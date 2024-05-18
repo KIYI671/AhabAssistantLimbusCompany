@@ -123,9 +123,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         可能存在各种奇奇怪怪的BUG\n
         随机、斩击、突刺、打击队伍不怎么用，很不完善\n
         镜牢初始自动选择第1、2项EGO饰品\n
+        使用CTRL+Q按键暂停脚本进程\n
         其他的所见即所得，懒得写了''')
 
-        self.about_text.setText('''直接看github项目主页的README吧，懒得写了''')
+        self.about_text.setText('''使用CTRL+Q按键暂停脚本进程，其他的直接看github项目主页的README吧，懒得写了''')
 
 
     def setting_teams(self):
