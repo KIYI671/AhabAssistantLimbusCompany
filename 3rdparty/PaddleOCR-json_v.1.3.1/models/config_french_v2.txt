@@ -1,0 +1,10 @@
+# 法文 PP-OCR v2
+
+# rec 识别模型库
+rec_model_dir models/french_mobile_v2.0_rec_infer
+
+# 字典路径
+rec_char_dict_path models/dict_french.txt
+
+# v2模型启用
+rec_img_h 32

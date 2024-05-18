@@ -1,0 +1,7 @@
+# 纯英文 PP-OCR v3
+
+# rec 识别模型库
+rec_model_dir models/en_PP-OCRv3_rec_infer
+
+# 字典路径
+rec_char_dict_path models/dict_en.txt

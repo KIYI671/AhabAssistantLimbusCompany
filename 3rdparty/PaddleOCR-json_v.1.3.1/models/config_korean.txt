@@ -1,0 +1,7 @@
+# 韩文 PP-OCR v3
+
+# rec 识别模型库
+rec_model_dir models/korean_PP-OCRv3_rec_infer
+
+# 字典路径
+rec_char_dict_path models/dict_korean.txt

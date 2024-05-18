@@ -1,0 +1,103 @@
+# 保存最后处在的页面
+default_page: 2
+
+# 保存各个任务是否启用
+set_windows: true
+daily_task: false
+get_reward: false
+buy_enkephalin: false
+mirror: true
+
+# 保存"窗口设置"任务模块中的设置
+set_win_size: 0  #窗口大小设置
+set_win_position: 0  #窗口位移设置
+set_reduce_miscontact: 0  #结束时是否恢复窗口
+
+# 保存"日常任务"任务模块中的设置
+set_EXP_count: 1  #经验本次数
+set_thread_count: 3 #纽本次数
+all_teams: 1 #日常任务使用哪支队伍
+
+# 保存"领取奖励"任务模块中的设置
+set_get_prize: 0  #领取日常、周常、邮件奖励设置
+
+# 保存"狂气换体"任务模块中的设置
+set_lunacy_to_enkephalin: 2 #狂气换体次数设置
+
+# 保存"镜牢设置"任务模块中的设置，这部分的内容不可随意修改，否则会闪退！！！！！
+set_mirror_count: 1  #坐牢次数设置
+team1: true     #设置配队1是否启用
+team2: true    #设置配队2是否启用
+team3: true    #设置配队3是否启用
+team4: true    #设置配队4是否启用
+team5: true    #设置配队5是否启用
+team6: true    #设置配队6是否启用
+team7: false   #设置配队7是否启用
+teams_be_select: 6  #保存启用了几个队伍
+team1_order: '7' #设置配队1的顺序
+team2_order: '8' #设置配队2的顺序
+team3_order: '9'  #设置配队3的顺序
+team4_order: '10' #设置配队4的顺序
+team5_order: '11' #设置配队5的顺序
+team6_order: '12' #设置配队6的顺序
+team7_order: ''   #设置配队7的顺序
+
+#保存各个配队情况
+team1_setting: {all_system: 4, all_teams: 3, sinners_be_select: 7, YiSang: true, YiSang_order: '5',
+  Faust: true, Faust_order: '3', DonQuixote: true, DonQuixote_order: '6', Ryoshu: true,
+  Ryoshu_order: '4', Meursault: true, Meursault_order: '2', HongLu: false, HongLu_order: '',
+  Heathcliff: false, Heathcliff_order: '', Ishmael: false, Ishmael_order: '', Rodion: false,
+  Rodion_order: '', Sinclair: true, Sinclair_order: '1', Outis: true, Outis_order: '7',
+  Gregor: false, Gregor_order: '', burn: true, bleed: false, tremor: true, repture: false,
+  poise: false, sinking: true, charge: true, slash: false, clash: false, blunt: false   #各体系
+}
+team2_setting: {all_system: 0, all_teams: 4, sinners_be_select: 8, YiSang: false,
+  YiSang_order: '', Faust: false, Faust_order: '', DonQuixote: false, DonQuixote_order: '',
+  Ryoshu: true, Ryoshu_order: '5', Meursault: true, Meursault_order: '8', HongLu: true,
+  HongLu_order: '7', Heathcliff: false, Heathcliff_order: '', Ishmael: true, Ishmael_order: '2',
+  Rodion: true, Rodion_order: '3', Sinclair: true, Sinclair_order: '1', Outis: true,
+  Outis_order: '4', Gregor: true, Gregor_order: '6', burn: false, bleed: true, tremor: true,
+  repture: true, poise: true, sinking: true, charge: true, slash: false, clash: false,
+  blunt: false                                                            #各体系
+}
+team3_setting: {all_system: 6, all_teams: 5, sinners_be_select: 6, YiSang: true, YiSang_order: '4',
+  Faust: false, Faust_order: '', DonQuixote: true, DonQuixote_order: '2', Ryoshu: true,
+  Ryoshu_order: '1', Meursault: true, Meursault_order: '5', HongLu: true, HongLu_order: '6',
+  Heathcliff: true, Heathcliff_order: '3', Ishmael: false, Ishmael_order: '', Rodion: false,
+  Rodion_order: '', Sinclair: false, Sinclair_order: '', Outis: false, Outis_order: '',
+  Gregor: false, Gregor_order: '', burn: true, bleed: true, tremor: true, repture: false,
+  poise: false, sinking: false, charge: false, slash: false, clash: false, blunt: false #各体系
+}
+team4_setting: {all_system: 2, all_teams: 6, sinners_be_select: 7, YiSang: true, YiSang_order: '5',
+  Faust: true, Faust_order: '3', DonQuixote: false, DonQuixote_order: '', Ryoshu: false,
+  Ryoshu_order: '', Meursault: false, Meursault_order: '', HongLu: true, HongLu_order: '6',
+  Heathcliff: true, Heathcliff_order: '1', Ishmael: true, Ishmael_order: '7', Rodion: true,
+  Rodion_order: '4', Sinclair: false, Sinclair_order: '', Outis: true, Outis_order: '2',
+  Gregor: false, Gregor_order: '', burn: true, bleed: true, tremor: false, repture: true,
+  poise: false, sinking: false, charge: true, slash: false, clash: false, blunt: false  #各体系
+}
+team5_setting: {all_system: 5, all_teams: 7, sinners_be_select: 7, YiSang: true, YiSang_order: '2',
+  Faust: true, Faust_order: '6', DonQuixote: false, DonQuixote_order: '', Ryoshu: false,
+  Ryoshu_order: '', Meursault: false, Meursault_order: '', HongLu: true, HongLu_order: '5',
+  Heathcliff: false, Heathcliff_order: '', Ishmael: true, Ishmael_order: '1', Rodion: true,
+  Rodion_order: '3', Sinclair: false, Sinclair_order: '', Outis: true, Outis_order: '7',
+  Gregor: true, Gregor_order: '4', burn: true, bleed: true, tremor: true, repture: true,
+  poise: false, sinking: false, charge: true, slash: false, clash: false, blunt: false  #各体系
+}
+team6_setting: {all_system: 1, all_teams: 2, sinners_be_select: 6, YiSang: true, YiSang_order: '2',
+  Faust: false, Faust_order: '', DonQuixote: true, DonQuixote_order: '5', Ryoshu: true,
+  Ryoshu_order: '6', Meursault: false, Meursault_order: '', HongLu: false, HongLu_order: '',
+  Heathcliff: true, Heathcliff_order: '3', Ishmael: true, Ishmael_order: '1', Rodion: false,
+  Rodion_order: '', Sinclair: false, Sinclair_order: '', Outis: false, Outis_order: '',
+  Gregor: true, Gregor_order: '4', burn: true, bleed: false, tremor: true, repture: true,
+  poise: false, sinking: true, charge: true, slash: false, clash: false, blunt: false   #各体系
+}
+team7_setting: {all_system: 0, all_teams: 1, sinners_be_select: 0, YiSang: false,
+  YiSang_order: '', Faust: false, Faust_order: '', DonQuixote: false, DonQuixote_order: '',
+  Ryoshu: false, Ryoshu_order: '', Meursault: false, Meursault_order: '', HongLu: false,
+  HongLu_order: '', Heathcliff: false, Heathcliff_order: '', Ishmael: false, Ishmael_order: '',
+  Rodion: false, Rodion_order: '', Sinclair: false, Sinclair_order: '', Outis: false,
+  Outis_order: '', Gregor: false, Gregor_order: '', burn: false, bleed: false, tremor: false,
+  repture: false, poise: false, sinking: false, charge: false, slash: false, clash: false,
+  blunt: false                                                                          #各体系
+}
