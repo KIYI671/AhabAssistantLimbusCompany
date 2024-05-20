@@ -17,7 +17,7 @@ set_select_team_options = {"Team1": 1, "Team2": 2, "Team3": 3, "Team4": 4, "Team
                            "Team11": 11, "Team12": 12, "Team13": 13, "Team14": 14, "Team15": 15,
                            "Team16": 16, "Team17": 17, "Team18": 18, "Team19": 19, "Team20": 20,
                            }
-all_systems = {"烧伤(burn)": 0, "流血(bleed)": 1, "震颤(tremor)": 2, "破裂(repture)": 3, "呼吸(poise)": 4,
+all_systems = {"烧伤(burn)": 0, "流血(bleed)": 1, "震颤(tremor)": 2, "破裂(rupture)": 3, "呼吸(poise)": 4,
                "沉沦(sinking)": 5, "充能(charge)": 6, "斩击(slash)": 7, "突刺(clash)": 8, "打击(blunt)": 9}
 
 
@@ -443,7 +443,7 @@ class setting_window(QDialog, Ui_all_team_basic_setting):
         self.burn.stateChanged.connect(lambda checked: self.shop_checkbox_state_changed(checked, which_team))
         self.bleed.stateChanged.connect(lambda checked: self.shop_checkbox_state_changed(checked, which_team))
         self.tremor.stateChanged.connect(lambda checked: self.shop_checkbox_state_changed(checked, which_team))
-        self.repture.stateChanged.connect(lambda checked: self.shop_checkbox_state_changed(checked, which_team))
+        self.rupture.stateChanged.connect(lambda checked: self.shop_checkbox_state_changed(checked, which_team))
         self.poise.stateChanged.connect(lambda checked: self.shop_checkbox_state_changed(checked, which_team))
         self.sinking.stateChanged.connect(lambda checked: self.shop_checkbox_state_changed(checked, which_team))
         self.charge.stateChanged.connect(lambda checked: self.shop_checkbox_state_changed(checked, which_team))
@@ -558,7 +558,7 @@ class setting_window(QDialog, Ui_all_team_basic_setting):
         self.burn.setChecked(config_datas[which_team]["burn"])
         self.bleed.setChecked(config_datas[which_team]["bleed"])
         self.tremor.setChecked(config_datas[which_team]["tremor"])
-        self.repture.setChecked(config_datas[which_team]["repture"])
+        self.rupture.setChecked(config_datas[which_team]["rupture"])
         self.poise.setChecked(config_datas[which_team]["poise"])
         self.sinking.setChecked(config_datas[which_team]["sinking"])
         self.charge.setChecked(config_datas[which_team]["charge"])

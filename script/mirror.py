@@ -117,6 +117,7 @@ def select_theme_pack():
                 mouse_drag_down(pic[1])
                 return 0
     mouse_drag_down(get_theme_pack("./pic/mirror/theme_pack_features.png"))
+    sleep(3)
 
 
 @begin_and_finish_log(task_name="镜牢获取奖励卡")

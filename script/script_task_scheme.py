@@ -23,7 +23,7 @@ from script.team_formation import select_battle_team
 from script.team_preparation import team_preparation
 from os import environ
 
-all_systems = {0: "burn", 1: "bleed", 2: "tremor", 3: "repture", 4: "poise",
+all_systems = {0: "burn", 1: "bleed", 2: "tremor", 3: "rupture", 4: "poise",
                5: "sinking", 6: "charge", 7: "slash", 8: "clash", 9: "blunt"}
 all_sinners_name = ["YiSang", "Faust", "DonQuixote", "Ryoshu", "Meursault", "HongLu",
                     "Heathcliff", "Ishmael", "Rodion", "Sinclair", "Outis", "Gregor"]
