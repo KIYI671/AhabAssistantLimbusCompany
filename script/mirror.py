@@ -384,6 +384,7 @@ def execute_a_mirror(sinner_team, which_team, shop_sell_list, system="burn"):
             mouse_click(ego_gift_get_confirm)
 
         if get_pic_position("./pic/mirror/select_encounter_reward_card.png"):
+            sleep(2)  # 防止过快点击导致脚本卡死
             get_reward_card()
         if get_pic_position("./pic/mirror/leave_reward_card.png"):
             mouse_click(get_pic_position("./pic/mirror/leave_reward_card_cancel.png"))
