@@ -8,6 +8,7 @@ from os import environ
 
 from my_decorator.decorator import begin_and_finish_log
 from my_log.my_log import my_log
+from my_ocr.ocr import commom_ocr, commom_gain_text
 from script.decision_event_handling import decision_event_handling
 
 
@@ -19,7 +20,7 @@ def battle():
         if in_mirror is False and get_pic_position("./pic/battle/in_mirror_battle.png"):
             in_mirror = True
         # 如果在镜牢战斗，并且有角色死亡，退出战斗
-        if in_mirror and get_pic_position("./pic/battle/dead.png", 0.9):
+        if in_mirror and get_pic_position("./pic/battle/dead.png", 0.9) and battle_ocr():
             msg = f"角色死亡，退出战斗"
             my_log("info", msg)
             mouse_click(get_pic_position("./pic/battle/setting.png"))
@@ -112,3 +113,12 @@ def battle():
             sleep(3)
         if chance <= 0:
             break
+
+
+def battle_ocr():
+    dead = commom_ocr("./pic/battle/dead.png", 85, 20)
+    text = commom_gain_text(dead[0])
+    text_values = [d.get("text", "") for d in text]
+    if any("dead" in t.lower() for t in text_values):
+        return True
+    return False

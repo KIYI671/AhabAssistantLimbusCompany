@@ -5,7 +5,7 @@ from command.get_position import get_pic_position, get_pic_position_without_cap,
 from command.mouse_activity import mouse_click, mouse_scroll_farthest, mouse_drag_down
 from my_decorator.decorator import begin_and_finish_log
 from my_log.my_log import my_log
-from my_ocr.ocr import get_theme_pack, compare_the_blacklist
+from my_ocr.ocr import get_theme_pack, compare_the_blacklist, commom_ocr, commom_gain_text, commom_all_ocr
 from script.all_retry_question import retry
 from script.back_init_menu import back_init_menu
 from script.decision_event_handling import decision_event_handling
@@ -215,7 +215,24 @@ def in_rest_room(system):
                 retry()
                 times -= 1
                 if times < 0:
-                    mouse_click(get_pic_position("./pic/mirror/event/leave_heal_sinner.png"))
+                    leave = commom_ocr("./pic/mirror/event/leave_heal_sinner.png", 320, 100)
+                    p = []
+                    for b in leave:
+                        if "move" in b['text'].lower():
+                            box = b['box']
+                            p = [(box[0][0] + box[2][0]) // 2, (box[0][1] + box[2][1]) // 2]
+                    mouse_click(p)
+                    break
+                if times < -5:
+                    leave = commom_gain_text(commom_all_ocr()[0])
+                    p = []
+                    for b in leave:
+                        if "move" in b['text'].lower():
+                            box = b['box']
+                            p = [(box[0][0] + box[2][0]) // 2, (box[0][1] + box[2][1]) // 2]
+                    mouse_click(p)
+                    break
+                if get_pic_position("./pic/mirror/event/rest_room/leave.png"):
                     break
             if continue_button := get_pic_position("./pic/event/continue.png"):
                 mouse_click(continue_button)
