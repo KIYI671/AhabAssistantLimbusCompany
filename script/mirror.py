@@ -215,21 +215,13 @@ def in_rest_room(system):
                 retry()
                 times -= 1
                 if times < 0:
-                    leave = commom_ocr("./pic/mirror/event/leave_heal_sinner.png", 320, 100)
-                    p = []
-                    for b in leave:
-                        if "move" in b['text'].lower():
-                            box = b['box']
-                            p = [(box[0][0] + box[2][0]) // 2, (box[0][1] + box[2][1]) // 2]
-                    mouse_click(p)
-                    break
-                if times < -5:
                     leave = commom_gain_text(commom_all_ocr()[0])
                     p = []
                     for b in leave:
                         if "move" in b['text'].lower():
                             box = b['box']
                             p = [(box[0][0] + box[2][0]) // 2, (box[0][1] + box[2][1]) // 2]
+                            break
                     mouse_click(p)
                     break
                 if get_pic_position("./pic/mirror/event/rest_room/leave.png"):
