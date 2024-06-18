@@ -33,6 +33,8 @@
     * [特色功能](#特色功能)
   * [下载方式](#下载方式)
   * [使用说明](#使用说明)
+    * [堂吉诃德都能学会的操作方法 (英语)](#堂吉诃德都能学会的操作方法英语)
+    * [Even Don Quixote can learn how to operate it (EN)](#even-don-quixote-can-learn-how-to-operate-iten)
     * [主题包黑名单设置](#主题包黑名单设置)
     * [后台运行](#后台运行)
   * [注意！！！](#注意)
@@ -73,6 +75,18 @@ Download
 ---
 ## 使用说明
 How to use
+
+### 堂吉诃德都能学会的操作方法(英语)
+#### Even Don Quixote can learn how to operate it(EN)
+
+<details>
+<summary></summary>
+<img src="pic/screenshot/how_to_use.png"/> 
+
+
+
+</details>
+
 
 在脚本执行过程可以使用 **CTRL+Q** 按键终止脚本进程（此操作可能导致脚本再次启动时出现问题，可以通过重启脚本程序解决）
 
