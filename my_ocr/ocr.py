@@ -348,9 +348,44 @@ def commom_ocr(img_model_path, width=50, height=50, precision=0.8, scale=0, scre
     return all_byte_stream
 
 
-def commom_gain_text(pic_byte_stream):
+def commom_range_ocr(upper_left_corner, lower_right_corner, hight=0, width=0, precision=0.8, scale=0,
+                     screenshot="./screenshot.png"):
+    # 对当前页面进行截图
+    win_cap()
+
+    # 设置缩放比例
+    scale_factors = [0.75, 1.0, 0.5, 0.625, 1.25, 1.5]
+    # 初始化目标截图
+    try:
+        my_screenshot = get_grey_normalized_pic(screenshot)
+    except:
+        my_log("error", "无法读取图片文件\"" + screenshot + "\"图片文件很可能被删除，或主程序被移动")
+        raise withOutPicError("无法读取图片文件\"" + screenshot + "\"图片文件很可能被删除，或主程序被移动")
+
+    if screenshot != "./screenshot.png":
+        my_screenshot = cv2.resize(my_screenshot, None, fx=scale_factors[scale], fy=scale_factors[scale],
+                                   interpolation=cv2.INTER_AREA)
+
+    new_model = my_screenshot[upper_left_corner[1]:lower_right_corner[1], upper_left_corner[0]:lower_right_corner[0]]
+
+    # 将图片转为字节流
+    is_success, encoded_image = cv2.imencode('.png', new_model)
+    if not is_success:
+        raise Exception("Could not encode image.")
+
+    # encoded_image是numpy数组，本身并不是一个流对象
+    # 转为字节对象，并将其写入到一个流对象中
+    byte_stream = io.BytesIO(encoded_image.tobytes())
+
+    # 转为可用于ocr的字节流
+    byte_stream_read = byte_stream.read()
+
+    return byte_stream_read
+
+
+def commom_gain_text(pic_byte_stream, language="models/config_en.txt"):
     # 使用的识别语言配置文件
-    my_argument = {"config_path": "models/config_en.txt"}
+    my_argument = {"config_path": language}
     # 初始化识别器对象，传入 PaddleOCR-json.exe
     ocr = GetOcrApi("./3rdparty/PaddleOCR-json_v.1.3.1/PaddleOCR-json.exe", my_argument)
     # 读取图片字节流进行OCR

@@ -4,7 +4,7 @@ from command.get_position import get_pic_position, get_all_pic_position
 from command.mouse_activity import mouse_click, mouse_drag
 from my_decorator.decorator import begin_and_finish_log
 from my_log.my_log import my_log
-from my_ocr.ocr import get_all_team, search_team_number
+from my_ocr.ocr import get_all_team, search_team_number, commom_gain_text, commom_all_ocr, commom_range_ocr
 
 all_sinner = {
     1: "YiSang", 2: "Faust", 3: "DonQuixote",
@@ -33,8 +33,21 @@ def team_formation(sinner_team):
             name = pic_path + all_sinner[sinner] + '.png'
             if my_sinner := get_pic_position(name):
                 mouse_click(my_sinner)
-        if get_pic_position("./pic/teams/full_team.png") is None:
-            clean_team()
+        leave = commom_gain_text(commom_all_ocr()[0], language="models/config_chinese.txt")
+        sinner_nums = [f"6/6", f"5/6", f"4/6", f"3/6", f"2/6", f"1/6"]
+        p1, p2 = None, None
+        for b in leave:
+            if "limit" in b['text'].lower():
+                box = b['box']
+                p1 = [box[0][0], box[0][1]]
+                p2 = [box[2][0], box[2][1]]
+        p2[1] += 80
+        leave = commom_gain_text(commom_range_ocr(p1, p2), language="models/config_chinese.txt")
+        all_text = ""
+        for b in leave:
+            all_text += b['text'].lower() + " "
+        if any(sinner in all_text for sinner in sinner_nums):
+            break
 
 
 @begin_and_finish_log(task_name="寻找队伍")
