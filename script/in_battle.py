@@ -21,13 +21,11 @@ def battle():
             in_mirror = True
         # 如果在镜牢战斗，并且有角色死亡，退出战斗
         if in_mirror and get_pic_position("./pic/battle/dead.png", 0.9) and battle_ocr():
-            sleep(2)
-            if in_mirror and get_pic_position("./pic/battle/dead.png", 0.9) and battle_ocr():
-                msg = f"角色死亡，退出战斗"
-                my_log("info", msg)
-                mouse_click(get_pic_position("./pic/battle/setting.png"))
-                mouse_click(get_pic_position("./pic/battle/give_up.png"))
-                break
+            msg = f"角色死亡，退出战斗"
+            my_log("info", msg)
+            mouse_click(get_pic_position("./pic/battle/setting.png"))
+            mouse_click(get_pic_position("./pic/battle/give_up.png"))
+            break
         # 如果正在战斗待机界面
         elif get_pic_position("./pic/battle/in_battle.png"):
             pyautogui.press('p')
