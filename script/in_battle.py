@@ -36,8 +36,7 @@ def battle():
             chance = 5
             msg = f"使用P+Enter开始战斗"
             my_log("debug", msg)
-            if chance == 0:
-                mouse_click_blank()
+            mouse_click_blank()
             continue
         # 如果正在交战过程
         elif get_pic_position("./pic/battle/pause.png"):
