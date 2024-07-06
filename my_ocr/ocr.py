@@ -25,7 +25,6 @@ def compare_the_blacklist(pic_byte_stream, language="models/config_chinese.txt")
     text_blocks = res["data"]
     # 只获取文本块中的文本
     text_values = [d.get("text", "") for d in text_blocks]
-    print(text_values)
     # 获取黑名单
     black_list = get_black_list_keyword_yaml()
     keywords = black_list["keys"]

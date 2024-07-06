@@ -3,12 +3,12 @@ from time import sleep
 import pyautogui
 
 from command.get_position import get_pic_position, get_pic_position_without_cap
-from command.mouse_activity import mouse_click
+from command.mouse_activity import mouse_click, mouse_click_blank
 from os import environ
 
 from my_decorator.decorator import begin_and_finish_log
 from my_log.my_log import my_log
-from my_ocr.ocr import commom_ocr, commom_gain_text
+from my_ocr.ocr import commom_ocr, commom_gain_text, commom_all_ocr
 from script.decision_event_handling import decision_event_handling
 
 
@@ -21,17 +21,23 @@ def battle():
             in_mirror = True
         # 如果在镜牢战斗，并且有角色死亡，退出战斗
         if in_mirror and get_pic_position("./pic/battle/dead.png", 0.9) and battle_ocr():
-            msg = f"角色死亡，退出战斗"
-            my_log("info", msg)
-            mouse_click(get_pic_position("./pic/battle/setting.png"))
-            mouse_click(get_pic_position("./pic/battle/give_up.png"))
-            break
+            sleep(2)
+            if get_pic_position("./pic/battle/dead.png", 0.9):
+                msg = f"角色死亡，退出战斗"
+                my_log("info", msg)
+                mouse_click(get_pic_position("./pic/battle/setting.png"))
+                mouse_click(get_pic_position("./pic/battle/give_up.png"))
+                break
         # 如果正在战斗待机界面
         elif get_pic_position("./pic/battle/in_battle.png"):
             pyautogui.press('p')
             sleep(0.5)
             pyautogui.press('enter')
             chance = 5
+            msg = f"使用P+Enter开始战斗"
+            my_log("debug", msg)
+            if chance == 0:
+                mouse_click_blank()
             continue
         # 如果正在交战过程
         elif get_pic_position("./pic/battle/pause.png"):
@@ -65,11 +71,11 @@ def battle():
             continue
         # 两种升级可能出现的图片识别
         elif get_pic_position("./pic/battle/level_up_message.png"):
-            mouse_click(get_pic_position("./pic/battle/level_up_confirm.png"))
+            level_up_leave()
             chance = 5
             continue
         elif get_pic_position("./pic/battle/level_up_message2.png"):
-            mouse_click(get_pic_position("./pic/battle/level_up_confirm.png"))
+            level_up_leave()
             chance = 5
             continue
         # 如果网络波动，需要点击重试
@@ -108,10 +114,12 @@ def battle():
             mouse_click(get_pic_position("./pic/battle/setting.png"))
             mouse_click(get_pic_position("./pic/battle/give_up.png"))
             break
+        elif chance <= 3 and get_pic_position("./pic/teams/formation_features.png"):
+            break
         else:
             chance -= 1
             sleep(3)
-        if chance <= 0:
+        if chance < 0:
             break
 
 
@@ -120,5 +128,20 @@ def battle_ocr():
     text = commom_gain_text(dead[0])
     text_values = [d.get("text", "") for d in text]
     if any("dead" in t.lower() for t in text_values):
+        msg = f"OCR检测到单词{"dead"}"
+        my_log("debug", msg)
         return True
+    msg = f"OCR没有检测到单词{"dead"}"
+    my_log("debug", msg)
     return False
+
+
+def level_up_leave(word="confirm"):
+    leave = commom_gain_text(commom_all_ocr()[0])
+    p = []
+    for b in leave:
+        if word in b['text'].lower():
+            box = b['box']
+            p = [(box[0][0] + box[2][0]) // 2, (box[0][1] + box[2][1]) // 2]
+            break
+    mouse_click(p)
