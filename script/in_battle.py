@@ -109,10 +109,6 @@ def battle():
             break
         elif get_pic_position("./pic/mirror/acquire_ego_gift.png"):
             break
-        elif in_mirror and get_pic_position("./pic/battle/dead.png"):
-            mouse_click(get_pic_position("./pic/battle/setting.png"))
-            mouse_click(get_pic_position("./pic/battle/give_up.png"))
-            break
         elif chance <= 3 and get_pic_position("./pic/teams/formation_features.png"):
             break
         else:
