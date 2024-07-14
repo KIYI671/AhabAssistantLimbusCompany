@@ -224,6 +224,8 @@ def in_rest_room(system):
                             p = [(box[0][0] + box[2][0]) // 2, (box[0][1] + box[2][1]) // 2]
                             break
                     mouse_click(p)
+                    msg = "无法过量回复，离开回复页面"
+                    my_log("info", msg)
                     break
                 if get_pic_position("./pic/mirror/event/rest_room/leave.png"):
                     break
@@ -242,7 +244,23 @@ def in_rest_room(system):
                 "./pic/mirror/event/rest_room/ego_gift_power_up_close.png"):
             mouse_click(ego_gift_power_up_close)
     # 离开休息房间
-    mouse_click(get_pic_position("./pic/mirror/event/rest_room/leave.png"))
+    if leave_button := get_pic_position("./pic/mirror/event/rest_room/leave.png"):
+        msg = "找到leave按钮"
+        my_log("debug", msg)
+        mouse_click(leave_button)
+    elif get_pic_position("./pic/mirror/event/leave_heal_sinner.png"):
+        msg = "未找到leave按钮，仍在回复页面"
+        my_log("debug", msg)
+        mouse_click(get_pic_position("./pic/mirror/event/leave_heal_sinner.png"))
+        sleep(1)
+        mouse_click(get_pic_position("./pic/mirror/event/rest_room/leave.png"))
+    elif ego_gift_power_up_close := get_pic_position(
+            "./pic/mirror/event/rest_room/ego_gift_power_up_close.png"):
+        msg = "未找到leave按钮，仍在升级EGO页面"
+        my_log("debug", msg)
+        mouse_click(ego_gift_power_up_close)
+        sleep(1)
+        mouse_click(get_pic_position("./pic/mirror/event/rest_room/leave.png"))
     mouse_click(get_pic_position("./pic/mirror/event/rest_room/leave_confirm.png"))
 
 
