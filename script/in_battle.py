@@ -25,8 +25,9 @@ def battle():
             if get_pic_position("./pic/battle/dead.png", 0.9):
                 msg = f"角色死亡，退出战斗"
                 my_log("info", msg)
-                mouse_click(get_pic_position("./pic/battle/setting.png"))
-                mouse_click(get_pic_position("./pic/battle/give_up.png"))
+                while give_up_button := get_pic_position("./pic/battle/give_up.png") is None:
+                    mouse_click(get_pic_position("./pic/battle/setting.png"))
+                mouse_click(give_up_button)
                 break
         # 如果正在战斗待机界面
         elif get_pic_position("./pic/battle/in_battle.png"):
