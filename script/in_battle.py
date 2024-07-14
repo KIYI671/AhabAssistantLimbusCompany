@@ -27,7 +27,7 @@ def battle():
                 my_log("info", msg)
                 while give_up_button := get_pic_position("./pic/battle/give_up.png") is None:
                     mouse_click(get_pic_position("./pic/battle/setting.png"))
-                mouse_click(give_up_button)
+                mouse_click(get_pic_position("./pic/battle/give_up.png"))
                 break
         # 如果正在战斗待机界面
         elif get_pic_position("./pic/battle/in_battle.png"):
