@@ -6,7 +6,7 @@ from command.mouse_activity import mouse_click, mouse_scroll_farthest, mouse_dra
 from my_decorator.decorator import begin_and_finish_log
 from my_log.my_log import my_log
 from my_ocr.ocr import get_theme_pack, compare_the_blacklist, commom_ocr, commom_gain_text, commom_all_ocr, \
-    commom_range_ocr
+    commom_range_ocr, find_and_click_text
 from script.all_retry_question import retry
 from script.back_init_menu import back_init_menu
 from script.decision_event_handling import decision_event_handling
@@ -341,16 +341,16 @@ def execute_a_mirror(sinner_team, which_team, shop_sell_list, system="burn"):
             search_road_default_distanc()
 
         # 战斗配队的情况
-        if get_pic_position("./pic/teams/formation_features.png"):
+        if find_and_click_text("participant"):
             leave = commom_gain_text(commom_all_ocr()[0], language="models/config_chinese.txt")
             sinner_nums = [f"6/6", f"5/6", f"4/6", f"3/6", f"2/6", f"1/6"]
             p1, p2 = None, None
             for b in leave:
-                if "limit" in b['text'].lower():
+                if "selection" in b['text'].lower():
                     box = b['box']
                     p1 = [box[0][0], box[0][1]]
                     p2 = [box[2][0], box[2][1]]
-            p2[1] += 80
+            p2[1] += 180
             leave = commom_gain_text(commom_range_ocr(p1, p2), language="models/config_chinese.txt")
             all_text = ""
             for b in leave:

@@ -4,7 +4,7 @@ from command.get_position import get_pic_position, get_all_pic_position
 from command.mouse_activity import mouse_click, mouse_drag
 from my_decorator.decorator import begin_and_finish_log
 from my_log.my_log import my_log
-from my_ocr.ocr import get_all_team, search_team_number, commom_gain_text, commom_all_ocr, commom_range_ocr
+from my_ocr.ocr import get_all_team, search_team_number, commom_gain_text, commom_all_ocr, commom_range_ocr, find_and_click_text
 
 all_sinner = {
     1: "YiSang", 2: "Faust", 3: "DonQuixote",
@@ -19,9 +19,8 @@ pic_path = "./pic/teams/"
 
 # 清队
 def clean_team():
-    if team_selected := get_all_pic_position("./pic/teams/selected.png"):
-        for sinner in team_selected:
-            mouse_click(sinner)
+    find_and_click_text("clear")
+    find_and_click_text("confirm")
 
 
 @begin_and_finish_log(task_name="罪人编队")
@@ -37,11 +36,11 @@ def team_formation(sinner_team):
         sinner_nums = [f"6/6", f"5/6", f"4/6", f"3/6", f"2/6", f"1/6"]
         p1, p2 = None, None
         for b in leave:
-            if "limit" in b['text'].lower():
+            if "selection" in b['text'].lower():
                 box = b['box']
                 p1 = [box[0][0], box[0][1]]
                 p2 = [box[2][0], box[2][1]]
-        p2[1] += 80
+        p2[1] += 180
         leave = commom_gain_text(commom_range_ocr(p1, p2), language="models/config_chinese.txt")
         all_text = ""
         for b in leave:

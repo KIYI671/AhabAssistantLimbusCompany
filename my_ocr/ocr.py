@@ -393,3 +393,19 @@ def commom_gain_text(pic_byte_stream, language="models/config_en.txt"):
     # 提取文本块数据
     data_blocks = res["data"]
     return data_blocks
+
+
+def find_and_click_text(word):
+    leave = commom_gain_text(commom_all_ocr()[0])
+    p = []
+    for b in leave:
+        if word in b['text'].lower():
+            box = b['box']
+            p = [(box[0][0] + box[2][0]) // 2, (box[0][1] + box[2][1]) // 2]
+            break
+    if p:
+        mouse_click(p)
+    else:
+        msg = f"OCR没有检测到单词{word}"
+        my_log("debug", msg)
+    return p
