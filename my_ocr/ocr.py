@@ -398,6 +398,8 @@ def commom_gain_text(pic_byte_stream, language="models/config_en.txt"):
 def find_and_click_text(word):
     leave = commom_gain_text(commom_all_ocr()[0])
     p = []
+    if "No text found in image." in leave:
+        return None
     for b in leave:
         if word in b['text'].lower():
             box = b['box']
