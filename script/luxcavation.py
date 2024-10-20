@@ -3,7 +3,8 @@ from command.mouse_activity import mouse_click
 
 
 def EXP_luxcavation():
-    level_select = ["./pic/luxcavation/EXP_lv43.png", "./pic/luxcavation/EXP_lv38.png",
+    level_select = ["./pic/luxcavation/EXP_lv48.png", "./pic/luxcavation/EXP_lv43.png",
+                    "./pic/luxcavation/EXP_lv38.png",
                     "./pic/luxcavation/EXP_lv33.png",
                     "./pic/luxcavation/EXP_lv28.png",
                     "./pic/luxcavation/EXP_lv18.png", "./pic/luxcavation/EXP_lv8.png"]
@@ -34,7 +35,8 @@ def thread_luxcavation():
                                       screenshot="./pic/luxcavation/first_thread.png")
     position = (temp_position1[0] + temp_position2[0], temp_position1[1] + temp_position2[1])
     mouse_click(position)
-    level_select = ["./pic/luxcavation/thread_lv40.png", "./pic/luxcavation/thread_lv30.png",
+    level_select = ["./pic/luxcavation/thread_lv50.png", "./pic/luxcavation/thread_lv40.png",
+                    "./pic/luxcavation/thread_lv30.png",
                     "./pic/luxcavation/thread_lv20.png"]
     for level in level_select:
         if get_pic_position(level):

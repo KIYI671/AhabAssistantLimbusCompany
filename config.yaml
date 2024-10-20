@@ -1,12 +1,12 @@
 # 保存最后处在的页面
-default_page: 2
+default_page: 0
 
 # 保存各个任务是否启用
 set_windows: true
 daily_task: false
 get_reward: false
 buy_enkephalin: false
-mirror: true
+mirror: false
 
 # 保存"窗口设置"任务模块中的设置
 set_win_size: 0  #窗口大小设置
@@ -26,15 +26,15 @@ set_lunacy_to_enkephalin: 2 #狂气换体次数设置
 
 # 保存"镜牢设置"任务模块中的设置，这部分的内容不可随意修改，否则会闪退！！！！！
 set_mirror_count: 1  #坐牢次数设置
-team1: true     #设置配队1是否启用
+team1: false    #设置配队1是否启用
 team2: false   #设置配队2是否启用
 team3: false   #设置配队3是否启用
 team4: false   #设置配队4是否启用
 team5: false   #设置配队5是否启用
 team6: false   #设置配队6是否启用
 team7: false   #设置配队7是否启用
-teams_be_select: 1  #保存启用了几个队伍
-team1_order: '2' #设置配队1的顺序
+teams_be_select: 0  #保存启用了几个队伍
+team1_order: ''  #设置配队1的顺序
 team2_order: ''  #设置配队2的顺序
 team3_order: ''   #设置配队3的顺序
 team4_order: ''   #设置配队4的顺序
@@ -43,13 +43,14 @@ team6_order: ''   #设置配队6的顺序
 team7_order: ''   #设置配队7的顺序
 
 #保存各个配队情况
-team1_setting: {all_system: 4, all_teams: 3, sinners_be_select: 6, YiSang: true, YiSang_order: '5',
-  Faust: true, Faust_order: '4', DonQuixote: true, DonQuixote_order: '6', Ryoshu: true,
-  Ryoshu_order: '3', Meursault: true, Meursault_order: '2', HongLu: false, HongLu_order: '',
-  Heathcliff: false, Heathcliff_order: '', Ishmael: false, Ishmael_order: '', Rodion: false,
-  Rodion_order: '', Sinclair: true, Sinclair_order: '1', Outis: false, Outis_order: '',
-  Gregor: false, Gregor_order: '', burn: true, bleed: false, tremor: true, rupture: false,
-  poise: false, sinking: true, charge: true, slash: false, clash: false, blunt: false   #各体系
+team1_setting: {all_system: 0, all_teams: 1, sinners_be_select: 0, YiSang: false,
+  YiSang_order: '', Faust: false, Faust_order: '', DonQuixote: false, DonQuixote_order: '',
+  Ryoshu: false, Ryoshu_order: '', Meursault: false, Meursault_order: '', HongLu: false,
+  HongLu_order: '', Heathcliff: false, Heathcliff_order: '', Ishmael: false, Ishmael_order: '',
+  Rodion: false, Rodion_order: '', Sinclair: false, Sinclair_order: '', Outis: false,
+  Outis_order: '', Gregor: false, Gregor_order: '', burn: false, bleed: false, tremor: false,
+  rupture: false, poise: false, sinking: false, charge: false, slash: false, clash: false,
+  blunt: false                                                                          #各体系
 }
 team2_setting: {all_system: 0, all_teams: 1, sinners_be_select: 0, YiSang: false,
   YiSang_order: '', Faust: false, Faust_order: '', DonQuixote: false, DonQuixote_order: '',
