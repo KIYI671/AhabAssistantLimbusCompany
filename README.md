@@ -80,7 +80,7 @@ How to use
 #### Even Don Quixote can learn how to operate it(EN)
 
 <details>
-<summary></summary>
+<summary>click me ！！！</summary>
 <img src="pic/screenshot/how_to_use.png"/> 
 
 
@@ -102,10 +102,30 @@ Setting up a blacklist
 release下载压缩包后，解压的文件中存在 **_“black_list_keyword.yaml”_** 这一文件
 使用记事本或者其他文本编辑器打开后，可以仿照其格式自行添加黑名单
 
-文件格式如以下图片所示
+文件格式参考以下图片所示
+
+The file format is shown in the following picture.
 
 ![image](./pic/screenshot/blacklist_setting.png)
 
+<details>
+<summary>以下为脚本默认黑名单（Default blacklist）</summary>
+<img src="readme/theme_pack_black_list/1.png"/> 
+<img src="readme/theme_pack_black_list/2.png"/> 
+<img src="readme/theme_pack_black_list/3.png"/> 
+<img src="readme/theme_pack_black_list/4.png"/> 
+<img src="readme/theme_pack_black_list/5.png"/> 
+<img src="readme/theme_pack_black_list/6.png"/> 
+<img src="readme/theme_pack_black_list/7.png"/> 
+<img src="readme/theme_pack_black_list/8.png"/> 
+<img src="readme/theme_pack_black_list/9.png"/> 
+<img src="readme/theme_pack_black_list/10.png"/> 
+<img src="readme/theme_pack_black_list/11.png"/> 
+<img src="readme/theme_pack_black_list/12.png"/> 
+<img src="readme/theme_pack_black_list/13.png"/> 
+<img src="readme/theme_pack_black_list/14.png"/> 
+<img src="readme/theme_pack_black_list/15.png"/> 
+</details>
 
 ### 后台运行
 run in the background
@@ -121,11 +141,8 @@ run in the background
 
 ## 注意！！！
 - **_此项目仅支持使用英语(EN)作为游戏语言进行使用_**
-- 坐牢设置中，可能出现编队号码的初始值不为1的情况，此时需要将队伍全部关闭后重新选择（~~技术力低下的体现~~）
 - 暂时只能使用1920 * 1080的窗口运行，未测试屏幕小于等于1920 * 1080的情况
 - 可能存在各种奇奇怪怪的BUG
-- 因为随机、斩击、突刺、打击队伍作者的使用频率为0，所以很不完善，其中随机队伍无法正常使用
-- 镜牢只会初始自动选择第1、2项EGO饰品
 
 ---
 
@@ -180,7 +197,6 @@ AALC的项目离不开以下开源项目的帮助
 ---
 ## 未来计划
 - [ ] 修复已发现的BUG
-- [ ] 商店刷新
 - [ ] 休息室合成EGO饰品
 - [ ] 重头开始学计算机的课程
 - [ ] ……

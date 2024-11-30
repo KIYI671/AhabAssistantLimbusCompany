@@ -383,7 +383,7 @@ def commom_range_ocr(upper_left_corner, lower_right_corner, hight=0, width=0, pr
     return byte_stream_read
 
 
-def commom_gain_text(pic_byte_stream, language="models/config_en.txt"):
+def commom_gain_text(pic_byte_stream, language="models/config_chinese.txt"):
     # 使用的识别语言配置文件
     my_argument = {"config_path": language}
     # 初始化识别器对象，传入 PaddleOCR-json.exe

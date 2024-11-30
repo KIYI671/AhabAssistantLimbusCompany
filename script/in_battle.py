@@ -112,6 +112,8 @@ def battle():
             break
         elif chance <= 3 and get_pic_position("./pic/teams/formation_features.png"):
             break
+        elif get_pic_position("./pic/mirror/select_encounter_reward_card.png"):
+            break
         else:
             chance -= 1
             sleep(3)

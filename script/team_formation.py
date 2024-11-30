@@ -4,7 +4,8 @@ from command.get_position import get_pic_position, get_all_pic_position
 from command.mouse_activity import mouse_click, mouse_drag
 from my_decorator.decorator import begin_and_finish_log
 from my_log.my_log import my_log
-from my_ocr.ocr import get_all_team, search_team_number, commom_gain_text, commom_all_ocr, commom_range_ocr, find_and_click_text
+from my_ocr.ocr import get_all_team, search_team_number, commom_gain_text, commom_all_ocr, commom_range_ocr, \
+    find_and_click_text
 
 all_sinner = {
     1: "YiSang", 2: "Faust", 3: "DonQuixote",
@@ -27,13 +28,14 @@ def clean_team():
 # 编队
 def team_formation(sinner_team):
     clean_team()
-    while get_pic_position("./pic/teams/full_team.png", 0.9) is None:
+    while get_pic_position("./pic/teams/full_team_12.png", 0.9) is None:
         for sinner in sinner_team:
             name = pic_path + all_sinner[sinner] + '.png'
             if my_sinner := get_pic_position(name):
                 mouse_click(my_sinner)
         leave = commom_gain_text(commom_all_ocr()[0], language="models/config_chinese.txt")
-        sinner_nums = [f"6/6", f"5/6", f"4/6", f"3/6", f"2/6", f"1/6"]
+        sinner_nums = [f"12/12", f"11/12", f"10/12", f"9/12", f"8/12", f"7/12", f"6/12", f"5/12", f"4/12", f"3/12",
+                       f"2/12", f"1/12"]
         p1, p2 = None, None
         for b in leave:
             if "selection" in b['text'].lower():
@@ -61,7 +63,6 @@ def select_battle_team(num):
         for i in range(10):
             pic_byte_stream = get_all_team("./pic/teams/teams.png")
             if team_position := search_team_number(pic_byte_stream[0], num):
-
                 mouse_click(team_position)
                 find = True
                 break
@@ -70,6 +71,7 @@ def select_battle_team(num):
     if find:
         msg = f"成功找到队伍"
         my_log("info", msg)
+        sleep(1)
         return True
     else:
         msg = f"找不到队伍"

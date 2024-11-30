@@ -2,7 +2,7 @@ import os
 from time import sleep
 
 from command.get_position import get_pic_position, get_pic_position_without_cap, get_all_pic_position
-from command.mouse_activity import mouse_click, mouse_scroll_farthest, mouse_drag_down
+from command.mouse_activity import mouse_click, mouse_scroll_farthest, mouse_drag_down, mouse_click_blank, mouse_drag
 from my_decorator.decorator import begin_and_finish_log
 from my_log.my_log import my_log
 from my_ocr.ocr import get_theme_pack, compare_the_blacklist, commom_ocr, commom_gain_text, commom_all_ocr, \
@@ -15,26 +15,26 @@ from script.team_formation import team_formation, select_battle_team
 
 scale_factors = [0.75, 1.0, 0.5, 0.625, 1.25, 1.5]
 # 存放位置
-systems = {"burn": "./pic/mirror/event/rest_room/burn.png",
-           "sinking": "./pic/mirror/event/rest_room/sinking.png",
-           "charge": "./pic/mirror/event/rest_room/charge.png",
-           "bleed": "./pic/mirror/event/rest_room/bleed.png",
-           "tremor": "./pic/mirror/event/rest_room/tremor.png",
-           "rupture": "./pic/mirror/event/rest_room/rupture.png",
-           "poise": "./pic/mirror/event/rest_room/poise.png",
-           "clash": "./pic/mirror/event/rest_room/clash.png",
-           "slash": "./pic/mirror/event/rest_room/slash.png",
-           "blunt": "./pic/mirror/event/rest_room/blunt.png"}
-systems_big_pic = {"burn": "./pic/mirror/event/rest_room/big_burn.png",
-                   "sinking": "./pic/mirror/event/rest_room/big_sinking.png",
-                   "charge": "./pic/mirror/event/rest_room/big_charge.png",
-                   "bleed": "./pic/mirror/event/rest_room/big_bleed.png",
-                   "tremor": "./pic/mirror/event/rest_room/big_tremor.png",
-                   "rupture": "./pic/mirror/event/rest_room/big_rupture.png",
-                   "poise": "./pic/mirror/event/rest_room/big_poise.png",
-                   "clash": "./pic/mirror/event/rest_room/big_clash.png",
-                   "slash": "./pic/mirror/event/rest_room/big_slash.png",
-                   "blunt": "./pic/mirror/event/rest_room/big_blunt.png"}
+systems = {"burn": "./pic/mirror/event/shop/enhance/burn.png",
+           "sinking": "./pic/mirror/event/shop/enhance/sinking.png",
+           "charge": "./pic/mirror/event/shop/enhance/charge.png",
+           "bleed": "./pic/mirror/event/shop/enhance/bleed.png",
+           "tremor": "./pic/mirror/event/shop/enhance/tremor.png",
+           "rupture": "./pic/mirror/event/shop/enhance/rupture.png",
+           "poise": "./pic/mirror/event/shop/enhance/poise.png",
+           "clash": "./pic/mirror/event/shop/enhance/clash.png",
+           "slash": "./pic/mirror/event/shop/enhance/slash.png",
+           "blunt": "./pic/mirror/event/shop/enhance/blunt.png"}
+systems_big_pic = {"burn": "./pic/mirror/event/shop/enhance/big_burn.png",
+                   "sinking": "./pic/mirror/event/shop/enhance/big_sinking.png",
+                   "charge": "./pic/mirror/event/shop/enhance/big_charge.png",
+                   "bleed": "./pic/mirror/event/shop/enhance/big_bleed.png",
+                   "tremor": "./pic/mirror/event/shop/enhance/big_tremor.png",
+                   "rupture": "./pic/mirror/event/shop/enhance/big_rupture.png",
+                   "poise": "./pic/mirror/event/shop/enhance/big_poise.png",
+                   "clash": "./pic/mirror/event/shop/enhance/big_clash.png",
+                   "slash": "./pic/mirror/event/shop/enhance/big_slash.png",
+                   "blunt": "./pic/mirror/event/shop/enhance/big_blunt.png"}
 systems_shop = {"burn": "./pic/mirror/event/shop/shop_burn.png",
                 "sinking": "./pic/mirror/event/shop/shop_sinking.png",
                 "charge": "./pic/mirror/event/shop/shop_charge.png",
@@ -55,6 +55,15 @@ for root, dirs, files in os.walk(must_to_buy_path):
         # 将文件路径添加到列表中
         must_to_buy.append(full_path)
 
+must_to_sell_path = "./pic/mirror/event/shop/must_to_sell/"
+must_to_sell = []
+for root, dirs, files in os.walk(must_to_sell_path):
+    for file in files:
+        # 拼接完整的文件路径
+        full_path = os.path.join(root, file)
+        # 将文件路径添加到列表中
+        must_to_sell.append(full_path)
+
 
 def road_to_mir():
     back_init_menu()
@@ -71,27 +80,39 @@ def enter_mir(system="random", team=1):
                "sinking": "./pic/mirror/select_team/sinking_ego_gift",
                "poise": "./pic/mirror/select_team/poise_ego_gift",
                "charge": "./pic/mirror/select_team/charge_ego_gift"}
-    mouse_click(get_pic_position("./pic/mirror/normal_mirror.png"))
+    mouse_click(get_pic_position("./pic/mirror/enter_mirror_button.png"))
     if enter_normal_mir := get_pic_position("./pic/mirror/enter_normal_mirror.png"):
         mouse_click(enter_normal_mir)
-        sleep(1)
-        while get_pic_position("./pic/mirror/wish_of_stars.png"):
-            mouse_click(get_pic_position("./pic/mirror/wish_of_stars_confirm.png"))
+        sleep(3)
+        select_battle_team(team)
+        while enter_mir_confirm := get_pic_position("./pic/mirror/select_team_confirm.png"):
+            mouse_click(enter_mir_confirm)
+
+        # mirror5
+        while get_pic_position("./pic/mirror/mirror5/grace_of_stars_passive.png") is None:
             retry()
+        mouse_click(get_pic_position("./pic/mirror/mirror5/10_stars.png"))
+        mouse_click(get_pic_position("./pic/mirror/mirror5/20_stars.png"))
+        mouse_click(get_pic_position("./pic/mirror/mirror5/30_stars.png"))
+        mouse_click(get_pic_position("./pic/mirror/mirror5/40_stars.png"))
+        mouse_click(get_pic_position("./pic/mirror/mirror5/50_stars.png"))
+        mouse_click(get_pic_position("./pic/mirror/mirror5/60_stars.png"))
+        mouse_click(get_pic_position("./pic/mirror/mirror5/select_stars_enter.png"))
+        mouse_click(get_pic_position("./pic/mirror/mirror5/select_stars_confirm.png"))
+
         while get_pic_position("./pic/mirror/select_init_ego_gift.png") is None:
             retry()
         mouse_click(get_pic_position(sys := systems[system] + '.png'))
         mouse_click(get_pic_position(sys := systems[system] + '_1.png'))
         mouse_click(get_pic_position(sys := systems[system] + '_2.png'))
+        mouse_click(get_pic_position(sys := systems[system] + '_3.png'))
         mouse_click(get_pic_position("./pic/mirror/select_team/select_ego_gift.png"))
         while get_pic_position("./pic/mirror/ego_gift_get.png") is None:
             retry()
         while ego_gift_get_confirm := get_pic_position("./pic/mirror/ego_gift_get_confirm.png"):
             mouse_click(ego_gift_get_confirm)
             sleep(1)
-        if select_battle_team(team):
-            while enter_mir_confirm := get_pic_position("./pic/mirror/enter_mir_confirm.png"):
-                mouse_click(enter_mir_confirm)
+
     elif resume := get_pic_position("./pic/mirror/resume_mir.png"):
         mouse_click(resume)
 
@@ -125,8 +146,7 @@ def select_theme_pack():
 # 获取奖励卡
 def get_reward_card():
     all_cards = ["./pic/mirror/gain_ego_resource.png", "./pic/mirror/gain_cost.png",
-                 "./pic/mirror/gain_cost_and_ego.png", "./pic/mirror/gain_ego.png",
-                 "./pic/mirror/gain_starlight.png"]
+                 "./pic/mirror/gain_ego.png", "./pic/mirror/gain_cost_and_ego.png"]
     for card in all_cards[::-1]:
         card_position = get_pic_position(card)
         if card_position:
@@ -134,7 +154,7 @@ def get_reward_card():
             break
     if reward_card_confirm := get_pic_position("./pic/mirror/reward_card_confirm.png"):
         mouse_click(reward_card_confirm)
-        sleep(5)
+        sleep(2)
         if ego_gift_get_confirm := get_pic_position("./pic/mirror/ego_gift_get_confirm.png"):
             mouse_click(ego_gift_get_confirm)
 
@@ -188,117 +208,20 @@ def search_road_farthest_distanc():
 
 # 为EGO饰品升级
 def ego_gift_to_power_up():
-    while ego_gift_power_up := get_pic_position("./pic/mirror/event/rest_room/ego_gift_power_up.png"):
+    while ego_gift_power_up := get_pic_position("./pic/mirror/event/shop/enhance/ego_gift_power_up.png"):
         mouse_click(ego_gift_power_up)
-        if power_up_confirm := get_pic_position("./pic/mirror/event/rest_room/power_up_confirm.png"):
+        if power_up_confirm := get_pic_position("./pic/mirror/event/shop/enhance/power_up_confirm.png"):
             mouse_click(power_up_confirm)
-            if get_pic_position("./pic/mirror/event/rest_room/power_up_confirm.png"):
-                mouse_click(get_pic_position("./pic/mirror/event/rest_room/power_up_cancel.png"))
+            if get_pic_position("./pic/mirror/event/shop/enhance/power_up_confirm.png"):
+                mouse_click(get_pic_position("./pic/mirror/event/shop/enhance/power_up_cancel.png"))
                 break
-        elif get_pic_position_without_cap("./pic/mirror/event/rest_room/cannot_enhance.png"):
+        elif get_pic_position_without_cap("./pic/mirror/event/shop/enhance/cannot_enhance.png"):
             break
         else:
             break
 
 
-@begin_and_finish_log(task_name="镜牢休息房间")
-# 在休息房间时的处理
-def in_rest_room(system):
-    # 全体治疗
-    if heal_sinner_button := get_pic_position("./pic/mirror/event/rest_room/heal_sinner.png"):
-        mouse_click(heal_sinner_button)
-        if get_pic_position("./pic/mirror/event/rest_room/heal_sinner_sold_out.png") is None:
-            mouse_click(get_pic_position("./pic/mirror/event/rest_room/heal_sinner_choosen.png"))
-            times = 5
-            while get_pic_position("./pic/event/continue.png") is None:
-                if skip_button := get_pic_position("./pic/mirror/event/skip.png"):
-                    mouse_click(skip_button, 5)
-                retry()
-                times -= 1
-                if times < 0:
-                    leave = commom_gain_text(commom_all_ocr()[0])
-                    p = []
-                    for b in leave:
-                        if "move" in b['text'].lower():
-                            box = b['box']
-                            p = [(box[0][0] + box[2][0]) // 2, (box[0][1] + box[2][1]) // 2]
-                            break
-                    mouse_click(p)
-                    msg = "无法过量回复，离开回复页面"
-                    my_log("info", msg)
-                    break
-                if get_pic_position("./pic/mirror/event/rest_room/leave.png"):
-                    break
-            if continue_button := get_pic_position("./pic/event/continue.png"):
-                mouse_click(continue_button)
-    # 升级体系ego饰品
-    if enhance_gifts_button := get_pic_position("./pic/mirror/event/rest_room/enhance_gifts.png"):
-        mouse_click(enhance_gifts_button)
-        if get_pic_position(systems_big_pic[system]):
-            ego_gift_to_power_up()
-        if gifts := get_all_pic_position(systems[system]):
-            for gift in gifts:
-                mouse_click(gift)
-                ego_gift_to_power_up()
-        if ego_gift_power_up_close := get_pic_position(
-                "./pic/mirror/event/rest_room/ego_gift_power_up_close.png"):
-            mouse_click(ego_gift_power_up_close)
-    # 离开休息房间
-    if leave_button := get_pic_position("./pic/mirror/event/rest_room/leave.png"):
-        msg = "找到leave按钮"
-        my_log("debug", msg)
-        mouse_click(leave_button)
-    elif get_pic_position("./pic/mirror/event/leave_heal_sinner.png"):
-        msg = "未找到leave按钮，仍在回复页面"
-        my_log("debug", msg)
-        mouse_click(get_pic_position("./pic/mirror/event/leave_heal_sinner.png"))
-        sleep(1)
-        mouse_click(get_pic_position("./pic/mirror/event/rest_room/leave.png"))
-    elif ego_gift_power_up_close := get_pic_position(
-            "./pic/mirror/event/rest_room/ego_gift_power_up_close.png"):
-        msg = "未找到leave按钮，仍在升级EGO页面"
-        my_log("debug", msg)
-        mouse_click(ego_gift_power_up_close)
-        sleep(1)
-        mouse_click(get_pic_position("./pic/mirror/event/rest_room/leave.png"))
-    mouse_click(get_pic_position("./pic/mirror/event/rest_room/leave_confirm.png"))
-
-
-@begin_and_finish_log(task_name="镜牢商店")
-# 在商店的处理
-def in_shop(system, shop_sell_list):
-    # 全体治疗
-    if heal_sinner := get_pic_position("./pic/mirror/event/shop/heal_sinner.png"):
-        mouse_click(heal_sinner)
-        mouse_click(get_pic_position("./pic/mirror/event/shop/heal_sinner_button.png"))
-        times = 5
-        while get_pic_position("./pic/event/continue.png") is None:
-            if skip_button := get_pic_position("./pic/mirror/event/skip.png"):
-                mouse_click(skip_button, 5)
-            retry()
-            times -= 1
-            if times < 0:
-                mouse_click(get_pic_position("./pic/mirror/event/leave_heal_sinner.png"))
-                break
-        if continue_button := get_pic_position("./pic/event/continue.png"):
-            mouse_click(continue_button)
-    # 出售无用饰品
-    if sell_gifts_button := get_pic_position("./pic/mirror/event/shop/sell_gifts.png"):
-        mouse_click(sell_gifts_button)
-        for sell_system in shop_sell_list:
-            path = "./pic/mirror/event/rest_room/"
-            my_sell_system = path + sell_system + ".png"
-            while gift := get_pic_position(my_sell_system):
-                mouse_click(gift)
-                mouse_click(get_pic_position("./pic/mirror/event/shop/sell_button.png"))
-                mouse_click(get_pic_position("./pic/mirror/event/shop/sell_confirm.png"))
-        if white_gossypium := get_pic_position("./pic/mirror/event/shop/must_to_sell/white_gossypium.png"):
-            mouse_click(white_gossypium)
-            mouse_click(get_pic_position("./pic/mirror/event/shop/sell_button.png"))
-            mouse_click(get_pic_position("./pic/mirror/event/shop/sell_confirm.png"))
-        while get_pic_position("./pic/mirror/event/shop/sell_close_button.png") is None:
-            retry()
-        mouse_click(get_pic_position("./pic/mirror/event/shop/sell_close_button.png"))
+def buy_gifts(system):
     # 购买必买项（回血饰品）
     for commodity in must_to_buy:
         if item := get_pic_position(commodity):
@@ -314,10 +237,86 @@ def in_shop(system, shop_sell_list):
                 mouse_click(get_pic_position("./pic/mirror/event/shop/purchase.png"))
                 while ego_gift_get_confirm := get_pic_position("./pic/mirror/ego_gift_get_confirm.png"):
                     mouse_click(ego_gift_get_confirm)
+            if get_pic_position("./pic/mirror/event/shop/ego_info.png"):
+                mouse_click_blank()
 
+
+def sell_gifts(shop_sell_list):
+    for sell_system in shop_sell_list:
+        path = "./pic/mirror/event/shop/enhance/"
+        my_sell_system = path + sell_system + ".png"
+        while gift := get_pic_position(my_sell_system):
+            mouse_click(gift)
+            mouse_click(get_pic_position("./pic/mirror/event/shop/sell_button.png"))
+            mouse_click(get_pic_position("./pic/mirror/event/shop/sell_confirm.png"))
+    if white_gossypium := get_pic_position("./pic/mirror/event/shop/must_to_sell/white_gossypium.png"):
+        mouse_click(white_gossypium)
+        mouse_click(get_pic_position("./pic/mirror/event/shop/sell_button.png"))
+        mouse_click(get_pic_position("./pic/mirror/event/shop/sell_confirm.png"))
+    for commodity in must_to_sell:
+        if item := get_pic_position(commodity):
+            mouse_click(item)
+            mouse_click(get_pic_position("./pic/mirror/event/shop/sell_button.png"))
+            mouse_click(get_pic_position("./pic/mirror/event/shop/sell_confirm.png"))
+            sleep(1)
+
+
+@begin_and_finish_log(task_name="镜牢商店")
+# 在商店的处理
+def in_shop(system, shop_sell_list):
+    # 全体治疗
+    if heal_sinner := get_pic_position("./pic/mirror/event/shop/heal_sinner.png"):
+        mouse_click(heal_sinner)
+        sleep(0.5)
+        if heal_sinner_button := get_pic_position("./pic/mirror/event/shop/heal_sinner_button.png"):
+            mouse_click(heal_sinner_button)
+            sleep(1)
+            while get_pic_position("./pic/event/return.png") is None:
+                retry()
+            if return_button := get_pic_position("./pic/event/return.png"):
+                mouse_click(return_button)
+    # 出售无用饰品
+    if sell_gifts_button := get_pic_position("./pic/mirror/event/shop/sell_gifts.png"):
+        mouse_click(sell_gifts_button)
+        sell_gifts(shop_sell_list)
+
+        if sell_list_block := get_pic_position("./pic/mirror/event/shop/gifts_list_block.png"):
+            mouse_drag(sell_list_block, time=1, y=500)
+            sell_gifts(shop_sell_list)
+
+        while get_pic_position("./pic/mirror/event/shop/sell_close_button.png") is None:
+            retry()
+        mouse_click(get_pic_position("./pic/mirror/event/shop/sell_close_button.png"))
+
+    # 购买ego饰品
+    buy_gifts(system)
+    if refresh_shop := get_pic_position("./pic/mirror/event/shop/refresh_shop.png", 0.95):
+        mouse_click(refresh_shop)
+        buy_gifts(system)
+
+    # 升级体系ego饰品
+    if enhance_gifts_button := get_pic_position("./pic/mirror/event/shop/enhance_gifts.png"):
+        mouse_click(enhance_gifts_button)
+        if get_pic_position(systems_big_pic[system]):
+            ego_gift_to_power_up()
+        if gifts := get_all_pic_position(systems[system]):
+            for gift in gifts:
+                mouse_click(gift)
+                ego_gift_to_power_up()
+        if sell_list_block := get_pic_position("./pic/mirror/event/shop/gifts_list_block.png"):
+            mouse_drag(sell_list_block, time=1, y=500)
+            if gifts := get_all_pic_position(systems[system]):
+                for gift in gifts:
+                    mouse_click(gift)
+                    ego_gift_to_power_up()
+        if ego_gift_power_up_close := get_pic_position(
+                "./pic/mirror/event/shop/enhance/ego_gift_power_up_close.png"):
+            mouse_click(ego_gift_power_up_close)
+
+    mouse_click_blank(times=3)
     # 离开商店
-    mouse_click(get_pic_position("./pic/mirror/event/rest_room/leave.png"))
-    mouse_click(get_pic_position("./pic/mirror/event/rest_room/leave_confirm.png"))
+    mouse_click(get_pic_position("./pic/mirror/event/shop/leave_shop.png"))
+    mouse_click(get_pic_position("./pic/mirror/event/shop/leave_shop_confirm.png"))
 
 
 # 一次镜本流程
@@ -343,7 +342,8 @@ def execute_a_mirror(sinner_team, which_team, shop_sell_list, system="burn"):
         # 战斗配队的情况
         if find_and_click_text("participant"):
             leave = commom_gain_text(commom_all_ocr()[0], language="models/config_chinese.txt")
-            sinner_nums = [f"6/6", f"5/6", f"4/6", f"3/6", f"2/6", f"1/6"]
+            sinner_nums = [f"12/12", f"11/12", f"10/12", f"9/12", f"8/12", f"7/12", f"6/12", f"5/12", f"4/12", f"3/12",
+                           f"2/12", f"1/12"]
             p1, p2 = None, None
             for b in leave:
                 if "selection" in b['text'].lower():
@@ -362,6 +362,13 @@ def execute_a_mirror(sinner_team, which_team, shop_sell_list, system="burn"):
                 first_battle = False
             mouse_click(get_pic_position("./pic/teams/to_battle.png"))
             battle()
+
+            sleep(2)
+            if get_pic_position("./pic/mirror/select_encounter_reward_card.png"):
+                sleep(1)  # 防止过快点击导致脚本卡死
+                get_reward_card()
+            if get_pic_position("./pic/mirror/leave_reward_card.png"):
+                mouse_click(get_pic_position("./pic/mirror/leave_reward_card_cancel.png"))
 
         # 遇到有SKIP的情况
         while skip_button := get_pic_position("./pic/mirror/event/skip.png"):
@@ -395,15 +402,6 @@ def execute_a_mirror(sinner_team, which_team, shop_sell_list, system="burn"):
                 if ego_gift_get_confirm := get_pic_position("./pic/mirror/ego_gift_get_confirm.png"):
                     mouse_click(ego_gift_get_confirm)
 
-            # 休息室事件
-            if get_pic_position("./pic/mirror/event/rest_room/rest_room_features_1.png") and \
-                    get_pic_position("./pic/mirror/event/rest_room/heal_sinner.png"):
-                in_rest_room(system)
-            # 商店事件
-            if get_pic_position("./pic/mirror/event/shop/shop_features_1.png") and \
-                    get_pic_position("./pic/mirror/event/shop/shop_features_2.png"):
-                in_shop(system, shop_sell_list)
-
             retry()
 
         # 如果遇到获取ego饰品的情况
@@ -426,12 +424,19 @@ def execute_a_mirror(sinner_team, which_team, shop_sell_list, system="burn"):
         # 防卡死
         if ego_gift_get_confirm := get_pic_position("./pic/mirror/ego_gift_get_confirm.png"):
             mouse_click(ego_gift_get_confirm)
+        retry()
+
+        # 商店事件
+        if get_pic_position("./pic/mirror/event/shop/shop_features_1.png") and \
+                get_pic_position("./pic/mirror/event/shop/shop_features_2.png"):
+            in_shop(system, shop_sell_list)
 
         if get_pic_position("./pic/mirror/select_encounter_reward_card.png"):
-            sleep(2)  # 防止过快点击导致脚本卡死
+            sleep(1)  # 防止过快点击导致脚本卡死
             get_reward_card()
         if get_pic_position("./pic/mirror/leave_reward_card.png"):
             mouse_click(get_pic_position("./pic/mirror/leave_reward_card_cancel.png"))
+
         if enter := get_pic_position("./pic/mirror/enter_room.png"):
             mouse_click(enter)
         if enter_mir_confirm := get_pic_position("./pic/mirror/enter_mir_confirm.png"):
@@ -440,6 +445,7 @@ def execute_a_mirror(sinner_team, which_team, shop_sell_list, system="burn"):
     my_log("info", msg)
     if claim_rewards := get_pic_position("./pic/mirror/claim_rewards.png"):
         mouse_click(claim_rewards)
+        sleep(1)
     mouse_click(get_pic_position("./pic/mirror/claim.png"))
     mouse_click(get_pic_position("./pic/mirror/claim_confirm.png"))
     while get_pic_position("./pic/mirror/claim_last_confirm.png") is None:
