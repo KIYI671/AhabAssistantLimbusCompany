@@ -437,6 +437,10 @@ def execute_a_mirror(sinner_team, which_team, shop_sell_list, system="burn"):
         if get_pic_position("./pic/mirror/leave_reward_card.png"):
             mouse_click(get_pic_position("./pic/mirror/leave_reward_card_cancel.png"))
 
+        if get_pic_position("./pic/mirror/event/select_event_effect.png"):
+            mouse_click(get_pic_position("./pic/mirror/event/event_effect_button.png"))
+            mouse_click(get_pic_position("./pic/mirror/event/select_event_effect_confirm.png"))
+
         if enter := get_pic_position("./pic/mirror/enter_room.png"):
             mouse_click(enter)
         if enter_mir_confirm := get_pic_position("./pic/mirror/enter_mir_confirm.png"):
