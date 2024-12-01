@@ -479,9 +479,9 @@ class setting_window(QDialog, Ui_all_team_basic_setting):
         save_yaml(config_datas)
 
     def checkbox_state_changed(self, checked, combo, which_team):
-        check_teams_select_num()
         # 各个配队的复选框被选中时，修改旁边的启动顺序
         config_datas = get_yaml_information()
+        check_teams_select_num(config_datas)
 
         sender_checkbox = self.sender()
         name = sender_checkbox.objectName()
