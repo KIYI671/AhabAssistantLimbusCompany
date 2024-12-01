@@ -3,7 +3,8 @@ from command.mouse_activity import mouse_click
 
 
 def EXP_luxcavation():
-    level_select = ["./pic/luxcavation/EXP_lv48.png", "./pic/luxcavation/EXP_lv43.png",
+    level_select = ["./pic/luxcavation/EXP_lv48_1.png", "./pic/luxcavation/EXP_lv48_2.png",
+                    "./pic/luxcavation/EXP_lv48_3.png", "./pic/luxcavation/EXP_lv43.png",
                     "./pic/luxcavation/EXP_lv38.png",
                     "./pic/luxcavation/EXP_lv33.png",
                     "./pic/luxcavation/EXP_lv28.png",
