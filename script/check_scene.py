@@ -82,6 +82,8 @@ def where_am_i():
         return 18
     elif get_pic_position_without_cap("./pic/mirror/exploration_reward.png"):
         return 19
+    elif get_pic_position("./pic/mirror/select_encounter_reward_card.png"):
+        return 20
 
     # 如果在主界面的几个窗口，或其他乱七八糟的位置
     if get_pic_position_without_cap("./pic/scenes/init_window.png") \

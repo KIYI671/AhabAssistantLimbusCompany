@@ -9,6 +9,8 @@ from script.check_scene import where_am_i
 from command.get_position import get_pic_position
 from script.in_battle import battle
 from command.mouse_activity import mouse_click, mouse_click_blank
+from script.some_script_in_MD import get_reward_card
+
 
 @begin_and_finish_log(task_name="返回主界面")
 def back_init_menu():
@@ -63,6 +65,9 @@ def back_init_menu():
         elif where == 19:
             mouse_click(get_pic_position("./pic/mirror/claim.png"))
             mouse_click(get_pic_position("./pic/mirror/claim_confirm.png"))
+
+        elif where == 20:
+            get_reward_card()
 
         # 无退出按键，但是可以使用esc按键返回
         elif 31 <= where <= 35:

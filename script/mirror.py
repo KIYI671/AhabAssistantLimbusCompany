@@ -11,6 +11,7 @@ from script.all_retry_question import retry
 from script.back_init_menu import back_init_menu
 from script.decision_event_handling import decision_event_handling
 from script.in_battle import battle
+from script.some_script_in_MD import get_reward_card
 from script.team_formation import team_formation, select_battle_team
 
 scale_factors = [0.75, 1.0, 0.5, 0.625, 1.25, 1.5]
@@ -91,12 +92,16 @@ def enter_mir(system="random", team=1):
         # mirror5
         while get_pic_position("./pic/mirror/mirror5/grace_of_stars_passive.png") is None:
             retry()
-        mouse_click(get_pic_position("./pic/mirror/mirror5/10_stars.png"))
         mouse_click(get_pic_position("./pic/mirror/mirror5/20_stars.png"))
-        mouse_click(get_pic_position("./pic/mirror/mirror5/30_stars.png"))
         mouse_click(get_pic_position("./pic/mirror/mirror5/40_stars.png"))
-        mouse_click(get_pic_position("./pic/mirror/mirror5/50_stars.png"))
-        mouse_click(get_pic_position("./pic/mirror/mirror5/60_stars.png"))
+        if stars_button := get_pic_position("./pic/mirror/mirror5/60_stars.png"):
+            mouse_click(stars_button)
+        if stars_button := get_pic_position("./pic/mirror/mirror5/40_stars_2.png"):
+            mouse_click(stars_button)
+        if stars_button := get_pic_position("./pic/mirror/mirror5/20_stars_2.png"):
+            mouse_click(stars_button)
+        if stars_button := get_pic_position("./pic/mirror/mirror5/10_stars.png"):
+            mouse_click(stars_button)
         mouse_click(get_pic_position("./pic/mirror/mirror5/select_stars_enter.png"))
         mouse_click(get_pic_position("./pic/mirror/mirror5/select_stars_confirm.png"))
 
@@ -138,25 +143,8 @@ def select_theme_pack():
             if compare_the_blacklist(pic[0]):
                 mouse_drag_down(pic[1])
                 return 0
-    mouse_drag_down(get_theme_pack("./pic/mirror/theme_pack_features.png"))
+    mouse_drag_down(get_pic_position("./pic/mirror/theme_pack_features.png"))
     sleep(3)
-
-
-@begin_and_finish_log(task_name="镜牢获取奖励卡")
-# 获取奖励卡
-def get_reward_card():
-    all_cards = ["./pic/mirror/gain_ego_resource.png", "./pic/mirror/gain_cost.png",
-                 "./pic/mirror/gain_ego.png", "./pic/mirror/gain_cost_and_ego.png"]
-    for card in all_cards[::-1]:
-        card_position = get_pic_position(card)
-        if card_position:
-            mouse_click(card_position)
-            break
-    if reward_card_confirm := get_pic_position("./pic/mirror/reward_card_confirm.png"):
-        mouse_click(reward_card_confirm)
-        sleep(2)
-        if ego_gift_get_confirm := get_pic_position("./pic/mirror/ego_gift_get_confirm.png"):
-            mouse_click(ego_gift_get_confirm)
 
 
 @begin_and_finish_log(task_name="镜牢寻路")
