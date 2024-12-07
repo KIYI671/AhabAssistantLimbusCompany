@@ -104,17 +104,19 @@ def script_task():
                 all_setting[key][key_2] = temp
 
     # 对游戏窗口进行设置
-    if all_setting["select_task"]["set_windows"]:
+    if all_setting["set_win"]["set_windows"]:
         # 未完成！！！
         handle = get_win_handle()
         if handle == None:
             my_log("error", "没有找到游戏窗口")
             raise withOutGameWinError("没有找到游戏窗口")
+        win_size = all_setting["select_task"]["set_win_size"]
+        environ['window_size'] = win_size
         adjust_position_and_size(handle)
         # back_init_menu()
         # make_enkephalin_module()
 
-    environ['rewards'] = "0"
+        environ['rewards'] = "0"
     # 如果是战斗中，先处理战斗
     if (where := where_am_i()) == 2:
         battle()

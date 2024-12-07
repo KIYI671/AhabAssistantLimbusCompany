@@ -63,7 +63,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.team7_setting.clicked.connect(self.setting_teams)
 
         # 设置各个选项卡中的下拉框内容
-        set_reduce_miscontact_options = {'是': 0, '否': 1}
+        set_reduce_miscontact_options = {'NO': 0, '否': 1}
         self.set_reduce_miscontact.addItems(set_reduce_miscontact_options)
 
         self.all_teams.addItems(set_select_team_options)
@@ -74,12 +74,17 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         set_get_prize_options = {"邮件+日/周常": 0, "日/周常": 1, "邮件": 2}
         self.set_get_prize.addItems(set_get_prize_options)
 
+        set_win_size_options = {"1920*1080": 0, "2560*1440": 1, "1280*720": 2, "1600*900": 3, "3200*1800": 4,
+                                "3840*2160": 5}
+        self.set_win_size.addItems(set_win_size_options)
+
         # 设置各个下拉框选择时，改变config.yaml中的参数
         self.set_reduce_miscontact.currentIndexChanged.connect(
             lambda: self.on_combobox_changed(set_reduce_miscontact_options))
         self.set_lunacy_to_enkephalin.currentIndexChanged.connect(
             lambda: self.on_combobox_changed(set_lunacy_to_enkephalin_options))
         self.set_get_prize.currentIndexChanged.connect(lambda: self.on_combobox_changed(set_get_prize_options))
+        self.set_win_size.currentIndexChanged.connect(lambda: self.on_combobox_changed(set_win_size_options))
         self.all_teams.currentIndexChanged.connect(lambda: self.on_combobox_changed(set_select_team_options))
 
         # 设置当复选框选中时，修改配队顺序
@@ -127,7 +132,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         其他的所见即所得，懒得写了''')
 
         self.about_text.setText('''使用CTRL+Q按键暂停脚本进程，其他的直接看github项目主页的README吧，懒得写了''')
-
 
     def setting_teams(self):
         button = self.sender()
@@ -252,7 +256,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def setting_unavailable(self):
         # 使所有设置项不可用
-        self.set_windows.setEnabled(False)
         self.daily_task.setEnabled(False)
         self.mirror.setEnabled(False)
         self.buy_enkephalin.setEnabled(False)
@@ -278,7 +281,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def setting_available(self):
         # 使所有设置项可用
-        self.set_windows.setEnabled(True)
         self.daily_task.setEnabled(True)
         self.mirror.setEnabled(True)
         self.buy_enkephalin.setEnabled(True)
@@ -375,12 +377,14 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def set_log(self, option=0):
         if option == 0:
-            try :self.load_log_text()
+            try:
+                self.load_log_text()
             except:
                 pass
 
         else:
-            try: self.clear_all_log()
+            try:
+                self.clear_all_log()
             except:
                 pass
 
@@ -582,6 +586,8 @@ def read_last_setting(mygui):
     mygui.set_lunacy_to_enkephalin.setCurrentIndex(config_datas["set_lunacy_to_enkephalin"])
 
     mygui.set_get_prize.setCurrentIndex(config_datas["set_get_prize"])
+
+    mygui.set_win_size.setCurrentIndex(config_datas["set_win_size"])
 
     # 读取之前最后复选框设置
     mygui.team1.setChecked(config_datas["team1"])

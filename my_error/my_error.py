@@ -116,3 +116,13 @@ class serverCloseError(Exception):
 
     def __str__(self):
         return self.errorInfo
+
+
+# 分辨率设置错误
+class resolutionSettingError(Exception):
+    def __init__(self, ErrorInfo):
+        super().__init__(ErrorInfo)
+        self.errorInfo = ErrorInfo
+
+    def __str__(self):
+        return self.errorInfo

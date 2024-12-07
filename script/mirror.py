@@ -1,4 +1,5 @@
 import os
+import time
 from time import sleep
 
 from command.get_position import get_pic_position, get_pic_position_without_cap, get_all_pic_position
@@ -127,6 +128,8 @@ def enter_mir(system="random", team=1):
 def select_theme_pack():
     while get_pic_position("./pic/mirror/theme_pack_features.png") is None:
         sleep(1)
+    if hard_button := get_pic_position("./pic/mirror/mirror5/hard_theme_pack.png"):
+        mouse_click(hard_button)
     if get_pic_position("./pic/mirror/theme_pack_features.png"):
         sleep(4)
         all_pic_byte_stream = get_theme_pack("./pic/mirror/theme_pack_features.png")
@@ -309,6 +312,9 @@ def in_shop(system, shop_sell_list):
 
 # 一次镜本流程
 def execute_a_mirror(sinner_team, which_team, shop_sell_list, system="burn"):
+    # 计时开始
+    start_time = time.time()
+
     if get_pic_position("./pic/teams/to_battle.png"):
         mouse_click(get_pic_position("./pic/scenes/the_back_button.png"))
     if get_pic_position("./pic/scenes/road_in_mirror.png") is None and get_pic_position(
@@ -447,3 +453,13 @@ def execute_a_mirror(sinner_team, which_team, shop_sell_list, system="burn"):
         sleep(1)
     if claim_last_confirm := get_pic_position("./pic/mirror/claim_last_confirm.png"):
         mouse_click(claim_last_confirm)
+
+    # 计时结束
+    end_time = time.time()
+    elapsed_time = end_time - start_time
+    # 将总秒数转换为小时、分钟和秒
+    hours, remainder = divmod(elapsed_time, 3600)
+    minutes, seconds = divmod(remainder, 60)
+    time_string = f"{int(hours):02}:{int(minutes):02}:{int(seconds):02}"
+    msg = f"此次镜牢使用{system}体系队伍，共花费{time_string}"
+    my_log("info", msg)

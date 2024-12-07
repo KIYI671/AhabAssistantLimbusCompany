@@ -91,6 +91,15 @@ def battle():
             continue
         # 战斗结束，进入结算页面
         elif get_pic_position("./pic/battle/battle_finish_confirm.png"):
+            sleep(1)
+            if get_pic_position("./pic/battle/level_up_message.png"):
+                level_up_leave()
+                chance = 5
+                continue
+            elif get_pic_position("./pic/battle/level_up_message2.png"):
+                level_up_leave()
+                chance = 5
+                continue
             # 为某些人在副本战斗过程中启动脚本任务进行收尾
             if environ.get('rewards') == '0':
                 if get_pic_position("./pic/battle/rewards/clear_rewards.png"):
@@ -110,9 +119,9 @@ def battle():
             break
         elif get_pic_position("./pic/mirror/acquire_ego_gift.png"):
             break
-        elif chance <= 3 and get_pic_position("./pic/teams/formation_features.png"):
-            break
         elif get_pic_position("./pic/mirror/select_encounter_reward_card.png"):
+            break
+        elif chance <= 3 and get_pic_position("./pic/teams/formation_features.png"):
             break
         else:
             chance -= 1

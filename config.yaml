@@ -9,7 +9,7 @@ buy_enkephalin: false
 mirror: false
 
 # 保存"窗口设置"任务模块中的设置
-set_win_size: 0  #窗口大小设置
+set_win_size: 2  #窗口大小设置
 set_win_position: 0  #窗口位移设置
 set_reduce_miscontact: 0  #结束时是否恢复窗口
 
