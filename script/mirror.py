@@ -14,6 +14,7 @@ from script.decision_event_handling import decision_event_handling
 from script.in_battle import battle
 from script.some_script_in_MD import get_reward_card
 from script.team_formation import team_formation, select_battle_team
+from os import environ
 
 scale_factors = [0.75, 1.0, 0.5, 0.625, 1.25, 1.5]
 # 存放位置
@@ -154,14 +155,17 @@ def select_theme_pack():
 # 在默认缩放情况下，进行镜牢寻路
 def search_road_default_distanc():
     # 后续补充窗口大小设置后需要修改！！！
-    three_roads = [[500 * scale_factors[0], 0],
-                   [500 * scale_factors[0], -400 * scale_factors[0]],
-                   [500 * scale_factors[0], 450 * scale_factors[0]]]
+    scale = 0
+    if environ.get('window_size'):
+        scale = int(environ.get('window_size'))
+    three_roads = [[500 * scale_factors[scale], 0],
+                   [500 * scale_factors[scale], -400 * scale_factors[scale]],
+                   [500 * scale_factors[scale], 450 * scale_factors[scale]]]
     if bus_position := get_pic_position("./pic/mirror/mybus_default_distanc.png"):
         for road in three_roads:
             road[0] += bus_position[0]
             road[1] += bus_position[1]
-            if 0 < road[0] < 2560 * scale_factors[0] and 0 < road[1] < 1440 * scale_factors[0]:
+            if 0 < road[0] < 2560 * scale_factors[scale] and 0 < road[1] < 1440 * scale_factors[scale]:
                 mouse_click(road)
                 sleep(0.5)
                 if enter := get_pic_position("./pic/mirror/enter_room.png"):
@@ -179,15 +183,18 @@ def search_road_default_distanc():
 
 # 如果默认缩放无法镜牢寻路，进行滚轮缩放后继续寻路
 def search_road_farthest_distanc():
+    scale = 0
+    if environ.get('window_size'):
+        scale = int(environ.get('window_size'))
     mouse_scroll_farthest()
-    three_roads = [[250 * scale_factors[0], -200 * scale_factors[0]],
-                   [250 * scale_factors[0], 0],
-                   [250 * scale_factors[0], 225 * scale_factors[0]]]
+    three_roads = [[250 * scale_factors[scale], -200 * scale_factors[scale]],
+                   [250 * scale_factors[scale], 0],
+                   [250 * scale_factors[scale], 225 * scale_factors[scale]]]
     if bus_position := get_pic_position("./pic/mirror/mybus_default_distanc.png"):
         for road in three_roads:
             road[0] += bus_position[0]
             road[1] += bus_position[1]
-            if 0 < road[0] < 2560 * scale_factors[0] and 0 < road[1] < 1440 * scale_factors[0]:
+            if 0 < road[0] < 2560 * scale_factors[scale] and 0 < road[1] < 1440 * scale_factors[scale]:
                 mouse_click(road)
                 if enter := get_pic_position("./pic/mirror/enter_room.png"):
                     mouse_click(enter)
@@ -201,6 +208,7 @@ def search_road_farthest_distanc():
 def ego_gift_to_power_up():
     while ego_gift_power_up := get_pic_position("./pic/mirror/event/shop/enhance/ego_gift_power_up.png"):
         mouse_click(ego_gift_power_up)
+        sleep(0.5)
         if power_up_confirm := get_pic_position("./pic/mirror/event/shop/enhance/power_up_confirm.png"):
             mouse_click(power_up_confirm)
             if get_pic_position("./pic/mirror/event/shop/enhance/power_up_confirm.png"):

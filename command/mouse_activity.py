@@ -1,4 +1,5 @@
 import random
+from os import environ
 from time import sleep
 
 import pyautogui
@@ -23,9 +24,13 @@ def mouse_click(coordinate, times=1):
 
 
 def mouse_drag_down(coordinate):
+    scale = 0
+    if environ.get('window_size'):
+        scale = int(environ.get('window_size'))
+    scale_factors = [1, 1.333, 0.667, 0.833, 1.667, 2]
     pyautogui.moveTo(coordinate[0], coordinate[1])
     pyautogui.mouseDown()
-    pyautogui.dragTo(coordinate[0], coordinate[1] + 300, duration=0.4)
+    pyautogui.dragTo(coordinate[0], coordinate[1] + int(300 * scale_factors[scale]), duration=0.4)
     pyautogui.mouseUp()
     msg = f"选择卡包:({coordinate[0]},{coordinate[1]})"
     my_log("debug", msg)

@@ -3,7 +3,7 @@ from traceback import format_exception
 
 from PyQt5.QtCore import QThread, pyqtSignal, QMutex
 
-from command.adjust_position_and_siz import adjust_position_and_size
+from command.adjust_position_and_siz import adjust_position_and_size, reset_win
 from my_decorator.decorator import begin_and_finish_log
 from my_error.my_error import withOutGameWinError, userStopError, noSavedPresetsError, \
     unexpectNumError, cannotOperateGameError, netWorkUnstableError, backMainWinError, notWaitError, withOutPicError, \
@@ -104,14 +104,14 @@ def script_task():
                 all_setting[key][key_2] = temp
 
     # 对游戏窗口进行设置
-    if all_setting["set_win"]["set_windows"]:
+    handle = get_win_handle()
+    if all_setting["select_task"]["set_windows"]:
         # 未完成！！！
-        handle = get_win_handle()
         if handle == None:
             my_log("error", "没有找到游戏窗口")
             raise withOutGameWinError("没有找到游戏窗口")
-        win_size = all_setting["select_task"]["set_win_size"]
-        environ['window_size'] = win_size
+        win_size = all_setting["set_win"]["set_win_size"]
+        environ['window_size'] = f"{win_size}"
         adjust_position_and_size(handle)
         # back_init_menu()
         # make_enkephalin_module()
@@ -191,6 +191,8 @@ def script_task():
                     config_datas[t[2]] = str(t[0])
                 save_yaml(config_datas)
                 mir_times -= 1
+    if all_setting["set_win"]["set_reduce_miscontact"] == 0:
+        reset_win(handle)
 
 
 class my_script_task(QThread):

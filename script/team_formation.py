@@ -1,3 +1,4 @@
+from os import environ
 from time import sleep
 
 from command.get_position import get_pic_position, get_all_pic_position
@@ -27,6 +28,10 @@ def clean_team():
 @begin_and_finish_log(task_name="罪人编队")
 # 编队
 def team_formation(sinner_team):
+    scale = 0
+    if environ.get('window_size'):
+        scale = int(environ.get('window_size'))
+    scale_factors = [1, 1.333, 0.667, 0.833, 1.667, 2]
     clean_team()
     while get_pic_position("./pic/teams/full_team_12.png", 0.9) is None:
         for sinner in sinner_team:
@@ -42,7 +47,7 @@ def team_formation(sinner_team):
                 box = b['box']
                 p1 = [box[0][0], box[0][1]]
                 p2 = [box[2][0], box[2][1]]
-        p2[1] += 180
+        p2[1] += int(180 * scale_factors[scale])
         leave = commom_gain_text(commom_range_ocr(p1, p2), language="models/config_chinese.txt")
         all_text = ""
         for b in leave:
@@ -54,19 +59,23 @@ def team_formation(sinner_team):
 @begin_and_finish_log(task_name="寻找队伍")
 # 找队
 def select_battle_team(num):
-    my_position = [0, 150]
+    scale = 0
+    if environ.get('window_size'):
+        scale = int(environ.get('window_size'))
+    scale_factors = [1, 1.333, 0.667, 0.833, 1.667, 2]
+    my_position = [0, 150 * scale_factors[scale]]
     find = False
     if position := get_pic_position("./pic/teams/teams.png"):
         my_position[0] += position[0]
         my_position[1] += position[1]
-        mouse_drag(my_position, y=1000, time=0.2)
+        mouse_drag(my_position, y=1000 * scale_factors[scale], time=0.2)
         for i in range(10):
             pic_byte_stream = get_all_team("./pic/teams/teams.png")
             if team_position := search_team_number(pic_byte_stream[0], num):
                 mouse_click(team_position)
                 find = True
                 break
-            mouse_drag(my_position, y=-200, time=1.5)
+            mouse_drag(my_position, y=-200 * scale_factors[scale], time=1.5)
             sleep(1)
     if find:
         msg = f"成功找到队伍"

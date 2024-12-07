@@ -63,7 +63,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.team7_setting.clicked.connect(self.setting_teams)
 
         # 设置各个选项卡中的下拉框内容
-        set_reduce_miscontact_options = {'NO': 0, '否': 1}
+        set_reduce_miscontact_options = {'是': 0, '否': 1}
         self.set_reduce_miscontact.addItems(set_reduce_miscontact_options)
 
         self.all_teams.addItems(set_select_team_options)

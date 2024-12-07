@@ -9,18 +9,27 @@ import win32gui
 
 from command.mouse_activity import mouse_click_blank
 from my_decorator.decorator import begin_and_finish_log
+from my_error.my_error import resolutionSettingError
 
 resolution = [[1920, 1080], [2560, 1440], [1280, 720], [1600, 900], [3200, 1800], [3840, 2160]]
 
 
 @begin_and_finish_log("窗口设置")
-def adjust_position_and_size(hwnd: object, windows_size=environ.get('window_size'), choice: object = 0) -> object:
+def adjust_position_and_size(hwnd: object, choice: object = 0) -> object:
     # 如果窗口最小化或不可见，先将其恢复
     win32gui.ShowWindow(hwnd, win32con.SW_RESTORE)
     # 将窗口设为活动窗口
     win32gui.SetForegroundWindow(hwnd)
 
-    """if isfullscreen(hwnd):
+    # 获取窗口分辨率大小
+    windows_size = "1"
+    if environ.get('window_size'):
+        windows_size = environ.get('window_size')
+
+    windows_size = int(windows_size)
+
+    # 判断是否是全屏，如果是则设为窗口
+    if isfullscreen(hwnd):
         sleep(1)
         mouse_click_blank()
         # 按下 Ctrl 键
@@ -28,7 +37,15 @@ def adjust_position_and_size(hwnd: object, windows_size=environ.get('window_size
         # 按下 Enter 键
         pyautogui.press('enter')
         # 释放 Ctrl 键
-        pyautogui.keyUp('alt')"""
+        pyautogui.keyUp('alt')
+
+    user32 = ctypes.windll.user32
+    SM_CXSCREEN = 0
+    SM_CYSCREEN = 1
+    screen_width = user32.GetSystemMetrics(SM_CXSCREEN)
+    screen_height = user32.GetSystemMetrics(SM_CYSCREEN)
+    if resolution[windows_size][0] > screen_width or resolution[windows_size][1] > screen_height:
+        raise resolutionSettingError("屏幕过小，无法支持设置的分辨率!!!\nThe screen is too small to support the set resolution!!!")
 
     # 告诉系统当前进程是 DPI 感知的,确保窗口在高 DPI 系统上正确显示,并适应不同的 DPI 缩放
     windll.user32.SetProcessDPIAware()
@@ -37,18 +54,20 @@ def adjust_position_and_size(hwnd: object, windows_size=environ.get('window_size
     # 如果选择防止误触，则移除窗口标题栏、大小调整框、最大化按钮
     reduce_miscontact(hwnd)
     # 设置窗口位置与大小
-    adjust_position(hwnd,windows_size)
-    adjust_size(hwnd,windows_size)
+    adjust_position(hwnd, windows_size)
+    adjust_size(hwnd, windows_size)
 
 
-def adjust_position(hwnd,windows_size):
+def adjust_position(hwnd, windows_size):
     # 设置窗口位置
-    win32gui.SetWindowPos(hwnd, None, 0, 0, resolution[windows_size][0], resolution[windows_size][1], win32con.SWP_NOSIZE)
+    win32gui.SetWindowPos(hwnd, None, 0, 0, resolution[windows_size][0], resolution[windows_size][1],
+                          win32con.SWP_NOSIZE)
 
 
-def adjust_size(hwnd,windows_size):
+def adjust_size(hwnd, windows_size):
     # 设置窗口大小
-    win32gui.SetWindowPos(hwnd, None, 0, 0, resolution[windows_size][0], resolution[windows_size][1], win32con.SWP_NOMOVE)
+    win32gui.SetWindowPos(hwnd, None, 0, 0, resolution[windows_size][0], resolution[windows_size][1],
+                          win32con.SWP_NOMOVE)
 
 
 def reduce_miscontact(hwnd):
@@ -67,7 +86,7 @@ def reduce_miscontact(hwnd):
     win32gui.SetWindowLong(hwnd, win32con.GWL_STYLE, style)
 
 
-"""
+# 判断窗口是否是全屏
 def isfullscreen(hwnd):
     # 定义与Windows API对应的类型
     user32 = ctypes.windll.user32
@@ -90,16 +109,26 @@ def isfullscreen(hwnd):
     return is_popup and is_fullscreen_size
 
 
-def is_window_minimized_or_invisible(hwnd):
-    # 获取窗口的显示状态
-    window_state = win32gui.GetWindowPlacement(hwnd)
+def reset_win(hwnd):
+    # 获取窗口的当前样式
+    style = win32gui.GetWindowLong(hwnd, win32con.GWL_STYLE)
+    # 获取窗口的当前扩展样式
+    ex_style = win32gui.GetWindowLong(hwnd, win32con.GWL_EXSTYLE)
 
-    # 窗口状态标志
-    # SW_SHOWMINIMIZED: 窗口最小化
-    # SW_HIDE: 窗口隐藏
-    minimized = window_state[1] == win32gui.SW_SHOWMINIMIZED
-    hidden = window_state[1] == win32gui.SW_HIDE
+    # 恢复窗口样式：标题栏、大小调整框、最大化按钮
+    style |= win32con.WS_CAPTION | win32con.WS_THICKFRAME | win32con.WS_MAXIMIZEBOX
+    # 应用修改后的样式
+    win32gui.SetWindowLong(hwnd, win32con.GWL_STYLE, style)
 
-    # 返回窗口是否最小化或不可见
-    return minimized or hidden
-"""
+    # 取消始终置顶
+    ex_style &= ~win32con.WS_EX_TOPMOST
+    # 应用修改后的扩展样式
+    win32gui.SetWindowLong(hwnd, win32con.GWL_EXSTYLE, ex_style)
+
+    # 更新窗口，使样式改变生效
+    win32gui.SetWindowPos(hwnd, None, 0, 0, 0, 0,
+                          win32con.SWP_FRAMECHANGED | win32con.SWP_NOMOVE | win32con.SWP_NOSIZE | win32con.SWP_NOZORDER)
+
+    # 恢复窗口状态
+    win32gui.ShowWindow(hwnd, win32con.SW_RESTORE)
+    win32gui.SetWindowPos(hwnd, win32con.HWND_NOTOPMOST, 0, 0, 0, 0, win32con.SWP_NOMOVE | win32con.SWP_NOSIZE)

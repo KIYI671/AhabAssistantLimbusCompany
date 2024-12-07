@@ -1,3 +1,5 @@
+from os import environ
+
 import cv2
 import numpy as np
 
@@ -10,7 +12,8 @@ from my_log.my_log import my_log
 def get_pic_position(img_model_path, precision=0.8, scale=0, screenshot="./screenshot.png"):
     # 对当前页面进行截图
     win_cap()
-
+    if environ.get('window_size'):
+        scale = int(environ.get('window_size'))
     # 设置缩放比例
     scale_factors = [0.75, 1.0, 0.5, 0.625, 1.25, 1.5]
     # 初始化目标截图
@@ -55,6 +58,8 @@ def get_pic_position(img_model_path, precision=0.8, scale=0, screenshot="./scree
 def get_pic_temp_position(img_model_path, precision=0.8, scale=0, screenshot="./screenshot.png"):
     # 对当前页面进行截图
     win_cap()
+    if environ.get('window_size'):
+        scale = int(environ.get('window_size'))
     # 设置缩放比例
     scale_factors = [0.75, 1.0, 0.5, 0.625, 1.25, 1.5]
     # 初始化目标截图
@@ -93,6 +98,8 @@ def get_pic_temp_position(img_model_path, precision=0.8, scale=0, screenshot="./
 def get_all_pic_position(img_model_path, precision=0.8, scale=0, screenshot="./screenshot.png"):
     # 对当前页面进行截图
     win_cap()
+    if environ.get('window_size'):
+        scale = int(environ.get('window_size'))
     # 设置缩放比例
     scale_factors = [0.75, 1.0, 0.5, 0.625, 1.25, 1.5]
     # 初始化目标截图
@@ -208,6 +215,8 @@ def get_pic_keypoints_position(img_model_path, screenshot="./screenshot.png"):
 
 
 def get_pic_position_without_cap(img_model_path, precision=0.8, scale=0, screenshot="./screenshot.png"):
+    if environ.get('window_size'):
+        scale = int(environ.get('window_size'))
     # 设置缩放比例
     scale_factors = [0.75, 1.0, 0.5, 0.625, 1.25, 1.5]
     # 初始化目标截图

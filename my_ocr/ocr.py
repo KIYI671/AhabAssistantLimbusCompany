@@ -1,4 +1,5 @@
 import io
+from os import environ
 
 import cv2
 import numpy as np
@@ -42,9 +43,11 @@ def compare_the_blacklist(pic_byte_stream, language="models/config_chinese.txt")
 def get_theme_pack(img_model_path, precision=0.8, scale=0, screenshot="./screenshot.png"):
     # 对当前页面进行截图
     win_cap()
-
+    if environ.get('window_size'):
+        scale = int(environ.get('window_size'))
     # 设置缩放比例
     scale_factors = [0.75, 1.0, 0.5, 0.625, 1.25, 1.5]
+    scale_factors2 = [1, 1.333, 0.667, 0.833, 1.667, 2]
     # 初始化目标截图
     try:
         my_screenshot = get_grey_normalized_pic(screenshot)
@@ -98,8 +101,10 @@ def get_theme_pack(img_model_path, precision=0.8, scale=0, screenshot="./screens
     for point in center_points:
 
         # 计算获取主题包的矩形区域用来截图
-        top_left = (max(point[0] - 210, 0), max(point[1] - 60, 0))
-        bottom_right = (min(point[0] + w + 60, my_screenshot.shape[1]), min(point[1] + h + 390, my_screenshot.shape[0]))
+        top_left = (
+        max(point[0] - int(210 * scale_factors2[scale]), 0), max(point[1] - int(60 * scale_factors2[scale]), 0))
+        bottom_right = (min(point[0] + w + int(60 * scale_factors2[scale]), my_screenshot.shape[1]),
+                        min(point[1] + h + int(390 * scale_factors2[scale]), my_screenshot.shape[0]))
 
         # 截取主题包图片
         roi = my_screenshot[top_left[1]:bottom_right[1], top_left[0]:bottom_right[0]]
@@ -151,9 +156,11 @@ def search_team_number(pic_byte_stream, number, language="models/config_chinese.
 def get_all_team(img_model_path, precision=0.8, scale=0, screenshot="./screenshot.png"):
     # 对当前页面进行截图
     win_cap()
-
+    if environ.get('window_size'):
+        scale = int(environ.get('window_size'))
     # 设置缩放比例
     scale_factors = [0.75, 1.0, 0.5, 0.625, 1.25, 1.5]
+    scale_factors2 = [1, 1.333, 0.667, 0.833, 1.667, 2]
     # 初始化目标截图
     try:
         my_screenshot = get_grey_normalized_pic(screenshot)
@@ -206,8 +213,10 @@ def get_all_team(img_model_path, precision=0.8, scale=0, screenshot="./screensho
     for point in center_points:
 
         # 计算获取图片的矩形区域用来截图
-        top_left = (max(point[0] - 100, 0), max(point[1] - 25, 0))
-        bottom_right = (min(point[0] + 100, my_screenshot.shape[1]), min(point[1] + h + 300, my_screenshot.shape[0]))
+        top_left = (
+        max(point[0] - int(100 * scale_factors2[scale]), 0), max(point[1] - int(25 * scale_factors2[scale]), 0))
+        bottom_right = (min(point[0] + int(100 * scale_factors2[scale]), my_screenshot.shape[1]),
+                        min(point[1] + h + int(300 * scale_factors2[scale]), my_screenshot.shape[0]))
 
         # 截取图片
         roi = my_screenshot[top_left[1]:bottom_right[1], top_left[0]:bottom_right[0]]
@@ -233,7 +242,8 @@ def get_all_team(img_model_path, precision=0.8, scale=0, screenshot="./screensho
 def commom_all_ocr(scale=0, screenshot="./screenshot.png"):
     # 对当前页面进行截图
     win_cap()
-
+    if environ.get('window_size'):
+        scale = int(environ.get('window_size'))
     # 设置缩放比例
     scale_factors = [0.75, 1.0, 0.5, 0.625, 1.25, 1.5]
     # 初始化目标截图
@@ -271,9 +281,13 @@ def commom_all_ocr(scale=0, screenshot="./screenshot.png"):
 def commom_ocr(img_model_path, width=50, height=50, precision=0.8, scale=0, screenshot="./screenshot.png"):
     # 对当前页面进行截图
     win_cap()
-
+    if environ.get('window_size'):
+        scale = int(environ.get('window_size'))
     # 设置缩放比例
+    scale_factors2 = [1, 1.333, 0.667, 0.833, 1.667, 2]
     scale_factors = [0.75, 1.0, 0.5, 0.625, 1.25, 1.5]
+    width = int(width*scale_factors2[scale])
+    height = int(height*scale_factors2[scale])
     # 初始化目标截图
     try:
         my_screenshot = get_grey_normalized_pic(screenshot)
@@ -352,7 +366,8 @@ def commom_range_ocr(upper_left_corner, lower_right_corner, hight=0, width=0, pr
                      screenshot="./screenshot.png"):
     # 对当前页面进行截图
     win_cap()
-
+    if environ.get('window_size'):
+        scale = int(environ.get('window_size'))
     # 设置缩放比例
     scale_factors = [0.75, 1.0, 0.5, 0.625, 1.25, 1.5]
     # 初始化目标截图
