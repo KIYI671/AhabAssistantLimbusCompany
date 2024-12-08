@@ -48,7 +48,8 @@ def team_formation(sinner_team):
                     mouse_click([first_sinner[0] + 270 * (sinner - 7) * scale_factors2[scale],
                                  first_sinner[1] + 500 * scale_factors2[scale]])
                 else:
-                    mouse_click([first_sinner[0] + 270 * (sinner - 8) * scale_factors2[scale], first_sinner[1]])
+                    mouse_click([first_sinner[0] + 270 * (sinner - 8) * scale_factors2[scale],
+                                 first_sinner[1] + 500 * scale_factors2[scale]])
 
         leave = commom_gain_text(commom_all_ocr()[0], language="models/config_chinese.txt")
         sinner_nums = [f"12/12", f"11/12", f"10/12", f"9/12", f"8/12", f"7/12", f"6/12", f"5/12", f"4/12", f"3/12",
