@@ -342,7 +342,7 @@ def execute_a_mirror(sinner_team, which_team, shop_sell_list, system="burn"):
             search_road_default_distanc()
 
         # 战斗配队的情况
-        if find_and_click_text("participant"):
+        if find_and_click_text("participant") or get_pic_position("./pic/teams/total_participants.png"):
             leave = commom_gain_text(commom_all_ocr()[0], language="models/config_chinese.txt")
             sinner_nums = [f"12/12", f"11/12", f"10/12", f"9/12", f"8/12", f"7/12", f"6/12", f"5/12", f"4/12", f"3/12",
                            f"2/12", f"1/12"]

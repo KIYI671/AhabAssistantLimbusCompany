@@ -32,12 +32,24 @@ def team_formation(sinner_team):
     if environ.get('window_size'):
         scale = int(environ.get('window_size'))
     scale_factors = [1, 1.333, 0.667, 0.833, 1.667, 2]
+    scale_factors2 = [0.75, 1.0, 0.5, 0.625, 1.25, 1.5]
     clean_team()
+    announcer_position = get_pic_position("./pic/teams/announcer.png")
+    first_sinner = [announcer_position[0] + 350 * scale_factors2[scale], announcer_position[1]]
     while get_pic_position("./pic/teams/full_team_12.png", 0.9) is None:
         for sinner in sinner_team:
             name = pic_path + all_sinner[sinner] + '.png'
             if my_sinner := get_pic_position(name):
                 mouse_click(my_sinner)
+            else:
+                if sinner <= 6:
+                    mouse_click([first_sinner[0] + 270 * (sinner - 1) * scale_factors2[scale], first_sinner[1]])
+                elif sinner <= 10:
+                    mouse_click([first_sinner[0] + 270 * (sinner - 7) * scale_factors2[scale],
+                                 first_sinner[1] + 500 * scale_factors2[scale]])
+                else:
+                    mouse_click([first_sinner[0] + 270 * (sinner - 8) * scale_factors2[scale], first_sinner[1]])
+
         leave = commom_gain_text(commom_all_ocr()[0], language="models/config_chinese.txt")
         sinner_nums = [f"12/12", f"11/12", f"10/12", f"9/12", f"8/12", f"7/12", f"6/12", f"5/12", f"4/12", f"3/12",
                        f"2/12", f"1/12"]
