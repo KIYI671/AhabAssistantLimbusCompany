@@ -1,0 +1,6 @@
+build
+dist
+dist_release
+*.pyc
+*.pyd
+*.dll

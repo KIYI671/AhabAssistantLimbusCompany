@@ -1,0 +1,14 @@
+nb_log==12.0
+pyautogui==0.9.54
+pynput==1.7.7
+pytest==8.3.4
+python_json_logger
+pywin32==308
+ruamel.base==1.0.0
+traitlets==5.14.3
+PyQt-Fluent-Widgets
+numpy
+ruamel.yaml
+psutil
+sip
+pillow

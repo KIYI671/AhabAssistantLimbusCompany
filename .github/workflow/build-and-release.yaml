@@ -1,0 +1,84 @@
+name: Build and Release
+
+on:
+  push:
+    tags:
+      - 'Release*'  # 监听以 Release 开头的标签（例如 Release-v1.0.0）
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 检出代码
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # 设置 Python 环境
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'  # 根据你的项目需求选择 Python 版本
+
+      # 安装依赖
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pyinstaller
+
+      # 打包项目
+      - name: Build executable
+        run: |
+          pyinstaller main.spec
+
+      # 打包成 zip 供发布
+      - name: Archive build artifacts
+        run: |
+          mkdir dist_release
+          mv dist/* dist_release/
+          cp -r 3rdparty dist_release/AALC/
+          cp -r pic dist_release/AALC/
+          cp config.yaml dist_release/AALC/
+          cp black_list_keyword.yaml dist_release/AALC/
+          zip -r dist_release.zip dist_release/
+
+      # 上传构建产物
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: build-artifacts
+          path: dist_release.zip
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      # 检出代码
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # 下载构建产物
+      - name: Download artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: build-artifacts
+
+      # 处理版本号（去掉 "Release-" 前缀）
+      - name: Extract version number
+        id: extract_version
+        run: |
+          VERSION=${GITHUB_REF#refs/tags/Release-}
+          echo "VERSION=${VERSION}" >> $GITHUB_ENV
+
+      # 发布到 GitHub Releases
+      - name: Create Release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref_name }}  # 使用推送标签的名称
+          release_name: Release ${{ env.VERSION }}  # 使用版本号作为发布名称
+          draft: false
+          prerelease: false
+          files: dist_release.zip
