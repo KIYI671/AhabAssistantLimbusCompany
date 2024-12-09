@@ -41,7 +41,7 @@ jobs:
           cp -r pic dist_release/AALC/
           cp config.yaml dist_release/AALC/
           cp black_list_keyword.yaml dist_release/AALC/
-          zip -r dist_release.zip dist_release/
+          powershell Compress-Archive -Path dist_release\* -DestinationPath dist_release.zip
 
       # 上传构建产物
       - name: Upload artifact
