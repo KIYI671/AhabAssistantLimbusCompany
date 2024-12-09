@@ -3,7 +3,7 @@ name: Build and Release
 on:
   push:
     tags:
-      - 'Release*'  # 监听以 Release 开头的标签（例如 Release-v1.0.0）
+      - 'v*'  # 监听以 v 开头的标签（例如 v1.0.0）
 
 jobs:
   build:
@@ -18,7 +18,7 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v4
         with:
-          python-version: '3.9'  # 根据你的项目需求选择 Python 版本
+          python-version: '3.12'  # 根据你的项目需求选择 Python 版本
 
       # 安装依赖
       - name: Install dependencies
@@ -64,21 +64,14 @@ jobs:
         with:
           name: build-artifacts
 
-      # 处理版本号（去掉 "Release-" 前缀）
-      - name: Extract version number
-        id: extract_version
-        run: |
-          VERSION=${GITHUB_REF#refs/tags/Release-}
-          echo "VERSION=${VERSION}" >> $GITHUB_ENV
-
       # 发布到 GitHub Releases
       - name: Create Release
         uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: ${{ github.ref_name }}  # 使用推送标签的名称
-          release_name: Release ${{ env.VERSION }}  # 使用版本号作为发布名称
+          tag_name: ${{ github.ref_name }}
+          release_name: Release ${{ github.ref_name }}
           draft: false
           prerelease: false
           files: dist_release.zip
