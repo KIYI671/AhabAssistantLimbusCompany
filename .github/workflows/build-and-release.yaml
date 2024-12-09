@@ -18,7 +18,7 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v4
         with:
-          python-version: '3.12'  # 根据你的项目需求选择 Python 版本
+          python-version: '3.12.8'  # 根据你的项目需求选择 Python 版本
 
       # 安装依赖
       - name: Install dependencies
@@ -66,6 +66,7 @@ jobs:
 
       # 发布到 GitHub Releases
       - name: Create Release
+        id: create_release
         uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -74,4 +75,11 @@ jobs:
           release_name: Release ${{ github.ref_name }}
           draft: false
           prerelease: false
-          files: dist_release.zip
+      
+      - name: Upload Release Asset
+        uses: actions/upload-release-asset@v1
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: dist_release.zip
+          asset_name: AALC-${{ github.ref_name }}.zip
+          asset_content_type: application/zip
