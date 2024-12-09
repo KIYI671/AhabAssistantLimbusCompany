@@ -3,7 +3,7 @@ name: Build and Release
 on:
   push:
     tags:
-      - 'v*'  # 监听以 v 开头的标签（例如 v1.0.0）
+      - 'v*.*'  # 监听以 v 开头的标签（例如 v1.0.0）
 
 jobs:
   build:
