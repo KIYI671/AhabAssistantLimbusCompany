@@ -3,7 +3,7 @@ name: Release
 on:
   release:
     types:
-      - created  # 监听手动创建 Release 的事件
+      - released  # 监听手动发布 Release 的事件
 
 jobs:
   build:
