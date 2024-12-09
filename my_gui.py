@@ -131,7 +131,28 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         使用CTRL+Q按键暂停脚本进程\n
         其他的所见即所得，懒得写了''')
 
-        self.about_text.setText('''使用CTRL+Q按键暂停脚本进程，其他的直接看github项目主页的README吧，懒得写了''')
+        self.about_text.setText('''本项目为非科班出身、非计算机从业人员心血来潮的作品。\n
+        是一个掺杂了第三方项目、初学者乱七八糟风格代码、可能存在各种BUG的手游LimbusCompany的PC端小助手。\n
+        此项目基于图像识别与文字识别，一键护肝。\n
+        本软件开源、免费，仅供学习交流使用。\n
+        若您遇到商家使用本软件进行代练并收费，可能是设备与时间等费用，产生的问题及后果与本软件无关。\n
+        获取管理员权限是为了确保运行顺利。\n
+        该版本离线，只能到github自助更新。\n
+        软件图标素材来源网图，不属于GPL协议开源的内容，如有侵权，请及时联系作者删除。\n
+        用户在使用过程中需自行遵守相关平台的使用规则与服务条款。因使用本软件可能导致的游戏账号封禁、违规行为等一切后果，作者概不负责。用户需对自身行为负责，并承担使用本软件可能带来的所有风险。\n                                                                                                                        
+        \n
+        向感谢以下项目提供的帮助：\n
+        LixAssistantLimbusCompany：https://github.com/HSLix/LixAssistantLimbusCompany\n
+        OCR文字识别：https://github.com/hiroi-sora/PaddleOCR-json\n
+        图形界面组件库：https://github.com/zhiyiYo/PyQt-Fluent-Widgets\n
+        三月七小助手：https://github.com/moesnow/March7thAssistant\n
+        \n
+        同时向直接或间接参与到本软件开发的所有人员，包括在网络上分享各种教程的大佬们，还有开源自己代码的巨佬们致谢！\n
+        \n
+        项目地址:https://github.com/KIYI671/AhabAssistantLimbusCompany\n
+        \n
+        本项目使用 AGPL-3.0 开源协议。\n
+        ''')
 
     def setting_teams(self):
         button = self.sender()
