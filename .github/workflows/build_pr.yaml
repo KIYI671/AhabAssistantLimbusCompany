@@ -1,0 +1,54 @@
+name: Build for Pull
+
+on:
+    pull_request:  # 监听 PR 事件
+      branches:
+        - main
+      types:
+        - opened      # 当 PR 被打开时触发
+        - synchronize # 当 PR 更新时触发（如提交新的代码）
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      # 检出代码
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # 设置 Python 环境
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.12'  # 根据你的项目需求选择 Python 版本
+
+      # 安装依赖
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pyinstaller
+
+      # 打包项目
+      - name: Build executable
+        run: |
+          pyinstaller main.spec
+
+      # 打包成 zip 供发布
+      - name: Archive build artifacts
+        run: |
+          mkdir dist_release
+          mv dist/* dist_release/
+          cp -r 3rdparty dist_release/AALC/
+          cp -r pic dist_release/AALC/
+          cp config.yaml dist_release/AALC/
+          cp black_list_keyword.yaml dist_release/AALC/
+          powershell Compress-Archive -Path dist_release\* -DestinationPath dist_release.zip
+
+      # 上传构建产物
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: build-artifacts
+          path: dist_release.zip
