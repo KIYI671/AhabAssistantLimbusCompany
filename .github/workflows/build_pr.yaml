@@ -21,7 +21,7 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v4
         with:
-          python-version: '3.12.8'  # 根据你的项目需求选择 Python 版本
+          python-version: '3.12.1'  # 根据你的项目需求选择 Python 版本
 
       # 安装依赖
       - name: Install dependencies
