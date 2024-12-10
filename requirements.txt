@@ -1,0 +1,10 @@
+nb_log==12.7
+PyQt_Fluent_Widgets==1.4.6
+numpy==1.26.3
+opencv-python==4.9.0.80
+PyAutoGUI==0.9.54
+pynput==1.7.7
+PyQt5==5.15.10
+pywin32==308
+ruamel.yaml
+pillow==11.0.0
