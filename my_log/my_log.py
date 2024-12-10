@@ -1,6 +1,12 @@
 import logging
 from datetime import datetime
 
+import sys
+import os
+for _name in ('stdin', 'stdout', 'stderr'):
+              if getattr(sys, _name) is None:
+                  setattr(sys, _name, open(os.devnull, 'r' if _name == 'stdin' else 'w'))
+
 from nb_log import get_logger
 
 from my_error.my_error import logTypeError
