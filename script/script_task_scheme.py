@@ -1,9 +1,12 @@
 from sys import exc_info
+from time import sleep
 from traceback import format_exception
 
+import pyautogui
 from PyQt5.QtCore import QThread, pyqtSignal, QMutex
 
 from command.adjust_position_and_siz import adjust_position_and_size, reset_win
+from command.get_position import get_pic_position
 from my_decorator.decorator import begin_and_finish_log
 from my_error.my_error import withOutGameWinError, userStopError, noSavedPresetsError, \
     unexpectNumError, cannotOperateGameError, netWorkUnstableError, backMainWinError, notWaitError, withOutPicError, \
@@ -13,7 +16,7 @@ from script.check_scene import where_am_i
 from command.get_win_handle import get_win_handle
 from script.in_battle import battle
 from script.make_enkephalin_module import lunacy_to_enkephalin, make_enkephalin_module
-from command.mouse_activity import mouse_click_blank
+from command.mouse_activity import mouse_click_blank, mouse_click
 from command.use_yaml import get_yaml_information, save_yaml
 from script.back_init_menu import back_init_menu
 from script.get_prize import get_pass_prize, get_mail_prize
@@ -76,8 +79,23 @@ def onetime_mir_process(the_selected_team_setting):
         if the_selected_team_setting[shop_system]:
             shop_sell_list.append(shop_system)
     # 进行一次镜牢
-    execute_a_mirror(sinner_team, the_selected_team_setting["all_teams"], shop_sell_list,
-                     all_systems[the_selected_team_setting["all_system"]])
+    while execute_a_mirror(sinner_team, the_selected_team_setting["all_teams"], shop_sell_list,
+                           all_systems[the_selected_team_setting["all_system"]]) is not True:
+        msg = f"无人生还，重启镜牢"
+        my_log("info", msg)
+        while not get_pic_position("./pic/mirror/setting.png"):
+            pyautogui.press('esc')
+        mouse_click(get_pic_position("./pic/mirror/setting.png"))
+        mouse_click(get_pic_position("./pic/mirror/mirror_setting_forfeit.png"))
+        mouse_click(get_pic_position("./pic/mirror/claim_confirm.png"))
+        sleep(2)
+        mouse_click(get_pic_position("./pic/mirror/forfeit_defeat_confirm.png"))
+        if claim_rewards := get_pic_position("./pic/mirror/claim_rewards.png"):
+            mouse_click(claim_rewards)
+            sleep(1)
+        mouse_click(get_pic_position("./pic/mirror/give_up_rewards.png"))
+        mouse_click(get_pic_position("./pic/mirror/claim_confirm.png"))
+
     back_init_menu()
     make_enkephalin_module()
 

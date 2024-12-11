@@ -1,12 +1,12 @@
 <div align="center">
 
-![image](./pic/icon/my_icon.png)
+![image](../../pic/icon/my_icon.png)
 
 <br>
 
 # AhabAssistantLimbusCompany
 
-## FACE THE SIN,SAVE THE E.G.O
+## FACE THE <font color= #ff0000>S</font><font color= #b40001>I</font><font color= #690001>N</font>,SAVE THE <font color=#ffd700>E</font><font color=#f8da39>.</font><font color=#f1dd72>G</font><font color=#eae0aa>.</font><font color= #e3e3e3>O</font>
 
 <br>
 <div>
@@ -24,7 +24,7 @@
   
   This project is based on image recognition and text recognition, one-click liver protection 
 
-  reused a lot of other people's code ~~including this README~~
+  Learn some other people's code ~~including this README~~
 
 <br>
 
@@ -34,7 +34,6 @@
 
 <!-- TOC -->
 - [AhabAssistantLimbusCompany](#ahabassistantlimbuscompany)
-  - [FACE THE SIN,SAVE THE E.G.O](#face-the-sinsave-the-ego)
   - [Function Introduction](#function-introduction)
     - [Special Features](#special-features)
   - [How to download](#how-to-download)
@@ -69,6 +68,7 @@
 
 - Imitation of MAA style GUI 
 - What You See Is What You Get.
+- Supports multi-resolution window execution.
   
 ### Special Features
 
@@ -81,7 +81,7 @@
 
 Click [Realeases](https://github.com/KIYI671/AhabAssistantLimbusCompany/releases) and download the file called AALC-vx.x.x in the latest version, unzip it and run AALC.exe.
 
-I don't have much technical power, but I also messed up the GUI and used the third-party OCR, so the file is relatively large!
+I don't have much technical power, but I also built a GUI and used the third-party OCR, so the file is relatively large!
 
 ---
 
@@ -148,7 +148,8 @@ The file format is shown in the following picture.
 ## Attention!!!
 
 - **This project only supports the use of English (EN) as the language of the game**
-- Temporarily can only use 1920 * 1080 window to run, not tested screen less than or equal to 1920 * 1080, also not recommended in less than the resolution of the use!
+- Currently, we only recommend running it at resolutions of 1920 * 1080 and 2160 * 1440. We have not tested screens smaller than 1920 * 1080, and we do not recommend using it at resolutions smaller than that!
+- If you have enabled the performance display function of steam or other software, you should try to avoid covering the game screen, otherwise it may cause problems in the script usage process.
 - There may be a variety of strange bugs
 
 ---
@@ -161,7 +162,7 @@ If you encounter merchants use this software to practice on behalf of and charge
 
 Get administrator privileges is to ensure smooth operation
 
-The version offline, only to github self-service update
+This project is purely offline, only to github self-service update
 
 Software icon material from the source of network graphics, does not belong to the AGPL v3 agreement open source content, if any infringement, please contact the author to delete in a timely manner
 
@@ -207,9 +208,18 @@ And the giants who open-sourced their own code!
 
 ---
 
+## Contributors
+
+Thanks to the following developers for their outstanding contributions to AALC:
+
+<a href="https://github.com/KIYI671/AhabAssistantLimbusCompany/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=KIYI671/AhabAssistantLimbusCompany" />
+</a>
+
 ## Future plans
 - [ ] Fixing discovered bugs
-- [ ] Synthesize EGO jewelry in the lounge
+- [ ] Synthesize EGO gift in the shop
+- [ ] Use deep learning or image feature recognition technology to improve script recognition speed
 - [ ] ......
 
 ---

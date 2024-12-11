@@ -36,7 +36,7 @@ def team_formation(sinner_team):
     clean_team()
     announcer_position = get_pic_position("./pic/teams/announcer.png")
     first_sinner = [announcer_position[0] + 350 * scale_factors2[scale], announcer_position[1]]
-    while all(get_pic_position(f"./pic/teams/full_team_{i}.png", 0.9) is None for i in range(12,10,-1)):
+    while all(get_pic_position(f"./pic/teams/full_team_{i}.png", 0.9) is None for i in range(12, 9, -1)):
         for sinner in sinner_team:
             name = pic_path + all_sinner[sinner] + '.png'
             if my_sinner := get_pic_position(name):
@@ -99,3 +99,26 @@ def select_battle_team(num):
         msg = f"找不到队伍"
         my_log("info", msg)
         return False
+
+
+def check_team():
+    leave = commom_gain_text(commom_all_ocr()[0], language="models/config_chinese.txt")
+    # 至少还有5人可以战斗
+    sinner_nums = [f"{a}/{b}" for b in range(5, 10) for a in range(5, b + 1)]
+    p1, p2 = None, None
+    for b in leave:
+        if "selection" in b['text'].lower():
+            box = b['box']
+            p1 = [box[0][0], box[0][1]]
+            p2 = [box[2][0], box[2][1]]
+    p2[1] += 180
+    leave = commom_gain_text(commom_range_ocr(p1, p2), language="models/config_chinese.txt")
+    all_text = ""
+    for b in leave:
+        all_text += b['text'].lower() + " "
+    # 如果还有至少5人能战斗就继续，不然就退出重开
+    if any(sinner in all_text for sinner in sinner_nums):
+        return True
+    else:
+        return False
+

@@ -13,7 +13,7 @@ from script.back_init_menu import back_init_menu
 from script.decision_event_handling import decision_event_handling
 from script.in_battle import battle
 from script.some_script_in_MD import get_reward_card
-from script.team_formation import team_formation, select_battle_team
+from script.team_formation import team_formation, select_battle_team, check_team
 from os import environ
 
 scale_factors = [0.75, 1.0, 0.5, 0.625, 1.25, 1.5]
@@ -154,7 +154,6 @@ def select_theme_pack():
 @begin_and_finish_log(task_name="镜牢寻路")
 # 在默认缩放情况下，进行镜牢寻路
 def search_road_default_distanc():
-    # 后续补充窗口大小设置后需要修改！！！
     scale = 0
     if environ.get('window_size'):
         scale = int(environ.get('window_size'))
@@ -342,23 +341,15 @@ def execute_a_mirror(sinner_team, which_team, shop_sell_list, system="burn"):
             search_road_default_distanc()
 
         # 战斗配队的情况
-        if find_and_click_text("participant") or get_pic_position("./pic/teams/total_participants.png"):
-            leave = commom_gain_text(commom_all_ocr()[0], language="models/config_chinese.txt")
-            sinner_nums = [f"12/12", f"11/12", f"10/12", f"9/12", f"8/12", f"7/12", f"6/12", f"5/12", f"4/12", f"3/12",
-                           f"2/12", f"1/12"]
-            p1, p2 = None, None
-            for b in leave:
-                if "selection" in b['text'].lower():
-                    box = b['box']
-                    p1 = [box[0][0], box[0][1]]
-                    p2 = [box[2][0], box[2][1]]
-            p2[1] += 180
-            leave = commom_gain_text(commom_range_ocr(p1, p2), language="models/config_chinese.txt")
-            all_text = ""
-            for b in leave:
-                all_text += b['text'].lower() + " "
-            if not any(sinner in all_text for sinner in sinner_nums):
-                first_battle = True
+        if get_pic_position("./pic/teams/announcer.png"):
+            # 检测罪人幸存人数是否少于10人
+            if not (get_pic_position("./pic/teams/12_sinner_live.png", 0.91) or
+                    get_pic_position("./pic/teams/11_sinner_live.png", 0.91) or
+                    get_pic_position("./pic/teams/10_sinner_live.png", 0.91)):
+                continue_mirror = check_team()
+                # 如果还有至少5人能战斗就继续，不然就退出重开
+                if continue_mirror is False:
+                    return False
             if first_battle:
                 team_formation(sinner_team)
                 first_battle = False
@@ -471,3 +462,5 @@ def execute_a_mirror(sinner_team, which_team, shop_sell_list, system="burn"):
     time_string = f"{int(hours):02}:{int(minutes):02}:{int(seconds):02}"
     msg = f"此次镜牢使用{system}体系队伍，共花费{time_string}"
     my_log("info", msg)
+
+    return True

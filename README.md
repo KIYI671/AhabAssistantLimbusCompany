@@ -6,7 +6,7 @@
 
 # AhabAssistantLimbusCompany
 
-## FACE THE SIN,SAVE THE E.G.O
+## FACE THE <font color= #ff0000>S</font><font color= #b40001>I</font><font color= #690001>N</font>,SAVE THE <font color=#ffd700>E</font><font color=#f8da39>.</font><font color=#f1dd72>G</font><font color=#eae0aa>.</font><font color= #e3e3e3>O</font>
 
 <br>
 <div>
@@ -22,9 +22,9 @@
   
   手游LimbusCompany的PC端小助手
   
-  此项目基于图像识别与文字识别，一键护肝（~~除了我这个写代码的~~）
+  此项目基于图像识别与文字识别，一键护肝（~~除了写代码的~~）
 
-  ~~抄了~~复用了不少其他人的代码（~~包括此README~~)
+  学习了一些其他人的代码（~~包括此README~~)
 <br>
 
 
@@ -33,7 +33,6 @@
 
 <!-- TOC -->
 - [AhabAssistantLimbusCompany](#ahabassistantlimbuscompany)
-  - [FACE THE SIN,SAVE THE E.G.O](#face-the-sinsave-the-ego)
   - [功能简介](#功能简介)
     - [特色功能](#特色功能)
   - [下载方式](#下载方式)
@@ -68,6 +67,7 @@
 
 - 仿MAA式GUI （~~做得很菜~~）
 - 所见即所得，操作简单
+- 已支持多分辨率窗口执行
   
 ### 特色功能
 
@@ -80,7 +80,7 @@
 
 点击[Realeases](https://github.com/KIYI671/AhabAssistantLimbusCompany/releases)并下载最新版中叫AALC-vx.x.x的文件，解压后运行AALC.exe即可。
 
-没啥技术力，还搞了GUI和使用第三方OCR，导致所以文件比较大
+没啥技术力，还搞了GUI和使用第三方OCR，所以导致文件比较大
 
 ---
 
@@ -101,7 +101,7 @@
 
 没什么需要说明的，所见即所得
 
-如果发现问题（除了下面那个队伍顺序编号问题），可以通过 [Issue](https://github.com/KIYI671/AhabAssistantLimbusCompany/issues) 反馈
+如果发现问题，可以通过 [Issue](https://github.com/KIYI671/AhabAssistantLimbusCompany/issues) 反馈
 
 当然也欢迎提交 [PR](https://github.com/KIYI671/AhabAssistantLimbusCompany/pulls)
 
@@ -147,7 +147,8 @@ release下载压缩包后，解压的文件中存在 **_“black_list_keyword.ya
 ## 注意！！！
 
 - **_此项目仅支持使用英语(EN)作为游戏语言进行使用_**
-- 暂时只能使用1920 * 1080的窗口运行，未测试屏幕小于等于1920 * 1080的情况,也不建议在小于该分辨率下使用
+- 暂时只建议使用 1920 * 1080 和 2160 * 1440 的分辨率运行，未测试屏幕小于1920 * 1080的情况,也不建议在小于该分辨率下使用
+- 如果您启动了 steam 或其他软件的性能展示功能，应尽量减少遮盖游戏画面，否则可能导致脚本使用过程出现问题
 - 可能存在各种奇奇怪怪的BUG
 
 ---
@@ -160,7 +161,7 @@ release下载压缩包后，解压的文件中存在 **_“black_list_keyword.ya
 
 获取管理员权限是为了确保运行顺利
 
-该版本离线，只能到github自助更新
+该项目纯离线运行，只能到github自助更新
 
 软件图标素材来源网图，不属于 AGPL v3 协议开源的内容，如有侵权，请及时联系作者删除
 
@@ -205,9 +206,18 @@ AALC的项目离不开以下开源项目的帮助
 
 ---
 
+## 贡献者
+
+感谢以下开发者对 AALC 作出的卓越贡献： 
+
+<a href="https://github.com/KIYI671/AhabAssistantLimbusCompany/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=KIYI671/AhabAssistantLimbusCompany" />
+</a>
+
 ## 未来计划
 - [ ] 修复已发现的BUG
-- [ ] 休息室合成EGO饰品
+- [ ] 商店合成EGO饰品
+- [ ] 使用深度学习或图片特征识别技术提高脚本的识别速度
 - [ ] ……
 
 ---
@@ -217,7 +227,7 @@ AALC的项目离不开以下开源项目的帮助
 - 参考 [构建指南](./doc/zh/build_guide.md)
 
 ## 如果想学习这个项目的代码
-- 还是别学了吧，代码整一个稀烂
+- 谨慎学习，项目代码稀烂，存在重复造车轮、代码效率低的问题
 
 ---
 
