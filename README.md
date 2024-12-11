@@ -34,7 +34,6 @@
   - [下载方式](#下载方式)
   - [使用说明](#使用说明)
     - [堂吉诃德都能学会的操作方法(英语)](#堂吉诃德都能学会的操作方法英语)
-      - [Even Don Quixote can learn how to operate it(EN)](#even-don-quixote-can-learn-how-to-operate-iten)
     - [主题包黑名单设置](#主题包黑名单设置)
     - [后台运行](#后台运行)
   - [注意！！！](#注意)
@@ -46,6 +45,7 @@
     - [单独致谢](#单独致谢)
     - [统一致谢](#统一致谢)
   - [未来计划](#未来计划)
+  - [构建指南](#构建指南)
   - [如果想学习这个项目的代码](#如果想学习这个项目的代码)
   - [最后](#最后)
 <!-- TOC -->
@@ -63,24 +63,25 @@
 
 - 仿MAA式GUI （~~做得很菜~~）
 - 所见即所得，操作简单
+  
 ### 特色功能
+
 - 自动选队（必须保持初始队伍名称，如【TEAM #1】）
 - 镜牢自动选择主题包（可以自行补充黑名单）
 
 ---
-## 下载方式
-Download
 
-点击[Realeases](https://github.com/KIYI671/AhabAssistantLimbusCompany/releases)并下载最新版中叫AALC.7z的文件，解压后运行AALC.exe即可。
+## 下载方式
+
+点击[Realeases](https://github.com/KIYI671/AhabAssistantLimbusCompany/releases)并下载最新版中叫AALC-vx.x.x的文件，解压后运行AALC.exe即可。
 
 没啥技术力，还搞了GUI和使用第三方OCR，导致所以文件比较大
 
 ---
+
 ## 使用说明
-How to use
 
 ### 堂吉诃德都能学会的操作方法(英语)
-#### Even Don Quixote can learn how to operate it(EN)
 
 <details>
 <summary>click me ！！！</summary>
@@ -100,7 +101,6 @@ How to use
 当然也欢迎提交 [PR](https://github.com/KIYI671/AhabAssistantLimbusCompany/pulls)
 
 ### 主题包黑名单设置
-Setting up a blacklist
 
 release下载压缩包后，解压的文件中存在 **_“black_list_keyword.yaml”_** 这一文件
 使用记事本或者其他文本编辑器打开后，可以仿照其格式自行添加黑名单
@@ -131,7 +131,6 @@ The file format is shown in the following picture.
 </details>
 
 ### 后台运行
-run in the background
 
 - **需要后台运行或多显示器可以尝试 [远程本地多用户桌面](https://www.bilibili.com/read/cv24286313/)**
 - **以上教程中所有相关文件：[下载链接](https://github.com/CHNZYX/asu_version_latest/releases)**
@@ -143,14 +142,14 @@ run in the background
 
 
 ## 注意！！！
+
 - **_此项目仅支持使用英语(EN)作为游戏语言进行使用_**
-- 暂时只能使用1920 * 1080的窗口运行，未测试屏幕小于等于1920 * 1080的情况
+- 暂时只能使用1920 * 1080的窗口运行，未测试屏幕小于等于1920 * 1080的情况,也不建议在小于该分辨率下使用
 - 可能存在各种奇奇怪怪的BUG
 
 ---
 
 ## 声明
-Disclaimer
 
 本软件开源、免费，仅供学习交流使用。
 
@@ -168,20 +167,22 @@ Disclaimer
 
 
 ## 图示样例
-Pic
+
 （图片仅供参考，还请以实例为准）
 
 ### 开始界面
+
 ![image](/pic/screenshot/README1.png)
 ### 镜牢队伍设置界面
+
 ![image](/pic/screenshot/README2.png)
 
 
 ---
 ## 致谢
-Thanks
 
 ### 单独致谢
+
 AALC的项目离不开以下开源项目的帮助
 
 | 项目      | 链接                                                                              | -                                         |
@@ -200,6 +201,7 @@ AALC的项目离不开以下开源项目的帮助
 还有开源自己代码的巨佬们！
 
 ---
+
 ## 未来计划
 - [ ] 修复已发现的BUG
 - [ ] 休息室合成EGO饰品
@@ -207,13 +209,17 @@ AALC的项目离不开以下开源项目的帮助
 - [ ] ……
 
 ---
+
+## 构建指南
+
+- 参考 [构建指南](./doc/build_guide.md)
+
 ## 如果想学习这个项目的代码
 - 还是别学了吧，代码整一个稀烂
-- 如果真要学，遇到使用pyinstaller打包程序失败，提示是Log问题时，参考[这个](https://github.com/ydf0509/nb_log/issues/61)
 
 ---
+
 ## 最后
-Last
 
 如果你觉得该软件对你有帮助，请点个Star吧。
 

@@ -2,7 +2,7 @@
 
 ## 配置python环境
 
-依赖python3.12版本
+依赖python3.12.1版本
 
 python库依赖见[requirements.txt](requirements.txt)
 
