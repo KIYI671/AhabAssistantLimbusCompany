@@ -36,7 +36,7 @@ def team_formation(sinner_team):
     clean_team()
     announcer_position = get_pic_position("./pic/teams/announcer.png")
     first_sinner = [announcer_position[0] + 350 * scale_factors2[scale], announcer_position[1]]
-    while get_pic_position("./pic/teams/full_team_12.png", 0.9) is None:
+    while all(get_pic_position(f"./pic/teams/full_team_{i}.png", 0.9) is None for i in range(10,13)):
         for sinner in sinner_team:
             name = pic_path + all_sinner[sinner] + '.png'
             if my_sinner := get_pic_position(name):
