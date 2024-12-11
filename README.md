@@ -5,12 +5,16 @@
 <br>
 
 # AhabAssistantLimbusCompany
+
+## FACE THE SIN,SAVE THE E.G.O
+
 <br>
 <div>
     <img alt="language" src="https://img.shields.io/badge/Language-Python-blue">
     <img alt="platform" src="https://img.shields.io/badge/platform-Windows-blue?style=flat-square&color=4096d8">
 </div>
 
+  [简体中文](README.md) | [English](doc/en/README_EN.md)
 
   本项目为非科班出身、非计算机从业人员心血来潮的作品
 
@@ -29,11 +33,12 @@
 
 <!-- TOC -->
 - [AhabAssistantLimbusCompany](#ahabassistantlimbuscompany)
+  - [FACE THE SIN,SAVE THE E.G.O](#face-the-sinsave-the-ego)
   - [功能简介](#功能简介)
     - [特色功能](#特色功能)
   - [下载方式](#下载方式)
   - [使用说明](#使用说明)
-    - [堂吉诃德都能学会的操作方法(英语)](#堂吉诃德都能学会的操作方法英语)
+    - [堂吉诃德都能学会的操作方法](#堂吉诃德都能学会的操作方法)
     - [主题包黑名单设置](#主题包黑名单设置)
     - [后台运行](#后台运行)
   - [注意！！！](#注意)
@@ -81,10 +86,10 @@
 
 ## 使用说明
 
-### 堂吉诃德都能学会的操作方法(英语)
+### 堂吉诃德都能学会的操作方法
 
 <details>
-<summary>click me ！！！</summary>
+<summary>点我 ！！！</summary>
 <img src="pic/screenshot/how_to_use.png"/> 
 
 
@@ -106,8 +111,6 @@ release下载压缩包后，解压的文件中存在 **_“black_list_keyword.ya
 使用记事本或者其他文本编辑器打开后，可以仿照其格式自行添加黑名单
 
 文件格式参考以下图片所示
-
-The file format is shown in the following picture.
 
 ![image](./pic/screenshot/blacklist_setting.png)
 
@@ -159,7 +162,7 @@ The file format is shown in the following picture.
 
 该版本离线，只能到github自助更新
 
-软件图标素材来源网图，不属于GPL协议开源的内容，如有侵权，请及时联系作者删除
+软件图标素材来源网图，不属于 AGPL v3 协议开源的内容，如有侵权，请及时联系作者删除
 
 用户在使用过程中需自行遵守相关平台的使用规则与服务条款。因使用本软件可能导致的游戏账号封禁、违规行为等一切后果，作者概不负责。用户需对自身行为负责，并承担使用本软件可能带来的所有风险。
 
@@ -205,14 +208,13 @@ AALC的项目离不开以下开源项目的帮助
 ## 未来计划
 - [ ] 修复已发现的BUG
 - [ ] 休息室合成EGO饰品
-- [ ] 重头开始学计算机的课程
 - [ ] ……
 
 ---
 
 ## 构建指南
 
-- 参考 [构建指南](./doc/build_guide.md)
+- 参考 [构建指南](./doc/zh/build_guide.md)
 
 ## 如果想学习这个项目的代码
 - 还是别学了吧，代码整一个稀烂
