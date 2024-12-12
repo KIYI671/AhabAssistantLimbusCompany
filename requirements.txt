@@ -11,7 +11,7 @@ idna==3.10
 logging_tree==1.10
 MouseInfo==0.1.3
 nb-libs==1.8
-nb-log==13.2
+nb-log==12.7
 nb_filelock==0.9
 numpy==2.2.0
 opencv-python==4.10.0.84

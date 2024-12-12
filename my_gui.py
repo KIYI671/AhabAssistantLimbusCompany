@@ -644,7 +644,6 @@ def read_last_setting(mygui):
     mygui.team6_order.setText(config_datas["team6_order"])
     mygui.team7_order.setText(config_datas["team7_order"])
 
-    print(config_datas["team4_order"])
     # 重计算选中几支队伍，防未知错误
     check_teams_select_num(config_datas)
 
