@@ -6,8 +6,8 @@ import os
 
 # 修复nb_log的输出bug
 for _name in ('stdin', 'stdout', 'stderr'):
-              if getattr(sys, _name) is None:
-                  setattr(sys, _name, open(os.devnull, 'r' if _name == 'stdin' else 'w',encoding='utf-8',errors='ignore'))
+    if getattr(sys, _name) is None:
+        setattr(sys, _name, open(os.devnull, 'r' if _name == 'stdin' else 'w',encoding='utf-8',errors='ignore'))
 
 from nb_log import get_logger
 
