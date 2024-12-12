@@ -6,6 +6,9 @@ from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QMainWindow, QApplication, QDialog
 from qfluentwidgets import setThemeColor
 from pynput import keyboard
+
+from command.adjust_position_and_siz import reset_win
+from command.get_win_handle import get_win_handle
 from command.use_yaml import get_yaml_information, save_yaml
 from main_windows import Ui_MainWindow
 from my_log.my_log import my_log
@@ -160,6 +163,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.setting_page = setting_window(which_team=button_name)
 
     def my_stop_shortcut(self):
+        handle = get_win_handle()
+        reset_win(handle)
         current_text = self.start_tasks.text()
         if current_text != "Link Start!":
             self.start_tasks.click()
