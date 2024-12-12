@@ -31,42 +31,24 @@ def team_formation(sinner_team):
     scale = 0
     if environ.get('window_size'):
         scale = int(environ.get('window_size'))
-    scale_factors = [1, 1.333, 0.667, 0.833, 1.667, 2]
-    scale_factors2 = [0.75, 1.0, 0.5, 0.625, 1.25, 1.5]
+    scale_factors = [0.75, 1.0, 0.5, 0.625, 1.25, 1.5]
     clean_team()
     announcer_position = get_pic_position("./pic/teams/announcer.png")
-    first_sinner = [announcer_position[0] + 350 * scale_factors2[scale], announcer_position[1]]
-    while all(get_pic_position(f"./pic/teams/full_team_{i}.png", 0.9) is None for i in range(12, 9, -1)):
-        for sinner in sinner_team:
-            name = pic_path + all_sinner[sinner] + '.png'
-            if my_sinner := get_pic_position(name):
-                mouse_click(my_sinner)
-            else:
-                if sinner <= 6:
-                    mouse_click([first_sinner[0] + 270 * (sinner - 1) * scale_factors2[scale], first_sinner[1]])
-                elif sinner <= 10:
-                    mouse_click([first_sinner[0] + 270 * (sinner - 7) * scale_factors2[scale],
-                                 first_sinner[1] + 500 * scale_factors2[scale]])
-                else:
-                    mouse_click([first_sinner[0] + 270 * (sinner - 8) * scale_factors2[scale],
-                                 first_sinner[1] + 500 * scale_factors2[scale]])
+    first_sinner = [announcer_position[0] + 350 * scale_factors[scale], announcer_position[1]]
 
-        leave = commom_gain_text(commom_all_ocr()[0], language="models/config_chinese.txt")
-        sinner_nums = [f"12/12", f"11/12", f"10/12", f"9/12", f"8/12", f"7/12", f"6/12", f"5/12", f"4/12", f"3/12",
-                       f"2/12", f"1/12"]
-        p1, p2 = None, None
-        for b in leave:
-            if "selection" in b['text'].lower():
-                box = b['box']
-                p1 = [box[0][0], box[0][1]]
-                p2 = [box[2][0], box[2][1]]
-        p2[1] += int(180 * scale_factors[scale])
-        leave = commom_gain_text(commom_range_ocr(p1, p2), language="models/config_chinese.txt")
-        all_text = ""
-        for b in leave:
-            all_text += b['text'].lower() + " "
-        if any(sinner in all_text for sinner in sinner_nums):
-            break
+    for sinner in sinner_team:
+        name = pic_path + all_sinner[sinner] + '.png'
+        if my_sinner := get_pic_position(name):
+            mouse_click(my_sinner)
+        else:
+            if sinner <= 6:
+                mouse_click([first_sinner[0] + 270 * (sinner - 1) * scale_factors[scale], first_sinner[1]])
+            elif sinner <= 10:
+                mouse_click([first_sinner[0] + 270 * (sinner - 7) * scale_factors[scale],
+                             first_sinner[1] + 500 * scale_factors[scale]])
+            else:
+                mouse_click([first_sinner[0] + 270 * (sinner - 8) * scale_factors[scale],
+                             first_sinner[1] + 500 * scale_factors[scale]])
 
 
 @begin_and_finish_log(task_name="寻找队伍")
@@ -101,6 +83,7 @@ def select_battle_team(num):
         return False
 
 
+@begin_and_finish_log(task_name="检查队伍剩余战斗力")
 def check_team():
     leave = commom_gain_text(commom_all_ocr()[0], language="models/config_chinese.txt")
     # 至少还有5人可以战斗
@@ -121,4 +104,3 @@ def check_team():
         return True
     else:
         return False
-

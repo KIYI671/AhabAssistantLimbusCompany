@@ -342,17 +342,18 @@ def execute_a_mirror(sinner_team, which_team, shop_sell_list, system="burn"):
 
         # 战斗配队的情况
         if get_pic_position("./pic/teams/announcer.png"):
-            # 检测罪人幸存人数是否少于10人
-            if not (get_pic_position("./pic/teams/12_sinner_live.png", 0.91) or
-                    get_pic_position("./pic/teams/11_sinner_live.png", 0.91) or
-                    get_pic_position("./pic/teams/10_sinner_live.png", 0.91)):
-                continue_mirror = check_team()
-                # 如果还有至少5人能战斗就继续，不然就退出重开
-                if continue_mirror is False:
-                    return False
+            # 如果第一次启动脚本，还没进行编队，就先编队
             if first_battle:
                 team_formation(sinner_team)
                 first_battle = False
+            # 检测罪人幸存人数是否少于10人
+            if not (get_pic_position("./pic/teams/12_sinner_live.png", 0.9) or
+                    get_pic_position("./pic/teams/11_sinner_live.png", 0.9) or
+                    get_pic_position("./pic/teams/10_sinner_live.png", 0.9)):
+                continue_mirror = check_team()
+                # 如果还有至少5人能战斗就继续，不然就退出重开
+                if continue_mirror is False and first_battle is False:
+                    return False
             mouse_click(get_pic_position("./pic/teams/to_battle.png"))
             battle()
 
