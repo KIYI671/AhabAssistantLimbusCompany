@@ -206,7 +206,7 @@ class Ui_MainWindow(object):
         self.mirror_count.setGeometry(QtCore.QRect(5, 20, 71, 20))
         font = QtGui.QFont()
         font.setFamily("Segoe UI")
-        font.setPointSize(int(13 * scale_factor))
+        font.setPointSize(int(13 / scale_factor))
         font.setBold(True)
         font.setUnderline(False)
         self.mirror_count.setFont(font)
