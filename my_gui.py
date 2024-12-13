@@ -358,6 +358,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def create_and_start_script(self):
         msg = f"开始进行所有任务"
         my_log("info", msg)
+        self.scoll_log_edit.clear()
+        self.last_position = 0
         self.set_log(option=1)
         # 启动脚本线程
         self.my_script = my_script_task()
@@ -391,7 +393,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         new_content = ""
         while not stream.atEnd():
             line = stream.readLine()
-            new_content += line + '\n'
+            new_content += line
+            if not stream.atEnd():
+                new_content += '\n'
 
         # 更新文件读取位置
         self.last_position = file.pos()
@@ -402,7 +406,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         # 如果用户滚动到底部，则自动滚动
         if self.scoll_log_edit.verticalScrollBar().value() == self.scoll_log_edit.verticalScrollBar().maximum():
-           self.scoll_log_edit.moveCursor(self.scoll_log_edit.textCursor().End)
+            self.scoll_log_edit.moveCursor(self.scoll_log_edit.textCursor().End)
 
         # 关闭文件
         file.close()
