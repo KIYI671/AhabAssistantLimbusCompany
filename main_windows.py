@@ -17,6 +17,7 @@ class Ui_MainWindow(object):
         MainWindow.setObjectName("MainWindow")
         MainWindow.resize(800, 600)
 
+        scale_factor = QtWidgets.QApplication.primaryScreen().logicalDotsPerInch() / 96  # Windows 标准 DPI 是 96
         # 设置主窗口颜色
         palette = QtGui.QPalette()
         brush = QtGui.QBrush(QtGui.QColor(255, 255, 255))
@@ -132,7 +133,7 @@ class Ui_MainWindow(object):
         self.start_tasks.setGeometry(QtCore.QRect(60, 420, 131, 71))
         font = QtGui.QFont()
         font.setFamily("Segoe UI")
-        font.setPointSize(14)
+        font.setPointSize(int(14 / scale_factor))
         font.setBold(False)
         self.start_tasks.setFont(font)
         self.start_tasks.setObjectName("start_tasks")
@@ -205,7 +206,7 @@ class Ui_MainWindow(object):
         self.mirror_count.setGeometry(QtCore.QRect(5, 20, 71, 20))
         font = QtGui.QFont()
         font.setFamily("Segoe UI")
-        font.setPointSize(13)
+        font.setPointSize(int(13 * scale_factor))
         font.setBold(True)
         font.setUnderline(False)
         self.mirror_count.setFont(font)
