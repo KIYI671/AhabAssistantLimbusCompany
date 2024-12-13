@@ -687,6 +687,8 @@ def check_teams_select_num(config_datas):
 def mygui():
     app = QApplication(sys.argv)
     app.setAttribute(Qt.AA_DontCreateNativeWidgetSiblings)
+    app.setAttribute(Qt.AA_EnableHighDpiScaling)
+    app.setAttribute(Qt.AA_UseHighDpiPixmaps)
     ui = MainWindow()
     read_last_setting(ui)
     timer = QTimer()
