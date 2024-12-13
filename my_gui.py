@@ -30,6 +30,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def __init__(self, parent=None):
         super(MainWindow, self).__init__(parent)
         self.my_script = None
+        self.last_position = 0
         self.setupUi(self)
 
         self.init_ui()
@@ -371,7 +372,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def load_log_text(self):
 
-        self.scoll_log_edit.clear()
         # 打开 log 文件，使用 UTF-8 编码
         file = QFile('./logs/myLog.log')
         if not file.open(QFile.ReadOnly | QFile.Text):
@@ -380,9 +380,29 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         # 使用 QTextStream 读取文件内容，并指定 UTF-8 编码
         stream = QTextStream(file)
         stream.setCodec('UTF-8')  # 设置编码为 UTF-8
+
+        # 如果是首次读取，初始化 last_position
+        if not hasattr(self, 'last_position'):
+            self.last_position = 0
+
+        # 从上次读取的位置继续读取
+        file.seek(self.last_position)
+
+        new_content = ""
         while not stream.atEnd():
             line = stream.readLine()
-            self.scoll_log_edit.append(line)
+            new_content += line + '\n'
+
+        # 更新文件读取位置
+        self.last_position = file.pos()
+
+        # 如果有新内容，追加到 QTextEdit 控件
+        if new_content:
+            self.scoll_log_edit.append(new_content)
+
+        # 如果用户滚动到底部，则自动滚动
+        if self.scoll_log_edit.verticalScrollBar().value() == self.scoll_log_edit.verticalScrollBar().maximum():
+           self.scoll_log_edit.moveCursor(self.scoll_log_edit.textCursor().End)
 
         # 关闭文件
         file.close()
