@@ -311,12 +311,35 @@ default_config = {
     },
 }
 
+default_blacklist = {
+    "keys": [
+        "outcast",
+        "unloving",
+        "flowers",
+        "abyss",
+        "bones",
+        "time",
+        "warp",
+        "violet",
+        "dicers",
+        "pierces",
+        "breakers",
+        "wrath",
+        "sloth",
+        "flood",
+        "vain",
+    ]
+}
+
+
 def get_yaml_information():
     try:
         with open('config.yaml', 'r', encoding='utf-8') as file:
             config_data = yaml.load(file)
             return config_data
     except:
+        msg = f"读取yaml配置失败,使用默认配置"
+        my_log("debug", msg)
         save_yaml(default_config)
         return default_config
 
@@ -329,8 +352,15 @@ def save_yaml(config_data):
 
 
 def get_black_list_keyword_yaml():
-    with open('black_list_keyword.yaml', 'r', encoding='utf-8') as file:
-        msg = f"读取镜牢主题包黑名单"
-        my_log("debug", msg)
-        config_data = yaml.load(file)
+    try:
+        with open('black_list_keyword.yaml', 'r', encoding='utf-8') as file:
+            msg = f"读取镜牢主题包黑名单"
+            my_log("debug", msg)
+            config_data = yaml.load(file)
         return config_data
+    except:
+        with open('black_list_keyword.yaml', 'w', encoding='utf-8') as file:
+            msg = f"读取镜牢主题包黑名单失败,使用默认黑名单"
+            my_log("debug", msg)
+            yaml.dump(default_blacklist, file)
+        return default_blacklist
