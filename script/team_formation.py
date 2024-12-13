@@ -73,7 +73,7 @@ def select_battle_team(num):
             mouse_drag(my_position, y=-200 * scale_factors[scale], time=1.5)
             sleep(1)
     if find:
-        msg = f"成功找到队伍"
+        msg = f"成功找到队伍 # {num}"
         my_log("info", msg)
         sleep(1)
         return True

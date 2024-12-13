@@ -113,7 +113,7 @@ def enter_mir(system="random", team=1):
         while get_pic_position("./pic/mirror/select_init_ego_gift.png") is None:
             retry()
 
-        if system == "slash" or "pierce" or "blunt":
+        if system == "slash" or system == "pierce" or system == "blunt":
             slash_button = get_pic_position("./pic/mirror/select_team/slash_ego_gift.png")
             mouse_drag(slash_button, time=0.2, x=0, y=-200)
 
