@@ -25,7 +25,7 @@ systems = {"burn": "./pic/mirror/event/shop/enhance/burn.png",
            "tremor": "./pic/mirror/event/shop/enhance/tremor.png",
            "rupture": "./pic/mirror/event/shop/enhance/rupture.png",
            "poise": "./pic/mirror/event/shop/enhance/poise.png",
-           "clash": "./pic/mirror/event/shop/enhance/clash.png",
+           "pierce": "./pic/mirror/event/shop/enhance/pierce.png",
            "slash": "./pic/mirror/event/shop/enhance/slash.png",
            "blunt": "./pic/mirror/event/shop/enhance/blunt.png"}
 systems_big_pic = {"burn": "./pic/mirror/event/shop/enhance/big_burn.png",
@@ -35,7 +35,7 @@ systems_big_pic = {"burn": "./pic/mirror/event/shop/enhance/big_burn.png",
                    "tremor": "./pic/mirror/event/shop/enhance/big_tremor.png",
                    "rupture": "./pic/mirror/event/shop/enhance/big_rupture.png",
                    "poise": "./pic/mirror/event/shop/enhance/big_poise.png",
-                   "clash": "./pic/mirror/event/shop/enhance/big_clash.png",
+                   "pierce": "./pic/mirror/event/shop/enhance/big_pierce.png",
                    "slash": "./pic/mirror/event/shop/enhance/big_slash.png",
                    "blunt": "./pic/mirror/event/shop/enhance/big_blunt.png"}
 systems_shop = {"burn": "./pic/mirror/event/shop/shop_burn.png",
@@ -45,7 +45,7 @@ systems_shop = {"burn": "./pic/mirror/event/shop/shop_burn.png",
                 "tremor": "./pic/mirror/event/shop/shop_tremor.png",
                 "rupture": "./pic/mirror/event/shop/shop_rupture.png",
                 "poise": "./pic/mirror/event/shop/shop_poise.png",
-                "clash": "./pic/mirror/event/shop/shop_clash.png",
+                "pierce": "./pic/mirror/event/shop/shop_pierce.png",
                 "slash": "./pic/mirror/event/shop/shop_slash.png",
                 "blunt": "./pic/mirror/event/shop/shop_blunt.png"}
 
@@ -82,7 +82,10 @@ def enter_mir(system="random", team=1):
                "rupture": "./pic/mirror/select_team/rupture_ego_gift",
                "sinking": "./pic/mirror/select_team/sinking_ego_gift",
                "poise": "./pic/mirror/select_team/poise_ego_gift",
-               "charge": "./pic/mirror/select_team/charge_ego_gift"}
+               "charge": "./pic/mirror/select_team/charge_ego_gift",
+               "slash": "./pic/mirror/select_team/slash_ego_gift",
+               "pierce": "./pic/mirror/select_team/pierce_ego_gift",
+               "blunt": "./pic/mirror/select_team/blunt_ego_gift"}
     mouse_click(get_pic_position("./pic/mirror/enter_mirror_button.png"))
     if enter_normal_mir := get_pic_position("./pic/mirror/enter_normal_mirror.png"):
         mouse_click(enter_normal_mir)
@@ -109,6 +112,11 @@ def enter_mir(system="random", team=1):
 
         while get_pic_position("./pic/mirror/select_init_ego_gift.png") is None:
             retry()
+
+        if system == "slash" or "pierce" or "blunt":
+            slash_button = get_pic_position("./pic/mirror/select_team/slash_ego_gift.png")
+            mouse_drag(slash_button, time=0.2, x=0, y=-200)
+
         mouse_click(get_pic_position(sys := systems[system] + '.png'))
         mouse_click(get_pic_position(sys := systems[system] + '_1.png'))
         mouse_click(get_pic_position(sys := systems[system] + '_2.png'))

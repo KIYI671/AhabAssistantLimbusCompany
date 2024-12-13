@@ -49,7 +49,7 @@ team1_setting: {all_system: 0, all_teams: 1, sinners_be_select: 0, YiSang: false
   HongLu_order: '', Heathcliff: false, Heathcliff_order: '', Ishmael: false, Ishmael_order: '',
   Rodion: false, Rodion_order: '', Sinclair: false, Sinclair_order: '', Outis: false,
   Outis_order: '', Gregor: false, Gregor_order: '', burn: false, bleed: false, tremor: false,
-  rupture: false, poise: false, sinking: false, charge: false, slash: false, clash: false,
+  rupture: false, poise: false, sinking: false, charge: false, slash: false, pierce: false,
   blunt: false                                                                          #各体系
 }
 team2_setting: {all_system: 0, all_teams: 1, sinners_be_select: 0, YiSang: false,
@@ -58,7 +58,7 @@ team2_setting: {all_system: 0, all_teams: 1, sinners_be_select: 0, YiSang: false
   HongLu_order: '', Heathcliff: false, Heathcliff_order: '', Ishmael: false, Ishmael_order: '',
   Rodion: false, Rodion_order: '', Sinclair: false, Sinclair_order: '', Outis: false,
   Outis_order: '', Gregor: false, Gregor_order: '', burn: false, bleed: false, tremor: false,
-  rupture: false, poise: false, sinking: false, charge: false, slash: false, clash: false,
+  rupture: false, poise: false, sinking: false, charge: false, slash: false, pierce: false,
   blunt: false                                                            #各体系
 }
 team3_setting: {all_system: 0, all_teams: 1, sinners_be_select: 0, YiSang: false,
@@ -67,7 +67,7 @@ team3_setting: {all_system: 0, all_teams: 1, sinners_be_select: 0, YiSang: false
   HongLu_order: '', Heathcliff: false, Heathcliff_order: '', Ishmael: false, Ishmael_order: '',
   Rodion: false, Rodion_order: '', Sinclair: false, Sinclair_order: '', Outis: false,
   Outis_order: '', Gregor: false, Gregor_order: '', burn: false, bleed: false, tremor: false,
-  rupture: false, poise: false, sinking: false, charge: false, slash: false, clash: false,
+  rupture: false, poise: false, sinking: false, charge: false, slash: false, pierce: false,
   blunt: false                                                                          #各体系
 }
 team4_setting: {all_system: 0, all_teams: 1, sinners_be_select: 0, YiSang: false,
@@ -76,7 +76,7 @@ team4_setting: {all_system: 0, all_teams: 1, sinners_be_select: 0, YiSang: false
   HongLu_order: '', Heathcliff: false, Heathcliff_order: '', Ishmael: false, Ishmael_order: '',
   Rodion: false, Rodion_order: '', Sinclair: false, Sinclair_order: '', Outis: false,
   Outis_order: '', Gregor: false, Gregor_order: '', burn: false, bleed: false, tremor: false,
-  rupture: false, poise: false, sinking: false, charge: false, slash: false, clash: false,
+  rupture: false, poise: false, sinking: false, charge: false, slash: false, pierce: false,
   blunt: false                                                                          #各体系
 }
 team5_setting: {all_system: 0, all_teams: 1, sinners_be_select: 0, YiSang: false,
@@ -85,7 +85,7 @@ team5_setting: {all_system: 0, all_teams: 1, sinners_be_select: 0, YiSang: false
   HongLu_order: '', Heathcliff: false, Heathcliff_order: '', Ishmael: false, Ishmael_order: '',
   Rodion: false, Rodion_order: '', Sinclair: false, Sinclair_order: '', Outis: false,
   Outis_order: '', Gregor: false, Gregor_order: '', burn: false, bleed: false, tremor: false,
-  rupture: false, poise: false, sinking: false, charge: false, slash: false, clash: false,
+  rupture: false, poise: false, sinking: false, charge: false, slash: false, pierce: false,
   blunt: false                                                                          #各体系
 }
 team6_setting: {all_system: 0, all_teams: 1, sinners_be_select: 0, YiSang: false,
@@ -94,7 +94,7 @@ team6_setting: {all_system: 0, all_teams: 1, sinners_be_select: 0, YiSang: false
   HongLu_order: '', Heathcliff: false, Heathcliff_order: '', Ishmael: false, Ishmael_order: '',
   Rodion: false, Rodion_order: '', Sinclair: false, Sinclair_order: '', Outis: false,
   Outis_order: '', Gregor: false, Gregor_order: '', burn: false, bleed: false, tremor: false,
-  rupture: false, poise: false, sinking: false, charge: false, slash: false, clash: false,
+  rupture: false, poise: false, sinking: false, charge: false, slash: false, pierce: false,
   blunt: false                                                                          #各体系
 }
 team7_setting: {all_system: 0, all_teams: 1, sinners_be_select: 0, YiSang: false,
@@ -103,6 +103,6 @@ team7_setting: {all_system: 0, all_teams: 1, sinners_be_select: 0, YiSang: false
   HongLu_order: '', Heathcliff: false, Heathcliff_order: '', Ishmael: false, Ishmael_order: '',
   Rodion: false, Rodion_order: '', Sinclair: false, Sinclair_order: '', Outis: false,
   Outis_order: '', Gregor: false, Gregor_order: '', burn: false, bleed: false, tremor: false,
-  rupture: false, poise: false, sinking: false, charge: false, slash: false, clash: false,
+  rupture: false, poise: false, sinking: false, charge: false, slash: false, pierce: false,
   blunt: false                                                                          #各体系
 }

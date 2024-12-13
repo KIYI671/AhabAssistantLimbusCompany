@@ -21,7 +21,7 @@ set_select_team_options = {"Team1": 1, "Team2": 2, "Team3": 3, "Team4": 4, "Team
                            "Team16": 16, "Team17": 17, "Team18": 18, "Team19": 19, "Team20": 20,
                            }
 all_systems = {"烧伤(burn)": 0, "流血(bleed)": 1, "震颤(tremor)": 2, "破裂(rupture)": 3, "呼吸(poise)": 4,
-               "沉沦(sinking)": 5, "充能(charge)": 6, "斩击(slash)": 7, "突刺(clash)": 8, "打击(blunt)": 9}
+               "沉沦(sinking)": 5, "充能(charge)": 6, "斩击(slash)": 7, "突刺(pierce)": 8, "打击(blunt)": 9}
 
 
 class MainWindow(QMainWindow, Ui_MainWindow):
@@ -498,7 +498,7 @@ class setting_window(QDialog, Ui_all_team_basic_setting):
         self.sinking.stateChanged.connect(lambda checked: self.shop_checkbox_state_changed(checked, which_team))
         self.charge.stateChanged.connect(lambda checked: self.shop_checkbox_state_changed(checked, which_team))
         self.slash.stateChanged.connect(lambda checked: self.shop_checkbox_state_changed(checked, which_team))
-        self.clash.stateChanged.connect(lambda checked: self.shop_checkbox_state_changed(checked, which_team))
+        self.pierce.stateChanged.connect(lambda checked: self.shop_checkbox_state_changed(checked, which_team))
         self.blunt.stateChanged.connect(lambda checked: self.shop_checkbox_state_changed(checked, which_team))
 
         # 设置完成按钮
@@ -613,7 +613,7 @@ class setting_window(QDialog, Ui_all_team_basic_setting):
         self.sinking.setChecked(config_datas[which_team]["sinking"])
         self.charge.setChecked(config_datas[which_team]["charge"])
         self.slash.setChecked(config_datas[which_team]["slash"])
-        self.clash.setChecked(config_datas[which_team]["clash"])
+        self.pierce.setChecked(config_datas[which_team]["pierce"])
         self.blunt.setChecked(config_datas[which_team]["blunt"])
 
 

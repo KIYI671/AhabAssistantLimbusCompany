@@ -22,7 +22,7 @@ def adjust_position_and_size(hwnd: object, choice: object = 0) -> object:
     win32gui.SetForegroundWindow(hwnd)
 
     # 获取窗口分辨率大小
-    windows_size = "1"
+    windows_size = "0"
     if environ.get('window_size'):
         windows_size = environ.get('window_size')
 

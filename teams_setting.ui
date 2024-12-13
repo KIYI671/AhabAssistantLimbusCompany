@@ -679,7 +679,7 @@
      <string>震颤</string>
     </property>
    </widget>
-   <widget class="CheckBox" name="clash">
+   <widget class="CheckBox" name="pierce">
     <property name="geometry">
      <rect>
       <x>350</x>
