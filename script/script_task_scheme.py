@@ -102,7 +102,7 @@ def onetime_mir_process(the_selected_team_setting):
 
 def script_task():
     all_setting = {
-        "select_task": {"set_windows": False, "daily_task": False, "get_reward": False, "buy_enkephalin": False,
+        "select_task": {"set_windows": True, "daily_task": False, "get_reward": False, "buy_enkephalin": False,
                         "mirror": False},
         "set_win": {"set_win_size": 0, "set_win_position": 0, "set_reduce_miscontact": 0},
         "set_daily": {"set_EXP_count": 0, "set_thread_count": 0},

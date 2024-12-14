@@ -16,6 +16,8 @@ def get_pic_position(img_model_path, precision=0.8, scale=0, screenshot="./scree
         scale = int(environ.get('window_size'))
     # 设置缩放比例
     scale_factors = [0.75, 1.0, 0.5, 0.625, 1.25, 1.5]
+    scale_factors = [1.333, 1.0, 2.0, 1.6, 0.8, 0.667]
+    my_log("debug",f"当前窗口大小{environ.get('window_size')},当前缩放比例{scale_factors[scale]}")
     # 初始化目标截图
     try:
         my_screenshot = get_grey_normalized_pic(screenshot)
@@ -47,7 +49,7 @@ def get_pic_position(img_model_path, precision=0.8, scale=0, screenshot="./scree
         top_left = max_loc
         center_pos = (int(top_left[0] + w / 2), int(top_left[1] + h / 2))
 
-        msg = f"获取到图片{img_model_path}的中心点在截屏的位置:({center_pos[0]},{center_pos[1]})"
+        msg = f"获取到图片{img_model_path}的中心点在截屏的位置:({center_pos[0]},{center_pos[1]}),相似度为{max_val}"
         my_log("debug", msg)
         return center_pos
     msg = f"未能获取到图片{img_model_path}的位置)"
@@ -87,7 +89,7 @@ def get_pic_temp_position(img_model_path, precision=0.8, scale=0, screenshot="./
     if max_val > precision:
         # 获取匹配区域的中心点
         top_left = max_loc
-        msg = f"获取到图片{img_model_path}的左上角在截屏的位置:({top_left[0]},{top_left[1]})"
+        msg = f"获取到图片{img_model_path}的左上角在截屏的位置:({top_left[0]},{top_left[1]}),相似度为{max_val}"
         my_log("debug", msg)
         return top_left
     msg = f"未能获取到图片{img_model_path}的位置)"
