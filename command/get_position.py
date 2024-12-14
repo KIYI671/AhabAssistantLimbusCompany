@@ -47,10 +47,10 @@ def get_pic_position(img_model_path, precision=0.8, scale=0, screenshot="./scree
         top_left = max_loc
         center_pos = (int(top_left[0] + w / 2), int(top_left[1] + h / 2))
 
-        msg = f"获取到图片{img_model_path}的中心点在截屏的位置:({center_pos[0]},{center_pos[1]}),相似度为{max_val}"
+        msg = f"获取到图片{img_model_path}的中心点在截屏的位置:({center_pos[0]},{center_pos[1]}),相似度为{max_val:.3f}"
         my_log("debug", msg)
         return center_pos
-    msg = f"未能获取到图片{img_model_path}的位置,最大相似度{max_val}"
+    msg = f"未能获取到图片{img_model_path}的位置,最大相似度{max_val:.3f}"
     my_log("debug", msg)
     return None
 
@@ -87,10 +87,10 @@ def get_pic_temp_position(img_model_path, precision=0.8, scale=0, screenshot="./
     if max_val > precision:
         # 获取匹配区域的中心点
         top_left = max_loc
-        msg = f"获取到图片{img_model_path}的左上角在截屏的位置:({top_left[0]},{top_left[1]}),相似度为{max_val}"
+        msg = f"获取到图片{img_model_path}的左上角在截屏的位置:({top_left[0]},{top_left[1]}),相似度为{max_val:.3f}"
         my_log("debug", msg)
         return top_left
-    msg = f"未能获取到图片{img_model_path}的位置,最大相似度{max_val}"
+    msg = f"未能获取到图片{img_model_path}的位置,最大相似度{max_val:.3f}"
     my_log("debug", msg)
     return None
 
