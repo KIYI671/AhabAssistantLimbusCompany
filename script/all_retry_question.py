@@ -10,4 +10,4 @@ def retry():
             or get_pic_position_without_cap("./pic/scenes/network/try_again.png"):
         if retry_button := get_pic_position("./pic/scenes/network/retry.png"):
             mouse_click(retry_button)
-            sleep(5)
+            sleep(3)

@@ -41,7 +41,7 @@ def battle():
             continue
         # 如果正在交战过程
         elif get_pic_position("./pic/battle/pause.png"):
-            sleep(2)
+            sleep(1)
             chance = 5
             continue
         # 如果战斗中途出现事件
@@ -61,7 +61,7 @@ def battle():
             continue
         # 如果战斗结束进入黑屏
         elif get_pic_position("./pic/wait.png"):
-            sleep(2)
+            sleep(1)
             chance = 5
             continue
         # 如果交战过程误触，导致战斗暂停

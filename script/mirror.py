@@ -89,7 +89,7 @@ def enter_mir(system="random", team=1):
     mouse_click(get_pic_position("./pic/mirror/enter_mirror_button.png"))
     if enter_normal_mir := get_pic_position("./pic/mirror/enter_normal_mirror.png"):
         mouse_click(enter_normal_mir)
-        sleep(3)
+        sleep(2)
         select_battle_team(team)
         while enter_mir_confirm := get_pic_position("./pic/mirror/select_team_confirm.png"):
             mouse_click(enter_mir_confirm)
@@ -316,7 +316,7 @@ def in_shop(system, shop_sell_list, store_floors):
                 "./pic/mirror/event/shop/enhance/ego_gift_power_up_close.png"):
             mouse_click(ego_gift_power_up_close)
 
-    if store_floors == 5:
+    if store_floors >= 4:
         while refresh_shop := get_pic_position("./pic/mirror/mirror5/shop/keyword_refresh.png"):
             mouse_click(refresh_shop)
             sleep(0.5)
