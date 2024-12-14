@@ -40,9 +40,10 @@ def begin_and_finish_time_log(task_name):
             minutes, seconds = divmod(remainder, 60)
             time_string = f"{int(hours):02}:{int(minutes):02}:{int(seconds):02}"
 
-            msg = "结束执行 " + task_name + f" 耗时:{time_string}"
+            msg = "结束执行 " + task_name
             my_log("info", msg)
-
+            time_msg = msg + " 耗时:" + time_string
+            my_log("debug",time_msg)
             return elapsed_time
 
         return wrapper

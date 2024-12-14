@@ -4,7 +4,7 @@ from time import sleep
 
 from command.get_position import get_pic_position, get_pic_position_without_cap, get_all_pic_position
 from command.mouse_activity import mouse_click, mouse_scroll_farthest, mouse_drag_down, mouse_click_blank, mouse_drag
-from my_decorator.decorator import begin_and_finish_log
+from my_decorator.decorator import begin_and_finish_log,begin_and_finish_time_log
 from my_log.my_log import my_log
 from my_ocr.ocr import get_theme_pack, compare_the_blacklist, commom_ocr, commom_gain_text, commom_all_ocr, \
     commom_range_ocr, find_and_click_text
@@ -132,7 +132,7 @@ def enter_mir(system="random", team=1):
         mouse_click(resume)
 
 
-@begin_and_finish_log(task_name="选择镜牢主题包")
+@begin_and_finish_time_log(task_name="选择镜牢主题包")
 # 选择镜牢主题包
 def select_theme_pack():
     while get_pic_position("./pic/mirror/theme_pack_features.png") is None:
@@ -159,7 +159,7 @@ def select_theme_pack():
     sleep(3)
 
 
-@begin_and_finish_log(task_name="镜牢寻路")
+@begin_and_finish_time_log(task_name="镜牢寻路")
 # 在默认缩放情况下，进行镜牢寻路
 def search_road_default_distanc():
     scale = 0
@@ -267,7 +267,7 @@ def sell_gifts(shop_sell_list):
             sleep(1)
 
 
-@begin_and_finish_log(task_name="镜牢商店")
+@begin_and_finish_time_log(task_name="镜牢商店")
 # 在商店的处理
 def in_shop(system, shop_sell_list, store_floors):
     # 全体治疗
@@ -358,20 +358,7 @@ def execute_a_mirror(sinner_team, which_team, shop_sell_list, system="burn"):
     while get_pic_position("./pic/mirror/total_progress.png") is None:
         # 选择楼层主题包的情况
         if get_pic_position("./pic/scenes/mirror_select_theme_pack.png"):
-
-            pick_start_time = time.time()
-
-            select_theme_pack()
-
-            pick_end_time = time.time()
-            pick_elapsed_time = pick_end_time - pick_start_time
-            pick_total_time += pick_elapsed_time
-            # 将总秒数转换为小时、分钟和秒
-            hours, remainder = divmod(pick_elapsed_time, 3600)
-            minutes, seconds = divmod(remainder, 60)
-            time_string = f"{int(hours):02}:{int(minutes):02}:{int(seconds):02}"
-            msg = f"此次选择主题包共花费{time_string}"
-            my_log("info", msg)
+            pick_total_time += select_theme_pack()
 
         # 在镜牢中寻路
         if get_pic_position("./pic/scenes/road_in_mirror.png"):
@@ -406,21 +393,7 @@ def execute_a_mirror(sinner_team, which_team, shop_sell_list, system="burn"):
                     return False
             mouse_click(get_pic_position("./pic/teams/to_battle.png"))
 
-            # 战斗计时开始
-            battle_start_time = time.time()
-
-            battle()
-
-            # 战斗计时结束
-            battle_end_time = time.time()
-            battle_elapsed_time = battle_end_time - battle_start_time
-            battle_total_time += battle_elapsed_time
-            # 将总秒数转换为小时、分钟和秒
-            hours, remainder = divmod(battle_elapsed_time, 3600)
-            minutes, seconds = divmod(remainder, 60)
-            time_string = f"{int(hours):02}:{int(minutes):02}:{int(seconds):02}"
-            msg = f"此次战斗共花费{time_string}"
-            my_log("info", msg)
+            battle_total_time += battle()
 
             sleep(2)
             if get_pic_position("./pic/mirror/select_encounter_reward_card.png"):
@@ -478,7 +451,7 @@ def execute_a_mirror(sinner_team, which_team, shop_sell_list, system="burn"):
             minutes, seconds = divmod(remainder, 60)
             time_string = f"{int(hours):02}:{int(minutes):02}:{int(seconds):02}"
             msg = f"此次事件共花费{time_string}"
-            my_log("info", msg)
+            my_log("debug", msg)
 
         # 如果遇到获取ego饰品的情况
         if acquire_ego_gift := get_pic_position("./pic/mirror/acquire_ego_gift.png"):
@@ -508,7 +481,7 @@ def execute_a_mirror(sinner_team, which_team, shop_sell_list, system="burn"):
             minutes, seconds = divmod(remainder, 60)
             time_string = f"{int(hours):02}:{int(minutes):02}:{int(seconds):02}"
             msg = f"此次获取ego饰品共花费{time_string}"
-            my_log("info", msg)
+            my_log("debug", msg)
 
         # 防卡死
         if ego_gift_get_confirm := get_pic_position("./pic/mirror/ego_gift_get_confirm.png"):
@@ -518,23 +491,8 @@ def execute_a_mirror(sinner_team, which_team, shop_sell_list, system="burn"):
         # 商店事件
         if get_pic_position("./pic/mirror/event/shop/shop_features_1.png") and \
                 get_pic_position("./pic/mirror/event/shop/shop_features_2.png"):
-            
-            # 商店计时开始
-            shop_start_time = time.time()
-
-            in_shop(system, shop_sell_list, store_floors)
+            shop_total_time += in_shop(system, shop_sell_list, store_floors)
             store_floors += 1
-
-            # 商店计时结束
-            shop_end_time = time.time()
-            shop_elapsed_time =  shop_end_time -  shop_start_time
-            shop_total_time += shop_elapsed_time
-            # 将总秒数转换为小时、分钟和秒
-            hours, remainder = divmod(shop_elapsed_time, 3600)
-            minutes, seconds = divmod(remainder, 60)
-            time_string = f"{int(hours):02}:{int(minutes):02}:{int(seconds):02}"
-            msg = f"此次商店节点共花费{time_string}"
-            my_log("info", msg)
         
         if get_pic_position("./pic/mirror/select_encounter_reward_card.png"):
             sleep(1)  # 防止过快点击导致脚本卡死
@@ -574,24 +532,28 @@ def execute_a_mirror(sinner_team, which_team, shop_sell_list, system="burn"):
     minutes, seconds = divmod(remainder, 60)
     time_string = f"{int(hours):02}:{int(minutes):02}:{int(seconds):02}"
     msg = f"此次镜牢在战斗共花费{time_string}"
+    my_log("info", msg)
 
     # 输出事件总时间
     hours, remainder = divmod(event_total_time, 3600)
     minutes, seconds = divmod(remainder, 60)
     time_string = f"{int(hours):02}:{int(minutes):02}:{int(seconds):02}"
     msg = f"此次镜牢在事件共花费{time_string}"
-    
+    my_log("info", msg)
+
     # 输出商店总时间
     hours, remainder = divmod(shop_total_time, 3600)
     minutes, seconds = divmod(remainder, 60)
     time_string = f"{int(hours):02}:{int(minutes):02}:{int(seconds):02}"
     msg = f"此次镜牢中在商店共花费{time_string}"
+    my_log("info", msg)
 
     # 输出寻路总时间
     hours, remainder = divmod(find_road_total_time, 3600)
     minutes, seconds = divmod(remainder, 60)
     time_string = f"{int(hours):02}:{int(minutes):02}:{int(seconds):02}"
     msg = f"此次镜牢中在寻路共花费{time_string}"
+    my_log("info", msg)
 
     # 将总秒数转换为小时、分钟和秒
     hours, remainder = divmod(elapsed_time, 3600)

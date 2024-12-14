@@ -7,7 +7,7 @@ from PyQt5.QtCore import QThread, pyqtSignal, QMutex
 
 from command.adjust_position_and_siz import adjust_position_and_size, reset_win
 from command.get_position import get_pic_position
-from my_decorator.decorator import begin_and_finish_log
+from my_decorator.decorator import begin_and_finish_log,begin_and_finish_time_log
 from my_error.my_error import withOutGameWinError, userStopError, noSavedPresetsError, \
     unexpectNumError, cannotOperateGameError, netWorkUnstableError, backMainWinError, notWaitError, withOutPicError, \
     withOutAdminError
@@ -39,7 +39,7 @@ all_sinner = {
 }
 
 
-@begin_and_finish_log(task_name="一次经验本")
+@begin_and_finish_time_log(task_name="一次经验本")
 # 一次经验本的过程
 def onetime_EXP_process(team):
     EXP_luxcavation()
@@ -50,7 +50,7 @@ def onetime_EXP_process(team):
     make_enkephalin_module()
 
 
-@begin_and_finish_log(task_name="一次纽本")
+@begin_and_finish_time_log(task_name="一次纽本")
 # 一次纽本的过程
 def onetime_thread_process(team):
     thread_luxcavation()
@@ -61,7 +61,7 @@ def onetime_thread_process(team):
     make_enkephalin_module()
 
 
-@begin_and_finish_log(task_name="一次镜牢")
+@begin_and_finish_time_log(task_name="一次镜牢")
 # 一次镜牢的过程
 def onetime_mir_process(the_selected_team_setting):
     # 读取队伍配置、顺序
