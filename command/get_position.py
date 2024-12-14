@@ -16,7 +16,6 @@ def get_pic_position(img_model_path, precision=0.8, scale=0, screenshot="./scree
         scale = int(environ.get('window_size'))
     # 设置缩放比例
     scale_factors = [0.75, 1.0, 0.5, 0.625, 1.25, 1.5]
-    # my_log("debug",f"当前窗口大小{environ.get('window_size')},当前缩放比例{scale_factors[scale]}")
     # 初始化目标截图
     try:
         my_screenshot = get_grey_normalized_pic(screenshot)
