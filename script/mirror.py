@@ -330,6 +330,13 @@ def in_shop(system, shop_sell_list, store_floors):
     mouse_click(get_pic_position("./pic/mirror/event/shop/leave_shop.png"))
     mouse_click(get_pic_position("./pic/mirror/event/shop/leave_shop_confirm.png"))
 
+# 输出时间统计
+def to_log_with_time(msg,elapsed_time):
+    # 将总秒数转换为小时、分钟和秒
+    hours, remainder = divmod(elapsed_time, 3600)
+    minutes, seconds = divmod(remainder, 60)
+    time_string = f"{int(hours):02}:{int(minutes):02}:{int(seconds):02}"
+    my_log("info",f"{msg} 总耗时:{time_string}")
 
 # 一次镜本流程
 def execute_a_mirror(sinner_team, which_team, shop_sell_list, system="burn"):
@@ -515,38 +522,26 @@ def execute_a_mirror(sinner_team, which_team, shop_sell_list, system="burn"):
     elapsed_time = end_time - start_time
 
     # 输出战斗总时间
-    hours, remainder = divmod(battle_total_time, 3600)
-    minutes, seconds = divmod(remainder, 60)
-    time_string = f"{int(hours):02}:{int(minutes):02}:{int(seconds):02}"
-    msg = f"此次镜牢在战斗共花费{time_string}"
-    my_log("info", msg)
+    msg = f"此次镜牢在战斗"
+    to_log_with_time(msg, battle_total_time)
 
     # 输出事件总时间
-    hours, remainder = divmod(event_total_time, 3600)
-    minutes, seconds = divmod(remainder, 60)
-    time_string = f"{int(hours):02}:{int(minutes):02}:{int(seconds):02}"
-    msg = f"此次镜牢在事件共花费{time_string}"
-    my_log("info", msg)
+    msg = f"此次镜牢在事件"
+    to_log_with_time(msg, event_total_time)
 
     # 输出商店总时间
-    hours, remainder = divmod(shop_total_time, 3600)
-    minutes, seconds = divmod(remainder, 60)
-    time_string = f"{int(hours):02}:{int(minutes):02}:{int(seconds):02}"
-    msg = f"此次镜牢中在商店共花费{time_string}"
-    my_log("info", msg)
+    msg = f"此次镜牢中在商店"
+    to_log_with_time(msg,shop_total_time)
 
     # 输出寻路总时间
-    hours, remainder = divmod(find_road_total_time, 3600)
-    minutes, seconds = divmod(remainder, 60)
-    time_string = f"{int(hours):02}:{int(minutes):02}:{int(seconds):02}"
-    msg = f"此次镜牢中在寻路共花费{time_string}"
-    my_log("info", msg)
+    msg = f"此次镜牢中在寻路"
+    to_log_with_time(msg,find_road_total_time)
 
-    # 将总秒数转换为小时、分钟和秒
-    hours, remainder = divmod(elapsed_time, 3600)
-    minutes, seconds = divmod(remainder, 60)
-    time_string = f"{int(hours):02}:{int(minutes):02}:{int(seconds):02}"
-    msg = f"此次镜牢使用{system}体系队伍，共花费{time_string}"
-    my_log("info", msg)
+    # debug输出时间
+    my_log("debug",f"战斗shijan:{battle_total_time} 事件时间:{event_total_time} 商店时间:{shop_total_time} 寻路时间:{find_road_total_time} 总时间:{elapsed_time}")
+
+    # 输出镜牢总时间
+    msg = f"此次镜牢使用{system}体系队伍"
+    to_log_with_time(msg,elapsed_time)
 
     return True
