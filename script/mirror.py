@@ -362,20 +362,7 @@ def execute_a_mirror(sinner_team, which_team, shop_sell_list, system="burn"):
 
         # 在镜牢中寻路
         if get_pic_position("./pic/scenes/road_in_mirror.png"):
-
-            find_road_start_time = time.time()
-
-            search_road_default_distanc()
-
-            find_road_end_time = time.time()
-            find_road_elapsed_time = find_road_end_time - find_road_start_time
-            find_road_total_time += find_road_elapsed_time
-            # 将总秒数转换为小时、分钟和秒
-            hours, remainder = divmod(find_road_elapsed_time, 3600)
-            minutes, seconds = divmod(remainder, 60)
-            time_string = f"{int(hours):02}:{int(minutes):02}:{int(seconds):02}"
-            msg = f"此次寻路共花费{time_string}"
-            my_log("info", msg)
+            find_road_total_time += search_road_default_distanc()
 
         # 战斗配队的情况
         if get_pic_position("./pic/teams/announcer.png"):
