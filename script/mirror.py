@@ -89,7 +89,7 @@ def enter_mir(system="random", team=1):
     mouse_click(get_pic_position("./pic/mirror/enter_mirror_button.png"))
     if enter_normal_mir := get_pic_position("./pic/mirror/enter_normal_mirror.png"):
         mouse_click(enter_normal_mir)
-        sleep(3)
+        sleep(2)
         select_battle_team(team)
         while enter_mir_confirm := get_pic_position("./pic/mirror/select_team_confirm.png"):
             mouse_click(enter_mir_confirm)
