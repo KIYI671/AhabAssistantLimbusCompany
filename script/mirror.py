@@ -215,7 +215,7 @@ def search_road_farthest_distanc():
 def ego_gift_to_power_up():
     while ego_gift_power_up := get_pic_position("./pic/mirror/event/shop/enhance/ego_gift_power_up.png"):
         mouse_click(ego_gift_power_up)
-        sleep(0.5)
+        sleep(0.2)
         if power_up_confirm := get_pic_position("./pic/mirror/event/shop/enhance/power_up_confirm.png"):
             mouse_click(power_up_confirm)
             if get_pic_position("./pic/mirror/event/shop/enhance/power_up_confirm.png"):
@@ -269,7 +269,7 @@ def sell_gifts(shop_sell_list):
 
 @begin_and_finish_log(task_name="镜牢商店")
 # 在商店的处理
-def in_shop(system, shop_sell_list):
+def in_shop(system, shop_sell_list, store_floors):
     # 全体治疗
     if heal_sinner := get_pic_position("./pic/mirror/event/shop/heal_sinner.png"):
         mouse_click(heal_sinner)
@@ -296,9 +296,6 @@ def in_shop(system, shop_sell_list):
 
     # 购买ego饰品
     buy_gifts(system)
-    if refresh_shop := get_pic_position("./pic/mirror/event/shop/refresh_shop.png", 0.95):
-        mouse_click(refresh_shop)
-        buy_gifts(system)
 
     # 升级体系ego饰品
     if enhance_gifts_button := get_pic_position("./pic/mirror/event/shop/enhance_gifts.png"):
@@ -319,6 +316,15 @@ def in_shop(system, shop_sell_list):
                 "./pic/mirror/event/shop/enhance/ego_gift_power_up_close.png"):
             mouse_click(ego_gift_power_up_close)
 
+    if store_floors == 5:
+        while refresh_shop := get_pic_position("./pic/mirror/mirror5/shop/keyword_refresh.png"):
+            mouse_click(refresh_shop)
+            sleep(0.5)
+            mouse_click(get_pic_position(f"./pic/mirror/mirror5/shop/keyword_{system}.png"))
+            mouse_click(get_pic_position("./pic/mirror/mirror5/shop/refresh_shop_confirm.png"))
+            sleep(1)
+            buy_gifts(system)
+
     mouse_click_blank(times=3)
     # 离开商店
     mouse_click(get_pic_position("./pic/mirror/event/shop/leave_shop.png"))
@@ -329,6 +335,8 @@ def in_shop(system, shop_sell_list):
 def execute_a_mirror(sinner_team, which_team, shop_sell_list, system="burn"):
     # 计时开始
     start_time = time.time()
+    # 记录商店楼层
+    store_floors = 1
 
     if get_pic_position("./pic/teams/to_battle.png"):
         mouse_click(get_pic_position("./pic/scenes/the_back_button.png"))
@@ -340,7 +348,7 @@ def execute_a_mirror(sinner_team, which_team, shop_sell_list, system="burn"):
     first_battle = True
     # 未到达奖励页不会停止
     while get_pic_position("./pic/mirror/total_progress.png") is None:
-        # 选择楼层主题的情况
+        # 选择楼层主题包的情况
         if get_pic_position("./pic/scenes/mirror_select_theme_pack.png"):
             select_theme_pack()
 
@@ -431,7 +439,8 @@ def execute_a_mirror(sinner_team, which_team, shop_sell_list, system="burn"):
         # 商店事件
         if get_pic_position("./pic/mirror/event/shop/shop_features_1.png") and \
                 get_pic_position("./pic/mirror/event/shop/shop_features_2.png"):
-            in_shop(system, shop_sell_list)
+            in_shop(system, shop_sell_list, store_floors)
+            store_floors += 1
 
         if get_pic_position("./pic/mirror/select_encounter_reward_card.png"):
             sleep(1)  # 防止过快点击导致脚本卡死
