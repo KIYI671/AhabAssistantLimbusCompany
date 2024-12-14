@@ -28,6 +28,13 @@ def adjust_position_and_size(hwnd: object, choice: object = 0) -> object:
 
     windows_size = int(windows_size)
 
+    # 将窗口状态重置，减少可能出现的问题
+    # 按下 Ctrl 键
+    pyautogui.keyDown('alt')
+    # 按下 Enter 键
+    pyautogui.press('enter')
+    # 释放 Ctrl 键
+    pyautogui.keyUp('alt')
     # 判断是否是全屏，如果是则设为窗口
     if isfullscreen(hwnd):
         sleep(1)
