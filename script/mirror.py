@@ -91,7 +91,7 @@ def enter_mir(system="random", team=1):
     while get_pic_position("./pic/mirror/enter_mirror_button.png", precision=precision) is None:
         if precision > 0.7:
             precision -= 0.01
-    mouse_click(get_pic_position("./pic/mirror/enter_mirror_button.png"), precision)
+    mouse_click(get_pic_position("./pic/mirror/enter_mirror_button.png",precision))
     if enter_normal_mir := get_pic_position("./pic/mirror/enter_normal_mirror.png"):
         mouse_click(enter_normal_mir)
         sleep(2)
