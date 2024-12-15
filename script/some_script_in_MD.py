@@ -2,10 +2,10 @@ from time import sleep
 
 from command.get_position import get_pic_position
 from command.mouse_activity import mouse_click
-from my_decorator.decorator import begin_and_finish_log
+from my_decorator.decorator import begin_and_finish_time_log
 
 
-@begin_and_finish_log(task_name="镜牢获取奖励卡")
+@begin_and_finish_time_log(task_name="镜牢获取奖励卡", calculate_time=False)
 # 获取奖励卡
 def get_reward_card():
     all_cards = ["./pic/mirror/gain_ego_resource.png", "./pic/mirror/gain_cost.png",

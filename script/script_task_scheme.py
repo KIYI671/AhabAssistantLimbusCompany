@@ -7,7 +7,7 @@ from PyQt5.QtCore import QThread, pyqtSignal, QMutex
 
 from command.adjust_position_and_siz import adjust_position_and_size, reset_win
 from command.get_position import get_pic_position
-from my_decorator.decorator import begin_and_finish_log,begin_and_finish_time_log
+from my_decorator.decorator import begin_and_finish_time_log
 from my_error.my_error import withOutGameWinError, userStopError, noSavedPresetsError, \
     unexpectNumError, cannotOperateGameError, netWorkUnstableError, backMainWinError, notWaitError, withOutPicError, \
     withOutAdminError

@@ -3,7 +3,7 @@ from time import sleep
 
 from command.get_position import get_pic_position, get_all_pic_position
 from command.mouse_activity import mouse_click, mouse_drag
-from my_decorator.decorator import begin_and_finish_log,begin_and_finish_time_log
+from my_decorator.decorator import begin_and_finish_time_log
 from my_log.my_log import my_log
 from my_ocr.ocr import get_all_team, search_team_number, commom_gain_text, commom_all_ocr, commom_range_ocr, \
     find_and_click_text

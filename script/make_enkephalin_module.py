@@ -1,9 +1,9 @@
 from command.get_position import get_pic_position
 from command.mouse_activity import mouse_click
-from my_decorator.decorator import begin_and_finish_log
+from my_decorator.decorator import begin_and_finish_time_log
 
 
-@begin_and_finish_log(task_name="体力换饼")
+@begin_and_finish_time_log(task_name="体力换饼", calculate_time=False)
 def make_enkephalin_module():
     while get_pic_position("./pic/scenes/charge_enkephalin.png") is None:
         mouse_click(get_pic_position("./pic/enkephalin/enkephalin_box.png"))
@@ -14,7 +14,7 @@ def make_enkephalin_module():
     mouse_click(get_pic_position("./pic/enkephalin/leave_cancel.png"))
 
 
-@begin_and_finish_log(task_name="狂气换体")
+@begin_and_finish_time_log(task_name="狂气换体", calculate_time=False)
 def lunacy_to_enkephalin(times=0):
     # 待加入葛朗台模式!!!
     make_enkephalin_module()

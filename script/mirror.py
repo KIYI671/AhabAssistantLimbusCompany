@@ -4,7 +4,7 @@ from time import sleep
 
 from command.get_position import get_pic_position, get_pic_position_without_cap, get_all_pic_position
 from command.mouse_activity import mouse_click, mouse_scroll_farthest, mouse_drag_down, mouse_click_blank, mouse_drag
-from my_decorator.decorator import begin_and_finish_log,begin_and_finish_time_log
+from my_decorator.decorator import begin_and_finish_time_log
 from my_log.my_log import my_log
 from my_ocr.ocr import get_theme_pack, compare_the_blacklist, commom_ocr, commom_gain_text, commom_all_ocr, \
     commom_range_ocr, find_and_click_text
