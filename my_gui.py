@@ -9,7 +9,7 @@ from pynput import keyboard
 
 from command.adjust_position_and_siz import reset_win
 from command.get_win_handle import get_win_handle
-from command.use_yaml import get_yaml_information, save_yaml
+from command.use_yaml import get_yaml_information, save_yaml, replace_old_with_new
 from main_windows import Ui_MainWindow
 from my_log.my_log import my_log
 from script.script_task_scheme import my_script_task
@@ -218,7 +218,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                      self.team6_order, self.team7_order]
         all_teams_name = ["team1_order", "team2_order", "team3_order", "team4_order",
                           "team5_order", "team6_order", "team7_order"]
-        for i in range(6):
+        for i in range(7):
             if config_datas[all_teams_name[i]] != '':
                 if int(config_datas[all_teams_name[i]]) > int(config_datas[which]):
                     config_datas[all_teams_name[i]] = str((int(config_datas[all_teams_name[i]])) - 1)
@@ -275,7 +275,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.buy_enkephalin.setChecked(True)
             self.get_reward.setChecked(True)
         if button == self.select_none:
-            self.set_windows.setChecked(False)
             self.daily_task.setChecked(False)
             self.mirror.setChecked(False)
             self.buy_enkephalin.setChecked(False)
@@ -624,6 +623,10 @@ class setting_window(QDialog, Ui_all_team_basic_setting):
 def read_last_setting(mygui):
     # 读取设置
     config_datas = get_yaml_information()
+
+    # 临时功能，处理confirm.yaml文件历史遗留问题，3个版本后删除
+    config_datas = replace_old_with_new(config_datas)
+    save_yaml(config_datas)
 
     # 读取之前最后页面
     mygui.detail_setting.setCurrentIndex(config_datas["default_page"])

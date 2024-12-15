@@ -8,13 +8,13 @@ import win32con
 import win32gui
 
 from command.mouse_activity import mouse_click_blank
-from my_decorator.decorator import begin_and_finish_log
+from my_decorator.decorator import begin_and_finish_time_log
 from my_error.my_error import resolutionSettingError
 
 resolution = [[1920, 1080], [2560, 1440], [1280, 720], [1600, 900], [3200, 1800], [3840, 2160]]
 
 
-@begin_and_finish_log("窗口设置")
+@begin_and_finish_time_log("窗口设置", False)
 def adjust_position_and_size(hwnd: object, choice: object = 0) -> object:
     # 如果窗口最小化或不可见，先将其恢复
     win32gui.ShowWindow(hwnd, win32con.SW_RESTORE)
@@ -52,7 +52,8 @@ def adjust_position_and_size(hwnd: object, choice: object = 0) -> object:
     screen_width = user32.GetSystemMetrics(SM_CXSCREEN)
     screen_height = user32.GetSystemMetrics(SM_CYSCREEN)
     if resolution[windows_size][0] > screen_width or resolution[windows_size][1] > screen_height:
-        raise resolutionSettingError("屏幕过小，无法支持设置的分辨率!!!\nThe screen is too small to support the set resolution!!!")
+        raise resolutionSettingError(
+            "屏幕过小，无法支持设置的分辨率!!!\nThe screen is too small to support the set resolution!!!")
 
     # 告诉系统当前进程是 DPI 感知的,确保窗口在高 DPI 系统上正确显示,并适应不同的 DPI 缩放
     windll.user32.SetProcessDPIAware()

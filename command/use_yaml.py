@@ -364,3 +364,16 @@ def get_black_list_keyword_yaml():
             my_log("debug", msg)
             yaml.dump(default_blacklist, file)
         return default_blacklist
+
+
+# 递归函数，用于替换所有的"clash"字符串为"pierce",处理历史遗留问题用
+def replace_old_with_new(item, old="clash", new="pierce"):
+    if isinstance(item, dict):
+        for key, value in item.items():
+            item[key] = replace_old_with_new(value)
+    elif isinstance(item, list):
+        for i in range(len(item)):
+            item[i] = replace_old_with_new(item[i])
+    elif isinstance(item, str):
+        item = item.replace(old, new)
+    return item

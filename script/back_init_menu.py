@@ -2,7 +2,7 @@ from time import sleep
 
 import pyautogui
 
-from my_decorator.decorator import begin_and_finish_log
+from my_decorator.decorator import begin_and_finish_time_log
 from my_error.my_error import backMainWinError
 from my_log.my_log import my_log
 from script.check_scene import where_am_i
@@ -12,7 +12,7 @@ from command.mouse_activity import mouse_click, mouse_click_blank
 from script.some_script_in_MD import get_reward_card
 
 
-@begin_and_finish_log(task_name="返回主界面")
+@begin_and_finish_time_log(task_name="返回主界面")
 def back_init_menu():
     loop_count = 0
     while (where := where_am_i()) != 30:

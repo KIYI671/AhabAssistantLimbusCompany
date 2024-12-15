@@ -14,7 +14,7 @@ def EXP_luxcavation():
     mouse_click(get_pic_position("./pic/luxcavation/luxcavation.png"))
     temp_position1, temp_position2 = None, None
     for level in level_select:
-        temp_position1 = get_pic_temp_position(level)
+        temp_position1 = get_pic_temp_position(level, 0.9)
         if temp_position1:
             temp_position2 = get_pic_position("./pic/luxcavation/EXP_enter.png",
                                               screenshot=level)

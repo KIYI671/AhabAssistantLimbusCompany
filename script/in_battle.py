@@ -6,7 +6,7 @@ from command.get_position import get_pic_position, get_pic_position_without_cap
 from command.mouse_activity import mouse_click, mouse_click_blank
 from os import environ
 
-from my_decorator.decorator import begin_and_finish_log,begin_and_finish_time_log
+from my_decorator.decorator import begin_and_finish_time_log
 from my_log.my_log import my_log
 from my_ocr.ocr import commom_ocr, commom_gain_text, commom_all_ocr
 from script.decision_event_handling import decision_event_handling

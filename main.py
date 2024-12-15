@@ -2,7 +2,9 @@ import sys
 from win32api import GetLastError
 from win32event import CreateMutex
 from command.check_admin import check_admin
+from my_error.my_error import withOutAdminError
 from my_gui import mygui
+from my_log.my_log import my_log
 
 if __name__ == "__main__":
     # 构建互斥锁
@@ -14,5 +16,9 @@ if __name__ == "__main__":
         # 使用非零退出码表示错误
         sys.exit(1)
 
-    check_admin()
+    if not check_admin():
+        my_log("error",
+               "未能获取管理员权限，脚本将无法正常运行!!!\nWithout administrator privileges, the script will not run properly!!!")
+        raise withOutAdminError(
+            "未能获取管理员权限，脚本将无法正常运行!!!\nWithout administrator privileges, the script will not run properly!!!")
     mygui()
