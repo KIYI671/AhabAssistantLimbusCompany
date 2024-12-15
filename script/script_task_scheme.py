@@ -124,7 +124,7 @@ def script_task():
     # 对游戏窗口进行设置
     handle = get_win_handle()
     if all_setting["select_task"]["set_windows"]:
-        if handle == None:
+        if handle is None:
             my_log("error", "没有找到游戏窗口")
             raise withOutGameWinError("没有找到游戏窗口")
         win_size = all_setting["set_win"]["set_win_size"]

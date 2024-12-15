@@ -328,7 +328,11 @@ def in_shop(system, shop_sell_list, store_floors):
 
     mouse_click_blank(times=3)
     # 离开商店
-    mouse_click(get_pic_position("./pic/mirror/event/shop/leave_shop.png"))
+    precision = 0.8
+    while get_pic_position("./pic/mirror/event/shop/leave_shop_confirm.png") is None:
+        mouse_click(get_pic_position("./pic/mirror/event/shop/leave_shop.png", precision=precision))
+        if precision > 0.7:
+            precision -= 0.01
     mouse_click(get_pic_position("./pic/mirror/event/shop/leave_shop_confirm.png"))
 
 

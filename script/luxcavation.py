@@ -40,6 +40,6 @@ def thread_luxcavation():
                     "./pic/luxcavation/thread_lv30.png",
                     "./pic/luxcavation/thread_lv20.png"]
     for level in level_select:
-        if get_pic_position(level):
+        if get_pic_position(level, 0.9):
             mouse_click(get_pic_position(level))
             break
