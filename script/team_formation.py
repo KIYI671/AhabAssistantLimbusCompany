@@ -3,7 +3,7 @@ from time import sleep
 
 from command.get_position import get_pic_position, get_all_pic_position
 from command.mouse_activity import mouse_click, mouse_drag
-from my_decorator.decorator import begin_and_finish_log
+from my_decorator.decorator import begin_and_finish_log,begin_and_finish_time_log
 from my_log.my_log import my_log
 from my_ocr.ocr import get_all_team, search_team_number, commom_gain_text, commom_all_ocr, commom_range_ocr, \
     find_and_click_text
@@ -25,7 +25,7 @@ def clean_team():
     find_and_click_text("confirm")
 
 
-@begin_and_finish_log(task_name="罪人编队")
+@begin_and_finish_time_log(task_name="罪人编队")
 # 编队
 def team_formation(sinner_team):
     scale = 0
@@ -51,7 +51,7 @@ def team_formation(sinner_team):
                              first_sinner[1] + 500 * scale_factors[scale]])
 
 
-@begin_and_finish_log(task_name="寻找队伍")
+@begin_and_finish_time_log(task_name="寻找队伍")
 # 找队
 def select_battle_team(num):
     scale = 0
@@ -83,7 +83,7 @@ def select_battle_team(num):
         return False
 
 
-@begin_and_finish_log(task_name="检查队伍剩余战斗力")
+@begin_and_finish_time_log(task_name="检查队伍剩余战斗力")
 def check_team():
     leave = commom_gain_text(commom_all_ocr()[0], language="models/config_chinese.txt")
     # 至少还有5人可以战斗
