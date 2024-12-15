@@ -14,35 +14,33 @@ from script.decision_event_handling import decision_event_handling
 
 @begin_and_finish_time_log(task_name="一次战斗")
 def battle():
-    chance = 5
+    INIT_CHANCE = 15
+    chance = INIT_CHANCE
+    MAX_WAITING = 3.0
+    waiting = 1.0
+    increase_waiting = 0.1
+    total_count= 0
+    fail_count = 0
     in_mirror = False
     while True:
+        total_count += 1
         if in_mirror is False and get_pic_position("./pic/battle/in_mirror_battle.png"):
             in_mirror = True
-        # 如果在镜牢战斗，并且有角色死亡，退出战斗
-        if in_mirror and get_pic_position("./pic/battle/dead.png", 0.9) and battle_ocr():
-            sleep(2)
-            if get_pic_position("./pic/battle/dead.png", 0.9):
-                msg = f"角色死亡，退出战斗"
-                my_log("info", msg)
-                while give_up_button := get_pic_position("./pic/battle/give_up.png") is None:
-                    mouse_click(get_pic_position("./pic/battle/setting.png"))
-                mouse_click(get_pic_position("./pic/battle/give_up.png"))
-                break
+        
         # 如果正在战斗待机界面
-        elif get_pic_position("./pic/battle/in_battle.png"):
+        if get_pic_position("./pic/battle/in_battle.png"):
             pyautogui.press('p')
             sleep(0.5)
             pyautogui.press('enter')
-            chance = 5
+            chance = INIT_CHANCE
             msg = f"使用P+Enter开始战斗"
             my_log("debug", msg)
             mouse_click_blank()
             continue
         # 如果正在交战过程
         elif get_pic_position("./pic/battle/pause.png"):
-            sleep(1)
-            chance = 5
+            sleep(waiting)
+            chance = INIT_CHANCE
             continue
         # 如果战斗中途出现事件
         elif get_pic_position("./pic/event/skip.png"):
@@ -57,48 +55,18 @@ def battle():
                 mouse_click(continue_button)
             if process_button := get_pic_position("./pic/battle/proceed.png"):
                 mouse_click(process_button)
-            chance = 5
-            continue
-        # 如果战斗结束进入黑屏
-        elif get_pic_position("./pic/wait.png"):
-            sleep(1)
-            chance = 5
-            continue
-        # 如果交战过程误触，导致战斗暂停
-        elif get_pic_position("./pic/battle/continue.png"):
-            mouse_click(get_pic_position("./pic/battle/continue.png"))
-            chance = 5
-            continue
-        # 两种升级可能出现的图片识别
-        elif get_pic_position("./pic/battle/level_up_message.png"):
-            level_up_leave()
-            chance = 5
-            continue
-        elif get_pic_position("./pic/battle/level_up_message2.png"):
-            level_up_leave()
-            chance = 5
-            continue
-        # 如果网络波动，需要点击重试
-        elif get_pic_position("./pic/scenes/network/retry_countdown.png"):
-            sleep(5)
-            if get_pic_position("./pic/scenes/network/retry.png"):
-                mouse_click(get_pic_position("./pic/scenes/network/retry.png"))
-            chance = 5
-            continue
-        elif get_pic_position("./pic/scenes/network/retry.png"):
-            mouse_click(get_pic_position("./pic/scenes/network/retry.png"))
-            chance = 5
+            chance = INIT_CHANCE
             continue
         # 战斗结束，进入结算页面
         elif get_pic_position("./pic/battle/battle_finish_confirm.png"):
             sleep(1)
             if get_pic_position("./pic/battle/level_up_message.png"):
                 level_up_leave()
-                chance = 5
+                chance = INIT_CHANCE
                 continue
             elif get_pic_position("./pic/battle/level_up_message2.png"):
                 level_up_leave()
-                chance = 5
+                chance = INIT_CHANCE
                 continue
             # 为某些人在副本战斗过程中启动脚本任务进行收尾
             if environ.get('rewards') == '0':
@@ -111,6 +79,46 @@ def battle():
                         environ['rewards'] = "2"
             mouse_click(get_pic_position("./pic/battle/battle_finish_confirm.png"))
             break
+        # 如果战斗结束进入黑屏
+        elif get_pic_position("./pic/wait.png"):
+            sleep(1)
+            chance = INIT_CHANCE
+            continue
+        # 如果在镜牢战斗，并且有角色死亡，退出战斗
+        elif in_mirror and get_pic_position("./pic/battle/dead.png", 0.9) and battle_ocr():
+            sleep(2)
+            if get_pic_position("./pic/battle/dead.png", 0.9):
+                msg = f"角色死亡，退出战斗"
+                my_log("info", msg)
+                while give_up_button := get_pic_position("./pic/battle/give_up.png") is None:
+                    mouse_click(get_pic_position("./pic/battle/setting.png"))
+                mouse_click(get_pic_position("./pic/battle/give_up.png"))
+                break
+        # 如果交战过程误触，导致战斗暂停
+        elif get_pic_position("./pic/battle/continue.png"):
+            mouse_click(get_pic_position("./pic/battle/continue.png"))
+            chance = INIT_CHANCE
+            continue
+        # 两种升级可能出现的图片识别
+        elif get_pic_position("./pic/battle/level_up_message.png"):
+            level_up_leave()
+            chance = INIT_CHANCE
+            continue
+        elif get_pic_position("./pic/battle/level_up_message2.png"):
+            level_up_leave()
+            chance = INIT_CHANCE
+            continue
+        # 如果网络波动，需要点击重试
+        elif get_pic_position("./pic/scenes/network/retry_countdown.png"):
+            sleep(5)
+            if get_pic_position("./pic/scenes/network/retry.png"):
+                mouse_click(get_pic_position("./pic/scenes/network/retry.png"))
+            chance = INIT_CHANCE
+            continue
+        elif get_pic_position("./pic/scenes/network/retry.png"):
+            mouse_click(get_pic_position("./pic/scenes/network/retry.png"))
+            chance = INIT_CHANCE
+            continue
         elif get_pic_position("./pic/scenes/network/retry_countdown.png") \
                 or get_pic_position_without_cap("./pic/scenes/network/retry.png") \
                 or get_pic_position_without_cap("./pic/scenes/network/try_again.png"):
@@ -121,13 +129,21 @@ def battle():
             break
         elif get_pic_position("./pic/mirror/select_encounter_reward_card.png"):
             break
-        elif chance <= 3 and get_pic_position("./pic/teams/formation_features.png"):
+        elif chance <= (INIT_CHANCE // 2 + 1) and get_pic_position("./pic/teams/formation_features.png"):
             break
         else:
             chance -= 1
-            sleep(3)
+            sleep(waiting)
+            # 如果匹配失败，则等待时间增加
+            if waiting < MAX_WAITING:
+                waiting += increase_waiting
+            # 统计失败次数 
+            fail_count += 1
         if chance < 0:
             break
+
+    msg = f"匹配失败次数{fail_count} 匹配总次数{total_count} 匹配成功率{(1 - fail_count / total_count):.3f}"
+    my_log("debug", msg)
 
 
 def battle_ocr():
