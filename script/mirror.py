@@ -5,6 +5,7 @@ from time import sleep
 from command.get_position import get_pic_position, get_pic_position_without_cap, get_all_pic_position
 from command.mouse_activity import mouse_click, mouse_scroll_farthest, mouse_drag_down, mouse_click_blank, mouse_drag
 from my_decorator.decorator import begin_and_finish_time_log
+from my_error.my_error import unableToFindTeamError
 from my_log.my_log import my_log
 from my_ocr.ocr import get_theme_pack, compare_the_blacklist, commom_ocr, commom_gain_text, commom_all_ocr, \
     commom_range_ocr, find_and_click_text
@@ -76,23 +77,34 @@ def road_to_mir():
 
 
 def enter_mir(system="random", team=1):
-    systems = {"bleed": "./pic/mirror/select_team/bleed_ego_gift",
-               "burn": "./pic/mirror/select_team/burn_ego_gift",
-               "tremor": "./pic/mirror/select_team/tremor_ego_gift",
-               "rupture": "./pic/mirror/select_team/rupture_ego_gift",
-               "sinking": "./pic/mirror/select_team/sinking_ego_gift",
-               "poise": "./pic/mirror/select_team/poise_ego_gift",
-               "charge": "./pic/mirror/select_team/charge_ego_gift",
-               "slash": "./pic/mirror/select_team/slash_ego_gift",
-               "pierce": "./pic/mirror/select_team/pierce_ego_gift",
-               "blunt": "./pic/mirror/select_team/blunt_ego_gift"}
-    mouse_click(get_pic_position("./pic/mirror/enter_mirror_button.png"))
+    all_systems = {"bleed": "./pic/mirror/select_team/bleed_ego_gift",
+                   "burn": "./pic/mirror/select_team/burn_ego_gift",
+                   "tremor": "./pic/mirror/select_team/tremor_ego_gift",
+                   "rupture": "./pic/mirror/select_team/rupture_ego_gift",
+                   "sinking": "./pic/mirror/select_team/sinking_ego_gift",
+                   "poise": "./pic/mirror/select_team/poise_ego_gift",
+                   "charge": "./pic/mirror/select_team/charge_ego_gift",
+                   "slash": "./pic/mirror/select_team/slash_ego_gift",
+                   "pierce": "./pic/mirror/select_team/pierce_ego_gift",
+                   "blunt": "./pic/mirror/select_team/blunt_ego_gift"}
+    precision = 0.8
+    while get_pic_position("./pic/mirror/enter_mirror_button.png", precision=precision) is None:
+        if precision > 0.7:
+            precision -= 0.01
+    mouse_click(get_pic_position("./pic/mirror/enter_mirror_button.png"), precision)
     if enter_normal_mir := get_pic_position("./pic/mirror/enter_normal_mirror.png"):
         mouse_click(enter_normal_mir)
         sleep(2)
-        select_battle_team(team)
+        chance_to_select_team = 5
+        while not select_battle_team(team):
+            chance_to_select_team -= 1
+            if chance_to_select_team < 0:
+                my_log("error", "无法寻得队伍")
+                raise unableToFindTeamError("无法寻得队伍，请检查队伍名称是否为默认名称")
         while enter_mir_confirm := get_pic_position("./pic/mirror/select_team_confirm.png"):
             mouse_click(enter_mir_confirm)
+            if get_pic_position("./pic/mirror/starlight.png", 0.9):
+                break
 
         # mirror5
         while (get_pic_position("./pic/mirror/mirror5/grace_of_stars_passive.png") is None
@@ -118,10 +130,10 @@ def enter_mir(system="random", team=1):
             slash_button = get_pic_position("./pic/mirror/select_team/slash_ego_gift.png")
             mouse_drag(slash_button, time=0.2, x=0, y=-200)
 
-        mouse_click(get_pic_position(sys := systems[system] + '.png'))
-        mouse_click(get_pic_position(sys := systems[system] + '_1.png'))
-        mouse_click(get_pic_position(sys := systems[system] + '_2.png'))
-        mouse_click(get_pic_position(sys := systems[system] + '_3.png'))
+        mouse_click(get_pic_position(sys := all_systems[system] + '.png'))
+        mouse_click(get_pic_position(sys := all_systems[system] + '_1.png'))
+        mouse_click(get_pic_position(sys := all_systems[system] + '_2.png'))
+        mouse_click(get_pic_position(sys := all_systems[system] + '_3.png'))
         mouse_click(get_pic_position("./pic/mirror/select_team/select_ego_gift.png"))
         while get_pic_position("./pic/mirror/ego_gift_get.png") is None:
             retry()

@@ -78,8 +78,8 @@ class unexpectNumError(Exception):
         return self.errorInfo
 
 
-# 暂时没有这个:没有之前选人记录
-class noSavedPresetsError(Exception):
+# 队伍配置名称可能有误，无法寻得队伍
+class unableToFindTeamError(Exception):
     def __init__(self, ErrorInfo):
         super().__init__(ErrorInfo)
         self.errorInfo = ErrorInfo
