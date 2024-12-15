@@ -9,7 +9,7 @@ from pynput import keyboard
 
 from command.adjust_position_and_siz import reset_win
 from command.get_win_handle import get_win_handle
-from command.use_yaml import get_yaml_information, save_yaml
+from command.use_yaml import get_yaml_information, save_yaml, replace_old_with_new
 from main_windows import Ui_MainWindow
 from my_log.my_log import my_log
 from script.script_task_scheme import my_script_task
@@ -624,6 +624,10 @@ class setting_window(QDialog, Ui_all_team_basic_setting):
 def read_last_setting(mygui):
     # 读取设置
     config_datas = get_yaml_information()
+
+    # 临时功能，处理confirm.yaml文件历史遗留问题，3个版本后删除
+    config_datas = replace_old_with_new(config_datas)
+    save_yaml(config_datas)
 
     # 读取之前最后页面
     mygui.detail_setting.setCurrentIndex(config_datas["default_page"])
