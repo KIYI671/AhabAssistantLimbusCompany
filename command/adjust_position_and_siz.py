@@ -140,3 +140,16 @@ def reset_win(hwnd):
     # 恢复窗口状态
     win32gui.ShowWindow(hwnd, win32con.SW_RESTORE)
     win32gui.SetWindowPos(hwnd, win32con.HWND_NOTOPMOST, 0, 0, 0, 0, win32con.SWP_NOMOVE | win32con.SWP_NOSIZE)
+
+    # 获取窗口客户区的大小
+    client_rect = win32gui.GetClientRect(hwnd)
+    client_width = client_rect[2]
+    client_height = client_rect[3]
+
+    # 获取窗口的大小（包括边框、标题栏等）
+    window_rect = win32gui.GetWindowRect(hwnd)
+    window_width = window_rect[2] - window_rect[0]
+    window_height = window_rect[3] - window_rect[1]
+
+    win32gui.SetWindowPos(hwnd, win32con.HWND_NOTOPMOST, 0, 0, window_width * 2 - client_width,
+                          window_height * 2 - client_height, win32con.SWP_NOMOVE)
