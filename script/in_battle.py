@@ -163,7 +163,7 @@ def battle():
             chance -= 1
             sleep(waiting)
             # 更新等待时间
-            update_wait_time(waiting,True,total_count)
+            waiting = update_wait_time(waiting,True,total_count)
             # 统计失败次数 
             fail_count += 1
         if chance < 0:
