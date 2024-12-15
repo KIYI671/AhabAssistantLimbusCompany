@@ -14,10 +14,16 @@ from script.decision_event_handling import decision_event_handling
 
 @begin_and_finish_time_log(task_name="一次战斗")
 def battle():
-    INIT_CHANCE = 5
+    INIT_CHANCE = 15
     chance = INIT_CHANCE
+    MAX_WAITING = 3.0
+    waiting = 1.0
+    increase_waiting = 0.1
+    total_count= 0
+    fail_count = 0
     in_mirror = False
     while True:
+        total_count += 1
         if in_mirror is False and get_pic_position("./pic/battle/in_mirror_battle.png"):
             in_mirror = True
         
@@ -33,7 +39,7 @@ def battle():
             continue
         # 如果正在交战过程
         elif get_pic_position("./pic/battle/pause.png"):
-            sleep(1)
+            sleep(waiting)
             chance = INIT_CHANCE
             continue
         # 如果战斗中途出现事件
@@ -127,9 +133,17 @@ def battle():
             break
         else:
             chance -= 1
-            sleep(1)
+            sleep(waiting)
+            # 如果匹配失败，则等待时间增加
+            if waiting < MAX_WAITING:
+                waiting += increase_waiting
+            # 统计失败次数 
+            fail_count += 1
         if chance < 0:
             break
+
+    msg = f"匹配失败次数{fail_count} 匹配总次数{total_count} 匹配成功率{(1 - fail_count / total_count):.3f}"
+    my_log("debug", msg)
 
 
 def battle_ocr():
