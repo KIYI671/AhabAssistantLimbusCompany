@@ -7,13 +7,17 @@ import pyautogui
 from my_log.my_log import my_log
 
 
-def mouse_click(coordinate, times=1):
+def mouse_click(coordinate, times=1, offset_x=0, offset_y=0):
     if coordinate is None:
         msg = "传入位置为空，无法进行点击"
         my_log("debug", msg)
         return False
-    x = coordinate[0] + random.randint(-10, 10)
-    y = coordinate[1] + random.randint(-10, 10)
+    # 满足某些精确点击要求
+    x = coordinate[0]
+    y = coordinate[1]
+    if offset_x == 0 and offset_y == 0:
+        x += random.randint(-10, 10)
+        y += random.randint(-10, 10)
     msg = f"点击位置:({x},{y})"
     my_log("debug", msg)
     for i in range(times):

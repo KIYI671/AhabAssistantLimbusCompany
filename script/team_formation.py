@@ -67,7 +67,8 @@ def select_battle_team(num):
         for i in range(10):
             pic_byte_stream = get_all_team("./pic/teams/teams.png")
             if team_position := search_team_number(pic_byte_stream[0], num):
-                mouse_click(team_position)
+                # 防止选到其他队伍
+                mouse_click(team_position, offset_x=1, offset_y=0)
                 find = True
                 break
             mouse_drag(my_position, y=-200 * scale_factors[scale], time=1.5)

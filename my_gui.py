@@ -218,7 +218,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                      self.team6_order, self.team7_order]
         all_teams_name = ["team1_order", "team2_order", "team3_order", "team4_order",
                           "team5_order", "team6_order", "team7_order"]
-        for i in range(6):
+        for i in range(7):
             if config_datas[all_teams_name[i]] != '':
                 if int(config_datas[all_teams_name[i]]) > int(config_datas[which]):
                     config_datas[all_teams_name[i]] = str((int(config_datas[all_teams_name[i]])) - 1)
@@ -275,7 +275,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.buy_enkephalin.setChecked(True)
             self.get_reward.setChecked(True)
         if button == self.select_none:
-            self.set_windows.setChecked(False)
             self.daily_task.setChecked(False)
             self.mirror.setChecked(False)
             self.buy_enkephalin.setChecked(False)
