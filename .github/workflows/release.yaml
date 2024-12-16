@@ -36,6 +36,11 @@ jobs:
         run: |
           $filePath = "main_windows.ui"
           (Get-Content $filePath) -replace "<string>AhabAssistantLimbusCompany</string>", "<string>AhabAssistantLimbusCompany ${{ github.ref_name }}</string>" | Set-Content $filePath
+
+      - name: Replace version in main_window.py
+        run: |
+          $filePath = "main_window.py"
+          (Get-Content $filePath) -replace 'MainWindow\\.setWindowTitle\\(_translate\\("MainWindow", "AhabAssistantLimbusCompany"\\)\\)', "MainWindow.setWindowTitle(_translate(\"MainWindow\", \"AhabAssistantLimbusCompany ${{ github.ref_name }}\"))" | Set-Content $filePath
     
       # 打包项目
       - name: Build executable
