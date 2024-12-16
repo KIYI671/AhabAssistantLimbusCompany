@@ -1,3 +1,5 @@
+import pyautogui
+
 from command.get_position import get_pic_position, get_pic_temp_position
 from command.mouse_activity import mouse_click
 
@@ -10,7 +12,10 @@ def EXP_luxcavation():
                     "./pic/luxcavation/EXP_lv28.png",
                     "./pic/luxcavation/EXP_lv18.png", "./pic/luxcavation/EXP_lv8.png"]
     while get_pic_position("./pic/scenes/drive_features.png") is None:
-        mouse_click(get_pic_position("./pic/scenes/init_drive.png"))
+        if button := get_pic_position("./pic/scenes/init_drive.png"):
+            mouse_click(button)
+        else:
+            pyautogui.press("esc")
     mouse_click(get_pic_position("./pic/luxcavation/luxcavation.png"))
     temp_position1, temp_position2 = None, None
     for level in level_select:
@@ -28,7 +33,10 @@ def EXP_luxcavation():
 
 def thread_luxcavation():
     while get_pic_position("./pic/scenes/drive_features.png") is None:
-        mouse_click(get_pic_position("./pic/scenes/init_drive.png"))
+        if button := get_pic_position("./pic/scenes/init_drive.png"):
+            mouse_click(button)
+        else:
+            pyautogui.press("esc")
     mouse_click(get_pic_position("./pic/luxcavation/luxcavation.png"))
     mouse_click(get_pic_position("./pic/luxcavation/thread.png"))
     temp_position1 = get_pic_temp_position("./pic/luxcavation/first_thread.png")

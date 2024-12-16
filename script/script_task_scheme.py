@@ -42,7 +42,8 @@ all_sinner = {
 @begin_and_finish_time_log(task_name="一次经验本")
 # 一次经验本的过程
 def onetime_EXP_process(team):
-    EXP_luxcavation()
+    while get_pic_position("./pic/teams/announcer.png") is None:
+        EXP_luxcavation()
     select_battle_team(team)
     team_preparation()
     battle()
@@ -53,7 +54,8 @@ def onetime_EXP_process(team):
 @begin_and_finish_time_log(task_name="一次纽本")
 # 一次纽本的过程
 def onetime_thread_process(team):
-    thread_luxcavation()
+    while get_pic_position("./pic/teams/announcer.png") is None:
+        thread_luxcavation()
     select_battle_team(team)
     team_preparation()
     battle()
