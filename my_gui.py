@@ -156,6 +156,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         项目地址:https://github.com/KIYI671/AhabAssistantLimbusCompany\n
         \n
         本项目使用 AGPL-3.0 开源协议。\n
+        \n
+        当前版本号:\n            
         ''')
 
     def setting_teams(self):

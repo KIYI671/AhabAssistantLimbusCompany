@@ -26,7 +26,17 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
           pip install pyinstaller
+      
+      - name: Replace name in main.spec
+        run: |
+          $filePath = "main.spec"
+          (Get-Content $filePath) -replace "name\s*=\s*'AALC'", "name='AALC_${{ github.ref_name }}'" | Set-Content $filePath
 
+      - name: Replace version in my_gui.py
+        run: |
+          $filePath = "my_gui.py"
+          (Get-Content $filePath) -replace "当前版本号:(\\n)", "当前版本号: ${{ github.ref_name }}1" | Set-Content $filePath
+    
       # 打包项目
       - name: Build executable
         run: |
