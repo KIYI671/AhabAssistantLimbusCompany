@@ -198,7 +198,14 @@ def search_road_default_distanc():
     else:
         if search_road_farthest_distanc() is False:
             # 如果寻路失败，退出镜牢重进
-            pass
+            if button := get_pic_position("./pic/mirror/setting.png"):
+                mouse_click(button)
+            if button := get_pic_position("./pic/mirror/to_window.png"):
+                mouse_click(button)
+            if button := get_pic_position("./pic/mirror/to_window_confirm.png"):
+                mouse_click(button)
+            road_to_mir()
+            enter_mir()
 
 
 # 如果默认缩放无法镜牢寻路，进行滚轮缩放后继续寻路
@@ -210,7 +217,7 @@ def search_road_farthest_distanc():
     three_roads = [[250 * scale_factors[scale], -200 * scale_factors[scale]],
                    [250 * scale_factors[scale], 0],
                    [250 * scale_factors[scale], 225 * scale_factors[scale]]]
-    if bus_position := get_pic_position("./pic/mirror/mybus_default_distanc.png"):
+    if bus_position := get_pic_position("./pic/mirror/mybus_maximum_distance.png"):
         for road in three_roads:
             road[0] += bus_position[0]
             road[1] += bus_position[1]
