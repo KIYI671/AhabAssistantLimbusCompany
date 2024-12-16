@@ -39,7 +39,7 @@ jobs:
 
       - name: Replace version in main_window.py
         run: |
-          $filePath = "main_window.py"
+          $filePath = "main_windows.py"
           $pattern = '\(_translate\("MainWindow", "AhabAssistantLimbusCompany"\)\)'
           $replacement = "(_translate(`"MainWindow`", `"AhabAssistantLimbusCompany ${{ github.ref_name }}`"))"
           (Get-Content $filePath) -replace $pattern, $replacement | Set-Content $filePath
