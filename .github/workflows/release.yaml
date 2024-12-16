@@ -26,7 +26,24 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
           pip install pyinstaller
+      
+      - name: Replace version in my_gui.py
+        run: |
+          $filePath = "my_gui.py"
+          (Get-Content $filePath) -replace "当前版本号:(\\n)", "当前版本号: ${{ github.ref_name }}$1" | Set-Content $filePath
 
+      - name: Replace version in main_windows.ui
+        run: |
+          $filePath = "main_windows.ui"
+          (Get-Content $filePath) -replace "<string>AhabAssistantLimbusCompany</string>", "<string>AhabAssistantLimbusCompany ${{ github.ref_name }}</string>" | Set-Content $filePath
+
+      - name: Replace version in main_window.py
+        run: |
+          $filePath = "main_windows.py"
+          $pattern = '\(_translate\("MainWindow", "AhabAssistantLimbusCompany"\)\)'
+          $replacement = "(_translate(`"MainWindow`", `"AhabAssistantLimbusCompany ${{ github.ref_name }}`"))"
+          (Get-Content $filePath) -replace $pattern, $replacement | Set-Content $filePath
+    
       # 打包项目
       - name: Build executable
         run: |
@@ -58,6 +75,6 @@ jobs:
         with:
             upload_url: ${{ github.event.release.upload_url }}
             asset_path: dist_release.zip
-            asset_name: AALC-${{ github.ref_name }}.zip
+            asset_name: AALC_${{ github.ref_name }}.zip
             asset_content_type: application/zip
       
