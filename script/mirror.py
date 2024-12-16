@@ -528,6 +528,10 @@ def execute_a_mirror(sinner_team, which_team, shop_sell_list, system="burn"):
             mouse_click(enter)
         if enter_mir_confirm := get_pic_position("./pic/mirror/enter_mir_confirm.png"):
             mouse_click(enter_mir_confirm)
+
+        # 如果战斗退出过快导致没有点击结算按钮
+        if get_pic_position("./pic/mirror/victory.png"):
+            mouse_click(get_pic_position("./pic/mirror/victory_confirm.png"))
     msg = f"开始进行镜牢奖励领取"
     my_log("info", msg)
     if claim_rewards := get_pic_position("./pic/mirror/claim_rewards.png"):

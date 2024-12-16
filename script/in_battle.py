@@ -12,40 +12,38 @@ from my_ocr.ocr import commom_ocr, commom_gain_text, commom_all_ocr
 from script.decision_event_handling import decision_event_handling
 
 
-def update_wait_time(time:float = None, fail_flag: bool = False,total_count:int = 1):
-     
-    MAX_WAITING = 3.0 # 最大等待时间
-    MIN_WAITING = 0.5 # 最小等待时间
-    INIT_WAITING = 1.5 # 初始等待时间
+def update_wait_time(time: float = None, fail_flag: bool = False, total_count: int = 1):
+    MAX_WAITING = 3.0  # 最大等待时间
+    MIN_WAITING = 0.5  # 最小等待时间
+    INIT_WAITING = 1.5  # 初始等待时间
     fail_adjust = 0.5
     success_adjust = -0.2
     if time is None:
         return INIT_WAITING
-    
-    total_count = total_count if total_count > 0 else 1 # 防止除0
+
+    total_count = total_count if total_count > 0 else 1  # 防止除0
     adjust = fail_adjust if fail_flag else success_adjust
-    new_time = time + adjust / (total_count ** 0.5) # 平方根调整
-    
-    new_time = min(new_time, MAX_WAITING) # 防止超过最大等待时间
-    new_time = max(new_time, MIN_WAITING) # 防止低于最小等待时间
+    new_time = time + adjust / (total_count ** 0.5)  # 平方根调整
+
+    new_time = min(new_time, MAX_WAITING)  # 防止超过最大等待时间
+    new_time = max(new_time, MIN_WAITING)  # 防止低于最小等待时间
     if fail_flag:
         msg = f"匹配失败，等待时间从{time:.3f}调整为{new_time:.3f}"
         my_log("debug", msg)
-        
+
     return new_time
 
 
 @begin_and_finish_time_log(task_name="一次战斗")
 def battle():
-    INIT_CHANCE = 15
+    INIT_CHANCE = 16
     chance = INIT_CHANCE
     waiting = update_wait_time()
-    total_count= 0
+    total_count = 0
     fail_count = 0
     in_mirror = False
 
-    
-    while get_pic_position("./pic/wait.png"): # 战斗开始前的加载
+    while get_pic_position("./pic/wait.png"):  # 战斗开始前的加载
         sleep(waiting)
     sleep(1.5 * waiting)
 
@@ -53,10 +51,10 @@ def battle():
         total_count += 1
         if in_mirror is False and get_pic_position("./pic/battle/in_mirror_battle.png"):
             in_mirror = True
-        
+
         # 如果正在交战过程
         if get_pic_position("./pic/battle/pause.png"):
-            sleep(2 * waiting) # 战斗播片中增大间隔
+            sleep(2 * waiting)  # 战斗播片中增大间隔
             chance = INIT_CHANCE
             continue
         # 如果正在战斗待机界面
@@ -68,9 +66,9 @@ def battle():
             msg = f"使用P+Enter开始战斗"
             my_log("debug", msg)
             mouse_click_blank()
-            waiting = update_wait_time(waiting,False,total_count)
-            continue     
-        # 如果战斗中途出现事件
+            waiting = update_wait_time(waiting, False, total_count)
+            continue
+            # 如果战斗中途出现事件
         elif get_pic_position("./pic/event/skip.png"):
             mouse_click(get_pic_position("./pic/event/skip.png"), 5)
             if get_pic_position("./pic/battle/event_choices.png") and get_pic_position(
@@ -163,7 +161,7 @@ def battle():
             chance -= 1
             sleep(waiting)
             # 更新等待时间
-            waiting = update_wait_time(waiting,True,total_count)
+            waiting = update_wait_time(waiting, True, total_count)
             # 统计失败次数 
             fail_count += 1
         if chance < 0:
