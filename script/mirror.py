@@ -173,6 +173,25 @@ def select_theme_pack():
 
 
 @begin_and_finish_time_log(task_name="镜牢寻路")
+def search_road():
+    for _ in range(3):
+        if search_road_default_distanc():
+            return True
+    for _ in range(3):
+        if search_road_farthest_distanc():
+            return True
+    if search_road_farthest_distanc() is False:
+        # 如果寻路失败，退出镜牢重进
+        if button := get_pic_position("./pic/mirror/setting.png"):
+            mouse_click(button)
+        if button := get_pic_position("./pic/mirror/to_window.png"):
+            mouse_click(button)
+        if button := get_pic_position("./pic/mirror/to_window_confirm.png"):
+            mouse_click(button)
+        road_to_mir()
+        enter_mir()
+
+
 # 在默认缩放情况下，进行镜牢寻路
 def search_road_default_distanc():
     scale = 0
@@ -196,16 +215,7 @@ def search_road_default_distanc():
             mouse_click(enter)
             return True
     else:
-        if search_road_farthest_distanc() is False:
-            # 如果寻路失败，退出镜牢重进
-            if button := get_pic_position("./pic/mirror/setting.png"):
-                mouse_click(button)
-            if button := get_pic_position("./pic/mirror/to_window.png"):
-                mouse_click(button)
-            if button := get_pic_position("./pic/mirror/to_window_confirm.png"):
-                mouse_click(button)
-            road_to_mir()
-            enter_mir()
+        return False
 
 
 # 如果默认缩放无法镜牢寻路，进行滚轮缩放后继续寻路
@@ -213,6 +223,7 @@ def search_road_farthest_distanc():
     scale = 0
     if environ.get('window_size'):
         scale = int(environ.get('window_size'))
+    mouse_click_blank()
     mouse_scroll_farthest()
     three_roads = [[250 * scale_factors[scale], -200 * scale_factors[scale]],
                    [250 * scale_factors[scale], 0],
@@ -395,7 +406,7 @@ def execute_a_mirror(sinner_team, which_team, shop_sell_list, system="burn"):
 
         # 在镜牢中寻路
         if get_pic_position("./pic/scenes/road_in_mirror.png"):
-            find_road_total_time += search_road_default_distanc()
+            find_road_total_time += search_road()
 
         # 战斗配队的情况
         if get_pic_position("./pic/teams/announcer.png"):
@@ -412,8 +423,13 @@ def execute_a_mirror(sinner_team, which_team, shop_sell_list, system="burn"):
                 if continue_mirror is False and first_battle is False:
                     return False
             mouse_click(get_pic_position("./pic/teams/to_battle.png"))
+            sleep(0.5)
 
-            battle_total_time += battle()
+            if get_pic_position("./pic/teams/select_none.png"):
+                mouse_click_blank()
+                first_battle = True
+            else:
+                battle_total_time += battle()
 
             sleep(2)
             if get_pic_position("./pic/mirror/select_encounter_reward_card.png"):
