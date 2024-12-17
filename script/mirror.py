@@ -403,6 +403,7 @@ def execute_a_mirror(sinner_team, which_team, shop_sell_list, system="burn"):
         # 选择楼层主题包的情况
         if get_pic_position("./pic/scenes/mirror_select_theme_pack.png"):
             pick_total_time += select_theme_pack()
+            continue
 
         # 在镜牢中寻路
         if get_pic_position("./pic/scenes/road_in_mirror.png"):
@@ -437,6 +438,8 @@ def execute_a_mirror(sinner_team, which_team, shop_sell_list, system="burn"):
                 get_reward_card()
             if get_pic_position("./pic/mirror/leave_reward_card.png"):
                 mouse_click(get_pic_position("./pic/mirror/leave_reward_card_cancel.png"))
+
+            continue
 
         event_start_time = time.time()
         event_trigger = False
@@ -519,6 +522,8 @@ def execute_a_mirror(sinner_team, which_team, shop_sell_list, system="burn"):
             msg = f"此次获取ego饰品共花费{time_string}"
             my_log("debug", msg)
 
+            continue
+
         # 防卡死
         if ego_gift_get_confirm := get_pic_position("./pic/mirror/ego_gift_get_confirm.png"):
             mouse_click(ego_gift_get_confirm)
@@ -529,6 +534,8 @@ def execute_a_mirror(sinner_team, which_team, shop_sell_list, system="burn"):
                 get_pic_position("./pic/mirror/event/shop/shop_features_2.png"):
             shop_total_time += in_shop(system, shop_sell_list, store_floors)
             store_floors += 1
+
+            continue
 
         if get_pic_position("./pic/mirror/select_encounter_reward_card.png"):
             sleep(1)  # 防止过快点击导致脚本卡死
