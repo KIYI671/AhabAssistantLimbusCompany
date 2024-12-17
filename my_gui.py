@@ -159,6 +159,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         \n
         当前版本号:\n            
         ''')
+        # 向日志打印当前版本号
+        msg="当前版本号:"
+        my_log("debug",msg)
 
     def setting_teams(self):
         button = self.sender()
