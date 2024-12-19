@@ -2,8 +2,11 @@ import os
 import time
 from time import sleep
 
+import pyautogui
+
 from command.get_position import get_pic_position, get_pic_position_without_cap, get_all_pic_position
 from command.mouse_activity import mouse_click, mouse_scroll_farthest, mouse_drag_down, mouse_click_blank, mouse_drag
+from command.polymerization import wait_to_click
 from my_decorator.decorator import begin_and_finish_time_log
 from my_error.my_error import unableToFindTeamError
 from my_log.my_log import my_log
@@ -278,6 +281,28 @@ def buy_gifts(system):
                 mouse_click_blank()
 
 
+"""def fuse_gifts(shop_sell_list):
+    while True:
+        for commodity in must_to_sell:
+            if item := get_pic_position(commodity):
+                mouse_click(item)
+                wait_to_click("./pic/mirror/event/shop/fuse_ego_gift_caption.png")
+        for sell_system in shop_sell_list:
+            path = "./pic/mirror/event/shop/enhance/"
+            my_sell_system = path + sell_system + ".png"
+            while gift := get_pic_position(my_sell_system):
+                mouse_click(gift)
+        mouse_click(get_pic_position("./pic/mirror/event/shop/fuse_check.png"))
+        sleep(0.5)
+        if get_pic_position("./pic/mirror/event/shop/fuse_recognize.png") and get_pic_position(
+                "./pic/mirror/event/shop/fuse_confirm.png"):
+            mouse_click(get_pic_position("./pic/mirror/event/shop/fuse_confirm.png"))
+            wait_to_click("./pic/mirror/ego_gift_get_confirm.png")
+        else:
+            mouse_click_blank()
+            break"""
+
+
 def sell_gifts(shop_sell_list):
     for sell_system in shop_sell_list:
         path = "./pic/mirror/event/shop/enhance/"
@@ -286,10 +311,6 @@ def sell_gifts(shop_sell_list):
             mouse_click(gift)
             mouse_click(get_pic_position("./pic/mirror/event/shop/sell_button.png"))
             mouse_click(get_pic_position("./pic/mirror/event/shop/sell_confirm.png"))
-    if white_gossypium := get_pic_position("./pic/mirror/event/shop/must_to_sell/white_gossypium.png"):
-        mouse_click(white_gossypium)
-        mouse_click(get_pic_position("./pic/mirror/event/shop/sell_button.png"))
-        mouse_click(get_pic_position("./pic/mirror/event/shop/sell_confirm.png"))
     for commodity in must_to_sell:
         if item := get_pic_position(commodity):
             mouse_click(item)
@@ -301,6 +322,8 @@ def sell_gifts(shop_sell_list):
 @begin_and_finish_time_log(task_name="镜牢商店")
 # 在商店的处理
 def in_shop(system, shop_sell_list, store_floors):
+    if store_floors == 4:
+        pyautogui.hotkey("ctrl", "q")
     # 全体治疗
     if heal_sinner := get_pic_position("./pic/mirror/event/shop/heal_sinner.png"):
         mouse_click(heal_sinner)
@@ -313,7 +336,7 @@ def in_shop(system, shop_sell_list, store_floors):
             if return_button := get_pic_position("./pic/event/return.png"):
                 mouse_click(return_button)
     # 出售无用饰品
-    if sell_gifts_button := get_pic_position("./pic/mirror/event/shop/sell_gifts.png"):
+    """if sell_gifts_button := get_pic_position("./pic/mirror/event/shop/sell_gifts.png"):
         mouse_click(sell_gifts_button)
         sell_gifts(shop_sell_list)
 
@@ -323,7 +346,16 @@ def in_shop(system, shop_sell_list, store_floors):
 
         while get_pic_position("./pic/mirror/event/shop/sell_close_button.png") is None:
             retry()
-        mouse_click(get_pic_position("./pic/mirror/event/shop/sell_close_button.png"))
+        mouse_click(get_pic_position("./pic/mirror/event/shop/sell_close_button.png"))"""
+
+    # 合成饰品
+    """if fuse_gifts_button := get_pic_position("./pic/mirror/event/shop/fuse_gifts.png"):
+        mouse_click(fuse_gifts_button)
+        wait_to_click("./pic/mirror/event/shop/fuse_gifts_select_system.png")
+        mouse_click(get_pic_position(f"./pic/mirror/mirror5/shop/keyword_{system}.png"))
+        sleep(0.2)
+        mouse_click(get_pic_position("./pic/mirror/event/shop/fusion_keyword_selection_confirm.png"))
+        fuse_gifts(shop_sell_list)"""
 
     # 购买ego饰品
     buy_gifts(system)
@@ -377,6 +409,7 @@ def to_log_with_time(msg, elapsed_time):
 
 # 一次镜本流程
 def execute_a_mirror(sinner_team, which_team, shop_sell_list, system="burn"):
+    print(shop_sell_list)
     # 计时开始
     start_time = time.time()
 
