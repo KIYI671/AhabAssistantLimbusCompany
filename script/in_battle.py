@@ -128,11 +128,6 @@ def battle():
                     mouse_click(get_pic_position("./pic/battle/setting.png"))
                 mouse_click(get_pic_position("./pic/battle/give_up.png"))
                 break
-        # 如果交战过程误触，导致战斗暂停
-        elif get_pic_position("./pic/battle/continue.png"):
-            mouse_click(get_pic_position("./pic/battle/continue.png"))
-            chance = INIT_CHANCE
-            continue
         # 两种升级可能出现的图片识别
         elif get_pic_position("./pic/battle/level_up_message.png"):
             level_up_leave()
@@ -142,6 +137,11 @@ def battle():
             level_up_leave()
             chance = INIT_CHANCE
             continue
+        # 如果交战过程误触，导致战斗暂停
+        elif get_pic_position("./pic/battle/continue.png"):
+            mouse_click(get_pic_position("./pic/battle/continue.png"))
+            chance = INIT_CHANCE
+            continue        
         # 如果网络波动，需要点击重试
         elif get_pic_position("./pic/scenes/network/retry_countdown.png"):
             sleep(5)
