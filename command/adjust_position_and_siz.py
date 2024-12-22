@@ -37,8 +37,7 @@ def adjust_position_and_size(hwnd: object, choice: object = 0) -> object:
     pyautogui.keyUp('alt')
     # 判断是否是全屏，如果是则设为窗口
     if isfullscreen(hwnd):
-        sleep(1)
-        #mouse_click_blank()
+        mouse_click_blank()
         # 按下 Ctrl 键
         pyautogui.keyDown('alt')
         # 按下 Enter 键
