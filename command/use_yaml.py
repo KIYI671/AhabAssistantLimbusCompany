@@ -64,6 +64,7 @@ default_config = {
         "Outis_order": "",
         "Gregor": False,
         "Gregor_order": "",
+        "fuse": False,
         "burn": False,
         "bleed": False,
         "tremor": False,
@@ -103,6 +104,7 @@ default_config = {
         "Outis_order": "",
         "Gregor": False,
         "Gregor_order": "",
+        "fuse": False,
         "burn": False,
         "bleed": False,
         "tremor": False,
@@ -142,6 +144,7 @@ default_config = {
         "Outis_order": "",
         "Gregor": False,
         "Gregor_order": "",
+        "fuse": False,
         "burn": False,
         "bleed": False,
         "tremor": False,
@@ -181,6 +184,7 @@ default_config = {
         "Outis_order": "",
         "Gregor": False,
         "Gregor_order": "",
+        "fuse": False,
         "burn": False,
         "bleed": False,
         "tremor": False,
@@ -220,6 +224,7 @@ default_config = {
         "Outis_order": "",
         "Gregor": False,
         "Gregor_order": "",
+        "fuse": False,
         "burn": False,
         "bleed": False,
         "tremor": False,
@@ -259,6 +264,7 @@ default_config = {
         "Outis_order": "",
         "Gregor": False,
         "Gregor_order": "",
+        "fuse": False,
         "burn": False,
         "bleed": False,
         "tremor": False,
@@ -298,6 +304,7 @@ default_config = {
         "Outis_order": "",
         "Gregor": False,
         "Gregor_order": "",
+        "fuse": False,
         "burn": False,
         "bleed": False,
         "tremor": False,
@@ -377,3 +384,18 @@ def replace_old_with_new(item, old="clash", new="pierce"):
     elif isinstance(item, str):
         item = item.replace(old, new)
     return item
+
+
+# 为配置文件添加设置项
+def add_keyword_to_yaml(config_datas):
+    for i in range(1, 8):
+        target_dict = config_datas[f'team{i}_setting']
+        if 'fuse' not in target_dict:
+            new_items = []
+            for key, value in target_dict.items():
+                if key == 'burn':
+                    new_items.append(('fuse', False))
+                new_items.append((key, value))
+            target_dict.update(new_items)
+    return config_datas
+

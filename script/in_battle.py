@@ -70,7 +70,7 @@ def battle():
             continue
             # 如果战斗中途出现事件
         elif get_pic_position("./pic/event/skip.png"):
-            mouse_click(get_pic_position("./pic/event/skip.png"), 5)
+            mouse_click(get_pic_position("./pic/event/skip.png"), 6)
             if get_pic_position("./pic/battle/event_choices.png") and get_pic_position(
                     "./pic/battle/random_to_choose_event.png"):
                 mouse_click(get_pic_position("./pic/battle/random_to_choose_event.png"))

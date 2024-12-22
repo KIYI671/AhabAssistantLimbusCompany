@@ -692,6 +692,25 @@
      <string>突刺</string>
     </property>
    </widget>
+   <widget class="SwitchButton" name="switch_button">
+    <property name="geometry">
+     <rect>
+      <x>90</x>
+      <y>15</y>
+      <width>153</width>
+      <height>22</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>出售饰品 / SELL</string>
+    </property>
+    <property name="onText">
+     <string>合成饰品 / FUSE</string>
+    </property>
+    <property name="offText">
+     <string>出售饰品 / SELL</string>
+    </property>
+   </widget>
   </widget>
   <widget class="QFrame" name="line1">
    <property name="geometry">
@@ -850,6 +869,11 @@
   <customwidget>
    <class>PushButton</class>
    <extends>QPushButton</extends>
+   <header>qfluentwidgets</header>
+  </customwidget>
+  <customwidget>
+   <class>SwitchButton</class>
+   <extends>QWidget</extends>
    <header>qfluentwidgets</header>
   </customwidget>
   <customwidget>

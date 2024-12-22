@@ -211,6 +211,9 @@ class Ui_all_team_basic_setting(object):
         self.pierce = CheckBox(self.shop_setting)
         self.pierce.setGeometry(QtCore.QRect(350, 90, 92, 22))
         self.pierce.setObjectName("pierce")
+        self.switch_button = SwitchButton(self.shop_setting)
+        self.switch_button.setGeometry(QtCore.QRect(90, 15, 153, 22))
+        self.switch_button.setObjectName("switch_button")
         self.line1 = QtWidgets.QFrame(all_team_basic_setting)
         self.line1.setGeometry(QtCore.QRect(30, 50, 541, 20))
         self.line1.setFrameShape(QtWidgets.QFrame.HLine)
@@ -297,4 +300,7 @@ class Ui_all_team_basic_setting(object):
         self.slash.setText(_translate("all_team_basic_setting", "斩击"))
         self.tremor.setText(_translate("all_team_basic_setting", "震颤"))
         self.pierce.setText(_translate("all_team_basic_setting", "突刺"))
-from qfluentwidgets import BodyLabel, CheckBox, ComboBox, LineEdit, PushButton
+        self.switch_button.setText(_translate("all_team_basic_setting", "出售饰品 / SELL"))
+        self.switch_button.setOnText(_translate("all_team_basic_setting", "合成饰品 / FUSE"))
+        self.switch_button.setOffText(_translate("all_team_basic_setting", "出售饰品 / SELL"))
+from qfluentwidgets import BodyLabel, CheckBox, ComboBox, LineEdit, PushButton, SwitchButton

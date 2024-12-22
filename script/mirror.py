@@ -12,6 +12,7 @@ from my_error.my_error import unableToFindTeamError
 from my_log.my_log import my_log
 from my_ocr.ocr import get_theme_pack, compare_the_blacklist, commom_ocr, commom_gain_text, commom_all_ocr, \
     commom_range_ocr, find_and_click_text
+from script import fusion_material
 from script.all_retry_question import retry
 from script.back_init_menu import back_init_menu
 from script.decision_event_handling import decision_event_handling
@@ -79,7 +80,7 @@ def road_to_mir():
     mouse_click(get_pic_position("./pic/scenes/mirror_dungeons.png"))
 
 
-def enter_mir(system="random", team=1):
+def enter_mir(system="random", team=1, fuse_switch=False):
     all_systems = {"bleed": "./pic/mirror/select_team/bleed_ego_gift",
                    "burn": "./pic/mirror/select_team/burn_ego_gift",
                    "tremor": "./pic/mirror/select_team/tremor_ego_gift",
@@ -104,25 +105,36 @@ def enter_mir(system="random", team=1):
             if chance_to_select_team < 0:
                 my_log("error", "无法寻得队伍")
                 raise unableToFindTeamError("无法寻得队伍，请检查队伍名称是否为默认名称")
-        while enter_mir_confirm := get_pic_position("./pic/mirror/select_team_confirm.png"):
-            mouse_click(enter_mir_confirm)
-            if get_pic_position("./pic/mirror/starlight.png", 0.9):
-                break
+        wait_to_click("./pic/mirror/select_team_confirm.png")
 
         # mirror5
         while (get_pic_position("./pic/mirror/mirror5/grace_of_stars_passive.png") is None
                and get_pic_position("./pic/mirror/starlight.png", 0.9) is None):
             retry()
-        mouse_click(get_pic_position("./pic/mirror/mirror5/20_stars.png"))
-        mouse_click(get_pic_position("./pic/mirror/mirror5/40_stars.png"))
-        if stars_button := get_pic_position("./pic/mirror/mirror5/60_stars.png"):
-            mouse_click(stars_button)
-        if stars_button := get_pic_position("./pic/mirror/mirror5/40_stars_2.png"):
-            mouse_click(stars_button)
-        if stars_button := get_pic_position("./pic/mirror/mirror5/20_stars_2.png"):
-            mouse_click(stars_button)
-        if stars_button := get_pic_position("./pic/mirror/mirror5/10_stars.png"):
-            mouse_click(stars_button)
+        if fuse_switch is False:
+            mouse_click(get_pic_position("./pic/mirror/mirror5/20_stars.png"))
+            mouse_click(get_pic_position("./pic/mirror/mirror5/40_stars.png"))
+            if stars_button := get_pic_position("./pic/mirror/mirror5/60_stars.png"):
+                mouse_click(stars_button)
+            if stars_button := get_pic_position("./pic/mirror/mirror5/40_stars_2.png"):
+                mouse_click(stars_button)
+            if stars_button := get_pic_position("./pic/mirror/mirror5/20_stars_2.png"):
+                mouse_click(stars_button)
+            if stars_button := get_pic_position("./pic/mirror/mirror5/10_stars.png"):
+                mouse_click(stars_button)
+        else:
+            # 根据B站UP主 绅士丶蚂蚱 《镜牢5完全攻略》制定
+            mouse_click(get_pic_position("./pic/mirror/mirror5/20_stars.png"))
+            mouse_click(get_pic_position("./pic/mirror/mirror5/20_stars_2.png"))
+            mouse_click(get_pic_position("./pic/mirror/mirror5/10_stars.png"))
+            if stars_button := get_pic_position("./pic/mirror/mirror5/60_stars.png"):
+                mouse_click(stars_button)
+            if stars_button := get_pic_position("./pic/mirror/mirror5/30_stars.png"):
+                mouse_click(stars_button)
+            if stars_button := get_pic_position("./pic/mirror/mirror5/30_stars_2.png"):
+                mouse_click(stars_button)
+            if stars_button := get_pic_position("./pic/mirror/mirror5/10_stars_2.png"):
+                mouse_click(stars_button)
         mouse_click(get_pic_position("./pic/mirror/mirror5/select_stars_enter.png"))
         mouse_click(get_pic_position("./pic/mirror/mirror5/select_stars_confirm.png"))
 
@@ -172,7 +184,7 @@ def select_theme_pack():
                 mouse_drag_down(pic[1])
                 return 0
     mouse_drag_down(get_pic_position("./pic/mirror/theme_pack_features.png"))
-    sleep(3)
+    sleep(5)
 
 
 @begin_and_finish_time_log(task_name="镜牢寻路")
@@ -281,17 +293,51 @@ def buy_gifts(system):
                 mouse_click_blank()
 
 
-"""def fuse_gifts(shop_sell_list):
+def fuse_useless_gifts(shop_sell_list):
+    """合成无用饰品"""
+
+    def processing_coordinates(my_gift_list, scale=0):
+        """将列表从左上到右下排序，然后去重"""
+        # 排序
+        sorted_list = sorted(my_gift_list, key=lambda x: (x[1], x[0]))
+
+        # 获取分辨率
+        if environ.get('window_size'):
+            scale = int(environ.get('window_size'))
+
+        # 去除重复坐标
+        unique_list = []
+        for coord in sorted_list:
+            if not any(abs(coord[0] - x[0]) <= 40 * scale_factors[scale] and
+                       abs(coord[1] - x[1]) <= 40 * scale_factors[scale] for x in unique_list):
+                unique_list.append(coord)
+
+        return unique_list
+
     while True:
+        gift_list = []
+
+        # 获取无用饰品列表
         for commodity in must_to_sell:
-            if item := get_pic_position(commodity):
-                mouse_click(item)
-                wait_to_click("./pic/mirror/event/shop/fuse_ego_gift_caption.png")
+            item = get_all_pic_position(commodity, 0.85)
+            if item:
+                gift_list.extend(list(g) for g in item)
         for sell_system in shop_sell_list:
             path = "./pic/mirror/event/shop/enhance/"
             my_sell_system = path + sell_system + ".png"
-            while gift := get_pic_position(my_sell_system):
-                mouse_click(gift)
+            gift = get_all_pic_position(my_sell_system)
+            if gift:
+                gift_list.extend(list(g) for g in gift)
+
+        # 选择至多3样无用饰品
+        my_list = processing_coordinates(gift_list)
+        for sequence in range(3):
+            try:
+                mouse_click(my_list[sequence])
+            except IndexError:
+                msg = f"饰品放弃列表已经没有第{sequence + 1}项了"
+                my_log("debug", msg)
+
         mouse_click(get_pic_position("./pic/mirror/event/shop/fuse_check.png"))
         sleep(0.5)
         if get_pic_position("./pic/mirror/event/shop/fuse_recognize.png") and get_pic_position(
@@ -300,7 +346,38 @@ def buy_gifts(system):
             wait_to_click("./pic/mirror/ego_gift_get_confirm.png")
         else:
             mouse_click_blank()
-            break"""
+            break
+
+
+def fuse_system_gifts(system):
+    """合成体系饰品"""
+    system_gifts = fusion_material[system]
+    if len(system_gifts) == 2:
+        my_fuse_system_gifts = [system_gifts[0], system_gifts[1]]
+    else:
+        my_fuse_system_gifts = [system_gifts, []]
+    for i in range(2):
+        fusion = True
+        fusion_position = []
+        if len(my_fuse_system_gifts[i]) == 0:
+            break
+        for select_gift in my_fuse_system_gifts[i]:
+            pos = get_pic_position(f"./pic/mirror/event/shop/fusion_material/{select_gift}")
+            if pos is None:
+                fusion = False
+                break
+            else:
+                fusion_position.append(os)
+        if fusion:
+            for pos in fusion_position:
+                mouse_click(pos)
+                wait_to_click("./pic/mirror/event/shop/fuse_ego_gift_caption.png")
+            mouse_click(get_pic_position("./pic/mirror/event/shop/fuse_check.png"))
+            sleep(0.5)
+            if get_pic_position("./pic/mirror/event/shop/fuse_recognize.png") and get_pic_position(
+                    "./pic/mirror/event/shop/fuse_confirm.png"):
+                mouse_click(get_pic_position("./pic/mirror/event/shop/fuse_confirm.png"))
+                wait_to_click("./pic/mirror/ego_gift_get_confirm.png")
 
 
 def sell_gifts(shop_sell_list):
@@ -319,11 +396,26 @@ def sell_gifts(shop_sell_list):
             sleep(1)
 
 
+def fuse_gift(shop_sell_list, system):
+    fuse_times = 2
+    if system not in fusion_material:
+        fuse_times = 1
+    for i in range(fuse_times):
+        if fuse_gifts_button := get_pic_position("./pic/mirror/event/shop/fuse_gifts.png"):
+            mouse_click(fuse_gifts_button)
+            wait_to_click("./pic/mirror/event/shop/fuse_gifts_select_system.png")
+            mouse_click(get_pic_position(f"./pic/mirror/mirror5/shop/keyword_{system}.png"))
+            sleep(0.2)
+            mouse_click(get_pic_position("./pic/mirror/event/shop/fusion_keyword_selection_confirm.png"))
+            if i == 0:
+                fuse_useless_gifts(shop_sell_list)
+            else:
+                fuse_system_gifts(system)
+
+
 @begin_and_finish_time_log(task_name="镜牢商店")
 # 在商店的处理
-def in_shop(system, shop_sell_list, store_floors):
-    if store_floors == 4:
-        pyautogui.hotkey("ctrl", "q")
+def in_shop(system, shop_sell_list, store_floors, fuse_switch):
     # 全体治疗
     if heal_sinner := get_pic_position("./pic/mirror/event/shop/heal_sinner.png"):
         mouse_click(heal_sinner)
@@ -335,30 +427,39 @@ def in_shop(system, shop_sell_list, store_floors):
                 retry()
             if return_button := get_pic_position("./pic/event/return.png"):
                 mouse_click(return_button)
-    # 出售无用饰品
-    """if sell_gifts_button := get_pic_position("./pic/mirror/event/shop/sell_gifts.png"):
-        mouse_click(sell_gifts_button)
-        sell_gifts(shop_sell_list)
 
-        if sell_list_block := get_pic_position("./pic/mirror/event/shop/gifts_list_block.png"):
-            mouse_drag(sell_list_block, time=1, y=500)
+    # 出售无用饰品
+    if fuse_switch is False:
+        if sell_gifts_button := get_pic_position("./pic/mirror/event/shop/sell_gifts.png"):
+            mouse_click(sell_gifts_button)
             sell_gifts(shop_sell_list)
 
-        while get_pic_position("./pic/mirror/event/shop/sell_close_button.png") is None:
-            retry()
-        mouse_click(get_pic_position("./pic/mirror/event/shop/sell_close_button.png"))"""
+            if sell_list_block := get_pic_position("./pic/mirror/event/shop/gifts_list_block.png"):
+                mouse_drag(sell_list_block, time=1, y=500)
+                sell_gifts(shop_sell_list)
 
-    # 合成饰品
-    """if fuse_gifts_button := get_pic_position("./pic/mirror/event/shop/fuse_gifts.png"):
-        mouse_click(fuse_gifts_button)
-        wait_to_click("./pic/mirror/event/shop/fuse_gifts_select_system.png")
-        mouse_click(get_pic_position(f"./pic/mirror/mirror5/shop/keyword_{system}.png"))
-        sleep(0.2)
-        mouse_click(get_pic_position("./pic/mirror/event/shop/fusion_keyword_selection_confirm.png"))
-        fuse_gifts(shop_sell_list)"""
+            while get_pic_position("./pic/mirror/event/shop/sell_close_button.png") is None:
+                retry()
+            mouse_click(get_pic_position("./pic/mirror/event/shop/sell_close_button.png"))
 
     # 购买ego饰品
     buy_gifts(system)
+    if store_floors >= 4 or (fuse_switch and store_floors <= 2):
+        while refresh_shop := get_pic_position("./pic/mirror/mirror5/shop/keyword_refresh.png"):
+            mouse_click(refresh_shop)
+            sleep(0.5)
+            mouse_click(get_pic_position(f"./pic/mirror/mirror5/shop/keyword_{system}.png"))
+            mouse_click(get_pic_position("./pic/mirror/mirror5/shop/refresh_shop_confirm.png"))
+            sleep(1)
+            buy_gifts(system)
+
+    mouse_click_blank(times=3)
+
+    if fuse_switch:
+        # 合成饰品
+        fuse_gift(shop_sell_list, system)
+
+    mouse_click_blank(times=3)
 
     # 升级体系ego饰品
     if enhance_gifts_button := get_pic_position("./pic/mirror/event/shop/enhance_gifts.png"):
@@ -378,15 +479,6 @@ def in_shop(system, shop_sell_list, store_floors):
         if ego_gift_power_up_close := get_pic_position(
                 "./pic/mirror/event/shop/enhance/ego_gift_power_up_close.png"):
             mouse_click(ego_gift_power_up_close)
-
-    if store_floors >= 4:
-        while refresh_shop := get_pic_position("./pic/mirror/mirror5/shop/keyword_refresh.png"):
-            mouse_click(refresh_shop)
-            sleep(0.5)
-            mouse_click(get_pic_position(f"./pic/mirror/mirror5/shop/keyword_{system}.png"))
-            mouse_click(get_pic_position("./pic/mirror/mirror5/shop/refresh_shop_confirm.png"))
-            sleep(1)
-            buy_gifts(system)
 
     mouse_click_blank(times=3)
     # 离开商店
@@ -408,7 +500,7 @@ def to_log_with_time(msg, elapsed_time):
 
 
 # 一次镜本流程
-def execute_a_mirror(sinner_team, which_team, shop_sell_list, system="burn"):
+def execute_a_mirror(sinner_team, which_team, shop_sell_list, fuse_switch, system="burn"):
     print(shop_sell_list)
     # 计时开始
     start_time = time.time()
@@ -428,7 +520,7 @@ def execute_a_mirror(sinner_team, which_team, shop_sell_list, system="burn"):
     if get_pic_position("./pic/scenes/road_in_mirror.png") is None and get_pic_position(
             "./pic/mirror/theme_pack_features.png") is None:
         road_to_mir()
-        enter_mir(system, which_team)
+        enter_mir(system, which_team, fuse_switch)
     # 判断是否首次进入战斗，如果是则重新配队
     first_battle = True
     # 未到达奖励页不会停止
@@ -480,7 +572,7 @@ def execute_a_mirror(sinner_team, which_team, shop_sell_list, system="burn"):
         # 遇到有SKIP的情况
         while skip_button := get_pic_position("./pic/mirror/event/skip.png"):
             # 如果存在SKIP按钮，多次点击
-            mouse_click(skip_button, 5)
+            mouse_click(skip_button, 6)
 
             # 触发事件
             event_trigger = True
@@ -565,7 +657,7 @@ def execute_a_mirror(sinner_team, which_team, shop_sell_list, system="burn"):
         # 商店事件
         if get_pic_position("./pic/mirror/event/shop/shop_features_1.png") and \
                 get_pic_position("./pic/mirror/event/shop/shop_features_2.png"):
-            shop_total_time += in_shop(system, shop_sell_list, store_floors)
+            shop_total_time += in_shop(system, shop_sell_list, store_floors, fuse_switch)
             store_floors += 1
 
             continue
@@ -625,7 +717,7 @@ def execute_a_mirror(sinner_team, which_team, shop_sell_list, system="burn"):
 
     # debug输出时间
     my_log("debug",
-           f"战斗shijan:{battle_total_time} 事件时间:{event_total_time} 商店时间:{shop_total_time} 寻路时间:{find_road_total_time} 总时间:{elapsed_time}")
+           f"战斗时间:{battle_total_time} 事件时间:{event_total_time} 商店时间:{shop_total_time} 寻路时间:{find_road_total_time} 总时间:{elapsed_time}")
 
     # 输出镜牢总时间
     msg = f"此次镜牢使用{system}体系队伍"

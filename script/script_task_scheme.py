@@ -70,6 +70,7 @@ def onetime_mir_process(the_selected_team_setting):
     my_team = {}
     sinner_team = []
     shop_sell_list = []
+    fuse_switch = the_selected_team_setting['fuse']
     for sinner in all_sinners_name:
         sinner_order = sinner + "_order"
         if the_selected_team_setting[sinner]:
@@ -81,7 +82,7 @@ def onetime_mir_process(the_selected_team_setting):
         if the_selected_team_setting[shop_system]:
             shop_sell_list.append(shop_system)
     # 进行一次镜牢
-    while execute_a_mirror(sinner_team, the_selected_team_setting["all_teams"], shop_sell_list,
+    while execute_a_mirror(sinner_team, the_selected_team_setting["all_teams"], shop_sell_list, fuse_switch,
                            all_systems[the_selected_team_setting["all_system"]]) is not True:
         msg = f"无人生还，重启镜牢"
         my_log("info", msg)

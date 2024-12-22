@@ -9,7 +9,7 @@ from pynput import keyboard
 
 from command.adjust_position_and_siz import reset_win
 from command.get_win_handle import get_win_handle
-from command.use_yaml import get_yaml_information, save_yaml, replace_old_with_new
+from command.use_yaml import get_yaml_information, save_yaml, replace_old_with_new, add_keyword_to_yaml
 from main_windows import Ui_MainWindow
 from my_log.my_log import my_log
 from script.script_task_scheme import my_script_task
@@ -494,7 +494,7 @@ class setting_window(QDialog, Ui_all_team_basic_setting):
         self.all_teams.currentIndexChanged.connect(
             lambda: self.on_combobox_changed(set_select_team_options, which_team))
 
-        # 设置当复选框选中时，修改配队顺序
+        # 设置当复选框选中时，修改是否启用对应关键词的售卖/合成
         self.burn.stateChanged.connect(lambda checked: self.shop_checkbox_state_changed(checked, which_team))
         self.bleed.stateChanged.connect(lambda checked: self.shop_checkbox_state_changed(checked, which_team))
         self.tremor.stateChanged.connect(lambda checked: self.shop_checkbox_state_changed(checked, which_team))
@@ -506,13 +506,30 @@ class setting_window(QDialog, Ui_all_team_basic_setting):
         self.pierce.stateChanged.connect(lambda checked: self.shop_checkbox_state_changed(checked, which_team))
         self.blunt.stateChanged.connect(lambda checked: self.shop_checkbox_state_changed(checked, which_team))
 
+        # 设置当按钮点击时改变商店逻辑
+        self.switch_button.checkedChanged.connect(lambda checked: self.shop_switch_button_state_changed(checked, which_team))
+
         # 设置完成按钮
         self.confirm_button.clicked.connect(self.close)
 
         self.exec_()
 
+    def shop_switch_button_state_changed(self,check,which_team,name='fuse'):
+        config_datas = get_yaml_information()
+        sender_check = self.sender()
+        if sender_check.isChecked() != config_datas[which_team][name]:
+            if not config_datas[which_team][name]:
+                config_datas[which_team][name] = True
+            else:
+                config_datas[which_team][name] = False
+        save_yaml(config_datas)
+        if config_datas[which_team][name]:
+            self.sell_gift_select.setText("合成饰品")
+        else:
+            self.sell_gift_select.setText("出售饰品")
+
     def shop_checkbox_state_changed(self, checked, which_team):
-        # 各个配队的复选框被选中时，修改旁边的启动顺序
+        # 设置当复选框选中时，修改是否启用对应关键词的售卖/合成
         config_datas = get_yaml_information()
         sender_checkbox = self.sender()
         name = sender_checkbox.objectName()
@@ -609,6 +626,13 @@ class setting_window(QDialog, Ui_all_team_basic_setting):
         self.Outis_order.setText(config_datas[which_team]["Outis_order"])
         self.Gregor_order.setText(config_datas[which_team]["Gregor_order"])
 
+        # 读取是否启用合成饰品
+        self.switch_button.setChecked(config_datas[which_team]["fuse"])
+        if config_datas[which_team]['fuse']:
+            self.sell_gift_select.setText("合成饰品")
+        else:
+            self.sell_gift_select.setText("出售饰品")
+
         # 读取之前商店复选框设置
         self.burn.setChecked(config_datas[which_team]["burn"])
         self.bleed.setChecked(config_datas[which_team]["bleed"])
@@ -628,6 +652,10 @@ def read_last_setting(mygui):
 
     # 临时功能，处理confirm.yaml文件历史遗留问题，3个版本后删除
     config_datas = replace_old_with_new(config_datas)
+    save_yaml(config_datas)
+
+    # 临时功能，为配置文件增加合成选项功能，5个版本后删除
+    config_datas = add_keyword_to_yaml(config_datas)
     save_yaml(config_datas)
 
     # 读取之前最后页面
