@@ -30,7 +30,7 @@ jobs:
       - name: Replace version in my_gui.py
         run: |
           $filePath = "my_gui.py"
-          (Get-Content $filePath) -replace "当前版本号:(\\n)", "当前版本号: ${{ github.ref_name }}$1" | Set-Content $filePath
+          (Get-Content $filePath) -replace "当前版本号:", "当前版本号: ${{ github.ref_name }}" | Set-Content $filePath
 
       - name: Replace version in main_windows.ui
         run: |
