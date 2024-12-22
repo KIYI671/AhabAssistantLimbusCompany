@@ -367,7 +367,7 @@ def fuse_system_gifts(system):
                 fusion = False
                 break
             else:
-                fusion_position.append(os)
+                fusion_position.append(pos)
         if fusion:
             for pos in fusion_position:
                 mouse_click(pos)
