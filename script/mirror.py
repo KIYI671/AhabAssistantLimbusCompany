@@ -266,11 +266,11 @@ def ego_gift_to_power_up():
             mouse_click(power_up_confirm)
             if get_pic_position("./pic/mirror/event/shop/enhance/power_up_confirm.png"):
                 mouse_click(get_pic_position("./pic/mirror/event/shop/enhance/power_up_cancel.png"))
-                break
+                return False
         elif get_pic_position_without_cap("./pic/mirror/event/shop/enhance/cannot_enhance.png"):
-            break
+            return True
         else:
-            break
+            return True
 
 
 def buy_gifts(system):
@@ -314,6 +314,7 @@ def fuse_useless_gifts(shop_sell_list):
 
         return unique_list
 
+    block = False
     while True:
         gift_list = []
 
@@ -331,13 +332,18 @@ def fuse_useless_gifts(shop_sell_list):
 
         # 选择至多3样无用饰品
         my_list = processing_coordinates(gift_list)
-        for sequence in range(3):
-            try:
-                mouse_click(my_list[sequence])
-            except IndexError:
-                msg = f"饰品放弃列表已经没有第{sequence + 1}项了"
-                my_log("debug", msg)
+        if len(my_list) <= 1:
+            msg = f"饰品放弃列表数量不足，结束合成"
+            my_log("debug", msg)
+        else:
+            for sequence in range(3):
+                try:
+                    mouse_click(my_list[sequence])
+                except IndexError:
+                    msg = f"饰品放弃列表已经没有第{sequence + 1}项了"
+                    my_log("debug", msg)
 
+        wait_to_click("./pic/mirror/event/shop/fuse_ego_gift_caption.png")
         mouse_click(get_pic_position("./pic/mirror/event/shop/fuse_check.png"))
         sleep(0.5)
         if get_pic_position("./pic/mirror/event/shop/fuse_recognize.png") and get_pic_position(
@@ -345,39 +351,84 @@ def fuse_useless_gifts(shop_sell_list):
             mouse_click(get_pic_position("./pic/mirror/event/shop/fuse_confirm.png"))
             wait_to_click("./pic/mirror/ego_gift_get_confirm.png")
         else:
+            list_block = get_pic_position("./pic/mirror/event/shop/gifts_list_block.png")
+            if list_block is not None and block is False:
+                mouse_drag(list_block, time=1, y=500)
+                block = True
+                continue
             mouse_click_blank()
             break
 
 
-def fuse_system_gifts(system):
+def fuse_system_gifts(system, times):
     """合成体系饰品"""
+    # 第几次合成
+    i = times - 1
+
+    # 获取合成公式
     system_gifts = fusion_material[system]
     if len(system_gifts) == 2:
         my_fuse_system_gifts = [system_gifts[0], system_gifts[1]]
     else:
         my_fuse_system_gifts = [system_gifts, []]
-    for i in range(2):
-        fusion = True
-        fusion_position = []
-        if len(my_fuse_system_gifts[i]) == 0:
-            break
+    # 标记合成可行性
+    fusion = True
+    fusion_position = {}
+    # 如果无第二合成公式，返回
+    if len(my_fuse_system_gifts[i]) == 0:
+        return
+
+    # 如果找到合成素材，记录位置后点击
+    for select_gift in my_fuse_system_gifts[i]:
+        pos = get_pic_position(f"./pic/mirror/event/shop/fusion_material/{select_gift}")
+        if pos is None:
+            if select_gift not in fusion_position:
+                fusion_position[select_gift] = pos
+        else:
+            if select_gift in fusion_position:
+                if fusion_position[select_gift] is None:
+                    fusion_position[select_gift] = pos
+            else:
+                fusion_position[select_gift] = pos
+            mouse_click(pos)
+            wait_to_click("./pic/mirror/event/shop/fuse_ego_gift_caption.png")
+
+    list_block = get_pic_position("./pic/mirror/event/shop/gifts_list_block.png")
+    block = False
+    if list_block is not None:
+        block = True
+        mouse_drag(list_block, time=1, y=500)
+
+    if block:
+        # 如果找到合成素材，如果是无记录位置的，记录位置后点击
         for select_gift in my_fuse_system_gifts[i]:
             pos = get_pic_position(f"./pic/mirror/event/shop/fusion_material/{select_gift}")
-            if pos is None:
-                fusion = False
-                break
-            else:
-                fusion_position.append(pos)
-        if fusion:
-            for pos in fusion_position:
-                mouse_click(pos)
-                wait_to_click("./pic/mirror/event/shop/fuse_ego_gift_caption.png")
-            mouse_click(get_pic_position("./pic/mirror/event/shop/fuse_check.png"))
-            sleep(0.5)
-            if get_pic_position("./pic/mirror/event/shop/fuse_recognize.png") and get_pic_position(
-                    "./pic/mirror/event/shop/fuse_confirm.png"):
-                mouse_click(get_pic_position("./pic/mirror/event/shop/fuse_confirm.png"))
-                wait_to_click("./pic/mirror/ego_gift_get_confirm.png")
+            if pos is not None:
+                if select_gift in fusion_position:
+                    if fusion_position[select_gift] is None:
+                        fusion_position[select_gift] = pos
+                        mouse_click(pos)
+                        wait_to_click("./pic/mirror/event/shop/fuse_ego_gift_caption.png")
+                else:
+                    fusion_position[select_gift] = pos
+                    mouse_click(pos)
+                    wait_to_click("./pic/mirror/event/shop/fuse_ego_gift_caption.png")
+
+    for name in (my_fuse_system_gifts[i]):
+        if fusion_position[name] is None:
+            fusion = False
+
+    if fusion:
+        mouse_click(get_pic_position("./pic/mirror/event/shop/fuse_check.png"))
+        sleep(0.5)
+        if get_pic_position("./pic/mirror/event/shop/fuse_recognize.png") and get_pic_position(
+                "./pic/mirror/event/shop/fuse_confirm.png"):
+            mouse_click(get_pic_position("./pic/mirror/event/shop/fuse_confirm.png"))
+            wait_to_click("./pic/mirror/event/shop/fuse_ego_gift_caption.png")
+            msg = f"成功合成{system}体系饰品{i+1}号"
+            my_log("debug", msg)
+
+    mouse_click_blank(times=2)
 
 
 def sell_gifts(shop_sell_list):
@@ -397,7 +448,7 @@ def sell_gifts(shop_sell_list):
 
 
 def fuse_gift(shop_sell_list, system):
-    fuse_times = 2
+    fuse_times = 3
     if system not in fusion_material:
         fuse_times = 1
     for i in range(fuse_times):
@@ -410,7 +461,7 @@ def fuse_gift(shop_sell_list, system):
             if i == 0:
                 fuse_useless_gifts(shop_sell_list)
             else:
-                fuse_system_gifts(system)
+                fuse_system_gifts(system, i)
 
 
 @begin_and_finish_time_log(task_name="镜牢商店")
@@ -445,13 +496,23 @@ def in_shop(system, shop_sell_list, store_floors, fuse_switch):
     # 购买ego饰品
     buy_gifts(system)
     if store_floors >= 4 or (fuse_switch and store_floors <= 2):
-        while refresh_shop := get_pic_position("./pic/mirror/mirror5/shop/keyword_refresh.png"):
-            mouse_click(refresh_shop)
-            sleep(0.5)
-            mouse_click(get_pic_position(f"./pic/mirror/mirror5/shop/keyword_{system}.png"))
-            mouse_click(get_pic_position("./pic/mirror/mirror5/shop/refresh_shop_confirm.png"))
-            sleep(1)
-            buy_gifts(system)
+        if store_floors <= 2:
+            for _ in range(2):
+                if refresh_shop := get_pic_position("./pic/mirror/mirror5/shop/keyword_refresh.png"):
+                    mouse_click(refresh_shop)
+                    sleep(0.5)
+                    mouse_click(get_pic_position(f"./pic/mirror/mirror5/shop/keyword_{system}.png"))
+                    mouse_click(get_pic_position("./pic/mirror/mirror5/shop/refresh_shop_confirm.png"))
+                    sleep(1)
+                    buy_gifts(system)
+        else:
+            while refresh_shop := get_pic_position("./pic/mirror/mirror5/shop/keyword_refresh.png"):
+                mouse_click(refresh_shop)
+                sleep(0.5)
+                mouse_click(get_pic_position(f"./pic/mirror/mirror5/shop/keyword_{system}.png"))
+                mouse_click(get_pic_position("./pic/mirror/mirror5/shop/refresh_shop_confirm.png"))
+                sleep(1)
+                buy_gifts(system)
 
     mouse_click_blank(times=3)
 
@@ -469,13 +530,15 @@ def in_shop(system, shop_sell_list, store_floors, fuse_switch):
         if gifts := get_all_pic_position(systems[system]):
             for gift in gifts:
                 mouse_click(gift)
-                ego_gift_to_power_up()
+                if ego_gift_to_power_up() is False:
+                    break
         if sell_list_block := get_pic_position("./pic/mirror/event/shop/gifts_list_block.png"):
             mouse_drag(sell_list_block, time=1, y=500)
             if gifts := get_all_pic_position(systems[system]):
                 for gift in gifts:
                     mouse_click(gift)
-                    ego_gift_to_power_up()
+                    if ego_gift_to_power_up() is False:
+                        break
         if ego_gift_power_up_close := get_pic_position(
                 "./pic/mirror/event/shop/enhance/ego_gift_power_up_close.png"):
             mouse_click(ego_gift_power_up_close)
