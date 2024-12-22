@@ -218,7 +218,8 @@ Thanks to the following developers for their outstanding contributions to AALC:
 
 ## Future plans
 - [ ] Fixing discovered bugs
-- [ ] Synthesize EGO gift in the shop
+- [ ] Added version checking function
+- [ ] Optimized the path finding logic of the mirror prison, added more events, and reduced time consumption
 - [ ] Use deep learning or image feature recognition technology to improve script recognition speed
 - [ ] ......
 
