@@ -1,0 +1,21 @@
+name: CI Build
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths-ignore: # 文档更新不必触发 CI
+      - "**.md"
+      - "readme/**"
+  push:
+    branches:
+      - main
+    paths-ignore: # 文档更新不必触发 CI
+      - "**.md"
+      - "readme/**"
+
+jobs:
+  build:
+    uses: ./.github/workflows/reusable-build.yml
+    with:
+      version: ${{ github.sha }}
