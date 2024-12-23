@@ -182,9 +182,10 @@ def select_theme_pack():
         for pic in all_pic_byte_stream:
             if compare_the_blacklist(pic[0]):
                 mouse_drag_down(pic[1])
+                sleep(3)
                 return 0
     mouse_drag_down(get_pic_position("./pic/mirror/theme_pack_features.png"))
-    sleep(5)
+    sleep(3)
 
 
 @begin_and_finish_time_log(task_name="镜牢寻路")
