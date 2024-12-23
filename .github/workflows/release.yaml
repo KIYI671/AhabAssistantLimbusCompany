@@ -1,9 +1,6 @@
 name: Release
 
 on:
-  release:
-    types:
-      - released # 监听手动发布 Release 的事件
   push:
     tags:
       - V*.*
