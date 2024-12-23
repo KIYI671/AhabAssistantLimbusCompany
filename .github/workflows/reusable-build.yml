@@ -52,11 +52,13 @@ jobs:
           cp -r doc dist_release/AALC/
           cp LICENSE dist_release/AALC/
           cp README.md dist_release/AALC/
-          Compress-Archive -Path dist_release\* -DestinationPath AALC_${{ inputs.version }}.zip
+          7z a -mx=7 AALC_${{ inputs.version }}.7z dist_release/*
+
 
       # 上传打包结果
       - name: Upload build artifacts
         uses: actions/upload-artifact@main
         with:
           name: AALC_${{ inputs.version }}
-          path: AALC_${{ inputs.version }}.zip
+          path: |
+            AALC_${{ inputs.version }}.7z
