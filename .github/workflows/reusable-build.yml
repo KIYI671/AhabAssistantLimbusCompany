@@ -1,0 +1,62 @@
+name: Reusable Build
+
+on:
+  workflow_call:
+    inputs:
+      version:
+        required: true
+        type: string
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      # 检出代码
+      - name: Checkout
+        uses: actions/checkout@main
+
+      # 设置 Python 环境
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.12.1"
+
+      # 安装依赖
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pyinstaller
+
+      - name: Inject version number
+        run: |
+          $filePath = "my_gui.py"
+          (Get-Content $filePath) -replace "当前版本号:", "当前版本号: ${{ inputs.version }}" | Set-Content $filePath
+
+          $filePath = "main_windows.ui"
+          (Get-Content $filePath) -replace "<string>AhabAssistantLimbusCompany</string>", "<string>AhabAssistantLimbusCompany ${{ inputs.version }}</string>" | Set-Content $filePath
+
+          $filePath = "main_windows.py"
+          $pattern = '\(_translate\("MainWindow", "AhabAssistantLimbusCompany"\)\)'
+          $replacement = "(_translate(`"MainWindow`", `"AhabAssistantLimbusCompany ${{ inputs.version }}`"))"
+          (Get-Content $filePath) -replace $pattern, $replacement | Set-Content $filePath
+
+      # 打包项目
+      - name: Build executable & Bundle resources
+        run: |
+          pyinstaller main.spec
+          mkdir dist_release
+          mv dist/* dist_release/
+          cp -r 3rdparty dist_release/AALC/
+          cp -r pic dist_release/AALC/
+          cp -r doc dist_release/AALC/
+          cp LICENSE dist_release/AALC/
+          cp README.md dist_release/AALC/
+          Compress-Archive -Path dist_release\* -DestinationPath AALC_${{ inputs.version }}.zip
+
+      # 上传打包结果
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@main
+        with:
+          name: AALC_${{ inputs.version }}
+          path: AALC_${{ inputs.version }}.zip
