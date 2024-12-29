@@ -35,6 +35,9 @@ jobs:
           $filePath = "my_gui.py"
           (Get-Content $filePath) -replace "当前版本号:", "当前版本号: ${{ inputs.version }}" | Set-Content $filePath
 
+          $filePath = "command/check_update.py"
+          (Get-Content $filePath) -replace "version = `"`"", "version=`"${{ inputs.version }}`"" | Set-Content $filePath
+
           $filePath = "main_windows.ui"
           (Get-Content $filePath) -replace "<string>AhabAssistantLimbusCompany</string>", "<string>AhabAssistantLimbusCompany ${{ inputs.version }}</string>" | Set-Content $filePath
 
