@@ -4,3 +4,4 @@ dist_release
 *.pyc
 *.pyd
 *.dll
+build.bat

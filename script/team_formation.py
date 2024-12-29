@@ -66,6 +66,7 @@ def select_battle_team(num):
         mouse_drag(my_position, y=1000 * scale_factors[scale], time=0.2)
         for i in range(10):
             pic_byte_stream = get_all_team("./pic/teams/teams.png")
+            my_log("debug","correct")
             if team_position := search_team_number(pic_byte_stream[0], num):
                 # 防止选到其他队伍
                 mouse_click(team_position, offset_x=1, offset_y=0)
@@ -86,7 +87,7 @@ def select_battle_team(num):
 
 @begin_and_finish_time_log(task_name="检查队伍剩余战斗力")
 def check_team():
-    leave = commom_gain_text(commom_all_ocr()[0], language="models/config_chinese.txt")
+    leave = commom_gain_text(commom_all_ocr()[0], language="models/config_en.txt")
     # 至少还有5人可以战斗
     sinner_nums = [f"{a}/{b}" for b in range(5, 10) for a in range(5, b + 1)]
     p1, p2 = None, None
@@ -96,7 +97,7 @@ def check_team():
             p1 = [box[0][0], box[0][1]]
             p2 = [box[2][0], box[2][1]]
     p2[1] += 180
-    leave = commom_gain_text(commom_range_ocr(p1, p2), language="models/config_chinese.txt")
+    leave = commom_gain_text(commom_range_ocr(p1, p2), language="models/config_en.txt")
     all_text = ""
     for b in leave:
         all_text += b['text'].lower() + " "

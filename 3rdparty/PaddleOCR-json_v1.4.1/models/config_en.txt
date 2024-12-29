@@ -1,0 +1,13 @@
+# 纯英文 PP-OCR v3
+
+# det 检测模型库
+det_model_dir models/ch_PP-OCRv3_det_infer
+
+# cls 方向分类器库
+cls_model_dir models/ch_ppocr_mobile_v2.0_cls_infer
+
+# rec 识别模型库
+rec_model_dir models/en_PP-OCRv3_rec_infer
+
+# 字典路径
+rec_char_dict_path models/dict_en.txt
