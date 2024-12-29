@@ -163,8 +163,15 @@ def enter_mir(system="random", team=1, fuse_switch=False):
 @begin_and_finish_time_log(task_name="选择镜牢主题包")
 # 选择镜牢主题包
 def select_theme_pack():
+    fail_count = 0
+    count_max = 60
     while get_pic_position("./pic/mirror/theme_pack_features.png") is None:
         sleep(1)
+        fail_count += 1
+        if fail_count > count_max:
+            msg="镜牢主题包获取失败，超出最大尝试次数"
+            my_log("debug",msg)
+            return 0
     if hard_button := get_pic_position("./pic/mirror/mirror5/hard_theme_pack.png"):
         mouse_click(hard_button)
     if get_pic_position("./pic/mirror/theme_pack_features.png"):

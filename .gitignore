@@ -4,4 +4,5 @@ dist_release
 *.pyc
 *.pyd
 *.dll
+!3rdparty/PaddleOCR-json_v1.4.1/*.dll
 build.bat
