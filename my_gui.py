@@ -27,8 +27,8 @@ all_systems = {"烧伤(burn)": 0, "流血(bleed)": 1, "震颤(tremor)": 2, "破�
 class MainWindow(QMainWindow, Ui_MainWindow):
     clear_signal = pyqtSignal()  # 用于右边日志栏清理
 
-    def __init__(self, parent=None):
-        super(MainWindow, self).__init__(parent)
+    def __init__(self):
+        super().__init__()
         self.my_script = None
         self.last_position = 0
         self.setupUi(self)
@@ -44,7 +44,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         # 设置界面主题为红色
         setThemeColor("#9c080b")
 
+        # 设置窗口标志以禁用最大化按钮
+        self.setWindowFlags(Qt.WindowCloseButtonHint | Qt.WindowMinimizeButtonHint)
+
         self.setWindowIcon(QIcon('./pic/icon/my_icon_256X256.ico'))
+        self.setWindowTitle("Ahab Assistant Limbus Company")
 
         # 设置各个按钮的交互
         self.set_windows_button.clicked.connect(self.change_page)
@@ -721,16 +725,10 @@ def check_teams_select_num(config_datas):
 
 
 def mygui():
-    app = QApplication(sys.argv)
-    app.setAttribute(Qt.AA_DontCreateNativeWidgetSiblings)
-    app.setAttribute(Qt.AA_EnableHighDpiScaling)
-    app.setAttribute(Qt.AA_UseHighDpiPixmaps)
-    ui = MainWindow()
     read_last_setting(ui)
     timer = QTimer()
     timer.timeout.connect(lambda option=0: ui.set_log(option))
     timer.start(1000)  # 每秒更新一次
-    sys.exit(app.exec_())
 
 
 if __name__ == "__main__":

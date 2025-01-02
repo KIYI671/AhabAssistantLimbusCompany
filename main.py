@@ -1,10 +1,30 @@
+import os
 import sys
+
+# 将当前工作目录设置为程序所在的目录，确保无论从哪里执行，其工作目录都正确设置为程序本身的位置，避免路径错误。
+os.chdir(os.path.dirname(sys.executable) if getattr(sys, 'frozen', False)else os.path.dirname(os.path.abspath(__file__)))
+
+# 获取管理员权限
+import pyuac
+if not pyuac.isUserAdmin():
+    try:
+        pyuac.runAsAdmin(False)
+        sys.exit(0)
+    except Exception:
+        sys.exit(1)
+
 from win32api import GetLastError
 from win32event import CreateMutex
-from command.check_admin import check_admin
-from my_error.my_error import withOutAdminError
-from my_gui import mygui
-from my_log.my_log import my_log
+
+from PyQt5.QtCore import Qt
+from PyQt5.QtWidgets import QApplication
+from my_gui import MainWindow
+
+# 启用 DPI 缩放
+QApplication.setHighDpiScaleFactorRoundingPolicy(Qt.HighDpiScaleFactorRoundingPolicy.PassThrough)
+QApplication.setAttribute(Qt.AA_DontCreateNativeWidgetSiblings)
+QApplication.setAttribute(Qt.AA_EnableHighDpiScaling)
+QApplication.setAttribute(Qt.AA_UseHighDpiPixmaps)
 
 if __name__ == "__main__":
     # 构建互斥锁
@@ -16,9 +36,7 @@ if __name__ == "__main__":
         # 使用非零退出码表示错误
         sys.exit(1)
 
-    if not check_admin():
-        my_log("error",
-               "未能获取管理员权限，脚本将无法正常运行!!!\nWithout administrator privileges, the script will not run properly!!!")
-        raise withOutAdminError(
-            "未能获取管理员权限，脚本将无法正常运行!!!\nWithout administrator privileges, the script will not run properly!!!")
-    mygui()
+    app = QApplication(sys.argv)
+    app.setAttribute(Qt.AA_DontCreateNativeWidgetSiblings)
+    ui = MainWindow()
+    sys.exit(app.exec_())
