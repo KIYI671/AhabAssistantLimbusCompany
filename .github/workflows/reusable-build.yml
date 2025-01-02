@@ -11,7 +11,7 @@ jobs:
   build:
     runs-on: windows-latest
     steps:
-      # 检出代码
+      # 签出代码
       - name: Checkout
         uses: actions/checkout@main
 
@@ -19,7 +19,7 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v4
         with:
-          python-version: "3.12.1"
+          python-version: "3.12"
           cache: "pip"
           cache-dependency-path: "requirements.txt"
 
