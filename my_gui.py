@@ -14,6 +14,7 @@ from main_windows import Ui_MainWindow
 from my_log.my_log import my_log
 from script.script_task_scheme import my_script_task
 from setting_ui import Ui_all_team_basic_setting
+from command.mouse_activity import set_pause,is_pause
 
 set_select_team_options = {"Team1": 1, "Team2": 2, "Team3": 3, "Team4": 4, "Team5": 5,
                            "Team6": 6, "Team7": 7, "Team8": 8, "Team9": 9, "Team10": 10,
@@ -35,9 +36,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         self.init_ui()
         # 启动快捷键监听
-        self.listener = keyboard.GlobalHotKeys({
-            '<ctrl>+q': self.my_stop_shortcut
-        })
+        self.listener = keyboard.GlobalHotKeys(
+            {
+                "<ctrl>+q": self.my_stop_shortcut,
+                "<alt>+p": self.my_pause,
+                "<alt>+r": self.my_resume,
+            }
+        )
         self.listener.start()
 
     def init_ui(self):
@@ -136,7 +141,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         可能存在各种奇奇怪怪的BUG\n
         随机、斩击、突刺、打击队伍不怎么用，很不完善\n
         镜牢初始自动选择第1、2项EGO饰品\n
-        使用CTRL+Q按键暂停脚本进程\n
+        使用CTRL+Q按键结束脚本操作\n
+        使用ALT+P按键暂停脚本操作，ALT+R恢复脚本操作\n
         其他的所见即所得，懒得写了''')
 
         self.about_text.setText('''本项目为非科班出身、非计算机从业人员心血来潮的作品。\n
@@ -166,6 +172,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         # 向日志打印当前版本号
         msg="当前版本号:"
         my_log("debug",msg)
+
+    def my_pause(self):
+        set_pause(True)
+
+    def my_resume(self):
+        set_pause(False)
 
     def setting_teams(self):
         button = self.sender()

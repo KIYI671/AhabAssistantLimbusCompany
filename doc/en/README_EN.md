@@ -34,6 +34,7 @@
 
 <!-- TOC -->
 - [AhabAssistantLimbusCompany](#ahabassistantlimbuscompany)
+  - [FACE THE SIN,SAVE THE E.G.O](#face-the-sinsave-the-ego)
   - [Function Introduction](#function-introduction)
     - [Special Features](#special-features)
   - [How to download](#how-to-download)
@@ -49,6 +50,7 @@
   - [Acknowledgements](#acknowledgements)
     - [Individual acknowledgements](#individual-acknowledgements)
     - [Uniform acknowledgements](#uniform-acknowledgements)
+  - [Contributors](#contributors)
   - [Future plans](#future-plans)
   - [Build guide](#build-guide)
   - [If you want to learn the code of this project](#if-you-want-to-learn-the-code-of-this-project)
@@ -99,6 +101,8 @@ I don't have much technical power, but I also built a GUI and used the third-par
 
 
 During script execution you can use **CTRL+Q** keys to terminate the script process (this may cause problems when the script is restarted, which can be solved by restarting the script program).
+
+At the same time **ALT+P** can pause the script, **ALT+R** can resume the script (experimental function)
 
 There is nothing to explain, what you see is what you get.
 

@@ -1,0 +1,64 @@
+name: "🐞 Bug 反馈 | Bug report"
+description: "反馈你发现的问题来帮助我们改进 Create a report to help us improve"
+labels: ["bug"]
+title: "[Bug] 输入issue标题"
+body:
+  - type: markdown
+    attributes:
+      value: |
+        感谢您抽出宝贵的时间来填写此错误报告！
+        在提交问题之前，请确保您使用的是[最新版本的AALC](https://github.com/KIYI671/AhabAssistantLimbusCompany/releases/latest)，并且[现存的issue](https://github.com/KIYI671/AhabAssistantLimbusCompany/issues)中没有您遇到的问题。
+        如果能按照[提问的智慧](https://github.com/tvvocold/How-To-Ask-Questions-The-Smart-Way)中的建议来提问就更好了！
+        Thanks for taking the time to fill out this bug report!
+        Before submitting the issue, please make sure that you're on the [latest AALC version](https://github.com/KIYI671/AhabAssistantLimbusCompany/releases/latest) and the issue you encountered hasn't been reported yet.
+        It would be great if you can follow the suggestions from [How to Ask Questions The Smart Way](http://www.catb.org/~esr/faqs/smart-questions.html).
+  - type: textarea
+    id: bug-description
+    attributes:
+      label: "描述你遇到的问题 | Describe the bug"
+      description: 简单描述你遇到的问题，如果你打算为此问题提交PR，请在描述中告诉我们。谢谢！ A clear and concise description of what the bug is. If you intend to submit a PR for this issue, tell us in the description. Thanks!
+      placeholder: "简单描述你遇到的问题，如果你打算为此问题提交PR，请在描述中告诉我们。谢谢！"
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: "如何复现bug | Reproduction"
+      description: 复现问题的步骤 Steps to reproduce the behavior.
+      placeholder: "在程序运行到时候（时间），点击了（行为），发生了**（结果）"
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: "期待的修复效果 | Expected behavior"
+      description: 简单描述你期待修复后的效果 A clear and concise description of what you expected to happen.
+      placeholder: "简单描述你期待修复后的效果"
+    validations:
+      required: true
+  - type: input
+    id: resolution
+    attributes:
+      label: "游戏运行分辨率 | Game Resolution"
+      placeholder: "1920x1080"
+    validations:
+      required: true
+  - type: input
+    id: windows-version
+    attributes:
+      label: "Windows版本 | Windows Version"
+      placeholder: "在命令行输入`cmd /c ver`，把结果粘贴到这里"
+    validations:
+      required: true
+  - type: input
+    id: aalc-version
+    attributes:
+      label: "AALC版本 | AALC Version"
+      placeholder: "v0.1.8"
+    validations:
+      required: true
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: "其他相关信息 | Additional context"
+      description: 错误发生时的视频，图片与所有日志文件（越详细，越能迅速解决问题）Add any other context or screenshots about the bug report here.

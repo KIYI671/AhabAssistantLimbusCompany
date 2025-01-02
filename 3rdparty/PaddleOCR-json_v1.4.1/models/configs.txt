@@ -1,0 +1,6 @@
+config_chinese.txt 简体中文
+config_en.txt English
+config_chinese_cht.txt 繁體中文
+config_japan.txt 日本語
+config_korean.txt 한국어
+config_cyrillic.txt Русский

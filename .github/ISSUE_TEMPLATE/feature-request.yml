@@ -1,0 +1,20 @@
+name: "💫 功能建议 | Feature Request"
+description: "关于添加新功能或者改进现有功能的建议 Suggest a new feature or improvement to an existing feature."
+labels: ["enhancement"]
+title: "[Feature] 输入issue标题"
+body:
+  - type: markdown
+    attributes:
+      value: |
+        感谢您提出功能建议！我们非常重视您的反馈。
+        在提交之前，请确保您已经搜索过[现存的issue](https://github.com/KIYI671/AhabAssistantLimbusCompany/issues)，并且没有找到类似的建议。
+        Thank you for suggesting a new feature! We greatly appreciate your feedback.
+        Before submitting, please make sure you've searched through the [existing issues](https://github.com/KIYI671/AhabAssistantLimbusCompany/issues) and haven't found a similar suggestion.
+  - type: textarea
+    id: feature-description
+    attributes:
+      label: "描述你想要的新功能 | Describe the new feature you'd like"
+      description: "请尽可能详细地描述你希望添加的功能。 Please describe the feature you'd like to see as detailed as possible."
+      placeholder: "我希望AALC能够..."
+    validations:
+      required: true

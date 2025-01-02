@@ -6,6 +6,27 @@ import pyautogui
 
 from my_log.my_log import my_log
 
+is_pause = False
+
+
+def set_pause(set_value=None):
+    global is_pause
+    if set_value is not None:
+        is_pause = set_value # 设置暂停状态
+    else:
+        is_pause = not is_pause  # 切换暂停状态
+    if is_pause:
+        msg = "操作将在下一次点击时暂停"
+    else:
+        msg = "继续操作"
+    my_log("info", msg)
+
+
+def wait_pause():
+    global is_pause
+    while is_pause:
+        sleep(1)
+
 
 def mouse_click(coordinate, times=1, offset_x=0, offset_y=0):
     if coordinate is None:
@@ -22,6 +43,7 @@ def mouse_click(coordinate, times=1, offset_x=0, offset_y=0):
     my_log("debug", msg)
     for i in range(times):
         pyautogui.click(x, y)
+        wait_pause()
         sleep(0.1)
     sleep(0.8)
     return True
@@ -63,5 +85,6 @@ def mouse_click_blank(coordinate=(1, 1), times=1):
     y = coordinate[1] + random.randint(0, 10)
     for i in range(times):
         pyautogui.click(x, y)
+        wait_pause()
     sleep(0.9)
     return True

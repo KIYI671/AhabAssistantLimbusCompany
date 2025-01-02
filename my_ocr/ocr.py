@@ -14,12 +14,12 @@ from my_log.my_log import my_log
 from my_ocr.PPOCR_api import GetOcrApi
 
 
-def compare_the_blacklist(pic_byte_stream, language="models/config_chinese.txt"):
+def compare_the_blacklist(pic_byte_stream, language="models/config_en.txt"):
     # 使用的识别语言配置文件
     # 之前的OCR使用"models/config_en.txt"
     my_argument = {"config_path": language}
     # 初始化识别器对象，传入 PaddleOCR-json.exe
-    ocr = GetOcrApi("./3rdparty/PaddleOCR-json_v.1.3.1/PaddleOCR-json.exe", my_argument)
+    ocr = GetOcrApi("./3rdparty/PaddleOCR-json_v1.4.1/PaddleOCR-json.exe", my_argument)
     # 读取图片字节流进行OCR
     res = ocr.runBytes(pic_byte_stream)
     # 提取文本块数据
@@ -130,11 +130,11 @@ def get_theme_pack(img_model_path, precision=0.8, scale=0, screenshot="./screens
     return all_byte_stream
 
 
-def search_team_number(pic_byte_stream, number, language="models/config_chinese.txt"):
+def search_team_number(pic_byte_stream, number, language="models/config_en.txt"):
     # 使用的识别语言配置文件
     my_argument = {"config_path": language}
     # 初始化识别器对象，传入 PaddleOCR-json.exe
-    ocr = GetOcrApi("./3rdparty/PaddleOCR-json_v.1.3.1/PaddleOCR-json.exe", my_argument)
+    ocr = GetOcrApi("./3rdparty/PaddleOCR-json_v1.4.1/PaddleOCR-json.exe", my_argument)
     # 读取图片字节流进行OCR
     res = ocr.runBytes(pic_byte_stream)
     # 提取文本块数据
@@ -398,11 +398,11 @@ def commom_range_ocr(upper_left_corner, lower_right_corner, hight=0, width=0, pr
     return byte_stream_read
 
 
-def commom_gain_text(pic_byte_stream, language="models/config_chinese.txt"):
+def commom_gain_text(pic_byte_stream, language="models/config_en.txt"):
     # 使用的识别语言配置文件
     my_argument = {"config_path": language}
     # 初始化识别器对象，传入 PaddleOCR-json.exe
-    ocr = GetOcrApi("./3rdparty/PaddleOCR-json_v.1.3.1/PaddleOCR-json.exe", my_argument)
+    ocr = GetOcrApi("./3rdparty/PaddleOCR-json_v1.4.1/PaddleOCR-json.exe", my_argument)
     # 读取图片字节流进行OCR
     res = ocr.runBytes(pic_byte_stream)
     # 提取文本块数据

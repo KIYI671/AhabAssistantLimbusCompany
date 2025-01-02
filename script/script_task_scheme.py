@@ -24,6 +24,7 @@ from script.luxcavation import EXP_luxcavation, thread_luxcavation
 from script.mirror import execute_a_mirror
 from script.team_formation import select_battle_team
 from script.team_preparation import team_preparation
+from command.check_update import check_update
 from os import environ
 
 all_systems = {0: "burn", 1: "bleed", 2: "tremor", 3: "rupture", 4: "poise",
@@ -104,6 +105,8 @@ def onetime_mir_process(the_selected_team_setting):
 
 
 def script_task():
+    check_update()
+    
     all_setting = {
         "select_task": {"set_windows": True, "daily_task": False, "get_reward": False, "buy_enkephalin": False,
                         "mirror": False},
