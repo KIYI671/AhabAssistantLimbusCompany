@@ -1,6 +1,6 @@
 <div align="center">
 
-![image](./pic/icon/my_icon.png)
+![image](./assets/logo/my_icon.png)
 
 <br>
 
@@ -14,7 +14,7 @@
     <img alt="platform" src="https://img.shields.io/badge/platform-Windows-blue?style=flat-square&color=4096d8">
 </div>
 
-  [简体中文](README.md) | [English](doc/en/README_EN.md)
+  [简体中文](README.md) | [English](assets/doc/en/README_EN.md)
 
   本项目为非科班出身、非计算机从业人员心血来潮的作品
 
@@ -116,7 +116,7 @@ release下载压缩包后，解压的文件中存在 **_“black_list_keyword.ya
 
 文件格式参考以下图片所示
 
-![image](./pic/screenshot/blacklist_setting.png)
+![image](./assets/doc/image/blacklist_setting.png)
 
 <details>
 <summary>以下为脚本默认黑名单（Default blacklist）</summary>
@@ -180,10 +180,10 @@ release下载压缩包后，解压的文件中存在 **_“black_list_keyword.ya
 
 ### 开始界面
 
-![image](/pic/screenshot/README1.png)
+![image](/assets/doc/image/README1.png)
 ### 镜牢队伍设置界面
 
-![image](/pic/screenshot/README2.png)
+![image](/assets/doc/image/README2.png)
 
 
 ---
@@ -229,7 +229,7 @@ AALC的项目离不开以下开源项目的帮助
 
 ## 构建指南
 
-- 参考 [构建指南](./doc/zh/build_guide.md)
+- 参考 [构建指南](assets/doc/zh/build_guide.md)
 
 ## 如果想学习这个项目的代码
 - 谨慎学习，项目代码稀烂，存在重复造车轮、代码效率低的问题
