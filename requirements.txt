@@ -46,3 +46,4 @@ tzdata==2024.2
 tzlocal==5.2
 urllib3==2.2.3
 wrapt==1.17.0
+pyuac~=0.0.3
