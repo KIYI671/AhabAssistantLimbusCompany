@@ -49,7 +49,6 @@ jobs:
           mv dist/* dist_release/
           cp -r 3rdparty dist_release/AALC/
           cp -r assets dist_release/AALC/
-          cp -r doc dist_release/AALC/
           cp LICENSE dist_release/AALC/
           cp README.md dist_release/AALC/
           7z a -mx=7 AALC_${{ github.run_number }}.7z dist_release/*
