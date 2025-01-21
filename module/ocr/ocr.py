@@ -2,7 +2,7 @@ import atexit
 import io
 import os.path
 
-import Image
+from PIL.Image import *
 
 from module.ocr.PPOCR_api import GetOcrApi
 
