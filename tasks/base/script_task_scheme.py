@@ -1,0 +1,239 @@
+from sys import exc_info
+from traceback import format_exception
+
+from PyQt5.QtCore import QThread, pyqtSignal, QMutex
+
+from module.automation import auto
+from module.config import cfg
+from module.decorator.decorator import begin_and_finish_time_log
+from module.logger import log
+from module.my_error.my_error import userStopError, unableToFindTeamError, unexpectNumError, cannotOperateGameError, \
+    netWorkUnstableError, backMainWinError, withOutGameWinError, notWaitError, withOutPicError, withOutAdminError
+from module.screen import screen
+from tasks.base.back_init_menu import back_init_menu
+from tasks.base.make_enkephalin_module import lunacy_to_enkephalin, make_enkephalin_module
+from tasks.battle.battle import battle, to_battle
+from tasks.daily.get_prize import get_pass_prize, get_mail_prize
+from tasks.daily.luxcavation import EXP_luxcavation, thread_luxcavation
+from tasks.mirror.mirror import Mirror
+from tasks.teams.team_formation import select_battle_team
+
+all_systems = {0: "burn", 1: "bleed", 2: "tremor", 3: "rupture", 4: "poise",
+               5: "sinking", 6: "charge", 7: "slash", 8: "pierce", 9: "blunt"}
+all_sinners_name = ["YiSang", "Faust", "DonQuixote", "Ryoshu", "Meursault", "HongLu",
+                    "Heathcliff", "Ishmael", "Rodion", "Sinclair", "Outis", "Gregor"]
+all_sinner = {
+    "YiSang": 1, "Faust": 2, "DonQuixote": 3,
+    "Ryoshu": 4, "Meursault": 5, "HongLu": 6,
+    "Heathcliff": 7, "Ishmael": 8, "Rodion": 9,
+    "Dante": 10,
+    "Sinclair": 11, "Outis": 12, "Gregor": 13
+}
+
+
+@begin_and_finish_time_log(task_name="一次经验本")
+# 一次经验本的过程
+def onetime_EXP_process(team):
+    EXP_luxcavation()
+    select_battle_team(team)
+    if to_battle() is False:
+        return False
+    battle()
+    back_init_menu()
+    make_enkephalin_module()
+
+
+@begin_and_finish_time_log(task_name="一次纽本")
+# 一次纽本的过程
+def onetime_thread_process(team):
+    thread_luxcavation()
+    select_battle_team(team)
+    if to_battle() is False:
+        return False
+    battle()
+    back_init_menu()
+    make_enkephalin_module()
+
+
+@begin_and_finish_time_log(task_name="一次镜牢")
+# 一次镜牢的过程
+def onetime_mir_process(the_selected_team_setting):
+    # 读取队伍配置、顺序
+    my_team = {}
+    sinner_team = []
+    shop_sell_list = []
+    fuse_switch = the_selected_team_setting['fuse']
+    fuse_aggressive_switch = the_selected_team_setting['fuse_aggressive']
+    for sinner in all_sinners_name:
+        sinner_order = sinner + "_order"
+        if the_selected_team_setting[sinner]:
+            my_team[sinner] = int(the_selected_team_setting[sinner_order])
+    my_sorted_team = dict(sorted(my_team.items(), key=lambda item: item[1]))
+    for sinner in my_sorted_team:
+        sinner_team.append(all_sinner[sinner])
+    for num, shop_system in all_systems.items():
+        if the_selected_team_setting[shop_system]:
+            shop_sell_list.append(shop_system)
+    # 进行一次镜牢
+    try:
+        mirror_adventure = Mirror(sinner_team,the_selected_team_setting["all_teams"],shop_sell_list,fuse_switch,all_systems[the_selected_team_setting["all_system"]],fuse_aggressive_switch)
+        if mirror_adventure.run():
+            del mirror_adventure
+            back_init_menu()
+            make_enkephalin_module()
+            return True
+        else:
+            return False
+    except Exception as e:
+        cfg = f"镜牢行动出错: {e}"
+        log.ERROR(cfg)
+
+
+
+def script_task():
+    # 对游戏窗口进行设置
+    screen.init_handle()
+    if cfg.set_windows:
+        screen.set_win()
+
+    # 如果是战斗中，先处理战斗
+    get_reward = None
+    while auto.take_screenshot() is None:
+        continue
+    if auto.click_element("battle/turn_assets.png"):
+        get_reward = battle()
+
+
+    # 执行日常刷本任务
+    if cfg.daily_task:
+        select_team = cfg.daily_teams
+        back_init_menu()
+        make_enkephalin_module()
+        exp_times = cfg.set_EXP_count
+        if get_reward and get_reward=="EXP":
+            exp_times-=1
+        thread_times = cfg.set_thread_count
+        if get_reward and get_reward=="thread":
+            thread_times-=1
+        for i in range(exp_times):
+            onetime_EXP_process(select_team)
+        for i in range(thread_times):
+            onetime_thread_process(select_team)
+    # 执行奖励领取任务
+    if cfg.get_reward:
+        if cfg.set_get_prize == 0:
+            back_init_menu()
+            get_pass_prize()
+            back_init_menu()
+            get_mail_prize()
+            back_init_menu()
+        elif cfg.set_get_prize == 1:
+            back_init_menu()
+            get_pass_prize()
+            back_init_menu()
+        else:
+            back_init_menu()
+            get_mail_prize()
+            back_init_menu()
+
+    # 执行狂气换饼任务
+    if cfg.buy_enkephalin:
+        back_init_menu()
+        lunacy_to_enkephalin(times=cfg.set_lunacy_to_enkephalin)
+
+    # 执行镜牢任务
+    if cfg.mirror:
+        all_teams = ["team1", "team2", "team3", "team4", "team5", "team6", "team7"]
+        mir_times = cfg.set_mirror_count
+        all_my_team_setting = []
+        for team in all_teams:
+            if cfg.get_value(team):
+                sequence = "_order"
+                team_sequence = team + sequence
+                team_order = cfg.get_value(team_sequence)
+                setting = "_setting"
+                team_setting = team + setting
+                my_team_setting = cfg.get_value(team_setting)
+                this_team_setting = [team_order, my_team_setting, team_sequence]
+                all_my_team_setting.append(this_team_setting)
+        if len(all_my_team_setting) != 0:
+            while mir_times > 0:
+                the_selected_team_setting = None
+                for this_team in all_my_team_setting:
+                    if this_team[0] == 1:
+                        the_selected_team_setting = this_team[1]
+                        break
+                mirror_result = onetime_mir_process(the_selected_team_setting)
+                if mirror_result:
+                    for this_team in all_my_team_setting:
+                        if this_team[0] == 1:
+                            this_team[0] = len(all_my_team_setting)
+                        else:
+                            this_team[0] -= 1
+                        cfg.set_value(this_team[2],this_team[0])
+                    mir_times -= 1
+    if cfg.set_reduce_miscontact:
+        screen.reset_win()
+
+
+class my_script_task(QThread):
+    # 定义信号
+    finished_signal = pyqtSignal()
+
+    def __init__(self):
+        # 初始化，构造函数
+        super().__init__()
+        self.running = True
+        self.exc_traceback = ''
+        self.mutex = QMutex()
+
+    def run(self):
+        self.mutex.lock()
+
+        try:
+            self._run()
+        except userStopError as e:
+            self.exception = e
+        except unableToFindTeamError as e:
+            self.exception = e
+        except unexpectNumError as e:
+            self.exception = e
+        except cannotOperateGameError as e:
+            self.exception = e
+        except netWorkUnstableError as e:
+            self.exception = e
+        except backMainWinError as e:
+            self.exception = e
+        except withOutGameWinError as e:
+            self.exception = e
+        except notWaitError as e:
+            self.exception = e
+        except withOutPicError as e:
+            self.exception = e
+        except withOutAdminError as e:
+            self.exception = e
+        except Exception as e:
+            self.exception = e
+            log.ERROR(f"出现错误: {e}")
+        finally:
+            if self.exc_traceback != '':
+                self.exc_traceback = ''.join(
+                    format_exception(*exc_info()))
+                log.ERROR(self.exc_traceback)
+                self.mutex.unlock()
+
+        self.finished_signal.emit()
+
+    """def stop(self):
+        self.running=False
+        self.finished_signal.emit()"""
+
+    def _run(self):
+        try:
+            script_task()
+        except Exception as e:
+            log.ERROR(f"出现错误: {e}")
+            self.exc_traceback = ''.join(
+                format_exception(*exc_info()))
+            log.ERROR(self.exc_traceback)
+            self.mutex.unlock()

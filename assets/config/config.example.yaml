@@ -1,0 +1,344 @@
+# 游戏设置
+game_title_name: LimbusCompany # 游戏窗口标题。
+game_process_name: LimbusCompany # 游戏进程名。
+game_path: C:\Program Files (x86)\Steam\steamapps\common\Limbus Company\LimbusCompany.exe # 游戏启动路径。
+language: en # 游戏语言
+
+# 自动更新
+check_update: True
+# 是否使用预发行版本
+update_prerelease_enable: False
+
+# 保存启动后的页面
+default_page: 0
+
+# 是否进行自动窗口设置
+set_windows: True # 是否进行自动窗口设置
+set_win_size: 1080 # 设置使用的分辨率,1080:1920*1080,1440:2560*1440,2160:3840*2160,720:1280*720,900:1600*900,1800:3200*1800
+set_win_position: True # 是否自动设置窗口的位置
+set_reduce_miscontact: True # 是否防止误触
+
+# 是否进行日常本
+daily_task: False # 是否进行日常本
+set_EXP_count: 1 # 设置经验本的次数
+set_thread_count: 3 # 设置纽本的次数
+daily_teams: 1 # 设置日常本使用的队伍
+
+# 是否自动获取奖励
+get_reward: False # 是否进行获取奖励
+set_get_prize: 0 # 0 领取邮件和通行证日常与周常，1 只领取通行证日常与周常， 2 只领取邮件
+
+# 是否自动购买体力
+buy_enkephalin: False # 是否自动购买体力
+set_lunacy_to_enkephalin: 2 # 0 不购买，1 购买一次，2 购买两次
+
+# 是否进行自动镜牢
+mirror: False # 是否进行自动镜牢
+set_mirror_count: 1 # 镜牢的次数
+team1: False # 是否启用队伍1
+team2: False # 是否启用队伍2
+team3: False # 是否启用队伍3
+team4: False # 是否启用队伍4
+team5: False # 是否启用队伍5
+team6: False # 是否启用队伍6
+team7: False # 是否启用队伍7
+
+# 队伍设置
+teams_be_select: 0 # 被选中的队伍数量
+team1_order: 0 # 队伍1的顺序
+team2_order: 0 # 队伍2的顺序
+team3_order: 0 # 队伍3的顺序
+team4_order: 0 # 队伍4的顺序
+team5_order: 0 # 队伍5的顺序
+team6_order: 0 # 队伍6的顺序
+team7_order: 0 # 队伍7的顺序
+
+# 一号队伍设置
+team1_setting:
+  all_system: 0 # 队伍使用的体系
+  all_teams: 1 # 使用的队伍序号
+  sinners_be_select: 0 # 有几名罪人被选中
+  YiSang: False # 李箱是否被选中
+  YiSang_order: 0 # 李箱的顺序
+  Faust: False # 浮士德是否被选中
+  Faust_order: 0 # 浮士德的顺序
+  DonQuixote: False # 堂吉诃德是否被选中
+  DonQuixote_order: 0 # 堂吉诃德的顺序
+  Ryoshu: False # 良秀是否被选中
+  Ryoshu_order: 0 # 良秀的顺序
+  Meursault: False # 默尔索是否被选中
+  Meursault_order: 0 # 默尔索的顺序
+  HongLu: False # 鸿潞是否被选中
+  HongLu_order: 0 # 鸿潞的顺序
+  Heathcliff: False # 希斯克利夫是否被选中
+  Heathcliff_order: 0 # 希斯克利夫的顺序
+  Ishmael: False # 以实玛利是否被选中
+  Ishmael_order: 0 # 以实玛利的顺序
+  Rodion: False # 罗佳是否被选中
+  Rodion_order: 0 # 罗佳的顺序
+  Sinclair: False # 辛克莱是否被选中
+  Sinclair_order: 0 # 辛克莱的顺序
+  Outis: False # 奥提斯是否被选中
+  Outis_order: 0 # 奥提斯的顺序
+  Gregor: False # 格里高尔是否被选中
+  Gregor_order: 0 # 格里高尔的顺序
+  fuse: False # 合成饰品开关
+  fuse_aggressive: False # 采取激进合成策略
+  burn: False # 弃置燃烧饰品
+  bleed: False # 弃置流血饰品
+  tremor: False # 弃置震颤饰品
+  rupture: False # 弃置破裂饰品
+  poise: False # 弃置呼吸饰品
+  sinking: False # 弃置沉沦饰品
+  charge: False # 弃置充能饰品
+  slash: False # 弃置斩击饰品
+  pierce: False # 弃置穿刺饰品
+  blunt: False # 弃置打击饰品
+
+team2_setting:
+  all_system: 0 # 队伍使用的体系
+  all_teams: 1 # 使用的队伍序号
+  sinners_be_select: 0 # 有几名罪人被选中
+  YiSang: False # 李箱是否被选中
+  YiSang_order: 0 # 李箱的顺序
+  Faust: False # 浮士德是否被选中
+  Faust_order: 0 # 浮士德的顺序
+  DonQuixote: False # 堂吉诃德是否被选中
+  DonQuixote_order: 0 # 堂吉诃德的顺序
+  Ryoshu: False # 良秀是否被选中
+  Ryoshu_order: 0 # 良秀的顺序
+  Meursault: False # 默尔索是否被选中
+  Meursault_order: 0 # 默尔索的顺序
+  HongLu: False # 鸿潞是否被选中
+  HongLu_order: 0 # 鸿潞的顺序
+  Heathcliff: False # 希斯克利夫是否被选中
+  Heathcliff_order: 0 # 希斯克利夫的顺序
+  Ishmael: False # 以实玛利是否被选中
+  Ishmael_order: 0 # 以实玛利的顺序
+  Rodion: False # 罗佳是否被选中
+  Rodion_order: 0 # 罗佳的顺序
+  Sinclair: False # 辛克莱是否被选中
+  Sinclair_order: 0 # 辛克莱的顺序
+  Outis: False # 奥提斯是否被选中
+  Outis_order: 0 # 奥提斯的顺序
+  Gregor: False # 格里高尔是否被选中
+  Gregor_order: 0 # 格里高尔的顺序
+  fuse: False # 合成饰品开关
+  fuse_aggressive: False # 采取激进合成策略
+  burn: False # 弃置燃烧饰品
+  bleed: False # 弃置流血饰品
+  tremor: False # 弃置震颤饰品
+  rupture: False # 弃置破裂饰品
+  poise: False # 弃置呼吸饰品
+  sinking: False # 弃置沉沦饰品
+  charge: False # 弃置充能饰品
+  slash: False # 弃置斩击饰品
+  pierce: False # 弃置穿刺饰品
+  blunt: False # 弃置打击饰品
+
+team3_setting:
+  all_system: 0 # 队伍使用的体系
+  all_teams: 1 # 使用的队伍序号
+  sinners_be_select: 0 # 有几名罪人被选中
+  YiSang: False # 李箱是否被选中
+  YiSang_order: 0 # 李箱的顺序
+  Faust: False # 浮士德是否被选中
+  Faust_order: 0 # 浮士德的顺序
+  DonQuixote: False # 堂吉诃德是否被选中
+  DonQuixote_order: 0 # 堂吉诃德的顺序
+  Ryoshu: False # 良秀是否被选中
+  Ryoshu_order: 0 # 良秀的顺序
+  Meursault: False # 默尔索是否被选中
+  Meursault_order: 0 # 默尔索的顺序
+  HongLu: False # 鸿潞是否被选中
+  HongLu_order: 0 # 鸿潞的顺序
+  Heathcliff: False # 希斯克利夫是否被选中
+  Heathcliff_order: 0 # 希斯克利夫的顺序
+  Ishmael: False # 以实玛利是否被选中
+  Ishmael_order: 0 # 以实玛利的顺序
+  Rodion: False # 罗佳是否被选中
+  Rodion_order: 0 # 罗佳的顺序
+  Sinclair: False # 辛克莱是否被选中
+  Sinclair_order: 0 # 辛克莱的顺序
+  Outis: False # 奥提斯是否被选中
+  Outis_order: 0 # 奥提斯的顺序
+  Gregor: False # 格里高尔是否被选中
+  Gregor_order: 0 # 格里高尔的顺序
+  fuse: False # 合成饰品开关
+  fuse_aggressive: False # 采取激进合成策略
+  burn: False # 弃置燃烧饰品
+  bleed: False # 弃置流血饰品
+  tremor: False # 弃置震颤饰品
+  rupture: False # 弃置破裂饰品
+  poise: False # 弃置呼吸饰品
+  sinking: False # 弃置沉沦饰品
+  charge: False # 弃置充能饰品
+  slash: False # 弃置斩击饰品
+  pierce: False # 弃置穿刺饰品
+  blunt: False # 弃置打击饰品
+
+team4_setting:
+  all_system: 0 # 队伍使用的体系
+  all_teams: 1 # 使用的队伍序号
+  sinners_be_select: 0 # 有几名罪人被选中
+  YiSang: False # 李箱是否被选中
+  YiSang_order: 0 # 李箱的顺序
+  Faust: False # 浮士德是否被选中
+  Faust_order: 0 # 浮士德的顺序
+  DonQuixote: False # 堂吉诃德是否被选中
+  DonQuixote_order: 0 # 堂吉诃德的顺序
+  Ryoshu: False # 良秀是否被选中
+  Ryoshu_order: 0 # 良秀的顺序
+  Meursault: False # 默尔索是否被选中
+  Meursault_order: 0 # 默尔索的顺序
+  HongLu: False # 鸿潞是否被选中
+  HongLu_order: 0 # 鸿潞的顺序
+  Heathcliff: False # 希斯克利夫是否被选中
+  Heathcliff_order: 0 # 希斯克利夫的顺序
+  Ishmael: False # 以实玛利是否被选中
+  Ishmael_order: 0 # 以实玛利的顺序
+  Rodion: False # 罗佳是否被选中
+  Rodion_order: 0 # 罗佳的顺序
+  Sinclair: False # 辛克莱是否被选中
+  Sinclair_order: 0 # 辛克莱的顺序
+  Outis: False # 奥提斯是否被选中
+  Outis_order: 0 # 奥提斯的顺序
+  Gregor: False # 格里高尔是否被选中
+  Gregor_order: 0 # 格里高尔的顺序
+  fuse: False # 合成饰品开关
+  fuse_aggressive: False # 采取激进合成策略
+  burn: False # 弃置燃烧饰品
+  bleed: False # 弃置流血饰品
+  tremor: False # 弃置震颤饰品
+  rupture: False # 弃置破裂饰品
+  poise: False # 弃置呼吸饰品
+  sinking: False # 弃置沉沦饰品
+  charge: False # 弃置充能饰品
+  slash: False # 弃置斩击饰品
+  pierce: False # 弃置穿刺饰品
+  blunt: False # 弃置打击饰品
+
+team5_setting:
+  all_system: 0 # 队伍使用的体系
+  all_teams: 1 # 使用的队伍序号
+  sinners_be_select: 0 # 有几名罪人被选中
+  YiSang: False # 李箱是否被选中
+  YiSang_order: 0 # 李箱的顺序
+  Faust: False # 浮士德是否被选中
+  Faust_order: 0 # 浮士德的顺序
+  DonQuixote: False # 堂吉诃德是否被选中
+  DonQuixote_order: 0 # 堂吉诃德的顺序
+  Ryoshu: False # 良秀是否被选中
+  Ryoshu_order: 0 # 良秀的顺序
+  Meursault: False # 默尔索是否被选中
+  Meursault_order: 0 # 默尔索的顺序
+  HongLu: False # 鸿潞是否被选中
+  HongLu_order: 0 # 鸿潞的顺序
+  Heathcliff: False # 希斯克利夫是否被选中
+  Heathcliff_order: 0 # 希斯克利夫的顺序
+  Ishmael: False # 以实玛利是否被选中
+  Ishmael_order: 0 # 以实玛利的顺序
+  Rodion: False # 罗佳是否被选中
+  Rodion_order: 0 # 罗佳的顺序
+  Sinclair: False # 辛克莱是否被选中
+  Sinclair_order: 0 # 辛克莱的顺序
+  Outis: False # 奥提斯是否被选中
+  Outis_order: 0 # 奥提斯的顺序
+  Gregor: False # 格里高尔是否被选中
+  Gregor_order: 0 # 格里高尔的顺序
+  fuse: False # 合成饰品开关
+  fuse_aggressive: False # 采取激进合成策略
+  burn: False # 弃置燃烧饰品
+  bleed: False # 弃置流血饰品
+  tremor: False # 弃置震颤饰品
+  rupture: False # 弃置破裂饰品
+  poise: False # 弃置呼吸饰品
+  sinking: False # 弃置沉沦饰品
+  charge: False # 弃置充能饰品
+  slash: False # 弃置斩击饰品
+  pierce: False # 弃置穿刺饰品
+  blunt: False # 弃置打击饰品
+
+team6_setting:
+  all_system: 0 # 队伍使用的体系
+  all_teams: 1 # 使用的队伍序号
+  sinners_be_select: 0 # 有几名罪人被选中
+  YiSang: False # 李箱是否被选中
+  YiSang_order: 0 # 李箱的顺序
+  Faust: False # 浮士德是否被选中
+  Faust_order: 0 # 浮士德的顺序
+  DonQuixote: False # 堂吉诃德是否被选中
+  DonQuixote_order: 0 # 堂吉诃德的顺序
+  Ryoshu: False # 良秀是否被选中
+  Ryoshu_order: 0 # 良秀的顺序
+  Meursault: False # 默尔索是否被选中
+  Meursault_order: 0 # 默尔索的顺序
+  HongLu: False # 鸿潞是否被选中
+  HongLu_order: 0 # 鸿潞的顺序
+  Heathcliff: False # 希斯克利夫是否被选中
+  Heathcliff_order: 0 # 希斯克利夫的顺序
+  Ishmael: False # 以实玛利是否被选中
+  Ishmael_order: 0 # 以实玛利的顺序
+  Rodion: False # 罗佳是否被选中
+  Rodion_order: 0 # 罗佳的顺序
+  Sinclair: False # 辛克莱是否被选中
+  Sinclair_order: 0 # 辛克莱的顺序
+  Outis: False # 奥提斯是否被选中
+  Outis_order: 0 # 奥提斯的顺序
+  Gregor: False # 格里高尔是否被选中
+  Gregor_order: 0 # 格里高尔的顺序
+  fuse: False # 合成饰品开关
+  fuse_aggressive: False # 采取激进合成策略
+  burn: False # 弃置燃烧饰品
+  bleed: False # 弃置流血饰品
+  tremor: False # 弃置震颤饰品
+  rupture: False # 弃置破裂饰品
+  poise: False # 弃置呼吸饰品
+  sinking: False # 弃置沉沦饰品
+  charge: False # 弃置充能饰品
+  slash: False # 弃置斩击饰品
+  pierce: False # 弃置穿刺饰品
+  blunt: False # 弃置打击饰品
+
+team7_setting:
+  all_system: 0 # 队伍使用的体系
+  all_teams: 1 # 使用的队伍序号
+  sinners_be_select: 0 # 有几名罪人被选中
+  YiSang: False # 李箱是否被选中
+  YiSang_order: 0 # 李箱的顺序
+  Faust: False # 浮士德是否被选中
+  Faust_order: 0 # 浮士德的顺序
+  DonQuixote: False # 堂吉诃德是否被选中
+  DonQuixote_order: 0 # 堂吉诃德的顺序
+  Ryoshu: False # 良秀是否被选中
+  Ryoshu_order: 0 # 良秀的顺序
+  Meursault: False # 默尔索是否被选中
+  Meursault_order: 0 # 默尔索的顺序
+  HongLu: False # 鸿潞是否被选中
+  HongLu_order: 0 # 鸿潞的顺序
+  Heathcliff: False # 希斯克利夫是否被选中
+  Heathcliff_order: 0 # 希斯克利夫的顺序
+  Ishmael: False # 以实玛利是否被选中
+  Ishmael_order: 0 # 以实玛利的顺序
+  Rodion: False # 罗佳是否被选中
+  Rodion_order: 0 # 罗佳的顺序
+  Sinclair: False # 辛克莱是否被选中
+  Sinclair_order: 0 # 辛克莱的顺序
+  Outis: False # 奥提斯是否被选中
+  Outis_order: 0 # 奥提斯的顺序
+  Gregor: False # 格里高尔是否被选中
+  Gregor_order: 0 # 格里高尔的顺序
+  fuse: False # 合成饰品开关
+  fuse_aggressive: False # 采取激进合成策略
+  burn: False # 弃置燃烧饰品
+  bleed: False # 弃置流血饰品
+  tremor: False # 弃置震颤饰品
+  rupture: False # 弃置破裂饰品
+  poise: False # 弃置呼吸饰品
+  sinking: False # 弃置沉沦饰品
+  charge: False # 弃置充能饰品
+  slash: False # 弃置斩击饰品
+  pierce: False # 弃置穿刺饰品
+  blunt: False # 弃置打击饰品
+
+

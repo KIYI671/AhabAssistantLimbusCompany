@@ -506,7 +506,7 @@
          <number>3</number>
         </property>
        </widget>
-       <widget class="ComboBox" name="all_teams">
+       <widget class="ComboBox" name="daily_teams">
         <property name="geometry">
          <rect>
           <x>20</x>
