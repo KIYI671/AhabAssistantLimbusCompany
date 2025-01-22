@@ -1,6 +1,6 @@
 <div align="center">
 
-![image](../../assets/logo/my_icon.png)
+![image](/assets/logo/my_icon.png)
 
 <br>
 
@@ -118,7 +118,7 @@ When you open it with Notepad or other text editors, you can add the blacklist b
 
 The file format is shown in the following picture.
 
-![image](../../assets/doc/image/blacklist_setting.png)
+![image](/assets/doc/image/blacklist_setting.png)
 
 <details>
 <summary>Default blacklist</summary>
@@ -181,11 +181,11 @@ Users are required to comply with the rules of use and terms of service of the r
 
 ### Start screen
 
-![image](../../assets/doc/image/README1.png)
+![image](/assets/doc/image/README1.png)
 
 ### The Mirror Dungeon team setup screen 
 
-![image](../../assets/doc/image/README2.png)
+![image](/assets/doc/image/README2.png)
 
 
 ---
