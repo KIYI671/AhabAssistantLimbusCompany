@@ -15,7 +15,7 @@ class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         # 设置主窗口
         MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(800, 600)
+        MainWindow.resize(800, 630)
 
         scale_factor = QtWidgets.QApplication.primaryScreen().logicalDotsPerInch() / 96  # Windows 标准 DPI 是 96
         # 设置主窗口颜色
@@ -54,7 +54,7 @@ class Ui_MainWindow(object):
 
         # 在主窗口中设置QStackedWidget，用以保存一键长草、使用说明、关于三个页面
         self.all_pages = QtWidgets.QStackedWidget(self.main_page)
-        self.all_pages.setGeometry(QtCore.QRect(0, 40, 801, 561))
+        self.all_pages.setGeometry(QtCore.QRect(0, 40, 801, 590))
         self.all_pages.setObjectName("all_pages")
 
         # 设置一键长草页面
@@ -63,7 +63,7 @@ class Ui_MainWindow(object):
 
         # 在一键长草页面中，布置左边选择任务的窗口
         self.select_task = CardWidget(self.page)
-        self.select_task.setGeometry(QtCore.QRect(30, 10, 210, 360))
+        self.select_task.setGeometry(QtCore.QRect(30, 10, 210, 470))
         self.select_task.setObjectName("select_task")
         # 布置五个任务选择框
         self.buy_enkephalin = CheckBox(self.select_task)
@@ -87,10 +87,10 @@ class Ui_MainWindow(object):
         self.get_reward.setObjectName("get_reward")
         # 布置下方全选与清空按钮
         self.select_all = PushButton(self.select_task)
-        self.select_all.setGeometry(QtCore.QRect(20, 310, 81, 32))
+        self.select_all.setGeometry(QtCore.QRect(20, 420, 81, 32))
         self.select_all.setObjectName("select_all")
         self.select_none = PushButton(self.select_task)
-        self.select_none.setGeometry(QtCore.QRect(110, 310, 81, 32))
+        self.select_none.setGeometry(QtCore.QRect(110, 420, 81, 32))
         self.select_none.setObjectName("select_none")
 
         # 布置右边一排五个设置按钮的ICON
@@ -130,7 +130,7 @@ class Ui_MainWindow(object):
 
         # 布置左下角开始按钮
         self.start_tasks = PushButton(self.page)
-        self.start_tasks.setGeometry(QtCore.QRect(60, 420, 131, 71))
+        self.start_tasks.setGeometry(QtCore.QRect(60, 500, 131, 71))
         font = QtGui.QFont()
         font.setFamily("Segoe UI")
         font.setPointSize(int(14 / scale_factor))
@@ -142,7 +142,7 @@ class Ui_MainWindow(object):
 
         # 布置中间页面
         self.detail_setting = QtWidgets.QStackedWidget(self.page)
-        self.detail_setting.setGeometry(QtCore.QRect(255, 10, 281, 481))
+        self.detail_setting.setGeometry(QtCore.QRect(255, 10, 281, 570))
         self.detail_setting.setObjectName("detail_setting")
 
         # 窗口设置的页面
@@ -200,7 +200,7 @@ class Ui_MainWindow(object):
         self.mirror_setting = QtWidgets.QWidget()
         self.mirror_setting.setObjectName("mirror_setting")
         self.set_mirror_counts = CardWidget(self.mirror_setting)
-        self.set_mirror_counts.setGeometry(QtCore.QRect(10, 410, 261, 61))
+        self.set_mirror_counts.setGeometry(QtCore.QRect(10, 500, 261, 61))
         self.set_mirror_counts.setObjectName("set_mirror_counts")
         self.mirror_count = BodyLabel(self.set_mirror_counts)
         self.mirror_count.setGeometry(QtCore.QRect(5, 20, 71, 20))
@@ -337,6 +337,22 @@ class Ui_MainWindow(object):
         self.team7_order.setReadOnly(True)
         self.team7_order.setObjectName("team7_order")
         self.detail_setting.addWidget(self.mirror_setting)
+        self.hard_mirror = CheckBox(self.mirror_setting)
+        self.hard_mirror.setGeometry(QtCore.QRect(50, 420, 211, 22))
+        self.hard_mirror.setObjectName("hard_mirror")
+        self.no_weekly_bonuses = CheckBox(self.mirror_setting)
+        self.no_weekly_bonuses.setGeometry(QtCore.QRect(50, 460, 221, 22))
+        self.no_weekly_bonuses.setObjectName("no_weekly_bonuses")
+        self.hint = BodyLabel(self.mirror_setting)
+        self.hint.setGeometry(QtCore.QRect(0, 420, 41, 61))
+        font = QtGui.QFont()
+        font.setFamily("Segoe UI")
+        font.setPointSize(48)
+        font.setBold(False)
+        font.setUnderline(False)
+        self.hint.setFont(font)
+        self.hint.setProperty("lightColor", QtGui.QColor(255, 0, 0))
+        self.hint.setObjectName("hint")
 
         # 狂气换体的页面
         self.lunacy_to_enkephalin_setting = QtWidgets.QWidget()
@@ -362,21 +378,21 @@ class Ui_MainWindow(object):
 
         # 右边显示日志的页面
         self.scroll_frame = QtWidgets.QFrame(self.page)
-        self.scroll_frame.setGeometry(QtCore.QRect(560, 20, 221, 491))
+        self.scroll_frame.setGeometry(QtCore.QRect(560, 20, 221, 560))
         self.scroll_frame.setFrameShape(QtWidgets.QFrame.StyledPanel)
         self.scroll_frame.setFrameShadow(QtWidgets.QFrame.Raised)
         self.scroll_frame.setObjectName("scroll_frame")
         self.scroll_area = ScrollArea(self.scroll_frame)
-        self.scroll_area.setGeometry(QtCore.QRect(0, 0, 221, 491))
+        self.scroll_area.setGeometry(QtCore.QRect(0, 0, 221,560))
         self.scroll_area.setFrameShape(QtWidgets.QFrame.NoFrame)
         self.scroll_area.setFrameShadow(QtWidgets.QFrame.Sunken)
         self.scroll_area.setWidgetResizable(True)
         self.scroll_area.setObjectName("scroll_area")
         self.scroll_area_widget_contents = QtWidgets.QWidget()
-        self.scroll_area_widget_contents.setGeometry(QtCore.QRect(0, 0, 221, 491))
+        self.scroll_area_widget_contents.setGeometry(QtCore.QRect(0, 0, 221, 560))
         self.scroll_area_widget_contents.setObjectName("scroll_area_widget_contents")
         self.scoll_log_edit = TextEdit(self.scroll_area_widget_contents)
-        self.scoll_log_edit.setGeometry(QtCore.QRect(0, -10, 221, 481))
+        self.scoll_log_edit.setGeometry(QtCore.QRect(0, -10, 221, 560))
         self.scoll_log_edit.setAutoFormatting(QtWidgets.QTextEdit.AutoAll)
         self.scoll_log_edit.setReadOnly(True)
         self.scoll_log_edit.setObjectName("TextEdit")
@@ -387,7 +403,7 @@ class Ui_MainWindow(object):
         self.instructions = QtWidgets.QWidget()
         self.instructions.setObjectName("instructions")
         self.instructions_text = TextEdit(self.instructions)
-        self.instructions_text.setGeometry(QtCore.QRect(20, 10, 761, 521))
+        self.instructions_text.setGeometry(QtCore.QRect(20, 10, 761, 560))
         self.instructions_text.setUndoRedoEnabled(False)
         self.instructions_text.setReadOnly(True)
         self.instructions_text.setObjectName("instructions_text")
@@ -395,7 +411,7 @@ class Ui_MainWindow(object):
         self.about = QtWidgets.QWidget()
         self.about.setObjectName("about")
         self.about_text = TextEdit(self.about)
-        self.about_text.setGeometry(QtCore.QRect(20, 10, 761, 521))
+        self.about_text.setGeometry(QtCore.QRect(20, 10, 761, 560))
         self.about_text.setUndoRedoEnabled(False)
         self.about_text.setReadOnly(True)
         self.about_text.setObjectName("about_text")
@@ -452,6 +468,9 @@ class Ui_MainWindow(object):
         self.team2.setText(_translate("MainWindow", "配队2"))
         self.team5.setText(_translate("MainWindow", "配队5"))
         self.team7.setText(_translate("MainWindow", "配队7"))
+        self.hard_mirror.setText(_translate("MainWindow", "困难镜牢 / Hard Mirror"))
+        self.no_weekly_bonuses.setText(_translate("MainWindow", "无加成 / No weekly bonuses"))
+        self.hint.setText(_translate("MainWindow", "！"))
         self.lunacy_to_enkephalin.setText(_translate("MainWindow", "狂气换脑啡肽"))
         self.set_lunacy_to_enkephalin.setText(_translate("MainWindow", "不换"))
         self.get_prize.setText(_translate("MainWindow", "领取奖励设置"))

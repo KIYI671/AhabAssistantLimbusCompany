@@ -42,6 +42,8 @@ team4: False # 是否启用队伍4
 team5: False # 是否启用队伍5
 team6: False # 是否启用队伍6
 team7: False # 是否启用队伍7
+hard_mirror: False
+no_weekly_bonuses: False
 
 # 队伍设置
 teams_be_select: 0 # 被选中的队伍数量

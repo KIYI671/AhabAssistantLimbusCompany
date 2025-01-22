@@ -560,7 +560,7 @@
      <rect>
       <x>10</x>
       <y>15</y>
-      <width>81</width>
+      <width>131</width>
       <height>20</height>
      </rect>
     </property>
@@ -572,7 +572,7 @@
      </font>
     </property>
     <property name="text">
-     <string>出售饰品</string>
+     <string>舍弃/Abandon</string>
     </property>
    </widget>
    <widget class="CheckBox" name="sinking">
@@ -695,9 +695,9 @@
    <widget class="SwitchButton" name="switch_button">
     <property name="geometry">
      <rect>
-      <x>90</x>
+      <x>180</x>
       <y>15</y>
-      <width>153</width>
+      <width>161</width>
       <height>22</height>
      </rect>
     </property>
@@ -709,6 +709,25 @@
     </property>
     <property name="offText">
      <string>出售饰品 / SELL</string>
+    </property>
+   </widget>
+   <widget class="SwitchButton" name="switch_button_2">
+    <property name="geometry">
+     <rect>
+      <x>360</x>
+      <y>15</y>
+      <width>181</width>
+      <height>22</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>普通 / Normal</string>
+    </property>
+    <property name="onText">
+     <string>激进 / Radicalization</string>
+    </property>
+    <property name="offText">
+     <string>普通 / Normal</string>
     </property>
    </widget>
   </widget>

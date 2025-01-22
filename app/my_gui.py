@@ -101,26 +101,31 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         # 设置当复选框选中时，修改配队顺序
         self.team1.stateChanged.connect(
-            lambda checked, combo=self.team1_order: self.checkbox_state_changed(checked, combo))
+            lambda checked, combo=self.team1_order: self.team_checkbox_state_changed(checked, combo))
         self.team2.stateChanged.connect(
-            lambda checked, combo=self.team2_order: self.checkbox_state_changed(checked, combo))
+            lambda checked, combo=self.team2_order: self.team_checkbox_state_changed(checked, combo))
         self.team3.stateChanged.connect(
-            lambda checked, combo=self.team3_order: self.checkbox_state_changed(checked, combo))
+            lambda checked, combo=self.team3_order: self.team_checkbox_state_changed(checked, combo))
         self.team4.stateChanged.connect(
-            lambda checked, combo=self.team4_order: self.checkbox_state_changed(checked, combo))
+            lambda checked, combo=self.team4_order: self.team_checkbox_state_changed(checked, combo))
         self.team5.stateChanged.connect(
-            lambda checked, combo=self.team5_order: self.checkbox_state_changed(checked, combo))
+            lambda checked, combo=self.team5_order: self.team_checkbox_state_changed(checked, combo))
         self.team6.stateChanged.connect(
-            lambda checked, combo=self.team6_order: self.checkbox_state_changed(checked, combo))
+            lambda checked, combo=self.team6_order: self.team_checkbox_state_changed(checked, combo))
         self.team7.stateChanged.connect(
-            lambda checked, combo=self.team7_order: self.checkbox_state_changed(checked, combo))
+            lambda checked, combo=self.team7_order: self.team_checkbox_state_changed(checked, combo))
+
+        self.hard_mirror.stateChanged.connect(lambda checked: self.checkbox_state_changed())
+        self.no_weekly_bonuses.stateChanged.connect(lambda checked: self.checkbox_state_changed())
+        cfg.set_value("hard_mirror",False)
+        cfg.set_value("no_weekly_bonuses",False)
 
         # 设置保存主页几个任务复选框的启用状态
-        self.set_windows.stateChanged.connect(lambda checked: self.menu_checkbox_state_changed())
-        self.daily_task.stateChanged.connect(lambda checked: self.menu_checkbox_state_changed())
-        self.mirror.stateChanged.connect(lambda checked: self.menu_checkbox_state_changed())
-        self.buy_enkephalin.stateChanged.connect(lambda checked: self.menu_checkbox_state_changed())
-        self.get_reward.stateChanged.connect(lambda checked: self.menu_checkbox_state_changed())
+        self.set_windows.stateChanged.connect(lambda checked: self.checkbox_state_changed())
+        self.daily_task.stateChanged.connect(lambda checked: self.checkbox_state_changed())
+        self.mirror.stateChanged.connect(lambda checked: self.checkbox_state_changed())
+        self.buy_enkephalin.stateChanged.connect(lambda checked: self.checkbox_state_changed())
+        self.get_reward.stateChanged.connect(lambda checked: self.checkbox_state_changed())
 
         # 设置各个数值选择器变化时，改变config.yaml中的参数
         self.set_EXP_count.valueChanged.connect(lambda value: self.spinbox_changed(value))
@@ -199,7 +204,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         name = sender_spinbox.objectName()
         cfg.set_value(name,value)
 
-    def menu_checkbox_state_changed(self):
+    def checkbox_state_changed(self):
         # 将主页几个任务复选框的启用状态保存到yaml文件
         sender_checkbox = self.sender()
         name = sender_checkbox.objectName()
@@ -207,7 +212,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         cfg.set_value(name,not status)
 
 
-    def checkbox_state_changed(self, checked, combo):
+    def team_checkbox_state_changed(self, checked, combo):
         # 各个配队的复选框被选中时，修改旁边的启动顺序
         sender_checkbox = self.sender()
         name = sender_checkbox.objectName()
@@ -589,7 +594,15 @@ class setting_window(QDialog, Ui_all_team_basic_setting):
         self.blunt.stateChanged.connect(lambda checked: self.shop_checkbox_state_changed(checked, which_team))
 
         # 设置当按钮点击时改变商店逻辑
-        self.switch_button.checkedChanged.connect(lambda checked: self.shop_switch_button_state_changed(checked, which_team))
+        self.switch_button.checkedChanged.connect(lambda checked: self.shop_switch_button_state_changed(checked, which_team,name="fuse"))
+        self.switch_button_2.checkedChanged.connect(
+            lambda checked: self.shop_switch_button_state_changed(checked, which_team,name="fuse_aggressive"))
+        config_datas = cfg.get_value(f"{which_team}")
+        if config_datas['fuse']:
+            self.switch_button_2.show()
+        else:
+            self.switch_button_2.hide()
+
 
         # 设置完成按钮
         self.confirm_button.clicked.connect(self.close)
@@ -600,10 +613,11 @@ class setting_window(QDialog, Ui_all_team_basic_setting):
         sender_check = self.sender()
         config_datas = cfg.get_value(f"{which_team}")
         config_datas[name] = not config_datas[name]
-        if config_datas[name]:
-            self.sell_gift_select.setText("合成饰品")
-        else:
-            self.sell_gift_select.setText("出售饰品")
+        if name =='fuse':
+            if config_datas[name]:
+                self.switch_button_2.show()
+            else:
+                self.switch_button_2.hide()
         cfg.set_value(f"{which_team}",config_datas)
 
 
@@ -717,10 +731,8 @@ class setting_window(QDialog, Ui_all_team_basic_setting):
 
             # 读取是否启用合成饰品
             self.switch_button.setChecked(config_datas["fuse"])
-            if config_datas['fuse']:
-                self.sell_gift_select.setText("合成饰品")
-            else:
-                self.sell_gift_select.setText("出售饰品")
+            self.switch_button_2.setChecked(config_datas["fuse_aggressive"])
+
 
             # 读取之前商店复选框设置
             self.burn.setChecked(config_datas["burn"])
