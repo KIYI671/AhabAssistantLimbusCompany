@@ -63,7 +63,7 @@ def onetime_mir_process(the_selected_team_setting):
     sinner_team = []
     shop_sell_list = []
     hard_switch = cfg.get_value("hard_mirror")
-    no_weekly_bonuses = the_selected_team_setting['no_weekly_bonuses']
+    no_weekly_bonuses = cfg.get_value('no_weekly_bonuses')
     fuse_switch = the_selected_team_setting['fuse']
     fuse_aggressive_switch = the_selected_team_setting['fuse_aggressive']
     for sinner in all_sinners_name:
