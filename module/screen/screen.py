@@ -6,6 +6,7 @@ import win32con
 import win32gui
 
 from module.config import cfg
+from module.my_error.my_error import withOutGameWinError
 from utils.singletonmeta import SingletonMeta
 
 
@@ -21,15 +22,18 @@ class Screen(metaclass=SingletonMeta):
             windows = pyautogui.getWindowsWithTitle(self.title)
 
             if not windows:
-                raise self.logger.ERROR(f"未能获取到游戏窗口: {self.title}")
+                self.logger.ERROR(f"未能获取到游戏窗口: {self.title}")
+                raise withOutGameWinError
 
             # 使用 next() 和生成器表达式直接获取第一个匹配的窗口
             self.handle = next((t for t in windows if t.title == self.title), None)
 
             if self.handle is None:
-                raise self.logger.ERROR(f"未能获取到游戏窗口: {self.title}")
+                self.logger.ERROR(f"未能获取到游戏窗口: {self.title}")
+                raise withOutGameWinError
         except Exception as e:
-            raise self.logger.ERROR(f"未能获取到游戏窗口: {e}")
+            self.logger.ERROR(f"未能获取到游戏窗口: {e}")
+            raise e
 
     def set_win(self):
         # 如果窗口最小化或不可见，先将其恢复
