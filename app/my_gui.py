@@ -78,6 +78,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         set_reduce_miscontact_options = {'是': True}
         self.set_reduce_miscontact.addItems(set_reduce_miscontact_options)
 
+        set_language_options = {
+            'English': 'en',
+            '简体中文': 'zh_cn'
+        }
+        self.language.addItems(set_language_options)
+
         self.daily_teams.addItems(set_select_team_options)
 
         set_lunacy_to_enkephalin_options = {"不换": 0, "换第一次": 1, "换第二次": 2}
@@ -98,6 +104,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.set_get_prize.currentIndexChanged.connect(lambda: self.on_combobox_changed(set_get_prize_options))
         self.set_win_size.currentIndexChanged.connect(lambda: self.on_combobox_changed(set_win_size_options))
         self.daily_teams.currentIndexChanged.connect(lambda: self.on_combobox_changed(set_select_team_options))
+        
+        self.language.currentIndexChanged.connect(
+            lambda: self.on_combobox_changed(set_language_options)
+        )
 
         # 设置当复选框选中时，修改配队顺序
         self.team1.stateChanged.connect(
@@ -296,6 +306,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.set_win_size.setEnabled(False)
         self.set_win_position.setEnabled(False)
         self.set_reduce_miscontact.setEnabled(False)
+        self.language.setEnabled(False)
         self.set_EXP_count.setEnabled(False)
         self.set_thread_count.setEnabled(False)
         self.daily_teams.setEnabled(False)
@@ -321,6 +332,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.set_win_size.setEnabled(True)
         self.set_win_position.setEnabled(True)
         self.set_reduce_miscontact.setEnabled(True)
+        self.language.setEnabled(True)
         self.set_EXP_count.setEnabled(True)
         self.set_thread_count.setEnabled(True)
         self.daily_teams.setEnabled(True)
@@ -469,6 +481,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         win_size = {"1080":0,"1440":1,"2160":3,"720":4,"900":5,"1800":6}
         self.set_win_size.setCurrentIndex(win_size[str(cfg.set_win_size)])
+        language_Index = {
+            'en': 0,
+            'zh_cn': 1
+        }
+        self.language.setCurrentIndex(language_Index[str(cfg.language)])
 
         # 读取之前最后复选框设置
         self.set_checkbox_state(self.team1, cfg.team1)

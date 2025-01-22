@@ -8,7 +8,7 @@ from cv2 import createCLAHE
 from module.config import cfg
 from module.logger import log
 
-pic_path =["share","en"]
+
 
 class ImageUtils:
     @staticmethod
@@ -18,6 +18,8 @@ class ImageUtils:
         :param image_path: 图片文件路径。
         :return: numpy数组，如果图片通道数大于3，则只返回前三个通道。
         """
+        pic_path = ["share"]
+        pic_path.insert(0, f"{cfg.language}")
         try:
             img_path = None
             for path in pic_path:

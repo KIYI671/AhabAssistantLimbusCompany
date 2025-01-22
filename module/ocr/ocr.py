@@ -35,7 +35,7 @@ class OCR:
         """执行OCR识别，支持Image对象、文件路径和np.ndarray对象"""
         self.init_ocr()
         try:
-            if not isinstance(image, Image.Image):
+            if not isinstance(image, Image):
                 if isinstance(image,str):
                     image = Image.open(os.path.abspath(image))
                 else: # 默认为 np.ndarray，避免需要import numpy

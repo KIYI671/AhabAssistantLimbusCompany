@@ -65,8 +65,7 @@ def select_battle_team(num):
         my_position[0] += position[0]
         my_position[1] += position[1]
         auto.mouse_drag(my_position[0],my_position[1], dy=1000 * scale, drag_time=0.2)
-        #TODO: 多语言适配   if cfg.language == 'en':
-        team_name = "TEAMS#"+str(num)
+        team_name = "#"+str(num)
         team_name_error_correcting="TFAMS#"+str(num)
         for i in range(10):
             while auto.take_screenshot() is None:

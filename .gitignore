@@ -6,3 +6,6 @@ dist_release
 *.dll
 !3rdparty/PaddleOCR-json_v1.4.1/*.dll
 build.bat
+logs
+black_list.yaml
+config.yaml
