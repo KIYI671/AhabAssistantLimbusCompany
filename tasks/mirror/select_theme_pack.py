@@ -43,7 +43,6 @@ def select_theme_pack(hard_switch=False):
                         min(pack[0] + 60 * scale, cfg.set_win_size * 16 / 9),
                         min(pack[1] + 390 * scale, cfg.set_win_size))
                     crop = (top_left[0], top_left[1], bottom_right[0], bottom_right[1])
-                    print(black_theme_list)
                     if auto.find_text_element(black_theme_list, crop):
                         continue
                     else:

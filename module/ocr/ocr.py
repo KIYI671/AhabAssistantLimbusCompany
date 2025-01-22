@@ -1,6 +1,11 @@
+import atexit
+import io
 import os.path
 
-from PIL.Image import *
+import cv2
+import numpy as np
+from PIL import Image
+from cv2 import createCLAHE
 
 from module.ocr.PPOCR_api import GetOcrApi
 
@@ -33,11 +38,19 @@ class OCR:
         """执行OCR识别，支持Image对象、文件路径和np.ndarray对象"""
         self.init_ocr()
         try:
-            if not isinstance(image, Image):
+            if not isinstance(image, Image.Image):
                 if isinstance(image,str):
                     image = open(os.path.abspath(image))
                 else: # 默认为 np.ndarray，避免需要import numpy
-                    image = fromarray(image)
+                    image = Image.fromarray(image)
+            # 1. 将 PIL Image 对象转换为 OpenCV 图片对象
+            img_cv = cv2.cvtColor(np.array(image), cv2.COLOR_RGB2BGR)
+            # 2. 将 OpenCV 图片对象转换为灰度模式
+            img_cv_gray = cv2.cvtColor(img_cv, cv2.COLOR_BGR2GRAY)
+            # 自适应均衡化(均值化后更亮)
+            clahe = createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
+            image = clahe.apply(img_cv_gray)
+            image = Image.fromarray(image)
             image_stream =io.BytesIO()
             image.save(image_stream, format='PNG')
             image_bytes =image_stream.getvalue()

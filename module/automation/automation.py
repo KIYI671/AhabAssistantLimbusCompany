@@ -201,7 +201,7 @@ class Automation(metaclass=SingletonMeta):
                 return ocr_dict[text]
         return False
 
-    def find_text_element(self, target, ocr_crop=None):
+    def find_text_element(self, target, ocr_crop=None,all_text=False):
         if ocr_crop is not None:
             # 根据ocr_crop（为左上与右下四个坐标），截取self.screenshot的部分区域进行ocr
             cropped_image = self.screenshot.crop(ocr_crop)
@@ -221,9 +221,15 @@ class Automation(metaclass=SingletonMeta):
         if isinstance(target, str):
             return self.find_str_in_text(target, ocr_dict)
         elif isinstance(target, list):
-            for key in target:
-                if self.find_str_in_text(key, ocr_dict):
-                    return True
+            if all_text:
+                for key in target:
+                    if self.find_str_in_text(key, ocr_dict) is False:
+                        return False
+                return True
+            else:
+                for key in target:
+                    if self.find_str_in_text(key, ocr_dict):
+                        return self.find_str_in_text(key, ocr_dict)
             return False
 
     def get_text_from_screenshot(self,ocr_crop=None):
