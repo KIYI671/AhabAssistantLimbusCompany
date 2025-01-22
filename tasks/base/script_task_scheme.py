@@ -62,6 +62,8 @@ def onetime_mir_process(the_selected_team_setting):
     my_team = {}
     sinner_team = []
     shop_sell_list = []
+    hard_switch = the_selected_team_setting['hard_mirror']
+    no_weekly_bonuses = the_selected_team_setting['no_weekly_bonuses']
     fuse_switch = the_selected_team_setting['fuse']
     fuse_aggressive_switch = the_selected_team_setting['fuse_aggressive']
     for sinner in all_sinners_name:
@@ -76,7 +78,7 @@ def onetime_mir_process(the_selected_team_setting):
             shop_sell_list.append(shop_system)
     # 进行一次镜牢
     try:
-        mirror_adventure = Mirror(sinner_team,the_selected_team_setting["all_teams"],shop_sell_list,fuse_switch,all_systems[the_selected_team_setting["all_system"]],fuse_aggressive_switch)
+        mirror_adventure = Mirror(sinner_team,the_selected_team_setting["all_teams"],shop_sell_list,fuse_switch,all_systems[the_selected_team_setting["all_system"]],fuse_aggressive_switch,hard_switch,no_weekly_bonuses)
         if mirror_adventure.run():
             del mirror_adventure
             back_init_menu()

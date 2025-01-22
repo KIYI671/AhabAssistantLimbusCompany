@@ -31,7 +31,7 @@ def to_log_with_time(msg, elapsed_time):
 
 class Mirror:
 
-    def __init__(self,sinner_team,team_number, shop_sell_list, fuse_switch, system,fuse_aggressive_switch):
+    def __init__(self,sinner_team,team_number, shop_sell_list, fuse_switch, system,fuse_aggressive_switch,hard_switch,no_weekly_bonuses):
         self.logger = log
         self.sinner_team = sinner_team
         self.team_number= team_number
@@ -41,6 +41,8 @@ class Mirror:
         self.start_time = time.time()
         self.first_battle = True # 判断是否首次进入战斗，如果是则重新配队
         self.fuse_aggressive_switch = fuse_aggressive_switch
+        self.hard_switch = hard_switch
+        self.no_weekly_bonuses = no_weekly_bonuses
 
     def set_fuse_switch_normal(self):
         self.fuse_aggressive_switch = False
@@ -109,7 +111,7 @@ class Mirror:
             # 选择楼层主题包的情况
             if auto.find_element("mirror/theme_pack/feature_theme_pack_assets.png"):
                 sleep(2)
-                select_theme_pack()
+                select_theme_pack(self.hard_switch)
                 continue
 
             # 在镜牢中寻路
@@ -120,6 +122,8 @@ class Mirror:
                 if auto.click_element("mirror/road_in_mir/ego_gift_get_confirm_assets.png"):
                     continue
                 if auto.find_element("teams/announcer_assets.png"):
+                    continue
+                if auto.find_element('mirror/shop/shop_coins_assets.png'):
                     continue
                 self.search_road()
                 continue
@@ -228,6 +232,8 @@ class Mirror:
             if auto.click_element("mirror/claim_reward/rewards_acquired_assets.png"):
                 continue
             if auto.click_element("mirror/claim_reward/claim_rewards_confirm_assets.png"):
+                continue
+            if self.no_weekly_bonuses and auto.click_element("mirror/claim_reward/weekly_bonuses.png"):
                 continue
             if auto.click_element("mirror/claim_reward/enkephalin_assets.png"):
                 continue

@@ -9,7 +9,7 @@ from tasks.base.back_init_menu import back_init_menu
 
 @begin_and_finish_time_log(task_name="选择镜牢主题包")
 # 选择镜牢主题包
-def select_theme_pack(hard_button=False):
+def select_theme_pack(hard_switch=False):
     loop_count = 30
     auto.model = 'clam'
     scale = cfg.set_win_size / 1080
@@ -20,9 +20,12 @@ def select_theme_pack(hard_button=False):
         if auto.take_screenshot() is None:
             continue
 
+        if auto.find_element("mirror/theme_pack/normal_assets.png") is None and auto.find_element("mirror/theme_pack/hard_assets.png") is None:
+            continue
+
         # TODO:适配困镜
         # 切换难度
-        if hard_button:
+        if hard_switch:
             if auto.click_element("mirror/theme_pack/normal_assets.png"):
                 continue
         else:

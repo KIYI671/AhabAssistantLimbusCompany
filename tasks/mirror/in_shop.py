@@ -67,14 +67,15 @@ def buy_gifts(system, fuse_aggressive_switch):
                 continue
             if system == 'bleed':
                 if len(auto.find_text_element(["white", "gossypium"])) >= 2:
-                    auto.mouse_click_blank()
+                    auto.mouse_click_blank(times=2)
             sleep(1)
             if auto.click_element("mirror/shop/purchase_assets.png", take_screenshot=True):
                 sleep(1)
                 auto.click_element("mirror/road_in_mir/ego_gift_get_confirm_assets.png", take_screenshot=True)
+                auto.mouse_click_blank(times=2)
                 continue
             else:
-                auto.mouse_click_blank()
+                auto.mouse_click_blank(times=2)
                 sleep(1)
 
         if fuse_aggressive_switch:
