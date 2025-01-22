@@ -12,6 +12,7 @@ from module.automation import auto
 from module.config import cfg
 from module.logger import log
 from module.screen import screen
+from module.update.check_update import check_update
 from tasks.base.script_task_scheme import my_script_task
 
 set_select_team_options = {f"Team{i}": i for i in range(1, 21)}
@@ -44,12 +45,18 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.timer.timeout.connect(lambda option=0: self.set_log(option))
         self.timer.start(1000)  # 每秒更新一次
 
+        try:
+            check_update(self,flag=True)
+            pass
+        except Exception as e:
+            log.ERROR(f"检查更新失败，原因：{e}")
+
     def init_ui(self):
         # 设置界面主题为红色
         setThemeColor("#9c080b")
 
         # 设置窗口标志以禁用最大化按钮
-        self.setWindowFlags(Qt.WindowCloseButtonHint | Qt.WindowMinimizeButtonHint)
+        #self.setWindowFlags(Qt.WindowCloseButtonHint | Qt.WindowMinimizeButtonHint)
 
         self.setWindowIcon(QIcon('./assets/logo/my_icon_256X256.ico'))
         self.setWindowTitle(f"Ahab Assistant Limbus Company -  {cfg.version}")
@@ -176,12 +183,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         # 向日志打印当前版本号
         msg=f"当前版本号:  {cfg.version}"
         log.DEBUG(msg)
-
-        try:
-            #check_update(self,flag=True)
-            pass
-        except Exception as e:
-            log.ERROR(f"检查更新失败，原因：{e}")
 
     def my_pause_and_resume(self):
         auto.set_pause()

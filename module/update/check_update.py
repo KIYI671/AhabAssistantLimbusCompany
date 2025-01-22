@@ -7,6 +7,7 @@ import requests  # 导入requests模块，用于发送HTTP请求
 from PyQt5.QtCore import QThread, pyqtSignal
 from packaging.version import parse
 
+from app.card.messagebox_custom import MessageBoxUpdate
 from module.config import cfg
 from module.decorator.decorator import begin_and_finish_time_log
 from module.logger import log
@@ -151,7 +152,7 @@ def check_update(self, timeout=5, flag=False):
         """
         if state == UpdateState.UPDATE_AVAILABLE:
             # 当有可用更新时，创建一个消息框对象并显示详细信息
-            """messages_box = MessageBoxUpdate(
+            messages_box = MessageBoxUpdate(
                 self.update_thread.title,
                 self.update_thread.content,
                 self.window()
@@ -159,9 +160,9 @@ def check_update(self, timeout=5, flag=False):
             if messages_box.exec_():
                 # 如果用户确认更新，则从指定的URL下载更新资源
                 assets_url = self.update_thread.assets_url
-                #update(assets_url)"""
-            assets_url = self.update_thread.assets_url
-            update(assets_url)
+                update(assets_url)
+            #assets_url = self.update_thread.assets_url
+            #update(assets_url)
         elif state == UpdateState.SUCCESS:
             # 如果更新成功，记录日志信息
             log.INFO(f"当前是最新版本")
@@ -238,7 +239,9 @@ def update(assets_url):
                 if percent - last_logged_percent >= 5:
                     log.INFO(f"下载进度: {percent:.2f}%")
                     last_logged_percent = percent
+        # TODO 不同语言展示不同信息 if cfg.language == 'en':
         log.INFO(f"下载完成,请手动解压 {file_path} 完成更新")
+        log.INFO(f"Once the download is complete, please manually unzip {file_path} to complete the update")
     except requests.exceptions.RequestException as e:
         log.error(f"下载失败，请检查网络: {e}")
     except OSError as e:

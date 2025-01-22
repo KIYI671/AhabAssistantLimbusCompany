@@ -1,6 +1,6 @@
 from PyQt5.QtCore import Qt, QUrl
 from PyQt5.QtGui import QDesktopServices
-from qfluentwidgets import MessageBox, BodyLabel, FluentStyleSheet
+from qfluentwidgets import MessageBox, BodyLabel, FluentStyleSheet, PrimaryPushButton
 
 
 class MessageBoxHtml(MessageBox):
@@ -12,14 +12,24 @@ class MessageBoxHtml(MessageBox):
         self.textLayout.removeWidget(self.contentLabel)
         self.contentLabel.clear()
 
-        self.contentLabel =BodyLabel(content,parent)
+        self.contentLabel = BodyLabel(content, parent)
         self.contentLabel.setObjectName('contentLabel')
         self.contentLabel.setOpenExternalLinks(True)
         self.contentLabel.linkActivated.connect(self.open_url)
-        self.contentLabel.setContentsMenuPolicy(Qt.ContextMenuPolicy.NoContextMenu)
+        self.contentLabel.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
         FluentStyleSheet.DIALOG.apply(self.contentLabel)
 
+        # 添加新的跳转按钮
+        self.jumpButton = PrimaryPushButton(self.tr('跳转 / JUMP'), self.buttonGroup)
+        self.jumpButton.adjustSize()
+        self.jumpButton.setAttribute(Qt.WA_LayoutUsesWidgetRect)
+        self.jumpButton.setFocus()
+        # self.jumpButton = QPushButton('跳转', parent)
+        self.jumpButton.clicked.connect(
+            lambda: self.open_url('https://github.com/KIYI671/AhabAssistantLimbusCompany/releases'))
+
         self.buttonLayout.addWidget(self.cancelButton, 1, Qt.AlignVCenter)
+        self.buttonLayout.addWidget(self.jumpButton, 1, Qt.AlignVCenter)
         self.buttonLayout.addWidget(self.yesButton, 1, Qt.AlignVCenter)
         self.textLayout.addWidget(self.contentLabel, 0, Qt.AlignTop)
 
@@ -30,10 +40,7 @@ class MessageBoxUpdate(MessageBoxHtml):
     def __init__(self, title: str, content: str, parent=None):
         super().__init__(title, content, parent)
 
-        self.yesButton.setText('下载')
-        self.cancelButton.setText('好的')
+        self.yesButton.setText('下载 / DOWNLOAD')
+        self.cancelButton.setText('好的 / OK')
 
-        """# 添加新的跳转按钮
-        self.jumpButton = QPushButton('跳转', parent)
-        self.jumpButton.clicked.connect(lambda: self.open_url('https://github.com/KIYI671/AhabAssistantLimbusCompany/releases'))
-        self.buttonLayout.addWidget(self.jumpButton, 1, Qt.AlignVCenter)"""
+
