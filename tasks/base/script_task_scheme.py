@@ -62,7 +62,7 @@ def onetime_mir_process(the_selected_team_setting):
     my_team = {}
     sinner_team = []
     shop_sell_list = []
-    hard_switch = the_selected_team_setting['hard_mirror']
+    hard_switch = cfg.get_value("hard_mirror")
     no_weekly_bonuses = the_selected_team_setting['no_weekly_bonuses']
     fuse_switch = the_selected_team_setting['fuse']
     fuse_aggressive_switch = the_selected_team_setting['fuse_aggressive']
@@ -87,8 +87,8 @@ def onetime_mir_process(the_selected_team_setting):
         else:
             return False
     except Exception as e:
-        cfg = f"镜牢行动出错: {e}"
-        log.ERROR(cfg)
+        msg = f"镜牢行动出错: {e}"
+        log.ERROR(msg)
 
 
 
