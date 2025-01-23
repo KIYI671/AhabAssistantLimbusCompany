@@ -10,7 +10,7 @@ from tasks.event.event_handling import EventHandling
 
 
 def to_battle():
-    test_count=15
+    loop_count=15
     while True:
         # 自动截图
         if auto.take_screenshot() is None:
@@ -19,8 +19,12 @@ def to_battle():
             break
         if auto.click_element("battle/chaim_to_battle_assets.png"):
             break
-        test_count-=1
-        if test_count<0:
+        loop_count -= 1
+        if loop_count < 10:
+            auto.model = "normal"
+        if loop_count < 5:
+            auto.model = 'aggressive'
+        if loop_count < 0:
             msg = "超出最大尝试次数,未能进入战斗"
             log.ERROR(msg)
             return False
@@ -56,6 +60,7 @@ def battle(first_battle=False):
     fail_count = 0
     in_mirror = False
     first_battle_reward=None
+    event_chance = 15
 
     while True:
         # 自动截图
@@ -92,7 +97,12 @@ def battle(first_battle=False):
         # 如果战斗中途出现事件
         if auto.find_element("event/choices_assets.png") and auto.find_element(
                 "event/select_first_option_assets.png"):
-            auto.click_element("event/select_first_option_assets.png")
+            if event_chance>5:
+                auto.click_element("event/select_first_option_assets.png")
+                event_chance-=1
+            elif event_chance>0:
+                auto.click_element("event/select_first_option_assets.png",find_type="image_with_multiple_targets")
+                event_chance-=1
         if auto.find_element("event/perform_the_check_feature_assets.png") :
             EventHandling.decision_event_handling()
         if auto.click_element("event/continue_assets.png"):

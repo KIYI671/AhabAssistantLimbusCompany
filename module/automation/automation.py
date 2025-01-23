@@ -183,6 +183,9 @@ class Automation(metaclass=SingletonMeta):
     def find_image_with_multiple_targets(self, target, threshold):
         try:
             template = ImageUtils.load_image(target)
+            if "assets" in target:
+                bbox = ImageUtils.get_bbox(template)
+                template = ImageUtils.crop(template, bbox)
             if template is None:
                 raise ValueError("读取图片失败")
             screenshot = np.array(self.screenshot)
