@@ -89,6 +89,7 @@ def onetime_mir_process(the_selected_team_setting):
     except Exception as e:
         msg = f"镜牢行动出错: {e}"
         log.ERROR(msg)
+        return False
 
 
 

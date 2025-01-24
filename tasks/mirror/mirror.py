@@ -211,7 +211,7 @@ class Mirror:
                 continue
 
             # 初始饰品选择
-            if auto.find_element("mirror/road_to_mir/bleed_gift_assets.png"):
+            if auto.find_element("mirror/road_to_mir/select_init_ego_gifts_assets.png"):
                 self.select_init_ego_gift()
                 continue
 
