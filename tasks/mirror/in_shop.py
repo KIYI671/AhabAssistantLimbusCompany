@@ -114,9 +114,10 @@ def buy_gifts(system, fuse_aggressive_switch):
         except Exception as e:
             log.ERROR(f"获取剩余金钱失败：{e}")
             my_remaining_money = -1
-        if 0 <= my_remaining_money <= 200:
-            refresh = True
+        if my_remaining_money <= 300:
             refresh_keyword = True
+        if my_remaining_money <= 200:
+            refresh = True
 
         if refresh is False:
             auto.mouse_click_blank(times=3)
@@ -209,8 +210,6 @@ def fuse_useless_gifts_aggressive(system):
                         if auto.find_element(system, find_type="text"):
                             fuse_IV = True
                             fuse = False
-                            log.INFO(f"fuse_IV: {fuse_IV}")
-                        log.INFO(f"fuse_IV: {fuse_IV}")
                     auto.mouse_click(ego_gift_get_confirm[0], ego_gift_get_confirm[1])
                     break
 
@@ -225,6 +224,7 @@ def fuse_useless_gifts_aggressive(system):
                     break
 
         if fuse:
+            sleep(2)
             continue
 
         break
@@ -301,6 +301,7 @@ def fuse_useless_gifts(shop_sell_list):
 
                 if auto.click_element("mirror/road_in_mir/ego_gift_get_confirm_assets.png"):
                     fuse = True
+                    sleep(1)
                     break
 
                 if auto.click_element("mirror/shop/enhance_and_fuse_and_sell_confirm_assets.png", model="normal"):

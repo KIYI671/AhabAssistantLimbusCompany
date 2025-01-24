@@ -124,7 +124,13 @@ class Mirror:
                     continue
                 if auto.find_element('mirror/shop/shop_coins_assets.png'):
                     continue
-                self.find_road_total_time += self.search_road()
+                if auto.find_element("mirror/claim_reward/claim_rewards_assets.png") and auto.find_element(
+                        "mirror/claim_reward/complete_mirror_100%_assets.png"):
+                    break
+                while auto.take_screenshot() is None:
+                    continue
+                if auto.find_element("mirror/road_in_mir/legend_assets.png"):
+                    self.find_road_total_time += self.search_road()
                 continue
 
             # 进入节点
@@ -457,11 +463,9 @@ class Mirror:
             if event_chance > 5:
                 auto.click_element("event/select_first_option_assets.png")
                 event_chance -= 1
-                continue
             elif event_chance > 0:
                 auto.click_element("event/select_first_option_assets.png", find_type="image_with_multiple_targets")
                 event_chance -= 1
-                continue
 
             # 如果需要罪人判定
             if auto.find_element("event/choices_assets.png") and auto.find_element(
@@ -599,6 +603,7 @@ class Mirror:
     @begin_and_finish_time_log(task_name="镜牢商店")
     def in_shop(self):
         fuse_IV = in_shop(self.system, self.shop_sell_list, self.fuse_switch, self.fuse_aggressive_switch)
-        log.INFO(f"合成四级结果：{fuse_IV}")
+        if self.fuse_aggressive_switch:
+            log.INFO(f"合成四级结果：{fuse_IV}")
         if fuse_IV is True:
             self.set_fuse_switch_normal()
