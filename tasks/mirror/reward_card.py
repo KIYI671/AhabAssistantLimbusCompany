@@ -17,6 +17,8 @@ def get_reward_card():
             break
         if auto.find_element("mirror/road_in_mir/acquire_ego_gift.png"):
             break
+        if auto.click_element("mirror/get_reward_card/continue_choosing_assets.png", model='clam'):
+            continue
         if auto.click_element("mirror/get_reward_card/gain_cost_and_ego.png"):
             break
         if auto.click_element("mirror/get_reward_card/gain_ego.png"):
@@ -37,4 +39,6 @@ def get_reward_card():
     while auto.click_element("mirror/get_reward_card/get_reward_card_confirm_assets.png"):
         while auto.take_screenshot() is None:
             continue
+        if auto.click_element("mirror/get_reward_card/continue_choosing_assets.png", model='clam'):
+            break
         continue

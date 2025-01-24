@@ -37,7 +37,8 @@ class Automation(metaclass=SingletonMeta):
         self.mouse_to_blank = self.input_handler.mouse_to_blank
 
     def click_element(self, target, find_type="image", threshold=0.8, max_retries=1, take_screenshot=False,
-                      offset=True,action="click", times=1, dx=0, dy=0, model=None, ocr_crop=None,click=True,drag_time =None):
+                      offset=True, action="click", times=1, dx=0, dy=0, model=None, ocr_crop=None, click=True,
+                      drag_time=None, interval=0.5):
         """查找并点击屏幕上的元素
 
         """
@@ -47,7 +48,8 @@ class Automation(metaclass=SingletonMeta):
                                         ocr_crop=ocr_crop)
         if coordinates:
             if click:
-                return self.mouse_action_with_pos(coordinates, offset, action, times,drag_time, dx, dy,find_type)
+                return self.mouse_action_with_pos(coordinates, offset, action, times, drag_time, dx, dy, find_type,
+                                                  interval)
             return coordinates
         return False
 
@@ -67,7 +69,8 @@ class Automation(metaclass=SingletonMeta):
             y = max(0, min(screenshot.shape[0], y + random.randint(-10, 10)))
         return x, y
 
-    def mouse_action_with_pos(self, coordinates, offset=True, action="click", times=1,drag_time=None, dx=0, dy=0,find_type=None,interval=0.5):
+    def mouse_action_with_pos(self, coordinates, offset=True, action="click", times=1, drag_time=None, dx=0, dy=0,
+                              find_type=None, interval=0.5):
         """
         在指定坐标上执行点击操作
         参数:
@@ -82,7 +85,7 @@ class Automation(metaclass=SingletonMeta):
                 self.mouse_action_with_pos(c, offset, action, times, dx, dy, find_type="image", interval=1)
             return True
 
-        if self.last_click_time==0:
+        if self.last_click_time == 0:
             self.last_click_time = time.time()
         if time.time() - self.last_click_time < interval:
             time.sleep(interval)
@@ -103,7 +106,7 @@ class Automation(metaclass=SingletonMeta):
             if action == "click":
                 self.mouse_click(x, y, times=times)
             elif action == "drag":
-                self.mouse_drag(x, y, drag_time = drag_time, dx=dx, dy=dy)
+                self.mouse_drag(x, y, drag_time=drag_time, dx=dx, dy=dy)
             elif action == "drag_down":
                 self.mouse_drag_down(x, y)
             elif action == "scroll":
@@ -164,7 +167,7 @@ class Automation(metaclass=SingletonMeta):
             if find_type in ['image', 'text']:
                 if find_type in ['image']:
                     # 使用图像查找方法查找元素
-                    center = self.find_image_element(target, threshold, model=model,ocr_crop=ocr_crop)
+                    center = self.find_image_element(target, threshold, model=model, ocr_crop=ocr_crop)
                 elif find_type == 'text':
                     # 使用文本查找方法查找元素
                     center = self.find_text_element(target, ocr_crop)
@@ -204,7 +207,7 @@ class Automation(metaclass=SingletonMeta):
                 return ocr_dict[text]
         return False
 
-    def find_text_element(self, target, ocr_crop=None,all_text=False):
+    def find_text_element(self, target, ocr_crop=None, all_text=False):
         if ocr_crop is not None:
             # 根据ocr_crop（为左上与右下四个坐标），截取self.screenshot的部分区域进行ocr
             cropped_image = self.screenshot.crop(ocr_crop)
@@ -235,11 +238,11 @@ class Automation(metaclass=SingletonMeta):
                         return self.find_str_in_text(key, ocr_dict)
             return False
 
-    def get_text_from_screenshot(self,ocr_crop=None):
+    def get_text_from_screenshot(self, ocr_crop=None):
         if ocr_crop is not None:
             # 根据ocr_crop（为左上与右下四个坐标），截取self.screenshot的部分区域进行ocr
             cropped_image = self.screenshot.crop(ocr_crop)
-            ocr_result=ocr.run(cropped_image)
+            ocr_result = ocr.run(cropped_image)
         else:
             ocr_result = ocr.run(self.screenshot)
         if "data" in ocr_result and "text" in ocr_result["data"][0]:
@@ -248,7 +251,7 @@ class Automation(metaclass=SingletonMeta):
             ocr_text_list = []
         return ocr_text_list
 
-    def find_image_element(self, target, threshold, cacheable=False, model='clam',ocr_crop=None):
+    def find_image_element(self, target, threshold, cacheable=False, model='clam', ocr_crop=None):
         try:
             if cacheable and target in self.img_cache:
                 bbox = self.img_cache[target]['bbox']
@@ -264,7 +267,7 @@ class Automation(metaclass=SingletonMeta):
                     self.img_cache[target] = {'bbox': bbox, 'template': template}
             screenshot = np.array(self.screenshot)
             if ocr_crop:
-                screenshot= ImageUtils.crop(screenshot,ocr_crop)
+                screenshot = ImageUtils.crop(screenshot, ocr_crop)
             center, matchVal = ImageUtils.match_template(screenshot, template, bbox, model)  # 匹配模板
             self.logger.DEBUG(f"目标图片：{target.replace('./assets/images/', '')}, 相似度：{matchVal:.2f}, "
                               f"目标位置：{center}")

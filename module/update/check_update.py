@@ -22,9 +22,9 @@ class UpdateState(Enum):
     - UPDATE_AVAILABLE 表示有可用的更新
     - FAILURE 表示更新操作失败
     """
-    SUCCESS=1
+    SUCCESS = 1
     UPDATE_AVAILABLE = 2
-    FAILURE=0
+    FAILURE = 0
 
 
 class UpdateThread(QThread):
@@ -136,7 +136,6 @@ class UpdateThread(QThread):
         return None
 
 
-
 @begin_and_finish_time_log(task_name="检查更新")
 def check_update(self, timeout=5, flag=False):
     """检查更新功能函数。
@@ -197,6 +196,7 @@ def is_valid_url(url):
         # 如果解析过程中出现异常，说明URL无效
         return False
 
+
 def update(assets_url):
     """
     从给定的URL下载更新文件到本地。
@@ -248,4 +248,3 @@ def update(assets_url):
         log.error(f"文件操作失败: {e}")
     finally:
         response.close()  # 确保关闭响应对象
-

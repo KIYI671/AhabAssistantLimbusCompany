@@ -84,7 +84,7 @@ class Screen(metaclass=SingletonMeta):
         try:
             screen_width = pyautogui.size().width
             screen_height = pyautogui.size().height
-            if screen_width < set_win_size*16/9 or screen_height < set_win_size:
+            if screen_width < set_win_size * 16 / 9 or screen_height < set_win_size:
                 self.logger.ERROR(f"屏幕分辨率过低，请重新设定分辨率")
                 pyautogui.hotkey('ctrl', 'q')
             pyautogui.hotkey('alt', 'enter')

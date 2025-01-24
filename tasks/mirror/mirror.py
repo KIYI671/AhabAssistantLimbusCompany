@@ -490,7 +490,7 @@ class Mirror:
             if auto.click_element("event/skip_assets.png", times=6):
                 continue
 
-            if event_chance<0:
+            if event_chance < 0:
                 msg = "事件卡死，尝试返回主界面"
                 log.ERROR(msg)
                 back_init_menu()

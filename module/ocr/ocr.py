@@ -12,8 +12,9 @@ from module.ocr.PPOCR_api import GetOcrApi
 
 class OCR:
     my_argument = {"config_path": "models/config_chinese.txt"}
-    def __init__(self,exe_path,logger):
-        self.exe_path=exe_path
+
+    def __init__(self, exe_path, logger):
+        self.exe_path = exe_path
         self.ocr = None
         self.logger = logger
 
@@ -32,29 +33,29 @@ class OCR:
     def exit_ocr(self):
         if self.ocr is not None:
             self.ocr.exit()
-            self.ocr=None
+            self.ocr = None
 
-    def run(self,image):
+    def run(self, image):
         """执行OCR识别，支持Image对象、文件路径和np.ndarray对象"""
         self.init_ocr()
         try:
             if not isinstance(image, Image.Image):
-                if isinstance(image,str):
+                if isinstance(image, str):
                     image = open(os.path.abspath(image))
-                else: # 默认为 np.ndarray，避免需要import numpy
+                else:  # 默认为 np.ndarray，避免需要import numpy
                     image = Image.fromarray(image)
-            # 1. 将 PIL Image 对象转换为 OpenCV 图片对象
+            # 将 PIL Image 对象转换为 OpenCV 图片对象
             img_cv = cv2.cvtColor(np.array(image), cv2.COLOR_RGB2BGR)
-            # 2. 将 OpenCV 图片对象转换为灰度模式
+            # 将 OpenCV 图片对象转换为灰度模式
             img_cv_gray = cv2.cvtColor(img_cv, cv2.COLOR_BGR2GRAY)
             # 自适应均衡化(均值化后更亮)
             clahe = createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
             image = clahe.apply(img_cv_gray)
             image = Image.fromarray(image)
-            image_stream =io.BytesIO()
+            image_stream = io.BytesIO()
             image.save(image_stream, format='PNG')
-            image_bytes =image_stream.getvalue()
-            original_dist =self.ocr.runBytes(image_bytes)
+            image_bytes = image_stream.getvalue()
+            original_dist = self.ocr.runBytes(image_bytes)
 
             self.log_results(original_dist)
             return original_dist
@@ -62,7 +63,7 @@ class OCR:
             self.logger.ERROR(e)
             return "{}"
 
-    def log_results(self,modified_dist):
+    def log_results(self, modified_dist):
         """记录OCR识别记录"""
         if "data" in modified_dist and "text" in modified_dist["data"][0]:
             print_list = [item["text"] for item in modified_dist["data"]]

@@ -20,7 +20,8 @@ def select_theme_pack(hard_switch=False):
         if auto.take_screenshot() is None:
             continue
 
-        if auto.find_element("mirror/theme_pack/normal_assets.png") is None and auto.find_element("mirror/theme_pack/hard_assets.png") is None:
+        if auto.find_element("mirror/theme_pack/normal_assets.png") is None and auto.find_element(
+                "mirror/theme_pack/hard_assets.png") is None:
             continue
 
         # TODO:适配困镜
@@ -46,7 +47,7 @@ def select_theme_pack(hard_switch=False):
                     if auto.find_text_element(black_theme_list, crop):
                         continue
                     else:
-                        auto.mouse_drag_down(pack[0],pack[1])
+                        auto.mouse_drag_down(pack[0], pack[1])
                         sleep(3)
                         return 0
         except Exception as e:

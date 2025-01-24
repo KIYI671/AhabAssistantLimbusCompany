@@ -11,7 +11,7 @@ def get_pass_prize():
         # 自动截图
         if auto.take_screenshot() is None:
             continue
-        if auto.click_element("pass/pass_coin.png",find_type='image_with_multiple_targets'):
+        if auto.click_element("pass/pass_coin.png", find_type='image_with_multiple_targets', interval=2):
             break
         if auto.click_element("pass/pass_missions_assets.png"):
             continue
@@ -30,7 +30,7 @@ def get_pass_prize():
     loop_count = 15
     auto.model = 'clam'
     while True:
-        if auto.click_element("pass/pass_coin.png",find_type='image_with_multiple_targets',take_screenshot=True):
+        if auto.click_element("pass/pass_coin.png", find_type='image_with_multiple_targets', take_screenshot=True):
             break
         loop_count -= 1
         if loop_count < 20:
@@ -42,7 +42,7 @@ def get_pass_prize():
             break
 
 
-@begin_and_finish_time_log(task_name="收取邮箱",calculate_time=False)
+@begin_and_finish_time_log(task_name="收取邮箱", calculate_time=False)
 def get_mail_prize():
     loop_count = 15
     auto.model = 'clam'

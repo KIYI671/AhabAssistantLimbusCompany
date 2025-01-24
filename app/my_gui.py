@@ -46,7 +46,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.timer.start(1000)  # 每秒更新一次
 
         try:
-            check_update(self,flag=True)
+            check_update(self, flag=True)
             pass
         except Exception as e:
             log.ERROR(f"检查更新失败，原因：{e}")
@@ -93,7 +93,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         set_get_prize_options = {"邮件+日/周常": 0, "日/周常": 1, "邮件": 2}
         self.set_get_prize.addItems(set_get_prize_options)
 
-        set_win_size_options = {"1920*1080": 1080, "2560*1440": 1440, "1280*720": 720, "1600*900": 900, "3200*1800": 1800,
+        set_win_size_options = {"1920*1080": 1080, "2560*1440": 1440, "1280*720": 720, "1600*900": 900,
+                                "3200*1800": 1800,
                                 "3840*2160": 2160}
         self.set_win_size.addItems(set_win_size_options)
 
@@ -124,8 +125,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         self.hard_mirror.stateChanged.connect(lambda checked: self.checkbox_state_changed())
         self.no_weekly_bonuses.stateChanged.connect(lambda checked: self.checkbox_state_changed())
-        cfg.set_value("hard_mirror",False)
-        cfg.set_value("no_weekly_bonuses",False)
+        cfg.set_value("hard_mirror", False)
+        cfg.set_value("no_weekly_bonuses", False)
 
         # 设置保存主页几个任务复选框的启用状态
         self.set_windows.stateChanged.connect(lambda checked: self.checkbox_state_changed())
@@ -181,12 +182,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         当前版本号:  {cfg.version}\n            
         ''')
         # 向日志打印当前版本号
-        msg=f"当前版本号:  {cfg.version}"
+        msg = f"当前版本号:  {cfg.version}"
         log.DEBUG(msg)
 
     def my_pause_and_resume(self):
         auto.set_pause()
-
 
     def setting_teams(self):
         button = self.sender()
@@ -203,15 +203,14 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         # 微调框改变时，将值传给yaml文件
         sender_spinbox = self.sender()
         name = sender_spinbox.objectName()
-        cfg.set_value(name,value)
+        cfg.set_value(name, value)
 
     def checkbox_state_changed(self):
         # 将主页几个任务复选框的启用状态保存到yaml文件
         sender_checkbox = self.sender()
         name = sender_checkbox.objectName()
         status = cfg.get_value(name)
-        cfg.set_value(name,not status)
-
+        cfg.set_value(name, not status)
 
     def team_checkbox_state_changed(self, checked, combo):
         # 各个配队的复选框被选中时，修改旁边的启动顺序
@@ -347,10 +346,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         all_teams = [getattr(self, f"team{i}_order") for i in range(1, 8)]
         for i, team in enumerate(all_teams, start=1):
             try:
-                team.setText(str(cfg.get_value(f"team{i}_order")) if cfg.get_value(f"team{i}_order")!=0 else "")
+                team.setText(str(cfg.get_value(f"team{i}_order")) if cfg.get_value(f"team{i}_order") != 0 else "")
             except Exception as e:
                 log.ERROR(f"更新队伍顺序失败: {e}")
-
 
     def start_and_stop_tasks(self):
         # 设置按下启动与停止按钮时，其他模块的启用与停用
@@ -453,7 +451,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 pass
 
     # 读取复选框时阻止信号触发
-    def set_checkbox_state(self,checkbox,value):
+    def set_checkbox_state(self, checkbox, value):
         checkbox.blockSignals(True)
         checkbox.setChecked(value)
         checkbox.blockSignals(False)
@@ -472,8 +470,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         self.set_get_prize.setCurrentIndex(cfg.set_get_prize)
 
-
-        win_size = {"1080":0,"1440":1,"2160":3,"720":4,"900":5,"1800":6}
+        win_size = {"1080": 0, "1440": 1, "2160": 3, "720": 4, "900": 5, "1800": 6}
         self.set_win_size.setCurrentIndex(win_size[str(cfg.set_win_size)])
 
         # 读取之前最后复选框设置
@@ -486,7 +483,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.set_checkbox_state(self.team7, cfg.team7)
 
         # 读取复选框设置，不执行选中时的行为
-        self.set_checkbox_state(self.set_windows,cfg.set_windows)
+        self.set_checkbox_state(self.set_windows, cfg.set_windows)
         self.set_checkbox_state(self.daily_task, cfg.daily_task)
         self.set_checkbox_state(self.mirror, cfg.mirror)
         self.set_checkbox_state(self.buy_enkephalin, cfg.buy_enkephalin)
@@ -500,17 +497,14 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         # 重计算选中几支队伍，防未知错误
         self.check_teams_select_num()
 
-
         # 读取之前排序文本框的数据
-        self.team1_order.setText(str(cfg.team1_order) if cfg.team1_order!=0 else "")
-        self.team2_order.setText(str(cfg.team2_order) if cfg.team2_order!=0 else "")
-        self.team3_order.setText(str(cfg.team3_order) if cfg.team3_order!=0 else "")
-        self.team4_order.setText(str(cfg.team4_order) if cfg.team4_order!=0 else "")
-        self.team5_order.setText(str(cfg.team5_order) if cfg.team5_order!=0 else "")
-        self.team6_order.setText(str(cfg.team6_order) if cfg.team6_order!=0 else "")
-        self.team7_order.setText(str(cfg.team7_order) if cfg.team7_order!=0 else "")
-
-
+        self.team1_order.setText(str(cfg.team1_order) if cfg.team1_order != 0 else "")
+        self.team2_order.setText(str(cfg.team2_order) if cfg.team2_order != 0 else "")
+        self.team3_order.setText(str(cfg.team3_order) if cfg.team3_order != 0 else "")
+        self.team4_order.setText(str(cfg.team4_order) if cfg.team4_order != 0 else "")
+        self.team5_order.setText(str(cfg.team5_order) if cfg.team5_order != 0 else "")
+        self.team6_order.setText(str(cfg.team6_order) if cfg.team6_order != 0 else "")
+        self.team7_order.setText(str(cfg.team7_order) if cfg.team7_order != 0 else "")
 
     # 重计算选中几支队伍，防未知错误
     def check_teams_select_num(self):
@@ -524,8 +518,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             cfg.set_value("teams_be_select", team_be_select)
         for team in seven_teams_order:
             if cfg.get_value(team) > team_be_select:
-                cfg.set_value(team, cfg.get_value(team)-team_be_select)
-
+                cfg.set_value(team, cfg.get_value(team) - team_be_select)
 
 
 # 镜牢队伍设置窗口界面
@@ -595,41 +588,39 @@ class setting_window(QDialog, Ui_all_team_basic_setting):
         self.blunt.stateChanged.connect(lambda checked: self.shop_checkbox_state_changed(checked, which_team))
 
         # 设置当按钮点击时改变商店逻辑
-        self.switch_button.checkedChanged.connect(lambda checked: self.shop_switch_button_state_changed(checked, which_team,name="fuse"))
+        self.switch_button.checkedChanged.connect(
+            lambda checked: self.shop_switch_button_state_changed(checked, which_team, name="fuse"))
         self.switch_button_2.checkedChanged.connect(
-            lambda checked: self.shop_switch_button_state_changed(checked, which_team,name="fuse_aggressive"))
+            lambda checked: self.shop_switch_button_state_changed(checked, which_team, name="fuse_aggressive"))
         config_datas = cfg.get_value(f"{which_team}")
         if config_datas['fuse']:
             self.switch_button_2.show()
         else:
             self.switch_button_2.hide()
 
-
         # 设置完成按钮
         self.confirm_button.clicked.connect(self.close)
 
         self.exec_()
 
-    def shop_switch_button_state_changed(self,check,which_team,name='fuse'):
+    def shop_switch_button_state_changed(self, check, which_team, name='fuse'):
         sender_check = self.sender()
         config_datas = cfg.get_value(f"{which_team}")
         config_datas[name] = not config_datas[name]
-        if name =='fuse':
+        if name == 'fuse':
             if config_datas[name]:
                 self.switch_button_2.show()
             else:
                 self.switch_button_2.hide()
-        cfg.set_value(f"{which_team}",config_datas)
-
+        cfg.set_value(f"{which_team}", config_datas)
 
     def shop_checkbox_state_changed(self, checked, which_team):
         # 设置当复选框选中时，修改是否启用对应关键词的售卖/合成
         sender_checkbox = self.sender()
         name = sender_checkbox.objectName()
-        config_datas =cfg.get_value(f"{which_team}")
+        config_datas = cfg.get_value(f"{which_team}")
         config_datas[name] = not config_datas[name]
-        cfg.set_value(f"{which_team}",config_datas)
-
+        cfg.set_value(f"{which_team}", config_datas)
 
     def on_combobox_changed(self, data_dict, which_team):
         # 各个下拉框改变时，改变config.yaml中的参数
@@ -641,7 +632,6 @@ class setting_window(QDialog, Ui_all_team_basic_setting):
         config_datas[name] = selected_value
         cfg.set_value(f"{which_team}", config_datas)
 
-
     def checkbox_state_changed(self, checked, combo, which_team):
         # 各个配队的复选框被选中时，修改旁边的启动顺序
         self.check_teams_select_num()
@@ -652,8 +642,8 @@ class setting_window(QDialog, Ui_all_team_basic_setting):
         if sender_checkbox.isChecked():
             config_datas = cfg.get_value(f"{which_team}")
             config_datas[name] = True
-            config_datas["sinners_be_select"]+=1
-            config_datas[this_sinner]=config_datas["sinners_be_select"]
+            config_datas["sinners_be_select"] += 1
+            config_datas[this_sinner] = config_datas["sinners_be_select"]
             combo.setText(str(config_datas["sinners_be_select"]))
             cfg.set_value(f"{which_team}", config_datas)
         else:
@@ -679,16 +669,15 @@ class setting_window(QDialog, Ui_all_team_basic_setting):
                 if config_datas[all_sinners_name[i]] != 0:
                     if config_datas[all_sinners_name[i]] > config_datas[sinner]:
                         config_datas[all_sinners_name[i]] = config_datas[all_sinners_name[i]] - 1
-                if config_datas[all_sinners_name[i]] !=0:
+                if config_datas[all_sinners_name[i]] != 0:
                     all_sinners[i].setText(str(config_datas[all_sinners_name[i]]))
                 else:
                     all_sinners[i].setText("")
-            cfg.set_value(which_team,config_datas)
+            cfg.set_value(which_team, config_datas)
         except Exception as e:
             raise log.ERROR(f"读取配置出错{e}")
 
-
-    def set_checkbox_state(self,checkbox,value):
+    def set_checkbox_state(self, checkbox, value):
         checkbox.blockSignals(True)
         checkbox.setChecked(value)
         checkbox.blockSignals(False)
@@ -703,7 +692,7 @@ class setting_window(QDialog, Ui_all_team_basic_setting):
             self.all_system.setCurrentIndex(config_datas["all_system"])
 
             # 读取之前罪人复选框设置
-            self.set_checkbox_state(self.YiSang,config_datas["YiSang"])
+            self.set_checkbox_state(self.YiSang, config_datas["YiSang"])
             self.set_checkbox_state(self.Faust, config_datas["Faust"])
             self.set_checkbox_state(self.DonQuixote, config_datas["DonQuixote"])
             self.set_checkbox_state(self.Ryoshu, config_datas["Ryoshu"])
@@ -717,23 +706,26 @@ class setting_window(QDialog, Ui_all_team_basic_setting):
             self.set_checkbox_state(self.Gregor, config_datas["Gregor"])
 
             # 读取之前排序文本框的数据
-            self.YiSang_order.setText(str(config_datas["YiSang_order"]) if config_datas["YiSang_order"]!=0 else "")
-            self.Faust_order.setText(str(config_datas["Faust_order"]) if config_datas["Faust_order"]!=0 else "")
-            self.DonQuixote_order.setText(str(config_datas["DonQuixote_order"]) if config_datas["DonQuixote_order"]!=0 else "")
-            self.Ryoshu_order.setText(str(config_datas["Ryoshu_order"]) if config_datas["Ryoshu_order"]!=0 else "")
-            self.Meursault_order.setText(str(config_datas["Meursault_order"]) if config_datas["Meursault_order"]!=0 else "")
-            self.HongLu_order.setText(str(config_datas["HongLu_order"]) if config_datas["HongLu_order"]!=0 else "")
-            self.Heathcliff_order.setText(str(config_datas["Heathcliff_order"]) if config_datas["Heathcliff_order"]!=0 else "")
-            self.Ishmael_order.setText(str(config_datas["Ishmael_order"]) if config_datas["Ishmael_order"]!=0 else "")
-            self.Rodion_order.setText(str(config_datas["Rodion_order"]) if config_datas["Rodion_order"]!=0 else "")
-            self.Sinclair_order.setText(str(config_datas["Sinclair_order"]) if config_datas["Sinclair_order"]!=0 else "")
-            self.Outis_order.setText(str(config_datas["Outis_order"]) if config_datas["Outis_order"]!=0 else "")
-            self.Gregor_order.setText(str(config_datas["Gregor_order"]) if config_datas["Gregor_order"] !=0 else "")
+            self.YiSang_order.setText(str(config_datas["YiSang_order"]) if config_datas["YiSang_order"] != 0 else "")
+            self.Faust_order.setText(str(config_datas["Faust_order"]) if config_datas["Faust_order"] != 0 else "")
+            self.DonQuixote_order.setText(
+                str(config_datas["DonQuixote_order"]) if config_datas["DonQuixote_order"] != 0 else "")
+            self.Ryoshu_order.setText(str(config_datas["Ryoshu_order"]) if config_datas["Ryoshu_order"] != 0 else "")
+            self.Meursault_order.setText(
+                str(config_datas["Meursault_order"]) if config_datas["Meursault_order"] != 0 else "")
+            self.HongLu_order.setText(str(config_datas["HongLu_order"]) if config_datas["HongLu_order"] != 0 else "")
+            self.Heathcliff_order.setText(
+                str(config_datas["Heathcliff_order"]) if config_datas["Heathcliff_order"] != 0 else "")
+            self.Ishmael_order.setText(str(config_datas["Ishmael_order"]) if config_datas["Ishmael_order"] != 0 else "")
+            self.Rodion_order.setText(str(config_datas["Rodion_order"]) if config_datas["Rodion_order"] != 0 else "")
+            self.Sinclair_order.setText(
+                str(config_datas["Sinclair_order"]) if config_datas["Sinclair_order"] != 0 else "")
+            self.Outis_order.setText(str(config_datas["Outis_order"]) if config_datas["Outis_order"] != 0 else "")
+            self.Gregor_order.setText(str(config_datas["Gregor_order"]) if config_datas["Gregor_order"] != 0 else "")
 
             # 读取是否启用合成饰品
             self.switch_button.setChecked(config_datas["fuse"])
             self.switch_button_2.setChecked(config_datas["fuse_aggressive"])
-
 
             # 读取之前商店复选框设置
             self.burn.setChecked(config_datas["burn"])
@@ -760,9 +752,7 @@ class setting_window(QDialog, Ui_all_team_basic_setting):
             cfg.set_value("teams_be_select", team_be_select)
         for team in seven_teams_order:
             if cfg.get_value(team) > team_be_select:
-                cfg.set_value(team, cfg.get_value(team)-team_be_select)
-
-
+                cfg.set_value(team, cfg.get_value(team) - team_be_select)
 
 
 if __name__ == "__main__":

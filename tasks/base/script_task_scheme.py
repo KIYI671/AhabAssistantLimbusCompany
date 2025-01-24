@@ -78,7 +78,9 @@ def onetime_mir_process(the_selected_team_setting):
             shop_sell_list.append(shop_system)
     # 进行一次镜牢
     try:
-        mirror_adventure = Mirror(sinner_team,the_selected_team_setting["all_teams"],shop_sell_list,fuse_switch,all_systems[the_selected_team_setting["all_system"]],fuse_aggressive_switch,hard_switch,no_weekly_bonuses)
+        mirror_adventure = Mirror(sinner_team, the_selected_team_setting["all_teams"], shop_sell_list, fuse_switch,
+                                  all_systems[the_selected_team_setting["all_system"]], fuse_aggressive_switch,
+                                  hard_switch, no_weekly_bonuses)
         if mirror_adventure.run():
             del mirror_adventure
             back_init_menu()
@@ -90,7 +92,6 @@ def onetime_mir_process(the_selected_team_setting):
         msg = f"镜牢行动出错: {e}"
         log.ERROR(msg)
         return False
-
 
 
 def script_task():
@@ -106,18 +107,17 @@ def script_task():
     if auto.click_element("battle/turn_assets.png"):
         get_reward = battle()
 
-
     # 执行日常刷本任务
     if cfg.daily_task:
         select_team = cfg.daily_teams
         back_init_menu()
         make_enkephalin_module()
         exp_times = cfg.set_EXP_count
-        if get_reward and get_reward=="EXP":
-            exp_times-=1
+        if get_reward and get_reward == "EXP":
+            exp_times -= 1
         thread_times = cfg.set_thread_count
-        if get_reward and get_reward=="thread":
-            thread_times-=1
+        if get_reward and get_reward == "thread":
+            thread_times -= 1
         for i in range(exp_times):
             onetime_EXP_process(select_team)
         for i in range(thread_times):
@@ -173,7 +173,7 @@ def script_task():
                             this_team[0] = len(all_my_team_setting)
                         else:
                             this_team[0] -= 1
-                        cfg.set_value(this_team[2],this_team[0])
+                        cfg.set_value(this_team[2], this_team[0])
                     mir_times -= 1
     if cfg.set_reduce_miscontact:
         screen.reset_win()

@@ -10,7 +10,7 @@ from tasks.event.event_handling import EventHandling
 
 
 def to_battle():
-    loop_count=15
+    loop_count = 15
     while True:
         # 自动截图
         if auto.take_screenshot() is None:
@@ -28,6 +28,7 @@ def to_battle():
             msg = "超出最大尝试次数,未能进入战斗"
             log.ERROR(msg)
             return False
+
 
 def update_wait_time(time: float = None, fail_flag: bool = False, total_count: int = 1):
     MAX_WAITING = 3.0  # 最大等待时间
@@ -59,7 +60,7 @@ def battle(first_battle=False):
     total_count = 0
     fail_count = 0
     in_mirror = False
-    first_battle_reward=None
+    first_battle_reward = None
     event_chance = 15
 
     while True:
@@ -97,13 +98,13 @@ def battle(first_battle=False):
         # 如果战斗中途出现事件
         if auto.find_element("event/choices_assets.png") and auto.find_element(
                 "event/select_first_option_assets.png"):
-            if event_chance>5:
+            if event_chance > 5:
                 auto.click_element("event/select_first_option_assets.png")
-                event_chance-=1
-            elif event_chance>0:
-                auto.click_element("event/select_first_option_assets.png",find_type="image_with_multiple_targets")
-                event_chance-=1
-        if auto.find_element("event/perform_the_check_feature_assets.png") :
+                event_chance -= 1
+            elif event_chance > 0:
+                auto.click_element("event/select_first_option_assets.png", find_type="image_with_multiple_targets")
+                event_chance -= 1
+        if auto.find_element("event/perform_the_check_feature_assets.png"):
             EventHandling.decision_event_handling()
         if auto.click_element("event/continue_assets.png"):
             continue
@@ -111,18 +112,19 @@ def battle(first_battle=False):
             continue
         if auto.click_element("event/commence_assets.png"):
             continue
-        if auto.click_element("event/skip_assets.png",times=6):
+        if auto.click_element("event/skip_assets.png", times=6):
             continue
 
         # 战斗结束，进入结算页面
-        if auto.click_element("battle/battle_finish_confirm_assets.png",click=False):
+        if auto.click_element("battle/battle_finish_confirm_assets.png", click=False):
             sleep(1)
             if auto.click_element("base/leave_up_assets.png"):
                 auto.click_element("base/leave_up_confirm_assets.png")
                 continue
             # 为某些人在副本战斗过程中启动脚本任务进行收尾
             if first_battle:
-                if auto.find_element("battle/clear_rewards_EXP_1.png") or auto.find_element("battle/clear_rewards_EXP_2.png") or auto.find_element("battle/clear_rewards_EXP_3.png"):
+                if auto.find_element("battle/clear_rewards_EXP_1.png") or auto.find_element(
+                        "battle/clear_rewards_EXP_2.png") or auto.find_element("battle/clear_rewards_EXP_3.png"):
                     first_battle_reward = "EXP"
                 if auto.find_element("battle/clear_rewards_thread.png"):
                     first_battle_reward = "thread"
@@ -140,10 +142,9 @@ def battle(first_battle=False):
 
         # 如果交战过程误触，导致战斗暂停
         if auto.click_element("battle/continue_assets.png"):
-            continue        
-        # 如果网络波动，需要点击重试
+            continue
+            # 如果网络波动，需要点击重试
         retry()
-
 
         chance -= 1
         sleep(waiting)
@@ -154,11 +155,11 @@ def battle(first_battle=False):
         if chance < 0:
             break
 
-    if total_count ==0:
-        match_success_rate=100
+    if total_count == 0:
+        match_success_rate = 100
     else:
         #保留最多三位小数
-        match_success_rate=(1 - fail_count / total_count) * 100
+        match_success_rate = (1 - fail_count / total_count) * 100
     msg = f"此次战斗匹配失败次数{fail_count} 匹配总次数{total_count} 匹配成功率{match_success_rate}%"
     log.DEBUG(msg)
     if first_battle:

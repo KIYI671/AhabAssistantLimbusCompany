@@ -66,7 +66,7 @@ def buy_gifts(system, fuse_aggressive_switch):
             while auto.take_screenshot() is None:
                 continue
             if system == 'bleed':
-                if auto.find_text_element(["white", "gossypium"],all_text=True):
+                if auto.find_text_element(["white", "gossypium"], all_text=True):
                     auto.mouse_click_blank(times=2)
                 sleep(1)
             if auto.click_element("mirror/shop/purchase_assets.png", take_screenshot=True):

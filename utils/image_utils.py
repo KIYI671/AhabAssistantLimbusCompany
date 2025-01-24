@@ -8,7 +8,8 @@ from cv2 import createCLAHE
 from module.config import cfg
 from module.logger import log
 
-pic_path =["share","en"]
+pic_path = ["share", "en"]
+
 
 class ImageUtils:
     @staticmethod
@@ -208,4 +209,3 @@ class ImageUtils:
         :return: 图片的宽度和高度。
         """
         return image_array.shape[::-1]
-
