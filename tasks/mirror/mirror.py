@@ -338,10 +338,13 @@ class Mirror:
                 break
 
             if self.system == "slash" or self.system == "pierce" or self.system == "blunt" and scroll == False:
-                slash_button = auto.find_element("mirror/road_to_mir/slash_gift_assets.png")
-                auto.mouse_drag(slash_button[0], slash_button[1], drag_time=0.2, dx=0, dy=-200)
+                slash_button = auto.find_element("mirror/road_to_mir/slash_gift_model_assets.png")
+                if slash_button is not None:
+                    auto.mouse_drag(slash_button[0], slash_button[1], drag_time=0.2, dx=0, dy=-200)
+                    sleep(0.5)
+                    continue
+                print(scroll)
                 scroll = True
-                continue
 
             if auto.click_element(f"mirror/road_to_mir/{self.system}_gift_assets.png") and select_system == False:
                 select_system = True
