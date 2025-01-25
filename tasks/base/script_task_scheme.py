@@ -17,6 +17,7 @@ from tasks.daily.get_prize import get_pass_prize, get_mail_prize
 from tasks.daily.luxcavation import EXP_luxcavation, thread_luxcavation
 from tasks.mirror.mirror import Mirror
 from tasks.teams.team_formation import select_battle_team
+from utils import pic_path
 
 all_systems = {0: "burn", 1: "bleed", 2: "tremor", 3: "rupture", 4: "poise",
                5: "sinking", 6: "charge", 7: "slash", 8: "pierce", 9: "blunt"}
@@ -99,6 +100,9 @@ def script_task():
     screen.init_handle()
     if cfg.set_windows:
         screen.set_win()
+
+    if cfg.language == "zh_cn":
+        pic_path.insert(0, "zh_cn")
 
     # 如果是战斗中，先处理战斗
     get_reward = None

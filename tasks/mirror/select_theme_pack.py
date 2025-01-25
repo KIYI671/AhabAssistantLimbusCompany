@@ -14,6 +14,9 @@ def select_theme_pack(hard_switch=False):
     auto.model = 'clam'
     scale = cfg.set_win_size / 1080
     black_theme_list = black_list.get_value("blacklist")
+    if cfg.language == 'zh_cn':
+        black_theme_list.extend(black_list.get_value("blacklist_cn"))
+
     refresh_times = 3
     while True:
         # 自动截图

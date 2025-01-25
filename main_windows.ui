@@ -365,7 +365,7 @@
        </rect>
       </property>
       <property name="currentIndex">
-       <number>2</number>
+       <number>0</number>
       </property>
       <widget class="QWidget" name="win_setting">
        <widget class="BodyLabel" name="win_size">
@@ -444,6 +444,32 @@
         </property>
         <property name="text">
          <string>是</string>
+        </property>
+       </widget>
+       <widget class="BodyLabel" name="language_in_game_setting">
+        <property name="geometry">
+         <rect>
+          <x>20</x>
+          <y>260</y>
+          <width>191</width>
+          <height>20</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>游戏语言设置</string>
+        </property>
+       </widget>
+       <widget class="ComboBox" name="language">
+        <property name="geometry">
+         <rect>
+          <x>20</x>
+          <y>290</y>
+          <width>251</width>
+          <height>32</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>English</string>
         </property>
        </widget>
       </widget>

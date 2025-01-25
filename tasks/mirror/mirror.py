@@ -82,7 +82,7 @@ class Mirror:
             if loop_count < 10:
                 auto.model = 'aggressive'
             if loop_count < 0:
-                log.ERROR("无法获取ego饰品,尝试回到初始界面")
+                log.ERROR("无法进入镜牢,尝试回到初始界面")
                 back_init_menu()
                 break
 
@@ -127,6 +127,7 @@ class Mirror:
                 if auto.find_element("mirror/claim_reward/claim_rewards_assets.png") and auto.find_element(
                         "mirror/claim_reward/complete_mirror_100%_assets.png"):
                     break
+                retry()
                 while auto.take_screenshot() is None:
                     continue
                 if auto.find_element("mirror/road_in_mir/legend_assets.png"):
@@ -530,7 +531,10 @@ class Mirror:
                     for button in acquire_button:
                         bbox = (button[0] - 350 * my_scale, button[1] - 50 * my_scale, button[0] + 150 * my_scale,
                                 button[1] + 250 * my_scale)
-                        ocr_result = auto.find_text_element(["white", "gossypium"], bbox)
+                        if cfg.language == "zh_cn":
+                            ocr_result = auto.find_text_element("白棉花", bbox)
+                        else:
+                            ocr_result = auto.find_text_element(["white", "gossypium"], bbox)
                         if isinstance(ocr_result, list):
                             if len(ocr_result) >= 2:
                                 continue
@@ -543,7 +547,10 @@ class Mirror:
                     for button in acquire_button:
                         bbox = (button[0] - 350 * my_scale, button[1] - 50 * my_scale, button[0] + 150 * my_scale,
                                 button[1] + 250 * my_scale)
-                        ocr_result = auto.find_text_element(["white", "gossypium"], bbox)
+                        if cfg.language == "zh_cn":
+                            ocr_result = auto.find_text_element("白棉花", bbox)
+                        else:
+                            ocr_result = auto.find_text_element(["white", "gossypium"], bbox)
                         if isinstance(ocr_result, list):
                             if len(ocr_result) >= 2:
                                 time.sleep(1)
@@ -561,7 +568,10 @@ class Mirror:
                     for button in acquire_button:
                         bbox = (button[0] - 350 * my_scale, button[1] - 50 * my_scale, button[0] + 150 * my_scale,
                                 button[1] + 250 * my_scale)
-                        ocr_result = auto.find_text_element(["white", "gossypium"], bbox)
+                        if cfg.language == "zh_cn":
+                            ocr_result = auto.find_text_element("白棉花", bbox)
+                        else:
+                            ocr_result = auto.find_text_element(["white", "gossypium"], bbox)
                         if ocr_result:
                             continue
                         if auto.find_element(f"mirror/road_in_mir/acquire_ego_gift/{self.system}.png", ocr_crop=bbox):

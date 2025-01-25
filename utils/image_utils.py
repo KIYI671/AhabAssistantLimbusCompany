@@ -7,8 +7,7 @@ from cv2 import createCLAHE
 
 from module.config import cfg
 from module.logger import log
-
-pic_path = ["share", "en"]
+from utils import pic_path
 
 
 class ImageUtils:

@@ -1,5 +1,6 @@
 from module.automation import auto
 from module.config import cfg
+from tasks.base.retry import retry
 
 
 # 在默认缩放情况下，进行镜牢寻路
@@ -10,6 +11,7 @@ def search_road_default_distance():
                    [500 * scale, 450 * scale]]
     while auto.take_screenshot() is None:
         continue
+    retry()
     if bus_position := auto.find_element("mirror/mybus_default_distance.png"):
         for road in three_roads:
             road[0] += bus_position[0]
@@ -35,6 +37,7 @@ def search_road_farthest_distance():
     auto.mouse_scroll()
     while auto.take_screenshot() is None:
         continue
+    retry()
     three_roads = [[250 * scale, -200 * scale],
                    [250 * scale, 0],
                    [250 * scale, 225 * scale]]

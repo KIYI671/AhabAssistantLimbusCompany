@@ -8,6 +8,19 @@ from tasks.base.retry import retry
 from tasks.mirror import must_be_abandoned, must_purchase, fusion_material
 from utils.image_utils import ImageUtils
 
+system_cn_zh = {
+    "burn": "烧伤",
+    "bleed": "流血",
+    "tremor": "震颤",
+    "rupture": "破裂",
+    "poise": "呼吸",
+    "sinking": "沉沦",
+    "charge": "充能",
+    "slash": "斩击",
+    "pierce": "突刺",
+    "blunt": "打击"
+}
+
 
 def ego_gift_to_power_up():
     loop_count = 30
@@ -66,8 +79,12 @@ def buy_gifts(system, fuse_aggressive_switch):
             while auto.take_screenshot() is None:
                 continue
             if system == 'bleed':
-                if auto.find_text_element(["white", "gossypium"], all_text=True):
-                    auto.mouse_click_blank(times=2)
+                if cfg.language == 'en':
+                    if auto.find_text_element(["white", "gossypium"], all_text=True):
+                        auto.mouse_click_blank(times=2)
+                elif cfg.language == 'zh_cn':
+                    if auto.find_text_element("白棉花"):
+                        auto.mouse_click_blank(times=2)
                 sleep(1)
             if auto.click_element("mirror/shop/purchase_assets.png", take_screenshot=True):
                 sleep(1)
@@ -192,22 +209,32 @@ def fuse_useless_gifts_aggressive(system):
                 try:
                     gift_position = my_list[sequence]
                     auto.mouse_click(gift_position[0], gift_position[1])
+                    sleep(0.5)
                 except IndexError:
                     msg = f"饰品列表已经没有第{sequence + 1}项了"
                     log.DEBUG(msg)
             sleep(1)
 
         fuse_confirm = False
+        loop_times = 15
         while True:
             if auto.take_screenshot() is None:
                 continue
 
             if fuse_confirm:
                 if ego_gift_get_confirm := auto.find_element("mirror/road_in_mir/ego_gift_get_confirm_assets.png"):
-                    if auto.find_element(["fragment", "corrosion"], find_type="text"):
+                    if cfg.language == "zh_cn":
+                        excluded_names = "残片"
+                    else:
+                        excluded_names = ["fragment", "corrosion"]
+                    if auto.find_element(excluded_names, find_type="text"):
                         fuse = True
                     else:
-                        if auto.find_element(system, find_type="text"):
+                        if cfg.language == "zh_cn":
+                            system_name = system_cn_zh[system]
+                        else:
+                            system_name = system
+                        if auto.find_element(system_name, find_type="text"):
                             fuse_IV = True
                             fuse = False
                     auto.mouse_click(ego_gift_get_confirm[0], ego_gift_get_confirm[1])
@@ -215,6 +242,9 @@ def fuse_useless_gifts_aggressive(system):
 
                 if auto.click_element("mirror/shop/enhance_and_fuse_and_sell_confirm_assets.png", model="normal"):
                     sleep(2)
+                    if loop_times <= 0:
+                        break
+                    loop_times -= 1
                     continue
             else:
                 if auto.find_element("mirror/shop/fusion_level_IV_gift_assets.png",
@@ -289,12 +319,14 @@ def fuse_useless_gifts(shop_sell_list):
                 try:
                     gift_position = my_list[sequence]
                     auto.mouse_click(gift_position[0], gift_position[1])
+                    sleep(0.5)
                 except IndexError:
                     msg = f"饰品舍弃列表已经没有第{sequence + 1}项了"
                     log.DEBUG(msg)
             select_gifts = True
 
         if select_gifts:
+            loop_times = 15
             while True:
                 if auto.take_screenshot() is None:
                     continue
@@ -309,6 +341,10 @@ def fuse_useless_gifts(shop_sell_list):
 
                 if auto.click_element("mirror/shop/fuse_ego_gift_assets.png"):
                     continue
+
+                if loop_times < 0:
+                    break
+                loop_times -= 1
 
         if fuse:
             continue

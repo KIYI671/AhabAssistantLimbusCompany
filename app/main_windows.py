@@ -166,6 +166,12 @@ class Ui_MainWindow(object):
         self.set_reduce_miscontact = ComboBox(self.win_setting)
         self.set_reduce_miscontact.setGeometry(QtCore.QRect(20, 210, 251, 32))
         self.set_reduce_miscontact.setObjectName("set_reduce_miscontact")
+        self.language_in_game_setting = BodyLabel(self.win_setting)
+        self.language_in_game_setting.setGeometry(QtCore.QRect(20, 260, 191, 20))
+        self.language_in_game_setting.setObjectName("language_in_game_setting")
+        self.language = ComboBox(self.win_setting)
+        self.language.setGeometry(QtCore.QRect(20, 290, 251, 32))
+        self.language.setObjectName("language")
         self.detail_setting.addWidget(self.win_setting)
 
         # 日常任务的页面
@@ -456,6 +462,8 @@ class Ui_MainWindow(object):
         self.set_win_size.setText(_translate("MainWindow", "1920*1080"))
         self.set_win_position.setText(_translate("MainWindow", "左上角（0，0）"))
         self.set_reduce_miscontact.setText(_translate("MainWindow", "是"))
+        self.language_in_game_setting.setText(_translate("MainWindow", "游戏语言设置"))
+        self.language.setText(_translate("MainWindow", "English"))
         self.EXP_count.setText(_translate("MainWindow", "经验本次数"))
         self.thread_count.setText(_translate("MainWindow", "纽本次数"))
         self.daily_teams.setText(_translate("MainWindow", "TEAM 1"))
