@@ -41,6 +41,11 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt pyinstaller
 
+      - name: Inject version number
+        run: |
+          $filePath = "assets/config/version.txt"
+          "V${{ inputs.version }}" | Set-Content $filePath
+
       # 步骤4：生成并打包项目
       - name: Build executable & Bundle resources
         run: |
