@@ -56,7 +56,7 @@ jobs:
           cp -r assets dist_release/AALC/
           cp LICENSE dist_release/AALC/
           cp README.md dist_release/AALC/
-          7z a -mx=7 AALC_${{ github.run_number }}.7z dist_release/*
+          7z a -mx=7 AALC_${{ github.run_number }}.7z dist_release/AALC/*
 
       # 步骤5：上传压缩包
       - name: Upload artifact
