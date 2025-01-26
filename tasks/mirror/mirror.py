@@ -58,6 +58,7 @@ class Mirror:
     def road_to_mir(self):
         loop_count = 30
         auto.model = 'clam'
+        self.first_battle = True
         while True:
             # 自动截图
             if auto.take_screenshot() is None:

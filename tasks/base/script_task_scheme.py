@@ -1,7 +1,9 @@
+import random
 from sys import exc_info
 from traceback import format_exception
 
 from PyQt5.QtCore import QThread, pyqtSignal, QMutex
+from playsound3 import playsound
 
 from module.automation import auto
 from module.config import cfg
@@ -103,6 +105,10 @@ def script_task():
 
     if cfg.language == "zh_cn":
         pic_path.insert(0, "zh_cn")
+
+    if cfg.play_audio:
+        random_number = random.randint(1, 4)
+        playsound(f"assets/audio/This_is_all_your_fault_{random_number}.mp3")
 
     # 如果是战斗中，先处理战斗
     get_reward = None

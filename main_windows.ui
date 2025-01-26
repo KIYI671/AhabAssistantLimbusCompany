@@ -334,6 +334,19 @@
         </size>
        </property>
       </widget>
+      <widget class="CheckBox" name="play_audio">
+       <property name="geometry">
+        <rect>
+         <x>20</x>
+         <y>230</y>
+         <width>90</width>
+         <height>22</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>亚哈语录</string>
+       </property>
+      </widget>
      </widget>
      <widget class="PushButton" name="start_tasks">
       <property name="geometry">

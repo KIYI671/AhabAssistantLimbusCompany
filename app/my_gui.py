@@ -138,6 +138,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.mirror.stateChanged.connect(lambda checked: self.checkbox_state_changed())
         self.buy_enkephalin.stateChanged.connect(lambda checked: self.checkbox_state_changed())
         self.get_reward.stateChanged.connect(lambda checked: self.checkbox_state_changed())
+        self.play_audio.stateChanged.connect(lambda checked: self.checkbox_state_changed())
 
         # 设置各个数值选择器变化时，改变config.yaml中的参数
         self.set_EXP_count.valueChanged.connect(lambda value: self.spinbox_changed(value))
@@ -302,6 +303,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.mirror.setEnabled(False)
         self.buy_enkephalin.setEnabled(False)
         self.get_reward.setEnabled(False)
+        self.play_audio.setEnabled(False)
         self.set_win_size.setEnabled(False)
         self.set_win_position.setEnabled(False)
         self.set_reduce_miscontact.setEnabled(False)
@@ -328,10 +330,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.mirror.setEnabled(True)
         self.buy_enkephalin.setEnabled(True)
         self.get_reward.setEnabled(True)
+        self.play_audio.setEnabled(True)
         self.set_win_size.setEnabled(True)
         self.set_win_position.setEnabled(True)
         self.set_reduce_miscontact.setEnabled(True)
-        self.set_reduce_miscontact.setEnabled(True)
+        self.language.setEnabled(True)
         self.set_EXP_count.setEnabled(True)
         self.set_thread_count.setEnabled(True)
         self.daily_teams.setEnabled(True)
@@ -497,6 +500,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.set_checkbox_state(self.mirror, cfg.mirror)
         self.set_checkbox_state(self.buy_enkephalin, cfg.buy_enkephalin)
         self.set_checkbox_state(self.get_reward, cfg.get_reward)
+        self.set_checkbox_state(self.play_audio, cfg.play_audio)
 
         # 读取之前最后数字调节框设置
         self.set_mirror_count.setValue(cfg.set_mirror_count)

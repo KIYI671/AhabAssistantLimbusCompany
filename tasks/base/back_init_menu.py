@@ -14,7 +14,7 @@ def back_init_menu():
         # 自动截图
         if auto.take_screenshot() is None:
             continue
-        if auto.click_element("home/window_assets.png") and auto.find_element("home/mail_assets.png"):
+        if auto.click_element("home/window_assets.png") and auto.find_element("home/mail_assets.png",model='normal'):
             break
 
         if auto.click_element("mirror/road_in_mir/towindow&forfeit_confirm_assets.png"):

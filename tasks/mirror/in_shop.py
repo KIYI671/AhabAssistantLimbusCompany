@@ -209,7 +209,7 @@ def fuse_useless_gifts_aggressive(system):
                 try:
                     gift_position = my_list[sequence]
                     auto.mouse_click(gift_position[0], gift_position[1])
-                    sleep(0.5)
+                    sleep(0.75)
                 except IndexError:
                     msg = f"饰品列表已经没有第{sequence + 1}项了"
                     log.DEBUG(msg)
@@ -319,7 +319,7 @@ def fuse_useless_gifts(shop_sell_list):
                 try:
                     gift_position = my_list[sequence]
                     auto.mouse_click(gift_position[0], gift_position[1])
-                    sleep(0.5)
+                    sleep(0.75)
                 except IndexError:
                     msg = f"饰品舍弃列表已经没有第{sequence + 1}项了"
                     log.DEBUG(msg)
@@ -331,6 +331,10 @@ def fuse_useless_gifts(shop_sell_list):
                 if auto.take_screenshot() is None:
                     continue
 
+                if loop_times < 0:
+                    break
+                loop_times -= 1
+
                 if auto.click_element("mirror/road_in_mir/ego_gift_get_confirm_assets.png"):
                     fuse = True
                     sleep(1)
@@ -341,10 +345,6 @@ def fuse_useless_gifts(shop_sell_list):
 
                 if auto.click_element("mirror/shop/fuse_ego_gift_assets.png"):
                     continue
-
-                if loop_times < 0:
-                    break
-                loop_times -= 1
 
         if fuse:
             continue

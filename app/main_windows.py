@@ -128,6 +128,11 @@ class Ui_MainWindow(object):
         self.get_reward_button.setIconSize(QtCore.QSize(20, 20))
         self.get_reward_button.setObjectName("get_reward_button")
 
+        # 亚哈语录启动
+        self.play_audio = CheckBox(self.select_task)
+        self.play_audio.setGeometry(QtCore.QRect(20, 230, 90, 22))
+        self.play_audio.setObjectName("play_audio")
+
         # 布置左下角开始按钮
         self.start_tasks = PushButton(self.page)
         self.start_tasks.setGeometry(QtCore.QRect(60, 500, 131, 71))
@@ -455,6 +460,7 @@ class Ui_MainWindow(object):
         self.get_reward.setText(_translate("MainWindow", "领取奖励"))
         self.select_all.setText(_translate("MainWindow", "全选"))
         self.select_none.setText(_translate("MainWindow", "清空"))
+        self.play_audio.setText(_translate("MainWindow", "亚哈语录"))
         self.start_tasks.setText(_translate("MainWindow", "Link Start!"))
         self.win_size.setText(_translate("MainWindow", "窗口大小"))
         self.win_position.setText(_translate("MainWindow", "窗口位移"))
