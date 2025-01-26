@@ -3,6 +3,7 @@ from time import sleep
 import pyautogui
 
 from module.automation import auto
+from module.config import cfg
 from module.decorator.decorator import begin_and_finish_time_log
 from module.logger import log
 from tasks.base.retry import retry
@@ -82,6 +83,25 @@ def battle(first_battle=False):
             sleep(2 * waiting)  # 战斗播片中增大间隔
             chance = INIT_CHANCE
             continue
+
+        if in_mirror :
+            if dead_position:=auto.find_element("battle/dead.png"):
+                my_scale = cfg.set_win_size / 1440
+                dead_bbox = (dead_position[0] - 100 * my_scale, dead_position[1] - 30 * my_scale, dead_position[0] + 100 * my_scale,
+                                    dead_position[1] + 30 * my_scale)
+                if cfg.language == "zh_cn":
+                    ocr_result = auto.find_text_element("阵亡", dead_bbox)
+                else:
+                    ocr_result = auto.find_text_element("dead", dead_bbox)
+                if ocr_result is not False:
+                    while True:
+                        if auto.take_screenshot() is None:
+                            continue
+                        if auto.click_element("battle/give_up_assets.png"):
+                            sleep(2)
+                            return False
+                        if auto.click_element("battle/setting_assets.png"):
+                            continue
 
         # 如果正在战斗待机界面
         if auto.click_element("battle/turn_assets.png") or auto.find_element("battle/win_rate_assets.png"):
