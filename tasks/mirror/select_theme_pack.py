@@ -59,6 +59,7 @@ def select_theme_pack(hard_switch=False):
 
         if auto.click_element("mirror/theme_pack/refresh_assets.png") and refresh_times > 0:
             refresh_times -= 1
+            sleep(1)
             continue
 
         if auto.click_element("mirror/theme_pack/theme_pack_features.png", action="drag_down"):

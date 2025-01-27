@@ -8,6 +8,7 @@ from utils.image_utils import ImageUtils
 from utils.singletonmeta import SingletonMeta
 from .input import Input
 from .screenshot import ScreenShot
+from ..logger import log
 from ..ocr import ocr
 
 
@@ -204,6 +205,7 @@ class Automation(metaclass=SingletonMeta):
     def find_str_in_text(self, target, ocr_dict):
         for text in ocr_dict.keys():
             if target.lower() in text.lower():
+                log.DEBUG(f"识别到目标：{text},坐标为：{ocr_dict[text]}")
                 return ocr_dict[text]
         return False
 

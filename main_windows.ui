@@ -125,7 +125,7 @@
         <x>30</x>
         <y>10</y>
         <width>210</width>
-        <height>471</height>
+        <height>411</height>
        </rect>
       </property>
       <widget class="CheckBox" name="buy_enkephalin">
@@ -197,7 +197,7 @@
        <property name="geometry">
         <rect>
          <x>20</x>
-         <y>420</y>
+         <y>360</y>
          <width>81</width>
          <height>32</height>
         </rect>
@@ -210,7 +210,7 @@
        <property name="geometry">
         <rect>
          <x>110</x>
-         <y>420</y>
+         <y>360</y>
          <width>81</width>
          <height>32</height>
         </rect>
@@ -1229,6 +1229,32 @@
         </widget>
        </widget>
       </widget>
+     </widget>
+     <widget class="ComboBox" name="after_completion">
+      <property name="geometry">
+       <rect>
+        <x>30</x>
+        <y>460</y>
+        <width>211</width>
+        <height>32</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>无 / None</string>
+      </property>
+     </widget>
+     <widget class="BodyLabel" name="after_all">
+      <property name="geometry">
+       <rect>
+        <x>65</x>
+        <y>430</y>
+        <width>141</width>
+        <height>20</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>脚本结束后 / After All</string>
+      </property>
      </widget>
     </widget>
     <widget class="QWidget" name="instructions">

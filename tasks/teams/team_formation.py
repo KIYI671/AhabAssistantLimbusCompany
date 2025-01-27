@@ -71,13 +71,16 @@ def select_battle_team(num):
         elif cfg.language == 'zh_cn':
             team_name = "编队#" + str(num)
             team_name_error_correcting = "编队#" + str(num)
+        my_scale = cfg.set_win_size / 1440
+        position_bbox = (position[0] - 130 * my_scale, position[1] - 30 * my_scale, position[0] + 130 * my_scale,
+                         position[1] + 400 * my_scale)
         for i in range(10):
             while auto.take_screenshot() is None:
                 continue
-            if auto.click_element(team_name, find_type="text", offset=False):
+            if auto.click_element(team_name, find_type="text", offset=False, ocr_crop=position_bbox):
                 find = True
                 break
-            if auto.click_element(team_name_error_correcting, find_type="text", offset=False):
+            if auto.click_element(team_name_error_correcting, find_type="text", offset=False, ocr_crop=position_bbox):
                 find = True
                 break
             auto.mouse_drag(my_position[0], my_position[1], dy=-200 * scale, drag_time=1.5)

@@ -255,6 +255,7 @@ def fuse_useless_gifts_aggressive(system):
 
         if fuse:
             sleep(2)
+            auto.click_element("mirror/shop/fuse_ego_gift_assets.png", take_screenshot=True)
             continue
 
         break
@@ -347,6 +348,7 @@ def fuse_useless_gifts(shop_sell_list):
                     continue
 
         if fuse:
+            auto.click_element("mirror/shop/fuse_ego_gift_assets.png", take_screenshot=True)
             continue
 
         while auto.take_screenshot() is None:

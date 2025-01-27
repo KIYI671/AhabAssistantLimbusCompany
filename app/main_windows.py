@@ -63,7 +63,7 @@ class Ui_MainWindow(object):
 
         # 在一键长草页面中，布置左边选择任务的窗口
         self.select_task = CardWidget(self.page)
-        self.select_task.setGeometry(QtCore.QRect(30, 10, 210, 470))
+        self.select_task.setGeometry(QtCore.QRect(30, 10, 210, 410))
         self.select_task.setObjectName("select_task")
         # 布置五个任务选择框
         self.buy_enkephalin = CheckBox(self.select_task)
@@ -87,10 +87,10 @@ class Ui_MainWindow(object):
         self.get_reward.setObjectName("get_reward")
         # 布置下方全选与清空按钮
         self.select_all = PushButton(self.select_task)
-        self.select_all.setGeometry(QtCore.QRect(20, 420, 81, 32))
+        self.select_all.setGeometry(QtCore.QRect(20, 360, 81, 32))
         self.select_all.setObjectName("select_all")
         self.select_none = PushButton(self.select_task)
-        self.select_none.setGeometry(QtCore.QRect(110, 420, 81, 32))
+        self.select_none.setGeometry(QtCore.QRect(110, 360, 81, 32))
         self.select_none.setObjectName("select_none")
 
         # 布置右边一排五个设置按钮的ICON
@@ -132,6 +132,14 @@ class Ui_MainWindow(object):
         self.play_audio = CheckBox(self.select_task)
         self.play_audio.setGeometry(QtCore.QRect(20, 230, 90, 22))
         self.play_audio.setObjectName("play_audio")
+
+        # 设置脚本运行结束后的操作
+        self.after_completion = ComboBox(self.page)
+        self.after_completion.setGeometry(QtCore.QRect(30, 460, 211, 32))
+        self.after_completion.setObjectName("after_completion")
+        self.after_all = BodyLabel(self.page)
+        self.after_all.setGeometry(QtCore.QRect(65, 430, 141, 20))
+        self.after_all.setObjectName("after_all")
 
         # 布置左下角开始按钮
         self.start_tasks = PushButton(self.page)
@@ -489,6 +497,8 @@ class Ui_MainWindow(object):
         self.set_lunacy_to_enkephalin.setText(_translate("MainWindow", "不换"))
         self.get_prize.setText(_translate("MainWindow", "领取奖励设置"))
         self.set_get_prize.setText(_translate("MainWindow", "邮件+日/周常"))
+        self.after_completion.setText(_translate("MainWindow", "无 / None"))
+        self.after_all.setText(_translate("MainWindow", "脚本结束后 / After All"))
         self.start_with_key_page.setText(_translate("MainWindow", "一键长草"))
         self.about_page.setText(_translate("MainWindow", "关于"))
         self.instructions_page.setText(_translate("MainWindow", "使用说明"))

@@ -484,6 +484,8 @@ class Mirror:
                 continue
             if auto.click_element("event/commence_assets.png"):
                 continue
+            if auto.click_element("event/commence_battle_assets.png"):
+                continue
 
             if auto.click_element("mirror/road_in_mir/ego_gift_get_confirm_assets.png"):
                 continue

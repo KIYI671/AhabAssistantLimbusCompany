@@ -1,3 +1,6 @@
+import ctypes
+import os
+import platform
 import random
 from sys import exc_info
 from traceback import format_exception
@@ -187,6 +190,32 @@ def script_task():
                     mir_times -= 1
     if cfg.set_reduce_miscontact:
         screen.reset_win()
+
+    if platform.system() == "Windows":
+        after_completion = cfg.after_completion
+        try:
+            if after_completion == 1:
+                    os.system("rundll32.exe powrprof.dll,SetSuspendState Sleep")
+            elif after_completion == 2:
+                if platform.system() == "Windows":
+                    os.system("rundll32.exe powrprof.dll,SetSuspendState Hibernate")
+            elif after_completion ==3:
+                if platform.system() == "Windows":
+                    os.system("shutdown /s /t 30")
+            elif after_completion == 4:
+                if platform.system() == "Windows":
+                    _, pid = ctypes.windll.user32.GetWindowThreadProcessId(screen.handle._hWnd, None)
+                    os.system(f'taskkill /F /PID {pid}')
+            elif after_completion == 5:
+                if platform.system() == "Windows":
+                    os.system("taskkill /f /im AALC.exe")
+            elif after_completion == 6:
+                if platform.system() == "Windows":
+                    _, pid = ctypes.windll.user32.GetWindowThreadProcessId(screen.handle._hWnd, None)
+                    os.system(f'taskkill /F /PID {pid}')
+                    os.system("taskkill /f /im AALC.exe")
+        except Exception as e:
+            log.ERROR(f"脚本结束后的操作失败: {e}")
 
 
 class my_script_task(QThread):
