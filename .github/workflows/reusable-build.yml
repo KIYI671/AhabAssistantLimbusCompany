@@ -33,7 +33,7 @@ jobs:
       - name: Inject version number
         run: |
           $filePath = "assets/config/version.txt"
-          "V${{ inputs.version }}" | Set-Content $filePath
+          "${{ inputs.version }}" | Set-Content $filePath
 
 
       # 打包项目
@@ -46,7 +46,7 @@ jobs:
           cp -r assets dist_release/AALC/
           cp LICENSE dist_release/AALC/
           cp README.md dist_release/AALC/
-          7z a -mx=7 AALC_${{ inputs.version }}.7z dist_release/*
+          7z a -mx=7 AALC_${{ inputs.version }}.7z dist_release/AALC/*
 
 
       # 上传打包结果

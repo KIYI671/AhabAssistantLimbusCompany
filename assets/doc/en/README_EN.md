@@ -93,7 +93,7 @@ I don't have much technical power, but I also built a GUI and used the third-par
 
 <details>
 <summary>click me ！！！</summary>
-<img src="../../pic/screenshot/how_to_use.png"/> 
+<img src="/assets/doc/image/how_to_use.png"/> 
 
 
 
@@ -118,25 +118,26 @@ When you open it with Notepad or other text editors, you can add the blacklist b
 
 The file format is shown in the following picture.
 
-![image](/assets/doc/image/blacklist_setting.png)
+<details>
+<summary>Expand The Image</summary>
+<img src="./assets/doc/image/blacklist_setting.png"/>
+</details>
 
 <details>
-<summary>Default blacklist</summary>
-<img src="../../readme/theme_pack_black_list/1.png"/> 
-<img src="../../readme/theme_pack_black_list/2.png"/> 
-<img src="../../readme/theme_pack_black_list/3.png"/> 
-<img src="../../readme/theme_pack_black_list/4.png"/> 
-<img src="../../readme/theme_pack_black_list/5.png"/> 
-<img src="../../readme/theme_pack_black_list/6.png"/> 
-<img src="../../readme/theme_pack_black_list/7.png"/> 
-<img src="../../readme/theme_pack_black_list/8.png"/> 
-<img src="../../readme/theme_pack_black_list/9.png"/> 
-<img src="../../readme/theme_pack_black_list/10.png"/> 
-<img src="../../readme/theme_pack_black_list/11.png"/> 
-<img src="../../readme/theme_pack_black_list/12.png"/> 
-<img src="../../readme/theme_pack_black_list/13.png"/> 
-<img src="../../readme/theme_pack_black_list/14.png"/> 
-<img src="../../readme/theme_pack_black_list/15.png"/> 
+<summary>The following is the default blacklist of scripts, and some inter-chapters and event theme packages are not displayed, but they have been included</summary>
+<img src="/readme/theme_pack_black_list/1.png"/> 
+<img src="/readme/theme_pack_black_list/2.png"/> 
+<img src="/readme/theme_pack_black_list/3.png"/> 
+<img src="/readme/theme_pack_black_list/4.png"/> 
+<img src="/readme/theme_pack_black_list/5.png"/> 
+<img src="/readme/theme_pack_black_list/6.png"/> 
+<img src="/readme/theme_pack_black_list/7.png"/> 
+<img src="/readme/theme_pack_black_list/8.png"/> 
+<img src="/readme/theme_pack_black_list/9.png"/>
+<img src="/readme/theme_pack_black_list/12.png"/> 
+<img src="/readme/theme_pack_black_list/13.png"/> 
+<img src="/readme/theme_pack_black_list/14.png"/> 
+<img src="/readme/theme_pack_black_list/15.png"/> 
 </details>
 
 ### Running in the background
@@ -151,7 +152,7 @@ The file format is shown in the following picture.
 
 ## Attention!!!
 
-- **This project only supports the use of English (EN) as the language of the game**
+- **_This project already supports English (EN) and Simplified Chinese (zh_cn) as the in-game language_**
 - Currently, we only recommend running it at resolutions of 1920 * 1080 and 2160 * 1440. We have not tested screens smaller than 1920 * 1080, and we do not recommend using it at resolutions smaller than that!
 - If you have enabled the performance display function of steam or other software, you should try to avoid covering the game screen, otherwise it may cause problems in the script usage process.
 - There may be a variety of strange bugs
@@ -166,9 +167,11 @@ If you encounter merchants use this software to practice on behalf of and charge
 
 Get administrator privileges is to ensure smooth operation
 
-This project is purely offline, only to github self-service update
+In addition to the check update and self-update functions, the project is purely offline.
 
 Software icon material from the source of network graphics, does not belong to the AGPL v3 agreement open source content, if any infringement, please contact the author to delete in a timely manner
+
+Some images and audio materials are from [Limbus Company Chinese WIKI](https://limbuscompany.huijiwiki.com/wiki/) and [Yue Helena](https://yuehailunna.lofter.com/), and are disclosed upon request
 
 Users are required to comply with the rules of use and terms of service of the relevant platform in the process of use. Due to the use of this software may lead to the game account ban, illegal behavior and all the consequences, the author is not responsible. Users are responsible for their own behavior and bear all risks that may be brought about by the use of this software.
 
@@ -195,12 +198,12 @@ Users are required to comply with the rules of use and terms of service of the r
 
 The AALC project could not have been possible without the help of the following open source projects
 
-|projects |links | introduction |
-|---------|---------------------------------------------------------------------------------|-------------------------------------------|
-| LALC | [LixAssistantLimbusCompany](https://github.com/HSLix/LixAssistantLimbusCompany) | Thanks to the big guy's open source, so I can learn and start my own project by rewriting the big guy's project with step-by-step follow-up |
-| OCR Text Recognition | [PaddleOCR-json](https://github.com/hiroi-sora/PaddleOCR-json) | Without it there would be no auto-recognition of teams, auto-recognition of Mirror Jail theme packs |
-| Graphical Interface Component Library | [PyQt-Fluent-Widgets](https://github.com/zhiyiYo/PyQt-Fluent-Widgets) | Although only used the basic components, not much development potential, but the basic components have made the GUI aesthetics UP |
-|March7thAssistant| [March7thAssistant](https://github.com/moesnow/March7thAssistant) | Learned quite a bit from the big guy here (~~ next full project teardown prep~~) |
+| projects                              | links                                                                           | introduction                                                                                                                                |
+|---------------------------------------|---------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------|
+| LALC                                  | [LixAssistantLimbusCompany](https://github.com/HSLix/LixAssistantLimbusCompany) | Thanks to the big guy's open source, so I can learn and start my own project by rewriting the big guy's project with step-by-step follow-up |
+| OCR Text Recognition                  | [PaddleOCR-json](https://github.com/hiroi-sora/PaddleOCR-json)                  | Without it there would be no auto-recognition of teams, auto-recognition of Mirror Jail theme packs                                         |
+| Graphical Interface Component Library | [PyQt-Fluent-Widgets](https://github.com/zhiyiYo/PyQt-Fluent-Widgets)           | Although only used the basic components, not much development potential, but the basic components have made the GUI aesthetics UP           |
+| March7thAssistant                     | [March7thAssistant](https://github.com/moesnow/March7thAssistant)               | Learned quite a bit from the big guy here                                                                                                   |
 
 
 ### Uniform acknowledgements
@@ -222,7 +225,6 @@ Thanks to the following developers for their outstanding contributions to AALC:
 
 ## Future plans
 - [ ] Fixing discovered bugs
-- [ ] Added version checking function
 - [ ] Optimized the path finding logic of the mirror prison, added more events, and reduced time consumption
 - [ ] Use deep learning or image feature recognition technology to improve script recognition speed
 - [ ] ......

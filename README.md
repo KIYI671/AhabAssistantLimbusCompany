@@ -92,7 +92,7 @@
 
 <details>
 <summary>点我 ！！！</summary>
-<img src="pic/screenshot/how_to_use.png"/> 
+<img src="assets/doc/image/how_to_use.png"/> 
 
 
 
@@ -115,11 +115,14 @@ release下载压缩包后，解压的文件中存在 **_“black_list_keyword.ya
 使用记事本或者其他文本编辑器打开后，可以仿照其格式自行添加黑名单
 
 文件格式参考以下图片所示
+<details>
+<summary>展开图片</summary>
+<img src="./assets/doc/image/blacklist_setting.png"/>
+</details>
 
-![image](./assets/doc/image/blacklist_setting.png)
 
 <details>
-<summary>以下为脚本默认黑名单（Default blacklist）</summary>
+<summary>以下为脚本默认黑名单，部分间章、活动卡包未展示，但已列入</summary>
 <img src="readme/theme_pack_black_list/1.png"/> 
 <img src="readme/theme_pack_black_list/2.png"/> 
 <img src="readme/theme_pack_black_list/3.png"/> 
@@ -128,9 +131,7 @@ release下载压缩包后，解压的文件中存在 **_“black_list_keyword.ya
 <img src="readme/theme_pack_black_list/6.png"/> 
 <img src="readme/theme_pack_black_list/7.png"/> 
 <img src="readme/theme_pack_black_list/8.png"/> 
-<img src="readme/theme_pack_black_list/9.png"/> 
-<img src="readme/theme_pack_black_list/10.png"/> 
-<img src="readme/theme_pack_black_list/11.png"/> 
+<img src="readme/theme_pack_black_list/9.png"/>
 <img src="readme/theme_pack_black_list/12.png"/> 
 <img src="readme/theme_pack_black_list/13.png"/> 
 <img src="readme/theme_pack_black_list/14.png"/> 
@@ -150,7 +151,7 @@ release下载压缩包后，解压的文件中存在 **_“black_list_keyword.ya
 
 ## 注意！！！
 
-- **_此项目仅支持使用英语(EN)作为游戏语言进行使用_**
+- **_此项目已支持使用英语(EN)、简体中文(zh_cn)作为游戏内语言进行使用_**
 - 暂时只建议使用 1920 * 1080 和 2160 * 1440 的分辨率运行，未测试屏幕小于1920 * 1080的情况,也不建议在小于该分辨率下使用
 - 如果您启动了 steam 或其他软件的性能展示功能，应尽量减少遮盖游戏画面，否则可能导致脚本使用过程出现问题
 - 可能存在各种奇奇怪怪的BUG
@@ -168,6 +169,8 @@ release下载压缩包后，解压的文件中存在 **_“black_list_keyword.ya
 该项目除了检查更新与自助更新功能外，纯离线运行
 
 软件图标素材来源网图，不属于 AGPL v3 协议开源的内容，如有侵权，请及时联系作者删除
+
+部分图像与音频素材来自 [边狱巴士中文WIKI](https://limbuscompany.huijiwiki.com/wiki/) 与 [月海伦娜](https://yuehailunna.lofter.com/) ，应要求进行声明
 
 用户在使用过程中需自行遵守相关平台的使用规则与服务条款。因使用本软件可能导致的游戏账号封禁、违规行为等一切后果，作者概不负责。用户需对自身行为负责，并承担使用本软件可能带来的所有风险。
 
@@ -198,7 +201,7 @@ AALC的项目离不开以下开源项目的帮助
 | LALC    | [LixAssistantLimbusCompany](https://github.com/HSLix/LixAssistantLimbusCompany) | 感谢大佬的开源，让我能通过一步步跟进重写大佬的项目，从而学习、开始自己的项目    |
 | OCR文字识别 | [PaddleOCR-json](https://github.com/hiroi-sora/PaddleOCR-json)                  | 没有它就没有自动识别队伍、自动识别镜牢主题包的功能                 |
 | 图形界面组件库 | [PyQt-Fluent-Widgets](https://github.com/zhiyiYo/PyQt-Fluent-Widgets)           | 虽然只是用到了基础的部件，没怎么开发潜力，但是基础的部件已经让GUI的美观性UP了 |
-| 三月七小助手  | [March7thAssistant](https://github.com/moesnow/March7thAssistant)         | 从大佬这里学到了挺多（~~下一个全项目拆解预备~~）                    |
+| 三月七小助手  | [March7thAssistant](https://github.com/moesnow/March7thAssistant)               | 从大佬这里学到了挺多                                |
 
 
 ### 统一致谢
@@ -220,7 +223,6 @@ AALC的项目离不开以下开源项目的帮助
 
 ## 未来计划
 - [ ] 修复已发现的BUG
-- [ ] 增加版本检查功能
 - [ ] 优化镜牢寻路逻辑，多走事件，减少时间消耗
 - [ ] 使用深度学习或图片特征识别技术提高脚本的识别速度
 - [ ] ……
