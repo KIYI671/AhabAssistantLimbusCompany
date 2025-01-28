@@ -441,10 +441,12 @@ def fuse_system_gifts(system, times):
                     if fusion_position[select_gift] is None:
                         fusion_position[select_gift] = pos
                         auto.mouse_click(pos[0], pos[1])
+                        sleep(0.5)
                         auto.click_element("mirror/shop/fuse_ego_gift_assets.png")
                 else:
                     fusion_position[select_gift] = pos
                     auto.mouse_click(pos[0], pos[1])
+                    sleep(0.5)
                     auto.click_element("mirror/shop/fuse_ego_gift_assets.png")
 
     for name in (my_fuse_system_gifts[times]):
@@ -456,6 +458,7 @@ def fuse_system_gifts(system, times):
     while fusion:
         if auto.take_screenshot() is None:
             continue
+        auto.mouse_to_blank()
 
         if auto.click_element("mirror/road_in_mir/ego_gift_get_confirm_assets.png"):
             break
