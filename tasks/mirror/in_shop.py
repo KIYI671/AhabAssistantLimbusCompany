@@ -264,7 +264,7 @@ def fuse_useless_gifts_aggressive(system):
         return True
 
 
-def fuse_useless_gifts(shop_sell_list):
+def fuse_useless_gifts(shop_sell_list,system):
     """合成无用饰品"""
 
     def processing_coordinates(my_gift_list):
@@ -282,6 +282,7 @@ def fuse_useless_gifts(shop_sell_list):
 
         return unique_list
 
+    fuse_IV_confirm = False
     block = True
     while True:
         if auto.take_screenshot() is None:
@@ -294,6 +295,8 @@ def fuse_useless_gifts(shop_sell_list):
         # 获取无用饰品列表
         for commodity in must_be_abandoned:
             item = auto.find_element(commodity, find_type="image_with_multiple_targets")
+            if "white_gossypium" in commodity and "bleed" in shop_sell_list:
+                continue
             if item:
                 if isinstance(item, list):
                     gift_list.extend(list(g) for g in item)
@@ -328,6 +331,7 @@ def fuse_useless_gifts(shop_sell_list):
 
         if select_gifts:
             loop_times = 15
+            fuse_IV = False
             while True:
                 if auto.take_screenshot() is None:
                     continue
@@ -336,10 +340,34 @@ def fuse_useless_gifts(shop_sell_list):
                     break
                 loop_times -= 1
 
-                if auto.click_element("mirror/road_in_mir/ego_gift_get_confirm_assets.png"):
-                    fuse = True
-                    sleep(1)
-                    break
+                if auto.find_element("mirror/shop/fusion_level_IV_gift_assets.png",
+                                     threshold=0.9) and auto.find_element("mirror/shop/fuse_90%_assets.png"):
+                    fuse_IV = True
+
+                if auto.find_element("mirror/road_in_mir/ego_gift_get_confirm_assets.png"):
+                    if fuse_IV:
+                        if cfg.language == "zh_cn":
+                            excluded_names = "残片"
+                        else:
+                            excluded_names = ["fragment", "corrosion"]
+                        if auto.find_element(excluded_names, find_type="text"):
+                            pass
+                        else:
+                            if cfg.language == "zh_cn":
+                                system_name = system_cn_zh[system]
+                            else:
+                                system_name = system
+                            if auto.find_element(system_name, find_type="text"):
+                                fuse_IV_confirm = True
+                        fuse = True
+                        auto.click_element("mirror/road_in_mir/ego_gift_get_confirm_assets.png")
+                        sleep(1)
+                        break
+                    else:
+                        if auto.click_element("mirror/road_in_mir/ego_gift_get_confirm_assets.png"):
+                            fuse = True
+                            sleep(1)
+                            break
 
                 if auto.click_element("mirror/shop/enhance_and_fuse_and_sell_confirm_assets.png", model="normal"):
                     continue
@@ -361,6 +389,9 @@ def fuse_useless_gifts(shop_sell_list):
 
         auto.mouse_click_blank(times=3)
         break
+    if fuse_IV_confirm:
+        log.INFO(f"合成四级")
+        return True
 
 
 def fuse_system_gifts(system, times):
@@ -562,8 +593,10 @@ def fuse_gift(shop_sell_list, system, fuse_aggressive=False):
         auto.mouse_click_blank(times=3)
 
     enter_fuse(system)
-    fuse_useless_gifts(shop_sell_list)
+    result = fuse_useless_gifts(shop_sell_list,system)
     auto.mouse_click_blank(times=3)
+    if fuse_IV is False and result is True:
+        fuse_IV = True
 
     if fuse_aggressive and fuse_IV is not True:
         enter_fuse(system)
