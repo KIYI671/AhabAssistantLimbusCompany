@@ -46,7 +46,9 @@ jobs:
           cp -r assets dist_release/AALC/
           cp LICENSE dist_release/AALC/
           cp README.md dist_release/AALC/
-          7z a -mx=7 AALC_${{ inputs.version }}.7z dist_release/AALC/*
+          cd dist_release
+          7z a -mx=7 AALC_${{ inputs.version }}.7z AALC/*
+          cd ..
 
 
       # 上传打包结果
@@ -55,4 +57,4 @@ jobs:
         with:
           name: AALC_${{ inputs.version }}
           path: |
-            AALC_${{ inputs.version }}.7z
+            dist_release/AALC_${{ inputs.version }}.7z
