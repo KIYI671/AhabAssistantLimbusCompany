@@ -77,6 +77,7 @@ class Mirror:
                 continue
             if auto.find_element("mirror/road_to_mir/select_team_stars_assets.png"):
                 break
+            retry()
             loop_count -= 1
             if loop_count < 20:
                 auto.model = "normal"
@@ -249,6 +250,7 @@ class Mirror:
             if auto.click_element("mirror/claim_reward/claim_rewards_assets.png"):
                 #TODO: 统计获取的coins
                 continue
+            retry()
 
         # 计时结束
         end_time = time.time()
@@ -404,12 +406,14 @@ class Mirror:
             if search_road_default_distance():
                 sleep(1)
                 return True
+            retry()
         for _ in range(3):
             while auto.take_screenshot() is None:
                 continue
             if search_road_farthest_distance():
                 sleep(1)
                 return True
+            retry()
         while True:
             # 自动截图
             if auto.take_screenshot() is None:
@@ -421,6 +425,7 @@ class Mirror:
             if auto.click_element("mirror/road_in_mir/setting_assets.png"):
                 sleep(1)
                 continue
+            retry()
 
     def re_start(self):
         while True:
@@ -435,6 +440,7 @@ class Mirror:
                 continue
             pyautogui.press("esc")
             time.sleep(1)
+            retry()
         #TODO耗时
         msg = f"满 身 疮 痍 ！ 重 开 ！此次战败耗时{time.time() - self.start_time}"
         log.INFO(msg)
@@ -516,7 +522,6 @@ class Mirror:
 
     def acquire_ego_gift(self):
         my_scale = cfg.set_win_size / 1440
-        loop_count = 30
         auto.model = 'clam'
         auto.mouse_to_blank()
         while True:
@@ -557,6 +562,9 @@ class Mirror:
                         if isinstance(ocr_result, list):
                             if len(ocr_result) >= 2:
                                 time.sleep(1)
+                                auto.click_element("mirror/road_in_mir/refuse_gift_assets.png",
+                                                   take_screenshot=True)
+                                sleep(1)
                                 auto.click_element("mirror/road_in_mir/refuse_gift_confirm_assets.png",
                                                    take_screenshot=True)
                                 time.sleep(2)

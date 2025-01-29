@@ -3,6 +3,7 @@ import pyautogui
 from module.automation import auto
 from module.decorator.decorator import begin_and_finish_time_log
 from module.logger import log
+from tasks.base.retry import retry
 from tasks.mirror.reward_card import get_reward_card
 
 
@@ -47,6 +48,7 @@ def back_init_menu():
 
         auto.mouse_click_blank()
         pyautogui.press('esc')
+        retry()
 
         loop_count -= 1
         if loop_count<20:

@@ -1,3 +1,5 @@
+from time import sleep
+
 from module.automation import auto
 from module.logger import log
 
@@ -12,10 +14,13 @@ def EXP_luxcavation():
         if auto.find_element("battle/teams_assets.png"):
             break
         if auto.click_element("luxcavation/exp_enter_1_assets.png",model='normal'):
+            sleep(1)
             continue
         if auto.click_element("luxcavation/exp_enter_2_assets.png",model='normal'):
+            sleep(1)
             continue
         if auto.click_element("luxcavation/exp_enter_3_assets.png",model='normal'):
+            sleep(1)
             continue
         if auto.click_element("home/luxcavation_assets.png"):
             continue
@@ -43,12 +48,16 @@ def thread_luxcavation():
         if auto.find_element("battle/teams_assets.png"):
             break
         if auto.click_element("luxcavation/thread_lv50.png"):
+            sleep(1)
             continue
         if auto.click_element("luxcavation/thread_lv40.png"):
+            sleep(1)
             continue
         if auto.click_element("luxcavation/thread_lv30.png"):
+            sleep(1)
             continue
         if auto.click_element("luxcavation/thread_lv20.png"):
+            sleep(1)
             continue
         if auto.click_element("luxcavation/thread_enter_assets.png"):
             continue
