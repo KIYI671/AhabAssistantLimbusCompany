@@ -15,7 +15,7 @@ def select_theme_pack(hard_switch=False):
     scale = cfg.set_win_size / 1080
     black_theme_list = black_list.get_value("blacklist")
     if cfg.language == 'zh_cn':
-        black_theme_list.extend(black_list.get_value("blacklist_cn")) # 这里能改成只读取对应语言的黑名单吗
+        black_theme_list.update(black_list.get_value("blacklist_cn")) # 这里能改成只读取对应语言的黑名单吗
 
     refresh_times = 3
     while True:
