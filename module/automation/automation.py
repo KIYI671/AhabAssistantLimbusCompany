@@ -239,7 +239,7 @@ class Automation(metaclass=SingletonMeta):
                     if self.find_str_in_text(key, ocr_dict):
                         return self.find_str_in_text(key, ocr_dict)
             return False
-        elif isinstance(target, set): # all_text没写
+        elif isinstance(target, dict): # all_text没写
             for key,value in target.items():
                 if self.find_str_in_text(key, ocr_dict):
                     return value
