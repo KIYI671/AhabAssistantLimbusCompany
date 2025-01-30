@@ -15,7 +15,7 @@ def select_theme_pack(hard_switch=False):
     scale = cfg.set_win_size / 1080
     black_theme_list = black_list.get_value("blacklist")
     if cfg.language == 'zh_cn':
-        black_theme_list.extend(black_list.get_value("blacklist_cn"))
+        black_theme_list.update(black_list.get_value("blacklist_cn")) # 这里能改成只读取对应语言的黑名单吗
 
     refresh_times = 3
     while True:
@@ -39,6 +39,7 @@ def select_theme_pack(hard_switch=False):
         try:
             if all_theme_pack := auto.find_element("mirror/theme_pack/theme_pack_features.png",
                                                    find_type='image_with_multiple_targets'):
+                weight_list=[]
                 for pack in all_theme_pack:
                     top_left = (
                         max(pack[0] - 210 * scale, 0),
@@ -47,12 +48,19 @@ def select_theme_pack(hard_switch=False):
                         min(pack[0] + 60 * scale, cfg.set_win_size * 16 / 9),
                         min(pack[1] + 390 * scale, cfg.set_win_size))
                     crop = (top_left[0], top_left[1], bottom_right[0], bottom_right[1])
-                    if auto.find_text_element(black_theme_list, crop):
-                        continue
+                    pack_weight = auto.find_text_element(black_theme_list, crop)
+                    if pack_weight == None: # 不在黑名单上的默认为0
+                        weight_list.append(0)
                     else:
-                        auto.mouse_drag_down(pack[0], pack[1])
-                        sleep(3)
-                        return 0
+                        weight_list.append(pack_weight) # 采用最小值的形式，权重越小，优先级越高
+
+                # 选择权重最小的主题包
+                min_weight = min(weight_list)
+                min_index = weight_list.index(min_weight)
+                pack = all_theme_pack[min_index]
+                auto.mouse_drag_down(pack[0], pack[1])
+                sleep(3)
+                return 0
         except Exception as e:
             log.ERROR(e)
             continue
