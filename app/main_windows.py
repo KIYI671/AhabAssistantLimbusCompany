@@ -185,6 +185,24 @@ class Ui_MainWindow(object):
         self.language = ComboBox(self.win_setting)
         self.language.setGeometry(QtCore.QRect(20, 290, 251, 32))
         self.language.setObjectName("language")
+        self.screenshot_interval_time = DoubleSpinBox(self.win_setting)
+        self.screenshot_interval_time.setGeometry(QtCore.QRect(20, 370, 251, 33))
+        self.screenshot_interval_time.setMinimum(0.1)
+        self.screenshot_interval_time.setSingleStep(0.01)
+        self.screenshot_interval_time.setProperty("value", 0.85)
+        self.screenshot_interval_time.setObjectName("screenshot_interval_time")
+        self.screenshot_interval = BodyLabel(self.win_setting)
+        self.screenshot_interval.setGeometry(QtCore.QRect(20, 340, 251, 20))
+        self.screenshot_interval.setObjectName("screenshot_interval")
+        self.mouse_action_interval = BodyLabel(self.win_setting)
+        self.mouse_action_interval.setGeometry(QtCore.QRect(20, 420, 251, 20))
+        self.mouse_action_interval.setObjectName("mouse_action_interval")
+        self.mouse_action_interval_time = DoubleSpinBox(self.win_setting)
+        self.mouse_action_interval_time.setGeometry(QtCore.QRect(20, 450, 251, 33))
+        self.mouse_action_interval_time.setMinimum(0.1)
+        self.mouse_action_interval_time.setSingleStep(0.01)
+        self.mouse_action_interval_time.setProperty("value", 0.5)
+        self.mouse_action_interval_time.setObjectName("mouse_action_interval_time")
         self.detail_setting.addWidget(self.win_setting)
 
         # 日常任务的页面
@@ -478,6 +496,8 @@ class Ui_MainWindow(object):
         self.set_reduce_miscontact.setText(_translate("MainWindow", "是"))
         self.language_in_game_setting.setText(_translate("MainWindow", "游戏语言设置"))
         self.language.setText(_translate("MainWindow", "English"))
+        self.screenshot_interval.setText(_translate("MainWindow", "截图间隔 / Screenshot Interval Time"))
+        self.mouse_action_interval.setText(_translate("MainWindow", "鼠标间隔 / Mouse Action Interval Time"))
         self.EXP_count.setText(_translate("MainWindow", "经验本次数"))
         self.thread_count.setText(_translate("MainWindow", "纽本次数"))
         self.daily_teams.setText(_translate("MainWindow", "TEAM 1"))
@@ -504,5 +524,4 @@ class Ui_MainWindow(object):
         self.instructions_page.setText(_translate("MainWindow", "使用说明"))
 
 
-from qfluentwidgets import BodyLabel, CardWidget, CheckBox, ComboBox, PushButton, ScrollArea, SpinBox, SubtitleLabel, \
-    TextEdit, LineEdit
+from qfluentwidgets import BodyLabel, CardWidget, CheckBox, ComboBox, DoubleSpinBox, PushButton, ScrollArea, SpinBox, SubtitleLabel, TextEdit, LineEdit

@@ -8,6 +8,7 @@ from utils.image_utils import ImageUtils
 from utils.singletonmeta import SingletonMeta
 from .input import Input
 from .screenshot import ScreenShot
+from ..config import cfg
 from ..logger import log
 from ..ocr import ocr
 
@@ -86,6 +87,9 @@ class Automation(metaclass=SingletonMeta):
                 self.mouse_action_with_pos(c, offset, action, times, dx, dy, find_type="image", interval=1)
             return True
 
+        if cfg.mouse_action_interval_time and interval == 0.5:
+            interval = cfg.mouse_action_interval_time
+
         if self.last_click_time == 0:
             self.last_click_time = time.time()
         if time.time() - self.last_click_time < interval:
@@ -121,6 +125,7 @@ class Automation(metaclass=SingletonMeta):
 
     def take_screenshot(self):
         start_time = time.time()
+        screenshot_interval_time = cfg.screenshot_interval_time if cfg.screenshot_interval_time else 0.85
         while True:
             try:
                 result = ScreenShot.take_screenshot()
@@ -131,7 +136,7 @@ class Automation(metaclass=SingletonMeta):
                         interval_time = 100
                     else:
                         interval_time = time.time() - self.last_screenshot_time
-                    if interval_time > 0.85:
+                    if interval_time > screenshot_interval_time:
                         self.last_screenshot_time = time.time()
                         return result
                     else:

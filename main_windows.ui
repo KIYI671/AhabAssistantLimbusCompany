@@ -485,6 +485,70 @@
          <string>English</string>
         </property>
        </widget>
+       <widget class="DoubleSpinBox" name="screenshot_interval_time">
+        <property name="geometry">
+         <rect>
+          <x>20</x>
+          <y>370</y>
+          <width>251</width>
+          <height>33</height>
+         </rect>
+        </property>
+        <property name="minimum">
+         <double>0.100000000000000</double>
+        </property>
+        <property name="singleStep">
+         <double>0.010000000000000</double>
+        </property>
+        <property name="value">
+         <double>0.850000000000000</double>
+        </property>
+       </widget>
+       <widget class="BodyLabel" name="screenshot_interval">
+        <property name="geometry">
+         <rect>
+          <x>20</x>
+          <y>340</y>
+          <width>251</width>
+          <height>20</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>截图间隔 / Screenshot Interval Time</string>
+        </property>
+       </widget>
+       <widget class="BodyLabel" name="mouse_action_interval">
+        <property name="geometry">
+         <rect>
+          <x>20</x>
+          <y>420</y>
+          <width>251</width>
+          <height>20</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>鼠标间隔 / Mouse Action Interval Time</string>
+        </property>
+       </widget>
+       <widget class="DoubleSpinBox" name="mouse_action_interval_time">
+        <property name="geometry">
+         <rect>
+          <x>20</x>
+          <y>450</y>
+          <width>251</width>
+          <height>33</height>
+         </rect>
+        </property>
+        <property name="minimum">
+         <double>0.100000000000000</double>
+        </property>
+        <property name="singleStep">
+         <double>0.010000000000000</double>
+        </property>
+        <property name="value">
+         <double>0.500000000000000</double>
+        </property>
+       </widget>
       </widget>
       <widget class="QWidget" name="daily_setting">
        <widget class="SpinBox" name="set_EXP_count">
@@ -1386,6 +1450,11 @@
   <customwidget>
    <class>SpinBox</class>
    <extends>QSpinBox</extends>
+   <header>qfluentwidgets</header>
+  </customwidget>
+  <customwidget>
+   <class>DoubleSpinBox</class>
+   <extends>QDoubleSpinBox</extends>
    <header>qfluentwidgets</header>
   </customwidget>
  </customwidgets>
