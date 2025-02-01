@@ -1,7 +1,7 @@
 from module.automation import auto
 from module.config import cfg
 from tasks.base.retry import retry
-
+from time import sleep
 
 # 在默认缩放情况下，进行镜牢寻路
 def search_road_default_distance():
@@ -18,6 +18,7 @@ def search_road_default_distance():
             road[1] += bus_position[1]
             if 0 < road[0] < cfg.set_win_size * 16 / 9 and 0 < road[1] < cfg.set_win_size:
                 auto.mouse_click(road[0], road[1])
+                sleep(0.75)
                 if auto.click_element("mirror/road_in_mir/enter_assets.png", take_screenshot=True):
                     return True
         auto.mouse_click(bus_position[0], bus_position[1])
