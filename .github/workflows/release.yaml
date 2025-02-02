@@ -5,8 +5,8 @@ on:
     tags:
       - V*.*
       - v*.*
-      - dev*.*
-      - DEV*.*
+      - dev*
+      - DEV*
 
 jobs:
   build:
