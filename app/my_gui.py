@@ -12,7 +12,6 @@ from module.automation import auto
 from module.config import cfg
 from module.logger import log
 from module.screen import screen
-from module.update.check_update import check_update
 from tasks.base.script_task_scheme import my_script_task
 
 set_select_team_options = {f"Team{i}": i for i in range(1, 21)}
@@ -46,8 +45,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.timer.start(1000)  # 每秒更新一次
 
         try:
-            check_update(self, flag=True)
-            pass
+            log.INFO(f"DEV版本不检查更新")
+            #check_update(self, flag=True)
         except Exception as e:
             log.ERROR(f"检查更新失败，原因：{e}")
 

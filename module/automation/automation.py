@@ -234,13 +234,12 @@ class Automation(metaclass=SingletonMeta):
                     if self.find_str_in_text(key, ocr_dict) is False:
                         return False
                 return True
-            else:
-                for key in target:
-                    if self.find_str_in_text(key, ocr_dict):
-                        return self.find_str_in_text(key, ocr_dict)
+            for key in target:
+                if self.find_str_in_text(key, ocr_dict):
+                    return self.find_str_in_text(key, ocr_dict)
             return False
-        elif isinstance(target, dict): # all_text没写
-            for key,value in target.items():
+        elif isinstance(target, dict):
+            for key, value in target.items():
                 if self.find_str_in_text(key, ocr_dict):
                     return value
             return None

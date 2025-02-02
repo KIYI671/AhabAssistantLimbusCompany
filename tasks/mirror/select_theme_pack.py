@@ -1,7 +1,7 @@
 from time import sleep
 
 from module.automation import auto
-from module.config import cfg, black_list
+from module.config import cfg, theme_list
 from module.decorator.decorator import begin_and_finish_time_log
 from module.logger import log
 from tasks.base.back_init_menu import back_init_menu
@@ -13,10 +13,13 @@ def select_theme_pack(hard_switch=False):
     loop_count = 30
     auto.model = 'clam'
     scale = cfg.set_win_size / 1080
-    black_theme_list = black_list.get_value("blacklist")
+    theme_pack_list = theme_list.get_value("theme_pack_list")
+    if hard_switch:
+        theme_pack_list.update(theme_list.get_value("theme_pack_list_hard"))
     if cfg.language == 'zh_cn':
-        black_theme_list.update(black_list.get_value("blacklist_cn")) # 这里能改成只读取对应语言的黑名单吗
-
+        theme_pack_list.update(theme_list.get_value("theme_pack_list_cn"))
+        if hard_switch:
+            theme_pack_list.update(theme_list.get_value("theme_pack_list_hard_cn"))
     refresh_times = 3
     while True:
         # 自动截图
@@ -37,9 +40,9 @@ def select_theme_pack(hard_switch=False):
                 continue
 
         try:
+            weight_list = []
             if all_theme_pack := auto.find_element("mirror/theme_pack/theme_pack_features.png",
                                                    find_type='image_with_multiple_targets'):
-                weight_list=[]
                 for pack in all_theme_pack:
                     top_left = (
                         max(pack[0] - 210 * scale, 0),
@@ -48,30 +51,47 @@ def select_theme_pack(hard_switch=False):
                         min(pack[0] + 60 * scale, cfg.set_win_size * 16 / 9),
                         min(pack[1] + 390 * scale, cfg.set_win_size))
                     crop = (top_left[0], top_left[1], bottom_right[0], bottom_right[1])
-                    pack_weight = auto.find_text_element(black_theme_list, crop)
-                    if pack_weight == None: # 不在黑名单上的默认为0
-                        weight_list.append(0)
-                    else:
-                        weight_list.append(pack_weight) # 采用最小值的形式，权重越小，优先级越高
+                    theme_pack_weight = auto.find_text_element(theme_pack_list, crop)
+                    if theme_pack_weight is None:
+                        theme_pack_weight = 0
 
-                # 选择权重最小的主题包
-                min_weight = min(weight_list)
-                min_index = weight_list.index(min_weight)
-                pack = all_theme_pack[min_index]
-                auto.mouse_drag_down(pack[0], pack[1])
-                sleep(3)
-                return 0
+                    weight_list.append(theme_pack_weight)  # 采用最大值的形式，权重越大，优先级越高
+
+                # 选择权重最大的主题包
+                max_weight = max(weight_list)
+                # 如果存在权重最大值大于等于优选阈值的主题包，则选择该主题包
+                if max_weight >= theme_list.preferred_thresholds:
+                    max_index = weight_list.index(max_weight)
+                    pack = all_theme_pack[max_index]
+                    auto.mouse_drag_down(pack[0], pack[1])
+                    sleep(3)
+                    return 0
+
         except Exception as e:
             log.ERROR(e)
             continue
 
         if auto.click_element("mirror/theme_pack/refresh_assets.png") and refresh_times > 0:
             refresh_times -= 1
+            auto.mouse_to_blank()
             sleep(1)
             continue
 
-        if auto.click_element("mirror/theme_pack/theme_pack_features.png", action="drag_down"):
-            break
+        # 如果多次刷新仍无达到优选阈值的主题包，则选择权重最大的主题包
+        if refresh_times<=0:
+            try:
+                max_weight = max(weight_list)
+                # 如果存在权重最大值大于等于优选阈值的主题包，则选择该主题包
+                if max_weight >= theme_list.preferred_thresholds:
+                    max_index = weight_list.index(max_weight)
+                    pack = all_theme_pack[max_index]
+                    auto.mouse_drag_down(pack[0], pack[1])
+                    sleep(3)
+                    break
+            except Exception as e:
+                log.ERROR(f"选择主题包出错:{e},尝试回到初始界面")
+                back_init_menu()
+                break
 
         loop_count -= 1
         if loop_count < 20:
@@ -79,6 +99,6 @@ def select_theme_pack(hard_switch=False):
         if loop_count < 10:
             auto.model = 'aggressive'
         if loop_count < 0:
-            log.ERROR("无法获取ego饰品,尝试回到初始界面")
+            log.ERROR("无法选取主题包,尝试回到初始界面")
             back_init_menu()
             break
