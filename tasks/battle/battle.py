@@ -75,7 +75,7 @@ def battle(first_battle=False):
             continue
 
         # 判断是否为镜牢战斗
-        if in_mirror is False and auto.find_element("battle/in_mirror_assets.png"):
+        if in_mirror is False and auto.find_element("battle/in_mirror_assets.png",model="aggressive"):
             in_mirror = True
 
         # 如果正在交战过程
