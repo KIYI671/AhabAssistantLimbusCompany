@@ -5,6 +5,10 @@ game_path: C:\Program Files (x86)\Steam\steamapps\common\Limbus Company\LimbusCo
 language: en # 游戏语言
 after_completion: 0 # 脚本结束后的操作
 
+# 脚本运行速度设置
+screenshot_interval_time: 0.85    # 截图间隔时间
+mouse_action_interval_time : 0.5  # 鼠标操作间隔时间
+
 play_audio: False # 是否播放亚哈语录
 
 # 自动更新

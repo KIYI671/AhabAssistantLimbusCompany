@@ -152,6 +152,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.set_thread_count.valueChanged.connect(lambda value: self.spinbox_changed(value))
         self.set_mirror_count.valueChanged.connect(lambda value: self.spinbox_changed(value))
 
+        # 设置两个浮点数数值选择器变化时，改变config.yaml中的参数
+        self.screenshot_interval_time.valueChanged.connect(lambda value: self.spinbox_changed(value))
+        self.mouse_action_interval_time.valueChanged.connect(lambda value: self.spinbox_changed(value))
+
         # 设置开始按钮按下后的变化
         self.start_tasks.clicked.connect(self.start_and_stop_tasks)
 
@@ -326,6 +330,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.team6.setEnabled(False)
         self.team7.setEnabled(False)
         self.set_mirror_counts.setEnabled(False)
+        self.mouse_action_interval_time.setEnabled(False)
+        self.screenshot_interval_time.setEnabled(False)
         self.set_lunacy_to_enkephalin.setEnabled(False)
         self.set_get_prize.setEnabled(False)
         self.select_all.setEnabled(False)
@@ -353,6 +359,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.team6.setEnabled(True)
         self.team7.setEnabled(True)
         self.set_mirror_counts.setEnabled(True)
+        self.mouse_action_interval_time.setEnabled(True)
+        self.screenshot_interval_time.setEnabled(True)
         self.set_lunacy_to_enkephalin.setEnabled(True)
         self.set_get_prize.setEnabled(True)
         self.select_all.setEnabled(True)
@@ -513,6 +521,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.set_mirror_count.setValue(cfg.set_mirror_count)
         self.set_EXP_count.setValue(cfg.set_EXP_count)
         self.set_thread_count.setValue(cfg.set_thread_count)
+        self.mouse_action_interval_time.setValue(cfg.mouse_action_interval_time)
+        self.screenshot_interval_time.setValue(cfg.screenshot_interval_time)
 
         # 重计算选中几支队伍，防未知错误
         self.check_teams_select_num()
