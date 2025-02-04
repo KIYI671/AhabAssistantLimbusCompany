@@ -400,20 +400,24 @@ class Mirror:
 
     @begin_and_finish_time_log(task_name="镜牢寻路")
     def search_road(self):
-        for _ in range(3):
-            while auto.take_screenshot() is None:
-                continue
-            if search_road_default_distance():
-                sleep(1)
-                return True
-            retry()
-        for _ in range(3):
-            while auto.take_screenshot() is None:
-                continue
-            if search_road_farthest_distance():
-                sleep(1)
-                return True
-            retry()
+        try:
+            for _ in range(3):
+                while auto.take_screenshot() is None:
+                    continue
+                if search_road_default_distance():
+                    sleep(1)
+                    return True
+                retry()
+            for _ in range(3):
+                while auto.take_screenshot() is None:
+                    continue
+                if search_road_farthest_distance():
+                    sleep(1)
+                    return True
+                retry()
+        except Exception as e:
+            log.ERROR(f"寻路出错:{e}")
+            return False
         while True:
             # 自动截图
             if auto.take_screenshot() is None:

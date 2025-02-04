@@ -12,7 +12,7 @@ from utils import pic_path
 
 class ImageUtils:
     @staticmethod
-    def load_image(image_path):
+    def load_image(image_path, resize=True):
         """
         加载图片，并根据指定区域裁剪图片。
         :param image_path: 图片文件路径。
@@ -33,14 +33,15 @@ class ImageUtils:
                 # 如果图片通道数大于3，只保留前三个通道（如RGB）
                 if channel > 3:
                     image = image[:, :, :3].copy()
-                win_size = cfg.set_win_size
-                # 如果win_size 为2560*1440，则不变，否则将图片缩放到对应的16：9大小
-                if win_size < 1440:
-                    image = cv2.resize(image, None, fx=win_size / 1440, fy=win_size / 1440,
-                                       interpolation=cv2.INTER_AREA)
-                elif win_size > 1440:
-                    image = cv2.resize(image, None, fx=win_size / 1440, fy=win_size / 1440,
-                                       interpolation=cv2.INTER_LINEAR)
+                if resize:
+                    win_size = cfg.set_win_size
+                    # 如果win_size 为2560*1440，则不变，否则将图片缩放到对应的16：9大小
+                    if win_size < 1440:
+                        image = cv2.resize(image, None, fx=win_size / 1440, fy=win_size / 1440,
+                                           interpolation=cv2.INTER_AREA)
+                    elif win_size > 1440:
+                        image = cv2.resize(image, None, fx=win_size / 1440, fy=win_size / 1440,
+                                           interpolation=cv2.INTER_LINEAR)
                 # 返回处理后的图片数组
                 image = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
                 return image

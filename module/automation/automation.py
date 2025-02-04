@@ -2,8 +2,10 @@ import math
 import random
 import time
 
+import cv2
 import numpy as np
 
+from utils.image_feature_recognition_utils import find_all_results
 from utils.image_utils import ImageUtils
 from utils.singletonmeta import SingletonMeta
 from .input import Input
@@ -47,7 +49,7 @@ class Automation(metaclass=SingletonMeta):
         if model is None:
             model = self.model
         coordinates = self.find_element(target, find_type, threshold, max_retries, take_screenshot, model=model,
-                                        ocr_crop=ocr_crop)
+                                        my_crop=ocr_crop)
         if coordinates:
             if click:
                 return self.mouse_action_with_pos(coordinates, offset, action, times, drag_time, dx, dy, find_type,
@@ -148,7 +150,7 @@ class Automation(metaclass=SingletonMeta):
                 raise RuntimeError("截图超时")
 
     def find_element(self, target, find_type='image', threshold=0.8, max_retries=1, take_screenshot=False,
-                     model=None, ocr_crop=None):
+                     model=None, my_crop=None):
         """
         查找元素，并根据指定的查找类型执行不同的查找策略。
         :param target: 查找目标，可以是图像路径或文字。
@@ -157,7 +159,7 @@ class Automation(metaclass=SingletonMeta):
         :param max_retries: 最大重试次数。
         :param take_screenshot: 是否需要先截图。
         :param model: 查找的策略,'clam' 为在模板图片位置查找，'normal' 为模板图片位置扩大范围查找，'aggressive' 为全截屏区域查找
-        :param ocr_crop: 用于OCR识别的已截取的部分图片
+        :param my_crop: 用于OCR识别的已截取的部分图片
         :return: 查找到的元素位置，或者在图像计数查找时返回计数。
         """
         if model is None:
@@ -171,14 +173,17 @@ class Automation(metaclass=SingletonMeta):
                     continue
             # 根据查找类型执行不同的查找策略
             if find_type in ['image', 'text']:
+                center = None
                 if find_type in ['image']:
                     # 使用图像查找方法查找元素
-                    center = self.find_image_element(target, threshold, model=model, ocr_crop=ocr_crop)
+                    center = self.find_image_element(target, threshold, model=model, ocr_crop=my_crop)
                 elif find_type == 'text':
                     # 使用文本查找方法查找元素
-                    center = self.find_text_element(target, ocr_crop)
+                    center = self.find_text_element(target, my_crop)
                 if center:
                     return center
+            elif find_type in ['feature']:
+                return self.find_feature_element(target, my_crop)
             elif find_type in ['image_with_multiple_targets']:
                 # 使用多目标图像查找方法查找元素
                 return self.find_image_with_multiple_targets(target, threshold)
@@ -261,6 +266,32 @@ class Automation(metaclass=SingletonMeta):
         else:
             ocr_text_list = []
         return ocr_text_list
+
+    def find_feature_element(self, target, pic_crop=None):
+        try:
+            template = ImageUtils.load_image(target, resize=False)
+            screenshot = np.array(self.screenshot)
+            if cfg.set_win_size < 1440:
+                screenshot = cv2.resize(screenshot, None, fx=1440 / cfg.set_win_size, fy=1440 / cfg.set_win_size,
+                                        interpolation=cv2.INTER_AREA)
+            elif cfg.set_win_size > 1440:
+                screenshot = cv2.resize(screenshot, None, fx=cfg.set_win_size / 1440, fy=cfg.set_win_size / 1440,
+                                        interpolation=cv2.INTER_AREA)
+            if pic_crop:
+                if cfg.set_win_size<1440:
+                    pic_crop=[int(i*1440/cfg.set_win_size) for i in pic_crop]
+                elif cfg.set_win_size>1440:
+                    pic_crop=[int(i*cfg.set_win_size/1440) for i in pic_crop]
+                screenshot = ImageUtils.crop(screenshot, pic_crop)
+            result = find_all_results(screenshot, template)
+            if len(result) > 0:
+                self.logger.DEBUG(f"匹配目标特征图片：{target.replace('./assets/images/', '')}, 相似度：{result[0]:.2f}")
+                return result[0]
+            else:
+                return None
+        except Exception as e:
+            self.logger.ERROR(f"匹配图片特征失败:{e}")
+        return None
 
     def find_image_element(self, target, threshold, cacheable=False, model='clam', ocr_crop=None):
         try:
