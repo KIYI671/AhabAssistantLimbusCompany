@@ -183,6 +183,7 @@ def fuse_useless_gifts_aggressive(system):
 
     fuse_IV = False
     while True:
+        auto.mouse_to_blank()
         if auto.take_screenshot() is None:
             continue
 
@@ -218,6 +219,7 @@ def fuse_useless_gifts_aggressive(system):
         fuse_confirm = False
         loop_times = 15
         while True:
+            auto.mouse_to_blank()
             if auto.take_screenshot() is None:
                 continue
 
@@ -285,6 +287,7 @@ def fuse_useless_gifts(shop_sell_list,system):
     fuse_IV_confirm = False
     block = True
     while True:
+        auto.mouse_to_blank()
         if auto.take_screenshot() is None:
             continue
 
@@ -333,6 +336,7 @@ def fuse_useless_gifts(shop_sell_list,system):
             loop_times = 15
             fuse_IV = False
             while True:
+                auto.mouse_to_blank()
                 if auto.take_screenshot() is None:
                     continue
 
@@ -414,6 +418,7 @@ def fuse_system_gifts(system, times):
         return
 
     while True:
+        auto.mouse_to_blank()
         if auto.take_screenshot() is None:
             continue
 

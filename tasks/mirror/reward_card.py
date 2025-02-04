@@ -13,6 +13,7 @@ def get_reward_card():
         # 自动截图
         if auto.take_screenshot() is None:
             continue
+        auto.mouse_to_blank()
         if auto.find_element("mirror/road_in_mir/legend_assets.png"):
             break
         if auto.find_element("mirror/road_in_mir/acquire_ego_gift.png"):
