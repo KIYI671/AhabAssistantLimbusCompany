@@ -53,7 +53,7 @@ def select_theme_pack(hard_switch=False):
                     crop = (top_left[0], top_left[1], bottom_right[0], bottom_right[1])
                     theme_pack_weight = auto.find_text_element(theme_pack_list, crop)
                     if theme_pack_weight is None:
-                        theme_pack_weight = 0
+                        theme_pack_weight = -2
 
                     weight_list.append(theme_pack_weight)  # 采用最大值的形式，权重越大，优先级越高
 
