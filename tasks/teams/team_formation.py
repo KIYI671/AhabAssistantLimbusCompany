@@ -76,10 +76,10 @@ def select_battle_team(num):
         for i in range(10):
             while auto.take_screenshot() is None:
                 continue
-            if auto.click_element(team_name, find_type="text", offset=False, ocr_crop=position_bbox):
+            if auto.click_element(team_name, find_type="text", offset=False, my_crop=position_bbox):
                 find = True
                 break
-            if auto.click_element(team_name_error_correcting, find_type="text", offset=False, ocr_crop=position_bbox):
+            if auto.click_element(team_name_error_correcting, find_type="text", offset=False, my_crop=position_bbox):
                 find = True
                 break
             auto.mouse_drag(my_position[0], my_position[1], dy=-200 * scale, drag_time=1.5)

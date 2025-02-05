@@ -589,7 +589,7 @@ class Mirror:
                             ocr_result = auto.find_text_element(["white", "gossypium"], bbox)
                         if ocr_result:
                             continue
-                        if auto.find_element(f"mirror/road_in_mir/acquire_ego_gift/{self.system}.png", ocr_crop=bbox):
+                        if auto.find_element(f"mirror/road_in_mir/acquire_ego_gift/{self.system}.png", my_crop=bbox):
                             my_list.insert(0, button)
                         else:
                             my_list.append(button)
@@ -601,14 +601,14 @@ class Mirror:
                         min(select_bbox[2] + 100, cfg.set_win_size * 16 / 9),  # 确保右下角 x 坐标不大于 图片宽
                         min(select_bbox[3] + 100, cfg.set_win_size)  # 确保右下角 y 坐标不大于 图片高
                     )
-                if auto.find_text_element(["0/1", "01", "1/1", "11"], ocr_crop=select_bbox):
+                if auto.find_text_element(["0/1", "01", "1/1", "11"], my_crop=select_bbox):
                     for gift in my_list[:1]:
                         auto.mouse_click(gift[0], gift[1])
                     auto.click_element("mirror/road_in_mir/acquire_ego_gift_select_assets.png", model="normal")
                     time.sleep(2)
                     retry()
                     return
-                elif auto.find_text_element(["0/2", "02", "1/2", "12", "2/2", "22"], ocr_crop=select_bbox):
+                elif auto.find_text_element(["0/2", "02", "1/2", "12", "2/2", "22"], my_crop=select_bbox):
                     for gift in my_list[:2]:
                         auto.mouse_click(gift[0], gift[1])
                     auto.click_element("mirror/road_in_mir/acquire_ego_gift_select_assets.png", model="normal")
