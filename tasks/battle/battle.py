@@ -95,6 +95,7 @@ def battle(first_battle=False):
                     ocr_result = auto.find_text_element("dead", dead_bbox)
                 if ocr_result is not False:
                     while True:
+                        auto.mouse_to_blank()
                         if auto.take_screenshot() is None:
                             continue
                         if auto.click_element("battle/give_up_assets.png"):

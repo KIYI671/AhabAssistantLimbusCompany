@@ -278,7 +278,7 @@ class Automation(metaclass=SingletonMeta):
             center, matchVal = ImageUtils.match_template(screenshot, template, bbox, model)  # 匹配模板
             self.logger.DEBUG(f"目标图片：{target.replace('./assets/images/', '')}, 相似度：{matchVal:.2f}, "
                               f"目标位置：{center}")
-            if isinstance(matchVal, (int, float)) and not math.isinf(matchVal) and matchVal > threshold:
+            if isinstance(matchVal, (int, float)) and not math.isinf(matchVal) and matchVal >= threshold:
                 return center
         except Exception as e:
             self.logger.ERROR(f"寻找图片失败:{e}")
