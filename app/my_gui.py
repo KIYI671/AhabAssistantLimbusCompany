@@ -17,6 +17,8 @@ from tasks.base.script_task_scheme import my_script_task
 set_select_team_options = {f"Team{i}": i for i in range(1, 21)}
 all_systems = {"烧伤(burn)": 0, "流血(bleed)": 1, "震颤(tremor)": 2, "破裂(rupture)": 3, "呼吸(poise)": 4,
                "沉沦(sinking)": 5, "充能(charge)": 6, "斩击(slash)": 7, "突刺(pierce)": 8, "打击(blunt)": 9}
+all_systems_in_setting = {0: "burn", 1: "bleed", 2: "tremor", 3: "rupture", 4: "poise",
+                          5: "sinking", 6: "charge", 7: "slash", 8: "pierce", 9: "blunt"}
 
 
 class MainWindow(QMainWindow, Ui_MainWindow):
@@ -570,6 +572,12 @@ class setting_window(QDialog, Ui_all_team_basic_setting):
         self.all_teams.addItems(set_select_team_options)
         self.all_system.addItems(all_systems)
 
+        # 设置各个下拉框选择时，改变config.yaml中的参数
+        self.all_system.currentIndexChanged.connect(
+            lambda: self.on_combobox_changed(all_systems, which_team))
+        self.all_teams.currentIndexChanged.connect(
+            lambda: self.on_combobox_changed(set_select_team_options, which_team))
+
         # 读取已有设置项
         self.read_my_setting(which_team)
 
@@ -598,12 +606,6 @@ class setting_window(QDialog, Ui_all_team_basic_setting):
             lambda checked, combo=self.Outis_order: self.checkbox_state_changed(checked, combo, which_team))
         self.Gregor.stateChanged.connect(
             lambda checked, combo=self.Gregor_order: self.checkbox_state_changed(checked, combo, which_team))
-
-        # 设置各个下拉框选择时，改变config.yaml中的参数
-        self.all_system.currentIndexChanged.connect(
-            lambda: self.on_combobox_changed(all_systems, which_team))
-        self.all_teams.currentIndexChanged.connect(
-            lambda: self.on_combobox_changed(set_select_team_options, which_team))
 
         # 设置当复选框选中时，修改是否启用对应关键词的售卖/合成
         self.burn.stateChanged.connect(lambda checked: self.shop_checkbox_state_changed(checked, which_team))
@@ -659,6 +661,18 @@ class setting_window(QDialog, Ui_all_team_basic_setting):
         selected_value = data_dict[selected_key]
         name = sender_combo_box.objectName()
         config_datas = cfg.get_value(f"{which_team}")
+        if name == "all_system":
+            # 获取属性名
+            system_name = all_systems_in_setting[selected_value]
+            # 动态获取属性或方法
+            system_name_attribute = getattr(self, system_name, None)
+            for s_name in all_systems_in_setting.values():
+                getattr(self, s_name, None).setEnabled(True)
+            if system_name_attribute:
+                config_datas[system_name] = False
+                system_name_attribute.setChecked(False)
+                system_name_attribute.setEnabled(False)
+
         config_datas[name] = selected_value
         cfg.set_value(f"{which_team}", config_datas)
 
@@ -720,6 +734,10 @@ class setting_window(QDialog, Ui_all_team_basic_setting):
             # 读取之前最后下拉框设置
             self.all_teams.setCurrentIndex(config_datas["all_teams"] - 1)
             self.all_system.setCurrentIndex(config_datas["all_system"])
+            if config_datas["all_system"]==0:
+                config_datas["burn"] = False
+                self.burn.setChecked(False)
+                self.burn.setEnabled(False)
 
             # 读取之前罪人复选框设置
             self.set_checkbox_state(self.YiSang, config_datas["YiSang"])
