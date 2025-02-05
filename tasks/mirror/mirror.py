@@ -108,6 +108,8 @@ class Mirror:
             if auto.find_element("mirror/claim_reward/claim_rewards_assets.png") and auto.find_element(
                     "mirror/claim_reward/complete_mirror_100%_assets.png"):
                 break
+            if auto.find_element("mirror/claim_reward/enkephalin_assets.png", threshold=0.9):
+                continue
 
             # 选择楼层主题包的情况
             if auto.find_element("mirror/theme_pack/feature_theme_pack_assets.png"):
