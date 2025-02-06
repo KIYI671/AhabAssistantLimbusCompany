@@ -64,6 +64,8 @@ class Mirror:
             if auto.take_screenshot() is None:
                 continue
             auto.mouse_to_blank()
+            if auto.find_element("mirror/road_in_mir/legend_assets.png"):
+                break
             if auto.click_element("mirror/road_to_mir/resume_assets.png"):
                 break
             if auto.click_element("mirror/road_to_mir/enter_mirror_assets.png"):

@@ -1,6 +1,7 @@
 import pyautogui
 
 from module.automation import auto
+from module.config import cfg
 from module.decorator.decorator import begin_and_finish_time_log
 from module.logger import log
 from tasks.base.retry import retry
@@ -15,8 +16,15 @@ def back_init_menu():
         # 自动截图
         if auto.take_screenshot() is None:
             continue
-        if auto.click_element("home/window_assets.png") and auto.find_element("home/mail_assets.png",model='normal'):
-            break
+        if cfg.language == 'zh_cn':
+            if auto.click_element("home/window_assets.png") and (
+                    auto.find_element("home/mail_assets.png", model='normal') or auto.find_element(
+                    "home/mail_cn_assets.png", model='normal')):
+                break
+        else:
+            if auto.click_element("home/window_assets.png") and auto.find_element("home/mail_assets.png",
+                                                                                  model='normal'):
+                break
 
         if auto.click_element("mirror/road_in_mir/towindow&forfeit_confirm_assets.png"):
             continue
@@ -28,7 +36,6 @@ def back_init_menu():
 
         if auto.find_element("mirror/road_in_mir/select_encounter_reward_card_assets.png"):
             get_reward_card()
-
 
         # 在剧情中
         if auto.click_element("scenes/story_skip_confirm_assets.png"):
@@ -51,11 +58,9 @@ def back_init_menu():
         retry()
 
         loop_count -= 1
-        if loop_count<20:
+        if loop_count < 20:
             auto.model = "normal"
-        if loop_count<10:
+        if loop_count < 10:
             auto.model = 'aggressive'
         if loop_count < 0:
             raise log.ERROR("无法返回主界面，不能进行下一步,请手动操作重试")
-
-

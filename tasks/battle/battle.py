@@ -69,6 +69,9 @@ def battle(first_battle=False):
         if auto.take_screenshot() is None:
             continue
 
+        if auto.find_element("mirror/road_in_mir/legend_assets.png"):
+            return False
+
         # 战斗开始前的加载
         if auto.find_element("base/waiting_assets.png"):
             sleep(0.5)
@@ -98,6 +101,8 @@ def battle(first_battle=False):
                         auto.mouse_to_blank()
                         if auto.take_screenshot() is None:
                             continue
+                        if auto.find_element("mirror/road_in_mir/legend_assets.png"):
+                            return False
                         if auto.click_element("battle/give_up_assets.png"):
                             sleep(2)
                             return False

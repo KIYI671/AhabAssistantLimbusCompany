@@ -13,13 +13,13 @@ def EXP_luxcavation():
             continue
         if auto.find_element("battle/teams_assets.png"):
             break
-        if auto.click_element("luxcavation/exp_enter_1_assets.png",model='normal'):
+        if auto.click_element("luxcavation/exp_enter_1_assets.png", model='normal'):
             sleep(1)
             continue
-        if auto.click_element("luxcavation/exp_enter_2_assets.png",model='normal'):
+        if auto.click_element("luxcavation/exp_enter_2_assets.png", model='normal'):
             sleep(1)
             continue
-        if auto.click_element("luxcavation/exp_enter_3_assets.png",model='normal'):
+        if auto.click_element("luxcavation/exp_enter_3_assets.png", model='normal'):
             sleep(1)
             continue
         if auto.click_element("home/luxcavation_assets.png"):
@@ -47,16 +47,16 @@ def thread_luxcavation():
             continue
         if auto.find_element("battle/teams_assets.png"):
             break
-        if auto.click_element("luxcavation/thread_lv50.png"):
+        if auto.click_element("luxcavation/thread_lv50.png", threshold=0.93):
             sleep(1)
             continue
         if auto.click_element("luxcavation/thread_lv40.png"):
             sleep(1)
             continue
-        if auto.click_element("luxcavation/thread_lv30.png"):
+        if auto.click_element("luxcavation/thread_lv30.png", threshold=0.93):
             sleep(1)
             continue
-        if auto.click_element("luxcavation/thread_lv20.png"):
+        if auto.click_element("luxcavation/thread_lv20.png", threshold=0.93):
             sleep(1)
             continue
         if auto.click_element("luxcavation/thread_enter_assets.png"):
