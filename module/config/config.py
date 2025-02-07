@@ -90,14 +90,14 @@ class Config(metaclass=SingletonMeta):
         raise AttributeError(f"'{type(self).__name__}' 对象没有属性 ‘{attr}'")
 
 
-class Blacklist(metaclass=SingletonMeta):
+class Theme_pack_list(metaclass=SingletonMeta):
 
-    def __init__(self, example_path, blacklist_path):
+    def __init__(self, example_path, theme_pack_list_path):
         self.yaml = YAML()
         # 加载默认配置
         self.config = self._load_default_config(example_path)
         # 获取用户的配置文件路径
-        self.blacklist_path = blacklist_path
+        self.theme_pack_list_path = theme_pack_list_path
         # 加载实际配置，此方法会根据实际配置覆盖默认配置
         self._load_config()
 
@@ -107,7 +107,7 @@ class Blacklist(metaclass=SingletonMeta):
             with open(version_path, 'r', encoding='utf-8') as file:
                 return file.read().strip()
         except FileNotFoundError:
-            sys.exit("黑名单文件未找到")
+            sys.exit("主题包名单文件未找到")
 
     def _load_default_config(self, example_path):
         """加载默认配置信息"""
@@ -115,11 +115,11 @@ class Blacklist(metaclass=SingletonMeta):
             with open(example_path, 'r', encoding='utf-8') as file:
                 return self.yaml.load(file) or {}
         except FileNotFoundError:
-            sys.exit("默认配置文件未找到")
+            sys.exit("默认主题包配置文件未找到")
 
     def _load_config(self, path=None):
         """加载用户配置文件，如未找到则保存默认配置"""
-        path = path or self.blacklist_path
+        path = path or self.theme_pack_list_path
         try:
             with open(path, 'r', encoding='utf-8') as file:
                 loaded_config = self.yaml.load(file)
@@ -142,7 +142,7 @@ class Blacklist(metaclass=SingletonMeta):
 
     def save_config(self):
         """保存到配置文件"""
-        with open(self.blacklist_path, 'w', encoding='utf-8') as file:
+        with open(self.theme_pack_list_path, 'w', encoding='utf-8') as file:
             self.yaml.dump(self.config, file)
 
     def get_value(self, key, default=None):

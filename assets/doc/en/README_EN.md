@@ -226,6 +226,7 @@ Thanks to the following developers for their outstanding contributions to AALC:
 ## Future plans
 - [ ] Fixing discovered bugs
 - [ ] Optimized the path finding logic of the mirror prison, added more events, and reduced time consumption
+- [ ] Realization of the automatic update function of the software for the new version of the zip file.
 - [ ] Use deep learning or image feature recognition technology to improve script recognition speed
 - [ ] ......
 

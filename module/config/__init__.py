@@ -1,6 +1,6 @@
 import os
 
-from module.config.config import Config, Blacklist
+from module.config.config import Config, Theme_pack_list
 
 VERSION_PATH = "./assets/config/version.txt"
 EXAMPLE_PATH = "./assets/config/config.example.yaml"
@@ -17,7 +17,7 @@ cfg.env = os.environ.copy()
 # 用户代理是HTTP请求中的一部分，服务器可以使用它来识别客户端的类型和特性
 cfg.useragent = {"User-Agent": f"AhabLimbusCompany/{cfg.version}"}
 
-BLACKLIST_EXAMPLE_PATH = "./assets/config/black_list.example.yaml"
-BLACKLIST_PATH = "./black_list.yaml"
+THEME_PACK_LIST_EXAMPLE_PATH = "./assets/config/theme_pack_list.example.yaml"
+THEME_PACK_LIST_PATH = "./theme_pack_list.yaml"
 
-black_list = Blacklist(BLACKLIST_EXAMPLE_PATH, BLACKLIST_PATH)
+theme_list = Theme_pack_list(THEME_PACK_LIST_EXAMPLE_PATH, THEME_PACK_LIST_PATH)
