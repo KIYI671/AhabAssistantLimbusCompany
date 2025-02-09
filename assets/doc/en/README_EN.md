@@ -10,21 +10,26 @@
 
 <br>
 <div>
+    <img alt="version" src="https://img.shields.io/github/v/release/KIYI671/AhabAssistantLimbusCompany?color=%239c080b&style=flat-square">
+    <img alt="download" src="https://img.shields.io/github/downloads/KIYI671/AhabAssistantLimbusCompany/total?style=flat-square&color=4096d8">
+</div>
+<div>
     <img alt="language" src="https://img.shields.io/badge/Language-Python-blue">
     <img alt="platform" src="https://img.shields.io/badge/platform-Windows-blue?style=flat-square&color=4096d8">
 </div>
 
-  [简体中文](README.md) | [English](doc/en/README_EN.md)
+  [简体中文](/README.md) | **English**
 
   This project is the brainchild of a non-computer professional.
 
-  It is a mix of third-party projects, beginners messy style code, and may have all kinds of bugs
+  It is a third-party project based on image recognition and text recognition technology
   
-  PC assistant for handheld game LimbusCompany.
+  A PC assistant for the mobile game Limbus Company
   
-  This project is based on image recognition and text recognition, one-click liver protection 
+  It can help players automatically complete daily tasks, mirror dungeon challenges and other operations, one-click liver protection 
 
-  Learn some other people's code ~~including this README~~
+  This project aims to help you reduce the repetitive and boring parts of Limbus's gameplay, so that you can better enjoy the exciting story, performances, and mechanics inside
+
 
 <br>
 
@@ -32,41 +37,15 @@
 
 </div>
 
-<!-- TOC -->
-- [AhabAssistantLimbusCompany](#ahabassistantlimbuscompany)
-  - [FACE THE SIN,SAVE THE E.G.O](#face-the-sinsave-the-ego)
-  - [Function Introduction](#function-introduction)
-    - [Special Features](#special-features)
-  - [How to download](#how-to-download)
-  - [Instructions for use](#instructions-for-use)
-    - [A maneuver that even Don Quixote could learn](#a-maneuver-that-even-don-quixote-could-learn)
-    - [Theme package blacklist settings](#theme-package-blacklist-settings)
-    - [Running in the background](#running-in-the-background)
-  - [Attention!!!](#attention)
-  - [Declaration](#declaration)
-  - [Sample Diagrams](#sample-diagrams)
-    - [Start screen](#start-screen)
-    - [The Mirror Dungeon team setup screen](#the-mirror-dungeon-team-setup-screen)
-  - [Acknowledgements](#acknowledgements)
-    - [Individual acknowledgements](#individual-acknowledgements)
-    - [Uniform acknowledgements](#uniform-acknowledgements)
-  - [Contributors](#contributors)
-  - [Future plans](#future-plans)
-  - [Build guide](#build-guide)
-  - [If you want to learn the code of this project](#if-you-want-to-learn-the-code-of-this-project)
-  - [At last](#at-last)
-<!-- TOC -->
-
-
 ## Function Introduction
 
-- **Automatic Daily**: Brush the experience book and new book every day;
-- **Collect Rewards**: collect daily/weekly rewards, collect emails
-- **Berserk for Body**: automatic identification, daily use of berserk for stamina and automatic pie combining
+- **Automatic Daily**: Automatically swipe experience books, new books, receive daily/weekly rewards, and receive emails
+- **LUNACY to physical**: Automatically identify and use LUNACY for physical strength, and automatically synthesize enkephalin module (cake)
 - **Automatic Mirror Dungeons**: fully automatic Dungeons time
-  - Support multi-team cycle battle
-  - Support customized team jewelry theme selection
-  - Support the automatic identification of the blacklist of the mirror Dungeons theme package.
+  - Support multi-team rotation and round-robin battles
+  - Supports custom team accessories system selection
+  - Support mirror dungeon theme pack to automatically identify and filter based on weight
+  - Configure intelligent route planning (prioritize event nodes)
 
 - Imitation of MAA style GUI 
 - What You See Is What You Get.
@@ -75,34 +54,29 @@
 ### Special Features
 
 - Automatic team selection (must keep initial team name, e.g. [TEAM #1])
-- Mirror dungeon automatic theme pack selection (you can add your own blacklist)
+- The Mirror Dungeon automatically selects theme packs based on weights
+- Supports running with English (EN) and Chinese Simplified (zh_cn) as the game language
+- Automatically stay away from the mirror prison ornament: white cotton
 
 ---
 
 ## How to download
 
-Click [Realeases](https://github.com/KIYI671/AhabAssistantLimbusCompany/releases) and download the file called AALC-vx.x.x in the latest version, unzip it and run AALC.exe.
+Click [Realeases](https://github.com/KIYI671/AhabAssistantLimbusCompany/releases) and download the file called 【AALC-Vx.x.x】 in the latest version, unzip it and run AALC.exe.
 
-I don't have much technical power, but I also built a GUI and used the third-party OCR, so the file is relatively large!
+Because of the lack of technical power, I also engaged in GUI and used third-party OCR, so the file size is relatively large
 
 ---
 
 ## Instructions for use
 
-### A maneuver that even Don Quixote could learn ###
+### [A maneuver that even Don Quixote could learn](/assets/doc/en/How_to_use_EN.md)
 
-<details>
-<summary>click me ！！！</summary>
-<img src="/assets/doc/image/how_to_use.png"/> 
-
-
-
-</details>
-
+### Other Notes
 
 During script execution you can use **CTRL+Q** keys to terminate the script process (this may cause problems when the script is restarted, which can be solved by restarting the script program).
 
-At the same time **ALT+P** can pause the script, **ALT+R** can resume the script (experimental function)
+At the same time **ALT+P** can pause the script, **ALT+R** can resume the script
 
 There is nothing to explain, what you see is what you get.
 
@@ -110,52 +84,29 @@ If you find any problems (except for the team numbering problem below), you can 
 
 Of course, you are also welcome to submit [Pull Request](https://github.com/KIYI671/AhabAssistantLimbusCompany/pulls)
 
-### Theme package blacklist settings
+### Theme package weight setting
 
-Please download the zip file, there is a file **_“black_list_keyword.yaml”_** in the unzipped file.
-When you open it with Notepad or other text editors, you can add the blacklist by following its format.
-
+When the script is run once, a _"theme_pack_list.yaml"_ file is automatically created, which is used to set the weight of the theme package</br>
+After opening it with Notepad or other text editors, you can configure the weight of the theme package according to the format, or add the theme package to recognize the text
 
 The file format is shown in the following picture.
 
-<details>
-<summary>Expand The Image</summary>
-<img src="./assets/doc/image/blacklist_setting.png"/>
-</details>
 
-<details>
-<summary>The following is the default blacklist of scripts, and some inter-chapters and event theme packages are not displayed, but they have been included</summary>
-<img src="/readme/theme_pack_black_list/1.png"/> 
-<img src="/readme/theme_pack_black_list/2.png"/> 
-<img src="/readme/theme_pack_black_list/3.png"/> 
-<img src="/readme/theme_pack_black_list/4.png"/> 
-<img src="/readme/theme_pack_black_list/5.png"/> 
-<img src="/readme/theme_pack_black_list/6.png"/> 
-<img src="/readme/theme_pack_black_list/7.png"/> 
-<img src="/readme/theme_pack_black_list/8.png"/> 
-<img src="/readme/theme_pack_black_list/9.png"/>
-<img src="/readme/theme_pack_black_list/12.png"/> 
-<img src="/readme/theme_pack_black_list/13.png"/> 
-<img src="/readme/theme_pack_black_list/14.png"/> 
-<img src="/readme/theme_pack_black_list/15.png"/> 
-</details>
+![image](/assets/doc/image/theme_list.png)
+
 
 ### Running in the background
 
-- This language is not currently supported in this section of the related materials.
+- This section is currently unsupported for this language.
 - **Need to run in the background or have multiple monitors try [Remote Local Multi-User Desktop](https://www.bilibili.com/read/cv24286313/)**
 - **All related files in the above tutorials: [download link](https://github.com/CHNZYX/asu_version_latest/releases)**
 - **Related files can also be obtained by going to the tutorial author's [Home - Dynamic Page](https://space.bilibili.com/26715033/dynamic) from the top**.
-- Emulators have many drawbacks such as lagging and high performance consumption.
-- It is recommended that you use the Windows Remote Desktop Service for this program.
-- The performance consumption of running the program directly on your computer is less than that of an emulator.
 
 ## Attention!!!
 
-- **_This project already supports English (EN) and Simplified Chinese (zh_cn) as the in-game language_**
-- Currently, we only recommend running it at resolutions of 1920 * 1080 and 2160 * 1440. We have not tested screens smaller than 1920 * 1080, and we do not recommend using it at resolutions smaller than that!
-- If you have enabled the performance display function of steam or other software, you should try to avoid covering the game screen, otherwise it may cause problems in the script usage process.
-- There may be a variety of strange bugs
+- For the time being, it is only recommended to run at resolutions of 1920 * 1080 and 2160 * 1440</br> If the screen is less than 1920 * 1080, it is not recommended to use it at a resolution smaller than that
+- The game program will be set to window mode after the script starts, and if there is a behavior of switching to the full screen and then exiting in the middle, it is normal behavior, so there is no need to worry
+- If you have enabled the performance display feature of Steam or other software, you should try not to obscure the game screen, as this may cause problems with the scripting process
 
 ---
 
@@ -165,9 +116,9 @@ This software is open source, free of charge, for learning and communication pur
 
 If you encounter merchants use this software to practice on behalf of and charge, may be equipment and time and other costs, problems and consequences have nothing to do with this software.
 
-Get administrator privileges is to ensure smooth operation
+The code to get administrator privileges is configured to ensure smooth operation
 
-In addition to the check update and self-update functions, the project is purely offline.
+The project runs purely offline, except for checking for update functions
 
 Software icon material from the source of network graphics, does not belong to the AGPL v3 agreement open source content, if any infringement, please contact the author to delete in a timely manner
 
@@ -189,7 +140,6 @@ Users are required to comply with the rules of use and terms of service of the r
 ### The Mirror Dungeon team setup screen 
 
 ![image](/assets/doc/image/README2.png)
-
 
 ---
 ## Acknowledgements
@@ -225,7 +175,7 @@ Thanks to the following developers for their outstanding contributions to AALC:
 
 ## Future plans
 - [ ] Fixing discovered bugs
-- [ ] Optimized the path finding logic of the mirror prison, added more events, and reduced time consumption
+- [ ] Refactoring the GUI
 - [ ] Realization of the automatic update function of the software for the new version of the zip file.
 - [ ] Use deep learning or image feature recognition technology to improve script recognition speed
 - [ ] ......
@@ -236,14 +186,12 @@ Thanks to the following developers for their outstanding contributions to AALC:
 
 - References [build guide](build_guide_EN.md)
 
-## If you want to learn the code of this project ##
-- Don't bother. The code is a mess.
 ---
 
 ## At last
 
 If you found the software helpful, please click Star.
 
-I hope some bigwig will give a wave of pointers or optimization to this beginner style mess of code!
+I hope that there will be a big guy to guide or optimize this project, or further improve this project together.
 
-Hopefully this software will help people reduce the repetitive and tedious parts of limbus playthroughs and enjoy the wonderful plot, performances, and mechanics inside!
+Hopefully, this app will help you reduce the tedious part of playing Limbus and enjoy the wonderful story, performances, and mechanics inside.
