@@ -62,7 +62,7 @@
 
 ## 下载方式
 
-点击[Realeases](https://github.com/KIYI671/AhabAssistantLimbusCompany/releases)并下载最新版中命名为【AALC-Vx.x.x】的文件，解压后运行AALC.exe即可。
+点击[Releases](https://github.com/KIYI671/AhabAssistantLimbusCompany/releases)并下载最新版中命名为【AALC-Vx.x.x】的文件，解压后运行AALC.exe即可。
 
 因为技术力不足，还搞了GUI和使用第三方OCR，所以导致文件比较大
 

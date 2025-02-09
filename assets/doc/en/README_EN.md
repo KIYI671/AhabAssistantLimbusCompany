@@ -62,7 +62,7 @@
 
 ## How to download
 
-Click [Realeases](https://github.com/KIYI671/AhabAssistantLimbusCompany/releases) and download the file called 【AALC-Vx.x.x】 in the latest version, unzip it and run AALC.exe.
+Click [Releases](https://github.com/KIYI671/AhabAssistantLimbusCompany/releases) and download the file called 【AALC-Vx.x.x】 in the latest version, unzip it and run AALC.exe.
 
 Because of the lack of technical power, I also engaged in GUI and used third-party OCR, so the file size is relatively large
 
