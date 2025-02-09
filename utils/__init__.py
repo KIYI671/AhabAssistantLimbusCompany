@@ -1,1 +1,1 @@
-pic_path = ["share","en"]
+pic_path = ["share", "en"]

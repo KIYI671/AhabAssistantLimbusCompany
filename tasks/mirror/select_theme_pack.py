@@ -30,7 +30,6 @@ def select_theme_pack(hard_switch=False):
                 "mirror/theme_pack/hard_assets.png") is None:
             continue
 
-        # TODO:适配困镜
         # 切换难度
         if hard_switch:
             if auto.click_element("mirror/theme_pack/normal_assets.png"):
@@ -41,6 +40,7 @@ def select_theme_pack(hard_switch=False):
 
         try:
             weight_list = []
+            pack_name = []
             if all_theme_pack := auto.find_element("mirror/theme_pack/theme_pack_features.png",
                                                    find_type='image_with_multiple_targets'):
                 for pack in all_theme_pack:
@@ -51,11 +51,16 @@ def select_theme_pack(hard_switch=False):
                         min(pack[0] + 60 * scale, cfg.set_win_size * 16 / 9),
                         min(pack[1] + 390 * scale, cfg.set_win_size))
                     crop = (top_left[0], top_left[1], bottom_right[0], bottom_right[1])
-                    theme_pack_weight = auto.find_text_element(theme_pack_list, crop)
-                    if theme_pack_weight is None:
+                    result = auto.find_text_element(theme_pack_list, crop)
+                    if (isinstance(result, list) or isinstance(result, tuple)) and len(result) > 1:
+                        theme_pack_weight = result[0]
+                        theme_pack_name = result[1]
+                    else:
                         theme_pack_weight = -2
+                        theme_pack_name = "unknown"
 
                     weight_list.append(theme_pack_weight)  # 采用最大值的形式，权重越大，优先级越高
+                    pack_name.append(theme_pack_name)
 
                 # 选择权重最大的主题包
                 max_weight = max(weight_list)
@@ -65,7 +70,9 @@ def select_theme_pack(hard_switch=False):
                     pack = all_theme_pack[max_index]
                     auto.mouse_drag_down(pack[0], pack[1])
                     sleep(3)
-                    return 0
+                    msg = f"此次选择卡包关键词：{pack_name[max_index]}"
+                    log.INFO(msg)
+                    return
 
         except Exception as e:
             log.ERROR(e)
@@ -78,7 +85,7 @@ def select_theme_pack(hard_switch=False):
             continue
 
         # 如果多次刷新仍无达到优选阈值的主题包，则选择权重最大的主题包
-        if refresh_times<=0:
+        if refresh_times <= 0:
             try:
                 max_weight = max(weight_list)
                 # 如果存在权重最大值大于等于优选阈值的主题包，则选择该主题包
@@ -87,7 +94,10 @@ def select_theme_pack(hard_switch=False):
                     pack = all_theme_pack[max_index]
                     auto.mouse_drag_down(pack[0], pack[1])
                     sleep(3)
-                    break
+                    log.DEBUG("无匹配最低阈值的主题包，选择最高权重主题包")
+                    msg = f"无匹配最低阈值的主题包，选择最高权重主题包\n此次选择卡包关键词：{pack_name[max_index]}"
+                    log.INFO(msg)
+                    return
             except Exception as e:
                 log.ERROR(f"选择主题包出错:{e},尝试回到初始界面")
                 back_init_menu()

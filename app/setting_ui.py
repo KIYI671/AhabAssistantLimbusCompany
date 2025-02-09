@@ -34,7 +34,7 @@ class Ui_all_team_basic_setting(object):
         self.confirm_button.setGeometry(QtCore.QRect(230, 445, 141, 41))
         font = QtGui.QFont()
         font.setFamily("微软雅黑")
-        font.setPointSize(int(15 / scale_factor ))
+        font.setPointSize(int(15 / scale_factor))
         font.setBold(True)
         self.confirm_button.setFont(font)
         self.confirm_button.setObjectName("confirm_button")
@@ -309,4 +309,6 @@ class Ui_all_team_basic_setting(object):
         self.switch_button_2.setText(_translate("all_team_basic_setting", "普通 / Normal"))
         self.switch_button_2.setOnText(_translate("all_team_basic_setting", "激进 / Radicalization"))
         self.switch_button_2.setOffText(_translate("all_team_basic_setting", "普通 / Normal"))
+
+
 from qfluentwidgets import BodyLabel, CheckBox, ComboBox, LineEdit, PushButton, SwitchButton

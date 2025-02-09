@@ -72,7 +72,7 @@ def select_battle_team(num):
             team_name = "编队#" + str(num)
             team_name_error_correcting = "编队#" + str(num)
         my_scale = cfg.set_win_size / 1440
-        position_bbox = (0, 0, position[0] + 130 * my_scale,position[1] + 400 * my_scale)
+        position_bbox = (0, 0, position[0] + 130 * my_scale, position[1] + 400 * my_scale)
         for i in range(10):
             while auto.take_screenshot() is None:
                 continue

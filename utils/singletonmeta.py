@@ -28,4 +28,3 @@ class SingletonMeta(type):
             cls._instances[cls] = super().__call__(*args, **kwargs)
         # 返回实例
         return cls._instances[cls]
-

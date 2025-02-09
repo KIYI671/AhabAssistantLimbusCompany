@@ -2,10 +2,12 @@ import os
 import sys
 
 # 将当前工作目录设置为程序所在的目录，确保无论从哪里执行，其工作目录都正确设置为程序本身的位置，避免路径错误。
-os.chdir(os.path.dirname(sys.executable) if getattr(sys, 'frozen', False)else os.path.dirname(os.path.abspath(__file__)))
+os.chdir(
+    os.path.dirname(sys.executable) if getattr(sys, 'frozen', False) else os.path.dirname(os.path.abspath(__file__)))
 
 # 获取管理员权限
 import pyuac
+
 if not pyuac.isUserAdmin():
     try:
         pyuac.runAsAdmin(False)

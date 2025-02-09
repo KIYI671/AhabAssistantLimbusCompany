@@ -1,7 +1,7 @@
 import os
 
 purchase_path = "mirror/shop/must_purchase"
-must_purchase_path ="./assets/images/share/mirror/shop/must_purchase"
+must_purchase_path = "./assets/images/share/mirror/shop/must_purchase"
 must_purchase = []
 for root, dirs, files in os.walk(must_purchase_path):
     for file in files:
@@ -11,7 +11,7 @@ for root, dirs, files in os.walk(must_purchase_path):
         must_purchase.append(full_path)
 
 abandoned_path = "mirror/shop/must_be_abandoned"
-must_be_abandoned_path ="./assets/images/share/mirror/shop/must_be_abandoned"
+must_be_abandoned_path = "./assets/images/share/mirror/shop/must_be_abandoned"
 must_be_abandoned = []
 for root, dirs, files in os.walk(must_be_abandoned_path):
     for file in files:
@@ -21,7 +21,8 @@ for root, dirs, files in os.walk(must_be_abandoned_path):
         must_be_abandoned.append(full_path)
 
 fusion_material = {
-    'burn': [['melted_paraffin.png', 'decamillennial_stewpot.png'], ['ashes_to_ashes.png', 'dust_to_dust.png', 'secret_cookbook.png']],
+    'burn': [['melted_paraffin.png', 'decamillennial_stewpot.png'],
+             ['ashes_to_ashes.png', 'dust_to_dust.png', 'secret_cookbook.png']],
     'bleed': [['arrested_hymn.png', 'millarca.png'], ['devotion.png', 'smokes_and_wires.png', 'rusted_muzzle.png']],
     'tremor': ['nixie_divergence.png', 'interlocked_cogs.png', 'bell_of_truth.png'],
     'rupture': ['talisman_bundle.png', 'standard-duty_battery.png', 'thorny_rope_cuffs.png'],

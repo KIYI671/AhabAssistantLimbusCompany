@@ -195,11 +195,11 @@ def script_task():
         after_completion = cfg.after_completion
         try:
             if after_completion == 1:
-                    os.system("rundll32.exe powrprof.dll,SetSuspendState Sleep")
+                os.system("rundll32.exe powrprof.dll,SetSuspendState Sleep")
             elif after_completion == 2:
                 if platform.system() == "Windows":
                     os.system("rundll32.exe powrprof.dll,SetSuspendState Hibernate")
-            elif after_completion ==3:
+            elif after_completion == 3:
                 if platform.system() == "Windows":
                     os.system("shutdown /s /t 30")
             elif after_completion == 4:

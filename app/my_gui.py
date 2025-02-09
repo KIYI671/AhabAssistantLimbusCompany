@@ -57,7 +57,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         setThemeColor("#9c080b")
 
         # 设置窗口标志以禁用最大化按钮
-        #self.setWindowFlags(Qt.WindowCloseButtonHint | Qt.WindowMinimizeButtonHint)
+        # self.setWindowFlags(Qt.WindowCloseButtonHint | Qt.WindowMinimizeButtonHint)
 
         self.setWindowIcon(QIcon('./assets/logo/my_icon_256X256.ico'))
         self.setWindowTitle(f"Ahab Assistant Limbus Company -  {cfg.version}")
@@ -734,7 +734,7 @@ class setting_window(QDialog, Ui_all_team_basic_setting):
             # 读取之前最后下拉框设置
             self.all_teams.setCurrentIndex(config_datas["all_teams"] - 1)
             self.all_system.setCurrentIndex(config_datas["all_system"])
-            if config_datas["all_system"]==0:
+            if config_datas["all_system"] == 0:
                 config_datas["burn"] = False
                 self.burn.setChecked(False)
                 self.burn.setEnabled(False)

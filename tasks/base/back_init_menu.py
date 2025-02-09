@@ -19,7 +19,7 @@ def back_init_menu():
         if cfg.language == 'zh_cn':
             if auto.click_element("home/window_assets.png") and (
                     auto.find_element("home/mail_assets.png", model='normal') or auto.find_element(
-                    "home/mail_cn_assets.png", model='normal')):
+                "home/mail_cn_assets.png", model='normal')):
                 break
         else:
             if auto.click_element("home/window_assets.png") and auto.find_element("home/mail_assets.png",

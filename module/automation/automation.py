@@ -2,6 +2,7 @@ import math
 import random
 import time
 
+import cv2
 import numpy as np
 
 from utils.image_utils import ImageUtils
@@ -180,6 +181,8 @@ class Automation(metaclass=SingletonMeta):
                     center = self.find_text_element(target, my_crop)
                 if center:
                     return center
+            elif find_type in ['feature']:
+                return self.find_feature_element(target, my_crop)
             elif find_type in ['image_with_multiple_targets']:
                 # 使用多目标图像查找方法查找元素
                 return self.find_image_with_multiple_targets(target, threshold)
@@ -232,6 +235,8 @@ class Automation(metaclass=SingletonMeta):
             ocr_dict = {text: position for text, position in zip(ocr_text_list, ocr_position_list)}
         else:
             ocr_dict = {}
+        if ocr_dict == {}:
+            return False
         if isinstance(target, str):
             return self.find_str_in_text(target, ocr_dict)
         elif isinstance(target, list):
@@ -247,7 +252,7 @@ class Automation(metaclass=SingletonMeta):
         elif isinstance(target, dict):
             for key, value in target.items():
                 if self.find_str_in_text(key, ocr_dict):
-                    return value
+                    return value, key
             return None
 
     def get_text_from_screenshot(self, my_crop=None):
@@ -262,6 +267,34 @@ class Automation(metaclass=SingletonMeta):
         else:
             ocr_text_list = []
         return ocr_text_list
+
+    def find_feature_element(self, target, pic_crop=None, min_matches=8):
+        try:
+            template = ImageUtils.load_image(target, resize=False)
+            screenshot = np.array(self.screenshot)
+            if cfg.set_win_size < 1440:
+                screenshot = cv2.resize(screenshot, None, fx=1440 / cfg.set_win_size, fy=1440 / cfg.set_win_size,
+                                        interpolation=cv2.INTER_AREA)
+            elif cfg.set_win_size > 1440:
+                screenshot = cv2.resize(screenshot, None, fx=cfg.set_win_size / 1440, fy=cfg.set_win_size / 1440,
+                                        interpolation=cv2.INTER_AREA)
+            if pic_crop:
+                if cfg.set_win_size < 1440:
+                    pic_crop = [int(i * 1440 / cfg.set_win_size) for i in pic_crop]
+                elif cfg.set_win_size > 1440:
+                    pic_crop = [int(i * cfg.set_win_size / 1440) for i in pic_crop]
+                screenshot = ImageUtils.crop(screenshot, pic_crop)
+            result, num_matches = ImageUtils.feature_matching(template, screenshot, min_matches)
+            self.logger.DEBUG(
+                f"匹配目标特征图片：{target.replace('./assets/images/', '')}结果{result}, 找到 {num_matches} 个匹配点")
+            return result
+        except Exception as e:
+            error_message = str(e)
+            if "cv::flann" in error_message:
+                pass
+            else:
+                self.logger.ERROR(f"匹配图片特征失败:{e}")
+            return None
 
     def find_image_element(self, target, threshold, cacheable=False, model='clam', my_crop=None):
         try:

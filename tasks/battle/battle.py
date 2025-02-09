@@ -78,7 +78,7 @@ def battle(first_battle=False):
             continue
 
         # 判断是否为镜牢战斗
-        if in_mirror is False and auto.find_element("battle/in_mirror_assets.png",model="aggressive"):
+        if in_mirror is False and auto.find_element("battle/in_mirror_assets.png", model="aggressive"):
             in_mirror = True
 
         # 如果正在交战过程
@@ -87,11 +87,12 @@ def battle(first_battle=False):
             chance = INIT_CHANCE
             continue
 
-        if in_mirror :
-            if dead_position:=auto.find_element("battle/dead.png"):
+        if in_mirror:
+            if dead_position := auto.find_element("battle/dead.png"):
                 my_scale = cfg.set_win_size / 1440
-                dead_bbox = (dead_position[0] - 100 * my_scale, dead_position[1] - 30 * my_scale, dead_position[0] + 100 * my_scale,
-                                    dead_position[1] + 30 * my_scale)
+                dead_bbox = (
+                dead_position[0] - 100 * my_scale, dead_position[1] - 30 * my_scale, dead_position[0] + 100 * my_scale,
+                dead_position[1] + 30 * my_scale)
                 if cfg.language == "zh_cn":
                     ocr_result = auto.find_text_element("阵亡", dead_bbox)
                 else:
@@ -184,7 +185,7 @@ def battle(first_battle=False):
     if total_count == 0:
         match_success_rate = 100
     else:
-        #保留最多三位小数
+        # 保留最多三位小数
         match_success_rate = (1 - fail_count / total_count) * 100
     msg = f"此次战斗匹配失败次数{fail_count} 匹配总次数{total_count} 匹配成功率{match_success_rate}%"
     log.DEBUG(msg)

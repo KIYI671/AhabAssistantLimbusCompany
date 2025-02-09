@@ -50,13 +50,13 @@ class Screen(metaclass=SingletonMeta):
             self.adjust_win_position(self.set_win_position)
 
     def reduce_miscontact(self):
-        #获取适用于win32gui与win32con的窗口句柄
+        # 获取适用于win32gui与win32con的窗口句柄
         hwnd = self.handle._hWnd
 
         # 告诉系统当前进程是 DPI 感知的,确保窗口在高 DPI 系统上正确显示,并适应不同的 DPI 缩放
         windll.user32.SetProcessDPIAware()
 
-        #设置窗口始终置顶
+        # 设置窗口始终置顶
         win32gui.SetWindowPos(hwnd, win32con.HWND_TOPMOST, 0, 0, 0, 0, win32con.SWP_NOMOVE | win32con.SWP_NOSIZE)
         # 获取窗口的当前样式属性值
         style = win32gui.GetWindowLong(hwnd, win32con.GWL_STYLE)

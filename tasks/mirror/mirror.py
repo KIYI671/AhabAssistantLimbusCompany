@@ -13,7 +13,7 @@ from tasks.base.make_enkephalin_module import make_enkephalin_module
 from tasks.base.retry import retry
 from tasks.battle.battle import battle
 from tasks.event.event_handling import EventHandling
-from tasks.mirror.in_shop import in_shop
+from tasks.mirror.in_shop import Shop
 from tasks.mirror.reward_card import get_reward_card
 from tasks.mirror.search_road import search_road_default_distance, search_road_farthest_distance
 from tasks.mirror.select_theme_pack import select_theme_pack
@@ -37,12 +37,11 @@ class Mirror:
         self.logger = log
         self.sinner_team = sinner_team
         self.team_number = team_number
-        self.shop_sell_list = shop_sell_list
+        self.shop = Shop(system, shop_sell_list, fuse_switch, fuse_aggressive_switch)
         self.fuse_switch = fuse_switch
         self.system = system
         self.start_time = time.time()
         self.first_battle = True  # 判断是否首次进入战斗，如果是则重新配队
-        self.fuse_aggressive_switch = fuse_aggressive_switch
         self.hard_switch = hard_switch
         self.no_weekly_bonuses = no_weekly_bonuses
         # 统计时间
@@ -50,10 +49,8 @@ class Mirror:
         self.battle_total_time = 0
         self.shop_total_time = 0
         self.event_total_time = 0
-
-    def set_fuse_switch_normal(self):
-        self.fuse_aggressive_switch = False
-        log.INFO("合成四级，切换到非激进模式")
+        self.event_times = 0
+        self.layer_times = [0, 0]
 
     def road_to_mir(self):
         loop_count = 30
@@ -117,6 +114,14 @@ class Mirror:
             if auto.find_element("mirror/theme_pack/feature_theme_pack_assets.png"):
                 sleep(2)
                 select_theme_pack(self.hard_switch)
+                if self.layer_times[0] == 0:
+                    self.layer_times[0] = time.time()
+                else:
+                    this_layer_time = time.time() - self.layer_times[0]
+                    self.layer_times[0] = time.time()
+                    msg = f"启动后第{self.layer_times[1]}层卡包"
+                    to_log_with_time(msg, this_layer_time)
+                self.layer_times[1] += 1
                 continue
 
             # 在镜牢中寻路
@@ -151,7 +156,7 @@ class Mirror:
 
             # 战斗配队的情况
             if auto.find_element("teams/announcer_assets.png"):
-                #如果第一次启动脚本，还没进行编队，就先编队
+                # 如果第一次启动脚本，还没进行编队，就先编队
                 if self.first_battle:
                     team_formation(self.sinner_team)
                     self.first_battle = False
@@ -252,7 +257,7 @@ class Mirror:
             if auto.click_element("mirror/claim_reward/enkephalin_assets.png"):
                 continue
             if auto.click_element("mirror/claim_reward/claim_rewards_assets.png"):
-                #TODO: 统计获取的coins
+                # TODO: 统计获取的coins
                 continue
             retry()
 
@@ -260,10 +265,17 @@ class Mirror:
         end_time = time.time()
         elapsed_time = end_time - start_time
 
+        this_layer_time = time.time() - self.layer_times[0]
+        msg = f"启动后第{self.layer_times[1]}层卡包"
+        to_log_with_time(msg, this_layer_time)
+
         # 输出战斗总时间
         msg = f"此次镜牢在战斗"
         to_log_with_time(msg, self.battle_total_time)
 
+        # 输出事件总时间
+        msg = f"此次镜牢走的事件次数{self.event_times}"
+        log.INFO(msg)
         # 输出事件总时间
         msg = f"此次镜牢在事件"
         to_log_with_time(msg, self.event_total_time)
@@ -351,7 +363,6 @@ class Mirror:
                     auto.mouse_drag(slash_button[0], slash_button[1], drag_time=0.2, dx=0, dy=-200)
                     sleep(0.5)
                     continue
-                print(scroll)
                 scroll = True
 
             if auto.click_element(f"mirror/road_to_mir/{self.system}_gift_assets.png") and select_system == False:
@@ -404,20 +415,24 @@ class Mirror:
 
     @begin_and_finish_time_log(task_name="镜牢寻路")
     def search_road(self):
-        for _ in range(3):
-            while auto.take_screenshot() is None:
-                continue
-            if search_road_default_distance():
-                sleep(1)
-                return True
-            retry()
-        for _ in range(3):
-            while auto.take_screenshot() is None:
-                continue
-            if search_road_farthest_distance():
-                sleep(1)
-                return True
-            retry()
+        try:
+            for _ in range(3):
+                while auto.take_screenshot() is None:
+                    continue
+                if search_road_default_distance():
+                    sleep(1)
+                    return True
+                retry()
+            for _ in range(3):
+                while auto.take_screenshot() is None:
+                    continue
+                if search_road_farthest_distance():
+                    sleep(1)
+                    return True
+                retry()
+        except Exception as e:
+            log.ERROR(f"寻路出错:{e}")
+            return False
         while True:
             # 自动截图
             if auto.take_screenshot() is None:
@@ -445,7 +460,7 @@ class Mirror:
             pyautogui.press("esc")
             time.sleep(1)
             retry()
-        #TODO耗时
+        # TODO耗时
         msg = f"满 身 疮 痍 ！ 重 开 ！此次战败耗时{time.time() - self.start_time}"
         log.INFO(msg)
         self.first_battle = True
@@ -523,6 +538,7 @@ class Mirror:
         event_end_time = time.time()
         event_elapsed_time = event_end_time - event_start_time
         self.event_total_time += event_elapsed_time
+        self.event_times += 1
 
     def acquire_ego_gift(self):
         my_scale = cfg.set_win_size / 1440
@@ -538,7 +554,6 @@ class Mirror:
                 acquire_button = auto.find_element("mirror/road_in_mir/acquire_ego_gift.png",
                                                    find_type='image_with_multiple_targets')
                 my_list = []
-                print(len(acquire_button))
                 if len(acquire_button) == 2:
                     for button in acquire_button:
                         bbox = (button[0] - 350 * my_scale, button[1] - 50 * my_scale, button[0] + 150 * my_scale,
@@ -589,7 +604,8 @@ class Mirror:
                             ocr_result = auto.find_text_element(["white", "gossypium"], bbox)
                         if ocr_result:
                             continue
-                        if auto.find_element(f"mirror/road_in_mir/acquire_ego_gift/{self.system}.png", my_crop=bbox):
+                        if auto.find_element(f"mirror/road_in_mir/acquire_ego_gift/{self.system}.png", my_crop=bbox,
+                                             threshold=0.85):
                             my_list.insert(0, button)
                         else:
                             my_list.append(button)
@@ -601,14 +617,14 @@ class Mirror:
                         min(select_bbox[2] + 100, cfg.set_win_size * 16 / 9),  # 确保右下角 x 坐标不大于 图片宽
                         min(select_bbox[3] + 100, cfg.set_win_size)  # 确保右下角 y 坐标不大于 图片高
                     )
-                if auto.find_text_element(["0/1", "01", "1/1", "11"], my_crop=select_bbox):
+                if auto.find_text_element(["0/1", "01", "1/1", "11", "1/2", "12"], my_crop=select_bbox):
                     for gift in my_list[:1]:
                         auto.mouse_click(gift[0], gift[1])
                     auto.click_element("mirror/road_in_mir/acquire_ego_gift_select_assets.png", model="normal")
                     time.sleep(2)
                     retry()
                     return
-                elif auto.find_text_element(["0/2", "02", "1/2", "12", "2/2", "22"], my_crop=select_bbox):
+                elif auto.find_text_element(["0/2", "02", "2/2", "22"], my_crop=select_bbox):
                     for gift in my_list[:2]:
                         auto.mouse_click(gift[0], gift[1])
                     auto.click_element("mirror/road_in_mir/acquire_ego_gift_select_assets.png", model="normal")
@@ -630,8 +646,4 @@ class Mirror:
 
     @begin_and_finish_time_log(task_name="镜牢商店")
     def in_shop(self):
-        fuse_IV = in_shop(self.system, self.shop_sell_list, self.fuse_switch, self.fuse_aggressive_switch)
-        if self.fuse_aggressive_switch:
-            log.INFO(f"合成四级结果：{fuse_IV}")
-        if fuse_IV is True:
-            self.set_fuse_switch_normal()
+        self.shop.in_shop()

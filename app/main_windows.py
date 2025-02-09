@@ -420,7 +420,7 @@ class Ui_MainWindow(object):
         self.scroll_frame.setFrameShadow(QtWidgets.QFrame.Raised)
         self.scroll_frame.setObjectName("scroll_frame")
         self.scroll_area = ScrollArea(self.scroll_frame)
-        self.scroll_area.setGeometry(QtCore.QRect(0, 0, 221,560))
+        self.scroll_area.setGeometry(QtCore.QRect(0, 0, 221, 560))
         self.scroll_area.setFrameShape(QtWidgets.QFrame.NoFrame)
         self.scroll_area.setFrameShadow(QtWidgets.QFrame.Sunken)
         self.scroll_area.setWidgetResizable(True)
@@ -524,4 +524,5 @@ class Ui_MainWindow(object):
         self.instructions_page.setText(_translate("MainWindow", "使用说明"))
 
 
-from qfluentwidgets import BodyLabel, CardWidget, CheckBox, ComboBox, DoubleSpinBox, PushButton, ScrollArea, SpinBox, SubtitleLabel, TextEdit, LineEdit
+from qfluentwidgets import BodyLabel, CardWidget, CheckBox, ComboBox, DoubleSpinBox, PushButton, ScrollArea, SpinBox, \
+    SubtitleLabel, TextEdit, LineEdit

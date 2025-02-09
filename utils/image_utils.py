@@ -12,7 +12,7 @@ from utils import pic_path
 
 class ImageUtils:
     @staticmethod
-    def load_image(image_path):
+    def load_image(image_path, resize=True):
         """
         加载图片，并根据指定区域裁剪图片。
         :param image_path: 图片文件路径。
@@ -33,14 +33,15 @@ class ImageUtils:
                 # 如果图片通道数大于3，只保留前三个通道（如RGB）
                 if channel > 3:
                     image = image[:, :, :3].copy()
-                win_size = cfg.set_win_size
-                # 如果win_size 为2560*1440，则不变，否则将图片缩放到对应的16：9大小
-                if win_size < 1440:
-                    image = cv2.resize(image, None, fx=win_size / 1440, fy=win_size / 1440,
-                                       interpolation=cv2.INTER_AREA)
-                elif win_size > 1440:
-                    image = cv2.resize(image, None, fx=win_size / 1440, fy=win_size / 1440,
-                                       interpolation=cv2.INTER_LINEAR)
+                if resize:
+                    win_size = cfg.set_win_size
+                    # 如果win_size 为2560*1440，则不变，否则将图片缩放到对应的16：9大小
+                    if win_size < 1440:
+                        image = cv2.resize(image, None, fx=win_size / 1440, fy=win_size / 1440,
+                                           interpolation=cv2.INTER_AREA)
+                    elif win_size > 1440:
+                        image = cv2.resize(image, None, fx=win_size / 1440, fy=win_size / 1440,
+                                           interpolation=cv2.INTER_LINEAR)
                 # 返回处理后的图片数组
                 image = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
                 return image
@@ -208,3 +209,53 @@ class ImageUtils:
         :return: 图片的宽度和高度。
         """
         return image_array.shape[::-1]
+
+    @staticmethod
+    def feature_matching(template_img, target_img, min_matches=8):
+        # 读取图像并进行预处理
+
+        template = cv2.resize(template_img, None, fx=2, fy=2, interpolation=cv2.INTER_LINEAR)
+        target = cv2.resize(target_img, None, fx=2, fy=2, interpolation=cv2.INTER_LINEAR)
+
+        # 使用ORB特征检测器
+        orb = cv2.ORB_create(nfeatures=1000, scaleFactor=1.2, edgeThreshold=10)
+
+        # 检测关键点和描述符
+        kp1, des1 = orb.detectAndCompute(template, None)
+        kp2, des2 = orb.detectAndCompute(target, None)
+
+        # 使用FLANN匹配器
+        FLANN_INDEX_LSH = 6
+        index_params = dict(algorithm=FLANN_INDEX_LSH,
+                            table_number=6,
+                            key_size=12,
+                            multi_probe_level=1)
+        search_params = dict(checks=50)
+        flann = cv2.FlannBasedMatcher(index_params, search_params)
+
+        matches = flann.knnMatch(des1, des2, k=2)
+
+        # 比率测试
+        good_matches = []
+        for match in matches:
+            if len(match) >= 2:
+                m, n = match
+                if m.distance < 0.7 * n.distance:
+                    good_matches.append(m)
+
+        if len(good_matches) >= min_matches:
+            # 获取匹配点的坐标
+            src_pts = np.float32([kp1[m.queryIdx].pt for m in good_matches])
+            dst_pts = np.float32([kp2[m.trainIdx].pt for m in good_matches])
+
+            # 计算单应性矩阵
+            M, mask = cv2.findHomography(src_pts, dst_pts, cv2.RANSAC, 5.0)
+
+            # 计算匹配置信度评分
+            inlier_ratio = np.sum(mask) / len(mask)
+            if inlier_ratio < 0.3:  # 如果内点比例过低，认为匹配不可靠
+                return False, len(good_matches)
+
+            return True, len(good_matches)
+        else:
+            return False, len(good_matches)

@@ -160,8 +160,8 @@ def check_update(self, timeout=5, flag=False):
                 # 如果用户确认更新，则从指定的URL下载更新资源
                 assets_url = self.update_thread.assets_url
                 update(assets_url)
-            #assets_url = self.update_thread.assets_url
-            #update(assets_url)
+            # assets_url = self.update_thread.assets_url
+            # update(assets_url)
         elif state == UpdateState.SUCCESS:
             # 如果更新成功，记录日志信息
             log.INFO(f"当前是最新版本")

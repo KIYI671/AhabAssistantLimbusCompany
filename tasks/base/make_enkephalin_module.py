@@ -27,7 +27,7 @@ def lunacy_to_enkephalin(times=0):
     # TODO:待加入葛朗台模式
     make_enkephalin_module(cancel=False)
     auto.click_element("enkephalin/use_lunacy_assets.png")
-    while times>0:
+    while times > 0:
         auto.mouse_to_blank()
         # 自动截图
         if auto.take_screenshot() is None:
