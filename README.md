@@ -89,6 +89,12 @@
 运行一次脚本后，会自动创建一个 **_“theme_pack_list.yaml”_** 文件，该文件用于设置主题包的权重</br>
 使用记事本或者其他文本编辑器打开后，可以仿照格式自行配置主题包权重，或自行添加主题包识别文字
 
+#### 修改流程
+- 先运行一次AALC.exe（新用户）
+- AALC文件夹下出现theme_pack_list.yaml文件
+- 修改theme_pack_list.yaml文件
+- 修改后重新启动AALC
+
 文件格式参考以下图片所示
 
 ![image](/assets/doc/image/theme_list.png)

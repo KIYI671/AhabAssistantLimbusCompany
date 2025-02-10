@@ -89,8 +89,13 @@ Of course, you are also welcome to submit [Pull Request](https://github.com/KIYI
 When the script is run once, a _"theme_pack_list.yaml"_ file is automatically created, which is used to set the weight of the theme package</br>
 After opening it with Notepad or other text editors, you can configure the weight of the theme package according to the format, or add the theme package to recognize the text
 
-The file format is shown in the following picture.
+#### Modify the process
+- Run the AALC.exe once first (for new users)
+- A theme_pack_list.yaml file appears in the AALC folder
+- Modify theme_pack_list.yaml file
+- Restart AALC after modification
 
+The file format is shown in the following picture.
 
 ![image](/assets/doc/image/theme_list.png)
 
