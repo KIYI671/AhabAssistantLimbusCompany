@@ -242,17 +242,17 @@ class Automation(metaclass=SingletonMeta):
         elif isinstance(target, list):
             if all_text:
                 for key in target:
-                    if self.find_str_in_text(key, ocr_dict) is False:
+                    if self.find_str_in_text(str(key), ocr_dict) is False:
                         return False
                 return True
             for key in target:
-                if self.find_str_in_text(key, ocr_dict):
-                    return self.find_str_in_text(key, ocr_dict)
+                if self.find_str_in_text(str(key), ocr_dict):
+                    return self.find_str_in_text(str(key), ocr_dict)
             return False
         elif isinstance(target, dict):
             for key, value in target.items():
-                if self.find_str_in_text(key, ocr_dict):
-                    return value, key
+                if self.find_str_in_text(str(key), ocr_dict):
+                    return value, str(key)
             return None
 
     def get_text_from_screenshot(self, my_crop=None):
