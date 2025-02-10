@@ -182,6 +182,23 @@ Thanks to the following developers for their outstanding contributions to AALC:
 
 ---
 
+## Run the source code
+
+If you don't understand it at all, please download and install it through the above method, and you don't have to look down.
+
+```cmd
+# Installation (using venv is recommended)
+git clone https://github.com/KIYI671/AhabAssistantLimbusCompany
+cd AhabAssistantLimbusCompany
+pip install -r requirements.txt
+python main.py
+
+# Update
+git pull
+```
+
+---
+
 ## Build guide
 
 - References [build guide](build_guide_EN.md)

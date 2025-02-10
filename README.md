@@ -178,6 +178,23 @@ AALC的项目离不开以下开源项目的帮助
 
 ---
 
+## 源码运行
+
+如果你是完全不懂的小白，请通过上面的方式下载安装，不用往下看了。
+
+```cmd
+# Installation (using venv is recommended)
+git clone https://github.com/KIYI671/AhabAssistantLimbusCompany
+cd AhabAssistantLimbusCompany
+pip install -r requirements.txt
+python main.py
+
+# Update
+git pull
+```
+
+---
+
 ## 构建指南
 
 - 参考 [构建指南](assets/doc/zh/build_guide.md)
