@@ -61,15 +61,22 @@ def search_road_default_distance():
             bus_position = auto.find_element("mirror/mybus_default_distance.png", take_screenshot=True)
             if bus_position is None:
                 break
-    node_weight = {}
+
+    node_list =[]
     if bus_position := auto.find_element("mirror/mybus_default_distance.png", take_screenshot=True):
-        for road in three_roads:
+        for road in three_roads[:2]:
+            node_x = bus_position[0] + road[0]
+            node_y = bus_position[1] + road[1]
+            node_list.append((node_x, node_y))
+        old_weight = node_weight.values()
+        all_node_weight = dict(zip(node_list, old_weight))
+        for road in three_roads[2:]:
             node_x = bus_position[0] + road[0]
             node_y = bus_position[1] + road[1]
             weight = get_node_weight(node_x, node_y)
-            node_weight[(node_x, node_y)] = weight
-        # 根据node_weight，按照各个键的值，从大到小以生成只有键的新的列表
-        road_list = sorted(node_weight, key=node_weight.get, reverse=True)
+            all_node_weight[(node_x, node_y)] = weight
+        # 根据all_node_weight，按照各个键的值，从大到小以生成只有键的新的列表
+        road_list = sorted(all_node_weight, key=all_node_weight.get, reverse=True)
         for road in road_list:
             if 0 < road[0] < cfg.set_win_size * 16 / 9 and 0 < road[1] < cfg.set_win_size:
                 auto.mouse_click(road[0], road[1])

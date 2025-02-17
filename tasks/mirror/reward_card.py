@@ -37,9 +37,11 @@ def get_reward_card():
         if loop_count < 0:
             log.ERROR("无法获取奖励卡")
             return
+    retry()
     while auto.click_element("mirror/get_reward_card/get_reward_card_confirm_assets.png"):
         while auto.take_screenshot() is None:
             continue
+        auto.mouse_to_blank()
         if auto.click_element("mirror/get_reward_card/continue_choosing_assets.png", model='clam'):
             break
         continue

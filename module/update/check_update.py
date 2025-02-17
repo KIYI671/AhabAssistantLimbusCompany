@@ -1,6 +1,7 @@
 import os  # 导入os模块以便操作文件路径
 import re
 from enum import Enum
+from threading import Thread
 
 import markdown
 import requests  # 导入requests模块，用于发送HTTP请求
@@ -159,7 +160,7 @@ def check_update(self, timeout=5, flag=False):
             if messages_box.exec_():
                 # 如果用户确认更新，则从指定的URL下载更新资源
                 assets_url = self.update_thread.assets_url
-                update(assets_url)
+                start_update_thread(assets_url)
             # assets_url = self.update_thread.assets_url
             # update(assets_url)
         elif state == UpdateState.SUCCESS:
@@ -239,12 +240,23 @@ def update(assets_url):
                 if percent - last_logged_percent >= 5:
                     log.INFO(f"下载进度: {percent:.2f}%")
                     last_logged_percent = percent
-        # TODO 不同语言展示不同信息 if cfg.language == 'en':
-        log.INFO(f"下载完成,请手动解压 {file_path} 完成更新")
-        log.INFO(f"Once the download is complete, please manually unzip {file_path} to complete the update")
+        # 不同语言展示不同信息
+        if cfg.language == 'en':
+            log.INFO(f"Once the download is complete, please manually unzip {file_path} to complete the update")
+        elif cfg.language == 'zh_cn':
+            log.INFO(f"下载完成,请手动解压 {file_path} 完成更新")
     except requests.exceptions.RequestException as e:
         log.error(f"下载失败，请检查网络: {e}")
     except OSError as e:
         log.error(f"文件操作失败: {e}")
     finally:
         response.close()  # 确保关闭响应对象
+
+def start_update_thread(assets_url):
+    """
+    在单独的线程中启动更新功能。
+    :param assets_url: 更新文件的URL。
+    """
+    thread = Thread(target=update, args=(assets_url,))
+    thread.start()
+    return thread

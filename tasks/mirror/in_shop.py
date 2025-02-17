@@ -31,6 +31,7 @@ class Shop:
         self.fuse_IV = False
         self.fuse_system_gift_1 = False
         self.fuse_system_gift_2 = False
+        self.the_first_line_position = None
 
     @staticmethod
     def ego_gift_to_power_up():
@@ -209,6 +210,9 @@ class Shop:
             # 对饰品位置列表进行排序、去重处理
             my_list = processing_coordinates(gift_list)
 
+            if self.the_first_line_position is None:
+                self.the_first_line_position = my_list[0][1] - 50*cfg.set_win_size/1440
+
             # 选择至多3样饰品
             if len(my_list) <= 2:
                 msg = f"饰品列表数量不足，结束合成"
@@ -288,6 +292,9 @@ class Shop:
                 if not any(abs(coord[0] - x[0]) <= 40 * scale and
                            abs(coord[1] - x[1]) <= 40 * scale for x in unique_list):
                     unique_list.append(coord)
+
+            if self.fuse_aggressive_switch:
+                unique_list = [items for items in unique_list if items[1] >= self.the_first_line_position]
 
             return unique_list
 
