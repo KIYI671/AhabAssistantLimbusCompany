@@ -41,6 +41,7 @@ def team_formation(sinner_team):
         continue
     announcer_position = auto.find_element("teams/announcer_assets.png")
     first_sinner = [announcer_position[0] + 350 * scale, announcer_position[1]]
+    sleep(0.5)
 
     for sinner in sinner_team:
         name = pic_path + all_sinner[sinner] + '_assets.png'
@@ -51,6 +52,7 @@ def team_formation(sinner_team):
                 auto.mouse_click(first_sinner[0] + 270 * (sinner - 7) * scale, first_sinner[1] + 500 * scale)
             else:
                 auto.mouse_click(first_sinner[0] + 270 * (sinner - 8) * scale, first_sinner[1] + 500 * scale)
+            sleep(cfg.mouse_action_interval_time)
 
 
 @begin_and_finish_time_log(task_name="寻找队伍")

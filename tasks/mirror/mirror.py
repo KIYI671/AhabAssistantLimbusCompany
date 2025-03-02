@@ -248,6 +248,8 @@ class Mirror:
             # 如果回到主界面，退出循环
             if auto.find_element("home/drive_assets.png"):
                 break
+            if auto.click_element("base/battle_finish_confirm_assets.png"):
+                continue
             if auto.click_element("mirror/claim_reward/rewards_acquired_assets.png"):
                 continue
             if auto.click_element("mirror/claim_reward/claim_rewards_confirm_assets.png"):
@@ -440,6 +442,7 @@ class Mirror:
             # 自动截图
             if auto.take_screenshot() is None:
                 continue
+            auto.mouse_to_blank()
             if auto.click_element("mirror/road_in_mir/towindow&forfeit_confirm_assets.png"):
                 break
             if auto.click_element("mirror/road_in_mir/to_window_assets.png"):

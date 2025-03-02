@@ -62,7 +62,7 @@ def search_road_default_distance():
             if bus_position is None:
                 break
 
-    node_list =[]
+    node_list = []
     if bus_position := auto.find_element("mirror/mybus_default_distance.png", take_screenshot=True):
         for road in three_roads[:2]:
             node_x = bus_position[0] + road[0]
@@ -75,6 +75,7 @@ def search_road_default_distance():
             node_y = bus_position[1] + road[1]
             weight = get_node_weight(node_x, node_y)
             all_node_weight[(node_x, node_y)] = weight
+        all_node_weight[bus_position[0], bus_position[1]] = -6
         # 根据all_node_weight，按照各个键的值，从大到小以生成只有键的新的列表
         road_list = sorted(all_node_weight, key=all_node_weight.get, reverse=True)
         for road in road_list:

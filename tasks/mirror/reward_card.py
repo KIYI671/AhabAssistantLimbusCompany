@@ -28,6 +28,8 @@ def get_reward_card():
             break
         if auto.click_element("mirror/get_reward_card/gain_ego_resource.png"):
             break
+        if auto.click_element("mirror/road_in_mir/ego_gift_get_confirm_assets.png"):
+            break
         retry()
         loop_count -= 1
         if loop_count < 20:
