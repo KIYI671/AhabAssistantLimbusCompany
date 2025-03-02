@@ -67,6 +67,9 @@ class Mirror:
                 break
             if auto.click_element("mirror/road_to_mir/enter_mirror_assets.png"):
                 break
+            infinity_bbox = ImageUtils.get_bbox(ImageUtils.load_image("mirror/road_to_mir/infinity_mirror_bbox.png"))
+            if auto.find_text_element("on", infinity_bbox):
+                auto.click_element("mirror/road_to_mir/infinity_mirror_enter_assets.png")
             if auto.click_element("mirror/road_to_mir/enter_assets.png"):
                 sleep(0.5)
                 continue
@@ -231,6 +234,11 @@ class Mirror:
             if auto.find_element("mirror/road_in_mir/select_event_effect.png"):
                 auto.click_element("mirror/road_in_mir/event_effect_button.png")
                 auto.click_element("mirror/road_in_mir/select_event_effect_confirm.png")
+                continue
+
+            # 取消十层
+            if auto.find_element("mirror/infinity_mirror_assets.png"):
+                auto.click_element("mirror/infinity_mirror_close_assets.png")
                 continue
 
             # 防卡死
