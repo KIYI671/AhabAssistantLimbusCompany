@@ -50,3 +50,4 @@ pyuac~=0.0.3
 Markdown~=3.7
 packaging~=24.2
 playsound3~=2.5.2
+cpufeature~=0.2.1
