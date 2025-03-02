@@ -53,6 +53,10 @@ def back_init_menu():
         if auto.click_element("home/back_assets.png"):
             continue
 
+        # 周年活动弹出的窗口
+        if auto.click_element("home/close_anniversary_event_assets.png"):
+            continue
+
         auto.mouse_click_blank()
         pyautogui.press('esc')
         retry()

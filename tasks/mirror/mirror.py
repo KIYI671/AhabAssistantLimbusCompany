@@ -259,6 +259,9 @@ class Mirror:
             if auto.click_element("mirror/claim_reward/claim_rewards_assets.png"):
                 # TODO: 统计获取的coins
                 continue
+            # 处理周年活动弹出的窗口
+            if auto.click_element("home/close_anniversary_event_assets.png"):
+                continue
             retry()
 
         # 计时结束
