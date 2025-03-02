@@ -487,7 +487,9 @@ class Mirror:
                 break
 
             # 针对不同事件进行处理，优先选直接获取的，再选需要判定的，再选后续事件的，最后第一个事项
-            if auto.click_element("event/select_to_gain_ego.png"):
+            if positions_list :=auto.find_element("event/select_to_gain_ego.png", find_type="image_with_multiple_targets"):
+                positions_list = sorted(positions_list, key=lambda x: (x[1], x[0]))
+                auto.mouse_click(positions_list[0][0], positions_list[0][1])
                 continue
             if auto.click_element("event/advantage_check.png"):
                 continue

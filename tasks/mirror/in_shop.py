@@ -293,6 +293,7 @@ class Shop:
                            abs(coord[1] - x[1]) <= 40 * scale for x in unique_list):
                     unique_list.append(coord)
 
+            # 如果激活激进模式，则过滤第一行的饰品
             if self.fuse_aggressive_switch:
                 unique_list = [items for items in unique_list if items[1] >= self.the_first_line_position]
 
@@ -692,6 +693,7 @@ class Shop:
                     continue
             if gifts := auto.find_element(f"mirror/shop/enhance_gifts/{self.system}.png",
                                           find_type="image_with_multiple_targets"):
+                gifts = sorted(gifts, key=lambda x: (x[1], x[0]))
                 all_true = True
                 for gift in gifts:
                     auto.mouse_click(gift[0], gift[1])
