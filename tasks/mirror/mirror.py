@@ -188,7 +188,7 @@ class Mirror:
                 continue
 
             # 如果遇到选择ego饰品的情况
-            if auto.find_element("mirror/road_in_mir/acquire_ego_gift.png"):
+            if auto.find_element("mirror/road_in_mir/acquire_ego_gift.png", threshold=0.9):
                 self.acquire_ego_gift()
                 continue
 
@@ -498,7 +498,8 @@ class Mirror:
                 break
 
             # 针对不同事件进行处理，优先选直接获取的，再选需要判定的，再选后续事件的，最后第一个事项
-            if positions_list :=auto.find_element("event/select_to_gain_ego.png", find_type="image_with_multiple_targets"):
+            if positions_list := auto.find_element("event/select_to_gain_ego.png",
+                                                   find_type="image_with_multiple_targets"):
                 positions_list = sorted(positions_list, key=lambda x: (x[1], x[0]))
                 auto.mouse_click(positions_list[0][0], positions_list[0][1])
                 continue

@@ -56,7 +56,7 @@ def get_mail_prize():
         if auto.click_element("mail/claim_all_assets.png"):
             auto.click_element("mail/close_assets.png")
             break
-        if auto.click_element("home/mail_assets.png"):
+        if auto.click_element("home/mail_assets.png") or auto.click_element("home/mail_cn_assets.png", model='normal'):
             continue
         auto.mouse_to_blank()
         loop_count -= 1

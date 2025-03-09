@@ -296,7 +296,7 @@ class Automation(metaclass=SingletonMeta):
                 self.logger.ERROR(f"匹配图片特征失败:{e}")
             return None
 
-    def find_image_element(self, target, threshold, cacheable=False, model='clam', my_crop=None):
+    def find_image_element(self, target, threshold, cacheable=True, model='clam', my_crop=None):
         try:
             if cacheable and target in self.img_cache:
                 bbox = self.img_cache[target]['bbox']

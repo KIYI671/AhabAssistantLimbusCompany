@@ -211,7 +211,7 @@ class Shop:
             my_list = processing_coordinates(gift_list)
 
             if self.the_first_line_position is None:
-                self.the_first_line_position = my_list[0][1] - 50*cfg.set_win_size/1440
+                self.the_first_line_position = my_list[0][1] - 20 * (cfg.set_win_size / 1440)
 
             # 选择至多3样饰品
             if len(my_list) <= 2:
@@ -255,6 +255,8 @@ class Shop:
                                 log.INFO("合成四级，切换到非激进模式")
                                 fuse = False
                         auto.mouse_click(ego_gift_get_confirm[0], ego_gift_get_confirm[1])
+                        sleep(0.5)
+                        auto.click_element("mirror/road_in_mir/ego_gift_get_confirm_assets.png", take_screenshot=True)
                         break
 
                     if auto.click_element("mirror/shop/enhance_and_fuse_and_sell_confirm_assets.png", model="normal"):
@@ -382,11 +384,15 @@ class Shop:
                             fuse = True
                             auto.click_element("mirror/road_in_mir/ego_gift_get_confirm_assets.png")
                             sleep(1)
+                            auto.click_element("mirror/road_in_mir/ego_gift_get_confirm_assets.png",
+                                               take_screenshot=True)
                             break
                         else:
                             if auto.click_element("mirror/road_in_mir/ego_gift_get_confirm_assets.png"):
                                 fuse = True
                                 sleep(1)
+                                auto.click_element("mirror/road_in_mir/ego_gift_get_confirm_assets.png",
+                                                   take_screenshot=True)
                                 break
 
                     if auto.click_element("mirror/shop/enhance_and_fuse_and_sell_confirm_assets.png", model="normal"):
