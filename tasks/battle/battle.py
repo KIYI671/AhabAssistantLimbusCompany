@@ -8,6 +8,7 @@ from module.decorator.decorator import begin_and_finish_time_log
 from module.logger import log
 from tasks.base.retry import retry
 from tasks.event.event_handling import EventHandling
+from utils.image_utils import ImageUtils
 
 
 def to_battle():
@@ -110,17 +111,32 @@ def battle(first_battle=False):
                         if auto.click_element("battle/setting_assets.png"):
                             continue
 
-        # 如果正在战斗待机界面
-        if auto.click_element("battle/turn_assets.png") or auto.find_element("battle/win_rate_assets.png"):
-            auto.mouse_click_blank()
-            pyautogui.press('p')
-            sleep(0.5)
-            pyautogui.press('enter')
-            chance = INIT_CHANCE
-            msg = f"使用P+Enter开始战斗"
-            log.DEBUG(msg)
-            waiting = update_wait_time(waiting, False, total_count)
-            continue
+        if fail_count>=5:
+            # 如果多次识别不到战斗界面
+            turn_bbox = ImageUtils.get_bbox(ImageUtils.load_image("battle/turn_assets.png"))
+            turn_ocr_result = auto.find_text_element("turn", turn_bbox)
+            if turn_ocr_result is not False:
+                auto.mouse_click_blank()
+                pyautogui.press('p')
+                sleep(0.5)
+                pyautogui.press('enter')
+                chance = INIT_CHANCE
+                msg = f"使用P+Enter开始战斗"
+                log.DEBUG(msg)
+                waiting = update_wait_time(waiting, False, total_count)
+                continue
+        else:
+            # 如果正在战斗待机界面
+            if auto.click_element("battle/turn_assets.png") or auto.find_element("battle/win_rate_assets.png"):
+                auto.mouse_click_blank()
+                pyautogui.press('p')
+                sleep(0.5)
+                pyautogui.press('enter')
+                chance = INIT_CHANCE
+                msg = f"使用P+Enter开始战斗"
+                log.DEBUG(msg)
+                waiting = update_wait_time(waiting, False, total_count)
+                continue
 
         # 如果战斗中途出现事件
         if auto.find_element("event/choices_assets.png") and auto.find_element(

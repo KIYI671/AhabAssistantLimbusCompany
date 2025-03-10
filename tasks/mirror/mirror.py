@@ -183,12 +183,17 @@ class Mirror:
                 continue
 
             # 在战斗中
-            if auto.find_element("battle/turn_assets.png"):
+            if auto.find_element("battle/turn_assets.png") or auto.find_element("battle/in_mirror_assets.png"):
                 self.battle_total_time += battle()
                 continue
 
+            # 镜牢星光
+            if auto.find_element("mirror/road_to_mir/dreaming_star/coins_assets.png", threshold=0.9):
+                self.enter_mir_with_star()
+                continue
+
             # 如果遇到选择ego饰品的情况
-            if auto.find_element("mirror/road_in_mir/acquire_ego_gift.png", threshold=0.9):
+            if auto.find_element("mirror/road_in_mir/acquire_ego_gift.png"):
                 self.acquire_ego_gift()
                 continue
 
@@ -218,11 +223,6 @@ class Mirror:
             # 在镜牢界面，进入镜牢
             if auto.click_element("mirror/road_to_mir/enter_assets.png"):
                 self.road_to_mir()
-                continue
-
-            # 镜牢星光
-            if auto.find_element("mirror/road_to_mir/dreaming_star/coins_assets.png"):
-                self.enter_mir_with_star()
                 continue
 
             # 初始饰品选择
@@ -424,7 +424,7 @@ class Mirror:
                 log.ERROR("无法进入镜牢,尝试回到初始界面")
                 back_init_menu()
                 break
-        time.sleep(1)
+        time.sleep(3)
 
     @begin_and_finish_time_log(task_name="镜牢寻路")
     def search_road(self):
