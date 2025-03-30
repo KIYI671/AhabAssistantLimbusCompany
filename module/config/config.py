@@ -132,13 +132,9 @@ class Theme_pack_list(metaclass=SingletonMeta):
             sys.exit(f"配置文件{path}加载错误: {e}")
 
     def _update_config(self, config, new_config):
-        """递归更新配置信息"""
+        """更新配置信息"""
         for key, value in new_config.items():
-            if key in config:
-                if isinstance(config[key], dict) and isinstance(value, dict):
-                    self._update_config(config[key], value)
-                else:
-                    config[key] = value
+            config[key] = value
 
     def save_config(self):
         """保存到配置文件"""
