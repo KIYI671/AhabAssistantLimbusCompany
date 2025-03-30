@@ -179,10 +179,15 @@ Thanks to the following developers for their outstanding contributions to AALC:
 </a>
 
 ## Future plans
-- [ ] Fixing discovered bugs
-- [ ] Refactoring the GUI
-- [ ] Realization of the automatic update function of the software for the new version of the zip file.
-- [ ] Use deep learning or image feature recognition technology to improve script recognition speed
+- [ ] Refactor the GUI
+- [ ] Realize the automatic update function of the software for the new version of the zip file.
+- [ ] Fix the bug of auto-battle and the bug that theme packs can't be customized.
+- [ ] Add support for the Grampian mode
+- [ ] Count the number of pass levels after the run.
+- [ ] Adapt more window position.
+- [ ] Increase the freedom of customization of the mirror dungeon.
+- [ ] Generate excel file or chart for stats during runtime to improve readability.
+- [ ] Continuously fix bugs
 - [ ] ......
 
 ---
