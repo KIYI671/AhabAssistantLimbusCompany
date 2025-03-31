@@ -11,7 +11,7 @@ from module.my_error.my_error import unableToFindTeamError
 from tasks.base.back_init_menu import back_init_menu
 from tasks.base.make_enkephalin_module import make_enkephalin_module
 from tasks.base.retry import retry
-from tasks.battle.battle import battle
+from tasks.battle import battle
 from tasks.event.event_handling import EventHandling
 from tasks.mirror.in_shop import Shop
 from tasks.mirror.reward_card import get_reward_card
@@ -183,9 +183,16 @@ class Mirror:
                 continue
 
             # 在战斗中
-            if auto.find_element("battle/turn_assets.png") or auto.find_element("battle/in_mirror_assets.png"):
-                self.battle_total_time += battle()
-                continue
+            if battle.identify_keyword_turn:
+                if auto.find_element("battle/turn_assets.png") or auto.find_element("battle/in_mirror_assets.png"):
+                    self.battle_total_time += battle.fight()
+                    continue
+            else:
+                turn_bbox = ImageUtils.get_bbox(ImageUtils.load_image("battle/turn_assets.png"))
+                turn_ocr_result = auto.find_text_element("turn", turn_bbox)
+                if turn_ocr_result is not False:
+                    self.battle_total_time += battle.fight()
+                    continue
 
             # 镜牢星光
             if auto.find_element("mirror/road_to_mir/dreaming_star/coins_assets.png", threshold=0.9):

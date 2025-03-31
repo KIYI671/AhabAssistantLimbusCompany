@@ -17,7 +17,7 @@ from module.my_error.my_error import userStopError, unableToFindTeamError, unexp
 from module.screen import screen
 from tasks.base.back_init_menu import back_init_menu
 from tasks.base.make_enkephalin_module import lunacy_to_enkephalin, make_enkephalin_module
-from tasks.battle.battle import battle, to_battle
+from tasks.battle import battle
 from tasks.daily.get_prize import get_pass_prize, get_mail_prize
 from tasks.daily.luxcavation import EXP_luxcavation, thread_luxcavation
 from tasks.mirror.mirror import Mirror
@@ -42,9 +42,9 @@ all_sinner = {
 def onetime_EXP_process(team):
     EXP_luxcavation()
     select_battle_team(team)
-    if to_battle() is False:
+    if battle.to_battle() is False:
         return False
-    battle()
+    battle.fight()
     back_init_menu()
     make_enkephalin_module()
 
@@ -54,9 +54,9 @@ def onetime_EXP_process(team):
 def onetime_thread_process(team):
     thread_luxcavation()
     select_battle_team(team)
-    if to_battle() is False:
+    if battle.to_battle() is False:
         return False
-    battle()
+    battle.fight()
     back_init_menu()
     make_enkephalin_module()
 
@@ -118,7 +118,7 @@ def script_task():
     while auto.take_screenshot() is None:
         continue
     if auto.click_element("battle/turn_assets.png"):
-        get_reward = battle()
+        get_reward = battle.fight()
 
     # 执行日常刷本任务
     if cfg.daily_task:
