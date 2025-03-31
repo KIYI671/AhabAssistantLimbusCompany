@@ -186,7 +186,7 @@ class Mirror:
                 continue
 
             # 在战斗中
-            if battle.identify_keyword_turn:
+            if battle.identify_keyword_turn and main_loop_count > 45:
                 if auto.find_element("battle/turn_assets.png") or auto.find_element("battle/in_mirror_assets.png"):
                     self.battle_total_time += battle.fight()
                     continue
@@ -281,11 +281,11 @@ class Mirror:
                 continue
             if auto.click_element("mirror/claim_reward/rewards_acquired_assets.png"):
                 continue
-            if auto.click_element("mirror/claim_reward/claim_rewards_confirm_assets.png",threshold=0.75):
+            if auto.click_element("mirror/claim_reward/claim_rewards_confirm_assets.png", threshold=0.75):
                 continue
             if self.no_weekly_bonuses and auto.click_element("mirror/claim_reward/weekly_bonuses.png"):
                 continue
-            if auto.click_element("mirror/claim_reward/enkephalin_assets.png",threshold=0.75): # 降低识别阈值
+            if auto.click_element("mirror/claim_reward/enkephalin_assets.png", threshold=0.75):  # 降低识别阈值
                 continue
             if auto.click_element("mirror/claim_reward/claim_rewards_assets.png"):
                 # TODO: 统计获取的coins
