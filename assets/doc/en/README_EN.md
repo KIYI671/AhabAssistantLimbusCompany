@@ -110,6 +110,7 @@ The file format is shown in the following picture.
 ## Attention!!!
 
 - For the time being, it is only recommended to run at resolutions of 1920 * 1080 and 2160 * 1440</br> If the screen is less than 1920 * 1080, it is not recommended to use it at a resolution smaller than that
+- **Please set Material Quality and Render Ratio in Settings-Image to High, Normal FPS and Combat FPS to 60, and Post-Processing to Off** to facilitate software recognition. If the performance of the device cannot be met, please also try to set the **rendering ratio to high**, otherwise the software may have difficulty in recognizing it.
 - The game program will be set to window mode after the script starts, and if there is a behavior of switching to the full screen and then exiting in the middle, it is normal behavior, so there is no need to worry
 - If you have enabled the performance display feature of Steam or other software, you should try not to obscure the game screen, as this may cause problems with the scripting process
 
@@ -179,10 +180,15 @@ Thanks to the following developers for their outstanding contributions to AALC:
 </a>
 
 ## Future plans
-- [ ] Fixing discovered bugs
-- [ ] Refactoring the GUI
-- [ ] Realization of the automatic update function of the software for the new version of the zip file.
-- [ ] Use deep learning or image feature recognition technology to improve script recognition speed
+- [ ] Refactor the GUI
+- [ ] Realize the automatic update function of the software for the new version of the zip file.
+- [ ] Fix the bug of auto-battle and the bug that theme packs can't be customized.
+- [ ] Add support for the Grampian mode
+- [ ] Count the number of pass levels after the run.
+- [ ] Adapt more window position.
+- [ ] Increase the freedom of customization of the mirror dungeon.
+- [ ] Generate excel file or chart for stats during runtime to improve readability.
+- [ ] Continuously fix bugs
 - [ ] ......
 
 ---

@@ -4,7 +4,7 @@ import sys
 from ruamel.yaml import YAML
 
 from utils.singletonmeta import SingletonMeta
-
+from module.logger import log
 
 class Config(metaclass=SingletonMeta):
 
@@ -132,13 +132,12 @@ class Theme_pack_list(metaclass=SingletonMeta):
             sys.exit(f"配置文件{path}加载错误: {e}")
 
     def _update_config(self, config, new_config):
-        """递归更新配置信息"""
+        """更新配置信息"""
+        if config == new_config:
+            return
         for key, value in new_config.items():
-            if key in config:
-                if isinstance(config[key], dict) and isinstance(value, dict):
-                    self._update_config(config[key], value)
-                else:
-                    config[key] = value
+            config[key] = value
+        log.INFO(f"主题包名单已更新")
 
     def save_config(self):
         """保存到配置文件"""
