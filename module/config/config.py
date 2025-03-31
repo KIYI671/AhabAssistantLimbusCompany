@@ -4,7 +4,7 @@ import sys
 from ruamel.yaml import YAML
 
 from utils.singletonmeta import SingletonMeta
-
+from module.logger import log
 
 class Config(metaclass=SingletonMeta):
 
@@ -133,8 +133,11 @@ class Theme_pack_list(metaclass=SingletonMeta):
 
     def _update_config(self, config, new_config):
         """更新配置信息"""
+        if config == new_config:
+            return
         for key, value in new_config.items():
             config[key] = value
+        log.INFO(f"主题包名单已更新")
 
     def save_config(self):
         """保存到配置文件"""
