@@ -47,6 +47,7 @@ theme_pack_list:
   flood: -5 # 洋流
   vain: -5 # 金笠
   check: -5 # 霍恩海姆
+  sweep: -5 # 深夜清扫
 
 theme_pack_list_hard:
   opening: 0 # 血魔
@@ -123,6 +124,7 @@ theme_pack_list_cn:
   空转: -5 # 洋流
   体检: -5 # 霍恩海姆
   体险: -5 # 霍恩海姆
+  清扫: -5 # 深夜清扫
 
 theme_pack_list_hard_cn:
   开园: 0 # 血魔
