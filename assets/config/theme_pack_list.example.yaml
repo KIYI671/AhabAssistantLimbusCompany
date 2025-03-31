@@ -1,5 +1,5 @@
 # 优选阈值
-preferred_thresholds: -1
+preferred_thresholds: 0
 
 theme_pack_list:
   forgot: 0 # G 公司
