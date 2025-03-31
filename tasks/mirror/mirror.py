@@ -97,6 +97,8 @@ class Mirror:
         if auto.click_element("home/drive_assets.png") or auto.find_element("home/window_assets.png"):
             make_enkephalin_module()
 
+        main_loop_count = 50
+        auto.model = 'clam'
         # 未到达奖励页不会停止
         while True:
             # 自动截图
@@ -125,6 +127,7 @@ class Mirror:
                     msg = f"启动后第{self.layer_times[1]}层卡包"
                     to_log_with_time(msg, this_layer_time)
                 self.layer_times[1] += 1
+                main_loop_count += 10
                 continue
 
             # 在镜牢中寻路
@@ -244,10 +247,21 @@ class Mirror:
             # 防卡死
             auto.mouse_click_blank()
             retry()
+            main_loop_count -= 1
+            if main_loop_count % 10 == 0:
+                log.DEBUG(f"镜牢道中识别次数剩余{main_loop_count}次")
+            if main_loop_count < 30:
+                auto.model = "normal"
+            if main_loop_count < 15:
+                auto.model = 'aggressive'
+            if main_loop_count < 0:
+                raise log.ERROR("镜牢道中出错,请手动操作重试")
 
         msg = f"开始进行镜牢奖励领取"
         log.INFO(msg)
 
+        main_loop_count = 20
+        auto.model = 'clam'
         while True:
             # 自动截图
             if auto.take_screenshot() is None:
@@ -273,6 +287,15 @@ class Mirror:
             if auto.click_element("home/close_anniversary_event_assets.png"):
                 continue
             retry()
+            main_loop_count -= 1
+            if main_loop_count % 3 == 0:
+                log.DEBUG(f"镜牢奖励识别次数剩余{main_loop_count}次")
+            if main_loop_count < 10:
+                auto.model = "normal"
+            if main_loop_count < 5:
+                auto.model = 'aggressive'
+            if main_loop_count < 0:
+                raise log.ERROR("镜牢奖励领取出错,请手动操作重试")
 
         # 计时结束
         end_time = time.time()
@@ -347,6 +370,8 @@ class Mirror:
 
             retry()
             loop_count -= 1
+            if loop_count % 5 == 0:
+                log.DEBUG(f"进入镜牢识别次数剩余{loop_count}次")
             if loop_count < 20:
                 auto.model = "normal"
             if loop_count < 10:
@@ -391,6 +416,8 @@ class Mirror:
 
             retry()
             loop_count -= 1
+            if loop_count % 5 == 0:
+                log.DEBUG(f"选择藏品识别次数剩余{loop_count}次")
             if loop_count < 20:
                 auto.model = "normal"
             if loop_count < 10:
@@ -416,6 +443,8 @@ class Mirror:
             if auto.find_element("mirror/road_to_mir/dreaming_star/coins_assets.png"):
                 break
             loop_count -= 1
+            if loop_count % 5 == 0:
+                log.DEBUG(f"选择队伍识别次数剩余{loop_count}次")
             if loop_count < 20:
                 auto.model = "normal"
             if loop_count < 10:
@@ -542,6 +571,8 @@ class Mirror:
                 back_init_menu()
                 break
             loop_count -= 1
+            if loop_count % 3 == 0:
+                log.DEBUG(f"事件处理识别次数剩余{loop_count}次")
             if loop_count < 20:
                 auto.model = "normal"
             if loop_count < 10:
