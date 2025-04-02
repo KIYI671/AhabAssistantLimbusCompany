@@ -142,7 +142,7 @@ class Mirror:
                     continue
                 if auto.find_element("teams/announcer_assets.png"):
                     continue
-                if auto.find_element('mirror/shop/shop_coins_assets.png'):
+                if auto.find_element('mirror/shop/shop_coins_assets.png',model='normal'):
                     continue
                 if auto.find_element("mirror/claim_reward/claim_rewards_assets.png") and auto.find_element(
                         "mirror/claim_reward/complete_mirror_100%_assets.png"):
