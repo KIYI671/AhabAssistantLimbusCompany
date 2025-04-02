@@ -68,6 +68,7 @@ class Mirror:
             if auto.click_element("mirror/road_to_mir/enter_mirror_assets.png"):
                 break
             infinity_bbox = ImageUtils.get_bbox(ImageUtils.load_image("mirror/road_to_mir/infinity_mirror_bbox.png"))
+            infinity_bbox = (infinity_bbox[2]-50, infinity_bbox[1], infinity_bbox[2] + 100, infinity_bbox[3]) # 临时修复措施，调整裁切大小
             if auto.find_text_element("on", infinity_bbox):
                 auto.click_element("mirror/road_to_mir/infinity_mirror_enter_assets.png")
             if auto.click_element("mirror/road_to_mir/enter_assets.png"):
