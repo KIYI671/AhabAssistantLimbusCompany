@@ -19,6 +19,7 @@ class Battle:
     @staticmethod
     def to_battle():
         loop_count = 15
+        auto.model = 'clam'
         while True:
             # 自动截图
             if auto.take_screenshot() is None:
@@ -30,8 +31,10 @@ class Battle:
             loop_count -= 1
             if loop_count < 10:
                 auto.model = "normal"
+                log.DEBUG("识别模式切换到正常模式")
             if loop_count < 5:
                 auto.model = 'aggressive'
+                log.DEBUG("识别模式切换到激进模式")
             if loop_count < 0:
                 msg = "超出最大尝试次数,未能进入战斗"
                 log.ERROR(msg)

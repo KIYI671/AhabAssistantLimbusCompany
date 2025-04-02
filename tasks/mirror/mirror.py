@@ -68,6 +68,7 @@ class Mirror:
             if auto.click_element("mirror/road_to_mir/enter_mirror_assets.png"):
                 break
             infinity_bbox = ImageUtils.get_bbox(ImageUtils.load_image("mirror/road_to_mir/infinity_mirror_bbox.png"))
+            infinity_bbox = (infinity_bbox[2]-50, infinity_bbox[1], infinity_bbox[2] + 100, infinity_bbox[3]) # 临时修复措施，调整裁切大小
             if auto.find_text_element("on", infinity_bbox):
                 auto.click_element("mirror/road_to_mir/infinity_mirror_enter_assets.png")
             if auto.click_element("mirror/road_to_mir/enter_assets.png"):
@@ -97,10 +98,13 @@ class Mirror:
         if auto.click_element("home/drive_assets.png") or auto.find_element("home/window_assets.png"):
             make_enkephalin_module()
 
-        main_loop_count = 50
+        main_loop_count = 250
+        back_menu_count = 0
         auto.model = 'clam'
         # 未到达奖励页不会停止
         while True:
+            if main_loop_count >= 50:
+                auto.model = "clam" # 防止函数内修改后未还原
             # 自动截图
             if auto.take_screenshot() is None:
                 continue
@@ -127,7 +131,7 @@ class Mirror:
                     msg = f"启动后第{self.layer_times[1]}层卡包"
                     to_log_with_time(msg, this_layer_time)
                 self.layer_times[1] += 1
-                main_loop_count += 10
+                main_loop_count += 50
                 continue
 
             # 在镜牢中寻路
@@ -139,7 +143,7 @@ class Mirror:
                     continue
                 if auto.find_element("teams/announcer_assets.png"):
                     continue
-                if auto.find_element('mirror/shop/shop_coins_assets.png'):
+                if auto.find_element('mirror/shop/shop_coins_assets.png',model='normal'):
                     continue
                 if auto.find_element("mirror/claim_reward/claim_rewards_assets.png") and auto.find_element(
                         "mirror/claim_reward/complete_mirror_100%_assets.png"):
@@ -257,12 +261,19 @@ class Mirror:
             main_loop_count -= 1
             if main_loop_count % 10 == 0:
                 log.DEBUG(f"镜牢道中识别次数剩余{main_loop_count}次")
-            if main_loop_count < 30:
+            if main_loop_count < 75:
                 auto.model = "normal"
+                log.DEBUG("识别模式切换到正常模式")
             if main_loop_count < 15:
                 auto.model = 'aggressive'
+                log.DEBUG("识别模式切换到激进模式，警告，道中识别可能会出错")
             if main_loop_count < 0:
-                raise log.ERROR("镜牢道中出错,请手动操作重试")
+                if back_menu_count > 5:
+                    raise log.ERROR("镜牢道中出错,请手动操作重试")
+                log.ERROR("镜牢道中识别失败次数达到最大值,正在返回主界面")
+                back_init_menu()
+                back_menu_count += 1
+                main_loop_count = 250
 
         msg = f"开始进行镜牢奖励领取"
         log.INFO(msg)
@@ -299,8 +310,10 @@ class Mirror:
                 log.DEBUG(f"镜牢奖励识别次数剩余{main_loop_count}次")
             if main_loop_count < 10:
                 auto.model = "normal"
+                log.DEBUG("识别模式切换到正常模式")
             if main_loop_count < 5:
                 auto.model = 'aggressive'
+                log.DEBUG("识别模式切换到激进模式")
             if main_loop_count < 0:
                 raise log.ERROR("镜牢奖励领取出错,请手动操作重试")
 
@@ -381,8 +394,10 @@ class Mirror:
                 log.DEBUG(f"进入镜牢识别次数剩余{loop_count}次")
             if loop_count < 20:
                 auto.model = "normal"
+                log.DEBUG("识别模式切换到正常模式")
             if loop_count < 10:
                 auto.model = 'aggressive'
+                log.DEBUG("识别模式切换到激进模式")
             if loop_count < 0:
                 raise log.ERROR("无法进入镜牢，不能进行下一步,请手动操作重试")
 
@@ -427,8 +442,10 @@ class Mirror:
                 log.DEBUG(f"选择藏品识别次数剩余{loop_count}次")
             if loop_count < 20:
                 auto.model = "normal"
+                log.DEBUG("识别模式切换到正常模式")
             if loop_count < 10:
                 auto.model = 'aggressive'
+                log.DEBUG("识别模式切换到激进模式")
             if loop_count < 0:
                 log.ERROR("无法进入镜牢,尝试回到初始界面")
                 back_init_menu()
@@ -454,8 +471,10 @@ class Mirror:
                 log.DEBUG(f"选择队伍识别次数剩余{loop_count}次")
             if loop_count < 20:
                 auto.model = "normal"
+                log.DEBUG("识别模式切换到正常模式")
             if loop_count < 10:
                 auto.model = 'aggressive'
+                log.DEBUG("识别模式切换到激进模式")
             if loop_count < 0:
                 log.ERROR("无法进入镜牢,尝试回到初始界面")
                 back_init_menu()
@@ -582,8 +601,10 @@ class Mirror:
                 log.DEBUG(f"事件处理识别次数剩余{loop_count}次")
             if loop_count < 20:
                 auto.model = "normal"
+                log.DEBUG("识别模式切换到正常模式")
             if loop_count < 10:
                 auto.model = 'aggressive'
+                log.DEBUG("识别模式切换到激进模式")
             if loop_count < 0:
                 log.ERROR("无法解决事件,尝试回到初始界面")
                 back_init_menu()
@@ -693,7 +714,6 @@ class Mirror:
                     time.sleep(2)
                     retry()
                     return
-
 
             except Exception as e:
                 log.ERROR(e)
