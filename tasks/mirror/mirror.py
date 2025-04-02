@@ -97,11 +97,12 @@ class Mirror:
         if auto.click_element("home/drive_assets.png") or auto.find_element("home/window_assets.png"):
             make_enkephalin_module()
 
-        main_loop_count = 500
+        main_loop_count = 250
+        back_menu_count = 0
         auto.model = 'clam'
         # 未到达奖励页不会停止
         while True:
-            if main_loop_count >= 75:
+            if main_loop_count >= 50:
                 auto.model = "clam" # 防止函数内修改后未还原
             # 自动截图
             if auto.take_screenshot() is None:
@@ -129,7 +130,7 @@ class Mirror:
                     msg = f"启动后第{self.layer_times[1]}层卡包"
                     to_log_with_time(msg, this_layer_time)
                 self.layer_times[1] += 1
-                main_loop_count += 100
+                main_loop_count += 50
                 continue
 
             # 在镜牢中寻路
@@ -266,7 +267,12 @@ class Mirror:
                 auto.model = 'aggressive'
                 log.DEBUG("识别模式切换到激进模式，警告，道中识别可能会出错")
             if main_loop_count < 0:
-                raise log.ERROR("镜牢道中出错,请手动操作重试")
+                if back_menu_count > 5:
+                    raise log.ERROR("镜牢道中出错,请手动操作重试")
+                log.ERROR("镜牢道中识别失败次数达到最大值,正在返回主界面")
+                back_init_menu()
+                back_menu_count += 1
+                main_loop_count = 250
 
         msg = f"开始进行镜牢奖励领取"
         log.INFO(msg)
