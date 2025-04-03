@@ -76,6 +76,8 @@ class Shop:
                         while auto.take_screenshot() is None:
                             continue
                         retry()
+                        if auto.click_element("mirror/road_in_mir/ego_gift_get_confirm_assets.png"):
+                            break
                         continue
                     sleep(1)
                     auto.click_element("mirror/road_in_mir/ego_gift_get_confirm_assets.png", take_screenshot=True)
