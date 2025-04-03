@@ -51,6 +51,7 @@ class Mirror:
         self.event_total_time = 0
         self.event_times = 0
         self.layer_times = [0, 0]
+        self.LOOP_COUNT = 250
 
     def road_to_mir(self):
         loop_count = 30
@@ -68,7 +69,8 @@ class Mirror:
             if auto.click_element("mirror/road_to_mir/enter_mirror_assets.png"):
                 break
             infinity_bbox = ImageUtils.get_bbox(ImageUtils.load_image("mirror/road_to_mir/infinity_mirror_bbox.png"))
-            infinity_bbox = (infinity_bbox[2]-50, infinity_bbox[1], infinity_bbox[2] + 100, infinity_bbox[3]) # 临时修复措施，调整裁切大小
+            infinity_bbox = (
+            infinity_bbox[2] - 50, infinity_bbox[1], infinity_bbox[2] + 100, infinity_bbox[3])  # 临时修复措施，调整裁切大小
             if auto.find_text_element("on", infinity_bbox):
                 auto.click_element("mirror/road_to_mir/infinity_mirror_enter_assets.png")
             if auto.click_element("mirror/road_to_mir/enter_assets.png"):
@@ -98,13 +100,13 @@ class Mirror:
         if auto.click_element("home/drive_assets.png") or auto.find_element("home/window_assets.png"):
             make_enkephalin_module()
 
-        main_loop_count = 250
+        main_loop_count = self.LOOP_COUNT
         back_menu_count = 0
         auto.model = 'clam'
         # 未到达奖励页不会停止
         while True:
             if main_loop_count >= 50:
-                auto.model = "clam" # 防止函数内修改后未还原
+                auto.model = "clam"  # 防止函数内修改后未还原
             # 自动截图
             if auto.take_screenshot() is None:
                 continue
@@ -143,7 +145,7 @@ class Mirror:
                     continue
                 if auto.find_element("teams/announcer_assets.png"):
                     continue
-                if auto.find_element('mirror/shop/shop_coins_assets.png',model='normal'):
+                if auto.find_element('mirror/shop/shop_coins_assets.png', model='normal'):
                     continue
                 if auto.find_element("mirror/claim_reward/claim_rewards_assets.png") and auto.find_element(
                         "mirror/claim_reward/complete_mirror_100%_assets.png"):
@@ -190,7 +192,7 @@ class Mirror:
                 continue
 
             # 在战斗中
-            if battle.identify_keyword_turn and main_loop_count > 45:
+            if battle.identify_keyword_turn and self.LOOP_COUNT - main_loop_count < 5:
                 if auto.find_element("battle/turn_assets.png") or auto.find_element("battle/in_mirror_assets.png"):
                     self.battle_total_time += battle.fight()
                     continue
