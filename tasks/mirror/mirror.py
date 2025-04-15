@@ -70,7 +70,7 @@ class Mirror:
                 break
             infinity_bbox = ImageUtils.get_bbox(ImageUtils.load_image("mirror/road_to_mir/infinity_mirror_bbox.png"))
             infinity_bbox = (
-            infinity_bbox[2] - 50, infinity_bbox[1], infinity_bbox[2] + 100, infinity_bbox[3])  # 临时修复措施，调整裁切大小
+                infinity_bbox[2] - 50, infinity_bbox[1], infinity_bbox[2] + 100, infinity_bbox[3])  # 临时修复措施，调整裁切大小
             if auto.find_text_element("on", infinity_bbox):
                 auto.click_element("mirror/road_to_mir/infinity_mirror_enter_assets.png")
             if auto.click_element("mirror/road_to_mir/enter_assets.png"):
@@ -570,6 +570,15 @@ class Mirror:
             elif event_chance > 0:
                 auto.click_element("event/select_first_option_assets.png", find_type="image_with_multiple_targets")
                 event_chance -= 1
+            else:
+                finishes_bbox = ImageUtils.get_bbox(
+                    ImageUtils.load_image("event/continue_assets.png"))
+                if auto.find_text_element(["continue", "proceed", "commence", "choices", "confirm"], finishes_bbox):
+                    auto.mouse_click((finishes_bbox[0] + finishes_bbox[2]) // 2,
+                                     (finishes_bbox[1] + finishes_bbox[3]) // 2)
+                    break
+                else:
+                    event_chance = -1
 
             # 如果需要罪人判定
             if auto.find_element("event/choices_assets.png") and auto.find_element(
