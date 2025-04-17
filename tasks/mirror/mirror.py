@@ -573,7 +573,9 @@ class Mirror:
             else:
                 finishes_bbox = ImageUtils.get_bbox(
                     ImageUtils.load_image("event/continue_assets.png"))
-                if auto.find_text_element(["continue", "proceed", "commence", "choices", "confirm"], finishes_bbox):
+                if auto.find_text_element(
+                        ["continue", "proceed", "commence", "choices", "confirm", "进行判定", "开始战斗", "继续"],
+                        finishes_bbox):
                     auto.mouse_click((finishes_bbox[0] + finishes_bbox[2]) // 2,
                                      (finishes_bbox[1] + finishes_bbox[3]) // 2)
                     break
