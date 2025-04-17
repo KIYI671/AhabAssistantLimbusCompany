@@ -597,6 +597,8 @@ class Shop:
             break
 
     def enter_fuse(self):
+        loop_count = 30
+        auto.model = 'clam'
         while True:
             if auto.take_screenshot() is None:
                 continue
@@ -613,21 +615,34 @@ class Shop:
             if auto.click_element("mirror/shop/fuse_to_select_keyword_assets.png"):
                 continue
 
+            loop_count -= 1
+            if loop_count < 20:
+                auto.model = "normal"
+            if loop_count < 10:
+                auto.model = 'aggressive'
+            if loop_count < 0:
+                log.ERROR("无法合成ego饰品")
+                return False
+        return True
+
     def fuse_gift(self):
         # 激进合成
         if self.fuse_aggressive_switch:
-            self.enter_fuse()
+            if self.enter_fuse() is False:
+                return False
             self.fuse_useless_gifts_aggressive()
             auto.mouse_click_blank(times=3)
 
         # 普通合成
-        self.enter_fuse()
+        if self.enter_fuse() is False:
+            return False
         self.fuse_useless_gifts()
         auto.mouse_click_blank(times=3)
 
         # 再次合成
         if self.fuse_aggressive_switch and self.fuse_IV is not True:
-            self.enter_fuse()
+            if self.enter_fuse() is False:
+                return False
             self.fuse_useless_gifts_aggressive()
             auto.mouse_click_blank(times=3)
 
