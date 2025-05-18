@@ -212,7 +212,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.setting_page = setting_window(which_team=button_name)
 
     def my_stop_shortcut(self):
-        screen.reset_win()
         current_text = self.start_tasks.text()
         if current_text != "Link Start!":
             self.start_tasks.click()
@@ -384,6 +383,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.setting_unavailable()
             self.create_and_start_script()
         else:
+            screen.reset_win()
             self.start_tasks.setText("Link Start!")
             self.setting_available()
             self.refresh_team_order()

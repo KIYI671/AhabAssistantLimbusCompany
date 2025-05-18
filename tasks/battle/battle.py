@@ -157,6 +157,18 @@ class Battle:
                 elif event_chance > 0:
                     auto.click_element("event/select_first_option_assets.png", find_type="image_with_multiple_targets")
                     event_chance -= 1
+                else:
+                    finishes_bbox = ImageUtils.get_bbox(
+                        ImageUtils.load_image("event/continue_assets.png"))
+                    if auto.find_text_element(
+                            ["continue", "proceed", "commence", "choices", "confirm", "进行判定", "开始战斗", "继续"],
+                            finishes_bbox):
+                        auto.mouse_click((finishes_bbox[0] + finishes_bbox[2]) // 2,
+                                         (finishes_bbox[1] + finishes_bbox[3]) // 2)
+                        break
+                    else:
+                        event_chance = -1
+
             if auto.find_element("event/perform_the_check_feature_assets.png"):
                 EventHandling.decision_event_handling()
             if auto.click_element("event/continue_assets.png"):

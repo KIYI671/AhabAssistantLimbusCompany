@@ -63,6 +63,7 @@ class Shop:
                 break
 
     def buy_gifts(self):
+        log.DEBUG("开始执行饰品购买模块")
         refresh = False
         refresh_keyword = False
         while True:
@@ -194,6 +195,13 @@ class Shop:
 
             return unique_list
 
+        if auto.find_element(f"mirror/shop/level_IV_gifts/{self.system}_level_IV.png",take_screenshot=True):
+            self.fuse_IV = True
+            self.fuse_aggressive_switch = False
+            log.INFO("已有本体系四级饰品，切换到非激进模式")
+            return
+
+        log.DEBUG("开始执行激进合成模块")
         while True:
             auto.mouse_to_blank()
             if auto.take_screenshot() is None:
@@ -303,6 +311,7 @@ class Shop:
 
             return unique_list
 
+        log.DEBUG("开始执行普通合成模块")
         block = True
         while True:
             auto.mouse_to_blank()
@@ -423,6 +432,7 @@ class Shop:
         loop_count = 30
         auto.model = 'clam'
 
+        log.DEBUG("开始执行体系饰品合成模块")
         # 获取合成公式
         system_gifts = fusion_material[self.system]
         if len(system_gifts) == 2:
@@ -439,31 +449,7 @@ class Shop:
         elif times == 1 and self.fuse_system_gift_2:
             return
 
-        while True:
-            auto.mouse_to_blank()
-            if auto.take_screenshot() is None:
-                continue
-
-            # 进入合成页面
-            if auto.click_element("mirror/shop/fuse_gift_assets.png"):
-                continue
-
-            if auto.click_element(f"mirror/shop/keyword/keyword_{self.system}.png"):
-                while auto.take_screenshot() is None:
-                    continue
-                if auto.click_element("mirror/shop/fuse_gift_confirm_assets.png", model="normal"):
-                    break
-            if auto.click_element("mirror/shop/fuse_to_select_keyword_assets.png"):
-                continue
-
-            loop_count -= 1
-            if loop_count < 20:
-                auto.model = "normal"
-            if loop_count < 10:
-                auto.model = 'aggressive'
-            if loop_count < 0:
-                log.ERROR("无法合成ego饰品")
-                break
+        self.enter_fuse()
 
         # 如果找到合成素材，记录位置后点击
         for select_gift in my_fuse_system_gifts[times]:
@@ -549,6 +535,7 @@ class Shop:
     def sell_gifts(self):
         list_block = False
         system_sell = True
+        log.DEBUG("开始执行饰品出售模块")
         while True:
             # 自动截图
             if auto.take_screenshot() is None:
@@ -597,14 +584,12 @@ class Shop:
             break
 
     def enter_fuse(self):
-        loop_count = 30
+        loop_count = 15
         auto.model = 'clam'
+        auto.mouse_to_blank()
+        log.DEBUG("开始执行饰品合成前置模块")
         while True:
             if auto.take_screenshot() is None:
-                continue
-
-            # 进入合成页面
-            if auto.click_element("mirror/shop/fuse_gift_assets.png"):
                 continue
 
             if auto.click_element(f"mirror/shop/keyword/keyword_{self.system}.png"):
@@ -616,13 +601,18 @@ class Shop:
                 continue
 
             loop_count -= 1
-            if loop_count < 20:
-                auto.model = "normal"
             if loop_count < 10:
+                auto.model = "normal"
+            if loop_count < 5:
                 auto.model = 'aggressive'
             if loop_count < 0:
                 log.ERROR("无法合成ego饰品")
                 return False
+
+            # 进入合成页面
+            if auto.click_element("mirror/shop/fuse_gift_assets.png"):
+                continue
+
         return True
 
     def fuse_gift(self):
@@ -660,6 +650,7 @@ class Shop:
         # 全体治疗
         loop_count = 5
         auto.model = 'clam'
+        log.DEBUG("开始执行罪人治疗模块")
         sinner_be_heal = False
         while True:
             # 自动截图
@@ -690,6 +681,7 @@ class Shop:
                 break
 
     def enhance_gifts(self):
+        log.DEBUG("开始执行饰品升级模块")
         while True:
             # 自动截图
             if auto.take_screenshot() is None:
