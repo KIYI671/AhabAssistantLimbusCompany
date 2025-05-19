@@ -658,11 +658,12 @@ class Shop:
                 continue
 
             if sinner_be_heal is True and auto.click_element("mirror/shop/heal_sinner/heal_sinner_return_assets.png"):
-                sleep(1)
-                if auto.take_screenshot() is None:
-                    continue
-                if auto.find_element('mirror/shop/shop_coins_assets.png'):
+                if auto.find_element('mirror/shop/shop_coins_assets.png',take_screenshot=True):
                     break
+                elif auto.find_element('mirror/shop/heal_sinner/heal_sinner_return_assets.png'):
+                    continue
+                elif auto.find_element('mirror/shop/heal_sinner/heal_sinner_return_assets.png'):
+                    continue
 
             if auto.click_element("mirror/shop/heal_sinner/heal_all_sinner_assets.png"):
                 sinner_be_heal = True
