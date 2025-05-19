@@ -247,8 +247,7 @@ class Mirror:
                 continue
 
             # 遇到选择增益事件（少见）
-            if auto.find_element("mirror/road_in_mir/select_event_effect.png"):
-                auto.click_element("mirror/road_in_mir/event_effect_button.png")
+            if auto.click_element("mirror/road_in_mir/event_effect_button_assets.png"):
                 auto.click_element("mirror/road_in_mir/select_event_effect_confirm.png")
                 continue
 
