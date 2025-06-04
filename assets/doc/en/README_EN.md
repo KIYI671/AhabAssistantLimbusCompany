@@ -113,6 +113,7 @@ The file format is shown in the following picture.
 - **Please set Material Quality and Render Ratio in Settings-Image to High, Normal FPS and Combat FPS to 60, and Post-Processing to Off** to facilitate software recognition. If the performance of the device cannot be met, please also try to set the **rendering ratio to high**, otherwise the software may have difficulty in recognizing it.
 - The game program will be set to window mode after the script starts, and if there is a behavior of switching to the full screen and then exiting in the middle, it is normal behavior, so there is no need to worry
 - If you have enabled the performance display feature of Steam or other software, you should try not to obscure the game screen, as this may cause problems with the scripting process
+- After using the software for a long time, please clean up the `logs` folder under the program folder regularly to avoid taking up too much space.
 
 ---
 
