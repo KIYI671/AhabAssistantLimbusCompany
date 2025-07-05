@@ -72,6 +72,8 @@ def onetime_mir_process(the_selected_team_setting):
     no_weekly_bonuses = cfg.get_value('no_weekly_bonuses')
     fuse_switch = the_selected_team_setting['fuse']
     fuse_aggressive_switch = the_selected_team_setting['fuse_aggressive']
+    dont_convert_starlight_to_cost = cfg.get_value("dont_convert_starlight_to_cost")
+    dont_use_storaged_starlight = cfg.get_value("dont_use_storaged_starlight")
     for sinner in all_sinners_name:
         sinner_order = sinner + "_order"
         if the_selected_team_setting[sinner]:
@@ -86,7 +88,7 @@ def onetime_mir_process(the_selected_team_setting):
     try:
         mirror_adventure = Mirror(sinner_team, the_selected_team_setting["all_teams"], shop_sell_list, fuse_switch,
                                   all_systems[the_selected_team_setting["all_system"]], fuse_aggressive_switch,
-                                  hard_switch, no_weekly_bonuses)
+                                  hard_switch, no_weekly_bonuses, dont_use_storaged_starlight, dont_convert_starlight_to_cost)
         if mirror_adventure.run():
             del mirror_adventure
             back_init_menu()
