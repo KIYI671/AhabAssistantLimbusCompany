@@ -698,11 +698,11 @@ class Shop:
                 sleep(1)
                 break
             auto.mouse_click_blank()
-            loop_count -= 1
-            if loop_count < 0: # issue 171
+            loop_try_count -= 1
+            if loop_try_count < 0: # issue 171
                 retry()
-            
-            if loop_count < -50:
+
+            if loop_try_count < -50:
                 log.ERROR("不应该发生这样的问题，请提交issue")
 
 
