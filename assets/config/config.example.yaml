@@ -51,6 +51,8 @@ team6: False # 是否启用队伍6
 team7: False # 是否启用队伍7
 hard_mirror: False
 no_weekly_bonuses: False
+dont_use_storaged_starlight: True # 是否使用存储的星光激活加成 (取反)
+dont_convert_starlight_to_cost: True # 是否使用剩余的开局星光兑换钱币 (取反)
 
 # 队伍设置
 teams_be_select: 0 # 被选中的队伍数量

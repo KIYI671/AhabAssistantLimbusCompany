@@ -33,7 +33,7 @@ def to_log_with_time(msg, elapsed_time):
 class Mirror:
 
     def __init__(self, sinner_team, team_number, shop_sell_list, fuse_switch, system, fuse_aggressive_switch,
-                 hard_switch, no_weekly_bonuses):
+                 hard_switch, no_weekly_bonuses, dont_use_storaged_starlight, dont_convert_starlight_to_cost):
         self.logger = log
         self.sinner_team = sinner_team
         self.team_number = team_number
@@ -52,6 +52,8 @@ class Mirror:
         self.event_times = 0
         self.layer_times = [0, 0]
         self.LOOP_COUNT = 250
+        self.dont_use_storaged_starlight = dont_use_storaged_starlight
+        self.dont_convert_starlight_to_cost = dont_convert_starlight_to_cost
 
     def road_to_mir(self):
         loop_count = 30
@@ -356,6 +358,13 @@ class Mirror:
         return True
 
     def enter_mir_with_star(self):
+        def undo_if_use_storaged_starlight(target: str):
+            used_flag = "mirror/road_to_mir/dreaming_star/storaged_stars_used_assets.png"
+            auto.click_element(target)
+            auto.mouse_to_blank()
+            if(auto.find_element(used_flag, take_screenshot=True)):
+                auto.click_element(target)
+
         loop_count = 30
         auto.model = 'clam'
         while True:
@@ -366,24 +375,46 @@ class Mirror:
             if auto.find_element("mirror/road_to_mir/bleed_gift_assets.png"):
                 break
 
+            if self.dont_convert_starlight_to_cost:
+                auto.click_element("mirror/road_to_mir/dreaming_star/convert_star_to_cost_assets.png")
+            else:
+                auto.click_element("mirror/road_to_mir/dreaming_star/no_convert_star_to_cost_assets.png")
+
             if auto.click_element("mirror/road_to_mir/dreaming_star/select_star_confirm_assets.png"):
                 break
 
-            if self.fuse_switch is False:
-                auto.click_element("mirror/road_to_mir/dreaming_star/20_stars_assets.png")
-                auto.click_element("mirror/road_to_mir/dreaming_star/60_stars_assets.png")
-                auto.click_element("mirror/road_to_mir/dreaming_star/40_stars_2_assets.png")
-                auto.click_element("mirror/road_to_mir/dreaming_star/20_stars_2_assets.png")
-                auto.click_element("mirror/road_to_mir/dreaming_star/10_stars_assets.png")
+            if(self.dont_use_storaged_starlight):
+                if self.fuse_switch is False:
+                    undo_if_use_storaged_starlight("mirror/road_to_mir/dreaming_star/20_stars_assets.png")
+                    undo_if_use_storaged_starlight("mirror/road_to_mir/dreaming_star/60_stars_assets.png")
+                    undo_if_use_storaged_starlight("mirror/road_to_mir/dreaming_star/40_stars_2_assets.png")
+                    undo_if_use_storaged_starlight("mirror/road_to_mir/dreaming_star/20_stars_2_assets.png")
+                    undo_if_use_storaged_starlight("mirror/road_to_mir/dreaming_star/10_stars_assets.png")
+                else:
+                    # 根据B站UP主 绅士丶蚂蚱 《镜牢5完全攻略》制定
+                    undo_if_use_storaged_starlight("mirror/road_to_mir/dreaming_star/20_stars_assets.png")
+                    undo_if_use_storaged_starlight("mirror/road_to_mir/dreaming_star/20_stars_2_assets.png")
+                    undo_if_use_storaged_starlight("mirror/road_to_mir/dreaming_star/10_stars_assets.png")
+                    undo_if_use_storaged_starlight("mirror/road_to_mir/dreaming_star/60_stars_assets.png")
+                    undo_if_use_storaged_starlight("mirror/road_to_mir/dreaming_star/30_stars_assets.png")
+                    undo_if_use_storaged_starlight("mirror/road_to_mir/dreaming_star/30_stars_2_assets.png")
+                    undo_if_use_storaged_starlight("mirror/road_to_mir/dreaming_star/10_stars_2_assets.png")
             else:
-                # 根据B站UP主 绅士丶蚂蚱 《镜牢5完全攻略》制定
-                auto.click_element("mirror/road_to_mir/dreaming_star/20_stars_assets.png")
-                auto.click_element("mirror/road_to_mir/dreaming_star/20_stars_2_assets.png")
-                auto.click_element("mirror/road_to_mir/dreaming_star/10_stars_assets.png")
-                auto.click_element("mirror/road_to_mir/dreaming_star/60_stars_assets.png")
-                auto.click_element("mirror/road_to_mir/dreaming_star/30_stars_assets.png")
-                auto.click_element("mirror/road_to_mir/dreaming_star/30_stars_2_assets.png")
-                auto.click_element("mirror/road_to_mir/dreaming_star/10_stars_2_assets.png")
+                if self.fuse_switch is False:
+                    auto.click_element("mirror/road_to_mir/dreaming_star/20_stars_assets.png")
+                    auto.click_element("mirror/road_to_mir/dreaming_star/60_stars_assets.png")
+                    auto.click_element("mirror/road_to_mir/dreaming_star/40_stars_2_assets.png")
+                    auto.click_element("mirror/road_to_mir/dreaming_star/20_stars_2_assets.png")
+                    auto.click_element("mirror/road_to_mir/dreaming_star/10_stars_assets.png")
+                else:
+                    # 根据B站UP主 绅士丶蚂蚱 《镜牢5完全攻略》制定
+                    auto.click_element("mirror/road_to_mir/dreaming_star/20_stars_assets.png")
+                    auto.click_element("mirror/road_to_mir/dreaming_star/20_stars_2_assets.png")
+                    auto.click_element("mirror/road_to_mir/dreaming_star/10_stars_assets.png")
+                    auto.click_element("mirror/road_to_mir/dreaming_star/60_stars_assets.png")
+                    auto.click_element("mirror/road_to_mir/dreaming_star/30_stars_assets.png")
+                    auto.click_element("mirror/road_to_mir/dreaming_star/30_stars_2_assets.png")
+                    auto.click_element("mirror/road_to_mir/dreaming_star/10_stars_2_assets.png")
 
             if auto.click_element("mirror/road_to_mir/dreaming_star/dreaming_star_enter_assets.png"):
                 sleep(0.5)
