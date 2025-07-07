@@ -1,21 +1,23 @@
-name: mirrorchyan_release_note
+name: mirrorchyan_release
 
 on:
   workflow_dispatch:
-  release:
-    types: [edited]
+#   release:
+#     types: [released]
 
 jobs:
   mirrorchyan:
     runs-on: macos-latest
 
     steps:
-      - id: uploading
-        uses: MirrorChyan/release-note-action@v1
+      - uses: MirrorChyan/uploading-action@v1
         with:
+          filetype: latest-release
+          filename: "AALC_*.7z"
+          p7zip: true
           mirrorchyan_rid: AALC
 
-          upload_token: ${{ secrets.MirrorChyanUploadToken }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
           owner: KIYI671
           repo: AhabAssistantLimbusCompany
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+          upload_token: ${{ secrets.MirrorChyanUploadToken }}
