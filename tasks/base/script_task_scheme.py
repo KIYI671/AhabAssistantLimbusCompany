@@ -111,7 +111,7 @@ def script_task():
     if cfg.language == "zh_cn":
         pic_path.insert(0, "zh_cn")
 
-    if cfg.play_audio:
+    if cfg.resonate_with_Ahab:
         random_number = random.randint(1, 4)
         playsound(f"assets/audio/This_is_all_your_fault_{random_number}.mp3")
 
