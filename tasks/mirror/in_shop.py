@@ -1,3 +1,4 @@
+import re
 from time import sleep
 
 from module.automation import auto
@@ -289,6 +290,8 @@ class Shop:
 
             break
 
+        retry()
+
     def fuse_useless_gifts(self):
         """合成无用饰品"""
 
@@ -426,6 +429,8 @@ class Shop:
 
             auto.mouse_click_blank(times=3)
             break
+
+        retry()
 
     def fuse_system_gifts(self, times):
         """合成体系饰品"""
@@ -683,7 +688,9 @@ class Shop:
 
     def enhance_gifts(self):
         log.DEBUG("开始执行饰品升级模块")
+
         while True:
+            loop_try_count = 10
             # 自动截图
             if auto.take_screenshot() is None:
                 continue
@@ -691,6 +698,13 @@ class Shop:
                 sleep(1)
                 break
             auto.mouse_click_blank()
+            loop_try_count -= 1
+            if loop_try_count < 0: # issue 171
+                retry()
+
+            if loop_try_count < -50:
+                log.ERROR("不应该发生这样的问题，请提交issue")
+
 
         first_gift = True
         list_block = False
@@ -737,6 +751,8 @@ class Shop:
             if loop_count < 0:
                 log.ERROR("升级ego饰品失败")
                 break
+
+        retry()
 
     # 在商店的处理
     def in_shop(self):
