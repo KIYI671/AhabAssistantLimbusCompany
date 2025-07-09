@@ -1,0 +1,157 @@
+import re
+import sys
+from enum import Enum
+
+from PyQt5.QtCore import Qt, QLocale, QTranslator
+from PyQt5.QtGui import QIcon
+from PyQt5.QtWidgets import QApplication, QHBoxLayout, QStackedWidget, QVBoxLayout, QLabel, QWidget
+from qfluentwidgets import Pivot, setThemeColor
+from qfluentwidgets.components.widgets.frameless_window import FramelessWindow
+from qframelesswindow import StandardTitleBar
+
+from app.farming_interface import FarmingInterface
+from app.mediator import Mediator
+from app.page_card import MarkdownViewer
+from app.setting_interface import SettingInterface
+from app.team_setting_card import TeamSettingCard
+
+
+class Language(Enum):
+    """ Language enumeration """
+
+    CHINESE_SIMPLIFIED = QLocale(QLocale.Chinese, QLocale.China)
+    CHINESE_TRADITIONAL = QLocale(QLocale.Chinese, QLocale.HongKong)
+    ENGLISH = QLocale(QLocale.English)
+    AUTO = QLocale()
+
+# 使用无框窗口
+class Window(FramelessWindow):
+    def __init__(self):
+        super().__init__()
+        # 设置标准标题栏，如果不设置则无法展示标题
+        self.setTitleBar(StandardTitleBar(self))
+        self.setWindowIcon(QIcon(":/qfluentwidgets/images/logo.png"))
+        self.setWindowTitle("test")
+        setThemeColor("#9c080b")
+        #self.hBoxLayout =QHBoxLayout(self)
+        #self.test_interface = TestInterface(self)
+        #self.hBoxLayout.setContentsMargins(0,0,0,0)
+        #self.hBoxLayout.addWidget(self.test_interface)
+
+        # 禁用最大化
+        self.titleBar.maxBtn.setHidden(True)
+        self.titleBar.maxBtn.setDisabled(True)
+        self.titleBar.setDoubleClickEnabled(False)
+        self.setResizeEnabled(False)
+        self.setWindowFlags(Qt.WindowCloseButtonHint)
+
+        self.resize(1080,800)
+        desktop = QApplication.desktop().availableGeometry()
+        w, h = desktop.width(), desktop.height()
+        self.move(w // 2 - self.width() // 2, h // 2 - self.height() // 2)
+
+        self.pivot = Pivot(self)
+        self.stackedWidget = QStackedWidget(self)
+        self.vBoxLayout = QVBoxLayout(self)
+        self.HBoxLayout = QHBoxLayout(self)
+        #self.stackedWidget.setStyleSheet("border: 1px solid black;")
+        self.setStyleSheet("""
+                            Window {    
+                                background: #fdfdfd;        /* 背景色（可选） */
+                            }
+                        """)
+
+        self.farming_interface = FarmingInterface(self)
+        self.help_interface = MarkdownViewer("../README.md")
+        self.setting_interface = SettingInterface(self)
+        #self.team_setting = TeamSettingCard(self)
+
+        # add items to pivot
+        self.addSubInterface(self.farming_interface, 'farming_interface', '一键长草')
+        self.addSubInterface(self.help_interface, 'help_interface', '帮助')
+        self.addSubInterface(self.setting_interface, 'setting_interface', '设置')
+        #self.addSubInterface(self.team_setting, 'team_setting', '队伍设置')
+
+
+        self.HBoxLayout.addWidget(self.pivot)
+        self.vBoxLayout.addLayout(self.HBoxLayout,0)
+        self.vBoxLayout.addWidget(self.stackedWidget)
+        self.vBoxLayout.setContentsMargins(30, 20, 30, 30)
+        self.pivot.setMaximumHeight(50)
+
+        self.stackedWidget.setCurrentWidget(self.farming_interface)
+        self.pivot.setCurrentItem(self.farming_interface.objectName())
+        self.pivot.currentItemChanged.connect(
+            lambda k: self.stackedWidget.setCurrentWidget(self.findChild(QWidget, k)))
+
+        #self.stackedWidget.setStyleSheet("background-color: white;")
+
+        # 将标题栏置顶
+        self.titleBar.raise_()
+
+        # 获取单例
+        self.mediator = Mediator()
+        self.connect_mediator()
+
+        self.show()
+
+    def addSubInterface(self, widget: QLabel, objectName, text):
+        widget.setObjectName(objectName)
+        #widget.setAlignment(Qt.AlignCenter)
+        self.stackedWidget.addWidget(widget)
+        self.pivot.addItem(routeKey=objectName, text=text)
+
+    def add_and_switch_to_page(self, target: str):
+        try:
+            num = int(re.search(r'team(\d+)_setting', target).group(1))
+            if "team_setting" in list(self.pivot.items.keys()):
+                list(self.pivot.items.values())[-1].click()
+                self.pivot.setCurrentItem("team_setting")
+                # TODO 提示
+            else:
+                """切换页面（带越界保护）"""
+                self.addSubInterface(TeamSettingCard(num,self), 'team_setting', '队伍设置')
+                list(self.pivot.items.values())[-1].click()
+                self.pivot.setCurrentItem("team_setting")
+        except Exception as e:
+            print(f"【异常】switch_to_page 出错：{e}")
+
+    def close_setting_page(self):
+        try:
+            list(self.pivot.items.values())[0].click()
+            page = self.findChild(TeamSettingCard, "team_setting")
+            self.stackedWidget.removeWidget(page)
+            page.setParent(None)
+            page.deleteLater()
+            page = None
+            self.pivot.removeWidget("team_setting")
+        except Exception as e:
+            print(f"【异常】delete_team 出错：{e}")
+
+    def connect_mediator(self):
+        # 连接所有可能信号
+        self.mediator.switch_team_setting.connect(self.add_and_switch_to_page)
+        self.mediator.close_setting.connect(self.close_setting_page)
+
+
+
+if __name__ == "__main__":
+    app = QApplication(sys.argv)
+    QApplication.setAttribute(Qt.AA_DontCreateNativeWidgetSiblings)
+    QApplication.setHighDpiScaleFactorRoundingPolicy(
+        Qt.HighDpiScaleFactorRoundingPolicy.PassThrough)
+    QApplication.setAttribute(Qt.AA_EnableHighDpiScaling)
+    QApplication.setAttribute(Qt.AA_UseHighDpiPixmaps)
+
+    mediator = Mediator()
+
+    #locale =  Language.AUTO.value
+    #fluent_translator = FluentTranslator(locale)
+    test_translator = QTranslator()
+    test_translator.load("test_interface_zh_CN.qm")
+
+    #app.installTranslator(fluent_translator)
+    app.installTranslator(test_translator)
+
+    ui = Window()
+    sys.exit(app.exec_())

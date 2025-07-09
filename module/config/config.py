@@ -57,6 +57,8 @@ class Config(metaclass=SingletonMeta):
                     self._update_config(config[key], value)
                 else:
                     config[key] = value
+            elif "_setting" in key:
+                config[key] = value
 
     def save_config(self):
         """保存到配置文件"""
@@ -78,6 +80,12 @@ class Config(metaclass=SingletonMeta):
             self.config[key] = copy.deepcopy(value)
         else:
             self.config[key] = value
+        self.save_config()
+
+    def del_key(self, key):
+        """删除配置项并保存"""
+        self._load_config()
+        self.config.pop(key, None)
         self.save_config()
 
     def __getattr__(self, attr):
@@ -139,6 +147,8 @@ class Theme_pack_list(metaclass=SingletonMeta):
                     self._update_config(config[key], value)
                 else:
                     config[key] = value
+            else:
+                config[key] = value
 
     def save_config(self):
         """保存到配置文件"""

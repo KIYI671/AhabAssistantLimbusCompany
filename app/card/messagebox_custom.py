@@ -1,6 +1,6 @@
 from PyQt5.QtCore import Qt, QUrl
 from PyQt5.QtGui import QDesktopServices
-from qfluentwidgets import MessageBox, BodyLabel, FluentStyleSheet, PrimaryPushButton
+from qfluentwidgets import MessageBox, BodyLabel, FluentStyleSheet, PrimaryPushButton, LineEdit
 
 
 class MessageBoxHtml(MessageBox):
@@ -44,3 +44,21 @@ class MessageBoxUpdate(MessageBoxHtml):
         self.cancelButton.setText('好的 / OK')
 
 
+class MessageBoxEdit(MessageBox):
+    def __init__(self, title: str, content: str, parent=None):
+        super().__init__(title, content, parent)
+
+        self.textLayout.removeWidget(self.contentLabel)
+        self.contentLabel.clear()
+
+        self.yesButton.setText('确认')
+        self.cancelButton.setText('取消')
+
+        self.lineEdit = LineEdit(self)
+        self.lineEdit.setText(self.content)
+        self.textLayout.addWidget(self.lineEdit, 0, Qt.AlignTop)
+
+        self.buttonGroup.setMinimumWidth(400)
+
+    def getText(self):
+        return self.lineEdit.text()

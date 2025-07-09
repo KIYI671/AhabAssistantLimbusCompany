@@ -517,7 +517,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.set_checkbox_state(self.mirror, cfg.mirror)
         self.set_checkbox_state(self.buy_enkephalin, cfg.buy_enkephalin)
         self.set_checkbox_state(self.get_reward, cfg.get_reward)
-        self.set_checkbox_state(self.play_audio, cfg.play_audio)
+        self.set_checkbox_state(self.play_audio, cfg.resonate_with_Ahab)
 
         # 读取之前最后数字调节框设置
         self.set_mirror_count.setValue(cfg.set_mirror_count)
