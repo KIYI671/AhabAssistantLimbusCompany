@@ -73,19 +73,20 @@ class Automation(metaclass=SingletonMeta):
         return x, y
 
     def mouse_action_with_pos(self, coordinates, offset=True, action="click", times=1, drag_time=None, dx=0, dy=0,
-                              find_type=None, interval=0.5):
+                              find_type=None, interval=0.5, move_back=False):
         """
         在指定坐标上执行点击操作
         参数:
         - coordinates: 坐标位置，用于计算点击位置
         - offset: 是否使用偏移量计算点击位置，默认为True
         - action: 鼠标操作类型，默认为"click"
+        - move_back: 是否在操作后将鼠标移动回原位置，默认为False
         返回值:
         - 总是返回True表示操作执行完毕
         """
         if find_type == 'image_with_multiple_targets' and len(coordinates) > 0:
             for c in coordinates:
-                self.mouse_action_with_pos(c, offset, action, times, dx, dy, find_type="image", interval=1)
+                self.mouse_action_with_pos(c, offset, action, times, dx, dy, find_type="image", interval=1, move_back=move_back)
             return True
 
         if cfg.mouse_action_interval_time and interval == 0.5:
@@ -110,11 +111,11 @@ class Automation(metaclass=SingletonMeta):
         # 根据操作类型执行相应的鼠标操作
         if action in action_map:
             if action == "click":
-                self.mouse_click(x, y, times=times)
+                self.mouse_click(x, y, times=times, move_back=move_back)
             elif action == "drag":
-                self.mouse_drag(x, y, drag_time=drag_time, dx=dx, dy=dy)
+                self.mouse_drag(x, y, drag_time=drag_time, dx=dx, dy=dy, move_back=move_back)
             elif action == "drag_down":
-                self.mouse_drag_down(x, y)
+                self.mouse_drag_down(x, y, move_back=move_back)
             elif action == "scroll":
                 self.mouse_scroll()
             self.last_click_time = time.time()
