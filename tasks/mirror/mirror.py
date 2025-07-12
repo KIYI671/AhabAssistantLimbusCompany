@@ -362,7 +362,7 @@ class Mirror:
             used_flag = "mirror/road_to_mir/dreaming_star/storaged_stars_used_assets.png"
             auto.click_element(target)
             auto.mouse_to_blank()
-            if(auto.find_element(used_flag, take_screenshot=True)):
+            if auto.find_element(used_flag, take_screenshot=True):
                 auto.click_element(target)
 
         loop_count = 30
@@ -383,7 +383,7 @@ class Mirror:
             if auto.click_element("mirror/road_to_mir/dreaming_star/select_star_confirm_assets.png"):
                 break
 
-            if(self.dont_use_storaged_starlight):
+            if self.dont_use_storaged_starlight:
                 if self.fuse_switch is False:
                     undo_if_use_storaged_starlight("mirror/road_to_mir/dreaming_star/20_stars_assets.png")
                     undo_if_use_storaged_starlight("mirror/road_to_mir/dreaming_star/60_stars_assets.png")
@@ -492,12 +492,14 @@ class Mirror:
                 raise unableToFindTeamError("无法寻得队伍，请检查队伍名称是否为默认名称")
         loop_count = 30
         auto.model = 'clam'
-        while auto.click_element("mirror/road_to_mir/select_team_confirm_assets.png") is False:
+        while auto.find_element("mirror/road_to_mir/dreaming_star/coins_assets.png") is None:
             if auto.take_screenshot() is None:
                 continue
             retry()
-            if auto.find_element("mirror/road_to_mir/dreaming_star/coins_assets.png"):
-                break
+            if auto.click_element("mirror/road_to_mir/level_confirm_assets.png"):
+                continue
+            if auto.click_element("mirror/road_to_mir/select_team_confirm_assets.png"):
+                continue
             loop_count -= 1
             if loop_count % 5 == 0:
                 log.DEBUG(f"选择队伍识别次数剩余{loop_count}次")
