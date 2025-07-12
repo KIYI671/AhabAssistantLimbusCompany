@@ -255,7 +255,10 @@ class TeamSettingCard(QFrame):
 
         for combobox in all_combobox_config_name:
             if self.findChild(BaseComboBox, combobox):
-                self.findChild(BaseComboBox, combobox).set_options(self.team_setting[combobox])
+                if combobox == "team_number":
+                    self.findChild(BaseComboBox, combobox).set_options(self.team_setting[combobox]-1)
+                else:
+                    self.findChild(BaseComboBox, combobox).set_options(self.team_setting[combobox])
 
         for checkbox in all_checkbox_config_name:
             if self.findChild(BaseCheckBox, checkbox):

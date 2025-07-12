@@ -1,11 +1,13 @@
 import os
 import sys
 
+from app.my_app import MainWindow
+
 # 将当前工作目录设置为程序所在的目录，确保无论从哪里执行，其工作目录都正确设置为程序本身的位置，避免路径错误。
 os.chdir(
     os.path.dirname(sys.executable) if getattr(sys, 'frozen', False) else os.path.dirname(os.path.abspath(__file__)))
 
-# 获取管理员权限
+"""# 获取管理员权限
 import pyuac
 
 if not pyuac.isUserAdmin():
@@ -13,14 +15,13 @@ if not pyuac.isUserAdmin():
         pyuac.runAsAdmin(False)
         sys.exit(0)
     except Exception:
-        sys.exit(1)
+        sys.exit(1)"""
 
 from win32api import GetLastError
 from win32event import CreateMutex
 
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QApplication
-from app.my_gui import MainWindow
 
 # 启用 DPI 缩放
 QApplication.setHighDpiScaleFactorRoundingPolicy(Qt.HighDpiScaleFactorRoundingPolicy.PassThrough)

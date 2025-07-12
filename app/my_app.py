@@ -25,7 +25,7 @@ class Language(Enum):
     AUTO = QLocale()
 
 # 使用无框窗口
-class Window(FramelessWindow):
+class MainWindow(FramelessWindow):
     def __init__(self):
         super().__init__()
         # 设置标准标题栏，如果不设置则无法展示标题
@@ -56,13 +56,13 @@ class Window(FramelessWindow):
         self.HBoxLayout = QHBoxLayout(self)
         #self.stackedWidget.setStyleSheet("border: 1px solid black;")
         self.setStyleSheet("""
-                            Window {    
+                            MainWindow {    
                                 background: #fdfdfd;        /* 背景色（可选） */
                             }
                         """)
 
         self.farming_interface = FarmingInterface(self)
-        self.help_interface = MarkdownViewer("../README.md")
+        self.help_interface = MarkdownViewer("./README.md")
         self.setting_interface = SettingInterface(self)
         #self.team_setting = TeamSettingCard(self)
 
