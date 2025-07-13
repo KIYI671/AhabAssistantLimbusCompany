@@ -23,6 +23,7 @@ from tasks.daily.luxcavation import EXP_luxcavation, thread_luxcavation
 from tasks.mirror.mirror import Mirror
 from tasks.teams.team_formation import select_battle_team
 from utils import pic_path
+from utils.utils import get_day_of_week, calculate_the_teams
 
 all_systems = {0: "burn", 1: "bleed", 2: "tremor", 3: "rupture", 4: "poise",
                5: "sinking", 6: "charge", 7: "slash", 8: "pierce", 9: "blunt"}
@@ -39,7 +40,11 @@ all_sinner = {
 
 @begin_and_finish_time_log(task_name="一次经验本")
 # 一次经验本的过程
-def onetime_EXP_process(team):
+def onetime_EXP_process():
+    if cfg.targeted_teaming_EXP:
+        team = cfg.get_value(f"EXP_day_{calculate_the_teams()}")
+    else:
+        team = cfg.daily_teams
     EXP_luxcavation()
     select_battle_team(team)
     if battle.to_battle() is False:
@@ -51,7 +56,11 @@ def onetime_EXP_process(team):
 
 @begin_and_finish_time_log(task_name="一次纽本")
 # 一次纽本的过程
-def onetime_thread_process(team):
+def onetime_thread_process():
+    if cfg.targeted_teaming_thread:
+        team = cfg.get_value(f"thread_day_{get_day_of_week()}")
+    else:
+        team = cfg.daily_teams
     thread_luxcavation()
     select_battle_team(team)
     if battle.to_battle() is False:
@@ -108,7 +117,7 @@ def script_task():
     if cfg.set_windows:
         screen.set_win()
 
-    if cfg.language == "zh_cn":
+    if cfg.language_in_game == "zh_cn":
         pic_path.insert(0, "zh_cn")
 
     if cfg.resonate_with_Ahab:
@@ -117,14 +126,11 @@ def script_task():
 
     # 如果是战斗中，先处理战斗
     get_reward = None
-    while auto.take_screenshot() is None:
-        continue
-    if auto.click_element("battle/turn_assets.png"):
+    if auto.click_element("battle/turn_assets.png",take_screenshot=True):
         get_reward = battle.fight()
 
     # 执行日常刷本任务
     if cfg.daily_task:
-        select_team = cfg.daily_teams
         back_init_menu()
         make_enkephalin_module()
         exp_times = cfg.set_EXP_count
@@ -134,9 +140,9 @@ def script_task():
         if get_reward and get_reward == "thread":
             thread_times -= 1
         for i in range(exp_times):
-            onetime_EXP_process(select_team)
+            onetime_EXP_process()
         for i in range(thread_times):
-            onetime_thread_process(select_team)
+            onetime_thread_process()
     # 执行奖励领取任务
     if cfg.get_reward:
         if cfg.set_get_prize == 0:
