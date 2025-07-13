@@ -126,7 +126,7 @@ class Automation(metaclass=SingletonMeta):
 
     def take_screenshot(self):
         start_time = time.time()
-        screenshot_interval_time = cfg.screenshot_interval_time if cfg.screenshot_interval_time else 0.85
+        screenshot_interval_time = cfg.screenshot_interval if cfg.screenshot_interval else 0.85
         while True:
             try:
                 result = ScreenShot.take_screenshot()
@@ -218,7 +218,7 @@ class Automation(metaclass=SingletonMeta):
                 return ocr_dict[text]
         return False
 
-    def find_text_element(self, target, my_crop=None, all_text=False):
+    def find_text_element(self, target, my_crop=None, all_text=False,only_text = False):
         if my_crop is not None:
             # 根据my_crop（为左上与右下四个坐标），截取self.screenshot的部分区域进行ocr
             cropped_image = self.screenshot.crop(my_crop)
@@ -227,6 +227,8 @@ class Automation(metaclass=SingletonMeta):
             ocr_result = ocr.run(self.screenshot)
         if "data" in ocr_result and "text" in ocr_result["data"][0]:
             ocr_text_list = [item["text"] for item in ocr_result["data"]]
+            if only_text:
+                return ocr_text_list
             ocr_position_list = []
             for item in ocr_result["data"]:
                 x = (item["box"][0][0] + item["box"][3][0]) / 2
