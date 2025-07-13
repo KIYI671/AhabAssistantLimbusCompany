@@ -88,8 +88,8 @@ class Automation(metaclass=SingletonMeta):
                 self.mouse_action_with_pos(c, offset, action, times, dx, dy, find_type="image", interval=1)
             return True
 
-        if cfg.mouse_action_interval_time and interval == 0.5:
-            interval = cfg.mouse_action_interval_time
+        if cfg.mouse_action_interval and interval == 0.5:
+            interval = cfg.mouse_action_interval
 
         if self.last_click_time == 0:
             self.last_click_time = time.time()

@@ -1,4 +1,4 @@
-from PyQt5.QtCore import QUrl, pyqtSignal
+from PyQt5.QtCore import QUrl
 from PyQt5.QtGui import QPixmap, QDesktopServices
 from PyQt5.QtWidgets import QPushButton
 from qfluentwidgets import LineEdit, SettingCard, \
@@ -20,6 +20,9 @@ class CheckBoxWithButton(QFrame):
         self.hBoxLayout.addWidget(self.button)
         self.hBoxLayout.setAlignment(Qt.AlignCenter)
         task_check_box.append(self.box.check_box)
+
+    def set_box_enabled(self,b:bool):
+        self.box.set_box_enabled(b)
 
 
 class CheckBoxWithLineEdit(QFrame):

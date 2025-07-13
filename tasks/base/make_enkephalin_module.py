@@ -50,7 +50,6 @@ def make_enkephalin_module(cancel=False):
 
 @begin_and_finish_time_log(task_name="狂气换体", calculate_time=False)
 def lunacy_to_enkephalin(times=0):
-    # TODO:待加入葛朗台模式
     make_enkephalin_module(cancel=False)
     auto.click_element("enkephalin/use_lunacy_assets.png")
     while times > 0:
@@ -59,6 +58,7 @@ def lunacy_to_enkephalin(times=0):
         if auto.take_screenshot() is None:
             continue
         if times > 0 and auto.find_element("enkephalin/lunacy_spend_26_assets.png"):
+            # 葛朗台模式
             if cfg.Dr_Grandet_mode:
                 while get_the_timing() is False:
                     sleep(3)

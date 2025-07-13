@@ -1,14 +1,17 @@
 import sys
 
 from PyQt5 import QtWidgets
+from PyQt5.QtCore import QFile, QTextStream, QTimer
 from PyQt5.QtWidgets import QApplication
 from qfluentwidgets import TextEdit
 from qfluentwidgets.window.stacked_widget import StackedWidget
 
 from app.base_combination import *
 from app.base_tools import *
-from app.gui_action import *
 from app.page_card import PageSetWindows, PageDailyTask, PageLunacyToEnkephalin, PageGetPrize, PageMirror
+from module.logger import log
+from module.screen import screen
+from tasks.base.script_task_scheme import my_script_task
 
 
 class FarmingInterface(QWidget):
@@ -63,6 +66,7 @@ class FarmingInterfaceLeft(QWidget):
 
     def __init_card(self):
         self.set_windows = CheckBoxWithButton("set_windows", "窗口设置", None, "set_windows")
+        self.set_windows.set_box_enabled(False)
         self.daily_task = CheckBoxWithButton("daily_task", "日常任务", None, "daily_task")
         self.get_reward = CheckBoxWithButton("get_reward", "领取奖励", None, "get_reward")
         self.buy_enkephalin = CheckBoxWithButton("buy_enkephalin", "狂气换体", None, "buy_enkephalin")
@@ -70,21 +74,24 @@ class FarmingInterfaceLeft(QWidget):
         self.resonate_with_Ahab = CheckBoxWithButton("resonate_with_Ahab", "亚哈共鸣", None, "resonate_with_Ahab")
         self.resonate_with_Ahab.button.setEnabled(False)
 
-        self.select_all = NormalTextButton("全选", lambda: select_all())
-        self.clear_all = NormalTextButton("清空", lambda: clear_all())
+        self.select_all = NormalTextButton("全选","select_all")
+        self.select_all.clicked.connect(self.select_all_function)
+        self.clear_all = NormalTextButton("清空","clear_all")
+        self.clear_all.clicked.connect(self.clear_all_function)
 
         self.then = BaseLabel("之后")
         self.then_combobox = BaseComboBox("after_completion")
         self.then_combobox.add_items(set_after_completion_options)
         self.then_combobox.set_options(0)
-        self.link_start = NormalTextButton("Link Start!", lambda: link_start(),0)
-        self.link_start.button.setMinimumSize(130, 70)
+        self.link_start_button = NormalTextButton("Link Start!","link_start", 0)
+        self.link_start_button.clicked.connect(self.start_and_stop_tasks)
+        self.link_start_button.button.setMinimumSize(130, 70)
         scale_factor = QtWidgets.QApplication.primaryScreen().logicalDotsPerInch() / 96  # Windows 标准 DPI 是 96
         font_size = min(14, int(14 / scale_factor))
         # 创建字体对象并设置大小
-        font = self.link_start.button.font()  # 获取当前字体
+        font = self.link_start_button.button.font()  # 获取当前字体
         font.setPointSize(font_size)  # 设置字体大小（单位：点）
-        self.link_start.button.setFont(font)  # 应用新字体
+        self.link_start_button.button.setFont(font)  # 应用新字体
 
 
     def __init_layout(self):
@@ -105,7 +112,79 @@ class FarmingInterfaceLeft(QWidget):
         self.hbox_layout.addWidget(self.setting_box)
         self.hbox_layout.addWidget(self.then)
         self.hbox_layout.addWidget(self.then_combobox)
-        self.hbox_layout.addWidget(self.link_start)
+        self.hbox_layout.addWidget(self.link_start_button)
+
+    @staticmethod
+    def select_all_function():
+        for check_box in task_check_box[:5]:
+            check_box.setChecked(True)
+
+    @staticmethod
+    def clear_all_function():
+        for check_box in task_check_box[1:5]:
+            check_box.setChecked(False)
+
+    def start_and_stop_tasks(self):
+        # 设置按下启动与停止按钮时，其他模块的启用与停用
+        current_text = self.link_start_button.get_text()
+        if current_text == "Link Start!":
+            self.link_start_button.set_text("S t o p !")
+            self._disable_setting(self.parent)
+            self.create_and_start_script()
+        else:
+            screen.reset_win()
+            self.link_start_button.set_text("Link Start!")
+            self._enable_setting(self.parent)
+            mediator.refresh_teams_order.emit()
+            if self.my_script and self.my_script.isRunning():
+                self.stop_script()
+
+
+    def _disable_setting(self, parent):
+        for child in parent.children():
+            # 跳过非 QWidget 类型的子对象（如信号、槽等）
+            if not isinstance(child, QWidget):
+                continue
+            if child.objectName() == "link_start":
+                continue
+            # 检查是否为目标控件类型
+            if isinstance(child, (CheckBox, PushButton, ComboBox,SpinBox)):
+                child.setEnabled(False)
+            else:
+                # 递归处理子部件的子部件（如布局中的嵌套控件）
+                self._disable_setting(child)
+
+    def _enable_setting(self, parent):
+        for child in parent.children():
+            # 跳过非 QWidget 类型的子对象（如信号、槽等）
+            if not isinstance(child, QWidget):
+                continue
+            if child.objectName() == "set_windows":
+                continue
+            # 检查是否为目标控件类型
+            if isinstance(child, (CheckBox, PushButton, ComboBox,SpinBox)):
+                child.setEnabled(True)
+            else:
+                # 递归处理子部件的子部件（如布局中的嵌套控件）
+                self._enable_setting(child)
+
+    def create_and_start_script(self):
+        try:
+            msg = f"开始进行所有任务"
+            log.INFO(msg)
+            mediator.scroll_log_show.emit("clear")
+            # 启动脚本线程
+            self.my_script = my_script_task()
+            # 设置脚本线程为守护(当程序被关闭，一起停止)
+            self.my_script.daemon = True
+            self.my_script.finished_signal.connect(self.start_and_stop_tasks)
+            self.my_script.start()
+        except Exception as e:
+            log.ERROR(f"启动脚本失败: {e}")
+
+    def stop_script(self):
+        if self.my_script and self.my_script.isRunning():
+            self.my_script.terminate()  # 终止线程
 
 
 class FarmingInterfaceCenter(QWidget):
@@ -116,8 +195,7 @@ class FarmingInterfaceCenter(QWidget):
         self.__init_card()
         self.__init_layout()
         self.__init_setting()
-        # 获取单例
-        self.mediator = Mediator()
+
         self.connect_mediator()
 
     def __init_widget(self):
@@ -157,7 +235,7 @@ class FarmingInterfaceCenter(QWidget):
 
     def connect_mediator(self):
         # 连接所有可能信号
-        self.mediator.switch_page.connect(self.switch_to_page)
+        mediator.switch_page.connect(self.switch_to_page)
 
 class FarmingInterfaceRight(QWidget):
     def __init__(self, parent=None):
@@ -166,6 +244,13 @@ class FarmingInterfaceRight(QWidget):
         self.__init_widget()
         self.__init_card()
         self.__init_layout()
+        self.last_position = 0
+
+        self.timer = QTimer()
+        self.timer.timeout.connect(lambda option=0: self.set_log(option))
+        self.timer.start(1000)  # 每秒更新一次
+
+        self.connect_mediator()
 
     def __init_widget(self):
         self.main_layout = QVBoxLayout(self)
@@ -176,6 +261,81 @@ class FarmingInterfaceRight(QWidget):
 
     def __init_layout(self):
         self.main_layout.addWidget(self.scroll_log_edit)
+
+    def set_scroll_log(self, target: str):
+        if target == "clear":
+            self.scroll_log_edit.clear()
+            self.set_log(option=1)
+
+    def load_log_text(self):
+
+        # 打开 log 文件，使用 UTF-8 编码
+        file = QFile('./logs/myLog.log')
+        if not file.open(QFile.ReadOnly | QFile.Text):
+            return
+
+        # 使用 QTextStream 读取文件内容，并指定 UTF-8 编码
+        stream = QTextStream(file)
+        stream.setCodec('UTF-8')  # 设置编码为 UTF-8
+
+        # 如果是首次读取，初始化 last_position
+        if not hasattr(self, 'last_position'):
+            self.last_position = 0
+
+        # 从上次读取的位置继续读取
+        file.seek(self.last_position)
+
+        new_content = ""
+        while not stream.atEnd():
+            line = stream.readLine()
+            new_content += line
+            if not stream.atEnd():
+                new_content += '\n'
+
+        # 更新文件读取位置
+        self.last_position = file.pos()
+
+        # 如果有新内容，追加到 QTextEdit 控件
+        if new_content:
+            self.scroll_log_edit.append(new_content)
+
+        # 如果用户滚动到底部，则自动滚动
+        if self.scroll_log_edit.verticalScrollBar().value() == self.scroll_log_edit.verticalScrollBar().maximum():
+            self.scroll_log_edit.moveCursor(self.scroll_log_edit.textCursor().End)
+
+        # 关闭文件
+        file.close()
+
+    def clear_all_log(self):
+        file = QFile('./logs/myLog.log')
+        if not file.open(QFile.WriteOnly | QFile.Text):
+            self.text_edit.append('无法打开文件')
+            return
+
+        # 清空文件内容
+        file.write('')
+
+        # 关闭文件
+        file.close()
+        # 重新加载文件内容到 QTextEdit
+        self.load_log()
+
+    def set_log(self, option=0):
+        if option == 0:
+            try:
+                self.load_log_text()
+            except:
+                pass
+
+        else:
+            try:
+                self.clear_all_log()
+            except:
+                pass
+
+    def connect_mediator(self):
+        # 连接所有可能信号
+        mediator.scroll_log_show.connect(self.set_scroll_log)
 
 
 if __name__ == '__main__':

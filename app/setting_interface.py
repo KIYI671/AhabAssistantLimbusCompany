@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import QWidget, QVBoxLayout, QFileDialog
+from PyQt5.QtWidgets import QWidget, QFileDialog
 from qfluentwidgets import FluentIcon as FIF
 from qfluentwidgets import ScrollArea, ExpandLayout, SettingCardGroup, PushSettingCard, \
     PrimaryPushSettingCard
@@ -15,11 +15,13 @@ class SettingInterface(ScrollArea):
         self.__initLayout()
         self.set_style_sheet()
         self.__connect_signal()
+        self.setWidget(self.scroll_widget)
 
     def __init_widget(self):
-        self.BoxLayout = QVBoxLayout(self)
-        self.scroll_widget = QWidget(self)
+        self.scroll_widget = QWidget()
+        self.scroll_widget.setObjectName("scrollWidget")
         self.expand_layout = ExpandLayout(self.scroll_widget)
+        self.setWidgetResizable(True)
 
     def __init_card(self):
         self.game_path_group = SettingCardGroup("游戏路径", self.scroll_widget)
@@ -105,12 +107,10 @@ class SettingInterface(ScrollArea):
         self.expand_layout.addWidget(self.update_group)
         self.expand_layout.addWidget(self.logs_group)
 
-        self.BoxLayout.addWidget(self.scroll_widget)
-
     def set_style_sheet(self):
         self.setStyleSheet("""
                 SettingInterface, #scrollWidget {
-                    background-color: rgb(249, 249, 249);
+                    background-color: #fdfdfd;
                 }
                 QScrollArea {
                     background-color: transparent;

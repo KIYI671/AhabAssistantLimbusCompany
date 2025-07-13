@@ -198,8 +198,6 @@ class PageMirror(PageCard):
         self.infinite_dungeons = BaseCheckBox("infinite_dungeons", None, "无限坐牢",center=False)
         self.save_rewards = BaseCheckBox("save_rewards", None, "保存奖励",center=False)
         self.hard_mirror_single_bonuses = BaseCheckBox("hard_mirror_single_bonuses", None, "困牢单次加成",center=False)
-        # TODO:多语言、启动选、黑暗模式、定位游戏、清日志、更新源、打开日志文件夹
-
 
     def __init_layout(self):
         self.vbox_general.addWidget(self.team)

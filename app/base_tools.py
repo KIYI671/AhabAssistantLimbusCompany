@@ -1,6 +1,6 @@
 from typing import Union
 
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, pyqtSignal
 from PyQt5.QtGui import QIcon, QFont
 from PyQt5.QtWidgets import QFrame, QHBoxLayout, QVBoxLayout, QSizePolicy, QWidget, QGridLayout, QAction
 from qfluentwidgets import FluentIcon as FIF
@@ -96,6 +96,9 @@ class BaseCheckBox(BaseLayout):
         self.check_box.setChecked(checked)
         self.check_box.toggled.connect(self.on_toggle)
 
+    def set_box_enabled(self, b: bool):
+        self.check_box.setEnabled(b)
+
 
 
 
@@ -136,17 +139,16 @@ class BaseButton(BaseLayout):
     def __init__(self, config_name, parent=None):
         super().__init__(parent=parent)
         self.config_name = config_name
-
+        self.setObjectName(config_name)
 
 class NormalTextButton(BaseButton):
-    def __init__(self, config_name, action, tactics=1, parent=None):
-        super().__init__(config_name, parent=parent)
-        self.action = action
+    clicked = pyqtSignal()
 
+    def __init__(self,button_text, config_name, tactics=1, parent=None):
+        super().__init__(config_name, parent=parent)
         self.setFixedHeight(100)
 
-        self.button = PushButton(config_name, self)
-        self.button.clicked.connect(self.on_click)
+        self.button = PushButton(button_text, self)
         if tactics == 1:
             self.button.setSizePolicy(
                 QSizePolicy.Expanding,  # 水平方向自动扩展
@@ -154,9 +156,13 @@ class NormalTextButton(BaseButton):
             )
 
         self.hBoxLayout.addWidget(self.button)
+        self.button.clicked.connect(self.clicked)
 
-    def on_click(self):
-        self.action()
+    def get_text(self):
+        return self.button.text()
+
+    def set_text(self, text):
+        self.button.setText(text)
 
 class ToSettingButton(BaseButton):
     def __init__(self, config_name, icon: Union[str, QIcon, FluentIconBase, None] = FIF.SETTING, parent=None):

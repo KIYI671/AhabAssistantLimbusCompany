@@ -14,6 +14,7 @@ from app.mediator import Mediator
 from app.page_card import MarkdownViewer
 from app.setting_interface import SettingInterface
 from app.team_setting_card import TeamSettingCard
+from module.config import cfg
 
 
 class Language(Enum):
@@ -30,8 +31,8 @@ class MainWindow(FramelessWindow):
         super().__init__()
         # 设置标准标题栏，如果不设置则无法展示标题
         self.setTitleBar(StandardTitleBar(self))
-        self.setWindowIcon(QIcon(":/qfluentwidgets/images/logo.png"))
-        self.setWindowTitle("test")
+        self.setWindowIcon(QIcon('./assets/logo/my_icon_256X256.ico'))
+        self.setWindowTitle(f"Ahab Assistant Limbus Company -  {cfg.version}")
         setThemeColor("#9c080b")
         #self.hBoxLayout =QHBoxLayout(self)
         #self.test_interface = TestInterface(self)
@@ -74,6 +75,7 @@ class MainWindow(FramelessWindow):
 
 
         self.HBoxLayout.addWidget(self.pivot)
+        self.vBoxLayout.addSpacing(10)
         self.vBoxLayout.addLayout(self.HBoxLayout,0)
         self.vBoxLayout.addWidget(self.stackedWidget)
         self.vBoxLayout.setContentsMargins(30, 20, 30, 30)

@@ -8,6 +8,7 @@ class Mediator(QObject):
     close_setting = pyqtSignal()
     refresh_teams_order = pyqtSignal()
     sinner_be_selected = pyqtSignal()
+    scroll_log_show = pyqtSignal(str)
 
     # 单例实例（类变量）
     _instance = None
