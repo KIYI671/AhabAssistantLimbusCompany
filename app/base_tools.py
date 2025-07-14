@@ -9,7 +9,6 @@ from qfluentwidgets import FluentIconBase, CheckBox, ToggleToolButton, ToolButto
 from qfluentwidgets.components.settings.setting_card import SettingIconWidget
 
 from app import *
-from app.mediator import Mediator
 from module.config import cfg
 
 
@@ -65,8 +64,6 @@ class BaseCheckBox(BaseLayout):
         self.config_name = config_name
         self.setObjectName(config_name)
 
-        self.mediator = Mediator()
-
         if icon:
             self.iconLabel = SettingIconWidget(icon, self)
             self.iconLabel.setFixedSize(icon_size, icon_size)
@@ -87,7 +84,7 @@ class BaseCheckBox(BaseLayout):
             if number<=len(teams_be_select) and teams_be_select[number-1] is True:
                 self.check_box.setChecked(True)
         elif self.config_name in all_sinners_name:
-            self.mediator.sinner_be_selected.emit()
+            mediator.sinner_be_selected.emit()
 
         self.check_box.toggled.connect(self.on_toggle)
 
@@ -98,9 +95,6 @@ class BaseCheckBox(BaseLayout):
 
     def set_box_enabled(self, b: bool):
         self.check_box.setEnabled(b)
-
-
-
 
     def on_toggle(self, checked):
         if cfg.get_value(self.config_name) is not None:
@@ -126,13 +120,13 @@ class BaseCheckBox(BaseLayout):
                 teams_order[index] = 0
                 cfg.set_value("teams_be_select", teams_be_select)
                 cfg.set_value("teams_order", teams_order)
-            self.mediator.refresh_teams_order.emit()
+            mediator.refresh_teams_order.emit()
         else:
             data_dict = {self.config_name: checked}
             self.send_switch_signal(data_dict)
 
     def send_switch_signal(self, target: dict):
-        self.mediator.team_setting.emit(target)
+        mediator.team_setting.emit(target)
 
 
 class BaseButton(BaseLayout):
@@ -164,6 +158,9 @@ class NormalTextButton(BaseButton):
     def set_text(self, text):
         self.button.setText(text)
 
+    def be_click(self):
+        self.button.click()
+
 class ToSettingButton(BaseButton):
     def __init__(self, config_name, icon: Union[str, QIcon, FluentIconBase, None] = FIF.SETTING, parent=None):
         super().__init__(config_name, parent=parent)
@@ -186,15 +183,13 @@ class ToSettingButton(BaseButton):
 
         self.hBoxLayout.addWidget(self.button)
 
-        self.mediator = Mediator()
-
     def on_click(self):
         for button in team_toggle_button_group:
             if button == self.button:
                 self.send_switch_signal(self.config_name)
 
     def send_switch_signal(self, target: str):
-        self.mediator.switch_team_setting.emit(target)
+        mediator.switch_team_setting.emit(target)
 
 
 class ChangePageButton(BaseButton):
@@ -210,8 +205,6 @@ class ChangePageButton(BaseButton):
 
         self.hBoxLayout.addWidget(self.button)
 
-        self.mediator = Mediator()
-
     def on_click(self):
         for d,button in toggle_button_group.items():
             if button == self.button:
@@ -221,7 +214,7 @@ class ChangePageButton(BaseButton):
                 button.setChecked(False)
 
     def send_switch_signal(self, target: str):
-        self.mediator.switch_page.emit(target)
+        mediator.switch_page.emit(target)
 
 
 class SettingTeamsButton(BaseButton):
@@ -271,8 +264,6 @@ class BaseComboBox(BaseLayout):
 
         self.combo_box.currentIndexChanged.connect(self.on_change)
 
-        self.mediator = Mediator()
-
     def add_items(self, items):
         self.combo_box.currentIndexChanged.disconnect(self.on_change)
         self.combo_box.addItems(items)
@@ -294,7 +285,7 @@ class BaseComboBox(BaseLayout):
         self.combo_box.setCurrentIndex(index)
 
     def send_switch_signal(self, target: dict):
-        self.mediator.team_setting.emit(target)
+        mediator.team_setting.emit(target)
 
 
 class BaseSpinBox(BaseLayout):

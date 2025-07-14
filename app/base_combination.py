@@ -42,14 +42,12 @@ class CheckBoxWithLineEdit(QFrame):
 
         self.box.toggled.connect(self.on_toggle)
 
-        self.mediator = Mediator()
-
     def on_toggle(self, checked):
         data_dict = {self.config_name: checked}
         self.send_switch_signal(data_dict)
 
     def send_switch_signal(self, target: dict):
-        self.mediator.team_setting.emit(target)
+        mediator.team_setting.emit(target)
 
     def set_checked(self, checked):
         self.box.toggled.disconnect(self.on_toggle)
@@ -170,8 +168,6 @@ class MirrorTeamCombination(QFrame):
 
         self.refresh_remark_name()
 
-        self.mediator = Mediator()
-
     def edit_button_clicked(self):
         name = cfg.get_value(f"team{self.team_number}_remark_name")
         if name is None:
@@ -184,7 +180,7 @@ class MirrorTeamCombination(QFrame):
     def delete_button_clicked(self):
         if len(team_toggle_button_group) > 1:
             team_toggle_button_group.remove(self.button.button)
-            self.mediator.delete_team_setting.emit(f"team_{self.team_number}")
+            mediator.delete_team_setting.emit(f"team_{self.team_number}")
 
     def refresh_remark_name(self):
         name = cfg.get_value(f"team{self.team_number}_remark_name")

@@ -16,7 +16,7 @@ def back_init_menu():
         # 自动截图
         if auto.take_screenshot() is None:
             continue
-        if cfg.language == 'zh_cn':
+        if cfg.language_in_game == 'zh_cn':
             if auto.click_element("home/window_assets.png") and (
                     auto.find_element("home/mail_assets.png", model='normal') or auto.find_element(
                 "home/mail_cn_assets.png", model='normal')):

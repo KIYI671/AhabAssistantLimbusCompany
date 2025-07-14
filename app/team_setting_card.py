@@ -6,7 +6,6 @@ from qfluentwidgets import ScrollArea, PrimaryPushButton, PushButton, SwitchButt
 from app import *
 from app.base_combination import LabelWithComboBox, SinnerSelect, CheckBoxWithComboBox, CheckBoxWithLineEdit
 from app.base_tools import BaseCheckBox, BaseSettingLayout, BaseLabel, SwitchSettingLine, BaseComboBox
-from app.mediator import Mediator
 from module.config import cfg
 
 
@@ -28,8 +27,6 @@ class TeamSettingCard(QFrame):
         self.read_settings()
         self.refresh_starlight_select()
 
-        # 获取单例
-        self.mediator = Mediator()
         self.connect_mediator()
 
     def __init_widget(self):
@@ -149,8 +146,8 @@ class TeamSettingCard(QFrame):
 
     def connect_mediator(self):
         # 连接所有可能信号
-        self.mediator.team_setting.connect(self.setting_team)
-        self.mediator.sinner_be_selected.connect(self.refresh_sinner_order)
+        mediator.team_setting.connect(self.setting_team)
+        mediator.sinner_be_selected.connect(self.refresh_sinner_order)
 
     def setting_team(self, data_dict: dict):
         keys = list(data_dict.keys())[0]
@@ -269,7 +266,7 @@ class TeamSettingCard(QFrame):
 
 
     def cancel_team_setting(self):
-        self.mediator.close_setting.emit()
+        mediator.close_setting.emit()
 
 
 

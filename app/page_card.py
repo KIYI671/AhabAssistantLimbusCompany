@@ -8,7 +8,6 @@ from app import *
 from app.base_combination import LabelWithComboBox, LabelWithSpinBox, MirrorTeamCombination, \
     MirrorSpinBox
 from app.base_tools import BaseCheckBox
-from app.mediator import Mediator
 from module.config import cfg
 
 
@@ -179,8 +178,6 @@ class PageMirror(PageCard):
         self.get_setting()
         self.refresh()
 
-        # 获取单例
-        self.mediator = Mediator()
         self.connect_mediator()
 
     def __init_card(self):
@@ -289,8 +286,8 @@ class PageMirror(PageCard):
 
     def connect_mediator(self):
         # 连接所有可能信号
-        self.mediator.delete_team_setting.connect(self.delete_team)
-        self.mediator.refresh_teams_order.connect(self.refresh)
+        mediator.delete_team_setting.connect(self.delete_team)
+        mediator.refresh_teams_order.connect(self.refresh)
 
 
 class MarkdownViewer(QWidget):

@@ -9,8 +9,8 @@ from qfluentwidgets import Pivot, setThemeColor
 from qfluentwidgets.components.widgets.frameless_window import FramelessWindow
 from qframelesswindow import StandardTitleBar
 
+from app import mediator
 from app.farming_interface import FarmingInterface
-from app.mediator import Mediator
 from app.page_card import MarkdownViewer
 from app.setting_interface import SettingInterface
 from app.team_setting_card import TeamSettingCard
@@ -91,8 +91,6 @@ class MainWindow(FramelessWindow):
         # 将标题栏置顶
         self.titleBar.raise_()
 
-        # 获取单例
-        self.mediator = Mediator()
         self.connect_mediator()
 
         self.show()
@@ -132,8 +130,8 @@ class MainWindow(FramelessWindow):
 
     def connect_mediator(self):
         # 连接所有可能信号
-        self.mediator.switch_team_setting.connect(self.add_and_switch_to_page)
-        self.mediator.close_setting.connect(self.close_setting_page)
+        mediator.switch_team_setting.connect(self.add_and_switch_to_page)
+        mediator.close_setting.connect(self.close_setting_page)
 
 
 
@@ -145,7 +143,7 @@ if __name__ == "__main__":
     QApplication.setAttribute(Qt.AA_EnableHighDpiScaling)
     QApplication.setAttribute(Qt.AA_UseHighDpiPixmaps)
 
-    mediator = Mediator()
+    #mediator = Mediator()
 
     #locale =  Language.AUTO.value
     #fluent_translator = FluentTranslator(locale)
