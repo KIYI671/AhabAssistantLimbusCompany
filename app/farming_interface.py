@@ -3,12 +3,14 @@ import sys
 from PyQt5 import QtWidgets
 from PyQt5.QtCore import QFile, QTextStream, QTimer
 from PyQt5.QtWidgets import QApplication
+from pynput import keyboard
 from qfluentwidgets import TextEdit
 from qfluentwidgets.window.stacked_widget import StackedWidget
 
 from app.base_combination import *
 from app.base_tools import *
 from app.page_card import PageSetWindows, PageDailyTask, PageLunacyToEnkephalin, PageGetPrize, PageMirror
+from module.automation import auto
 from module.logger import log
 from module.screen import screen
 from tasks.base.script_task_scheme import my_script_task
@@ -38,12 +40,21 @@ class FarmingInterface(QWidget):
         self.hbox_layout_right.addWidget(FarmingInterfaceRight(self))
 
         #self.setStyleSheet("border: 1px solid black;")
+        # 启动快捷键监听
+        self.listener = keyboard.GlobalHotKeys(
+            {
+                "<ctrl>+q": self.my_stop_shortcut,
+                "<alt>+p": self.my_pause_and_resume,
+                "<alt>+r": self.my_pause_and_resume,
+            }
+        )
+        self.listener.start()
 
+    def my_stop_shortcut(self):
+        mediator.link_start.emit()
 
-        #self.hbox_layout_left.addStretch(1)
-        #self.hbox_layout_center.addStretch(1)
-        #self.hbox_layout_right.addStretch(1)
-
+    def my_pause_and_resume(self):
+        auto.set_pause()
 
 class FarmingInterfaceLeft(QWidget):
     def __init__(self, parent=None):
@@ -52,6 +63,8 @@ class FarmingInterfaceLeft(QWidget):
         self.__init_widget()
         self.__init_card()
         self.__init_layout()
+
+        self.connect_mediator()
 
     def __init_widget(self):
         self.hbox_layout = QVBoxLayout(self)
@@ -186,6 +199,15 @@ class FarmingInterfaceLeft(QWidget):
         if self.my_script and self.my_script.isRunning():
             self.my_script.terminate()  # 终止线程
 
+    def my_stop_shortcut(self):
+        current_text = self.link_start_button.get_text()
+        if current_text != "Link Start!":
+            self.link_start_button.be_click()
+
+    def connect_mediator(self):
+        # 连接所有可能信号
+        mediator.link_start.connect(self.my_stop_shortcut)
+
 
 class FarmingInterfaceCenter(QWidget):
     def __init__(self, parent=None):
@@ -258,6 +280,7 @@ class FarmingInterfaceRight(QWidget):
     def __init_card(self):
         self.scroll_log_edit = TextEdit()
         self.scroll_log_edit.setAutoFormatting(QtWidgets.QTextEdit.AutoAll)
+        self.scroll_log_edit.setReadOnly(True)
 
     def __init_layout(self):
         self.main_layout.addWidget(self.scroll_log_edit)
@@ -266,6 +289,7 @@ class FarmingInterfaceRight(QWidget):
         if target == "clear":
             self.scroll_log_edit.clear()
             self.set_log(option=1)
+            self.last_position = 0
 
     def load_log_text(self):
 
@@ -318,7 +342,7 @@ class FarmingInterfaceRight(QWidget):
         # 关闭文件
         file.close()
         # 重新加载文件内容到 QTextEdit
-        self.load_log()
+        self.load_log_text()
 
     def set_log(self, option=0):
         if option == 0:
