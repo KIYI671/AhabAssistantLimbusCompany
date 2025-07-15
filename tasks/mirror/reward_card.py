@@ -3,12 +3,17 @@ from module.decorator.decorator import begin_and_finish_time_log
 from module.logger import log
 from tasks.base.retry import retry
 
-
+reward_card_model = {0:["gain_starlight","gain_ego","gain_cost","gain_cost_and_ego","gain_ego_resource"],
+                        1:["gain_starlight","gain_ego","gain_cost","gain_cost_and_ego","gain_ego_resource"],
+                        2:["gain_starlight","gain_cost","gain_ego","gain_cost_and_ego","gain_ego_resource"],
+                        3:["gain_cost","gain_ego","gain_cost_and_ego","gain_ego_resource","gain_starlight"],
+                        4:["gain_ego","gain_cost","gain_cost_and_ego","gain_ego_resource","gain_starlight"]}
 @begin_and_finish_time_log(task_name="镜牢获取奖励卡", calculate_time=False)
 # 获取奖励卡
-def get_reward_card():
+def get_reward_card(model = 0):
     loop_count = 30
     auto.model = 'clam'
+    reward_card = reward_card_model[model]
     while True:
         # 自动截图
         if auto.take_screenshot() is None:
@@ -20,18 +25,9 @@ def get_reward_card():
             break
         if auto.click_element("mirror/get_reward_card/continue_choosing_assets.png", model='clam'):
             continue
-        if auto.click_element("mirror/get_reward_card/gain_starlight.png"):
-            break
-        if auto.click_element("mirror/get_reward_card/gain_cost_and_ego.png"):
-            break
-        if auto.click_element("mirror/get_reward_card/gain_ego.png"):
-            break
-        if auto.click_element("mirror/get_reward_card/gain_cost.png"):
-            break
-        if auto.click_element("mirror/get_reward_card/gain_ego_resource.png"):
-            break
-        if auto.click_element("mirror/road_in_mir/ego_gift_get_confirm_assets.png"):
-            break
+        for card in reward_card:
+            if auto.click_element(f"mirror/get_reward_card/{card}.png"):
+                break
         retry()
         loop_count -= 1
         if loop_count < 20:

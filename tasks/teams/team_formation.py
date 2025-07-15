@@ -5,16 +5,6 @@ from module.config import cfg
 from module.decorator.decorator import begin_and_finish_time_log
 from module.logger import log
 
-all_sinner = {
-    1: "YiSang", 2: "Faust", 3: "DonQuixote",
-    4: "Ryoshu", 5: "Meursault", 6: "HongLu",
-    7: "Heathcliff", 8: "Ishmael", 9: "Rodion",
-    10: "Dante",
-    11: "Sinclair", 12: "Outis", 13: "Gregor"
-}
-
-pic_path = "teams/"
-
 
 # 清队
 def clean_team():
@@ -43,16 +33,16 @@ def team_formation(sinner_team):
     first_sinner = [announcer_position[0] + 350 * scale, announcer_position[1]]
     sleep(0.5)
 
-    for sinner in sinner_team:
-        name = pic_path + all_sinner[sinner] + '_assets.png'
-        if not auto.click_element(name):
-            if sinner <= 6:
-                auto.mouse_click(first_sinner[0] + 270 * (sinner - 1) * scale, first_sinner[1])
-            elif sinner <= 10:
-                auto.mouse_click(first_sinner[0] + 270 * (sinner - 7) * scale, first_sinner[1] + 500 * scale)
-            else:
-                auto.mouse_click(first_sinner[0] + 270 * (sinner - 8) * scale, first_sinner[1] + 500 * scale)
-            sleep(cfg.mouse_action_interval_time)
+    for i in range(12):
+        if i in sinner_team:
+            sinner = sinner_team.index(i)
+        else:
+            return
+        if sinner <= 5:
+                auto.mouse_click(first_sinner[0] + 270 * sinner * scale, first_sinner[1])
+        else:
+            auto.mouse_click(first_sinner[0] + 270 * (sinner - 6) * scale, first_sinner[1] + 500 * scale)
+        sleep(cfg.mouse_action_interval_time)
 
 
 @begin_and_finish_time_log(task_name="寻找队伍")

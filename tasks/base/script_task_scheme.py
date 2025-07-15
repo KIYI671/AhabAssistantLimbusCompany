@@ -25,18 +25,6 @@ from tasks.teams.team_formation import select_battle_team
 from utils import pic_path
 from utils.utils import get_day_of_week, calculate_the_teams
 
-all_systems = {0: "burn", 1: "bleed", 2: "tremor", 3: "rupture", 4: "poise",
-               5: "sinking", 6: "charge", 7: "slash", 8: "pierce", 9: "blunt"}
-all_sinners_name = ["YiSang", "Faust", "DonQuixote", "Ryoshu", "Meursault", "HongLu",
-                    "Heathcliff", "Ishmael", "Rodion", "Sinclair", "Outis", "Gregor"]
-all_sinner = {
-    "YiSang": 1, "Faust": 2, "DonQuixote": 3,
-    "Ryoshu": 4, "Meursault": 5, "HongLu": 6,
-    "Heathcliff": 7, "Ishmael": 8, "Rodion": 9,
-    "Dante": 10,
-    "Sinclair": 11, "Outis": 12, "Gregor": 13
-}
-
 
 @begin_and_finish_time_log(task_name="一次经验本")
 # 一次经验本的过程
@@ -72,34 +60,13 @@ def onetime_thread_process():
 
 @begin_and_finish_time_log(task_name="一次镜牢")
 # 一次镜牢的过程
-def onetime_mir_process(the_selected_team_setting):
-    # 读取队伍配置、顺序
-    my_team = {}
-    sinner_team = []
-    shop_sell_list = []
-    hard_switch = cfg.get_value("hard_mirror")
-    no_weekly_bonuses = cfg.get_value('no_weekly_bonuses')
-    fuse_switch = the_selected_team_setting['fuse']
-    fuse_aggressive_switch = the_selected_team_setting['fuse_aggressive']
-    dont_convert_starlight_to_cost = cfg.get_value("dont_convert_starlight_to_cost")
-    dont_use_storaged_starlight = cfg.get_value("dont_use_storaged_starlight")
-    for sinner in all_sinners_name:
-        sinner_order = sinner + "_order"
-        if the_selected_team_setting[sinner]:
-            my_team[sinner] = int(the_selected_team_setting[sinner_order])
-    my_sorted_team = dict(sorted(my_team.items(), key=lambda item: item[1]))
-    for sinner in my_sorted_team:
-        sinner_team.append(all_sinner[sinner])
-    for num, shop_system in all_systems.items():
-        if the_selected_team_setting[shop_system]:
-            shop_sell_list.append(shop_system)
+def onetime_mir_process(team_setting):
     # 进行一次镜牢
     try:
-        mirror_adventure = Mirror(sinner_team, the_selected_team_setting["all_teams"], shop_sell_list, fuse_switch,
-                                  all_systems[the_selected_team_setting["all_system"]], fuse_aggressive_switch,
-                                  hard_switch, no_weekly_bonuses, dont_use_storaged_starlight, dont_convert_starlight_to_cost)
+        mirror_adventure = Mirror(team_setting)
         if mirror_adventure.run():
             del mirror_adventure
+            mirror_adventure = None
             back_init_menu()
             make_enkephalin_module()
             return True
@@ -167,35 +134,23 @@ def script_task():
 
     # 执行镜牢任务
     if cfg.mirror:
-        all_teams = ["team1", "team2", "team3", "team4", "team5", "team6", "team7"]
         mir_times = cfg.set_mirror_count
-        all_my_team_setting = []
-        for team in all_teams:
-            if cfg.get_value(team):
-                sequence = "_order"
-                team_sequence = team + sequence
-                team_order = cfg.get_value(team_sequence)
-                setting = "_setting"
-                team_setting = team + setting
-                my_team_setting = cfg.get_value(team_setting)
-                this_team_setting = [team_order, my_team_setting, team_sequence]
-                all_my_team_setting.append(this_team_setting)
-        if len(all_my_team_setting) != 0:
+        if cfg.teams_be_select_num != 0:
             while mir_times > 0:
-                the_selected_team_setting = None
-                for this_team in all_my_team_setting:
-                    if this_team[0] == 1:
-                        the_selected_team_setting = this_team[1]
-                        break
-                mirror_result = onetime_mir_process(the_selected_team_setting)
+                teams_order = cfg.teams_order
+                team_num = teams_order.index(1)
+                mirror_result = onetime_mir_process(cfg.get_value(f"team{team_num}_setting"))
                 if mirror_result:
-                    for this_team in all_my_team_setting:
-                        if this_team[0] == 1:
-                            this_team[0] = len(all_my_team_setting)
-                        else:
-                            this_team[0] -= 1
-                        cfg.set_value(this_team[2], this_team[0])
+                    for i in range(teams_order):
+                        if teams_order[i] == 1:
+                            teams_order[i] = cfg.teams_be_select_num
+                        elif teams_order[i] != 0:
+                            teams_order[i] -= 1
+                        cfg.set_value("teams_order", teams_order)
                     mir_times -= 1
+        else:
+            log.WARNING("没有选择任何队伍，请选择一个队伍进行镜牢任务")
+
     if cfg.set_reduce_miscontact:
         screen.reset_win()
 
