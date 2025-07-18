@@ -42,6 +42,7 @@ class Mirror:
         # 自选开局星光
         self.choose_opening_bonus = team_setting["choose_opening_bonus"]
         self.opening_bonus_order = team_setting["opening_bonus_order"]
+        self.keep_starlight = team_setting["keep_starlight"]
         # 自选奖励卡优先度
         self.reward_cards = team_setting["reward_cards"]
         self.reward_cards_select = team_setting["reward_cards_select"]
@@ -49,6 +50,11 @@ class Mirror:
         self.opening_items = team_setting["opening_items"]
         self.opening_items_select = team_setting["opening_items_select"]
         self.opening_items_system = team_setting["opening_items_system"]
+        self.re_formation_each_floor = team_setting["re_formation_each_floor"] # 是否每层重新配队
+        # 第二体系
+        self.second_system = team_setting["second_system"] # 启用第二体系
+        self.second_system_select = team_setting["second_system_select"] # 选择的第二体系
+        self.second_system_setting = team_setting["second_system_setting"] # 第二体系策略
 
         self.start_time = time.time()
         self.first_battle = True  # 判断是否首次进入战斗，如果是则重新配队
@@ -60,7 +66,8 @@ class Mirror:
         self.shop_total_time = 0
         self.event_total_time = 0
         self.event_times = 0
-        self.layer_times = [0, 0]
+        self.layer = 1
+        self.layer_times = [0, 0,0,0,0]
         self.LOOP_COUNT = 250
 
     def road_to_mir(self):
@@ -134,14 +141,15 @@ class Mirror:
             if auto.find_element("mirror/theme_pack/feature_theme_pack_assets.png"):
                 sleep(2)
                 select_theme_pack(self.hard_switch)
-                if self.layer_times[0] == 0:
-                    self.layer_times[0] = time.time()
+                if self.re_formation_each_floor:
+                    self.first_battle = True
+                layer = self.layer-1
+                if self.layer_times[layer] == 0:
+                    self.layer_times[layer] = time.time()
                 else:
-                    this_layer_time = time.time() - self.layer_times[0]
-                    self.layer_times[0] = time.time()
-                    msg = f"启动后第{self.layer_times[1]}层卡包"
-                    to_log_with_time(msg, this_layer_time)
-                self.layer_times[1] += 1
+                    self.layer_times[layer] = time.time() - self.layer_times[layer]
+                    msg = f"启动后第{self.layer}层卡包"
+                    to_log_with_time(msg, self.layer_times[layer])
                 main_loop_count += 50
                 continue
 
@@ -382,7 +390,7 @@ class Mirror:
             if auto.find_element("mirror/road_to_mir/bleed_gift_assets.png"):
                 break
 
-            if auto.click_element("mirror/road_to_mir/dreaming_star/convert_star_to_cost_assets.png"):
+            if self.keep_starlight and auto.click_element("mirror/road_to_mir/dreaming_star/convert_star_to_cost_assets.png"):
                 continue
 
             if auto.click_element("mirror/road_to_mir/dreaming_star/select_star_confirm_assets.png"):
@@ -712,6 +720,7 @@ class Mirror:
                         retry()
                         return
                 else:
+                    system_nums = 0
                     for button in acquire_button:
                         bbox = (button[0] - 350 * my_scale, button[1] - 50 * my_scale, button[0] + 150 * my_scale,
                                 button[1] + 250 * my_scale)
@@ -724,7 +733,14 @@ class Mirror:
                         if auto.find_element(f"mirror/road_in_mir/acquire_ego_gift/{self.system}.png", my_crop=bbox,
                                              threshold=0.85):
                             my_list.insert(0, button)
+                            system_nums+=1
                         else:
+                            if self.second_system and (self.second_system_setting == 0 or (
+                                    self.second_system_setting == 1 and self.shop.fuse_IV)):
+                                if auto.find_element(f"mirror/road_in_mir/acquire_ego_gift/{all_systems[self.second_system_select]}.png", my_crop=bbox,
+                                             threshold=0.85):
+                                    my_list.insert(system_nums, button)
+                                    continue
                             my_list.append(button)
                 select_bbox = ImageUtils.get_bbox(ImageUtils.load_image("mirror/road_in_mir/ego_gift_get_bbox.png"))
                 if select_bbox:
@@ -762,4 +778,4 @@ class Mirror:
 
     @begin_and_finish_time_log(task_name="镜牢商店")
     def in_shop(self):
-        self.shop.in_shop()
+        self.shop.in_shop(self.layer)
