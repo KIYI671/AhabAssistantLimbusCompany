@@ -87,16 +87,17 @@ team1_setting:
   system_slash: False # 弃置斩击饰品
   system_pierce: False # 弃置穿刺饰品
   system_blunt: False # 弃置打击饰品
-  customize:  False # 启用自定义
   do_not_heal: False # 不治疗
   do_not_buy: False # 不购买
   do_not_fuse : False # 不合成
+  do_not_sell: False # 不出售
+  do_not_enhance: False # 不升级
   only_aggressive_fuse : False # 合成只采取激进策略
   do_not_system_fuse : False # 不合成体系饰品
   only_system_fuse : False # 只合成体系饰品
   avoid_skill_3 : False # 避免使用3技能
   re_formation_each_floor : False # 每个楼层重新编队
-  keep_starlight: False # 保留开局星光
+  keep_starlight: False # 保留开局星光——————————————————————————————————
   reward_cards : False # 奖励卡优先度
   reward_cards_select: 0 # 自定义奖励卡优先度
   choose_opening_bonus : False # 自选开局加成
@@ -105,15 +106,15 @@ team1_setting:
   opening_bonus_order: [0,0,0,0,0,0,0,0,0,0] # 启用的开局加成顺序
   after_level_IV : False # 自定义合成四级后的操作
   after_level_IV_select : 0 # 合成四级后的操作
-  shopping_strategy : False # 自定义商店策略
-  shopping_strategy_select: 0 # 商店策略
+  shopping_strategy : False # 自定义购物策略
+  shopping_strategy_select: 0 # 购物策略
   opening_items : False # 自定义开局道具
   opening_items_select : 0 # 开局道具体系
   opening_items_system : 0 # 开局道具选择顺序
-  second_system : False # 自定义第二体系
-  second_system_select : 0 # 第二体系启用时间
-  second_system_setting : 0 # 第二体系设置
-  second_system_action : [0,0,0,0,0,0] # 第二体系行动模式
+  second_system : False # 启用第二体系
+  second_system_select : 0 # 第二体系
+  second_system_setting : 0 # 第二体系启用时间
+  second_system_action : [0,0,0,0] # 第二体系行动模式
   skill_replacement : False # 自定义技能替换
   skill_replacement_select : 0 # 技能替换设置
   skill_replacement_mode : 0 # 技能替换模式

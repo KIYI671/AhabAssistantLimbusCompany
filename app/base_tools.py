@@ -5,7 +5,7 @@ from PyQt5.QtGui import QIcon, QFont
 from PyQt5.QtWidgets import QFrame, QHBoxLayout, QVBoxLayout, QSizePolicy, QWidget, QGridLayout, QAction
 from qfluentwidgets import FluentIcon as FIF
 from qfluentwidgets import FluentIconBase, CheckBox, ToggleToolButton, ToolButton, PushButton, \
-    BodyLabel, ComboBox, DoubleSpinBox, SpinBox, ExpandSettingCard, SwitchButton, RoundMenu, SplitToolButton
+    BodyLabel, ComboBox, DoubleSpinBox, SpinBox, RoundMenu, SplitToolButton
 from qfluentwidgets.components.settings.setting_card import SettingIconWidget
 
 from app import *
@@ -312,20 +312,3 @@ class BaseSpinBox(BaseLayout):
     def value_changed(self):
         if cfg.get_value(self.config_name) is not None:
             cfg.set_value(self.config_name, self.spin_box.value())
-
-
-class SwitchSettingLine(ExpandSettingCard):
-    def __init__(self, parent=None, icon='', title='',config_name = "customize"):
-        super().__init__(icon=icon, title=title, parent=parent)
-        self.choiceLabel = SwitchButton(self)
-        self.choiceLabel.setObjectName(config_name)
-
-        self.addWidget(self.choiceLabel)
-
-        self.choiceLabel.checkedChanged.connect(self.on_choice_changed)
-
-    def on_choice_changed(self,checked):
-        data_dict = {self.choiceLabel.objectName(): checked}
-        print(data_dict)
-        mediator.team_setting.emit(data_dict)
-

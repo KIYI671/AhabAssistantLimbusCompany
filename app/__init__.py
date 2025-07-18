@@ -34,12 +34,12 @@ shop_strategy = {"出售": 0, "合成": 1, "合成：四级优先": 2}
 after_fuse_level_IV = {"商店策略改为出售": 0, "商店策略改为普通合成": 1, "合成第二体系四级饰品": 2, "跳过商店": 3}
 reward_cards = {"星光→饰品→钱→饰品/钱→罪孽": 0, "星光→钱→饰品→饰品/钱→罪孽": 1, "钱→饰品→饰品/钱→罪孽→星光": 2,
                 "饰品→钱→饰品/钱→罪孽→星光": 3}
-shopping_strategy = {"仅购买回血饰品": 0, "仅购买3-5级饰品": 1, "仅购买体系饰品": 2, "不购买体系饰品": 3,
-                     "不购买回血饰品": 4, "不购买3-5级饰品": 5}
+shopping_strategy = {"仅购买回血饰品": 0, "启用四级优先时：仅购买所有3-4级饰品": 1, "仅购买体系饰品": 2, "不购买体系饰品": 3,
+                     "不购买回血饰品": 4, "启用四级优先时：不购买所有3-4级饰品": 5}
 start_gift = {"1→2→3": 0, "1→3→2": 1, "2→1→3": 2, "2→3→1": 3, "3→1→2": 4, "3→2→1": 5}
 second_systems = {"合成第一体系四级饰品后": 0, "一直": 1}
 skill_replacement_sinner = {"配队首位": 0, "配队前3": 1, "配队前7": 2, "所有人": 3}
-skill_replacement_mode = {"1→3": 0, "1→2": 1, "2→3": 2}
+skill_replacement_mode = {"1→3": 0, "2→3": 1, "1→2": 2}
 
 blank_team_setting={}
 
@@ -60,10 +60,11 @@ team_setting_template = {
     "system_slash": False,  # 弃置斩击饰品
     "system_pierce": False,  # 弃置穿刺饰品
     "system_blunt": False,  # 弃置打击饰品
-    "customize": False,  # 启用自定义
     "do_not_heal": False,  # 不治疗
     "do_not_buy": False,  # 不购买
     "do_not_fuse": False,  # 不合成
+    "do_not_sell": False, # 不出售
+    "do_not_enhance":  False, # 不升级
     "only_aggressive_fuse": False,  # 合成只采取激进策略
     "do_not_system_fuse": False,  # 不合成体系饰品
     "only_system_fuse": False,  # 只合成体系饰品
@@ -85,7 +86,7 @@ team_setting_template = {
     "opening_items_system": 0,  # 开局道具选择顺序
     "second_system": False,  # 自定义第二体系
     "second_system_select": 0,  # 第二体系启用时间
-    "second_system_setting": [0, 0, 0, 0, 0, 0],  # 第二体系设置
+    "second_system_setting": [0, 0, 0, 0],  # 第二体系设置
     "skill_replacement": False,  # 自定义技能替换
     "skill_replacement_select": 0,  # 技能替换设置
     "skill_replacement_mode": 0,  # 技能替换模式
@@ -96,9 +97,7 @@ team_setting_template = {
 all_sinners_name = ["YiSang", "Faust", "DonQuixote", "Ryoshu", "Meursault", "HongLu",
                     "Heathcliff", "Ishmael", "Rodion", "Sinclair", "Outis", "Gregor"]
 
-second_system_mode = ["second_system_fuse",
-                      "second_system_fuse_IV",
-                      "second_system_fuse_system",
+second_system_mode = ["second_system_fuse_IV",
                       "second_system_buy",
                       "second_system_choose",
                       "second_system_power_up"]
@@ -129,10 +128,11 @@ all_checkbox_config_name = [
     "system_slash",
     "system_pierce",
     "system_blunt",
-    "customize",
     "do_not_heal",
     "do_not_buy",
     "do_not_fuse",
+    "do_not_sell",
+    "do_not_enhance",
     "only_aggressive_fuse",
     "do_not_system_fuse",
     "only_system_fuse",

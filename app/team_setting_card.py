@@ -1,11 +1,11 @@
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QFrame, QVBoxLayout, QWidget, QHBoxLayout, QSizePolicy, QGridLayout
-from qfluentwidgets import FluentIcon as FIF
-from qfluentwidgets import ScrollArea, PrimaryPushButton, PushButton, SwitchButton
+from qfluentwidgets import FluentIcon as FIF, ExpandSettingCard
+from qfluentwidgets import ScrollArea, PrimaryPushButton, PushButton
 
 from app import *
 from app.base_combination import LabelWithComboBox, SinnerSelect, CheckBoxWithComboBox, CheckBoxWithLineEdit
-from app.base_tools import BaseCheckBox, BaseSettingLayout, BaseLabel, SwitchSettingLine, BaseComboBox
+from app.base_tools import BaseCheckBox, BaseSettingLayout, BaseLabel, BaseComboBox
 from module.config import cfg
 
 
@@ -53,7 +53,7 @@ class TeamSettingCard(QFrame):
         self.gift_system_list_1 = QHBoxLayout()
         self.gift_system_list_2 = QHBoxLayout()
 
-        self.custom_layout = SwitchSettingLine(icon=FIF.EDIT, title="自定义设置", parent=self)
+        self.custom_layout = ExpandSettingCard(icon=FIF.EDIT, title="自定义设置", parent=self)
 
         self.setting_layout = QHBoxLayout()
 
@@ -95,10 +95,10 @@ class TeamSettingCard(QFrame):
 
         self.customize_settings_module = CustomizeSettingsModule()
 
-        self.confirm_button = PrimaryPushButton("保存", self)
-        self.confirm_button.clicked.connect(self.save_team_setting)
         self.cancel_button = PushButton("取消", self)
         self.cancel_button.clicked.connect(self.cancel_team_setting)
+        self.confirm_button = PrimaryPushButton("保存", self)
+        self.confirm_button.clicked.connect(self.save_team_setting)
 
     def __init_layout(self):
         self.combobox_layout.add(self.select_team)
@@ -132,8 +132,8 @@ class TeamSettingCard(QFrame):
         self.gift_system_layout.add(self.gift_system_list_1)
         self.gift_system_layout.add(self.gift_system_list_2)
 
-        self.setting_layout.addWidget(self.confirm_button)
         self.setting_layout.addWidget(self.cancel_button)
+        self.setting_layout.addWidget(self.confirm_button)
 
         self.layout.addWidget(self.combobox_layout)
         self.layout.addLayout(self.select_sinner_layout_1)
@@ -242,7 +242,7 @@ class TeamSettingCard(QFrame):
 
         second_system_action = self.team_setting["second_system_action"]
         ignore_shop = self.team_setting["ignore_shop"]
-        for i in range(6):
+        for i in range(4):
             if second_system_action[i]:
                 self.findChild(BaseCheckBox, second_system_mode[i]).set_checked(True)
 
@@ -260,9 +260,6 @@ class TeamSettingCard(QFrame):
         for checkbox in all_checkbox_config_name:
             if self.findChild(BaseCheckBox, checkbox):
                 self.findChild(BaseCheckBox, checkbox).set_checked(self.team_setting[checkbox])
-
-        if self.findChild(SwitchButton, "customize"):
-            self.findChild(SwitchButton, "customize").setChecked(self.team_setting["customize"])
 
 
     def cancel_team_setting(self):
@@ -313,14 +310,16 @@ class CustomizeSettingsModule(QFrame):
         self.do_not_heal = BaseCheckBox("do_not_heal", None, "不治疗罪人")
         self.do_not_buy = BaseCheckBox("do_not_buy", None, "不购买饰品")
         self.do_not_fuse = BaseCheckBox("do_not_fuse", None, "不合成饰品")
+        self.do_not_sell = BaseCheckBox("do_not_sell", None, "不出售饰品")
+        self.do_not_enhance = BaseCheckBox("do_not_enhance", None, "不升级饰品")
 
         self.only_aggressive_fuse = BaseCheckBox("only_aggressive_fuse", None, "只激进合成")
         self.do_not_system_fuse = BaseCheckBox("do_not_system_fuse", None, "不合成体系饰品")
         self.only_system_fuse = BaseCheckBox("only_system_fuse", None, "只合成体系饰品")
 
-        self.avoid_skill_3 = BaseCheckBox("avoid_skill_3", None, "避免使用三技能")
+        self.avoid_skill_3 = BaseCheckBox("avoid_skill_3", None, "链接战避免使用三技能")
         self.re_formation_each_floor = BaseCheckBox("re_formation_each_floor", None, "每楼层重新编队")
-        self.keep_starlight = BaseCheckBox("keep_starlight", None, "开局保留星光")
+        self.keep_starlight = BaseCheckBox("keep_starlight", None, "开局星光不换钱")
 
         self.reward_cards = CheckBoxWithComboBox("reward_cards", "奖励卡优先度", None, "reward_cards_select",
                                                  parent=self)
@@ -358,12 +357,10 @@ class CustomizeSettingsModule(QFrame):
         self.second_system.add_items(all_systems)
         self.second_system.add_combobox("second_system_setting")
         self.second_system.add_times_for_additional(second_systems)
-        self.second_system_fuse = BaseCheckBox("second_system_fuse", None, "合成")
         self.second_system_fuse_IV = BaseCheckBox("second_system_fuse_IV", None, "合成四级")
-        self.second_system_fuse_system = BaseCheckBox("second_system_fuse_system", None, "配方合成")
         self.second_system_buy = BaseCheckBox("second_system_buy", None, "购买")
-        self.second_system_select = BaseCheckBox("second_system_choose", None, "选择")
-        self.second_system_power_up = BaseCheckBox("second_system_power_up", None, "升级")
+        self.second_system_select = BaseCheckBox("second_system_choose", None, "选取胜利奖励")
+        self.second_system_power_up = BaseCheckBox("second_system_power_up", None, "升级四级")
 
         self.skill_replacement = CheckBoxWithComboBox("skill_replacement", "技能替换", None, "skill_replacement_select",
                                                       parent=self)
@@ -383,6 +380,8 @@ class CustomizeSettingsModule(QFrame):
         self.first_line.addWidget(self.do_not_heal)
         self.first_line.addWidget(self.do_not_buy)
         self.first_line.addWidget(self.do_not_fuse)
+        self.first_line.addWidget(self.do_not_sell)
+        self.first_line.addWidget(self.do_not_enhance)
 
         self.second_line.addWidget(self.only_aggressive_fuse)
         self.second_line.addWidget(self.do_not_system_fuse)
@@ -413,10 +412,8 @@ class CustomizeSettingsModule(QFrame):
         self.fifth_line.addWidget(self.opening_items, Qt.AlignLeft)
 
         self.second_system_line1.addWidget(self.second_system)
-        self.second_system_line2.addSpacing(150)
-        self.second_system_line2.addWidget(self.second_system_fuse)
+        self.second_system_line2.addSpacing(115)
         self.second_system_line2.addWidget(self.second_system_fuse_IV)
-        self.second_system_line2.addWidget(self.second_system_fuse_system)
         self.second_system_line2.addWidget(self.second_system_buy)
         self.second_system_line2.addWidget(self.second_system_select)
         self.second_system_line2.addWidget(self.second_system_power_up)
@@ -426,6 +423,7 @@ class CustomizeSettingsModule(QFrame):
         self.seventh_line.addWidget(self.skill_replacement)
 
         self.eighth_line.addWidget(self.ignore_shop)
+        self.eighth_line.addSpacing(20)
         self.flood_shop.addWidget(self.flood_shop_1)
         self.flood_shop.addWidget(self.flood_shop_2)
         self.flood_shop.addWidget(self.flood_shop_3)
