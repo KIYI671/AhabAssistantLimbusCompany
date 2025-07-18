@@ -30,7 +30,7 @@ def team_formation(sinner_team):
     while auto.take_screenshot() is None:
         continue
     announcer_position = auto.find_element("teams/announcer_assets.png")
-    first_sinner = [announcer_position[0] + 350 * scale, announcer_position[1]]
+    first_sinner = [announcer_position[0] + 350 * scale, announcer_position[1]+200*scale]
     sleep(0.5)
 
     for i in range(12):
