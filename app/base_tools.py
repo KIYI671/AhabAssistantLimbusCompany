@@ -312,3 +312,4 @@ class BaseSpinBox(BaseLayout):
     def value_changed(self):
         if cfg.get_value(self.config_name) is not None:
             cfg.set_value(self.config_name, self.spin_box.value())
+            
