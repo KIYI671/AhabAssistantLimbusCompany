@@ -53,7 +53,7 @@ class BaseSettingLayout(QFrame):
             self.BoxLayout.addLayout(tool)
         elif isinstance(tool, QHBoxLayout):
             self.BoxLayout.addLayout(tool)
-        elif isinstance(tool,QGridLayout):
+        elif isinstance(tool, QGridLayout):
             self.BoxLayout.addLayout(tool)
 
 
@@ -80,8 +80,8 @@ class BaseCheckBox(BaseLayout):
             self.check_box.setChecked(cfg.get_value(self.config_name))
         elif "the_team_" in self.config_name:
             number = int(self.config_name.split("_")[-1])
-            teams_be_select=cfg.get_value("teams_be_select")
-            if number<=len(teams_be_select) and teams_be_select[number-1] is True:
+            teams_be_select = cfg.get_value("teams_be_select")
+            if number <= len(teams_be_select) and teams_be_select[number - 1] is True:
                 self.check_box.setChecked(True)
         elif self.config_name in all_sinners_name:
             mediator.sinner_be_selected.emit()
@@ -102,11 +102,11 @@ class BaseCheckBox(BaseLayout):
         elif self.config_name.startswith('the_team_'):
             index = int(self.config_name.split("_")[-1]) - 1
             if checked:
-                cfg.set_value("teams_be_select_num",cfg.get_value("teams_be_select_num")+1)
+                cfg.set_value("teams_be_select_num", cfg.get_value("teams_be_select_num") + 1)
                 teams_be_select = cfg.get_value("teams_be_select")
-                teams_be_select[index]= True
+                teams_be_select[index] = True
                 teams_order = cfg.get_value("teams_order")
-                teams_order[index]=cfg.get_value("teams_be_select_num")
+                teams_order[index] = cfg.get_value("teams_be_select_num")
                 cfg.set_value("teams_be_select", teams_be_select)
                 cfg.set_value("teams_order", teams_order)
             else:
@@ -115,8 +115,8 @@ class BaseCheckBox(BaseLayout):
                 teams_be_select[index] = False
                 teams_order = cfg.get_value("teams_order")
                 for i in range(len(teams_order)):
-                    if teams_order[i] >teams_order[index]:
-                        teams_order[i]-=1
+                    if teams_order[i] > teams_order[index]:
+                        teams_order[i] -= 1
                 teams_order[index] = 0
                 cfg.set_value("teams_be_select", teams_be_select)
                 cfg.set_value("teams_order", teams_order)
@@ -135,10 +135,11 @@ class BaseButton(BaseLayout):
         self.config_name = config_name
         self.setObjectName(config_name)
 
+
 class NormalTextButton(BaseButton):
     clicked = pyqtSignal()
 
-    def __init__(self,button_text, config_name, tactics=1, parent=None):
+    def __init__(self, button_text, config_name, tactics=1, parent=None):
         super().__init__(config_name, parent=parent)
         self.setFixedHeight(100)
 
@@ -160,6 +161,7 @@ class NormalTextButton(BaseButton):
 
     def be_click(self):
         self.button.click()
+
 
 class ToSettingButton(BaseButton):
     def __init__(self, config_name, icon: Union[str, QIcon, FluentIconBase, None] = FIF.SETTING, parent=None):
@@ -200,13 +202,13 @@ class ChangePageButton(BaseButton):
         self.setFixedWidth(50)
 
         self.button = ToggleToolButton(icon, self)
-        toggle_button_group[config_name]=self.button
+        toggle_button_group[config_name] = self.button
         self.button.clicked.connect(self.on_click)
 
         self.hBoxLayout.addWidget(self.button)
 
     def on_click(self):
-        for d,button in toggle_button_group.items():
+        for d, button in toggle_button_group.items():
             if button == self.button:
                 button.setChecked(True)
                 self.send_switch_signal(self.config_name)
@@ -251,7 +253,7 @@ class BaseLabel(BaseLayout):
 
 
 class BaseComboBox(BaseLayout):
-    def __init__(self, config_name,combo_box_width=None, parent=None):
+    def __init__(self, config_name, combo_box_width=None, parent=None):
         super().__init__(parent=parent)
         self.setObjectName(config_name)
         self.config_name = config_name
@@ -267,21 +269,21 @@ class BaseComboBox(BaseLayout):
     def add_items(self, items):
         self.combo_box.currentIndexChanged.disconnect(self.on_change)
         self.combo_box.addItems(items)
-        self.items =  items
+        self.items = items
         if cfg.get_value(self.config_name):
             for i in range(self.combo_box.count()):
                 if list(items.items())[i][1] == cfg.get_value(self.config_name):
                     self.combo_box.setCurrentIndex(i)
         self.combo_box.currentIndexChanged.connect(self.on_change)
 
-    def on_change(self,index):
+    def on_change(self, index):
         if cfg.get_value(self.config_name) is not None:
-            cfg.set_value(self.config_name,list(self.items.items())[index][1])
+            cfg.set_value(self.config_name, list(self.items.items())[index][1])
         else:
             data_dict = {self.config_name: list(self.items.items())[index][1]}
             self.send_switch_signal(data_dict)
 
-    def set_options(self,index):
+    def set_options(self, index):
         self.combo_box.setCurrentIndex(index)
 
     def send_switch_signal(self, target: dict):
@@ -312,4 +314,3 @@ class BaseSpinBox(BaseLayout):
     def value_changed(self):
         if cfg.get_value(self.config_name) is not None:
             cfg.set_value(self.config_name, self.spin_box.value())
-            

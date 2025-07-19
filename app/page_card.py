@@ -193,7 +193,7 @@ class PageMirror(PageCard):
         self.no_weekly_bonuses = BaseCheckBox("no_weekly_bonuses", None, "不使用每周加成*", center=False)
         self.flood_3_exit = BaseCheckBox("flood_3_exit", None, "只打三层", center=False)
         self.infinite_dungeons = BaseCheckBox("infinite_dungeons", None, "无限坐牢",center=False)
-        self.save_rewards = BaseCheckBox("save_rewards", None, "保存奖励",center=False)
+        self.save_rewards = BaseCheckBox("save_rewards", None, "保存困牢奖励",center=False)
         self.hard_mirror_single_bonuses = BaseCheckBox("hard_mirror_single_bonuses", None, "困牢单次加成",center=False)
 
     def __init_layout(self):
