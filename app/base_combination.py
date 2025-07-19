@@ -2,7 +2,7 @@ from PyQt5.QtCore import QUrl
 from PyQt5.QtGui import QPixmap, QDesktopServices
 from PyQt5.QtWidgets import QPushButton
 from qfluentwidgets import LineEdit, SettingCard, \
-    IndicatorPosition
+    IndicatorPosition, SwitchButton
 
 from app.base_tools import *
 from app.card.messagebox_custom import MessageBoxEdit

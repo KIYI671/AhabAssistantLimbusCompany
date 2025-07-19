@@ -135,6 +135,10 @@ def script_task():
     # 执行镜牢任务
     if cfg.mirror:
         mir_times = cfg.set_mirror_count
+        if cfg.infinite_dungeons:
+            mir_times=9999
+        if cfg.save_rewards:
+            mir_times=1
         if cfg.teams_be_select_num != 0:
             while mir_times > 0:
                 teams_order = cfg.teams_order

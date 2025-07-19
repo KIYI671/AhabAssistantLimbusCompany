@@ -59,7 +59,6 @@ class Mirror:
         self.start_time = time.time()
         self.first_battle = True  # 判断是否首次进入战斗，如果是则重新配队
         self.hard_switch = cfg.hard_mirror
-        self.no_weekly_bonuses = no_weekly_bonuses
         # 统计时间
         self.find_road_total_time = 0
         self.battle_total_time = 0
@@ -126,6 +125,14 @@ class Mirror:
             # 自动截图
             if auto.take_screenshot() is None:
                 continue
+
+            if cfg.flood_3_exit and self.layer>=4:
+                if auto.click_element("mirror/road_in_mir/towindow&forfeit_confirm_assets.png"):
+                    break
+                if auto.click_element("mirror/road_in_mir/forfeit_assets.png"):
+                    continue
+                if auto.click_element("mirror/road_in_mir/setting_assets.png"):
+                    continue
 
             # 镜牢结束领取奖励
             if auto.find_element("mirror/claim_reward/battle_statistics_assets.png") and auto.click_element(
@@ -301,11 +308,15 @@ class Mirror:
 
         main_loop_count = 20
         auto.model = 'clam'
+        failed = False
         while True:
             # 自动截图
             if auto.take_screenshot() is None:
                 auto.mouse_to_blank()
                 continue
+            if not auto.find_element(
+                "mirror/claim_reward/complete_mirror_100%_assets.png") and not failed and not cfg.flood_3_exit:
+                failed = True
             # 如果回到主界面，退出循环
             if auto.find_element("home/drive_assets.png"):
                 break
@@ -315,13 +326,29 @@ class Mirror:
                 continue
             if auto.click_element("mirror/claim_reward/claim_rewards_confirm_assets.png", threshold=0.75):
                 continue
-            if self.no_weekly_bonuses and auto.click_element("mirror/claim_reward/weekly_bonuses.png"):
+            if cfg.hard_mirror_single_bonuses and not cfg.no_weekly_bonuses:
+                bonuses = auto.find_element("mirror/claim_reward/weekly_bonuses.png",find_type='image_with_multiple_targets')
+                bonuses = sorted(bonuses, key=lambda x: x[0])
+                if len(bonuses)>1:
+                    for _ in range(len(bonuses)-1):
+                        position = bonuses.pop(-1)
+                        auto.click_element(position[0],position[1])
+            if cfg.no_weekly_bonuses and auto.click_element("mirror/claim_reward/weekly_bonuses.png"):
                 continue
             if auto.click_element("mirror/claim_reward/enkephalin_assets.png", threshold=0.75):  # 降低识别阈值
                 continue
-            if auto.click_element("mirror/claim_reward/claim_rewards_assets.png"):
-                # TODO: 统计获取的coins
-                continue
+            if failed:
+                if auto.click_element("mirror/claim_reward/claim_forfeit_assets.png"):
+                    continue
+            else:
+                if self.hard_switch and cfg.save_rewards:
+                    pos = auto.find_element("mirror/claim_reward/claim_rewards_assets.png")
+                    if pos:
+                        auto.click_element(pos[0]-300*(cfg.set_win_size/1440),pos[1])
+                    continue
+                if auto.click_element("mirror/claim_reward/claim_rewards_assets.png"):
+                    # TODO: 统计获取的coins
+                    continue
             # 处理周年活动弹出的窗口
             if auto.click_element("home/close_anniversary_event_assets.png"):
                 continue
@@ -338,6 +365,8 @@ class Mirror:
             if main_loop_count < 0:
                 raise log.ERROR("镜牢奖励领取出错,请手动操作重试")
 
+        if failed:
+            return False
         # 计时结束
         end_time = time.time()
         elapsed_time = end_time - start_time
