@@ -78,7 +78,7 @@ def select_theme_pack(hard_switch=False):
             log.ERROR(e)
             continue
 
-        if auto.click_element("mirror/theme_pack/refresh_assets.png") and refresh_times > 0:
+        if refresh_times >= 0 and auto.click_element("mirror/theme_pack/refresh_assets.png"):
             refresh_times -= 1
             auto.mouse_to_blank()
             sleep(1)
@@ -88,16 +88,14 @@ def select_theme_pack(hard_switch=False):
         if refresh_times <= 0:
             try:
                 max_weight = max(weight_list)
-                # 如果存在权重最大值大于等于优选阈值的主题包，则选择该主题包
-                if max_weight >= theme_list.preferred_thresholds:
-                    max_index = weight_list.index(max_weight)
-                    pack = all_theme_pack[max_index]
-                    auto.mouse_drag_down(pack[0], pack[1])
-                    sleep(3)
-                    log.DEBUG("无匹配最低阈值的主题包，选择最高权重主题包")
-                    msg = f"无匹配最低阈值的主题包，选择最高权重主题包\n此次选择卡包关键词：{pack_name[max_index]}"
-                    log.INFO(msg)
-                    return
+                max_index = weight_list.index(max_weight)
+                pack = all_theme_pack[max_index]
+                auto.mouse_drag_down(pack[0], pack[1])
+                sleep(3)
+                log.DEBUG("无匹配最低阈值的主题包，选择最高权重主题包")
+                msg = f"无匹配最低阈值的主题包，选择最高权重主题包\n此次选择卡包关键词：{pack_name[max_index]}"
+                log.INFO(msg)
+                return
             except Exception as e:
                 log.ERROR(f"选择主题包出错:{e},尝试回到初始界面")
                 back_init_menu()
