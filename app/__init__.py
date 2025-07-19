@@ -86,7 +86,8 @@ team_setting_template = {
     "opening_items_system": 0,  # 开局道具选择顺序
     "second_system": False,  # 自定义第二体系
     "second_system_select": 0,  # 第二体系启用时间
-    "second_system_setting": [0, 0, 0, 0],  # 第二体系设置
+    "second_system_setting": 0,  # 第二体系启用时间
+    "second_system_action": [0, 0, 0, 0],  # 第二体系行动模式
     "skill_replacement": False,  # 自定义技能替换
     "skill_replacement_select": 0,  # 技能替换设置
     "skill_replacement_mode": 0,  # 技能替换模式
