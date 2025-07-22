@@ -162,3 +162,17 @@ class Input(metaclass=SingletonMeta):
         """
         x, y = pyautogui.position()
         return (x, y)
+
+    def mouse_drag_link(self,position:list, drag_time=0.1):
+        """鼠标从指定位置拖动到指定位置
+        Args:
+            x (int): 起始x坐标
+            y (int): 起始y坐标
+            position (list): 目标位置列表
+            drag_time (float): 拖动时间
+        """
+        pyautogui.moveTo(position[0][0],position[0][1])
+        pyautogui.mouseDown()
+        for pos in position:
+            pyautogui.moveTo(pos[0], pos[1], duration=drag_time)
+        pyautogui.mouseUp()

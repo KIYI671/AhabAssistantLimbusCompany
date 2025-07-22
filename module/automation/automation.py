@@ -38,6 +38,7 @@ class Automation(metaclass=SingletonMeta):
         self.set_pause = self.input_handler.set_pause
         self.wait_pause = self.input_handler.wait_pause
         self.mouse_to_blank = self.input_handler.mouse_to_blank
+        self.mouse_drag_link = self.input_handler.mouse_drag_link
 
     def click_element(self, target, find_type="image", threshold=0.8, max_retries=1, take_screenshot=False,
                       offset=True, action="click", times=1, dx=0, dy=0, model=None, my_crop=None, click=True,
@@ -125,12 +126,12 @@ class Automation(metaclass=SingletonMeta):
 
         return True
 
-    def take_screenshot(self):
+    def take_screenshot(self,gray = True):
         start_time = time.time()
         screenshot_interval_time = cfg.screenshot_interval if cfg.screenshot_interval else 0.85
         while True:
             try:
-                result = ScreenShot.take_screenshot()
+                result = ScreenShot.take_screenshot(gray)
                 if result:
                     self.screenshot = result
                     if self.last_screenshot_time == 0:
@@ -324,3 +325,10 @@ class Automation(metaclass=SingletonMeta):
         except Exception as e:
             self.logger.ERROR(f"寻找图片失败:{e}")
         return None
+
+    def get_screenshot_crop(self,crop):
+        self.take_screenshot(False)
+        screenshot = np.array(self.screenshot)
+        screenshot = screenshot[:, :, ::-1]
+        screenshot = ImageUtils.crop(screenshot, crop)
+        return screenshot

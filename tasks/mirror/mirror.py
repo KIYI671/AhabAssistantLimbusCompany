@@ -39,6 +39,7 @@ class Mirror:
         self.team_number = team_setting["team_number"] # 选择的编队名
         self.shop = Shop(team_setting)
         self.system = team_setting["team_system"] # 选择的体系
+        self.avoid_skill_3 = team_setting["avoid_skill_3"] # 是否避免使用3技能
         # 自选开局星光
         self.choose_opening_bonus = team_setting["choose_opening_bonus"]
         self.opening_bonus_order = team_setting["opening_bonus_order"]
@@ -218,13 +219,13 @@ class Mirror:
             # 在战斗中
             if battle.identify_keyword_turn and self.LOOP_COUNT - main_loop_count < 5:
                 if auto.find_element("battle/turn_assets.png") or auto.find_element("battle/in_mirror_assets.png"):
-                    self.battle_total_time += battle.fight()
+                    self.battle_total_time += battle.fight(self.avoid_skill_3)
                     continue
             else:
                 turn_bbox = ImageUtils.get_bbox(ImageUtils.load_image("battle/turn_assets.png"))
                 turn_ocr_result = auto.find_text_element("turn", turn_bbox)
                 if turn_ocr_result is not False:
-                    self.battle_total_time += battle.fight()
+                    self.battle_total_time += battle.fight(self.avoid_skill_3)
                     continue
 
             # 镜牢星光

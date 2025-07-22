@@ -7,8 +7,10 @@ from module.config import cfg
 from module.decorator.decorator import begin_and_finish_time_log
 from module.logger import log
 from tasks.base.retry import retry
+from tasks.battle import sins
 from tasks.event.event_handling import EventHandling
 from utils.image_utils import ImageUtils
+from utils.utils import find_skill3
 
 
 class Battle:
@@ -41,7 +43,7 @@ class Battle:
                 return False
 
     @staticmethod
-    def update_wait_time(time: float = None, fail_flag: bool = False, total_count: int = 1):
+    def _update_wait_time(time: float = None, fail_flag: bool = False, total_count: int = 1):
         MAX_WAITING = 3.0  # 最大等待时间
         MIN_WAITING = 0.5  # 最小等待时间
         INIT_WAITING = 1.5  # 初始等待时间
@@ -63,10 +65,10 @@ class Battle:
         return new_time
 
     @begin_and_finish_time_log(task_name="一次战斗")
-    def fight(self):
+    def fight(self,avoid_skill_3 = False):
         INIT_CHANCE = 16
         chance = INIT_CHANCE
-        waiting = self.update_wait_time()
+        waiting = self._update_wait_time()
         total_count = 0
         fail_count = 0
         in_mirror = False
@@ -126,26 +128,34 @@ class Battle:
                 turn_ocr_result = auto.find_text_element("turn", turn_bbox)
                 if turn_ocr_result is not False:
                     auto.mouse_click_blank()
-                    pyautogui.press('p')
-                    sleep(0.5)
-                    pyautogui.press('enter')
+                    if avoid_skill_3 and auto.find_element("battle/gear_left.png"):
+                        self._chain_battle()
+                        msg = f"使用避免3技能模式开始战斗"
+                    else:
+                        pyautogui.press('p')
+                        sleep(0.5)
+                        pyautogui.press('enter')
+                        msg = f"使用P+Enter开始战斗"
                     chance = INIT_CHANCE
-                    msg = f"使用P+Enter开始战斗"
                     log.DEBUG(msg)
-                    waiting = self.update_wait_time(waiting, False, total_count)
+                    waiting = self._update_wait_time(waiting, False, total_count)
                     self.identify_keyword_turn = False
                     continue
             else:
                 # 如果正在战斗待机界面
                 if auto.click_element("battle/turn_assets.png") or auto.find_element("battle/win_rate_assets.png"):
                     auto.mouse_click_blank()
-                    pyautogui.press('p')
-                    sleep(0.5)
-                    pyautogui.press('enter')
+                    if avoid_skill_3 and auto.find_element("battle/gear_left.png"):
+                        self._chain_battle()
+                        msg = f"使用避免3技能模式开始战斗"
+                    else:
+                        pyautogui.press('p')
+                        sleep(0.5)
+                        pyautogui.press('enter')
+                        msg = f"使用P+Enter开始战斗"
                     chance = INIT_CHANCE
-                    msg = f"使用P+Enter开始战斗"
                     log.DEBUG(msg)
-                    waiting = self.update_wait_time(waiting, False, total_count)
+                    waiting = self._update_wait_time(waiting, False, total_count)
                     continue
 
             # 如果战斗中途出现事件
@@ -214,7 +224,7 @@ class Battle:
             chance -= 1
             sleep(waiting)
             # 更新等待时间
-            waiting = self.update_wait_time(waiting, True, total_count)
+            waiting = self._update_wait_time(waiting, True, total_count)
             # 统计失败次数
             fail_count += 1
             if chance < 0:
@@ -231,3 +241,35 @@ class Battle:
             return first_battle_reward
         else:
             return None
+
+    def _chain_battle(self):
+        scale = cfg.set_win_size / 1440
+
+        gear_left = auto.find_element("battle/gear_left.png")
+
+        gear_1 = [gear_left[0] + 100 * scale, gear_left[1] - 35 * scale]
+        gear_right = auto.find_element("battle/gear_right.png")
+        gear_2 = [gear_right[0] - 100 * scale, gear_right[1]]
+
+        bbox = (gear_1[0], gear_1[1] - 15 * scale, gear_2[0], gear_1[1])
+
+        sc = auto.get_screenshot_crop(bbox)
+
+        skill3 = []
+        for sin in sins.keys():
+            skill3 += find_skill3(sc, sins[sin])
+        skill3 = [round(x[0] / (145 * scale)) for x in skill3]
+
+        skill_nums = int((bbox[2] - bbox[0]) / (145 * scale))
+
+        skill_list = [gear_left]
+
+        for i in range(1, skill_nums + 1):
+            if i in skill3:
+                skill_list.append(
+                    [gear_left[0] + 250 * scale + 150 * scale * (i - 1), gear_left[1] + 50 * scale + 250 * scale])
+            else:
+                skill_list.append([gear_left[0] + 250 * scale + 150 * scale * (i - 1), gear_left[1] + 50 * scale])
+        skill_list.append([gear_right[0],gear_right[1]+150*scale])
+
+        auto.mouse_drag_link(skill_list)
