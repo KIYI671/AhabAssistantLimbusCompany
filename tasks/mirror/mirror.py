@@ -38,7 +38,7 @@ class Mirror:
         self.sinner_team = team_setting["chosen_sinners"] # 选择的罪人序列
         self.team_number = team_setting["team_number"] # 选择的编队名
         self.shop = Shop(team_setting)
-        self.system = team_setting["team_system"] # 选择的体系
+        self.system = all_systems[team_setting["team_system"]] # 选择的体系
         self.avoid_skill_3 = team_setting["avoid_skill_3"] # 是否避免使用3技能
         # 自选开局星光
         self.choose_opening_bonus = team_setting["choose_opening_bonus"]
