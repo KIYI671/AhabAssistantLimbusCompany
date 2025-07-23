@@ -12,6 +12,7 @@ from app.base_tools import *
 from app.page_card import PageSetWindows, PageDailyTask, PageLunacyToEnkephalin, PageGetPrize, PageMirror
 from module.automation import auto
 from module.logger import log
+from module.ocr import ocr
 from module.screen import screen
 from tasks.base.script_task_scheme import my_script_task
 
@@ -151,6 +152,7 @@ class FarmingInterfaceLeft(QWidget):
             mediator.refresh_teams_order.emit()
             if self.my_script and self.my_script.isRunning():
                 self.stop_script()
+                ocr.exit_ocr()
 
 
     def _disable_setting(self, parent):
