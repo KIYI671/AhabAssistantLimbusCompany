@@ -24,6 +24,16 @@ class SettingInterface(ScrollArea):
         self.setWidgetResizable(True)
 
     def __init_card(self):
+        self.game_setting_group = SettingCardGroup("游戏设置", self.scroll_widget)
+        self.game_setting_card = ComboBoxSettingCard(
+            "select_team_by_order",
+            FIF.SEARCH,
+            self.tr('选择队伍方式'),
+            self.tr('设置选择队伍方式'),
+            texts={'使用队伍名':False, '使用队伍序号':"en"},
+            parent=self.game_setting_group
+        )
+
         self.game_path_group = SettingCardGroup("游戏路径", self.scroll_widget)
         self.game_path_card = PushSettingCard(
             self.tr('修改'),

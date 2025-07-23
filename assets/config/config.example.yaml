@@ -31,6 +31,8 @@ set_win_size: 1080 # 设置使用的分辨率,1080:1920*1080,1440:2560*1440,2160
 set_win_position: True # 是否自动设置窗口的位置
 set_reduce_miscontact: True # 是否防止误触
 
+select_team_by_order: False # 是否按顺序(而非名称)选择队伍
+
 # 是否进行日常本
 daily_task: False # 是否进行日常本
 set_EXP_count: 1 # 设置经验本的次数
@@ -101,7 +103,7 @@ team1_setting:
   only_system_fuse : False # 只合成体系饰品
   avoid_skill_3 : False # 避免使用3技能
   re_formation_each_floor : False # 每个楼层重新编队
-  keep_starlight: False # 保留开局星光——————————————————————————————————
+  keep_starlight: False # 保留开局星光
   reward_cards : False # 奖励卡优先度
   reward_cards_select: 0 # 自定义奖励卡优先度
   choose_opening_bonus : False # 自选开局加成
