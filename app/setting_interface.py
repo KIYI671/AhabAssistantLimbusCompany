@@ -1,3 +1,5 @@
+from PyQt5.QtCore import QUrl
+from PyQt5.QtGui import QDesktopServices
 from PyQt5.QtWidgets import QWidget, QFileDialog
 from qfluentwidgets import FluentIcon as FIF
 from qfluentwidgets import ScrollArea, ExpandLayout, SettingCardGroup, PushSettingCard, \
@@ -94,12 +96,34 @@ class SettingInterface(ScrollArea):
         )
         self.open_logs_card = PrimaryPushSettingCard(
             self.tr('日志'),
-            FIF.FEEDBACK,
+            FIF.FOLDER_ADD,
             self.tr('打开日志文件夹'),
             parent=self.logs_group
         )
 
+        self.about_group = SettingCardGroup("关于", self.scroll_widget)
+        self.github_card = PrimaryPushSettingCard(
+            self.tr('项目主页'),
+            FIF.GITHUB,
+            self.tr('项目主页'),
+            "https://github.com/KIYI671/AhabAssistantLimbusCompany"
+        )
+        self.qq_group_card = PrimaryPushSettingCard(
+            self.tr('加入群聊'),
+            FIF.EXPRESSIVE_INPUT_ENTRY,
+            self.tr('QQ群'),
+            "946227774"
+        )
+        self.feedback_card = PrimaryPushSettingCard(
+            self.tr('提供反馈'),
+            FIF.FEEDBACK,
+            self.tr('提供反馈'),
+            self.tr('帮助我们改进 AhabAssistantLimbusCompany')
+        )
+
     def __initLayout(self):
+        self.game_setting_group.addSettingCard(self.game_setting_card)
+
         self.game_path_group.addSettingCard(self.game_path_card)
         self.game_path_group.addSettingCard(self.auto_set_game_path_card)
 
@@ -112,10 +136,16 @@ class SettingInterface(ScrollArea):
         self.logs_group.addSettingCard(self.logs_clean_card)
         self.logs_group.addSettingCard(self.open_logs_card)
 
+        self.about_group.addSettingCard(self.github_card)
+        self.about_group.addSettingCard(self.qq_group_card)
+        self.about_group.addSettingCard(self.feedback_card)
+
+        self.expand_layout.addWidget(self.game_setting_group)
         self.expand_layout.addWidget(self.game_path_group)
         self.expand_layout.addWidget(self.personal_group)
         self.expand_layout.addWidget(self.update_group)
         self.expand_layout.addWidget(self.logs_group)
+        self.expand_layout.addWidget(self.about_group)
 
     def set_style_sheet(self):
         self.setStyleSheet("""
@@ -132,6 +162,10 @@ class SettingInterface(ScrollArea):
         self.game_path_card.clicked.connect(self.__onGamePathCardClicked)
         self.open_logs_card.clicked.connect(self.__onOpenLogsCardClicked)
 
+        self.github_card.clicked.connect(self.__openUrl("https://github.com/KIYI671/AhabAssistantLimbusCompany"))
+        self.qq_group_card.clicked.connect(self.__openUrl("https://qm.qq.com/q/SdgSRPrssg"))
+        self.feedback_card.clicked.connect(self.__openUrl("https://github.com/KIYI671/AhabAssistantLimbusCompany/issues"))
+
     def __onGamePathCardClicked(self):
         game_path, _ = QFileDialog.getOpenFileName(self, "选择游戏路径", "", "All Files (*)")
         if not game_path or cfg.game_path == game_path:
@@ -142,3 +176,6 @@ class SettingInterface(ScrollArea):
     def __onOpenLogsCardClicked(self):
         import os
         os.startfile(os.path.abspath("./logs"))
+
+    def __openUrl(self, url):
+        return lambda: QDesktopServices.openUrl(QUrl(url))
