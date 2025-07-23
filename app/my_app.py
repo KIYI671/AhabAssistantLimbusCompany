@@ -1,8 +1,9 @@
+import datetime
+import os
 import re
-import sys
 from enum import Enum
 
-from PyQt5.QtCore import Qt, QLocale, QTranslator
+from PyQt5.QtCore import Qt, QLocale
 from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QApplication, QHBoxLayout, QStackedWidget, QVBoxLayout, QLabel, QWidget
 from qfluentwidgets import Pivot, setThemeColor
@@ -15,6 +16,7 @@ from app.page_card import MarkdownViewer
 from app.setting_interface import SettingInterface
 from app.team_setting_card import TeamSettingCard
 from module.config import cfg
+from module.logger import log
 
 
 class Language(Enum):
@@ -95,6 +97,8 @@ class MainWindow(FramelessWindow):
 
         self.show()
 
+        self.clean_old_logs()
+
     def addSubInterface(self, widget: QLabel, objectName, text):
         widget.setObjectName(objectName)
         #widget.setAlignment(Qt.AlignCenter)
@@ -133,25 +137,29 @@ class MainWindow(FramelessWindow):
         mediator.switch_team_setting.connect(self.add_and_switch_to_page)
         mediator.close_setting.connect(self.close_setting_page)
 
+    @staticmethod
+    def clean_old_logs():
+        if not cfg.clean_logs:
+            return
+        # 获取今日日期（date对象）
+        today = datetime.date.today()
+        # 计算阈值日期（七天前的日期）
+        threshold_date = today - datetime.timedelta(days=7)
 
+        # 遍历日志文件夹中的所有文件/目录
+        for filename in os.listdir("./logs"):
+            # 拼接完整文件路径
+            file_path = os.path.join("./logs", filename)
 
-if __name__ == "__main__":
-    app = QApplication(sys.argv)
-    QApplication.setAttribute(Qt.AA_DontCreateNativeWidgetSiblings)
-    QApplication.setHighDpiScaleFactorRoundingPolicy(
-        Qt.HighDpiScaleFactorRoundingPolicy.PassThrough)
-    QApplication.setAttribute(Qt.AA_EnableHighDpiScaling)
-    QApplication.setAttribute(Qt.AA_UseHighDpiPixmaps)
+            try:
+                file_date = datetime.datetime.strptime(filename[:10], "%Y-%m-%d").date()
+            except:
+                continue
 
-    #mediator = Mediator()
-
-    #locale =  Language.AUTO.value
-    #fluent_translator = FluentTranslator(locale)
-    test_translator = QTranslator()
-    test_translator.load("test_interface_zh_CN.qm")
-
-    #app.installTranslator(fluent_translator)
-    app.installTranslator(test_translator)
-
-    ui = Window()
-    sys.exit(app.exec_())
+            # 判断是否早于阈值日期（需要删除）
+            if file_date < threshold_date:
+                try:
+                    os.remove(file_path)
+                    print(f"已删除过期日志文件: {file_path}")
+                except Exception as e:
+                    log.DEBUG(f"删除文件失败 {file_path}，错误原因: {str(e)}")
