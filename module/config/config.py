@@ -58,7 +58,7 @@ class Config(metaclass=SingletonMeta):
                     self._update_config(config[key], value)
                 else:
                     config[key] = value
-            elif "_setting" in key:
+            elif any(sub in key for sub in ("_setting", "_remark_name")):
                 config[key] = value
 
     def save_config(self):

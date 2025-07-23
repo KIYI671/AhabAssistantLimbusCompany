@@ -96,6 +96,9 @@ class BaseCheckBox(BaseLayout):
     def set_box_enabled(self, b: bool):
         self.check_box.setEnabled(b)
 
+    def set_check_false(self):
+        self.check_box.setChecked(False)
+
     def on_toggle(self, checked):
         if cfg.get_value(self.config_name) is not None:
             cfg.set_value(self.config_name, checked)

@@ -221,6 +221,7 @@ class PageMirror(PageCard):
                 self.vbox_general.insertWidget(self.vbox_general.count() - 1,
                                                MirrorTeamCombination(i, f"the_team_{i}", f"编队{i}", None,
                                                                      f"team{i}_setting"))
+        self.refresh()
 
     def new_team(self):
         number = len(team_toggle_button_group)+1
@@ -248,10 +249,14 @@ class PageMirror(PageCard):
 
     def delete_team(self, target:str):
         try:
+            team = self.findChild(MirrorTeamCombination, target)
+            team_order_box = team.findChild(BaseCheckBox, f"the_team_{team.team_number}")
+            team_order_box.set_check_false()
             self.remove_team_card(target)
 
             number = int(target.split("_")[-1])
             cfg.del_key(f"team{number}_setting")
+            cfg.del_key(f"team{number}_remark_name")
 
             teams_be_select = cfg.get_value("teams_be_select")
             teams_be_select.pop(number-1)
@@ -269,7 +274,6 @@ class PageMirror(PageCard):
             if cfg.get_value(f"team{i}_setting") is None and cfg.get_value(f"team{i+1}_setting") is not None:
                 cfg.set_value(f"team{i}_setting", cfg.get_value(f"team{i+1}_setting"))
                 cfg.del_key(f"team{i+1}_setting")
-            if cfg.get_value(f"team{i}_remark_name") is None and cfg.get_value(f"team{i+1}_remark_name") is not None:
                 cfg.set_value(f"team{i}_remark_name", cfg.get_value(f"team{i+1}_remark_name"))
                 cfg.del_key(f"team{i+1}_remark_name")
         self.get_setting()

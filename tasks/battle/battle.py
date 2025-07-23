@@ -6,8 +6,8 @@ from module.automation import auto
 from module.config import cfg
 from module.decorator.decorator import begin_and_finish_time_log
 from module.logger import log
+from tasks import sins
 from tasks.base.retry import retry
-from tasks.battle import sins
 from tasks.event.event_handling import EventHandling
 from utils.image_utils import ImageUtils
 from utils.utils import find_skill3
