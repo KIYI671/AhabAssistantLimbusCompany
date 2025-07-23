@@ -98,6 +98,9 @@ team_setting_template = {
 all_sinners_name = ["YiSang", "Faust", "DonQuixote", "Ryoshu", "Meursault", "HongLu",
                     "Heathcliff", "Ishmael", "Rodion", "Sinclair", "Outis", "Gregor"]
 
+all_systems_name = {0: "burn", 1: "bleed", 2: "tremor", 3: "rupture", 4: "poise",
+               5: "sinking", 6: "charge", 7: "slash", 8: "pierce", 9: "blunt"}
+
 second_system_mode = ["second_system_fuse_IV",
                       "second_system_buy",
                       "second_system_choose",

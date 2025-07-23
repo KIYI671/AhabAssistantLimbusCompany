@@ -154,6 +154,8 @@ class TeamSettingCard(QFrame):
         values = list(data_dict.values())[0]
         if keys in self.dict_keys:
             self.team_setting[keys] = values
+            if keys == "team_system":
+                self.foolproof(values)
         elif keys in all_sinners_name:
             sinner_index = all_sinners_name.index(keys)
             if values:
@@ -169,7 +171,6 @@ class TeamSettingCard(QFrame):
                         self.team_setting["sinner_order"][i] -= 1
                 self.team_setting["sinner_order"][sinner_index] = 0
             self.refresh_sinner_order()
-            # TODO 更新gui
         elif "starlight_" in keys:
             starlight_index = int(keys.split("_")[-1]) -1
             if values:
@@ -250,16 +251,28 @@ class TeamSettingCard(QFrame):
             if ignore_shop[i-1]:
                 self.findChild(BaseCheckBox, f"ignore_shop_{i}").set_checked(True)
 
+        for checkbox in all_checkbox_config_name:
+            if self.findChild(BaseCheckBox, checkbox):
+                self.findChild(BaseCheckBox, checkbox).set_checked(self.team_setting[checkbox])
+
         for combobox in all_combobox_config_name:
             if self.findChild(BaseComboBox, combobox):
                 if combobox == "team_number":
                     self.findChild(BaseComboBox, combobox).set_options(self.team_setting[combobox]-1)
                 else:
                     self.findChild(BaseComboBox, combobox).set_options(self.team_setting[combobox])
+                    if combobox == "team_system":
+                        self.foolproof(self.team_setting[combobox])
 
+    def foolproof(self,team_system):
         for checkbox in all_checkbox_config_name:
-            if self.findChild(BaseCheckBox, checkbox):
-                self.findChild(BaseCheckBox, checkbox).set_checked(self.team_setting[checkbox])
+            if check_box := self.findChild(BaseCheckBox, checkbox):
+                if checkbox.startswith("system_"):
+                    check_box.set_box_enabled(True)
+        check_box = self.findChild(BaseCheckBox, f"system_{all_systems_name[team_system]}")
+        if check_box:
+            check_box.set_checked(False)
+            check_box.set_box_enabled(False)
 
 
     def cancel_team_setting(self):
