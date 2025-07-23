@@ -10,10 +10,9 @@ from qfluentwidgets.window.stacked_widget import StackedWidget
 from app.base_combination import *
 from app.base_tools import *
 from app.page_card import PageSetWindows, PageDailyTask, PageLunacyToEnkephalin, PageGetPrize, PageMirror
+from app.team_setting_card import TeamSettingCard
 from module.automation import auto
 from module.logger import log
-from module.ocr import ocr
-from module.screen import screen
 from tasks.base.script_task_scheme import my_script_task
 
 
@@ -139,20 +138,26 @@ class FarmingInterfaceLeft(QWidget):
             check_box.setChecked(False)
 
     def start_and_stop_tasks(self):
+        # 检测是否有未保存的镜牢队伍设置
+        if self.parent.parent.findChild(TeamSettingCard):
+            list(self.parent.parent.pivot.items.values())[-1].click()
+            mediator.save_warning.emit()
+            return
+
         # 设置按下启动与停止按钮时，其他模块的启用与停用
-        current_text = self.link_start_button.get_text()
-        if current_text == "Link Start!":
-            self.link_start_button.set_text("S t o p !")
-            self._disable_setting(self.parent)
-            self.create_and_start_script()
-        else:
-            screen.reset_win()
-            self.link_start_button.set_text("Link Start!")
-            self._enable_setting(self.parent)
-            mediator.refresh_teams_order.emit()
-            if self.my_script and self.my_script.isRunning():
-                self.stop_script()
-                ocr.exit_ocr()
+        # current_text = self.link_start_button.get_text()
+        # if current_text == "Link Start!":
+        #     self.link_start_button.set_text("S t o p !")
+        #     self._disable_setting(self.parent)
+        #     self.create_and_start_script()
+        # else:
+        #     screen.reset_win()
+        #     self.link_start_button.set_text("Link Start!")
+        #     self._enable_setting(self.parent)
+        #     mediator.refresh_teams_order.emit()
+        #     if self.my_script and self.my_script.isRunning():
+        #         self.stop_script()
+        #         ocr.exit_ocr()
 
 
     def _disable_setting(self, parent):

@@ -11,6 +11,7 @@ from qfluentwidgets.components.widgets.frameless_window import FramelessWindow
 from qframelesswindow import StandardTitleBar
 
 from app import mediator
+from app.card.messagebox_custom import MessageBoxWarning
 from app.farming_interface import FarmingInterface
 from app.page_card import MarkdownViewer
 from app.setting_interface import SettingInterface
@@ -132,10 +133,18 @@ class MainWindow(FramelessWindow):
         except Exception as e:
             print(f"【异常】delete_team 出错：{e}")
 
+    def show_save_warning(self):
+        MessageBoxWarning(
+            '设置未保存',
+            '存在未保存的设置，请执行保存或取消操作',
+            self
+        ).exec()
+
     def connect_mediator(self):
         # 连接所有可能信号
         mediator.switch_team_setting.connect(self.add_and_switch_to_page)
         mediator.close_setting.connect(self.close_setting_page)
+        mediator.save_warning.connect(self.show_save_warning)
 
     @staticmethod
     def clean_old_logs():

@@ -62,3 +62,10 @@ class MessageBoxEdit(MessageBox):
 
     def getText(self):
         return self.lineEdit.text()
+
+class MessageBoxWarning(MessageBox):
+    def __init__(self, title: str, content: str, parent=None):
+        super().__init__(title, content, parent)
+
+        self.yesButton.setText('我已了解以上信息')
+        self.cancelButton.setHidden(True)

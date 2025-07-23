@@ -10,6 +10,7 @@ class Mediator(QObject):
     sinner_be_selected = pyqtSignal()
     scroll_log_show = pyqtSignal(str)
     link_start = pyqtSignal()
+    save_warning = pyqtSignal()
 
     # 单例实例（类变量）
     _instance = None
