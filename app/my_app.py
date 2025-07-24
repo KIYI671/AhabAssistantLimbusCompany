@@ -112,7 +112,6 @@ class MainWindow(FramelessWindow):
             if "team_setting" in list(self.pivot.items.keys()):
                 list(self.pivot.items.values())[-1].click()
                 self.pivot.setCurrentItem("team_setting")
-                # TODO 提示
             else:
                 """切换页面（带越界保护）"""
                 self.addSubInterface(TeamSettingCard(num,self), 'team_setting', '队伍设置')
