@@ -11,10 +11,10 @@ from playsound3 import playsound
 from module.automation import auto
 from module.config import cfg
 from module.decorator.decorator import begin_and_finish_time_log
+from module.game_and_screen import screen
 from module.logger import log
 from module.my_error.my_error import userStopError, unableToFindTeamError, unexpectNumError, cannotOperateGameError, \
     netWorkUnstableError, backMainWinError, withOutGameWinError, notWaitError, withOutPicError, withOutAdminError
-from module.screen import screen
 from tasks.base.back_init_menu import back_init_menu
 from tasks.base.make_enkephalin_module import lunacy_to_enkephalin, make_enkephalin_module
 from tasks.battle import battle

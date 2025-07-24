@@ -10,8 +10,8 @@ from app.main_windows import Ui_MainWindow
 from app.setting_ui import Ui_all_team_basic_setting
 from module.automation import auto
 from module.config import cfg
+from module.game_and_screen import screen
 from module.logger import log
-from module.screen import screen
 from module.update.check_update import check_update
 from tasks.base.script_task_scheme import my_script_task
 
