@@ -244,7 +244,7 @@ class Mirror:
                 continue
 
             # 初始饰品选择
-            if auto.find_element("mirror/road_to_mir/select_init_ego_gifts_assets.png"):
+            if auto.find_element("mirror/road_to_mir/activate_gift_search_on_assets.png") or auto.find_element("mirror/road_to_mir/activate_gift_search_off_assets.png"):
                 self.select_init_ego_gift()
                 continue
 
@@ -391,7 +391,6 @@ class Mirror:
                     undo_if_use_storaged_starlight("mirror/road_to_mir/dreaming_star/20_stars_2_assets.png")
                     undo_if_use_storaged_starlight("mirror/road_to_mir/dreaming_star/10_stars_assets.png")
                 else:
-                    # 根据B站UP主 绅士丶蚂蚱 《镜牢5完全攻略》制定
                     undo_if_use_storaged_starlight("mirror/road_to_mir/dreaming_star/20_stars_assets.png")
                     undo_if_use_storaged_starlight("mirror/road_to_mir/dreaming_star/20_stars_2_assets.png")
                     undo_if_use_storaged_starlight("mirror/road_to_mir/dreaming_star/10_stars_assets.png")
@@ -407,7 +406,6 @@ class Mirror:
                     auto.click_element("mirror/road_to_mir/dreaming_star/20_stars_2_assets.png")
                     auto.click_element("mirror/road_to_mir/dreaming_star/10_stars_assets.png")
                 else:
-                    # 根据B站UP主 绅士丶蚂蚱 《镜牢5完全攻略》制定
                     auto.click_element("mirror/road_to_mir/dreaming_star/20_stars_assets.png")
                     auto.click_element("mirror/road_to_mir/dreaming_star/20_stars_2_assets.png")
                     auto.click_element("mirror/road_to_mir/dreaming_star/10_stars_assets.png")
@@ -441,6 +439,9 @@ class Mirror:
         while True:
             # 自动截图
             if auto.take_screenshot() is None:
+                continue
+
+            if auto.click_element("mirror/road_to_mir/activate_gift_search_on_assets.png"):
                 continue
 
             if auto.find_element("mirror/theme_pack/feature_theme_pack_assets.png"):
