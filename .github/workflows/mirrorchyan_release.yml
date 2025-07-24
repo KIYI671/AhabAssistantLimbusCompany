@@ -1,0 +1,23 @@
+name: mirrorchyan_release
+
+on:
+  workflow_dispatch:
+#   release:
+#     types: [released]
+
+jobs:
+  mirrorchyan:
+    runs-on: macos-latest
+
+    steps:
+      - uses: MirrorChyan/uploading-action@v1
+        with:
+          filetype: latest-release
+          filename: "AALC_*.7z"
+          p7zip: true
+          mirrorchyan_rid: AALC
+
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          owner: KIYI671
+          repo: AhabAssistantLimbusCompany
+          upload_token: ${{ secrets.MirrorChyanUploadToken }}
