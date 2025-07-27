@@ -44,13 +44,6 @@ class SettingInterface(ScrollArea):
             cfg.game_path,
             parent=self.game_path_group
         )
-        self.auto_set_game_path_card = SwitchSettingCard(
-            FIF.GAME,
-            self.tr('启用自动配置游戏路径'),
-            "尝试自动配置游戏路径",
-            "auto_set_game_path",
-            parent=self.game_path_group
-        )
 
         self.personal_group = SettingCardGroup("个性化", self.scroll_widget)
         self.language_card = ComboBoxSettingCard(
@@ -125,7 +118,6 @@ class SettingInterface(ScrollArea):
         self.game_setting_group.addSettingCard(self.game_setting_card)
 
         self.game_path_group.addSettingCard(self.game_path_card)
-        self.game_path_group.addSettingCard(self.auto_set_game_path_card)
 
         self.personal_group.addSettingCard(self.language_card)
 

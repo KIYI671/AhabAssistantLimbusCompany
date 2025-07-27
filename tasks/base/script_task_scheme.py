@@ -11,7 +11,7 @@ from playsound3 import playsound
 from module.automation import auto
 from module.config import cfg
 from module.decorator.decorator import begin_and_finish_time_log
-from module.game_and_screen import screen
+from module.game_and_screen import screen, game_process
 from module.logger import log
 from module.my_error.my_error import userStopError, unableToFindTeamError, unexpectNumError, cannotOperateGameError, \
     netWorkUnstableError, backMainWinError, withOutGameWinError, notWaitError, withOutPicError, withOutAdminError
@@ -77,12 +77,15 @@ def onetime_mir_process(team_setting):
         log.ERROR(msg)
         return False
 
-
-def script_task():
-    # 对游戏窗口进行设置
+def init_game():
+    game_process.start_game()
     screen.init_handle()
     if cfg.set_windows:
         screen.set_win()
+
+def script_task():
+    # 获取（启动）游戏对游戏窗口进行设置
+    init_game()
 
     if cfg.language_in_game == "zh_cn":
         pic_path.insert(0, "zh_cn")
@@ -143,9 +146,9 @@ def script_task():
             while mir_times > 0:
                 teams_order = cfg.teams_order
                 team_num = teams_order.index(1)
-                mirror_result = onetime_mir_process(cfg.get_value(f"team{team_num}_setting"))
+                mirror_result = onetime_mir_process(cfg.get_value(f"team{team_num+1}_setting"))
                 if mirror_result:
-                    for i in range(teams_order):
+                    for i in teams_order:
                         if teams_order[i] == 1:
                             teams_order[i] = cfg.teams_be_select_num
                         elif teams_order[i] != 0:

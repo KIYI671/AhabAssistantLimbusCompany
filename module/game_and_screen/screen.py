@@ -11,9 +11,10 @@ from utils.singletonmeta import SingletonMeta
 
 
 class Screen(metaclass=SingletonMeta):
-    def __init__(self, title, logger):
+    def __init__(self, title, logger,game):
         self.logger = logger
         self.title = title
+        self.game = game
         self.handle = None
 
     def init_handle(self):
@@ -21,9 +22,11 @@ class Screen(metaclass=SingletonMeta):
             # 获取所有标题匹配的窗口
             windows = pyautogui.getWindowsWithTitle(self.title)
 
-            if not windows:
-                self.logger.ERROR(f"未能获取到游戏窗口: {self.title}")
-                raise withOutGameWinError
+            while not windows:
+                self.logger.ERROR(f"未能获取到游戏窗口: {self.title},尝试启动游戏")
+                self.game.start_game()
+                sleep(30)
+                windows = pyautogui.getWindowsWithTitle(self.title)
 
             # 使用 next() 和生成器表达式直接获取第一个匹配的窗口
             self.handle = next((t for t in windows if t.title == self.title), None)

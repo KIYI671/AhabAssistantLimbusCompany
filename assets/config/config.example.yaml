@@ -3,7 +3,6 @@ game_title_name: LimbusCompany # 游戏窗口标题。
 game_process_name: LimbusCompany # 游戏进程名。
 
 game_path: C:\Program Files (x86)\Steam\steamapps\common\Limbus Company\LimbusCompany.exe # 游戏启动路径。
-auto_set_game_path: True # 是否自动设置游戏路径
 
 language_in_game: en # 游戏语言
 after_completion: 0 # 脚本结束后的操作
