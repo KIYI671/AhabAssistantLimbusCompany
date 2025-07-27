@@ -6,7 +6,7 @@ from enum import Enum
 from PyQt5.QtCore import Qt, QLocale
 from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QApplication, QHBoxLayout, QStackedWidget, QVBoxLayout, QLabel, QWidget
-from qfluentwidgets import Pivot, setThemeColor
+from qfluentwidgets import Pivot, setThemeColor, ProgressRing
 from qfluentwidgets.components.widgets.frameless_window import FramelessWindow
 from qframelesswindow import StandardTitleBar
 
@@ -18,6 +18,7 @@ from app.setting_interface import SettingInterface
 from app.team_setting_card import TeamSettingCard
 from module.config import cfg
 from module.logger import log
+from module.update.check_update import check_update
 
 
 class Language(Enum):
@@ -48,6 +49,9 @@ class MainWindow(FramelessWindow):
         self.titleBar.setDoubleClickEnabled(False)
         self.setResizeEnabled(False)
         self.setWindowFlags(Qt.WindowCloseButtonHint)
+
+        self.progress_ring = ProgressRing(self)
+        self.progress_ring.hide()
 
         self.resize(1080,800)
         desktop = QApplication.desktop().availableGeometry()
@@ -100,6 +104,10 @@ class MainWindow(FramelessWindow):
 
         self.clean_old_logs()
 
+        check_update(self, flag=True)
+
+        self.set_ring()
+
     def addSubInterface(self, widget: QLabel, objectName, text):
         widget.setObjectName(objectName)
         #widget.setAlignment(Qt.AlignCenter)
@@ -144,6 +152,7 @@ class MainWindow(FramelessWindow):
         mediator.switch_team_setting.connect(self.add_and_switch_to_page)
         mediator.close_setting.connect(self.close_setting_page)
         mediator.save_warning.connect(self.show_save_warning)
+        mediator.update_progress.connect(self.set_progress_ring)
 
     @staticmethod
     def clean_old_logs():
@@ -171,3 +180,17 @@ class MainWindow(FramelessWindow):
                     print(f"已删除过期日志文件: {file_path}")
                 except Exception as e:
                     log.DEBUG(f"删除文件失败 {file_path}，错误原因: {str(e)}")
+
+    def set_ring(self):
+        self.progress_ring.setWindowFlag(Qt.WindowStaysOnTopHint)  # 保持最上层显示
+        self.progress_ring.setValue(0)
+        self.progress_ring.setTextVisible(True)
+        self.progress_ring.setFixedSize(80, 80)
+        x = self.width()-100
+        y = self.height()-100
+        self.progress_ring.move(x, y)
+
+    def set_progress_ring(self,value:int):
+        self.progress_ring.setWindowFlag(Qt.WindowStaysOnTopHint)  # 保持最上层显示
+        self.progress_ring.show()
+        self.progress_ring.setValue(value)

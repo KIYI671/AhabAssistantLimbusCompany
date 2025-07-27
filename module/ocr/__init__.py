@@ -2,7 +2,6 @@ import os
 
 import cpufeature
 
-from module.config import cfg
 from module.logger import log
 from module.ocr.ocr import OCR
 from module.update.check_update import start_update_thread
@@ -38,10 +37,6 @@ class OCRInstaller:
     def install_ocr(self):
         RapidOCR_url = "https://github.com/hiroi-sora/RapidOCR-json/releases/download/v0.2.0/RapidOCR-json_v0.2.0.7z"
         start_update_thread(RapidOCR_url)
-        if cfg.language == 'zh_cn':
-            self.logger.INFO(f"请在下载 {self.ocr_name} 完成后，将下载的文件解压并转移到 “3rdparty” 文件夹中，然后重启程序。")
-        else:
-            self.logger.INFO(f"After downloading {self.ocr_name}, please unzip the downloaded file and transfer it to the “3rdparty” folder, then restart the program.")
 
 ocr_installer = OCRInstaller(log)
 ocr_installer.check_and_install()

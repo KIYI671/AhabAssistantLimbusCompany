@@ -18,6 +18,7 @@ resonate_with_Ahab: False # 是否播放亚哈语录
 
 # 自动更新
 check_update: True
+update_prerelease_enable: False
 update_source: GitHub # 更新源
 mirrorchyan_cdk: "" # Mirror酱 CDK
 

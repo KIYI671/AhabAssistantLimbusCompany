@@ -6,6 +6,7 @@ from qfluentwidgets import LineEdit, SettingCard, \
 
 from app.base_tools import *
 from app.card.messagebox_custom import MessageBoxEdit
+from module.update.check_update import check_update
 
 
 class CheckBoxWithButton(QFrame):
@@ -299,10 +300,16 @@ class PushSettingCardMirrorchyan(SettingCard):
             cfg.set_value(self.config_name, message_box.getText())
             self.contentLabel.setText(message_box.getText())
             self.config_value = message_box.getText()
-            checkUpdate(self.update_callback)
+            parent = self._find_parent(self)
+            check_update(parent,flag=True)
 
     def __onclicked2(self):
         QDesktopServices.openUrl(QUrl("https://mirrorchyan.com/"))
+
+    def _find_parent(self, widget):
+        while widget.parent() is not None:
+            widget = widget.parent()
+        return widget
 
 
 class SwitchSettingCard(SettingCard):

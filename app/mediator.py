@@ -11,6 +11,7 @@ class Mediator(QObject):
     scroll_log_show = pyqtSignal(str)
     link_start = pyqtSignal()
     save_warning = pyqtSignal()
+    update_progress = pyqtSignal(int)
 
     # 单例实例（类变量）
     _instance = None

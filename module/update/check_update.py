@@ -1,20 +1,24 @@
 import os  # 导入os模块以便操作文件路径
 import re
+import shutil
+import subprocess
 from enum import Enum
 from threading import Thread
 
 import markdown
 import requests  # 导入requests模块，用于发送HTTP请求
-from PyQt5.QtCore import QThread, pyqtSignal
+from PyQt5.QtCore import QThread, pyqtSignal, Qt
 from packaging.version import parse
+from qfluentwidgets import InfoBar, InfoBarPosition
 
-from app.card.messagebox_custom import MessageBoxUpdate
+from app import mediator
+from app.card.messagebox_custom import MessageBoxUpdate, MessageBoxConfirm
 from module.config import cfg
 from module.decorator.decorator import begin_and_finish_time_log
 from module.logger import log
 
 
-class UpdateState(Enum):
+class UpdateStatus(Enum):
     """
     定义更新状态的枚举类
 
@@ -34,7 +38,7 @@ class UpdateThread(QThread):
     该类继承自 QThread，使用 PyQt5 的信号机制来通知 GUI 线程更新状态。
     """
     # 定义更新信号，用于通知主线程更新状态
-    updateSignal = pyqtSignal(UpdateState)
+    updateSignal = pyqtSignal(UpdateStatus)
 
     def __init__(self, timeout, flag):
         """
@@ -47,8 +51,11 @@ class UpdateThread(QThread):
         super().__init__()
         self.timeout = timeout  # 超时时间
         self.flag = flag  # 标志位，用于控制是否执行检查更新
+        self.error_msg = '' # 错误信息
+
         self.user = "KIYI671"
         self.repo = "AhabAssistantLimbusCompany"
+        self.new_version= ''
 
     def run(self):
         """
@@ -57,35 +64,32 @@ class UpdateThread(QThread):
         """
         try:
             # 如果标志位为 False 且配置中的检查更新标志也为 False，则直接返回
-            if self.flag and not cfg.check_update:
+            if self.flag and not cfg.get_value("check_update"):
                 return
 
             # 获取最新发布版本的信息
-            data = self.fetch_latest_release_info()
-            version = data['tag_name']
-            content = self.remove_images_from_markdown(data['body'])
-            assets_url = self.get_download_url_from_assets(data['assets'])
-
-            # 如果没有可用的下载 URL，则发送成功信号并返回
-            if assets_url is None:
-                self.updateSignal.emit(UpdateState.SUCCESS)
-                return
+            data = self.check_update_info()
+            version = data['version_name']
+            content = self.remove_images_from_markdown(data['release_note'])
+            content = re.sub(r"\r\n\r\n\[.*?Mirror酱.*?CDK.*?下载\]\(https?://.*?mirrorchyan\.com[^\)]*\)", "",
+                             content, flags=re.IGNORECASE)
+            if cfg.update_source == "GitHub":
+                content = content + "\n\n若下载速度较慢，可尝试使用 Mirror酱（设置 → 关于 → 更新源） 高速下载"
 
             # 比较当前版本和最新版本，如果最新版本更高，则准备更新
             if parse(version.lstrip('Vv')) > parse(cfg.version.lstrip('Vv')):
                 self.title = f"发现新版本：{cfg.version}——> {version}\n更新日志:"
                 self.content = "<style>a {color: #586f50; font-weight: bold;}</style>" + markdown.markdown(content)
-                self.assets_url = assets_url
-                self.updateSignal.emit(UpdateState.UPDATE_AVAILABLE)
+                self.updateSignal.emit(UpdateStatus.UPDATE_AVAILABLE)
             else:
                 # 如果没有新版本，则发送成功信号
-                self.updateSignal.emit(UpdateState.SUCCESS)
+                self.updateSignal.emit(UpdateStatus.SUCCESS)
         except Exception as e:
             # 异常处理，发送失败信号
             log.ERROR(f"更新失败:{e}")
-            self.updateSignal.emit(UpdateState.FAILURE)
+            self.updateSignal.emit(UpdateStatus.FAILURE)
 
-    def fetch_latest_release_info(self):
+    def check_update_info(self, cdk=''):
         """
         从 GitHub 获取最新发布版本的信息。
 
@@ -94,19 +98,22 @@ class UpdateThread(QThread):
         """
         if not cfg.update_prerelease_enable:
             response = requests.get(
-                f"https://api.github.com/repos/{self.user}/{self.repo}/releases/latest",
+                f"https://mirrorchyan.com/api/resources/AALC/latest?current_version={cfg.version}&user_agent={self.repo}&cdk={cdk}",
                 timeout=10,
                 headers=cfg.useragent
             )
         else:
             response = requests.get(
-                f"https://api.github.com/repos/{self.user}/{self.repo}/releases",
+                f"https://mirrorchyan.com/api/resources/AALC/latest?current_version={cfg.version}&user_agent={self.repo}&channel=beta&cdk={cdk}",
                 timeout=10,
                 headers=cfg.useragent
             )
         response.raise_for_status()
-        # 根据配置决定是否包含预发布版本
-        return response.json()[0] if cfg.update_prerelease_enable else response.json()
+        if cdk == '':
+            # 返回获取的最新发布版本信息
+            return response.json()["data"]
+        else:
+            return response
 
     def remove_images_from_markdown(self, markdown_content):
         """
@@ -136,6 +143,67 @@ class UpdateThread(QThread):
                 return asset['browser_download_url']
         return None
 
+    def get_assets_url(self):
+        try:
+            if cfg.update_source == "MirrorChyan":
+                if cfg.mirrorchyan_cdk == "":
+                    self.error_msg = "未设置 Mirror酱 CDK"
+                    self.updateSignal.emit(UpdateStatus.FAILURE)
+                    return None
+                # 符合Mirror酱条件
+                response = self.check_update_info(cfg.mirrorchyan_cdk)
+                if response.status_code == 200:
+                    mirrorchyan_data = response.json()
+                    if mirrorchyan_data["code"] == 0 and mirrorchyan_data["msg"] == "success":
+                        url = mirrorchyan_data["data"]["url"]
+                        return url
+                else:
+                    try:
+                        mirrorchyan_data = response.json()
+                        self.code = mirrorchyan_data["code"]
+                        self.error_msg = mirrorchyan_data["msg"]
+
+                        cdk_error_messages = {
+                            7001: "Mirror酱 CDK 已过期",
+                            7002: "Mirror酱 CDK 错误",
+                            7003: "Mirror酱 CDK 今日下载次数已达上限",
+                            7004: "Mirror酱 CDK 类型和待下载的资源不匹配",
+                            7005: "Mirror酱 CDK 已被封禁"
+                        }
+                        if self.code in cdk_error_messages:
+                            self.error_msg = cdk_error_messages[self.code]
+                    except:
+                        self.error_msg = "Mirror酱API请求失败"
+                    self.updateSignal.emit(UpdateStatus.FAILURE)
+                    return None
+            else:
+                if not cfg.update_prerelease_enable:
+                    response = requests.get(
+                        f"https://api.github.com/repos/{self.user}/{self.repo}/releases/latest",
+                        timeout=10,
+                        headers=cfg.useragent
+                    )
+                else:
+                    response = requests.get(
+                        f"https://api.github.com/repos/{self.user}/{self.repo}/releases",
+                        timeout=10,
+                        headers=cfg.useragent
+                    )
+                response.raise_for_status()
+                data = response.json()[0] if cfg.update_prerelease_enable else response.json()
+
+                assets_url = self.get_download_url_from_assets(data['assets'])
+
+                # 如果没有可用的下载 URL，则发送成功信号并返回
+                if assets_url is None:
+                    self.updateSignal.emit(UpdateStatus.SUCCESS)
+                    return
+                return assets_url
+        except Exception as e:
+            # 异常处理，发送失败信号
+            log.ERROR(f"更新失败:{e}")
+            self.updateSignal.emit(UpdateStatus.FAILURE)
+
 
 @begin_and_finish_time_log(task_name="检查更新")
 def check_update(self, timeout=5, flag=False):
@@ -145,12 +213,12 @@ def check_update(self, timeout=5, flag=False):
     此函数主要用于启动一个更新线程，并监听更新状态。
     """
 
-    def handler_update(state):
+    def handler_update(status):
         """
         更新处理函数，根据不同的更新状态执行不同的操作。
-        :param state: 更新状态。
+        :param status: 更新状态。
         """
-        if state == UpdateState.UPDATE_AVAILABLE:
+        if status == UpdateStatus.UPDATE_AVAILABLE:
             # 当有可用更新时，创建一个消息框对象并显示详细信息
             messages_box = MessageBoxUpdate(
                 self.update_thread.title,
@@ -159,16 +227,31 @@ def check_update(self, timeout=5, flag=False):
             )
             if messages_box.exec_():
                 # 如果用户确认更新，则从指定的URL下载更新资源
-                assets_url = self.update_thread.assets_url
-                start_update_thread(assets_url)
-            # assets_url = self.update_thread.assets_url
-            # update(assets_url)
-        elif state == UpdateState.SUCCESS:
-            # 如果更新成功，记录日志信息
-            log.INFO(f"当前是最新版本")
-        elif state == UpdateState.FAILURE:
-            # 如果更新失败，记录日志信息
-            log.INFO(f"检查更新失败")
+                assets_url = self.update_thread.get_assets_url()
+                if assets_url:
+                    start_update_thread(assets_url)
+        elif status == UpdateStatus.SUCCESS:
+            # 显示当前为最新版本的信息
+            InfoBar.success(
+                title=self.tr('当前是最新版本(＾∀＾●)'),
+                content="",
+                orient=Qt.Horizontal,
+                isClosable=True,
+                position=InfoBarPosition.TOP,
+                duration=1000,
+                parent=self
+            )
+        else:
+            # 显示检查更新失败的信息
+            InfoBar.warning(
+                title=self.tr('检测更新失败(╥╯﹏╰╥)'),
+                content=self.update_thread.error_msg,
+                orient=Qt.Horizontal,
+                isClosable=True,
+                position=InfoBarPosition.TOP,
+                duration=5000,
+                parent=self
+            )
 
     # 创建一个更新线程实例
     self.update_thread = UpdateThread(timeout, flag)
@@ -210,6 +293,8 @@ def update(assets_url):
 
     # 提取文件名
     file_name = assets_url.split('/')[-1]
+    if "7z" not in file_name or "OCR" in file_name:
+        file_name = "AALC.zip"
     log.INFO(f"正在下载 {file_name} ...")
 
     try:
@@ -219,7 +304,6 @@ def update(assets_url):
 
         # 获取文件总大小
         total_size = int(response.headers.get('content-length', 0))
-        block_size = 65536  # 设定每次读取的数据块大小
         downloaded = 0
 
         # 创建保存临时文件的目录
@@ -227,24 +311,39 @@ def update(assets_url):
         # 构建保存文件的完整路径
         file_path = os.path.join('update_temp', file_name)
 
-        # 保存文件到本地
-        with open(file_path, 'wb') as f:
-            last_logged_percent = -1  # 记录上次更新的进度百分比
-            for data in response.iter_content(block_size):
-                f.write(data)
-                # 计算下载进度
-                downloaded += len(data)
-                percent = (downloaded / total_size) * 100 if total_size else 100
+        with requests.get(assets_url, stream=True) as r:
+            with open(file_path, 'wb') as f:
+                for chunk in r.iter_content(chunk_size=1024):
+                    if chunk:
+                        f.write(chunk)
+                        downloaded+=len(chunk)
+                        progress = int(downloaded / total_size * 100)
+                        mediator.update_progress.emit(progress)
 
-                # 只有当进度超过上次记录的进度加上5%时才更新日志
-                if percent - last_logged_percent >= 5:
-                    log.INFO(f"下载进度: {percent:.2f}%")
-                    last_logged_percent = percent
-        # 不同语言展示不同信息
-        if cfg.language == 'en':
-            log.INFO(f"Once the download is complete, please manually unzip {file_path} to complete the update")
-        elif cfg.language == 'zh_cn':
-            log.INFO(f"下载完成,请手动解压 {file_path} 完成更新")
+        if "OCR" in file_name:
+            exe_path = os.path.abspath("./assets/binary/7za.exe")
+            download_file_path = os.path.join("./update_temp", file_name)
+            destination = os.path.abspath("./3rdparty")
+            try:
+                if os.path.exists(exe_path):
+                    subprocess.run([exe_path, "x", download_file_path, f"-o{destination}", "-aoa"], check=True)
+                else:
+                    shutil.unpack_archive(download_file_path, destination)
+                log.INFO("OCR解压完成，请重启AALC")
+                return True
+            except Exception as e:
+                input("解压失败，按回车键重新解压. . .多次失败请手动下载更新")
+                return False
+        else:
+            messages_box = MessageBoxConfirm(
+                "更新提醒",
+                "下载已经完成，是否开始更新",
+            )
+            if messages_box.exec_():
+                source_file = os.path.abspath("./AALC Updater.exe")
+                assert_name = file_name
+                subprocess.Popen([source_file, assert_name], creationflags=subprocess.DETACHED_PROCESS)
+
     except requests.exceptions.RequestException as e:
         log.error(f"下载失败，请检查网络: {e}")
     except OSError as e:
@@ -260,3 +359,7 @@ def start_update_thread(assets_url):
     thread = Thread(target=update, args=(assets_url,))
     thread.start()
     return thread
+
+def start_update(assert_name):
+    source_file = os.path.abspath("./AALC Updater.exe")
+    subprocess.Popen([source_file, assert_name], creationflags=subprocess.DETACHED_PROCESS)

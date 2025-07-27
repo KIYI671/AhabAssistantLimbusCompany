@@ -75,8 +75,9 @@ class SettingInterface(ScrollArea):
             self.tr('修改'),
             FIF.BOOK_SHELF,
             self.tr("Mirror 酱 CDK"),
-            self.update_group,
-            "mirrorchyan_cdk"
+            self.parent,
+            "mirrorchyan_cdk",
+            parent = self.update_group,
         )
 
         self.logs_group = SettingCardGroup("日志设置", self.scroll_widget)
