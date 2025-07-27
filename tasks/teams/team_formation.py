@@ -30,10 +30,10 @@ def team_formation(sinner_team):
     while auto.take_screenshot() is None:
         continue
     announcer_position = auto.find_element("teams/announcer_assets.png")
-    first_sinner = [announcer_position[0] + 350 * scale, announcer_position[1]+200*scale]
+    first_sinner = [announcer_position[0] + 350 * scale, announcer_position[1]]
     sleep(0.5)
 
-    for i in range(12):
+    for i in range(1,13):
         if i in sinner_team:
             sinner = sinner_team.index(i)
         else:
@@ -42,7 +42,7 @@ def team_formation(sinner_team):
                 auto.mouse_click(first_sinner[0] + 270 * sinner * scale, first_sinner[1])
         else:
             auto.mouse_click(first_sinner[0] + 270 * (sinner - 6) * scale, first_sinner[1] + 500 * scale)
-        sleep(cfg.mouse_action_interval_time)
+        sleep(cfg.mouse_action_interval)
 
 
 @begin_and_finish_time_log(task_name="寻找队伍")

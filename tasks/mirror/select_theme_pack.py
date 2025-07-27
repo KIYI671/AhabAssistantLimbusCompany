@@ -16,7 +16,7 @@ def select_theme_pack(hard_switch=False):
     theme_pack_list = theme_list.get_value("theme_pack_list")
     if hard_switch:
         theme_pack_list.update(theme_list.get_value("theme_pack_list_hard"))
-    if cfg.language == 'zh_cn':
+    if cfg.language_in_game == 'zh_cn':
         theme_pack_list.update(theme_list.get_value("theme_pack_list_cn"))
         if hard_switch:
             theme_pack_list.update(theme_list.get_value("theme_pack_list_hard_cn"))

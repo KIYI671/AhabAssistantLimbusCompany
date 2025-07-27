@@ -115,8 +115,8 @@ team1_setting:
   shopping_strategy : False # 自定义购物策略
   shopping_strategy_select: 0 # 购物策略
   opening_items : False # 自定义开局道具
-  opening_items_select : 0 # 开局道具体系
-  opening_items_system : 0 # 开局道具选择顺序
+  opening_items_select : 0 # 开局道具选择顺序
+  opening_items_system : 0 # 开局道具体系
   second_system : False # 启用第二体系
   second_system_select : 0 # 第二体系
   second_system_setting : 0 # 第二体系启用时间

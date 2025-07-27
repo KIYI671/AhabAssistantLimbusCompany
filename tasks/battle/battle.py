@@ -105,7 +105,7 @@ class Battle:
                         dead_position[0] - 100 * my_scale, dead_position[1] - 30 * my_scale,
                         dead_position[0] + 100 * my_scale,
                         dead_position[1] + 30 * my_scale)
-                    if cfg.language == "zh_cn":
+                    if cfg.language_in_game == "zh_cn":
                         ocr_result = auto.find_text_element("阵亡", dead_bbox)
                     else:
                         ocr_result = auto.find_text_element("dead", dead_bbox)
@@ -128,7 +128,7 @@ class Battle:
                 turn_ocr_result = auto.find_text_element("turn", turn_bbox)
                 if turn_ocr_result is not False:
                     auto.mouse_click_blank()
-                    if avoid_skill_3 and auto.find_element("battle/gear_left.png"):
+                    if avoid_skill_3 and auto.find_element("battle/gear_left.png",threshold=0.9):
                         self._chain_battle()
                         msg = f"使用避免3技能模式开始战斗"
                     else:
@@ -145,7 +145,7 @@ class Battle:
                 # 如果正在战斗待机界面
                 if auto.click_element("battle/turn_assets.png") or auto.find_element("battle/win_rate_assets.png"):
                     auto.mouse_click_blank()
-                    if avoid_skill_3 and auto.find_element("battle/gear_left.png"):
+                    if avoid_skill_3 and auto.find_element("battle/gear_left.png",threshold=0.9):
                         self._chain_battle()
                         msg = f"使用避免3技能模式开始战斗"
                     else:
@@ -273,3 +273,5 @@ class Battle:
         skill_list.append([gear_right[0],gear_right[1]+150*scale])
 
         auto.mouse_drag_link(skill_list)
+
+        sleep(1)

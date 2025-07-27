@@ -25,9 +25,15 @@ def get_reward_card(model = 0):
             break
         if auto.click_element("mirror/get_reward_card/continue_choosing_assets.png", model='clam'):
             continue
+        select_reward = False
         for card in reward_card:
             if auto.click_element(f"mirror/get_reward_card/{card}.png"):
+                select_reward = True
                 break
+        if select_reward:
+            break
+        if auto.click_element("mirror/road_in_mir/ego_gift_get_confirm_assets.png"):
+            break
         retry()
         loop_count -= 1
         if loop_count < 20:

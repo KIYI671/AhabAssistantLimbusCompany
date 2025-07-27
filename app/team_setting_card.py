@@ -359,10 +359,10 @@ class CustomizeSettingsModule(QFrame):
                                                       parent=self)
         self.shopping_strategy.add_items(shopping_strategy)
 
-        self.opening_items = CheckBoxWithComboBox("opening_items", "自选开局饰品", None, "opening_items_select",
+        self.opening_items = CheckBoxWithComboBox("opening_items", "自选开局饰品", None, "opening_items_system",
                                                   parent=self)
         self.opening_items.add_items(all_systems)
-        self.opening_items.add_combobox("opening_items_system")
+        self.opening_items.add_combobox("opening_items_select")
         self.opening_items.add_times_for_additional(start_gift)
 
         self.second_system = CheckBoxWithComboBox("second_system", "第二体系", None, "second_system_select",

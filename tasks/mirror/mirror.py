@@ -38,7 +38,7 @@ class Mirror:
 
     def __init__(self, team_setting:dict):
         self.logger = log
-        self.sinner_team = team_setting["chosen_sinners"] # 选择的罪人序列
+        self.sinner_team = team_setting["sinner_order"] # 选择的罪人序列
         self.team_number = team_setting["team_number"] # 选择的编队名
         self.shop = Shop(team_setting)
         self.system = all_systems[team_setting["team_system"]] # 选择的体系
@@ -355,18 +355,16 @@ class Mirror:
                 break
             if auto.click_element("base/battle_finish_confirm_assets.png"):
                 continue
-            if auto.click_element("mirror/claim_reward/rewards_acquired_assets.png"):
+            if cfg.no_weekly_bonuses and auto.click_element("mirror/claim_reward/weekly_bonuses.png"):
                 continue
-            if auto.click_element("mirror/claim_reward/claim_rewards_confirm_assets.png", threshold=0.75):
-                continue
-            if cfg.hard_mirror_single_bonuses and not cfg.no_weekly_bonuses:
+            if cfg.hard_mirror_single_bonuses:
                 bonuses = auto.find_element("mirror/claim_reward/weekly_bonuses.png",find_type='image_with_multiple_targets')
                 bonuses = sorted(bonuses, key=lambda x: x[0])
                 if len(bonuses)>1:
                     for _ in range(len(bonuses)-1):
                         position = bonuses.pop(-1)
                         auto.click_element(position[0],position[1])
-            if cfg.no_weekly_bonuses and auto.click_element("mirror/claim_reward/weekly_bonuses.png"):
+            if auto.click_element("mirror/claim_reward/claim_rewards_confirm_assets.png", threshold=0.75):
                 continue
             if auto.click_element("mirror/claim_reward/enkephalin_assets.png", threshold=0.75):  # 降低识别阈值
                 continue
@@ -461,7 +459,7 @@ class Mirror:
             if not self.choose_opening_bonus:
                 for i in range(4):
                     auto.mouse_click(first_starlight[0] + 400 * i * scale, first_starlight[1])
-                    sleep(cfg.mouse_action_interval_time)
+                    sleep(cfg.mouse_action_interval)
             else:
                 for i in range(10):
                     if i in self.opening_bonus_order:
@@ -470,7 +468,7 @@ class Mirror:
                             auto.mouse_click(first_starlight[0] + 400 * index * scale, first_starlight[1])
                         else:
                             auto.mouse_click(first_starlight[0] + 400 * (index-5) * scale, first_starlight[1]+450*scale)
-                        sleep(cfg.mouse_action_interval_time)
+                        sleep(cfg.mouse_action_interval)
 
             if auto.click_element("mirror/road_to_mir/dreaming_star/dreaming_star_enter_assets.png"):
                 sleep(0.5)
@@ -497,7 +495,7 @@ class Mirror:
 
         team_system = self.system
         if self.opening_items:
-            team_system =all_systems[self.opening_items_select]
+            team_system =all_systems[self.opening_items_system]
         while True:
             # 自动截图
             if auto.take_screenshot() is None:
@@ -748,7 +746,7 @@ class Mirror:
                     for button in acquire_button:
                         bbox = (button[0] - 350 * my_scale, button[1] - 50 * my_scale, button[0] + 150 * my_scale,
                                 button[1] + 250 * my_scale)
-                        if cfg.language == "zh_cn":
+                        if cfg.language_in_game == "zh_cn":
                             ocr_result = auto.find_text_element("白棉花", bbox)
                         else:
                             ocr_result = auto.find_text_element(["white", "gossypium"], bbox)
@@ -764,7 +762,7 @@ class Mirror:
                     for button in acquire_button:
                         bbox = (button[0] - 350 * my_scale, button[1] - 50 * my_scale, button[0] + 150 * my_scale,
                                 button[1] + 250 * my_scale)
-                        if cfg.language == "zh_cn":
+                        if cfg.language_in_game == "zh_cn":
                             ocr_result = auto.find_text_element("白棉花", bbox)
                         else:
                             ocr_result = auto.find_text_element(["white", "gossypium"], bbox)
@@ -789,7 +787,7 @@ class Mirror:
                     for button in acquire_button:
                         bbox = (button[0] - 350 * my_scale, button[1] - 50 * my_scale, button[0] + 150 * my_scale,
                                 button[1] + 250 * my_scale)
-                        if cfg.language == "zh_cn":
+                        if cfg.language_in_game == "zh_cn":
                             ocr_result = auto.find_text_element("白棉花", bbox)
                         else:
                             ocr_result = auto.find_text_element(["white", "gossypium"], bbox)

@@ -13,6 +13,7 @@ from utils.image_utils import ImageUtils
 class Shop:
     def __init__(self, team_setting:dict):
         self.system = all_systems[team_setting["team_system"]] # 队伍体系
+        self.sinner_team = team_setting["sinner_order"]  # 选择的罪人序列
         # 获取舍弃的饰品体系列表
         self.shop_sell_list = []
         for system in list(all_systems.values()):
@@ -36,7 +37,7 @@ class Shop:
         self.shopping_strategy_select = team_setting["shopping_strategy_select"]
         # 是否启用第二体系
         self.second_system = team_setting["second_system"]
-        self.second_system_select = team_setting["second_system_select"]
+        self.second_system_select = all_systems[team_setting["second_system_select"]]
         self.second_system_setting = team_setting["second_system_setting"]
         self.second_system_action = team_setting["second_system_action"]
         # 技能替换
@@ -139,10 +140,10 @@ class Shop:
                     while auto.take_screenshot() is None:
                         continue
                     if self.system == 'bleed':
-                        if cfg.language == 'en':
+                        if cfg.language_in_game == 'en':
                             if auto.find_text_element(["white", "gossypium"], all_text=True):
                                 auto.mouse_click_blank(times=2)
-                        elif cfg.language == 'zh_cn':
+                        elif cfg.language_in_game == 'zh_cn':
                             if auto.find_text_element("白棉花"):
                                 auto.mouse_click_blank(times=2)
                         sleep(1)
@@ -166,10 +167,10 @@ class Shop:
                         while auto.take_screenshot() is None:
                             continue
                         if self.system == 'bleed':
-                            if cfg.language == 'en':
+                            if cfg.language_in_game == 'en':
                                 if auto.find_text_element(["white", "gossypium"], all_text=True):
                                     auto.mouse_click_blank(times=2)
-                            elif cfg.language == 'zh_cn':
+                            elif cfg.language_in_game == 'zh_cn':
                                 if auto.find_text_element("白棉花"):
                                     auto.mouse_click_blank(times=2)
                             sleep(1)
@@ -225,7 +226,7 @@ class Shop:
     def fuse_useless_gifts_aggressive(self):
         """合成无用饰品_激进版"""
 
-        scale = cfg.set_win_size / 1080
+        scale = cfg.set_win_size / 1440
 
         def processing_coordinates(my_gift_list,coordinates,threshold=50):
             """将需要保护的坐标移除出列表"""
@@ -254,10 +255,9 @@ class Shop:
             if gift:
                 first_gift = [gift[0]+135*scale, gift[1]+200*scale]
                 if self.the_first_line_position is None:
-                    self.the_first_line_position = first_gift[0][1] + 100 * scale
-                my_list=[]
+                    self.the_first_line_position = first_gift[1] + 100 * scale
                 for i in range(10):
-                    my_list.append([first_gift[0]+200*(i%5)*scale, first_gift[1]+200*(i//5)*scale])
+                    gift_list.append([first_gift[0]+200*(i%5)*scale, first_gift[1]+200*(i//5)*scale])
             else:
                 return
 
@@ -272,7 +272,7 @@ class Shop:
             # 直到合成概率90%
             for coord in gift_list:
                 auto.mouse_click(coord[0],coord[1])
-                if auto.find_element("mirror/shop/fuse_90%_assets.png", take_screenshot=True):
+                if auto.find_element("mirror/shop/fuse_90%_assets.png",threshold=0.97, take_screenshot=True):
                     break
 
             # 如果无法合成四级，或可用饰品不足三个，则退出此次合成
@@ -288,14 +288,14 @@ class Shop:
                     continue
 
                 if ego_gift_get_confirm := auto.find_element("mirror/road_in_mir/ego_gift_get_confirm_assets.png"):
-                    if cfg.language == "zh_cn":
+                    if cfg.language_in_game == "zh_cn":
                         excluded_names = "残片"
                     else:
                         excluded_names = ["fragment", "corrosion"]
                     if auto.find_element(excluded_names, find_type="text"):
                         fuse = True
                     else:
-                        if cfg.language == "zh_cn":
+                        if cfg.language_in_game == "zh_cn":
                             system_name = system_cn_zh[self.system]
                         else:
                             system_name = self.system
@@ -329,7 +329,7 @@ class Shop:
 
     def fuse_useless_gifts(self):
         """合成无用饰品"""
-        scale = cfg.set_win_size / 1080
+        scale = cfg.set_win_size / 1440
 
         def protect_coordinates(my_gift_list,coordinates,threshold=50):
             """将需要保护的坐标移除出列表"""
@@ -428,14 +428,14 @@ class Shop:
 
                     if auto.find_element("mirror/road_in_mir/ego_gift_get_confirm_assets.png"):
                         if fuse_IV:
-                            if cfg.language == "zh_cn":
+                            if cfg.language_in_game == "zh_cn":
                                 excluded_names = "残片"
                             else:
                                 excluded_names = ["fragment", "corrosion"]
                             if auto.find_element(excluded_names, find_type="text"):
                                 pass
                             else:
-                                if cfg.language == "zh_cn":
+                                if cfg.language_in_game == "zh_cn":
                                     system_name = system_cn_zh[self.system]
                                 else:
                                     system_name = self.system
@@ -586,7 +586,7 @@ class Shop:
         auto.mouse_click_blank(times=3)
 
     def sell_gifts(self):
-        scale = cfg.set_win_size / 1080
+        scale = cfg.set_win_size / 1440
 
         def protect_coordinates(my_gift, coordinates, threshold=50):
             """将需要保护的坐标移除出列表"""
@@ -624,7 +624,7 @@ class Shop:
                             continue
                         else:
                             auto.mouse_click(sell_gift[0], sell_gift[1])
-                            sleep(cfg.mouse_action_interval_time)
+                            sleep(cfg.mouse_action_interval)
                         auto.click_element("mirror/shop/enhance_and_fuse_and_sell_confirm_assets.png", model='normal')
                         sleep(1)
                         gift_sell = True
@@ -695,7 +695,8 @@ class Shop:
                 return False
             self.fuse_useless_gifts_aggressive()
             auto.mouse_click_blank(times=3)
-
+        if self.fuse_switch is False:
+            return
         # 普通合成
         if self.only_aggressive_fuse or self.only_system_fuse:
             pass
@@ -711,7 +712,8 @@ class Shop:
                 return False
             self.fuse_useless_gifts_aggressive()
             auto.mouse_click_blank(times=3)
-
+        if self.fuse_switch is False:
+            return
         # 合成体系饰品
         if not self.only_aggressive_fuse and not self.do_not_system_fuse:
             if self.system not in fusion_material:
@@ -846,6 +848,7 @@ class Shop:
         if self.after_level_IV:
             if self.after_level_IV_select==0:
                 self.fuse_switch = False
+                self.fuse_aggressive_switch = False
                 log.INFO("合成四级，切换到出售模式")
             elif self.after_level_IV_select==1:
                 self.fuse_aggressive_switch = False
@@ -862,7 +865,7 @@ class Shop:
         log.INFO("合成四级，切换到非激进模式")
 
     def replacement_skill(self):
-        if module_position := auto.find_element("skill_replacement_assets.png", take_screenshot=True):
+        if module_position := auto.find_element("mirror/shop/skill_replacement_assets.png", take_screenshot=True):
             my_scale = cfg.set_win_size / 1440
             bbox = (
                 module_position[0] - 150 * my_scale, module_position[1] + 20 * my_scale,
@@ -877,16 +880,18 @@ class Shop:
             else:
                 sinner_nums= 12
             if cfg.language_in_game=='en':
-                sinner = all_sinners_name[:sinner_nums]
+                sinner = [all_sinners_name[self.sinner_team.index(i+1)] for i in range(sinner_nums)]
             else:
-                sinner = all_sinners_name_zh[:sinner_nums]
+                sinner = [all_sinners_name_zh[self.sinner_team.index(i + 1)] for i in range(sinner_nums)]
             if auto.find_text_element(sinner, my_crop=bbox):
                 auto.mouse_click(module_position[0], module_position[1]-100*my_scale)
                 sleep(0.5)
-                coins = auto.find_element(f"mirror/shop/skill_replacement_coins.png",find_type="image_with_multiple_targets")
-                coins = sorted(coins, key=lambda x: x[0], reverse=True)
-                auto.mouse_click(coins[self.skill_replacement_select][0], coins[self.skill_replacement_select][1])
+                coins = auto.find_element(f"mirror/shop/skill_replacement_coins.png",find_type="image_with_multiple_targets",take_screenshot=True)
+                coins = sorted(coins, key=lambda x: x[0])
+                select_mode = 3-self.skill_replacement_mode-1
+                auto.mouse_click(coins[select_mode][0], coins[select_mode][1])
                 sleep(0.5)
+                auto.click_element("mirror/shop/skill_replacement_confirm_assets.png")
                 auto.click_element("mirror/shop/skill_replacement_confirm_assets.png")
 
 
@@ -918,47 +923,47 @@ class Shop:
             if heal is False:
                 if self.do_not_heal:
                     heal = True
+                else:
+                    self.heal_sinner()
+                    heal = True
                     continue
-                self.heal_sinner()
-                heal = True
-                continue
 
             if sell is False:
                 if self.do_not_sell:
                     sell = True
+                else:
+                    # 出售无用饰品
+                    if self.fuse_switch is False:
+                        self.sell_gifts()
+                    sell = True
                     continue
-                # 出售无用饰品
-                if self.fuse_switch is False:
-                    self.sell_gifts()
-                sell = True
-                continue
 
             if buy is False:
                 if self.do_not_buy:
                     buy = True
+                else:
+                    self.buy_gifts()
+                    buy = True
                     continue
-                self.buy_gifts()
-                buy = True
-                continue
 
             if fuse is False:
                 if self.do_not_fuse:
                     fuse = True
+                else:
+                    # 合成饰品
+                    if self.fuse_switch:
+                        self.fuse_gift()
+                    fuse = True
                     continue
-                # 合成饰品
-                if self.fuse_switch:
-                    self.fuse_gift()
-                fuse = True
-                continue
 
             if enhance is False:
                 if self.do_not_enhance:
                     enhance = True
+                else:
+                    # 升级体系ego饰品
+                    self.enhance_gifts()
+                    enhance = True
                     continue
-                # 升级体系ego饰品
-                self.enhance_gifts()
-                enhance = True
-                continue
 
             break
 
