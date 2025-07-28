@@ -293,8 +293,10 @@ def update(assets_url):
 
     # 提取文件名
     file_name = assets_url.split('/')[-1]
-    if "7z" not in file_name or "OCR" in file_name:
+    if "7z" not in file_name:
         file_name = "AALC.zip"
+    elif "AALC" in file_name:
+        file_name = "AALC.7z"
     log.INFO(f"正在下载 {file_name} ...")
 
     try:
