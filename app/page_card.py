@@ -1,5 +1,7 @@
 from PyQt5.QtCore import Qt, QFile, QTextStream
-from PyQt5.QtWidgets import QVBoxLayout, QWidget, QFrame, QHBoxLayout, QTextBrowser
+from PyQt5.QtWidgets import QVBoxLayout, QWidget, QFrame, QHBoxLayout, QTextBrowser, QVBoxLayout
+from PyQt5.QtGui import QFont
+import markdown
 from qfluentwidgets import FluentIcon as FIF
 from qfluentwidgets import SegmentedWidget, ScrollArea, TransparentToolButton
 from qfluentwidgets.window.stacked_widget import StackedWidget
@@ -297,31 +299,52 @@ class PageMirror(PageCard):
 class MarkdownViewer(QWidget):
     def __init__(self, file_path=None):
         super().__init__()
-        # 创建布局和文本浏览器
         layout = QVBoxLayout()
         self.setLayout(layout)
 
         self.text_browser = QTextBrowser()
-        self.text_browser.setOpenExternalLinks(True)  # 允许打开外部链接
+        self.text_browser.setOpenExternalLinks(True)
+
+        font = QFont()
+        font.setFamily("Microsoft YaHei")
+        font.setPointSize(10)
+        self.text_browser.setFont(font)
+        self.text_browser.setStyleSheet("font-family: Microsoft YaHei, SimHei, sans-serif;")
+
         layout.addWidget(self.text_browser)
 
-
-        # 如果有文件路径，直接加载
         if file_path:
             self.load_markdown(file_path)
 
     def load_markdown(self, file_path):
-        """加载并显示Markdown文件"""
         try:
-            # 使用QFile确保正确处理文件编码
-            file = QFile(file_path)
-            if file.open(QFile.ReadOnly | QFile.Text):
-                stream = QTextStream(file)
-                stream.setCodec("UTF-8")  # 设置UTF-8编码
-                markdown_content = stream.readAll()
-                file.close()
+            with open(file_path, 'r', encoding='utf-8') as f:
+                markdown_text = f.read()
 
-                # 显示Markdown内容
-                self.text_browser.setMarkdown(markdown_content)
+                # 转换为 HTML
+                html = markdown.markdown(markdown_text, extensions=[
+                    'extra',        # 支持表格等扩展
+                    'toc',          # 支持目录
+                    'codehilite',   # 支持代码高亮（需要 pygments）
+                ])
+
+                # 可选加上 GitHub 风格样式
+                html_with_style = f"""
+                <html>
+                <head>
+                <style>
+                body {{ font-family: 'Microsoft YaHei', sans-serif; font-size: 10pt; }}
+                table {{ border-collapse: collapse; }}
+                td, th {{ border: 1px solid #ddd; padding: 6px; }}
+                pre {{ background-color: #f6f8fa; padding: 10px; }}
+                </style>
+                </head>
+                <body>
+                {html}
+                </body>
+                </html>
+                """
+
+                self.text_browser.setHtml(html_with_style)
         except Exception as e:
             self.text_browser.setPlainText(f"错误: 无法加载文件\n{str(e)}")
