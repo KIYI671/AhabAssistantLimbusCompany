@@ -463,7 +463,7 @@ class Mirror:
                     auto.mouse_click(first_starlight[0] + 400 * i * scale, first_starlight[1])
                     sleep(cfg.mouse_action_interval)
             else:
-                for i in range(10):
+                for i in range(1,11):
                     if i in self.opening_bonus_order:
                         index = self.opening_bonus_order.index(i)
                         if index <=4:
@@ -510,12 +510,12 @@ class Mirror:
                 break
 
             if auto.click_element("mirror/road_in_mir/ego_gift_get_confirm_assets.png"):
-                break
+                continue
 
             if team_system == "slash" or team_system == "pierce" or team_system == "blunt" and scroll == False:
                 slash_button = auto.find_element("mirror/road_to_mir/slash_gift_model_assets.png")
                 if slash_button is not None:
-                    auto.mouse_drag(slash_button[0], slash_button[1], drag_time=0.2, dx=0, dy=-200)
+                    auto.mouse_drag(slash_button[0], slash_button[1], drag_time=0.2, dx=0, dy=-400)
                     sleep(0.5)
                     continue
                 scroll = True
