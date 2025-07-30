@@ -88,6 +88,9 @@ class BaseCheckBox(BaseLayout):
 
         self.check_box.toggled.connect(self.on_toggle)
 
+        if self.config_name in ["hard_mirror","no_weekly_bonuses"]:
+            self.check_box.setChecked(False)
+
     def set_checked(self, checked):
         self.check_box.toggled.disconnect(self.on_toggle)
         self.check_box.setChecked(checked)
