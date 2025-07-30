@@ -266,7 +266,7 @@ class Shop:
 
             protect_list = ["mirror/shop/level_IV_gifts/lunar_memory.png",f"mirror/shop/level_IV_gifts/{self.system}_level_IV.png"]
             if self.second_system and self.second_system_action[0]:
-                protect_list.append(f"mirror/shop/level_IV_gifts/{all_systems[self.second_system_select]}_level_IV.png")
+                protect_list.append(f"mirror/shop/level_IV_gifts/{self.second_system_select}_level_IV.png")
 
             for protect_gift in protect_list:
                 if protect_coordinates:= auto.find_element(protect_gift):
@@ -393,7 +393,7 @@ class Shop:
             my_list = processing_coordinates(gift_list)
 
             if self.second_system and self.second_system_action[0]:
-                if protect_gift := auto.find_element(f"mirror/shop/level_IV_gifts/{all_systems[self.second_system_select]}_level_IV.png"):
+                if protect_gift := auto.find_element(f"mirror/shop/level_IV_gifts/{self.second_system_select}_level_IV.png"):
                     my_list=protect_coordinates(my_list,protect_gift)
 
             # 选择至多3样无用饰品
@@ -610,7 +610,7 @@ class Shop:
             gift_sell = False
 
             if self.second_system and self.second_system_action[0] and second is None:
-                if protect_gift := auto.find_element(f"mirror/shop/level_IV_gifts/{all_systems[self.second_system_select]}_level_IV.png"):
+                if protect_gift := auto.find_element(f"mirror/shop/level_IV_gifts/{self.second_system_select}_level_IV.png"):
                     second = protect_gift
 
             if auto.click_element("mirror/shop/sell_gift_assets.png"):
