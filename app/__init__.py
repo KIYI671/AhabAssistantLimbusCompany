@@ -70,7 +70,7 @@ team_setting_template = {
     "only_system_fuse": False,  # 只合成体系饰品
     "avoid_skill_3": False,  # 避免使用3技能
     "re_formation_each_floor": False,  # 每个楼层重新编队
-    "keep_starlight": False,  # 保留开局星光
+    "use_starlight": False,  # 使用开局星光换钱
     "reward_cards": False,  # 奖励卡优先度
     "reward_cards_select": 0, # 自定义奖励卡优先度
     "choose_opening_bonus": False,  # 自选开局加成
@@ -142,7 +142,7 @@ all_checkbox_config_name = [
     "only_system_fuse",
     "avoid_skill_3",
     "re_formation_each_floor",
-    "keep_starlight",
+    "use_starlight",
     "reward_cards",
     "choose_opening_bonus",
     "after_level_IV",

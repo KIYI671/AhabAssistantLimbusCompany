@@ -46,7 +46,7 @@ class Mirror:
         # 自选开局星光
         self.choose_opening_bonus = team_setting["choose_opening_bonus"]
         self.opening_bonus_order = team_setting["opening_bonus_order"]
-        self.keep_starlight = team_setting["keep_starlight"]
+        self.use_starlight = team_setting["use_starlight"]
         # 自选奖励卡优先度
         self.reward_cards = team_setting["reward_cards"]
         self.reward_cards_select = team_setting["reward_cards_select"]
@@ -452,7 +452,7 @@ class Mirror:
             if auto.find_element("mirror/road_to_mir/bleed_gift_assets.png"):
                 break
 
-            if self.keep_starlight and auto.click_element("mirror/road_to_mir/dreaming_star/convert_star_to_cost_assets.png"):
+            if self.use_starlight and auto.click_element("mirror/road_to_mir/dreaming_star/convert_star_to_cost_assets.png"):
                 continue
 
             if auto.click_element("mirror/road_to_mir/dreaming_star/select_star_confirm_assets.png"):

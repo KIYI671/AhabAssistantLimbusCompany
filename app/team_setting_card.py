@@ -332,7 +332,7 @@ class CustomizeSettingsModule(QFrame):
 
         self.avoid_skill_3 = BaseCheckBox("avoid_skill_3", None, "链接战避免使用三技能")
         self.re_formation_each_floor = BaseCheckBox("re_formation_each_floor", None, "每楼层重新编队")
-        self.keep_starlight = BaseCheckBox("keep_starlight", None, "开局星光不换钱")
+        self.use_starlight = BaseCheckBox("use_starlight", None, "开局星光换钱")
 
         self.reward_cards = CheckBoxWithComboBox("reward_cards", "奖励卡优先度", None, "reward_cards_select",
                                                  parent=self)
@@ -402,7 +402,7 @@ class CustomizeSettingsModule(QFrame):
 
         self.third_line.addWidget(self.avoid_skill_3)
         self.third_line.addWidget(self.re_formation_each_floor)
-        self.third_line.addWidget(self.keep_starlight)
+        self.third_line.addWidget(self.use_starlight)
 
         self.star_list.addWidget(self.starlight_1, 0, 0)
         self.star_list.addWidget(self.starlight_2, 0, 1)
