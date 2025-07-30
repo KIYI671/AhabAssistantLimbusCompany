@@ -51,6 +51,7 @@ class Shop:
         self.fuse_system_gift_1 = False
         self.fuse_system_gift_2 = False
         self.the_first_line_position = None
+        self.replacement = False
 
     @staticmethod
     def ego_gift_to_power_up():
@@ -209,6 +210,8 @@ class Shop:
                     sleep(3)
                     continue
                 refresh = True
+                if self.skill_replacement and self.replacement is False:
+                    self.replacement_skill()
 
             if refresh_keyword is False:
                 auto.mouse_click_blank(times=3)
@@ -887,12 +890,16 @@ class Shop:
                 auto.mouse_click(module_position[0], module_position[1]-100*my_scale)
                 sleep(0.5)
                 coins = auto.find_element(f"mirror/shop/skill_replacement_coins.png",find_type="image_with_multiple_targets",take_screenshot=True)
+                if len(coins)!=3:
+                    self.replacement = True
+                    return
                 coins = sorted(coins, key=lambda x: x[0])
                 select_mode = 3-self.skill_replacement_mode-1
                 auto.mouse_click(coins[select_mode][0], coins[select_mode][1])
                 sleep(0.5)
                 auto.click_element("mirror/shop/skill_replacement_confirm_assets.png")
                 auto.click_element("mirror/shop/skill_replacement_confirm_assets.png")
+                self.replacement = True
 
 
     # 在商店的处理
@@ -916,6 +923,7 @@ class Shop:
             sleep(1)
 
             if self.skill_replacement and skill is False:
+                self.replacement = False
                 self.replacement_skill()
                 skill = True
                 continue
