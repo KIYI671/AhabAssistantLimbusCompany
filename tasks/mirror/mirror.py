@@ -355,6 +355,8 @@ class Mirror:
                 break
             if auto.click_element("base/battle_finish_confirm_assets.png"):
                 continue
+            if auto.click_element("mirror/claim_reward/rewards_acquired_assets.png"):
+                continue
             if cfg.no_weekly_bonuses and auto.click_element("mirror/claim_reward/weekly_bonuses.png"):
                 continue
             if cfg.hard_mirror_single_bonuses:
