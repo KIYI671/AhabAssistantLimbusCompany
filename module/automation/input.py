@@ -91,7 +91,11 @@ class Input(metaclass=SingletonMeta):
 
         pyautogui.moveTo(x, y)
         pyautogui.mouseDown()
-        pyautogui.dragTo(x + dx, y + dy, duration=drag_time)
+        pyautogui.moveTo(x + dx, y + dy, duration=drag_time)
+        if drag_time*0.3>0.5:
+            sleep(drag_time*0.3)
+        else:
+            sleep(0.5)
         pyautogui.mouseUp()
 
         if move_back and current_mouse_position:

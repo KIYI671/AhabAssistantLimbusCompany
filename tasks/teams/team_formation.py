@@ -56,17 +56,19 @@ def select_battle_team(num):
     if position := auto.find_element("battle/teams_assets.png"):
         my_position[0] += position[0]
         my_position[1] += position[1]
-        auto.mouse_drag(my_position[0], my_position[1], dy=1333 * scale, drag_time=0.2)
+        auto.mouse_drag(my_position[0], my_position[1], dy=1333 * scale, drag_time=0.3)
         sleep(0.75)
+        first_position=[position[0],position[1]+70*scale]
         if cfg.select_team_by_order:
             team_range = (num-1)//5
-            team_order = (num-1)%5+1
+            team_order = (num-1)%5
             for _ in range(team_range):
-                auto.mouse_drag(my_position[0], my_position[1]+350*scale, dy=-360 * scale, drag_time=1.5)
+                auto.mouse_drag(first_position[0], first_position[1]+375*scale, dy=-385 * scale, drag_time=1.5)
+                sleep(1)
             if num <= 15:
-                auto.mouse_click(position[0], position[1] + 70 * team_order * scale)
+                auto.mouse_click(first_position[0], first_position[1] + 75 * team_order * scale)
             else:
-                auto.mouse_click(position[0], position[1] + 100 * scale + 70 * team_order * scale)
+                auto.mouse_click(first_position[0], first_position[1] + 100 * scale + 75 * team_order * scale)
         else:
             if cfg.language_in_game == 'en':
                 team_name = "TEAMS#" + str(num)
@@ -88,15 +90,15 @@ def select_battle_team(num):
                 sleep(1)
                 while auto.take_screenshot() is None:
                     continue
-    if find:
-        msg = f"成功找到队伍 # {num}"
-        log.INFO(msg)
-        sleep(1)
-        return True
-    else:
-        msg = f"找不到队伍 # {num}"
-        log.INFO(msg)
-        return False
+            if find:
+                msg = f"成功找到队伍 # {num}"
+                log.INFO(msg)
+                sleep(1)
+                return True
+            else:
+                msg = f"找不到队伍 # {num}"
+                log.INFO(msg)
+                return False
 
 
 @begin_and_finish_time_log(task_name="检查队伍剩余战斗力")
