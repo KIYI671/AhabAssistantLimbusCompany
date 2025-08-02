@@ -6,7 +6,6 @@ import win32con
 import win32gui
 
 from module.config import cfg
-from module.my_error.my_error import withOutGameWinError
 from utils.singletonmeta import SingletonMeta
 
 
@@ -33,10 +32,13 @@ class Screen(metaclass=SingletonMeta):
 
             if self.handle is None:
                 self.logger.ERROR(f"未能获取到游戏窗口: {self.title}")
-                raise withOutGameWinError
+                self.game.start_game()
+                return False
+            else:
+                return True
         except Exception as e:
             self.logger.ERROR(f"未能获取到游戏窗口: {e}")
-            raise e
+            self.game.start_game()
 
     def set_win(self):
         # 如果窗口最小化或不可见，先将其恢复

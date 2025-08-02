@@ -3,6 +3,7 @@ import os
 import platform
 import random
 from sys import exc_info
+from time import sleep
 from traceback import format_exception
 
 from PyQt5.QtCore import QThread, pyqtSignal, QMutex
@@ -79,7 +80,8 @@ def onetime_mir_process(team_setting):
 
 def init_game():
     game_process.start_game()
-    screen.init_handle()
+    while not screen.init_handle():
+        sleep(10)
     if cfg.set_windows:
         screen.set_win()
 
