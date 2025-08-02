@@ -365,7 +365,7 @@ class Mirror:
                 if len(bonuses)>1:
                     for _ in range(len(bonuses)-1):
                         position = bonuses.pop(-1)
-                        auto.click_element(position[0],position[1])
+                        auto.mouse_click(position[0],position[1])
             if auto.click_element("mirror/claim_reward/claim_rewards_confirm_assets.png", threshold=0.75):
                 continue
             if auto.click_element("mirror/claim_reward/enkephalin_assets.png", threshold=0.75):  # 降低识别阈值
@@ -379,7 +379,7 @@ class Mirror:
                     if pos:
                         auto.click_element(pos[0]-300*(cfg.set_win_size/1440),pos[1])
                     continue
-                if auto.click_element("mirror/claim_reward/claim_rewards_assets.png"):
+                elif auto.click_element("mirror/claim_reward/claim_rewards_assets.png"):
                     # TODO: 统计获取的coins
                     continue
             # 处理周年活动弹出的窗口

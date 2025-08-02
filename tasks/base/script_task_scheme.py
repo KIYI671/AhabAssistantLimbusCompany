@@ -148,12 +148,14 @@ def script_task():
                 team_num = teams_order.index(1)
                 mirror_result = onetime_mir_process(cfg.get_value(f"team{team_num+1}_setting"))
                 if mirror_result:
-                    for i in teams_order:
-                        if teams_order[i] == 1:
-                            teams_order[i] = cfg.teams_be_select_num
-                        elif teams_order[i] != 0:
-                            teams_order[i] -= 1
-                        cfg.set_value("teams_order", teams_order)
+                    for index,value in enumerate(teams_order):
+                        if value ==0:
+                            continue
+                        if teams_order[index] == 1:
+                            teams_order[index] = cfg.teams_be_select_num
+                        elif teams_order[index] != 0:
+                            teams_order[index] -= 1
+                    cfg.set_value("teams_order", teams_order)
                     mir_times -= 1
         else:
             log.WARNING("没有选择任何队伍，请选择一个队伍进行镜牢任务")
