@@ -104,6 +104,9 @@ class Mirror:
                 continue
             if auto.find_element("mirror/road_to_mir/select_team_stars_assets.png"):
                 break
+            if auto.find_element("mirror/road_to_mir/dreaming_star/coins_assets.png"):
+                # 防止卡在星光选择
+                break
             retry()
             loop_count -= 1
             if loop_count < 20:
