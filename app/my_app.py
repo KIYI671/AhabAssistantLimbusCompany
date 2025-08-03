@@ -70,7 +70,13 @@ class MainWindow(FramelessWindow):
                         """)
 
         self.farming_interface = FarmingInterface(self)
-        self.help_interface = MarkdownViewer("./README.md")
+        if cfg.language_in_program == "zh_cn":
+            self.help_interface = MarkdownViewer("./assets/doc/zh/How_to_use.md")
+        else:
+            self.help_interface = MarkdownViewer("./assets/doc/en/How_to_use_EN.md")
+        # 手动处理链接点击以处理md文件
+        self.help_interface.linkClicked.connect(self.handle_link_click)
+
         self.setting_interface = SettingInterface(self)
         #self.team_setting = TeamSettingCard(self)
 
@@ -80,6 +86,8 @@ class MainWindow(FramelessWindow):
         self.addSubInterface(self.setting_interface, 'setting_interface', '设置')
         #self.addSubInterface(self.team_setting, 'team_setting', '队伍设置')
 
+
+        
 
         self.HBoxLayout.addWidget(self.pivot)
         self.vBoxLayout.addSpacing(10)
@@ -194,3 +202,11 @@ class MainWindow(FramelessWindow):
         self.progress_ring.setWindowFlag(Qt.WindowStaysOnTopHint)  # 保持最上层显示
         self.progress_ring.show()
         self.progress_ring.setValue(value)
+
+    def handle_link_click(self, url:str):
+        """处理帮助文档中的链接点击"""
+        
+        
+        if url.endswith(".md"):
+            self.help_interface.load_markdown(url)
+        

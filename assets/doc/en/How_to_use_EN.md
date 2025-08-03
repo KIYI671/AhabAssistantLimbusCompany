@@ -2,13 +2,13 @@
 
 # How To Use
 
-[简体中文](/assets/doc/zh/How_to_use.md) | **English**
+[简体中文](./assets/doc/zh/How_to_use.md) | **English**
 
 </div>
 
 ---
 
-![image](/assets/doc/image/main_page.png)
+![image](./assets/doc/image/main_page.png)
 
 #### ① Lets you set the window resolution size
 #### ② Used to select the in-game language (i.e. it needs to be adapted to the in-game language)
@@ -22,19 +22,19 @@
 
 ---
 
-![image](/assets/doc/image/page_1.png)
+![image](./assets/doc/image/page_1.png)
 
 ---
 
-![image](/assets/doc/image/page_2.png)
+![image](./assets/doc/image/page_2.png)
 
 ---
 
-![image](/assets/doc/image/page_3.png)
+![image](./assets/doc/image/page_3.png)
 
 ---
 
-![image](/assets/doc/image/page_4.png)
+![image](./assets/doc/image/page_4.png)
 
 #### ① Enable/Deactivate after clicking This team is used for the Mirror Prison
 #### ② Used to showcase the rotation order of the enabled teams
@@ -44,7 +44,7 @@
 
 ---
 
-![image](/assets/doc/image/page_5.png)
+![image](./assets/doc/image/page_5.png)
 
 #### ① Select the system used by your team
 #### ② Select the team number to be used by the team
