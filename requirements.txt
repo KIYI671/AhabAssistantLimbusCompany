@@ -47,7 +47,8 @@ tzlocal==5.2
 urllib3==2.2.3
 wrapt==1.17.0
 pyuac~=0.0.3
-Markdown~=3.7
+markdown-it-py~=3.0.0
+mdit-py-plugins~=0.4.2
 packaging~=24.2
 playsound3~=2.5.2
 cpufeature~=0.2.1

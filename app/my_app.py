@@ -74,8 +74,6 @@ class MainWindow(FramelessWindow):
             self.help_interface = MarkdownViewer("./assets/doc/zh/How_to_use.md")
         else:
             self.help_interface = MarkdownViewer("./assets/doc/en/How_to_use_EN.md")
-        # 手动处理链接点击以处理md文件
-        self.help_interface.linkClicked.connect(self.handle_link_click)
 
         self.setting_interface = SettingInterface(self)
         #self.team_setting = TeamSettingCard(self)
