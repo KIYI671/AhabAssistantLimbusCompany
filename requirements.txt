@@ -25,7 +25,7 @@ PyGetWindow==0.0.9
 PyMsgBox==1.0.9
 pynput==1.7.7
 pyperclip==1.9.0
-PyQt-Fluent-Widgets==1.7.3
+PyQt-Fluent-Widgets==1.8.4
 PyQt5==5.15.11
 PyQt5-Frameless-Window==0.4.3
 PyQt5-Qt5==5.15.2
