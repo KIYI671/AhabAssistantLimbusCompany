@@ -1,7 +1,10 @@
-from PyQt5.QtCore import Qt, QFile, QTextStream
+from PyQt5.QtCore import Qt, QFile, QTextStream, pyqtSignal, QEvent
 from PyQt5.QtWidgets import QVBoxLayout, QWidget, QFrame, QHBoxLayout, QTextBrowser, QVBoxLayout
 from PyQt5.QtGui import QFont
+
 import markdown
+import re
+
 from qfluentwidgets import FluentIcon as FIF
 from qfluentwidgets import SegmentedWidget, ScrollArea, TransparentToolButton
 from qfluentwidgets.window.stacked_widget import StackedWidget
@@ -296,55 +299,129 @@ class PageMirror(PageCard):
         mediator.refresh_teams_order.connect(self.refresh)
 
 
-class MarkdownViewer(QWidget):
+class MarkdownViewer(QTextBrowser):
+
+    # 自定义信号，当链接被点击时发出
+    linkClicked = pyqtSignal(str)  # 参数为链接URL字符串
+    
+
     def __init__(self, file_path=None):
         super().__init__()
-        layout = QVBoxLayout()
-        self.setLayout(layout)
+        
+        # 设置文本浏览器属性
+        self.setOpenExternalLinks(False)
+        self.setOpenLinks(False)
 
-        self.text_browser = QTextBrowser()
-        self.text_browser.setOpenExternalLinks(True)
+        self.setContextMenuPolicy(Qt.NoContextMenu) # 禁用鼠标右键
 
-        font = QFont()
-        font.setFamily("Microsoft YaHei")
-        font.setPointSize(10)
-        self.text_browser.setFont(font)
-        self.text_browser.setStyleSheet("font-family: Microsoft YaHei, SimHei, sans-serif;")
+        font = QFont("Microsoft YaHei", 10)
+        self.setFont(font)
 
-        layout.addWidget(self.text_browser)
+        self.viewport().setMouseTracking(True)
+
+        self.css_style = """
+        QTextBrowser { color: #1F2328; font-family: "Microsoft YaHei", sans-serif; line-height: 1.2}
+        QScrollBar::handle:vertical { border-radius: 60px; }
+        body { color: #1F2328; font-family: "Microsoft YaHei", sans-serif; margin: 20px; line-height: 1.2}
+        img { max-width: 50%; }
+        pre, code {
+            font-family: Consolas, "Courier New", monospace;
+            font-size: large;
+            line-height: 1;
+            color: #24292e;
+            background-color: #f6f8fa;
+            overflow: auto;
+        }
+        code { font-size: smaller ; line-height: 1.5;}
+        a { color: #0969DA;}
+        hr { background-color: #D1D9E0; height: 4px; border: none; }
+        table { border-collapse: collapse; width: 100%; margin: 10px 0; }
+        th, td { border: 1px solid #ddd; padding: 8px; }
+        """
+        self.setStyleSheet(self.css_style)
 
         if file_path:
             self.load_markdown(file_path)
 
+    def mouseReleaseEvent(self, event):
+        """处理鼠标释放事件，捕获链接点击"""
+        # 只处理左键点击
+        if event.button() == Qt.LeftButton:
+            anchor = self.anchorAt(event.pos())
+            if anchor:
+                # 检查链接类型
+                if anchor.endswith(".md"):
+                    self.linkClicked.emit(anchor)
+                    return  # 拦截事件，阻止默认行为
+        
+        super().mouseReleaseEvent(event)
+
     def load_markdown(self, file_path):
         try:
-            with open(file_path, 'r', encoding='utf-8') as f:
-                markdown_text = f.read()
+            with open(file_path, "r", encoding="utf-8") as f:
+                md_content = f.read()
 
-                # 转换为 HTML
-                html = markdown.markdown(markdown_text, extensions=[
-                    'extra',        # 支持表格等扩展
-                    'toc',          # 支持目录
-                    'codehilite',   # 支持代码高亮（需要 pygments）
-                ])
+            def convert_strikethrough(text):
+                return re.sub(r'~~(.*?)~~', r'<del>\1</del>', text)
 
-                # 可选加上 GitHub 风格样式
-                html_with_style = f"""
-                <html>
-                <head>
+            md_content = convert_strikethrough(md_content)
+
+            def preprocess_divs(text):
+                def convert_div(match):
+                    inner = match.group(1)
+                    # 单独转换div内部内容
+                    return f'<div align="center">\n{markdown.markdown(inner)}\n</div>'
+                
+                return re.sub(r'<div[^>]*>(.*?)</div>', convert_div, text, flags=re.DOTALL)
+
+            md_content = preprocess_divs(md_content)
+
+            extensions = [
+                "extra",
+                "tables",
+                "fenced_code",
+                "toc",
+                "sane_lists",
+                "nl2br",
+                "admonition",
+            ]
+
+            html_content = markdown.markdown(
+                md_content,
+                extensions=extensions,
+                output_format="html5"
+            )
+
+            
+            html = f"""<!DOCTYPE html>
+            <html>
+            <head>
+                <meta charset="UTF-8">
+                <title>AhabAssistantLimbusCompany</title>
                 <style>
-                body {{ font-family: 'Microsoft YaHei', sans-serif; font-size: 10pt; }}
-                table {{ border-collapse: collapse; }}
-                td, th {{ border: 1px solid #ddd; padding: 6px; }}
-                pre {{ background-color: #f6f8fa; padding: 10px; }}
+                    {self.css_style}
                 </style>
-                </head>
-                <body>
-                {html}
-                </body>
-                </html>
-                """
+            </head>
+            <body>
+            <div id="content">
+            {html_content}
+            </div>
+            </body>
+            </html>"""
 
-                self.text_browser.setHtml(html_with_style)
+            # with open("Generated.html", 'w', encoding='utf-8') as f:
+            #     f.write(html)
+            
+            
+
+            self.setHtml(html)
+
         except Exception as e:
-            self.text_browser.setPlainText(f"错误: 无法加载文件\n{str(e)}")
+            # 显示错误信息
+            error_html = f"""
+            <html><body style="color: red; font-family: Arial; padding: 20px;">
+            <h2>错误: 无法加载文件</h2>
+            <pre>{str(e)}</pre>
+            </body></html>
+            """
+            self.setHtml(error_html)
