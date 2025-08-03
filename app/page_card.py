@@ -321,6 +321,7 @@ class MarkdownViewer(QWidget):
         self.text_browser = QTextBrowser()
         self.text_browser.setOpenExternalLinks(False)
         self.text_browser.anchorClicked.connect(self.handle_link_clicked)
+        self.text_browser.setContextMenuPolicy(Qt.ContextMenuPolicy.NoContextMenu) # 禁用右键菜单
 
         css_path = "assets/styles/github-markdown-light.css"
         with open(css_path, "r", encoding="utf-8") as css_file:
