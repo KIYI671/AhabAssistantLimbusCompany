@@ -95,6 +95,9 @@ class MessageBoxConfirm(MessageBox):
         self.buttonLayout.addWidget(self.yesButton, 1, Qt.AlignVCenter)
         self.textLayout.addWidget(self.contentLabel, 0, Qt.AlignTop)
 
+    def open_url(self, url):
+        QDesktopServices.openUrl(QUrl(url))
+
 
 class MessageBoxEdit(MessageBox):
     def __init__(self, title: str, content: str, parent=None):

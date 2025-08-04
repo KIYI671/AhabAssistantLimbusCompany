@@ -10,7 +10,7 @@ class Updater:
     """应用程序更新器，负责检查、下载、解压和安装最新版本的应用程序。"""
 
     def __init__(self, file_name=None):
-        self.process_names = ["Ahab Assistant Limbus Company.exe", "AALC.exe","Ahab Assistant Limbus Company","AALC"]
+        self.process_names = ["AALC.exe"]
 
         self.temp_path = os.path.abspath("./update_temp")
         os.makedirs(self.temp_path, exist_ok=True)
@@ -62,9 +62,15 @@ class Updater:
             if proc.info['name'] in self.process_names or any(name in proc.info['name'] for name in self.process_names):
                 try:
                     proc.terminate()
-                    proc.wait(10)
-                except (psutil.NoSuchProcess, psutil.TimeoutExpired, psutil.AccessDenied):
-                    pass
+                    try:
+                        proc.wait(timeout=10)  # 等待最多10秒
+                    except psutil.TimeoutExpired:
+                        proc.kill()  # 超时强制终止
+                        proc.wait(timeout=5)  # 再次等待
+                except psutil.AccessDenied:
+                    print(f"无权限终止进程 PID: {proc.info['pid']}")
+                except psutil.NoSuchProcess:
+                    print(f"进程 PID: {proc.info['pid']} 已退出")
         print("终止进程完成")
 
     def cleanup(self):
@@ -85,7 +91,7 @@ class Updater:
         self.terminate_processes()
         self.cover_folder()
         self.cleanup()
-        input("按回车键退出并打开软件")
+        input("已完成更新，按回车键退出并打开软件\nThe update is complete, press enter to exit and open the software")
         if os.system(f'cmd /c start "" "{os.path.abspath("./AALC.exe")}"'):
             subprocess.Popen(os.path.abspath("./AALC.exe"))
 

@@ -12,6 +12,7 @@ class Mediator(QObject):
     link_start = pyqtSignal()
     save_warning = pyqtSignal()
     update_progress = pyqtSignal(int)
+    download_complete = pyqtSignal(str)
 
     # 单例实例（类变量）
     _instance = None

@@ -12,7 +12,7 @@ from packaging.version import parse
 from qfluentwidgets import InfoBar, InfoBarPosition
 
 from app import mediator
-from app.card.messagebox_custom import MessageBoxUpdate, MessageBoxConfirm
+from app.card.messagebox_custom import MessageBoxUpdate
 from module.config import cfg
 from module.decorator.decorator import begin_and_finish_time_log
 from module.logger import log
@@ -322,6 +322,8 @@ def update(assets_url):
                         progress = int(downloaded / total_size * 100)
                         mediator.update_progress.emit(progress)
 
+        log.INFO(f"下载进度100%")
+
         if "OCR" in file_name:
             exe_path = os.path.abspath("./assets/binary/7za.exe")
             download_file_path = os.path.join("./update_temp", file_name)
@@ -337,14 +339,7 @@ def update(assets_url):
                 input("解压失败，按回车键重新解压. . .多次失败请手动下载更新")
                 return False
         else:
-            messages_box = MessageBoxConfirm(
-                "更新提醒",
-                "下载已经完成，是否开始更新",
-            )
-            if messages_box.exec_():
-                source_file = os.path.abspath("./AALC Updater.exe")
-                assert_name = file_name
-                subprocess.Popen([source_file, assert_name], creationflags=subprocess.DETACHED_PROCESS)
+            mediator.download_complete.emit(file_name)
 
     except requests.exceptions.RequestException as e:
         log.error(f"下载失败，请检查网络: {e}")

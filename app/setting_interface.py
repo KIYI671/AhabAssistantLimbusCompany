@@ -36,7 +36,7 @@ class SettingInterface(ScrollArea):
             parent=self.game_setting_group
         )
 
-        self.game_path_group = SettingCardGroup("游戏路径", self.scroll_widget)
+        self.game_path_group = SettingCardGroup("启动游戏", self.scroll_widget)
         self.game_path_card = PushSettingCard(
             self.tr('修改'),
             FIF.FOLDER,
@@ -58,9 +58,9 @@ class SettingInterface(ScrollArea):
         self.update_group = SettingCardGroup("更新设置", self.scroll_widget)
         self.check_update_card = SwitchSettingCard(
             FIF.SYNC,
-            self.tr('检查更新'),
-            "启用检查更新功能",
-            "check_update",
+            self.tr('加入预览版更新渠道'),
+            "",
+            "update_prerelease_enable",
             parent=self.update_group
         )
         self.update_source_card = ComboBoxSettingCard(
