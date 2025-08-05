@@ -1,6 +1,6 @@
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QFrame, QVBoxLayout, QWidget, QHBoxLayout, QSizePolicy, QGridLayout
-from qfluentwidgets import FluentIcon as FIF, SimpleExpandGroupSettingCard
+from qfluentwidgets import FluentIcon as FIF, ExpandSettingCard
 from qfluentwidgets import ScrollArea, PrimaryPushButton, PushButton
 
 from app import *
@@ -53,7 +53,7 @@ class TeamSettingCard(QFrame):
         self.gift_system_list_1 = QHBoxLayout()
         self.gift_system_list_2 = QHBoxLayout()
 
-        self.custom_layout = SimpleExpandGroupSettingCard(icon=FIF.EDIT, title="自定义设置", parent=self)
+        self.custom_layout = ExpandSettingCard(icon=FIF.EDIT, title="自定义设置", parent=self)
 
         self.setting_layout = QHBoxLayout()
 
