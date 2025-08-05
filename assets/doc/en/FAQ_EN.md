@@ -40,19 +40,19 @@ Ways to switch input methods:
 
 Q: After starting, can I not move the keyboard and mouse or switch to the background?
 
-A: Yes, if you need to run it in the background, please try [Remote Local Multi - User Desktop](/README.md#background - running).
+A: Yes, if you need to run it in the background, please try [Remote Local Multi - User Desktop](/assets/doc/en/README_EN.md#running-in-the-background).
 
 ---
 
 Q: I'm stuck in XXX / XXX seems to be unrecognizable all the time.
 
-A: Check if your computer has enabled night mode. For more details, refer to [this](<url id="cukbv53djm8j2js93phg" type="url" status="parsed" title="KIYI671/AhabAssistantLimbusCompany" wc="741">https://github.com/KIYI671/AhabAssistantLimbusCompany/issues/70)</url>.
+A: Check if your computer has enabled night mode. For more details, refer to [this](https://github.com/KIYI671/AhabAssistantLimbusCompany/issues/70).
 
 ---
 
 Q: I encountered the XXX theme pack, which led to the death of all members. Can I set it not to enter?
 
-A: Yes, you can set it not to enter. Please try [Setting Theme Pack Weight](/README.md#theme - pack - weight - setting) on your own.
+A: Yes, you can set it not to enter. Please try [Setting Theme Pack Weight](/README_EN.md#theme-package-weight-setting) on your own.
 
 ---
 

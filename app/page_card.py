@@ -1,9 +1,11 @@
-from PyQt5.QtCore import Qt, QFile, QTextStream, pyqtSignal, QEvent
+from PyQt5.QtCore import Qt, QFile, QTextStream, pyqtSignal, QEvent, QUrl
 from PyQt5.QtWidgets import QVBoxLayout, QWidget, QFrame, QHBoxLayout, QTextBrowser, QVBoxLayout
-from PyQt5.QtGui import QFont
+from PyQt5.QtGui import QFont, QDesktopServices
 
-import markdown
-import re
+import os
+from markdown_it import MarkdownIt
+from mdit_py_plugins.anchors import anchors_plugin
+from .markdown_it_imgdiv import imgdiv_plugin, render_div_open, render_div_close
 
 from qfluentwidgets import FluentIcon as FIF
 from qfluentwidgets import SegmentedWidget, ScrollArea, TransparentToolButton
@@ -299,129 +301,114 @@ class PageMirror(PageCard):
         mediator.refresh_teams_order.connect(self.refresh)
 
 
-class MarkdownViewer(QTextBrowser):
+def transform_image_url(self, tokens, idx, options, env):
+    token = tokens[idx]
+    src = token.attrs["src"]
+    if isinstance(src, str):
+        url = QUrl(src)
+        if url.path().startswith("/"):
+            new_src = "." + url.path()
+            tokens[idx].attrSet("src", new_src)
 
-    # 自定义信号，当链接被点击时发出
-    linkClicked = pyqtSignal(str)  # 参数为链接URL字符串
-    
+    return self.image(tokens, idx, options, env)
 
-    def __init__(self, file_path=None):
+class MarkdownViewer(QWidget):
+    def __init__(self, file_path: str):
         super().__init__()
-        
-        # 设置文本浏览器属性
-        self.setOpenExternalLinks(False)
-        self.setOpenLinks(False)
+        layout = QVBoxLayout(self)
+        self.setLayout(layout)
 
-        self.setContextMenuPolicy(Qt.NoContextMenu) # 禁用鼠标右键
+        self.text_browser = QTextBrowser()
+        self.text_browser.setOpenExternalLinks(False)
+        self.text_browser.anchorClicked.connect(self.handle_link_clicked)
+        self.text_browser.setContextMenuPolicy(Qt.ContextMenuPolicy.NoContextMenu) # 禁用右键菜单
 
-        font = QFont("Microsoft YaHei", 10)
-        self.setFont(font)
+        css_path = "assets/styles/github-markdown-light.css"
+        with open(css_path, "r", encoding="utf-8") as css_file:
+            css_content = css_file.read()
+            self.text_browser.setStyleSheet(css_content)
 
-        self.viewport().setMouseTracking(True)
+        self.md = (
+            MarkdownIt("commonmark", {"html": True})
+            .enable("linkify")
+            .enable("table")
+            .enable("strikethrough")
+            .use(
+                anchors_plugin,
+                max_level=4,
+                slug_func=lambda s: s.lower().replace(" ", "-"),
+            )
+        )
+        self.md.add_render_rule("image", transform_image_url)
+        self.md.use(imgdiv_plugin, class_name="figure", focusable=False, align="center")
 
-        self.css_style = """
-        QTextBrowser { color: #1F2328; font-family: "Microsoft YaHei", sans-serif; line-height: 1.2}
-        QScrollBar::handle:vertical { border-radius: 60px; }
-        body { color: #1F2328; font-family: "Microsoft YaHei", sans-serif; margin: 20px; line-height: 1.2}
-        img { max-width: 50%; }
-        pre, code {
-            font-family: Consolas, "Courier New", monospace;
-            font-size: large;
-            line-height: 1;
-            color: #24292e;
-            background-color: #f6f8fa;
-            overflow: auto;
-        }
-        code { font-size: smaller ; line-height: 1.5;}
-        a { color: #0969DA;}
-        hr { background-color: #D1D9E0; height: 4px; border: none; }
-        table { border-collapse: collapse; width: 100%; margin: 10px 0; }
-        th, td { border: 1px solid #ddd; padding: 8px; }
+        self.md.add_render_rule("div_open", render_div_open)
+        self.md.add_render_rule("div_close", render_div_close)
+
+        self.html = """
+        <html>
+            <body>
+                <h1>帮助页面加载失败！</h1>
+            </body>
+        </html>
         """
-        self.setStyleSheet(self.css_style)
 
-        if file_path:
-            self.load_markdown(file_path)
-
-    def mouseReleaseEvent(self, event):
-        """处理鼠标释放事件，捕获链接点击"""
-        # 只处理左键点击
-        if event.button() == Qt.LeftButton:
-            anchor = self.anchorAt(event.pos())
-            if anchor:
-                # 检查链接类型
-                if anchor.endswith(".md"):
-                    self.linkClicked.emit(anchor)
-                    return  # 拦截事件，阻止默认行为
-        
-        super().mouseReleaseEvent(event)
-
-    def load_markdown(self, file_path):
-        try:
-            with open(file_path, "r", encoding="utf-8") as f:
-                md_content = f.read()
-
-            def convert_strikethrough(text):
-                return re.sub(r'~~(.*?)~~', r'<del>\1</del>', text)
-
-            md_content = convert_strikethrough(md_content)
-
-            def preprocess_divs(text):
-                def convert_div(match):
-                    inner = match.group(1)
-                    # 单独转换div内部内容
-                    return f'<div align="center">\n{markdown.markdown(inner)}\n</div>'
-                
-                return re.sub(r'<div[^>]*>(.*?)</div>', convert_div, text, flags=re.DOTALL)
-
-            md_content = preprocess_divs(md_content)
-
-            extensions = [
-                "extra",
-                "tables",
-                "fenced_code",
-                "toc",
-                "sane_lists",
-                "nl2br",
-                "admonition",
-            ]
-
-            html_content = markdown.markdown(
-                md_content,
-                extensions=extensions,
-                output_format="html5"
+        layout.addWidget(self.text_browser)
+        self.help_path = file_path
+        self.reset_viewer()
+    
+    def reset_viewer(self):
+        if os.path.exists(self.help_path):
+            self.load_markdown(self.help_path)
+            self.text_browser.setHtml(self.html)
+        else:
+            self.text_browser.setPlainText(
+                f"错误: 无法加载文件 {self.help_path}，请检查文件路径是否正确。"
             )
 
-            
-            html = f"""<!DOCTYPE html>
-            <html>
-            <head>
-                <meta charset="UTF-8">
-                <title>AhabAssistantLimbusCompany</title>
-                <style>
-                    {self.css_style}
-                </style>
-            </head>
-            <body>
-            <div id="content">
-            {html_content}
-            </div>
-            </body>
-            </html>"""
+    def handle_link_clicked(self, url: QUrl):
+        """
+        Decides how to handle a clicked link in the QTextBrowser.
+        """
+        if url.scheme() in ["http", "https"]:
+            # 用系统默认浏览器打开外部链接
+            QDesktopServices.openUrl(url)
+        elif url.scheme() != "":
+            # 其他链接，不处理
+            pass
+        else:
+            # 本地文件
+            file_path = url.path()
+            if file_path.startswith("/"):
+                # 处理以项目根目录为base的路径
+                file_path = file_path[1:]
 
-            # with open("Generated.html", 'w', encoding='utf-8') as f:
-            #     f.write(html)
-            
-            
+            if os.path.exists(file_path) and file_path.endswith(".md"):
+                # 如果是本地文件链接，尝试加载 Markdown 文件
+                self.load_markdown(file_path)
+                self.text_browser.setHtml(self.html)
 
-            self.setHtml(html)
+                if url.hasFragment():
+                    # 如果链接有锚点，滚动到对应的锚点
+                    self.text_browser.scrollToAnchor(url.fragment())
+                return
 
+        self.text_browser.setHtml(self.html)
+
+    def load_markdown(self, file_path: str):
+        try:
+            with open(file_path, "r", encoding="utf-8") as f:
+                markdown_text = f.read()
+
+                html_body = self.md.render(markdown_text)
+
+                # 添加 HTML 头部
+                self.html = f"""
+                <html>
+                <body>
+                    {html_body}
+                </body>
+                </html>
+                """
         except Exception as e:
-            # 显示错误信息
-            error_html = f"""
-            <html><body style="color: red; font-family: Arial; padding: 20px;">
-            <h2>错误: 无法加载文件</h2>
-            <pre>{str(e)}</pre>
-            </body></html>
-            """
-            self.setHtml(error_html)
+            self.text_browser.setPlainText(f"错误: 无法加载文件\n{str(e)}")
