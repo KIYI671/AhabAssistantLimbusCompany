@@ -2,13 +2,13 @@
 
 # 用法详解
 
-**简体中文** | [English](./assets/doc/en/How_to_use_EN.md)
+**简体中文** | [English](/assets/doc/en/How_to_use_EN.md)
 
 </div>
 
 ---
 
-![image](./assets/doc/image/main_page.png)
+![image](/assets/doc/image/main_page.png)
 
 #### ① 用于设置窗口分辨率大小
 #### ② 用于选择游戏内语言（即需要与游戏内语言相适配）
@@ -22,19 +22,19 @@
 
 ---
 
-![image](./assets/doc/image/page_1.png)
+![image](/assets/doc/image/page_1.png)
 
 ---
 
-![image](./assets/doc/image/page_2.png)
+![image](/assets/doc/image/page_2.png)
 
 ---
 
-![image](./assets/doc/image/page_3.png)
+![image](/assets/doc/image/page_3.png)
 
 ---
 
-![image](./assets/doc/image/page_4.png)
+![image](/assets/doc/image/page_4.png)
 
 #### ① 点击后启用/取消启用 此队伍用于镜牢
 #### ② 用于展示已启用队伍的轮换排序
@@ -44,7 +44,7 @@
 
 ---
 
-![image](./assets/doc/image/page_5.png)
+![image](/assets/doc/image/page_5.png)
 
 #### ① 选择本配队使用的体系
 #### ② 选择本配队使用的队伍序号

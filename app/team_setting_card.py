@@ -38,7 +38,7 @@ class TeamSettingCard(QFrame):
         self.page_widget = QWidget()
         self.scroll_general.setWidget(self.page_widget)
 
-        self.layout = QVBoxLayout(self.page_widget)
+        self.layout_ = QVBoxLayout(self.page_widget)
 
         self.main_layout.addWidget(self.scroll_general)
 
@@ -135,12 +135,12 @@ class TeamSettingCard(QFrame):
         self.setting_layout.addWidget(self.cancel_button)
         self.setting_layout.addWidget(self.confirm_button)
 
-        self.layout.addWidget(self.combobox_layout)
-        self.layout.addLayout(self.select_sinner_layout_1)
-        self.layout.addLayout(self.select_sinner_layout_2)
-        self.layout.addWidget(self.gift_system_layout)
-        self.layout.addWidget(self.custom_layout)
-        self.layout.addLayout(self.setting_layout)
+        self.layout_.addWidget(self.combobox_layout)
+        self.layout_.addLayout(self.select_sinner_layout_1)
+        self.layout_.addLayout(self.select_sinner_layout_2)
+        self.layout_.addWidget(self.gift_system_layout)
+        self.layout_.addWidget(self.custom_layout)
+        self.layout_.addLayout(self.setting_layout)
 
         self.custom_layout.viewLayout.addWidget(self.customize_settings_module)
 
