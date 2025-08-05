@@ -34,7 +34,8 @@ def get_reward_card(model = 0):
             break
         if auto.click_element("mirror/road_in_mir/ego_gift_get_confirm_assets.png"):
             break
-        retry()
+        if retry() is False:
+            return False
         loop_count -= 1
         if loop_count < 20:
             auto.model = "normal"
@@ -43,7 +44,8 @@ def get_reward_card(model = 0):
         if loop_count < 0:
             log.ERROR("无法获取奖励卡")
             return
-    retry()
+    if retry() is False:
+        return False
     while auto.click_element("mirror/get_reward_card/get_reward_card_confirm_assets.png"):
         while auto.take_screenshot() is None:
             continue

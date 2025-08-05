@@ -219,7 +219,8 @@ class Battle:
             if auto.click_element("battle/continue_assets.png"):
                 continue
                 # 如果网络波动，需要点击重试
-            retry()
+            if retry() is False:
+                return False
 
             chance -= 1
             sleep(waiting)

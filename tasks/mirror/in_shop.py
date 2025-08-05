@@ -53,8 +53,10 @@ class Shop:
         self.the_first_line_position = None
         self.replacement = False
 
-    @staticmethod
-    def ego_gift_to_power_up():
+    class RestartGame(Exception):
+        pass
+
+    def ego_gift_to_power_up(self):
         loop_count = 30
         auto.model = 'clam'
         while True:
@@ -70,7 +72,8 @@ class Shop:
                 if auto.click_element("mirror/shop/power_up_confirm_assets.png") is False:
                     return True
                 sleep(3)
-                retry()
+                if retry() is False:
+                    raise self.RestartGame()
             if auto.find_element("mirror/shop/power_up_confirm_assets.png"):
                 return False
             loop_count -= 1
@@ -97,7 +100,8 @@ class Shop:
                         while auto.click_element("mirror/shop/purchase_assets.png") is False:
                             while auto.take_screenshot() is None:
                                 continue
-                            retry()
+                            if retry() is False:
+                                raise self.RestartGame()
                             if auto.click_element("mirror/road_in_mir/ego_gift_get_confirm_assets.png"):
                                 break
                             continue
@@ -185,7 +189,8 @@ class Shop:
                             auto.mouse_click_blank(times=2)
                             sleep(1)
 
-            retry()
+            if retry() is False:
+                raise self.RestartGame()
             try:
                 money_bbox = ImageUtils.get_bbox(ImageUtils.load_image("mirror/shop/my_money_bbox.png"))
                 my_money = auto.get_text_from_screenshot(money_bbox)
@@ -328,7 +333,8 @@ class Shop:
 
             break
 
-        retry()
+        if retry() is False:
+            raise self.RestartGame()
 
     def fuse_useless_gifts(self):
         """合成无用饰品"""
@@ -481,7 +487,8 @@ class Shop:
             auto.mouse_click_blank(times=3)
             break
 
-        retry()
+        if retry() is False:
+            raise self.RestartGame()
 
     def fuse_system_gifts(self, times):
         """合成体系饰品"""
@@ -777,7 +784,8 @@ class Shop:
             auto.mouse_click_blank()
             loop_try_count -= 1
             if loop_try_count < 0: # issue 171
-                retry()
+                if retry() is False:
+                    raise self.RestartGame()
 
             if loop_try_count < -50:
                 log.ERROR("不应该发生这样的问题，请提交issue")
@@ -844,7 +852,8 @@ class Shop:
                 log.ERROR("升级ego饰品失败")
                 break
 
-        retry()
+        if retry() is False:
+            raise self.RestartGame()
 
     def after_fuse_IV(self):
         self.fuse_IV = True
@@ -914,86 +923,90 @@ class Shop:
         fuse = False
         enhance = False
         skill = False
-        while True:
-            # 自动截图
-            if auto.take_screenshot() is None:
-                continue
+        try:
+            while True:
+                # 自动截图
+                if auto.take_screenshot() is None:
+                    continue
+
+                auto.mouse_click_blank(times=3)
+                sleep(1)
+
+                if self.skill_replacement and skill is False:
+                    self.replacement = False
+                    self.replacement_skill()
+                    skill = True
+                    continue
+
+                if heal is False:
+                    if self.do_not_heal:
+                        heal = True
+                    else:
+                        self.heal_sinner()
+                        heal = True
+                        continue
+
+                if sell is False:
+                    if self.do_not_sell:
+                        sell = True
+                    else:
+                        # 出售无用饰品
+                        if self.fuse_switch is False:
+                            self.sell_gifts()
+                        sell = True
+                        continue
+
+                if buy is False:
+                    if self.do_not_buy:
+                        buy = True
+                    else:
+                        self.buy_gifts()
+                        buy = True
+                        continue
+
+                if fuse is False:
+                    if self.do_not_fuse:
+                        fuse = True
+                    else:
+                        # 合成饰品
+                        if self.fuse_switch:
+                            self.fuse_gift()
+                        fuse = True
+                        continue
+
+                if enhance is False:
+                    if self.do_not_enhance:
+                        enhance = True
+                    else:
+                        # 升级体系ego饰品
+                        self.enhance_gifts()
+                        enhance = True
+                        continue
+
+                break
 
             auto.mouse_click_blank(times=3)
-            sleep(1)
-
-            if self.skill_replacement and skill is False:
-                self.replacement = False
-                self.replacement_skill()
-                skill = True
-                continue
-
-            if heal is False:
-                if self.do_not_heal:
-                    heal = True
-                else:
-                    self.heal_sinner()
-                    heal = True
+            loop_count = 30
+            auto.model = 'clam'
+            while True:
+                # 自动截图
+                if auto.take_screenshot() is None:
                     continue
-
-            if sell is False:
-                if self.do_not_sell:
-                    sell = True
-                else:
-                    # 出售无用饰品
-                    if self.fuse_switch is False:
-                        self.sell_gifts()
-                    sell = True
+                if auto.find_element("mirror/road_in_mir/legend_assets.png"):
+                    break
+                if auto.click_element("mirror/shop/leave_shop_confirm_assets.png"):
                     continue
-
-            if buy is False:
-                if self.do_not_buy:
-                    buy = True
-                else:
-                    self.buy_gifts()
-                    buy = True
+                if auto.click_element("mirror/shop/leave_assets.png"):
                     continue
-
-            if fuse is False:
-                if self.do_not_fuse:
-                    fuse = True
-                else:
-                    # 合成饰品
-                    if self.fuse_switch:
-                        self.fuse_gift()
-                    fuse = True
-                    continue
-
-            if enhance is False:
-                if self.do_not_enhance:
-                    enhance = True
-                else:
-                    # 升级体系ego饰品
-                    self.enhance_gifts()
-                    enhance = True
-                    continue
-
-            break
-
-        auto.mouse_click_blank(times=3)
-        loop_count = 30
-        auto.model = 'clam'
-        while True:
-            # 自动截图
-            if auto.take_screenshot() is None:
-                continue
-            if auto.find_element("mirror/road_in_mir/legend_assets.png"):
-                break
-            if auto.click_element("mirror/shop/leave_shop_confirm_assets.png"):
-                continue
-            if auto.click_element("mirror/shop/leave_assets.png"):
-                continue
-            loop_count -= 1
-            if loop_count < 20:
-                auto.model = "normal"
-            if loop_count < 10:
-                auto.model = 'aggressive'
-            if loop_count < 0:
-                log.ERROR("无法退出商店,尝试回到初始界面")
-                back_init_menu()
-                break
+                loop_count -= 1
+                if loop_count < 20:
+                    auto.model = "normal"
+                if loop_count < 10:
+                    auto.model = 'aggressive'
+                if loop_count < 0:
+                    log.ERROR("无法退出商店,尝试回到初始界面")
+                    back_init_menu()
+                    break
+        except self.RestartGame:
+            log.ERROR("执行商店操作期间出现错误，尝试重启游戏")
+            return

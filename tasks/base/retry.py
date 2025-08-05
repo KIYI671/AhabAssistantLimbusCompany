@@ -16,7 +16,7 @@ def retry():
             pyautogui.hotkey('alt', 'f4')
             sleep(10)
             restart_game()
-            return
+            return False
         # 自动截图
         if auto.take_screenshot() is None:
             continue
@@ -27,6 +27,7 @@ def retry():
             auto.mouse_click(position[0], position[1], times=3)
             continue
         if auto.click_element("base/retry.png", threshold=0.9):
+            auto.mouse_to_blank()
             continue
         if auto.find_element("base/retry_countdown.png") \
                 or auto.find_element("base/retry.png") \
@@ -41,7 +42,5 @@ def retry():
 def restart_game():
     from tasks.base.script_task_scheme import init_game
     from tasks.base.back_init_menu import back_init_menu
-    pyautogui.hotkey('alt', 'f4')
-    sleep(10)
     init_game()
     back_init_menu()

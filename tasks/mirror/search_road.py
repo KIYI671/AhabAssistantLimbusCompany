@@ -30,7 +30,8 @@ def search_road_default_distance():
 
     while auto.take_screenshot() is None:
         continue
-    retry()
+    if retry() is False:
+        return False
     # 判断中、下两个节点是否有权重3的节点，有的话直接选择进入
     node_weight = {}
     if bus_position := auto.find_element("mirror/mybus_default_distance.png", take_screenshot=True):
@@ -94,7 +95,8 @@ def search_road_farthest_distance():
     auto.mouse_scroll()
     while auto.take_screenshot() is None:
         continue
-    retry()
+    if retry() is False:
+        return False
     three_roads = [[250 * scale, -200 * scale],
                    [250 * scale, 0],
                    [250 * scale, 225 * scale]]
