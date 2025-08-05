@@ -107,7 +107,8 @@ class Mirror:
             if auto.find_element("mirror/road_to_mir/dreaming_star/coins_assets.png"):
                 # 防止卡在星光选择
                 break
-            retry()
+            if retry() is False:
+                return False
             loop_count -= 1
             if loop_count < 20:
                 auto.model = "normal"
@@ -310,7 +311,7 @@ class Mirror:
                 continue
 
             # 遇到选择增益事件（少见）
-            if auto.click_element("mirror/road_in_mir/event_effect_button_assets.png"):
+            if auto.click_element("mirror/road_in_mir/event_effect_button.png"):
                 auto.click_element("mirror/road_in_mir/select_event_effect_confirm.png")
                 continue
 
@@ -479,7 +480,8 @@ class Mirror:
                 sleep(0.5)
                 continue
 
-            retry()
+            if retry() is False:
+                return False
             loop_count -= 1
             if loop_count % 5 == 0:
                 log.DEBUG(f"进入镜牢识别次数剩余{loop_count}次")
@@ -540,7 +542,8 @@ class Mirror:
             if auto.click_element("mirror/road_to_mir/select_init_ego_gifts_confirm_assets.png"):
                 continue
 
-            retry()
+            if retry() is False:
+                return False
             loop_count -= 1
             if loop_count % 5 == 0:
                 log.DEBUG(f"选择藏品识别次数剩余{loop_count}次")
@@ -567,7 +570,8 @@ class Mirror:
         while auto.find_element("mirror/road_to_mir/dreaming_star/coins_assets.png") is None:
             if auto.take_screenshot() is None:
                 continue
-            retry()
+            if retry() is False:
+                return False
             if auto.click_element("mirror/road_to_mir/level_confirm_assets.png"):
                 continue
             if auto.click_element("mirror/road_to_mir/select_team_confirm_assets.png"):
@@ -596,14 +600,16 @@ class Mirror:
                 if search_road_default_distance():
                     sleep(1)
                     return True
-                retry()
+                if retry() is False:
+                    return False
             for _ in range(3):
                 while auto.take_screenshot() is None:
                     continue
                 if search_road_farthest_distance():
                     sleep(1)
                     return True
-                retry()
+                if retry() is False:
+                    return False
         except Exception as e:
             log.ERROR(f"寻路出错:{e}")
             return False
@@ -619,7 +625,8 @@ class Mirror:
             if auto.click_element("mirror/road_in_mir/setting_assets.png"):
                 sleep(1)
                 continue
-            retry()
+            if retry() is False:
+                return False
 
     def re_start(self):
         while True:
@@ -634,7 +641,8 @@ class Mirror:
                 continue
             pyautogui.press("esc")
             time.sleep(1)
-            retry()
+            if retry() is False:
+                return False
         # TODO耗时
         msg = f"满 身 疮 痍 ！ 重 开 ！此次战败耗时{time.time() - self.start_time}"
         log.INFO(msg)
@@ -704,7 +712,8 @@ class Mirror:
             if auto.click_element("mirror/road_in_mir/ego_gift_get_confirm_assets.png"):
                 continue
 
-            retry()
+            if retry() is False:
+                return False
             if auto.click_element("event/skip_assets.png", times=6):
                 continue
 
@@ -761,7 +770,8 @@ class Mirror:
                         auto.mouse_click(button[0], button[1])
                         auto.click_element("mirror/road_in_mir/acquire_ego_gift_select_assets.png", model="normal")
                         time.sleep(2)
-                        retry()
+                        if retry() is False:
+                            return False
                         return
                 elif len(acquire_button) == 1:
                     for button in acquire_button:
@@ -780,12 +790,14 @@ class Mirror:
                                 auto.click_element("mirror/road_in_mir/refuse_gift_confirm_assets.png",
                                                    take_screenshot=True)
                                 time.sleep(2)
-                                retry()
+                                if retry() is False:
+                                    return False
                                 return
                         auto.mouse_click(button[0], button[1])
                         auto.click_element("mirror/road_in_mir/acquire_ego_gift_select_assets.png", model="normal")
                         time.sleep(2)
-                        retry()
+                        if retry() is False:
+                            return False
                         return
                 else:
                     system_nums = 0
@@ -823,21 +835,24 @@ class Mirror:
                         auto.mouse_click(gift[0], gift[1])
                     auto.click_element("mirror/road_in_mir/acquire_ego_gift_select_assets.png", model="normal")
                     time.sleep(2)
-                    retry()
+                    if retry() is False:
+                        return False
                     return
                 elif auto.find_text_element(["0/2", "02", "2/2", "22"], my_crop=select_bbox):
                     for gift in my_list[:2]:
                         auto.mouse_click(gift[0], gift[1])
                     auto.click_element("mirror/road_in_mir/acquire_ego_gift_select_assets.png", model="normal")
                     time.sleep(2)
-                    retry()
+                    if retry() is False:
+                        return False
                     return
                 else:
                     for gift in my_list:
                         auto.mouse_click(gift[0], gift[1])
                     auto.click_element("mirror/road_in_mir/acquire_ego_gift_select_assets.png", model="normal")
                     time.sleep(2)
-                    retry()
+                    if retry() is False:
+                        return False
                     return
 
             except Exception as e:

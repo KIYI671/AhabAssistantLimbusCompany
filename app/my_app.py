@@ -54,7 +54,7 @@ class MainWindow(FramelessWindow):
         self.progress_ring = ProgressRing(self)
         self.progress_ring.hide()
 
-        self.resize(1080,800)
+        self.resize(1080,600)
         desktop = QApplication.desktop().availableGeometry()
         w, h = desktop.width(), desktop.height()
         self.move(w // 2 - self.width() // 2, h // 2 - self.height() // 2)
@@ -89,7 +89,7 @@ class MainWindow(FramelessWindow):
         self.vBoxLayout.addSpacing(10)
         self.vBoxLayout.addLayout(self.HBoxLayout,0)
         self.vBoxLayout.addWidget(self.stackedWidget)
-        self.vBoxLayout.setContentsMargins(30, 20, 30, 30)
+        self.vBoxLayout.setContentsMargins(30, 20, 30, 0)
         self.pivot.setMaximumHeight(50)
 
         self.stackedWidget.setCurrentWidget(self.farming_interface)

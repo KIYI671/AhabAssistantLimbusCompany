@@ -11,24 +11,24 @@ from utils.image_utils import ImageUtils
 
 
 class Shop:
-    def __init__(self, team_setting:dict):
-        self.system = all_systems[team_setting["team_system"]] # 队伍体系
+    def __init__(self, team_setting: dict):
+        self.system = all_systems[team_setting["team_system"]]  # 队伍体系
         self.sinner_team = team_setting["sinner_order"]  # 选择的罪人序列
         # 获取舍弃的饰品体系列表
         self.shop_sell_list = []
         for system in list(all_systems.values()):
             if team_setting[f"system_{system}"]:
                 self.shop_sell_list.append(system)
-        self.fuse_switch = False if team_setting["shop_strategy"]==0 else True # 是否启动合成模式
-        self.fuse_aggressive_switch = True if team_setting["shop_strategy"]==2 else False # 是否启动激进合成模式
-        self.do_not_heal = team_setting["do_not_heal"] # 是否不治疗
-        self.do_not_buy = team_setting["do_not_buy"] # 是否不购买
-        self.do_not_fuse = team_setting["do_not_fuse"] # 是否不合成
-        self.do_not_sell = team_setting["do_not_sell"] # 是否不出售
-        self.do_not_enhance = team_setting["do_not_enhance"] # 是否不升级
-        self.only_aggressive_fuse = team_setting["only_aggressive_fuse"] # 是否只进行激进合成，不进行其他合成
-        self.do_not_system_fuse = team_setting["do_not_system_fuse"] # 是否不进行体系饰品合成
-        self.only_system_fuse = team_setting["only_system_fuse"] # 是否只进行体系饰品合成
+        self.fuse_switch = False if team_setting["shop_strategy"] == 0 else True  # 是否启动合成模式
+        self.fuse_aggressive_switch = True if team_setting["shop_strategy"] == 2 else False  # 是否启动激进合成模式
+        self.do_not_heal = team_setting["do_not_heal"]  # 是否不治疗
+        self.do_not_buy = team_setting["do_not_buy"]  # 是否不购买
+        self.do_not_fuse = team_setting["do_not_fuse"]  # 是否不合成
+        self.do_not_sell = team_setting["do_not_sell"]  # 是否不出售
+        self.do_not_enhance = team_setting["do_not_enhance"]  # 是否不升级
+        self.only_aggressive_fuse = team_setting["only_aggressive_fuse"]  # 是否只进行激进合成，不进行其他合成
+        self.do_not_system_fuse = team_setting["do_not_system_fuse"]  # 是否不进行体系饰品合成
+        self.only_system_fuse = team_setting["only_system_fuse"]  # 是否只进行体系饰品合成
         # 是否在合成四级后改变行动策略
         self.after_level_IV = team_setting["after_level_IV"]
         self.after_level_IV_select = team_setting["after_level_IV_select"]
@@ -44,7 +44,7 @@ class Shop:
         self.skill_replacement = team_setting["skill_replacement"]
         self.skill_replacement_select = team_setting["skill_replacement_select"]
         self.skill_replacement_mode = team_setting["skill_replacement_mode"]
-        self.ignore_shop = team_setting["ignore_shop"] # 忽略的商店楼层
+        self.ignore_shop = team_setting["ignore_shop"]  # 忽略的商店楼层
 
         self.fuse_IV = False
         self.fuse_second_IV = False
@@ -93,7 +93,8 @@ class Shop:
             # 自动截图
             if auto.take_screenshot() is None:
                 continue
-            if self.shopping_strategy is False or (self.shopping_strategy and self.shopping_strategy_select in (0,1,5)):
+            if self.shopping_strategy is False or (
+                    self.shopping_strategy and self.shopping_strategy_select in (0, 1, 5)):
                 # 购买必买项（回血饰品）
                 for commodity in must_purchase:
                     if auto.click_element(commodity, threshold=0.85):
@@ -111,7 +112,8 @@ class Shop:
                             continue
 
             if self.fuse_aggressive_switch:
-                if self.shopping_strategy is False or (self.shopping_strategy and self.shopping_strategy_select in (1,3,4)):
+                if self.shopping_strategy is False or (
+                        self.shopping_strategy and self.shopping_strategy_select in (1, 3, 4)):
                     if auto.click_element("mirror/shop/level_IV_to_buy.png", threshold=0.82):
                         sleep(1)
                         while auto.take_screenshot() is None:
@@ -129,7 +131,8 @@ class Shop:
                         sleep(1)
                         if auto.click_element("mirror/shop/purchase_assets.png", take_screenshot=True):
                             sleep(1)
-                            auto.click_element("mirror/road_in_mir/ego_gift_get_confirm_assets.png", take_screenshot=True)
+                            auto.click_element("mirror/road_in_mir/ego_gift_get_confirm_assets.png",
+                                               take_screenshot=True)
                             continue
                         else:
                             auto.mouse_click_blank()
@@ -236,15 +239,16 @@ class Shop:
 
         scale = cfg.set_win_size / 1440
 
-        def processing_coordinates(my_gift_list,coordinates,threshold=50):
+        def processing_coordinates(my_gift_list, coordinates, threshold=50):
             """将需要保护的坐标移除出列表"""
             for position in my_gift_list:
-                if abs(position[0] - coordinates[0]) <= threshold * scale and abs(position[1] - coordinates[1]) <= threshold * scale:
+                if abs(position[0] - coordinates[0]) <= threshold * scale and abs(
+                        position[1] - coordinates[1]) <= threshold * scale:
                     my_gift_list.pop(position)
 
             return my_gift_list
 
-        if auto.find_element(f"mirror/shop/level_IV_gifts/{self.system}_level_IV.png",take_screenshot=True):
+        if auto.find_element(f"mirror/shop/level_IV_gifts/{self.system}_level_IV.png", take_screenshot=True):
             self.after_fuse_IV()
             if self.fuse_aggressive_switch is False:
                 log.INFO("已有本体系四级饰品，切换到非激进模式")
@@ -261,35 +265,37 @@ class Shop:
 
             gift = auto.find_element("mirror/shop/fuse_markers_assets.png")
             if gift:
-                first_gift = [gift[0]+135*scale, gift[1]+200*scale]
+                first_gift = [gift[0] + 135 * scale, gift[1] + 200 * scale]
                 if self.the_first_line_position is None:
                     self.the_first_line_position = first_gift[1] + 100 * scale
                 for i in range(10):
-                    gift_list.append([first_gift[0]+200*(i%5)*scale, first_gift[1]+200*(i//5)*scale])
+                    gift_list.append([first_gift[0] + 200 * (i % 5) * scale, first_gift[1] + 200 * (i // 5) * scale])
             else:
                 return
 
-            protect_list = ["mirror/shop/level_IV_gifts/lunar_memory.png",f"mirror/shop/level_IV_gifts/{self.system}_level_IV.png"]
+            protect_list = ["mirror/shop/level_IV_gifts/lunar_memory.png",
+                            f"mirror/shop/level_IV_gifts/{self.system}_level_IV.png"]
             if self.second_system and self.second_system_action[0]:
                 protect_list.append(f"mirror/shop/level_IV_gifts/{self.second_system_select}_level_IV.png")
 
             for protect_gift in protect_list:
-                if protect_coordinates:= auto.find_element(protect_gift):
-                    gift_list = processing_coordinates(gift_list,protect_coordinates)
+                if protect_coordinates := auto.find_element(protect_gift):
+                    gift_list = processing_coordinates(gift_list, protect_coordinates)
 
             # 直到合成概率90%
             for coord in gift_list:
-                auto.mouse_click(coord[0],coord[1])
-                if auto.find_element("mirror/shop/fuse_90%_assets.png",threshold=0.97, take_screenshot=True):
+                auto.mouse_click(coord[0], coord[1])
+                if auto.find_element("mirror/shop/fuse_90%_assets.png", threshold=0.97, take_screenshot=True):
                     break
 
             # 如果无法合成四级，或可用饰品不足三个，则退出此次合成
             if not auto.find_element("mirror/shop/fuse_90%_assets.png", take_screenshot=True):
                 return
-            if not auto.find_element("mirror/shop/fusion_level_IV_gift_assets.png",threshold=0.9):
+            if not auto.find_element("mirror/shop/fusion_level_IV_gift_assets.png", threshold=0.9):
                 return
 
             loop_times = 15
+            fuse_use_starlight_chance = 5
             while True:
                 auto.mouse_to_blank()
                 if auto.take_screenshot() is None:
@@ -315,8 +321,10 @@ class Shop:
                     auto.click_element("mirror/road_in_mir/ego_gift_get_confirm_assets.png", take_screenshot=True)
                     break
 
-                if auto.click_element("mirror/shop/fuse_use_starlight_assets.png"):
-                    auto.click_element("mirror/shop/fuse_use_starlight_confirm_assets.png",model="normal",take_screenshot=True)
+                if fuse_use_starlight_chance > 0 and auto.click_element("mirror/shop/fuse_use_starlight_assets.png"):
+                    fuse_use_starlight_chance -= 1
+                    auto.click_element("mirror/shop/fuse_use_starlight_confirm_assets.png", model="normal",
+                                       take_screenshot=True)
                     continue
 
                 if auto.click_element("mirror/shop/enhance_and_fuse_and_sell_confirm_assets.png", model="normal"):
@@ -340,13 +348,15 @@ class Shop:
         """合成无用饰品"""
         scale = cfg.set_win_size / 1440
 
-        def protect_coordinates(my_gift_list,coordinates,threshold=50):
+        def protect_coordinates(my_gift_list, coordinates, threshold=50):
             """将需要保护的坐标移除出列表"""
             for position in my_gift_list:
-                if abs(position[0]-50 - coordinates[0]) <= threshold * scale and abs(position[1]-50 - coordinates[1]) <= threshold * scale:
+                if abs(position[0] - 50 - coordinates[0]) <= threshold * scale and abs(
+                        position[1] - 50 - coordinates[1]) <= threshold * scale:
                     my_gift_list.pop(position)
 
             return my_gift_list
+
         def processing_coordinates(my_gift_list):
             """将列表从左上到右下排序，然后去重"""
 
@@ -399,11 +409,12 @@ class Shop:
             my_list = processing_coordinates(gift_list)
 
             if self.second_system and self.second_system_action[0]:
-                if protect_gift := auto.find_element(f"mirror/shop/level_IV_gifts/{self.second_system_select}_level_IV.png"):
-                    my_list=protect_coordinates(my_list,protect_gift)
+                if protect_gift := auto.find_element(
+                        f"mirror/shop/level_IV_gifts/{self.second_system_select}_level_IV.png"):
+                    my_list = protect_coordinates(my_list, protect_gift)
 
-            # 选择至多3样无用饰品
-            if len(my_list) <= 1:
+            # 选择3样无用饰品，不足则退出合成
+            if len(my_list) <= 2:
                 if block is False:
                     msg = f"饰品舍弃列表数量不足，结束合成"
                     log.DEBUG(msg)
@@ -600,7 +611,8 @@ class Shop:
 
         def protect_coordinates(my_gift, coordinates, threshold=50):
             """将需要保护的坐标移除出列表"""
-            if abs(my_gift[0] - coordinates[0]) <= threshold * scale and abs(my_gift[1] - coordinates[1]) <= threshold * scale:
+            if abs(my_gift[0] - coordinates[0]) <= threshold * scale and abs(
+                    my_gift[1] - coordinates[1]) <= threshold * scale:
                 return True
 
             return False
@@ -617,7 +629,8 @@ class Shop:
             gift_sell = False
 
             if self.second_system and self.second_system_action[0] and second is None:
-                if protect_gift := auto.find_element(f"mirror/shop/level_IV_gifts/{self.second_system_select}_level_IV.png"):
+                if protect_gift := auto.find_element(
+                        f"mirror/shop/level_IV_gifts/{self.second_system_select}_level_IV.png"):
                     second = protect_gift
 
             if auto.click_element("mirror/shop/sell_gift_assets.png"):
@@ -629,7 +642,7 @@ class Shop:
             if system_sell:
                 for sell_system in self.shop_sell_list:
                     my_sell_system = f"mirror/shop/enhance_gifts/{sell_system}.png"
-                    if sell_gift:=auto.find_element(my_sell_system):
+                    if sell_gift := auto.find_element(my_sell_system):
                         if second is not None and protect_coordinates(sell_gift, second):
                             continue
                         else:
@@ -747,7 +760,7 @@ class Shop:
                 continue
 
             if sinner_be_heal is True and auto.click_element("mirror/shop/heal_sinner/heal_sinner_return_assets.png"):
-                if auto.find_element('mirror/shop/shop_coins_assets.png',take_screenshot=True):
+                if auto.find_element('mirror/shop/shop_coins_assets.png', take_screenshot=True):
                     break
                 elif auto.find_element('mirror/shop/heal_sinner/heal_sinner_return_assets.png'):
                     continue
@@ -783,13 +796,12 @@ class Shop:
                 break
             auto.mouse_click_blank()
             loop_try_count -= 1
-            if loop_try_count < 0: # issue 171
+            if loop_try_count < 0:  # issue 171
                 if retry() is False:
                     raise self.RestartGame()
 
             if loop_try_count < -50:
                 log.ERROR("不应该发生这样的问题，请提交issue")
-
 
         first_gift = True
         list_block = False
@@ -820,7 +832,7 @@ class Shop:
                     break
 
             if self.second_system and self.second_system_action[3]:
-                if self.second_system_setting==1 or (self.second_system_setting==0 and self.fuse_IV is True):
+                if self.second_system_setting == 1 or (self.second_system_setting == 0 and self.fuse_IV is True):
                     if gifts := auto.find_element(f"mirror/shop/enhance_gifts/{self.second_system_select}.png",
                                                   find_type="image_with_multiple_targets"):
                         gifts = sorted(gifts, key=lambda x: (x[1], x[0]))
@@ -858,20 +870,21 @@ class Shop:
     def after_fuse_IV(self):
         self.fuse_IV = True
         if self.after_level_IV:
-            if self.after_level_IV_select==0:
+            if self.after_level_IV_select == 0:
                 self.fuse_switch = False
                 self.fuse_aggressive_switch = False
                 log.INFO("合成四级，切换到出售模式")
-            elif self.after_level_IV_select==1:
+            elif self.after_level_IV_select == 1:
                 self.fuse_aggressive_switch = False
                 log.INFO("合成四级，切换到非激进模式")
-            elif self.after_level_IV_select==2 and self.second_system is True and self.fuse_second_IV is False and self.second_system_action[0] is True:
+            elif self.after_level_IV_select == 2 and self.second_system is True and self.fuse_second_IV is False and \
+                    self.second_system_action[0] is True:
                 self.fuse_aggressive_switch = True
                 log.DEBUG("合成四级，切换到第二体系四级合成")
-            elif self.after_level_IV_select==3:
+            elif self.after_level_IV_select == 3:
                 log.INFO("合成四级，跳过之后商店")
                 for i in range(5):
-                    self.ignore_shop[i]=True
+                    self.ignore_shop[i] = True
             return
         self.fuse_aggressive_switch = False
         log.INFO("合成四级，切换到非激进模式")
@@ -883,38 +896,38 @@ class Shop:
                 module_position[0] - 150 * my_scale, module_position[1] + 20 * my_scale,
                 module_position[0] + 150 * my_scale,
                 module_position[1] + 100 * my_scale)
-            if self.skill_replacement_select==0:
-                sinner_nums= 1
-            elif self.skill_replacement_select==1:
-                sinner_nums= 3
-            elif self.skill_replacement_select==2:
-                sinner_nums= 7
+            if self.skill_replacement_select == 0:
+                sinner_nums = 1
+            elif self.skill_replacement_select == 1:
+                sinner_nums = 3
+            elif self.skill_replacement_select == 2:
+                sinner_nums = 7
             else:
-                sinner_nums= 12
-            if cfg.language_in_game=='en':
-                sinner = [all_sinners_name[self.sinner_team.index(i+1)] for i in range(sinner_nums)]
+                sinner_nums = 12
+            if cfg.language_in_game == 'en':
+                sinner = [all_sinners_name[self.sinner_team.index(i + 1)] for i in range(sinner_nums)]
             else:
                 sinner = [all_sinners_name_zh[self.sinner_team.index(i + 1)] for i in range(sinner_nums)]
             if auto.find_text_element(sinner, my_crop=bbox):
-                auto.mouse_click(module_position[0], module_position[1]-100*my_scale)
+                auto.mouse_click(module_position[0], module_position[1] - 100 * my_scale)
                 sleep(0.5)
-                coins = auto.find_element(f"mirror/shop/skill_replacement_coins.png",find_type="image_with_multiple_targets",take_screenshot=True)
-                if len(coins)!=3:
+                coins = auto.find_element(f"mirror/shop/skill_replacement_coins.png",
+                                          find_type="image_with_multiple_targets", take_screenshot=True)
+                if len(coins) != 3:
                     self.replacement = True
                     return
                 coins = sorted(coins, key=lambda x: x[0])
-                select_mode = 3-self.skill_replacement_mode-1
+                select_mode = 3 - self.skill_replacement_mode - 1
                 auto.mouse_click(coins[select_mode][0], coins[select_mode][1])
                 sleep(0.5)
                 auto.click_element("mirror/shop/skill_replacement_confirm_assets.png")
                 auto.click_element("mirror/shop/skill_replacement_confirm_assets.png")
                 self.replacement = True
 
-
     # 在商店的处理
-    def in_shop(self,layer):
+    def in_shop(self, layer):
         # 忽略楼层商店的情况
-        if layer<=5 and self.ignore_shop[layer-1]:
+        if layer <= 5 and self.ignore_shop[layer - 1]:
             return
 
         heal = False

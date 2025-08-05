@@ -10,7 +10,7 @@ from utils.singletonmeta import SingletonMeta
 
 
 class Screen(metaclass=SingletonMeta):
-    def __init__(self, title, logger,game):
+    def __init__(self, title, logger, game):
         self.logger = logger
         self.title = title
         self.game = game
@@ -41,18 +41,33 @@ class Screen(metaclass=SingletonMeta):
             self.game.start_game()
 
     def set_win(self):
-        # 如果窗口最小化或不可见，先将其恢复
-        if self.handle.isMinimized or not self.handle.isActive:
-            self.handle.restore()
-        # 将窗口设为活动窗口
-        win32gui.SetForegroundWindow(self.handle._hWnd)
-        self.set_win_size = cfg.set_win_size
-        self.set_win_position = cfg.set_win_position
-        if cfg.set_windows:
-            self.check_win_size(self.set_win_size)
-            self.reduce_miscontact()
-            self.adjust_win_size(self.set_win_size)
-            self.adjust_win_position(self.set_win_position)
+        def _set_win():
+            # 如果窗口最小化或不可见，先将其恢复
+            if self.handle.isMinimized or not self.handle.isActive:
+                self.handle.restore()
+            # 将窗口设为活动窗口
+            win32gui.SetForegroundWindow(self.handle._hWnd)
+            self.set_win_size = cfg.set_win_size
+            self.set_win_position = cfg.set_win_position
+            if cfg.set_windows:
+                self.check_win_size(self.set_win_size)
+                self.reduce_miscontact()
+                self.adjust_win_size(self.set_win_size)
+                self.adjust_win_position(self.set_win_position)
+
+        _set_win()
+        while True:
+            try:
+                rect = win32gui.GetWindowRect(self.handle)
+                width = rect[2] - rect[0]
+                height = rect[3] - rect[1]
+                if width != int(cfg.set_win_size * 16 / 9) or height != cfg.set_win_size:
+                    _set_win()
+                    sleep(1)
+                else:
+                    break
+            except Exception as e:
+                self.logger.ERROR(f"设置窗口出错: {e}")
 
     def reduce_miscontact(self):
         # 获取适用于win32gui与win32con的窗口句柄
@@ -79,7 +94,7 @@ class Screen(metaclass=SingletonMeta):
 
     def adjust_win_size(self, set_win_size):
         hwnd = self.handle._hWnd
-        win32gui.SetWindowPos(hwnd, None, 0, 0, int(cfg.set_win_size * 16 / 9), cfg.set_win_size, win32con.SWP_NOMOVE)
+        win32gui.SetWindowPos(hwnd, None, 0, 0, int(set_win_size * 16 / 9), set_win_size, win32con.SWP_NOMOVE)
 
     def adjust_win_position(self, set_win_position):
         hwnd = self.handle._hWnd

@@ -46,7 +46,7 @@ def get_reward_card(model = 0):
             return
     if retry() is False:
         return False
-    while auto.click_element("mirror/get_reward_card/get_reward_card_confirm_assets.png"):
+    while auto.click_element("mirror/get_reward_card/get_reward_card_confirm_assets.png",threshold=0.75):
         while auto.take_screenshot() is None:
             continue
         auto.mouse_to_blank()
