@@ -12,7 +12,7 @@ clean_logs: False # 是否自动清理日志
 
 # 脚本运行速度设置
 screenshot_interval: 0.85    # 截图间隔时间
-mouse_action_interval : 0.5  # 鼠标操作间隔时间
+mouse_action_interval: 0.5  # 鼠标操作间隔时间
 
 resonate_with_Ahab: False # 是否播放亚哈语录
 
@@ -58,7 +58,7 @@ set_get_prize: 0 # 0 领取邮件和通行证日常与周常，1 只领取通行
 
 # 是否自动购买体力
 buy_enkephalin: False # 是否自动购买体力
-set_lunacy_to_enkephalin: 2 # 0 不购买，1 购买一次，2 购买两次
+set_lunacy_to_enkephalin: 2 # 0 不购买，1 购买一次，2 购买两次，3 购买三次
 Dr_Grandet_mode: False
 
 # 是否进行自动镜牢
@@ -68,11 +68,11 @@ hard_mirror: False # 进行困难镜牢
 no_weekly_bonuses: False # 不使用每周加成
 flood_3_exit: False # 只打三层
 infinite_dungeons: False # 无限刷牢
-save_rewards : False # 保存奖励不领
+save_rewards: False # 保存奖励不领
 hard_mirror_single_bonuses: True # 困难镜牢使用单次加成
 teams_be_select_num: 0 # 被选中的队伍数量
-teams_be_select: [False] # 被选中的队伍
-teams_order: [0] # 队伍的顺序
+teams_be_select: [ False ] # 被选中的队伍
+teams_order: [ 0 ] # 队伍的顺序
 
 
 # 一号队伍设置
@@ -81,8 +81,8 @@ team1_setting:
   team_number: 1 # 使用的队伍序号
   shop_strategy: 0 # 商店策略
   sinners_be_select: 0 # 有几名罪人被选中
-  chosen_sinners: [0,0,0,0,0,0,0,0,0,0,0,0] # 有哪几名罪人被选中
-  sinner_order: [0,0,0,0,0,0,0,0,0,0,0,0] # 罪人被选中的顺序
+  chosen_sinners: [ 0,0,0,0,0,0,0,0,0,0,0,0 ] # 有哪几名罪人被选中
+  sinner_order: [ 0,0,0,0,0,0,0,0,0,0,0,0 ] # 罪人被选中的顺序
   system_burn: False # 弃置燃烧饰品
   system_bleed: False # 弃置流血饰品
   system_tremor: False # 弃置震颤饰品
@@ -95,35 +95,35 @@ team1_setting:
   system_blunt: False # 弃置打击饰品
   do_not_heal: False # 不治疗
   do_not_buy: False # 不购买
-  do_not_fuse : False # 不合成
+  do_not_fuse: False # 不合成
   do_not_sell: False # 不出售
   do_not_enhance: False # 不升级
-  only_aggressive_fuse : False # 合成只采取激进策略
-  do_not_system_fuse : False # 不合成体系饰品
-  only_system_fuse : False # 只合成体系饰品
-  avoid_skill_3 : False # 避免使用3技能
-  re_formation_each_floor : False # 每个楼层重新编队
+  only_aggressive_fuse: False # 合成只采取激进策略
+  do_not_system_fuse: False # 不合成体系饰品
+  only_system_fuse: False # 只合成体系饰品
+  avoid_skill_3: False # 避免使用3技能
+  re_formation_each_floor: False # 每个楼层重新编队
   use_starlight: False # 开局星光换钱
-  reward_cards : False # 奖励卡优先度
+  reward_cards: False # 奖励卡优先度
   reward_cards_select: 0 # 自定义奖励卡优先度
-  choose_opening_bonus : False # 自选开局加成
+  choose_opening_bonus: False # 自选开局加成
   opening_bonus_select: 0 # 开局加成已选数量
-  opening_bonus: [0,0,0,0,0,0,0,0,0,0] # 启用的开局加成
-  opening_bonus_order: [0,0,0,0,0,0,0,0,0,0] # 启用的开局加成顺序
-  after_level_IV : False # 自定义合成四级后的操作
-  after_level_IV_select : 0 # 合成四级后的操作
-  shopping_strategy : False # 自定义购物策略
+  opening_bonus: [ 0,0,0,0,0,0,0,0,0,0 ] # 启用的开局加成
+  opening_bonus_order: [ 0,0,0,0,0,0,0,0,0,0 ] # 启用的开局加成顺序
+  after_level_IV: False # 自定义合成四级后的操作
+  after_level_IV_select: 0 # 合成四级后的操作
+  shopping_strategy: False # 自定义购物策略
   shopping_strategy_select: 0 # 购物策略
-  opening_items : False # 自定义开局道具
-  opening_items_select : 0 # 开局道具选择顺序
-  opening_items_system : 0 # 开局道具体系
-  second_system : False # 启用第二体系
-  second_system_select : 0 # 第二体系
-  second_system_setting : 0 # 第二体系启用时间
-  second_system_action : [0,0,0,0] # 第二体系行动模式
-  skill_replacement : False # 自定义技能替换
-  skill_replacement_select : 0 # 技能替换设置
-  skill_replacement_mode : 0 # 技能替换模式
-  ignore_shop : [0,0,0,0,0] # 忽略商店楼层
+  opening_items: False # 自定义开局道具
+  opening_items_select: 0 # 开局道具选择顺序
+  opening_items_system: 0 # 开局道具体系
+  second_system: False # 启用第二体系
+  second_system_select: 0 # 第二体系
+  second_system_setting: 0 # 第二体系启用时间
+  second_system_action: [ 0,0,0,0 ] # 第二体系行动模式
+  skill_replacement: False # 自定义技能替换
+  skill_replacement_select: 0 # 技能替换设置
+  skill_replacement_mode: 0 # 技能替换模式
+  ignore_shop: [ 0,0,0,0,0 ] # 忽略商店楼层
 
 team1_remark_name: # 队伍备注名

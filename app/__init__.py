@@ -22,7 +22,7 @@ set_win_size_options = {"1920*1080": 1080, "2560*1440": 1440, "1280*720": 720, "
 set_win_position_options = {'左上角（0，0）': True}
 set_reduce_miscontact_options = {'是': True}
 set_language_options = {'English': 'en', '简体中文': 'zh_cn'}
-set_lunacy_to_enkephalin_options = {"不换": 0, "换第一次": 1, "换第二次": 2}
+set_lunacy_to_enkephalin_options = {"不换": 0, "换第一次": 1, "换第二次": 2,"换第三次": 3}
 set_get_prize_options = {"邮件+日/周常": 0, "日/周常": 1, "邮件": 2}
 set_after_completion_options = {"无 / None": 0, "睡眠 / Sleep": 1, "休眠 / Hibernate": 2,
                                 "关机 / Shutdown": 3, "退出游戏 / Exit Game": 4, "退出AALC / Exit AALC": 5,

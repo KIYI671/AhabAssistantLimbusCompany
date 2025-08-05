@@ -61,12 +61,18 @@ def lunacy_to_enkephalin(times=0):
             # 葛朗台模式
             if cfg.Dr_Grandet_mode:
                 while get_the_timing() is False:
-                    sleep(3)
-            sleep(5)
+                    sleep(2)
             auto.click_element("enkephalin/enkephalin_confirm_assets.png")
             sleep(1)
             continue
-        if times == 2 and auto.find_element("enkephalin/lunacy_spend_52_assets.png"):
+        if times >= 2 and auto.find_element("enkephalin/lunacy_spend_52_assets.png"):
+            if cfg.Dr_Grandet_mode:
+                while get_the_timing() is False:
+                    sleep(2)
+            auto.click_element("enkephalin/enkephalin_confirm_assets.png")
+            sleep(1)
+            continue
+        if times >= 3 and auto.find_element("enkephalin/lunacy_spend_78_assets.png"):
             if cfg.Dr_Grandet_mode:
                 while get_the_timing() is False:
                     sleep(2)
