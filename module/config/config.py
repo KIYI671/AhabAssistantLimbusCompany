@@ -81,6 +81,8 @@ class Config(metaclass=SingletonMeta):
             self.config[key] = copy.deepcopy(value)
         else:
             self.config[key] = value
+
+        log.DEBUG(f"{key} change to: {value}") # 增加设置修改的信息
         self.save_config()
 
     def del_key(self, key):
