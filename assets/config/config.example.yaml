@@ -6,7 +6,7 @@ game_path: C:\Program Files (x86)\Steam\steamapps\common\Limbus Company\LimbusCo
 
 language_in_game: en # 游戏语言
 after_completion: 0 # 脚本结束后的操作
-language_in_program: en # 程序语言
+language_in_program: '' # 程序语言
 
 clean_logs: False # 是否自动清理日志
 

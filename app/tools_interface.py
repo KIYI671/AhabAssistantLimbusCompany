@@ -1,7 +1,10 @@
+from PyQt5.QtCore import QT_TRANSLATE_NOOP
 from PyQt5.QtWidgets import QWidget
 from qfluentwidgets import FluentIcon as FIF
-from qfluentwidgets import ScrollArea, ExpandLayout, SettingCardGroup, PushSettingCard
+from qfluentwidgets import ScrollArea, ExpandLayout
 
+from app.base_combination import BaseSettingCardGroup, BasePushSettingCard
+from app.language_manager import LanguageManager
 from tasks import tools
 
 
@@ -15,6 +18,8 @@ class ToolsInterface(ScrollArea):
         self.__connect_signal()
         self.setWidget(self.scroll_widget)
 
+        LanguageManager().register_component(self)
+
     def __init_widget(self):
         self.scroll_widget = QWidget()
         self.scroll_widget.setObjectName("scrollWidget")
@@ -22,11 +27,14 @@ class ToolsInterface(ScrollArea):
         self.setWidgetResizable(True)
 
     def __init_card(self):
-        self.tools_group = SettingCardGroup(self.tr('工具箱'), self.scroll_widget)
-        self.auto_battle_card = PushSettingCard(
-            self.tr('运行'),
+        self.tools_group = BaseSettingCardGroup(
+            QT_TRANSLATE_NOOP("BaseSettingCardGroup",'工具箱'),
+            self.scroll_widget
+        )
+        self.auto_battle_card = BasePushSettingCard(
+            QT_TRANSLATE_NOOP("BasePushSettingCard",'运行'),
             FIF.CAFE,
-            self.tr("自动战斗"),
+            QT_TRANSLATE_NOOP("BasePushSettingCard","自动战斗"),
             parent=self.tools_group
         )
 
@@ -48,3 +56,7 @@ class ToolsInterface(ScrollArea):
 
     def __connect_signal(self):
         self.auto_battle_card.clicked.connect(lambda: tools.start("battle"))
+
+    def retranslateUi(self):
+        self.tools_group.retranslateUi()
+        self.auto_battle_card.retranslateUi()

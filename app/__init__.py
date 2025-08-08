@@ -1,4 +1,7 @@
 from app.mediator import Mediator
+from PyQt5.QtCore import QT_TRANSLATE_NOOP
+
+
 
 mediator = Mediator()
 
@@ -19,26 +22,64 @@ page_name_and_index = {
 set_win_size_options = {"1920*1080": 1080, "2560*1440": 1440, "1280*720": 720, "1600*900": 900,
                         "3200*1800": 1800,
                         "3840*2160": 2160}
-set_win_position_options = {'左上角（0，0）': True}
-set_reduce_miscontact_options = {'是': True}
+set_win_position_options = {QT_TRANSLATE_NOOP("BaseComboBox","左上角（0，0）"): True}
+set_reduce_miscontact_options = {QT_TRANSLATE_NOOP("BaseComboBox",'是'): True}
 set_language_options = {'English': 'en', '简体中文': 'zh_cn'}
-set_lunacy_to_enkephalin_options = {"不换": 0, "换第一次": 1, "换第二次": 2,"换第三次": 3}
-set_get_prize_options = {"邮件+日/周常": 0, "日/周常": 1, "邮件": 2}
-set_after_completion_options = {"无 / None": 0, "睡眠 / Sleep": 1, "休眠 / Hibernate": 2,
-                                "关机 / Shutdown": 3, "退出游戏 / Exit Game": 4, "退出AALC / Exit AALC": 5,
-                                "退出AALC和游戏 / Exit AALC And Game": 6}
+set_lunacy_to_enkephalin_options = {
+    QT_TRANSLATE_NOOP("BaseComboBox","不换"): 0, QT_TRANSLATE_NOOP("BaseComboBox","换第一次"): 1, 
+    QT_TRANSLATE_NOOP("BaseComboBox","换第二次"): 2,QT_TRANSLATE_NOOP("BaseComboBox","换第三次"): 3
+}
+set_get_prize_options = {
+    QT_TRANSLATE_NOOP("BaseComboBox","邮件+日/周常"): 0, 
+    QT_TRANSLATE_NOOP("BaseComboBox","日/周常"): 1, QT_TRANSLATE_NOOP("BaseComboBox","邮件"): 2
+}
+set_after_completion_options = {
+    QT_TRANSLATE_NOOP("BaseComboBox","无"): 0, QT_TRANSLATE_NOOP("BaseComboBox","睡眠"): 1, 
+    QT_TRANSLATE_NOOP("BaseComboBox","休眠"): 2,QT_TRANSLATE_NOOP("BaseComboBox","关机"): 3, 
+    QT_TRANSLATE_NOOP("BaseComboBox","退出游戏"): 4, QT_TRANSLATE_NOOP("BaseComboBox","退出AALC"): 5,
+    QT_TRANSLATE_NOOP("BaseComboBox","退出AALC和游戏"): 6
+}
 all_teams = {f"Team{i}": i for i in range(1, 21)}
-all_systems = {"烧伤(burn)": 0, "流血(bleed)": 1, "震颤(tremor)": 2, "破裂(rupture)": 3, "呼吸(poise)": 4,
-               "沉沦(sinking)": 5, "充能(charge)": 6, "斩击(slash)": 7, "突刺(pierce)": 8, "打击(blunt)": 9}
-shop_strategy = {"出售": 0, "合成": 1, "合成：四级优先": 2}
-after_fuse_level_IV = {"商店策略改为出售": 0, "商店策略改为普通合成": 1, "合成第二体系四级饰品": 2, "跳过商店": 3}
-reward_cards = {"星光→饰品→钱→饰品/钱→罪孽": 0, "星光→钱→饰品→饰品/钱→罪孽": 1, "钱→饰品→饰品/钱→罪孽→星光": 2,
-                "饰品→钱→饰品/钱→罪孽→星光": 3}
-shopping_strategy = {"仅购买回血饰品": 0, "启用四级优先时：仅购买所有3-4级饰品": 1, "仅购买体系饰品": 2, "不购买体系饰品": 3,
-                     "不购买回血饰品": 4, "启用四级优先时：不购买所有3-4级饰品": 5}
+all_systems = {
+    QT_TRANSLATE_NOOP("BaseComboBox","烧伤"): 0, QT_TRANSLATE_NOOP("BaseComboBox","流血"): 1, 
+    QT_TRANSLATE_NOOP("BaseComboBox","震颤"): 2, QT_TRANSLATE_NOOP("BaseComboBox","破裂"): 3, 
+    QT_TRANSLATE_NOOP("BaseComboBox","呼吸"): 4,QT_TRANSLATE_NOOP("BaseComboBox","沉沦"): 5, 
+    QT_TRANSLATE_NOOP("BaseComboBox","充能"): 6, QT_TRANSLATE_NOOP("BaseComboBox","斩击"): 7, 
+    QT_TRANSLATE_NOOP("BaseComboBox","突刺"): 8, QT_TRANSLATE_NOOP("BaseComboBox","打击"): 9
+}
+shop_strategy = {
+    QT_TRANSLATE_NOOP("BaseComboBox","出售"): 0, QT_TRANSLATE_NOOP("BaseComboBox","合成"): 1, 
+    QT_TRANSLATE_NOOP("BaseComboBox","合成：四级优先"): 2
+}
+after_fuse_level_IV = {
+    QT_TRANSLATE_NOOP("BaseComboBox","商店策略改为出售"): 0, 
+    QT_TRANSLATE_NOOP("BaseComboBox","商店策略改为普通合成"): 1, 
+    QT_TRANSLATE_NOOP("BaseComboBox","合成第二体系四级饰品"): 2, 
+    QT_TRANSLATE_NOOP("BaseComboBox","跳过商店"): 3
+}
+reward_cards = {
+    QT_TRANSLATE_NOOP("BaseComboBox","星光→饰品→钱→饰品/钱→罪孽"): 0, 
+    QT_TRANSLATE_NOOP("BaseComboBox","星光→钱→饰品→饰品/钱→罪孽"): 1, 
+    QT_TRANSLATE_NOOP("BaseComboBox","钱→饰品→饰品/钱→罪孽→星光"): 2,
+    QT_TRANSLATE_NOOP("BaseComboBox","饰品→钱→饰品/钱→罪孽→星光"): 3
+}
+shopping_strategy = {
+    QT_TRANSLATE_NOOP("BaseComboBox","仅购买回血饰品"): 0, 
+    QT_TRANSLATE_NOOP("BaseComboBox","启用四级优先时：仅购买所有3-4级饰品"): 1, 
+    QT_TRANSLATE_NOOP("BaseComboBox","仅购买体系饰品"): 2, 
+    QT_TRANSLATE_NOOP("BaseComboBox","不购买体系饰品"): 3,
+    QT_TRANSLATE_NOOP("BaseComboBox","不购买回血饰品"): 4, 
+    QT_TRANSLATE_NOOP("BaseComboBox","启用四级优先时：不购买所有3-4级饰品"): 5
+}
 start_gift = {"1→2→3": 0, "1→3→2": 1, "2→1→3": 2, "2→3→1": 3, "3→1→2": 4, "3→2→1": 5}
-second_systems = {"合成第一体系四级饰品后": 0, "一直": 1}
-skill_replacement_sinner = {"配队首位": 0, "配队前3": 1, "配队前7": 2, "所有人": 3}
+second_systems = {
+    QT_TRANSLATE_NOOP("BaseComboBox","合成第一体系四级饰品后"): 0, 
+    QT_TRANSLATE_NOOP("BaseComboBox","一直"): 1
+}
+skill_replacement_sinner = {
+    QT_TRANSLATE_NOOP("BaseComboBox","配队首位"): 0, QT_TRANSLATE_NOOP("BaseComboBox","配队前3"): 1, 
+    QT_TRANSLATE_NOOP("BaseComboBox","配队前7"): 2, QT_TRANSLATE_NOOP("BaseComboBox","所有人"): 3
+}
 skill_replacement_mode = {"1→3": 0, "2→3": 1, "1→2": 2}
 
 blank_team_setting={}

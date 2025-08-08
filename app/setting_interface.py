@@ -1,13 +1,13 @@
-from PyQt5.QtCore import QUrl
+from PyQt5.QtCore import QUrl, QT_TRANSLATE_NOOP
 from PyQt5.QtGui import QDesktopServices
 from PyQt5.QtWidgets import QWidget, QFileDialog
 from qfluentwidgets import FluentIcon as FIF
-from qfluentwidgets import ScrollArea, ExpandLayout, SettingCardGroup, PushSettingCard, \
-    PrimaryPushSettingCard
+from qfluentwidgets import ScrollArea, ExpandLayout
 
-from app.base_combination import ComboBoxSettingCard, SwitchSettingCard, PushSettingCardMirrorchyan
+from app.base_combination import ComboBoxSettingCard, SwitchSettingCard, PushSettingCardMirrorchyan, \
+    BaseSettingCardGroup, BasePushSettingCard, BasePrimaryPushSettingCard
 from module.config import cfg
-
+from app.language_manager import SUPPORTED_LANG_NAME, LanguageManager
 
 class SettingInterface(ScrollArea):
     def __init__(self, parent=None):
@@ -18,6 +18,10 @@ class SettingInterface(ScrollArea):
         self.set_style_sheet()
         self.__connect_signal()
         self.setWidget(self.scroll_widget)
+        self.setObjectName("SettingInterface")
+
+        LanguageManager().register_component(self)
+
 
     def __init_widget(self):
         self.scroll_widget = QWidget()
@@ -26,39 +30,54 @@ class SettingInterface(ScrollArea):
         self.setWidgetResizable(True)
 
     def __init_card(self):
-        self.game_setting_group = SettingCardGroup("游戏设置", self.scroll_widget)
+        self.game_setting_group = BaseSettingCardGroup(
+            QT_TRANSLATE_NOOP("BaseSettingCardGroup","游戏设置"),
+            self.scroll_widget
+        )
         self.game_setting_card = ComboBoxSettingCard(
             "select_team_by_order",
             FIF.SEARCH,
-            self.tr('选择队伍方式'),
-            self.tr('设置选择队伍方式'),
-            texts={'使用队伍名':False, '使用队伍序号':"en"},
+            QT_TRANSLATE_NOOP('ComboBoxSettingCard','选择队伍方式'),
+            QT_TRANSLATE_NOOP('ComboBoxSettingCard','设置选择队伍方式'),
+            texts={
+                QT_TRANSLATE_NOOP('ComboBoxSettingCard','使用队伍名'):False,
+                QT_TRANSLATE_NOOP('ComboBoxSettingCard','使用队伍序号'):"en"
+                },
             parent=self.game_setting_group
         )
 
-        self.game_path_group = SettingCardGroup("启动游戏", self.scroll_widget)
-        self.game_path_card = PushSettingCard(
-            self.tr('修改'),
+        self.game_path_group = BaseSettingCardGroup(
+            QT_TRANSLATE_NOOP("BaseSettingCardGroup","启动游戏"), 
+            self.scroll_widget
+        )
+        self.game_path_card = BasePushSettingCard(
+            QT_TRANSLATE_NOOP("BasePushSettingCard",'修改'),
             FIF.FOLDER,
-            self.tr("游戏路径"),
+            QT_TRANSLATE_NOOP("BasePushSettingCard","游戏路径"),
             cfg.game_path,
             parent=self.game_path_group
         )
 
-        self.personal_group = SettingCardGroup("个性化", self.scroll_widget)
+        self.personal_group = BaseSettingCardGroup(
+            QT_TRANSLATE_NOOP("BaseSettingCardGroup","个性化"), 
+            self.scroll_widget
+        )
         self.language_card = ComboBoxSettingCard(
             "language_in_program",
             FIF.LANGUAGE,
-            self.tr('语言'),
-            self.tr('设置程序 UI 使用的语言'),
-            texts={'简体中文':"zh_cn", 'English':"en"},
+            QT_TRANSLATE_NOOP("ComboBoxSettingCard",'语言'),
+            QT_TRANSLATE_NOOP("ComboBoxSettingCard",'设置程序 UI 使用的语言'),
+            texts=SUPPORTED_LANG_NAME,
             parent=self.personal_group
         )
 
-        self.update_group = SettingCardGroup("更新设置", self.scroll_widget)
+        self.update_group = BaseSettingCardGroup(
+            QT_TRANSLATE_NOOP("BaseSettingCardGroup","更新设置"), 
+            self.scroll_widget
+        )
         self.check_update_card = SwitchSettingCard(
             FIF.SYNC,
-            self.tr('加入预览版更新渠道'),
+            QT_TRANSLATE_NOOP("SwitchSettingCard",'加入预览版更新渠道'),
             "",
             "update_prerelease_enable",
             parent=self.update_group
@@ -66,54 +85,64 @@ class SettingInterface(ScrollArea):
         self.update_source_card = ComboBoxSettingCard(
             "update_source",
             FIF.CLOUD_DOWNLOAD,
-            self.tr('更新源'),
-            self.tr('选择更新源'),
-            texts={"Github源": "GitHub", "Mirror 酱": "MirrorChyan"},
+            QT_TRANSLATE_NOOP("ComboBoxSettingCard",'更新源'),
+            QT_TRANSLATE_NOOP("ComboBoxSettingCard",'选择更新源'),
+            texts={
+                QT_TRANSLATE_NOOP("ComboBoxSettingCard","Github源"): "GitHub", 
+                QT_TRANSLATE_NOOP("ComboBoxSettingCard","Mirror 酱"): "MirrorChyan"
+            },
             parent=self.update_group
         )
         self.mirrorchyan_cdk_card = PushSettingCardMirrorchyan(
-            self.tr('修改'),
+            QT_TRANSLATE_NOOP("PushSettingCardMirrorchyan",'修改'),
             FIF.BOOK_SHELF,
-            self.tr("Mirror 酱 CDK"),
+            QT_TRANSLATE_NOOP("PushSettingCardMirrorchyan","Mirror 酱 CDK"),
             self.parent,
             "mirrorchyan_cdk",
             parent = self.update_group,
         )
 
-        self.logs_group = SettingCardGroup("日志设置", self.scroll_widget)
+        self.logs_group = BaseSettingCardGroup(
+            QT_TRANSLATE_NOOP("BaseSettingCardGroup","日志设置"), 
+            self.scroll_widget
+        )
         self.logs_clean_card = SwitchSettingCard(
             FIF.BROOM,
-            self.tr('自动清理日志'),
-            "自动清理一周前的日志",
+            QT_TRANSLATE_NOOP("SwitchSettingCard",'自动清理日志'),
+            QT_TRANSLATE_NOOP("SwitchSettingCard","自动清理一周前的日志"),
             config_name="clean_logs",
             parent=self.logs_group
         )
-        self.open_logs_card = PrimaryPushSettingCard(
-            self.tr('日志'),
+        self.open_logs_card = BasePrimaryPushSettingCard(
+            QT_TRANSLATE_NOOP("BasePrimaryPushSettingCard",'日志'),
             FIF.FOLDER_ADD,
-            self.tr('打开日志文件夹'),
+            QT_TRANSLATE_NOOP("BasePrimaryPushSettingCard",'打开日志文件夹'),
             parent=self.logs_group
         )
 
-        self.about_group = SettingCardGroup("关于", self.scroll_widget)
-        self.github_card = PrimaryPushSettingCard(
-            self.tr('项目主页'),
+        self.about_group = BaseSettingCardGroup(
+            QT_TRANSLATE_NOOP("BaseSettingCardGroup","关于"), 
+            self.scroll_widget
+        )
+        self.github_card = BasePrimaryPushSettingCard(
+            QT_TRANSLATE_NOOP("BasePrimaryPushSettingCard",'项目主页'),
             FIF.GITHUB,
-            self.tr('项目主页'),
+            QT_TRANSLATE_NOOP("BasePrimaryPushSettingCard",'项目主页'),
             "https://github.com/KIYI671/AhabAssistantLimbusCompany"
         )
-        self.qq_group_card = PrimaryPushSettingCard(
-            self.tr('加入群聊'),
+        self.qq_group_card = BasePrimaryPushSettingCard(
+            QT_TRANSLATE_NOOP("BasePrimaryPushSettingCard",'加入群聊'),
             FIF.EXPRESSIVE_INPUT_ENTRY,
-            self.tr('QQ群'),
+            QT_TRANSLATE_NOOP("BasePrimaryPushSettingCard",'QQ群'),
             "946227774"
         )
-        self.feedback_card = PrimaryPushSettingCard(
-            self.tr('提供反馈'),
+        self.feedback_card = BasePrimaryPushSettingCard(
+            QT_TRANSLATE_NOOP("BasePrimaryPushSettingCard",'提供反馈'),
             FIF.FEEDBACK,
-            self.tr('提供反馈'),
-            self.tr('帮助我们改进 AhabAssistantLimbusCompany')
+            QT_TRANSLATE_NOOP("BasePrimaryPushSettingCard",'提供反馈'),
+            QT_TRANSLATE_NOOP("BasePrimaryPushSettingCard",'帮助我们改进 AhabAssistantLimbusCompany')
         )
+
 
     def __initLayout(self):
         self.game_setting_group.addSettingCard(self.game_setting_card)
@@ -172,3 +201,22 @@ class SettingInterface(ScrollArea):
 
     def __openUrl(self, url):
         return lambda: QDesktopServices.openUrl(QUrl(url))
+    
+    def retranslateUi(self):
+        self.game_setting_group.retranslateUi()
+        self.game_setting_card.retranslateUi()
+        self.game_path_card.retranslateUi()
+        self.game_path_group.retranslateUi()
+        self.personal_group.retranslateUi()
+        self.language_card.retranslateUi()
+        self.update_group.retranslateUi()
+        self.update_source_card.retranslateUi()
+        self.check_update_card.retranslateUi()
+        self.mirrorchyan_cdk_card.retranslateUi()
+        self.logs_group.retranslateUi()
+        self.logs_clean_card.retranslateUi()
+        self.about_group.retranslateUi()
+        self.open_logs_card.retranslateUi()
+        self.github_card.retranslateUi()
+        self.qq_group_card.retranslateUi()
+        self.feedback_card.retranslateUi()
