@@ -5,7 +5,7 @@ import subprocess
 from enum import Enum
 from threading import Thread
 
-import markdown
+from markdown_it import MarkdownIt
 import requests  # 导入requests模块，用于发送HTTP请求
 from PyQt5.QtCore import QThread, pyqtSignal, Qt
 from packaging.version import parse
@@ -17,6 +17,8 @@ from module.config import cfg
 from module.decorator.decorator import begin_and_finish_time_log
 from module.logger import log
 
+
+md_renderer = MarkdownIt("gfm-like", {"html": True})
 
 class UpdateStatus(Enum):
     """
@@ -79,7 +81,7 @@ class UpdateThread(QThread):
             # 比较当前版本和最新版本，如果最新版本更高，则准备更新
             if parse(version.lstrip('Vv')) > parse(cfg.version.lstrip('Vv')):
                 self.title = f"发现新版本：{cfg.version}——> {version}\n更新日志:"
-                self.content = "<style>a {color: #586f50; font-weight: bold;}</style>" + markdown.markdown(content)
+                self.content = "<style>a {color: #586f50; font-weight: bold;}</style>" + md_renderer.render(content)
                 self.updateSignal.emit(UpdateStatus.UPDATE_AVAILABLE)
             else:
                 # 如果没有新版本，则发送成功信号
