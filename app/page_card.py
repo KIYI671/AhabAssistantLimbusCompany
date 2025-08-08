@@ -1,12 +1,10 @@
-from PyQt5.QtCore import Qt, QFile, QTextStream, pyqtSignal, QEvent, QUrl
-from PyQt5.QtWidgets import QVBoxLayout, QWidget, QFrame, QHBoxLayout, QTextBrowser, QVBoxLayout
-from PyQt5.QtGui import QFont, QDesktopServices
-
 import os
+
+from PyQt5.QtCore import Qt, QUrl
+from PyQt5.QtGui import QDesktopServices
+from PyQt5.QtWidgets import QWidget, QFrame, QHBoxLayout, QTextBrowser, QVBoxLayout
 from markdown_it import MarkdownIt
 from mdit_py_plugins.anchors import anchors_plugin
-from .markdown_it_imgdiv import imgdiv_plugin, render_div_open, render_div_close
-
 from qfluentwidgets import FluentIcon as FIF
 from qfluentwidgets import SegmentedWidget, ScrollArea, TransparentToolButton
 from qfluentwidgets.window.stacked_widget import StackedWidget
@@ -16,6 +14,7 @@ from app.base_combination import LabelWithComboBox, LabelWithSpinBox, MirrorTeam
     MirrorSpinBox
 from app.base_tools import BaseCheckBox
 from module.config import cfg
+from .markdown_it_imgdiv import imgdiv_plugin, render_div_open, render_div_close
 
 
 class PageCard(QFrame):
@@ -108,18 +107,18 @@ class PageDailyTask(PageCard):
         self.team_select = LabelWithComboBox("使用编队", "daily_teams",all_teams)
 
         self.targeted_teaming_EXP = BaseCheckBox("targeted_teaming_EXP",None, "经验本针对性配队",center=False)
-        self.EXP_day_1_2 = LabelWithComboBox("周一、周二", "EXP_day_1_2",all_teams)
-        self.EXP_day_3_4 = LabelWithComboBox("周三、周四", "EXP_day_3_4",all_teams)
-        self.EXP_day_5_6 = LabelWithComboBox("周五、周六", "EXP_day_5_6",all_teams)
+        self.EXP_day_1_2 = LabelWithComboBox("周一、周二（斩击）", "EXP_day_1_2",all_teams)
+        self.EXP_day_3_4 = LabelWithComboBox("周三、周四（突刺）", "EXP_day_3_4",all_teams)
+        self.EXP_day_5_6 = LabelWithComboBox("周五、周六（打击）", "EXP_day_5_6",all_teams)
         self.EXP_day_7 = LabelWithComboBox("周日", "EXP_day_7",all_teams)
         self.targeted_teaming_thread = BaseCheckBox("targeted_teaming_thread", None, "纽本针对性配队", center=False)
-        self.thread_day_1 = LabelWithComboBox("纽本周一", "thread_day_1",all_teams)
-        self.thread_day_2 = LabelWithComboBox("纽本周二", "thread_day_2",all_teams)
-        self.thread_day_3 = LabelWithComboBox("纽本周三", "thread_day_3",all_teams)
-        self.thread_day_4 = LabelWithComboBox("纽本周四", "thread_day_4",all_teams)
-        self.thread_day_5 = LabelWithComboBox("纽本周五", "thread_day_5",all_teams)
-        self.thread_day_6 = LabelWithComboBox("纽本周六", "thread_day_6",all_teams)
-        self.thread_day_7 = LabelWithComboBox("纽本周日", "thread_day_7",all_teams)
+        self.thread_day_1 = LabelWithComboBox("纽本周一（色欲）", "thread_day_1",all_teams)
+        self.thread_day_2 = LabelWithComboBox("纽本周二（怠惰）", "thread_day_2",all_teams)
+        self.thread_day_3 = LabelWithComboBox("纽本周三（暴食）", "thread_day_3",all_teams)
+        self.thread_day_4 = LabelWithComboBox("纽本周四（忧郁）", "thread_day_4",all_teams)
+        self.thread_day_5 = LabelWithComboBox("纽本周五（傲慢）", "thread_day_5",all_teams)
+        self.thread_day_6 = LabelWithComboBox("纽本周六（嫉妒）", "thread_day_6",all_teams)
+        self.thread_day_7 = LabelWithComboBox("纽本周日（暴怒）", "thread_day_7",all_teams)
 
     def __init_layout(self):
         self.vbox_general.addWidget(self.EXP_count)

@@ -327,8 +327,8 @@ class CustomizeSettingsModule(QFrame):
         self.do_not_enhance = BaseCheckBox("do_not_enhance", None, "不升级饰品")
 
         self.only_aggressive_fuse = BaseCheckBox("only_aggressive_fuse", None, "只激进合成")
-        self.do_not_system_fuse = BaseCheckBox("do_not_system_fuse", None, "不合成体系饰品")
-        self.only_system_fuse = BaseCheckBox("only_system_fuse", None, "只合成体系饰品")
+        self.do_not_system_fuse = BaseCheckBox("do_not_system_fuse", None, "不使用公式合成")
+        self.only_system_fuse = BaseCheckBox("only_system_fuse", None, "只使用公式合成")
 
         self.avoid_skill_3 = BaseCheckBox("avoid_skill_3", None, "链接战避免使用三技能")
         self.re_formation_each_floor = BaseCheckBox("re_formation_each_floor", None, "每楼层重新编队")

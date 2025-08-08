@@ -58,7 +58,7 @@ class Screen(metaclass=SingletonMeta):
         _set_win()
         while True:
             try:
-                rect = win32gui.GetWindowRect(self.handle)
+                rect = win32gui.GetWindowRect(self.handle._hWnd)
                 width = rect[2] - rect[0]
                 height = rect[3] - rect[1]
                 if width != int(cfg.set_win_size * 16 / 9) or height != cfg.set_win_size:

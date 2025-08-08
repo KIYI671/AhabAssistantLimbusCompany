@@ -17,6 +17,7 @@ from app.farming_interface import FarmingInterface
 from app.page_card import MarkdownViewer
 from app.setting_interface import SettingInterface
 from app.team_setting_card import TeamSettingCard
+from app.tools_interface import ToolsInterface
 from module.config import cfg
 from module.logger import log
 from module.update.check_update import check_update
@@ -75,13 +76,14 @@ class MainWindow(FramelessWindow):
             self.help_interface = MarkdownViewer("./assets/doc/zh/How_to_use.md")
         else:
             self.help_interface = MarkdownViewer("./assets/doc/en/How_to_use_EN.md")
-
+        self.tools_interface = ToolsInterface(self)
         self.setting_interface = SettingInterface(self)
         #self.team_setting = TeamSettingCard(self)
 
         # add items to pivot
         self.addSubInterface(self.farming_interface, 'farming_interface', '一键长草')
         self.addSubInterface(self.help_interface, 'help_interface', '帮助')
+        self.addSubInterface(self.tools_interface, 'tools_interface', '小工具')
         self.addSubInterface(self.setting_interface, 'setting_interface', '设置')
         #self.addSubInterface(self.team_setting, 'team_setting', '队伍设置')
 
