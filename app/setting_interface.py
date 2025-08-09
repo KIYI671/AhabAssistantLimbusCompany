@@ -1,13 +1,14 @@
-from PyQt5.QtCore import QUrl, QT_TRANSLATE_NOOP
+from PyQt5.QtCore import QUrl, QT_TRANSLATE_NOOP, Qt
 from PyQt5.QtGui import QDesktopServices
 from PyQt5.QtWidgets import QWidget, QFileDialog
-from qfluentwidgets import FluentIcon as FIF
+from qfluentwidgets import FluentIcon as FIF, InfoBarPosition
 from qfluentwidgets import ScrollArea, ExpandLayout
 
 from app.base_combination import ComboBoxSettingCard, SwitchSettingCard, PushSettingCardMirrorchyan, \
     BaseSettingCardGroup, BasePushSettingCard, BasePrimaryPushSettingCard
-from module.config import cfg
+from app.card.messagebox_custom import BaseInfoBar
 from app.language_manager import SUPPORTED_LANG_NAME, LanguageManager
+from module.config import cfg
 
 
 class SettingInterface(ScrollArea):
@@ -41,7 +42,7 @@ class SettingInterface(ScrollArea):
             QT_TRANSLATE_NOOP('ComboBoxSettingCard', '设置选择队伍方式'),
             texts={
                 QT_TRANSLATE_NOOP('ComboBoxSettingCard', '使用队伍名'): False,
-                QT_TRANSLATE_NOOP('ComboBoxSettingCard', '使用队伍序号'): "en"
+                QT_TRANSLATE_NOOP('ComboBoxSettingCard', '使用队伍序号'): True
             },
             parent=self.game_setting_group
         )
@@ -68,6 +69,21 @@ class SettingInterface(ScrollArea):
             QT_TRANSLATE_NOOP("ComboBoxSettingCard", '语言'),
             QT_TRANSLATE_NOOP("ComboBoxSettingCard", '设置程序 UI 使用的语言'),
             texts=SUPPORTED_LANG_NAME,
+            parent=self.personal_group
+        )
+        self.zoom_card = ComboBoxSettingCard(
+            "zoom_scale",
+            FIF.ZOOM,
+            QT_TRANSLATE_NOOP("ComboBoxSettingCard", '缩放'),
+            QT_TRANSLATE_NOOP("ComboBoxSettingCard", '设置程序 UI 使用的缩放'),
+            texts={
+                QT_TRANSLATE_NOOP("ComboBoxSettingCard", "跟随系统"): 0,
+                "100%": 100,
+                "125%": 125,
+                "150%": 150,
+                "175%": 175,
+                "200%": 200,
+            },
             parent=self.personal_group
         )
 
@@ -149,6 +165,7 @@ class SettingInterface(ScrollArea):
         self.game_path_group.addSettingCard(self.game_path_card)
 
         self.personal_group.addSettingCard(self.language_card)
+        self.personal_group.addSettingCard(self.zoom_card)
 
         self.update_group.addSettingCard(self.check_update_card)
         self.update_group.addSettingCard(self.update_source_card)
@@ -183,6 +200,8 @@ class SettingInterface(ScrollArea):
         self.game_path_card.clicked.connect(self.__onGamePathCardClicked)
         self.open_logs_card.clicked.connect(self.__onOpenLogsCardClicked)
 
+        self.zoom_card.valueChanged.connect(self.__onZoomCardValueChanged)
+
         self.github_card.clicked.connect(self.__openUrl("https://github.com/KIYI671/AhabAssistantLimbusCompany"))
         self.qq_group_card.clicked.connect(self.__openUrl("https://qm.qq.com/q/SdgSRPrssg"))
         self.feedback_card.clicked.connect(
@@ -199,6 +218,18 @@ class SettingInterface(ScrollArea):
         import os
         os.startfile(os.path.abspath("./logs"))
 
+    def __onZoomCardValueChanged(self):
+        bar = BaseInfoBar.success(
+            title=QT_TRANSLATE_NOOP("BaseInfoBar", '更改将在重新启动后生效'),
+            content='',
+            orient=Qt.Horizontal,
+            isClosable=True,
+            position=InfoBarPosition.BOTTOM_RIGHT,
+            duration=5000,
+            parent=self
+        )
+        bar.retranslateUi()
+
     def __openUrl(self, url):
         return lambda: QDesktopServices.openUrl(QUrl(url))
 
@@ -209,6 +240,7 @@ class SettingInterface(ScrollArea):
         self.game_path_group.retranslateUi()
         self.personal_group.retranslateUi()
         self.language_card.retranslateUi()
+        self.zoom_card.retranslateUi()
         self.update_group.retranslateUi()
         self.update_source_card.retranslateUi()
         self.check_update_card.retranslateUi()

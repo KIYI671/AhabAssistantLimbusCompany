@@ -8,6 +8,8 @@ language_in_game: en # 游戏语言
 after_completion: 0 # 脚本结束后的操作
 language_in_program: '' # 程序语言
 
+zoom_scale: 0 # 缩放比例
+
 clean_logs: False # 是否自动清理日志
 
 # 脚本运行速度设置

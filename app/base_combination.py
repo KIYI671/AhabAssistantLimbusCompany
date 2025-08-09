@@ -1,10 +1,9 @@
-from PyQt5.QtCore import QUrl, QT_TRANSLATE_NOOP, QCoreApplication
-from PyQt5.QtGui import QIcon, QPixmap, QDesktopServices
+from PyQt5.QtCore import QUrl
+from PyQt5.QtGui import QPixmap, QDesktopServices
 from PyQt5.QtWidgets import QPushButton
 from qfluentwidgets import LineEdit, SettingCard, \
     IndicatorPosition, SwitchButton, SettingCardGroup, \
     PushSettingCard, PrimaryPushSettingCard
-from qfluentwidgets.common.icon import FluentIconBase
 
 from app.base_tools import *
 from app.card.messagebox_custom import MessageBoxEdit
@@ -313,6 +312,7 @@ class SinnerSelect(QFrame):
 
 
 class ComboBoxSettingCard(SettingCard):
+    valueChanged = pyqtSignal()
 
     def __init__(self, config_name: str, icon: Union[str, QIcon, FluentIconBase], title, content=None, texts=None,
                  parent=None):
@@ -333,6 +333,7 @@ class ComboBoxSettingCard(SettingCard):
                 self.comboBox.setCurrentText(key)
 
         self.comboBox.currentIndexChanged.connect(self._onCurrentIndexChanged)
+        self.comboBox.currentIndexChanged.connect(self.valueChanged)
 
     def _onCurrentIndexChanged(self, index: int):
         cfg.set_value(self.config_name, self.comboBox.itemData(index))

@@ -59,7 +59,7 @@ class BaseSettingLayout(QFrame):
 
 class BaseCheckBox(BaseLayout):
     def __init__(self, config_name, icon: Union[str, QIcon, FluentIconBase, None], title, parent=None, center=True,
-                 icon_size=16):
+                 icon_size=16, tips=None):
         super().__init__(parent=parent)
         self.config_name = config_name
         self.setObjectName(config_name)
@@ -71,6 +71,7 @@ class BaseCheckBox(BaseLayout):
             self.hBoxLayout.addSpacing(5)
 
         self.check_box_title = title
+        self.tips = tips
         self.check_box = CheckBox(title, self)
         self.hBoxLayout.addWidget(self.check_box, 0, Qt.AlignLeft)
         self.hBoxLayout.addSpacing(16)
@@ -137,6 +138,8 @@ class BaseCheckBox(BaseLayout):
 
     def retranslateUi(self):
         self.check_box.setText(self.tr(self.check_box_title))
+        if self.tips is not None:
+            self.check_box.setToolTip(self.tr(self.tips))
 
 
 class BaseButton(BaseLayout):
@@ -259,6 +262,8 @@ class BaseLabel(BaseLayout):
         self.label = BodyLabel(config_name)
         self.text = config_name
         self.label.setFont(QFont('Microsoft YaHei UI', 12))
+        if cfg.zoom_scale != 0:
+            self.label.setStyleSheet("font-size: 16px;")
         self.hBoxLayout.addWidget(self.label, Qt.AlignLeft)
         self.hBoxLayout.setContentsMargins(5, 0, 0, 0)
         self.setFixedHeight(25)

@@ -1,8 +1,8 @@
 import os
 
-from PyQt5.QtCore import Qt, QUrl, QT_TRANSLATE_NOOP, QCoreApplication
+from PyQt5.QtCore import Qt, QUrl, QCoreApplication
 from PyQt5.QtGui import QDesktopServices
-from PyQt5.QtWidgets import QVBoxLayout, QWidget, QFrame, QHBoxLayout, QTextBrowser, QVBoxLayout
+from PyQt5.QtWidgets import QWidget, QFrame, QHBoxLayout, QTextBrowser, QVBoxLayout
 from markdown_it import MarkdownIt
 from mdit_py_plugins.anchors import anchors_plugin
 from qfluentwidgets import FluentIcon as FIF
@@ -343,12 +343,14 @@ class PageMirror(PageCard):
         self.hard_mirror = BaseCheckBox(
             "hard_mirror", None,
             QT_TRANSLATE_NOOP("BaseCheckBox", "使用困难镜牢*"),
-            center=False
+            center=False,
+            tips=QT_TRANSLATE_NOOP("BaseCheckBox","仅本次运行期间有效，重启AALC后失效")
         )
         self.no_weekly_bonuses = BaseCheckBox(
             "no_weekly_bonuses", None,
             QT_TRANSLATE_NOOP("BaseCheckBox", "不使用每周加成*"),
-            center=False
+            center=False,
+            tips=QT_TRANSLATE_NOOP("BaseCheckBox","仅本次运行期间有效，重启AALC后失效")
         )
         self.flood_3_exit = BaseCheckBox(
             "flood_3_exit", None,
