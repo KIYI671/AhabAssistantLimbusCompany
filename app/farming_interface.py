@@ -1,7 +1,7 @@
 import sys
 
 from PyQt5 import QtWidgets
-from PyQt5.QtCore import QFile, QTextStream, QTimer
+from PyQt5.QtCore import QFile, QTextStream, QTimer, QT_TRANSLATE_NOOP
 from PyQt5.QtWidgets import QApplication
 from pynput import keyboard
 from qfluentwidgets import TextEdit
@@ -16,7 +16,7 @@ from module.game_and_screen import screen
 from module.logger import log
 from module.ocr import ocr
 from tasks.base.script_task_scheme import my_script_task
-
+from app.language_manager import LanguageManager
 
 class FarmingInterface(QWidget):
     def __init__(self, parent=None):
@@ -58,15 +58,21 @@ class FarmingInterface(QWidget):
     def my_pause_and_resume(self):
         auto.set_pause()
 
+
 class FarmingInterfaceLeft(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent=parent)
         self.parent = parent
+        self.setObjectName("FarmingInterfaceLeft")
+        
         self.__init_widget()
         self.__init_card()
         self.__init_layout()
 
         self.connect_mediator()
+
+        LanguageManager().register_component(self)
+        
 
     def __init_widget(self):
         self.hbox_layout = QVBoxLayout(self)
@@ -80,21 +86,63 @@ class FarmingInterfaceLeft(QWidget):
         self.setting_box.setLayout(self.setting_layout)
 
     def __init_card(self):
-        self.set_windows = CheckBoxWithButton("set_windows", "窗口设置", None, "set_windows")
+        
+        self.set_windows = CheckBoxWithButton(
+            "set_windows", 
+            QT_TRANSLATE_NOOP("CheckBoxWithButton","窗口设置"), 
+            None, 
+            "set_windows"
+        )
         self.set_windows.set_box_enabled(False)
-        self.daily_task = CheckBoxWithButton("daily_task", "日常任务", None, "daily_task")
-        self.get_reward = CheckBoxWithButton("get_reward", "领取奖励", None, "get_reward")
-        self.buy_enkephalin = CheckBoxWithButton("buy_enkephalin", "狂气换体", None, "buy_enkephalin")
-        self.mirror = CheckBoxWithButton("mirror", "坐牢设置", None, "mirror")
-        self.resonate_with_Ahab = CheckBoxWithButton("resonate_with_Ahab", "亚哈共鸣", None, "resonate_with_Ahab")
+
+        self.daily_task = CheckBoxWithButton(
+            "daily_task", 
+            QT_TRANSLATE_NOOP("CheckBoxWithButton","日常任务"), 
+            None, 
+            "daily_task"
+        )
+
+        self.get_reward = CheckBoxWithButton(
+            "get_reward", 
+            QT_TRANSLATE_NOOP("CheckBoxWithButton","领取奖励"), 
+            None, 
+            "get_reward"
+        )
+        self.buy_enkephalin = CheckBoxWithButton(
+           "buy_enkephalin",
+            QT_TRANSLATE_NOOP("CheckBoxWithButton","狂气换体"),
+            None, 
+            "buy_enkephalin"
+        )
+        self.mirror = CheckBoxWithButton(
+            "mirror", 
+            QT_TRANSLATE_NOOP("CheckBoxWithButton","坐牢设置"), 
+            None, 
+            "mirror"
+        )
+        self.resonate_with_Ahab = CheckBoxWithButton(
+            "resonate_with_Ahab", 
+            QT_TRANSLATE_NOOP("CheckBoxWithButton","亚哈共鸣"), 
+            None, 
+            "resonate_with_Ahab"
+        )
+
         self.resonate_with_Ahab.button.setEnabled(False)
 
-        self.select_all = NormalTextButton("全选","select_all")
+        self.select_all = NormalTextButton(
+            QT_TRANSLATE_NOOP("NormalTextButton", "全选"),
+            "select_all"
+        )
         self.select_all.clicked.connect(self.select_all_function)
-        self.clear_all = NormalTextButton("清空","clear_all")
+        
+        self.clear_all = NormalTextButton(
+            QT_TRANSLATE_NOOP("NormalTextButton", "清空"),
+            "clear_all"
+        )
         self.clear_all.clicked.connect(self.clear_all_function)
 
-        self.then = BaseLabel("之后")
+        self.then = BaseLabel(QT_TRANSLATE_NOOP("BaseLabel","之后"))
+        
         self.then_combobox = BaseComboBox("after_completion")
         self.then_combobox.add_items(set_after_completion_options)
         self.then_combobox.set_options(0)
@@ -217,17 +265,33 @@ class FarmingInterfaceLeft(QWidget):
         # 连接所有可能信号
         mediator.link_start.connect(self.my_stop_shortcut)
 
+    def retranslateUi(self):
+        self.set_windows.retranslateUi()
+        self.daily_task.retranslateUi()
+        self.get_reward.retranslateUi()
+        self.buy_enkephalin.retranslateUi()
+        self.mirror.retranslateUi()
+        self.resonate_with_Ahab.retranslateUi()
+
+        self.then.retranslateUi()
+        self.then_combobox.retranslateUi()
+        self.select_all.retranslateUi()
+        self.clear_all.retranslateUi()
+
 
 class FarmingInterfaceCenter(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent=parent)
         self.parent = parent
+        self.setObjectName("FarmingInterfaceCenter")
         self.__init_widget()
         self.__init_card()
         self.__init_layout()
         self.__init_setting()
 
         self.connect_mediator()
+
+        LanguageManager().register_component(self)
 
     def __init_widget(self):
         #self.setting_box = CardWidget()
@@ -262,11 +326,18 @@ class FarmingInterfaceCenter(QWidget):
             self.setting_page.setCurrentIndex(page_index)
             cfg.set_value("default_page", page_index)
         except Exception as e:
-            print(f"【异常】switch_to_page 出错：{e}")
+            log.ERROR(f"【异常】switch_to_page 出错：{type(e).__name__}:{e}")
 
     def connect_mediator(self):
         # 连接所有可能信号
         mediator.switch_page.connect(self.switch_to_page)
+
+    def retranslateUi(self):
+        self.set_windows.retranslateUi()
+        self.daily_task.retranslateUi()
+        self.get_reward.retranslateUi()
+        self.buy_enkephalin.retranslateUi()
+        self.mirror.retranslateUi()
 
 class FarmingInterfaceRight(QWidget):
     def __init__(self, parent=None):
@@ -369,6 +440,7 @@ class FarmingInterfaceRight(QWidget):
     def connect_mediator(self):
         # 连接所有可能信号
         mediator.scroll_log_show.connect(self.set_scroll_log)
+
 
 
 if __name__ == '__main__':

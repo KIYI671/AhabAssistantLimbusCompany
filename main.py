@@ -2,6 +2,7 @@ import os
 import sys
 
 from app.my_app import MainWindow
+from app.language_manager import LanguageManager
 
 # 将当前工作目录设置为程序所在的目录，确保无论从哪里执行，其工作目录都正确设置为程序本身的位置，避免路径错误。
 os.chdir(
@@ -20,7 +21,7 @@ if not pyuac.isUserAdmin():
 from win32api import GetLastError
 from win32event import CreateMutex
 
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, QTimer
 from PyQt5.QtWidgets import QApplication
 
 # 启用 DPI 缩放
@@ -38,8 +39,14 @@ if __name__ == "__main__":
     if not mutex or last_error > 0:
         # 使用非零退出码表示错误
         sys.exit(1)
-
+        
+    lang_manager = LanguageManager()
+    lang = lang_manager.init_language()
     app = QApplication(sys.argv)
     app.setAttribute(Qt.AA_DontCreateNativeWidgetSiblings)
+    
     ui = MainWindow()
+
+    QTimer.singleShot(50, lambda: lang_manager.set_language(lang))
+
     sys.exit(app.exec_())

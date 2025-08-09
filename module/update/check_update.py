@@ -5,18 +5,20 @@ import subprocess
 from enum import Enum
 from threading import Thread
 
-import markdown
+from markdown_it import MarkdownIt
 import requests  # 导入requests模块，用于发送HTTP请求
-from PyQt5.QtCore import QThread, pyqtSignal, Qt
+from PyQt5.QtCore import QThread, pyqtSignal, Qt, QT_TRANSLATE_NOOP
 from packaging.version import parse
-from qfluentwidgets import InfoBar, InfoBarPosition
+from qfluentwidgets import InfoBarPosition
 
 from app import mediator
-from app.card.messagebox_custom import MessageBoxUpdate
+from app.card.messagebox_custom import MessageBoxUpdate, BaseInfoBar
 from module.config import cfg
 from module.decorator.decorator import begin_and_finish_time_log
 from module.logger import log
 
+
+md_renderer = MarkdownIt("gfm-like", {"html": True})
 
 class UpdateStatus(Enum):
     """
@@ -78,8 +80,9 @@ class UpdateThread(QThread):
 
             # 比较当前版本和最新版本，如果最新版本更高，则准备更新
             if parse(version.lstrip('Vv')) > parse(cfg.version.lstrip('Vv')):
-                self.title = f"发现新版本：{cfg.version}——> {version}\n更新日志:"
-                self.content = "<style>a {color: #586f50; font-weight: bold;}</style>" + markdown.markdown(content)
+
+                self.title = self.tr("发现新版本：{Old_version} ——> {New_version}\n更新日志:").format(Old_version=cfg.version,New_version=version)
+                self.content = "<style>a {color: #586f50; font-weight: bold;}</style>" + md_renderer.render(content)
                 self.updateSignal.emit(UpdateStatus.UPDATE_AVAILABLE)
             else:
                 # 如果没有新版本，则发送成功信号
@@ -232,8 +235,8 @@ def check_update(self, timeout=5, flag=False):
                     start_update_thread(assets_url)
         elif status == UpdateStatus.SUCCESS:
             # 显示当前为最新版本的信息
-            InfoBar.success(
-                title=self.tr('当前是最新版本(＾∀＾●)'),
+            bar = BaseInfoBar.success(
+                title=QT_TRANSLATE_NOOP("BaseInfoBar",'当前是最新版本(＾∀＾●)'),
                 content="",
                 orient=Qt.Horizontal,
                 isClosable=True,
@@ -241,10 +244,11 @@ def check_update(self, timeout=5, flag=False):
                 duration=1000,
                 parent=self
             )
+            bar.retranslateUi()
         else:
             # 显示检查更新失败的信息
-            InfoBar.warning(
-                title=self.tr('检测更新失败(╥╯﹏╰╥)'),
+            bar = BaseInfoBar.warning(
+                title=QT_TRANSLATE_NOOP("BaseInfoBar",'检测更新失败(╥╯﹏╰╥)'),
                 content=self.update_thread.error_msg,
                 orient=Qt.Horizontal,
                 isClosable=True,
@@ -252,6 +256,7 @@ def check_update(self, timeout=5, flag=False):
                 duration=5000,
                 parent=self
             )
+            bar.retranslateUi()
 
     # 创建一个更新线程实例
     self.update_thread = UpdateThread(timeout, flag)
