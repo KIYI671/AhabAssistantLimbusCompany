@@ -17,8 +17,8 @@ from module.config import cfg
 from module.decorator.decorator import begin_and_finish_time_log
 from module.logger import log
 
-
 md_renderer = MarkdownIt("gfm-like", {"html": True})
+
 
 class UpdateStatus(Enum):
     """
@@ -53,11 +53,11 @@ class UpdateThread(QThread):
         super().__init__()
         self.timeout = timeout  # 超时时间
         self.flag = flag  # 标志位，用于控制是否执行检查更新
-        self.error_msg = '' # 错误信息
+        self.error_msg = ''  # 错误信息
 
         self.user = "KIYI671"
         self.repo = "AhabAssistantLimbusCompany"
-        self.new_version= ''
+        self.new_version = ''
 
     def run(self):
         """
@@ -81,7 +81,8 @@ class UpdateThread(QThread):
             # 比较当前版本和最新版本，如果最新版本更高，则准备更新
             if parse(version.lstrip('Vv')) > parse(cfg.version.lstrip('Vv')):
 
-                self.title = self.tr("发现新版本：{Old_version} ——> {New_version}\n更新日志:").format(Old_version=cfg.version,New_version=version)
+                self.title = self.tr("发现新版本：{Old_version} ——> {New_version}\n更新日志:").format(
+                    Old_version=cfg.version, New_version=version)
                 self.content = "<style>a {color: #586f50; font-weight: bold;}</style>" + md_renderer.render(content)
                 self.updateSignal.emit(UpdateStatus.UPDATE_AVAILABLE)
             else:
@@ -236,7 +237,7 @@ def check_update(self, timeout=5, flag=False):
         elif status == UpdateStatus.SUCCESS:
             # 显示当前为最新版本的信息
             bar = BaseInfoBar.success(
-                title=QT_TRANSLATE_NOOP("BaseInfoBar",'当前是最新版本(＾∀＾●)'),
+                title=QT_TRANSLATE_NOOP("BaseInfoBar", '当前是最新版本(＾∀＾●)'),
                 content="",
                 orient=Qt.Horizontal,
                 isClosable=True,
@@ -248,7 +249,7 @@ def check_update(self, timeout=5, flag=False):
         else:
             # 显示检查更新失败的信息
             bar = BaseInfoBar.warning(
-                title=QT_TRANSLATE_NOOP("BaseInfoBar",'检测更新失败(╥╯﹏╰╥)'),
+                title=QT_TRANSLATE_NOOP("BaseInfoBar", '检测更新失败(╥╯﹏╰╥)'),
                 content=self.update_thread.error_msg,
                 orient=Qt.Horizontal,
                 isClosable=True,
@@ -323,7 +324,7 @@ def update(assets_url):
                 for chunk in r.iter_content(chunk_size=1024):
                     if chunk:
                         f.write(chunk)
-                        downloaded+=len(chunk)
+                        downloaded += len(chunk)
                         progress = int(downloaded / total_size * 100)
                         mediator.update_progress.emit(progress)
 
@@ -353,6 +354,7 @@ def update(assets_url):
     finally:
         response.close()  # 确保关闭响应对象
 
+
 def start_update_thread(assets_url):
     """
     在单独的线程中启动更新功能。
@@ -361,6 +363,7 @@ def start_update_thread(assets_url):
     thread = Thread(target=update, args=(assets_url,))
     thread.start()
     return thread
+
 
 def start_update(assert_name):
     source_file = os.path.abspath("./AALC Updater.exe")

@@ -33,13 +33,13 @@ def team_formation(sinner_team):
     first_sinner = [announcer_position[0] + 350 * scale, announcer_position[1]]
     sleep(0.5)
 
-    for i in range(1,13):
+    for i in range(1, 13):
         if i in sinner_team:
             sinner = sinner_team.index(i)
         else:
             return
         if sinner <= 5:
-                auto.mouse_click(first_sinner[0] + 270 * sinner * scale, first_sinner[1])
+            auto.mouse_click(first_sinner[0] + 270 * sinner * scale, first_sinner[1])
         else:
             auto.mouse_click(first_sinner[0] + 270 * (sinner - 6) * scale, first_sinner[1] + 500 * scale)
         sleep(cfg.mouse_action_interval)
@@ -58,12 +58,12 @@ def select_battle_team(num):
         my_position[1] += position[1]
         auto.mouse_drag(my_position[0], my_position[1], dy=1333 * scale, drag_time=0.3)
         sleep(0.75)
-        first_position=[position[0],position[1]+70*scale]
+        first_position = [position[0], position[1] + 70 * scale]
         if cfg.select_team_by_order:
-            team_range = (num-1)//5
-            team_order = (num-1)%5
+            team_range = (num - 1) // 5
+            team_order = (num - 1) % 5
             for _ in range(team_range):
-                auto.mouse_drag(first_position[0], first_position[1]+375*scale, dy=-385 * scale, drag_time=1.5)
+                auto.mouse_drag(first_position[0], first_position[1] + 375 * scale, dy=-385 * scale, drag_time=1.5)
                 sleep(1)
             if num <= 15:
                 auto.mouse_click(first_position[0], first_position[1] + 75 * team_order * scale)
@@ -83,7 +83,8 @@ def select_battle_team(num):
                 if auto.click_element(team_name, find_type="text", offset=False, my_crop=position_bbox):
                     find = True
                     break
-                if auto.click_element(team_name_error_correcting, find_type="text", offset=False, my_crop=position_bbox):
+                if auto.click_element(team_name_error_correcting, find_type="text", offset=False,
+                                      my_crop=position_bbox):
                     find = True
                     break
                 auto.mouse_drag(my_position[0], my_position[1], dy=-267 * scale, drag_time=1.5)

@@ -9,25 +9,24 @@ def get_the_timing():
     if module_position := auto.find_element("enkephalin/lunacy_assets.png", take_screenshot=True):
         my_scale = cfg.set_win_size / 1440
         bbox = (
-            module_position[0] - 200* my_scale, module_position[1]+150* my_scale,
+            module_position[0] - 200 * my_scale, module_position[1] + 150 * my_scale,
             module_position[0] + 600 * my_scale,
             module_position[1] + 220 * my_scale)
-        ocr_result = auto.find_text_element(None,my_crop=bbox,only_text=True)
-        s=''
+        ocr_result = auto.find_text_element(None, my_crop=bbox, only_text=True)
+        s = ''
         if ocr_result is not None:
             try:
                 for ocr in ocr_result:
-                    s+=str(ocr)
+                    s += str(ocr)
                 if ':' in s:
                     l = s.split(":")
                     minute = int(l[0][-2:])
                     seconds = int(l[1][:2])
-                    if minute>=5 and seconds>=20:
+                    if minute >= 5 and seconds >= 20:
                         return True
             except:
                 return False
         return False
-
 
 
 @begin_and_finish_time_log(task_name="体力换饼", calculate_time=False)

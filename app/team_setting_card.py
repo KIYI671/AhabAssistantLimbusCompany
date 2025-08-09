@@ -10,15 +10,16 @@ from app.language_manager import LanguageManager
 
 from module.config import cfg
 
+
 class TeamSettingCard(QFrame):
     def __init__(self, team_num=0, parent=None):
         super().__init__(parent)
         self.__init_widget()
         self.__init_card()
         self.__init_layout()
-        #self.setStyleSheet("border: 1px solid black;")
+        # self.setStyleSheet("border: 1px solid black;")
 
-        self.team_num=team_num
+        self.team_num = team_num
         if cfg.get_value(f"team{team_num}_setting"):
             self.team_setting = cfg.get_value(f"team{team_num}_setting")
         else:
@@ -66,16 +67,19 @@ class TeamSettingCard(QFrame):
     def __init_card(self):
         self.select_team = LabelWithComboBox(self.tr("选择队伍名称"), "team_number", all_teams, vbox=False)
         self.select_system = LabelWithComboBox(self.tr("选择队伍体系"), "team_system", all_systems, vbox=False)
-        self.select_shop_strategy = LabelWithComboBox(self.tr("选择商店策略"), "shop_strategy", shop_strategy, vbox=False)
+        self.select_shop_strategy = LabelWithComboBox(self.tr("选择商店策略"), "shop_strategy", shop_strategy,
+                                                      vbox=False)
 
         self.sinner_YiSang = SinnerSelect("YiSang", self.tr("李箱"), None, "./assets/app/sinner/YiSang.png")
         self.sinner_Faust = SinnerSelect("Faust", self.tr("浮士德"), None, "./assets/app/sinner/Faust.png")
-        self.sinner_DonQuixote = SinnerSelect("DonQuixote", self.tr("堂吉诃德"), None, "./assets/app/sinner/DonQuixote.png")
+        self.sinner_DonQuixote = SinnerSelect("DonQuixote", self.tr("堂吉诃德"), None,
+                                              "./assets/app/sinner/DonQuixote.png")
         self.sinner_Ryoshu = SinnerSelect("Ryoshu", self.tr("良秀"), None, "./assets/app/sinner/Ryoshu.png")
         self.sinner_Meursault = SinnerSelect("Meursault", self.tr("默尔索"), None, "./assets/app/sinner/Meursault.png")
         self.sinner_HongLu = SinnerSelect("HongLu", self.tr("鸿潞"), None, "./assets/app/sinner/HongLu.png")
 
-        self.sinner_Heathcliff = SinnerSelect("Heathcliff", self.tr("希斯克利夫"), None, "./assets/app/sinner/Heathcliff.png")
+        self.sinner_Heathcliff = SinnerSelect("Heathcliff", self.tr("希斯克利夫"), None,
+                                              "./assets/app/sinner/Heathcliff.png")
         self.sinner_Ishmael = SinnerSelect("Ishmael", self.tr("以实玛利"), None, "./assets/app/sinner/Ishmael.png")
         self.sinner_Rodion = SinnerSelect("Rodion", self.tr("罗佳"), None, "./assets/app/sinner/Rodion.png")
         self.sinner_Sinclair = SinnerSelect("Sinclair", self.tr("辛克莱"), None, "./assets/app/sinner/Sinclair.png")
@@ -86,16 +90,25 @@ class TeamSettingCard(QFrame):
         self.shop_setting.add_icon(FIF.DELETE)
 
         self.burn = BaseCheckBox("system_burn", "./assets/app/status_effects/burn.png", self.tr("烧伤"), icon_size=30)
-        self.bleed = BaseCheckBox("system_bleed", "./assets/app/status_effects/bleed.png", self.tr("流血"), icon_size=30)
-        self.tremor = BaseCheckBox("system_tremor", "./assets/app/status_effects/tremor.png", self.tr("震颤"), icon_size=30)
-        self.rupture = BaseCheckBox("system_rupture", "./assets/app/status_effects/rupture.png", self.tr("破裂"), icon_size=30)
-        self.sinking = BaseCheckBox("system_sinking", "./assets/app/status_effects/sinking.png", self.tr("沉沦"), icon_size=30)
+        self.bleed = BaseCheckBox("system_bleed", "./assets/app/status_effects/bleed.png", self.tr("流血"),
+                                  icon_size=30)
+        self.tremor = BaseCheckBox("system_tremor", "./assets/app/status_effects/tremor.png", self.tr("震颤"),
+                                   icon_size=30)
+        self.rupture = BaseCheckBox("system_rupture", "./assets/app/status_effects/rupture.png", self.tr("破裂"),
+                                    icon_size=30)
+        self.sinking = BaseCheckBox("system_sinking", "./assets/app/status_effects/sinking.png", self.tr("沉沦"),
+                                    icon_size=30)
 
-        self.poise = BaseCheckBox("system_poise", "./assets/app/status_effects/poise.png", self.tr("呼吸"), icon_size=30)
-        self.charge = BaseCheckBox("system_charge", "./assets/app/status_effects/charge.png", self.tr("充能"), icon_size=30)
-        self.slash = BaseCheckBox("system_slash", "./assets/app/status_effects/slash.png", self.tr("斩击"), icon_size=30)
-        self.pierce = BaseCheckBox("system_pierce", "./assets/app/status_effects/pierce.png", self.tr("突刺"), icon_size=30)
-        self.blunt = BaseCheckBox("system_blunt", "./assets/app/status_effects/blunt.png", self.tr("打击"), icon_size=30)
+        self.poise = BaseCheckBox("system_poise", "./assets/app/status_effects/poise.png", self.tr("呼吸"),
+                                  icon_size=30)
+        self.charge = BaseCheckBox("system_charge", "./assets/app/status_effects/charge.png", self.tr("充能"),
+                                   icon_size=30)
+        self.slash = BaseCheckBox("system_slash", "./assets/app/status_effects/slash.png", self.tr("斩击"),
+                                  icon_size=30)
+        self.pierce = BaseCheckBox("system_pierce", "./assets/app/status_effects/pierce.png", self.tr("突刺"),
+                                   icon_size=30)
+        self.blunt = BaseCheckBox("system_blunt", "./assets/app/status_effects/blunt.png", self.tr("打击"),
+                                  icon_size=30)
 
         self.customize_settings_module = CustomizeSettingsModule()
 
@@ -176,7 +189,7 @@ class TeamSettingCard(QFrame):
                 self.team_setting["sinner_order"][sinner_index] = 0
             self.refresh_sinner_order()
         elif "starlight_" in keys:
-            starlight_index = int(keys.split("_")[-1]) -1
+            starlight_index = int(keys.split("_")[-1]) - 1
             if values:
                 self.team_setting["opening_bonus_select"] += 1
                 self.team_setting["opening_bonus"][starlight_index] = 1
@@ -192,22 +205,22 @@ class TeamSettingCard(QFrame):
             self.refresh_starlight_order()
         elif keys in second_system_mode:
             mode_index = second_system_mode.index(keys)
-            self.team_setting["second_system_action"][mode_index]= values
+            self.team_setting["second_system_action"][mode_index] = values
         elif "ignore_shop_" in keys:
-            shop_index = int(keys.split("_")[-1]) -1
+            shop_index = int(keys.split("_")[-1]) - 1
             self.team_setting["ignore_shop"][shop_index] = values
 
     def save_team_setting(self):
-        cfg.set_value(f"team{self.team_num}_setting",self.team_setting)
+        cfg.set_value(f"team{self.team_num}_setting", self.team_setting)
         self.cancel_team_setting()
 
     def refresh_starlight_order(self):
         opening_bonus_order = self.team_setting["opening_bonus_order"]
-        for i in range(1,11):
+        for i in range(1, 11):
             starlight = self.findChild(CheckBoxWithLineEdit, f'starlight_{i}')
             if starlight is not None:
-                if opening_bonus_order[i-1] != 0:
-                    starlight.set_text(str(opening_bonus_order[i-1]))
+                if opening_bonus_order[i - 1] != 0:
+                    starlight.set_text(str(opening_bonus_order[i - 1]))
                 else:
                     starlight.set_text("")
 
@@ -251,8 +264,8 @@ class TeamSettingCard(QFrame):
             if second_system_action[i]:
                 self.findChild(BaseCheckBox, second_system_mode[i]).set_checked(True)
 
-        for i in range(1,6):
-            if ignore_shop[i-1]:
+        for i in range(1, 6):
+            if ignore_shop[i - 1]:
                 self.findChild(BaseCheckBox, f"ignore_shop_{i}").set_checked(True)
 
         for checkbox in all_checkbox_config_name:
@@ -262,13 +275,13 @@ class TeamSettingCard(QFrame):
         for combobox in all_combobox_config_name:
             if self.findChild(BaseComboBox, combobox):
                 if combobox == "team_number":
-                    self.findChild(BaseComboBox, combobox).set_options(self.team_setting[combobox]-1)
+                    self.findChild(BaseComboBox, combobox).set_options(self.team_setting[combobox] - 1)
                 else:
                     self.findChild(BaseComboBox, combobox).set_options(self.team_setting[combobox])
                     if combobox == "team_system":
                         self.foolproof(self.team_setting[combobox])
 
-    def foolproof(self,team_system):
+    def foolproof(self, team_system):
         for checkbox in all_checkbox_config_name:
             if check_box := self.findChild(BaseCheckBox, checkbox):
                 if checkbox.startswith("system_"):
@@ -277,7 +290,6 @@ class TeamSettingCard(QFrame):
         if check_box:
             check_box.set_checked(False)
             check_box.set_box_enabled(False)
-
 
     def cancel_team_setting(self):
         mediator.close_setting.emit()
@@ -360,139 +372,139 @@ class CustomizeSettingsModule(QFrame):
 
     def __init_card(self):
         self.do_not_heal = BaseCheckBox(
-            "do_not_heal", None, QT_TRANSLATE_NOOP("BaseCheckBox","不治疗罪人")
+            "do_not_heal", None, QT_TRANSLATE_NOOP("BaseCheckBox", "不治疗罪人")
         )
         self.do_not_buy = BaseCheckBox(
-            "do_not_buy", None, QT_TRANSLATE_NOOP("BaseCheckBox","不购买饰品")
+            "do_not_buy", None, QT_TRANSLATE_NOOP("BaseCheckBox", "不购买饰品")
         )
         self.do_not_fuse = BaseCheckBox(
-            "do_not_fuse", None, QT_TRANSLATE_NOOP("BaseCheckBox","不合成饰品")
+            "do_not_fuse", None, QT_TRANSLATE_NOOP("BaseCheckBox", "不合成饰品")
         )
         self.do_not_sell = BaseCheckBox(
-            "do_not_sell", None, QT_TRANSLATE_NOOP("BaseCheckBox","不出售饰品")
+            "do_not_sell", None, QT_TRANSLATE_NOOP("BaseCheckBox", "不出售饰品")
         )
         self.do_not_enhance = BaseCheckBox(
-            "do_not_enhance", None, QT_TRANSLATE_NOOP("BaseCheckBox","不升级饰品")
+            "do_not_enhance", None, QT_TRANSLATE_NOOP("BaseCheckBox", "不升级饰品")
         )
 
         self.only_aggressive_fuse = BaseCheckBox(
-            "only_aggressive_fuse", None, QT_TRANSLATE_NOOP("BaseCheckBox","只激进合成")
+            "only_aggressive_fuse", None, QT_TRANSLATE_NOOP("BaseCheckBox", "只激进合成")
         )
         self.do_not_system_fuse = BaseCheckBox(
-            "do_not_system_fuse", None, QT_TRANSLATE_NOOP("BaseCheckBox","不使用公式合成")
+            "do_not_system_fuse", None, QT_TRANSLATE_NOOP("BaseCheckBox", "不使用公式合成")
         )
         self.only_system_fuse = BaseCheckBox(
-            "only_system_fuse", None, QT_TRANSLATE_NOOP("BaseCheckBox","只使用公式合成")
+            "only_system_fuse", None, QT_TRANSLATE_NOOP("BaseCheckBox", "只使用公式合成")
         )
 
         self.avoid_skill_3 = BaseCheckBox(
-            "avoid_skill_3", None, QT_TRANSLATE_NOOP("BaseCheckBox","链接战避免使用三技能")
+            "avoid_skill_3", None, QT_TRANSLATE_NOOP("BaseCheckBox", "链接战避免使用三技能")
         )
         self.re_formation_each_floor = BaseCheckBox(
-            "re_formation_each_floor", None, QT_TRANSLATE_NOOP("BaseCheckBox","每楼层重新编队")
+            "re_formation_each_floor", None, QT_TRANSLATE_NOOP("BaseCheckBox", "每楼层重新编队")
         )
         self.use_starlight = BaseCheckBox(
-            "use_starlight", None, QT_TRANSLATE_NOOP("BaseCheckBox","开局星光换钱")
+            "use_starlight", None, QT_TRANSLATE_NOOP("BaseCheckBox", "开局星光换钱")
         )
 
         self.reward_cards = CheckBoxWithComboBox(
-            "reward_cards",  QT_TRANSLATE_NOOP("CheckBoxWithComboBox","奖励卡优先度"), 
+            "reward_cards", QT_TRANSLATE_NOOP("CheckBoxWithComboBox", "奖励卡优先度"),
             None, "reward_cards_select", parent=self
         )
         self.reward_cards.add_items(reward_cards)
 
         self.choose_opening_bonus = BaseCheckBox(
-            "choose_opening_bonus", FIF.BUS, QT_TRANSLATE_NOOP("BaseCheckBox","自选开局加成"), 
+            "choose_opening_bonus", FIF.BUS, QT_TRANSLATE_NOOP("BaseCheckBox", "自选开局加成"),
             center=False
         )
 
-        QT_TRANSLATE_NOOP("CustomizeSettingsModule","星光")
-        self.starlight_1 = CheckBoxWithLineEdit("starlight_1","星光1")
-        self.starlight_2 = CheckBoxWithLineEdit("starlight_2","星光2")
-        self.starlight_3 = CheckBoxWithLineEdit("starlight_3","星光3")
-        self.starlight_4 = CheckBoxWithLineEdit("starlight_4","星光4")
-        self.starlight_5 = CheckBoxWithLineEdit("starlight_5","星光5")
+        QT_TRANSLATE_NOOP("CustomizeSettingsModule", "星光")
+        self.starlight_1 = CheckBoxWithLineEdit("starlight_1", "星光1")
+        self.starlight_2 = CheckBoxWithLineEdit("starlight_2", "星光2")
+        self.starlight_3 = CheckBoxWithLineEdit("starlight_3", "星光3")
+        self.starlight_4 = CheckBoxWithLineEdit("starlight_4", "星光4")
+        self.starlight_5 = CheckBoxWithLineEdit("starlight_5", "星光5")
 
-        self.starlight_6 = CheckBoxWithLineEdit("starlight_6","星光6")
-        self.starlight_7 = CheckBoxWithLineEdit("starlight_7","星光7")
-        self.starlight_8 = CheckBoxWithLineEdit("starlight_8","星光8")
-        self.starlight_9 = CheckBoxWithLineEdit("starlight_9","星光9")
-        self.starlight_10 = CheckBoxWithLineEdit("starlight_10","星光10")
+        self.starlight_6 = CheckBoxWithLineEdit("starlight_6", "星光6")
+        self.starlight_7 = CheckBoxWithLineEdit("starlight_7", "星光7")
+        self.starlight_8 = CheckBoxWithLineEdit("starlight_8", "星光8")
+        self.starlight_9 = CheckBoxWithLineEdit("starlight_9", "星光9")
+        self.starlight_10 = CheckBoxWithLineEdit("starlight_10", "星光10")
 
         self.after_level_IV = CheckBoxWithComboBox(
-            "after_level_IV", QT_TRANSLATE_NOOP("CheckBoxWithComboBox","合成四级以后"),
-            None, "after_level_IV_select",parent=self
+            "after_level_IV", QT_TRANSLATE_NOOP("CheckBoxWithComboBox", "合成四级以后"),
+            None, "after_level_IV_select", parent=self
         )
         self.after_level_IV.add_items(after_fuse_level_IV)
         self.shopping_strategy = CheckBoxWithComboBox(
-            "shopping_strategy", QT_TRANSLATE_NOOP("CheckBoxWithComboBox","购物策略"), 
-            None, "shopping_strategy_select",parent=self
+            "shopping_strategy", QT_TRANSLATE_NOOP("CheckBoxWithComboBox", "购物策略"),
+            None, "shopping_strategy_select", parent=self
         )
         self.shopping_strategy.add_items(shopping_strategy)
 
         self.opening_items = CheckBoxWithComboBox(
-            "opening_items", QT_TRANSLATE_NOOP("CheckBoxWithComboBox","自选开局饰品"), 
-            None, "opening_items_system",parent=self
+            "opening_items", QT_TRANSLATE_NOOP("CheckBoxWithComboBox", "自选开局饰品"),
+            None, "opening_items_system", parent=self
         )
         self.opening_items.add_items(all_systems)
         self.opening_items.add_combobox("opening_items_select")
         self.opening_items.add_times_for_additional(start_gift)
-        
+
         self.second_system = CheckBoxWithComboBox(
-            "second_system", QT_TRANSLATE_NOOP("CheckBoxWithComboBox","第二体系"), 
-            None, "second_system_select",parent=self
+            "second_system", QT_TRANSLATE_NOOP("CheckBoxWithComboBox", "第二体系"),
+            None, "second_system_select", parent=self
         )
         self.second_system.add_items(all_systems)
         self.second_system.add_combobox("second_system_setting")
         self.second_system.add_times_for_additional(second_systems)
 
         self.second_system_fuse_IV = BaseCheckBox(
-            "second_system_fuse_IV", None, 
-            QT_TRANSLATE_NOOP("BaseCheckBox","合成四级")
+            "second_system_fuse_IV", None,
+            QT_TRANSLATE_NOOP("BaseCheckBox", "合成四级")
         )
         self.second_system_buy = BaseCheckBox(
-            "second_system_buy", None, 
-            QT_TRANSLATE_NOOP("BaseCheckBox","购买")
+            "second_system_buy", None,
+            QT_TRANSLATE_NOOP("BaseCheckBox", "购买")
         )
         self.second_system_select = BaseCheckBox(
-            "second_system_choose", None, 
-            QT_TRANSLATE_NOOP("BaseCheckBox","选取胜利奖励")
+            "second_system_choose", None,
+            QT_TRANSLATE_NOOP("BaseCheckBox", "选取胜利奖励")
         )
         self.second_system_power_up = BaseCheckBox(
-            "second_system_power_up", None, 
-            QT_TRANSLATE_NOOP("BaseCheckBox","升级四级")
+            "second_system_power_up", None,
+            QT_TRANSLATE_NOOP("BaseCheckBox", "升级四级")
         )
 
         self.skill_replacement = CheckBoxWithComboBox(
-            "skill_replacement", QT_TRANSLATE_NOOP("CheckBoxWithComboBox","技能替换"), 
-            None, "skill_replacement_select",parent=self
+            "skill_replacement", QT_TRANSLATE_NOOP("CheckBoxWithComboBox", "技能替换"),
+            None, "skill_replacement_select", parent=self
         )
         self.skill_replacement.add_items(skill_replacement_sinner)
         self.skill_replacement.add_combobox("skill_replacement_mode")
         self.skill_replacement.add_times_for_additional(skill_replacement_mode)
 
-        QT_TRANSLATE_NOOP("BaseLabel","忽略商店")
+        QT_TRANSLATE_NOOP("BaseLabel", "忽略商店")
         self.ignore_shop = BaseLabel("忽略商店")
         self.ignore_shop.add_icon(FIF.CUT)
         self.flood_shop_1 = BaseCheckBox(
-            "ignore_shop_1", None, 
-            QT_TRANSLATE_NOOP("BaseCheckBox","第一层")
+            "ignore_shop_1", None,
+            QT_TRANSLATE_NOOP("BaseCheckBox", "第一层")
         )
         self.flood_shop_2 = BaseCheckBox(
-            "ignore_shop_2", None, 
-            QT_TRANSLATE_NOOP("BaseCheckBox","第二层")
+            "ignore_shop_2", None,
+            QT_TRANSLATE_NOOP("BaseCheckBox", "第二层")
         )
         self.flood_shop_3 = BaseCheckBox(
-            "ignore_shop_3", None, 
-            QT_TRANSLATE_NOOP("BaseCheckBox","第三层")
+            "ignore_shop_3", None,
+            QT_TRANSLATE_NOOP("BaseCheckBox", "第三层")
         )
         self.flood_shop_4 = BaseCheckBox(
-            "ignore_shop_4", None, 
-            QT_TRANSLATE_NOOP("BaseCheckBox","第四层")
+            "ignore_shop_4", None,
+            QT_TRANSLATE_NOOP("BaseCheckBox", "第四层")
         )
         self.flood_shop_5 = BaseCheckBox(
-            "ignore_shop_5", None, 
-            QT_TRANSLATE_NOOP("BaseCheckBox","第五层")
+            "ignore_shop_5", None,
+            QT_TRANSLATE_NOOP("BaseCheckBox", "第五层")
         )
 
     def __init_layout(self):
@@ -577,11 +589,11 @@ class CustomizeSettingsModule(QFrame):
         self.re_formation_each_floor.retranslateUi()
 
         starlight_text = self.tr("星光")
-        for index in range(1,11):
-            starlight = self.findChild(CheckBoxWithLineEdit,f"starlight_{index}")
+        for index in range(1, 11):
+            starlight = self.findChild(CheckBoxWithLineEdit, f"starlight_{index}")
             starlight.box.setText(f"{starlight_text}{index}")
             if index <= 5:
-                flood_shop = self.findChild(BaseCheckBox,f"ignore_shop_{index}")
+                flood_shop = self.findChild(BaseCheckBox, f"ignore_shop_{index}")
                 flood_shop.retranslateUi()
 
         self.after_level_IV.retranslateUi()
@@ -594,4 +606,3 @@ class CustomizeSettingsModule(QFrame):
         self.second_system_power_up.retranslateUi()
         self.skill_replacement.retranslateUi()
         self.ignore_shop.retranslateUi()
-

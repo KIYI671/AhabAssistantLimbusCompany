@@ -36,13 +36,13 @@ def to_log_with_time(msg, elapsed_time):
 
 class Mirror:
 
-    def __init__(self, team_setting:dict):
+    def __init__(self, team_setting: dict):
         self.logger = log
-        self.sinner_team = team_setting["sinner_order"] # 选择的罪人序列
-        self.team_number = team_setting["team_number"] # 选择的编队名
+        self.sinner_team = team_setting["sinner_order"]  # 选择的罪人序列
+        self.team_number = team_setting["team_number"]  # 选择的编队名
         self.shop = Shop(team_setting)
-        self.system = all_systems[team_setting["team_system"]] # 选择的体系
-        self.avoid_skill_3 = team_setting["avoid_skill_3"] # 是否避免使用3技能
+        self.system = all_systems[team_setting["team_system"]]  # 选择的体系
+        self.avoid_skill_3 = team_setting["avoid_skill_3"]  # 是否避免使用3技能
         # 自选开局星光
         self.choose_opening_bonus = team_setting["choose_opening_bonus"]
         self.opening_bonus_order = team_setting["opening_bonus_order"]
@@ -54,11 +54,11 @@ class Mirror:
         self.opening_items = team_setting["opening_items"]
         self.opening_items_select = team_setting["opening_items_select"]
         self.opening_items_system = team_setting["opening_items_system"]
-        self.re_formation_each_floor = team_setting["re_formation_each_floor"] # 是否每层重新配队
+        self.re_formation_each_floor = team_setting["re_formation_each_floor"]  # 是否每层重新配队
         # 第二体系
-        self.second_system = team_setting["second_system"] # 启用第二体系
-        self.second_system_select = team_setting["second_system_select"] # 选择的第二体系
-        self.second_system_setting = team_setting["second_system_setting"] # 第二体系策略
+        self.second_system = team_setting["second_system"]  # 启用第二体系
+        self.second_system_select = team_setting["second_system_select"]  # 选择的第二体系
+        self.second_system_setting = team_setting["second_system_setting"]  # 第二体系策略
 
         self.start_time = time.time()
         self.first_battle = True  # 判断是否首次进入战斗，如果是则重新配队
@@ -136,7 +136,7 @@ class Mirror:
             if auto.take_screenshot() is None:
                 continue
 
-            if cfg.flood_3_exit and self.flood>=4:
+            if cfg.flood_3_exit and self.flood >= 4:
                 if auto.click_element("mirror/road_in_mir/towindow&forfeit_confirm_assets.png"):
                     break
                 if auto.click_element("mirror/road_in_mir/forfeit_assets.png"):
@@ -189,14 +189,14 @@ class Mirror:
                 if self.get_flood_num:
                     get_flood_bbox = ImageUtils.get_bbox(
                         ImageUtils.load_image("mirror/road_in_mir/get_flood_bbox.png"))
-                    ocr_result = auto.find_text_element(None,my_crop=get_flood_bbox,only_text=True)
+                    ocr_result = auto.find_text_element(None, my_crop=get_flood_bbox, only_text=True)
                     try:
                         if cfg.language_in_game == 'zh_cn':
                             result = ocr_result[-1].split("第")
                             flood = result[1][0]
                             flood = int(flood)
                             self.flood = flood
-                            self.get_flood_num =  False
+                            self.get_flood_num = False
                         elif cfg.language_in_game == 'en':
                             get_flood_bbox = ImageUtils.get_bbox(
                                 ImageUtils.load_image("mirror/road_in_mir/get_flood_bbox.png"))
@@ -306,7 +306,8 @@ class Mirror:
                 continue
 
             # 初始饰品选择
-            if auto.find_element("mirror/road_to_mir/activate_gift_search_on_assets.png") or auto.find_element("mirror/road_to_mir/activate_gift_search_off_assets.png"):
+            if auto.find_element("mirror/road_to_mir/activate_gift_search_on_assets.png") or auto.find_element(
+                    "mirror/road_to_mir/activate_gift_search_off_assets.png"):
                 self.select_init_ego_gift()
                 continue
 
@@ -352,7 +353,7 @@ class Mirror:
                 auto.mouse_to_blank()
                 continue
             if not auto.find_element(
-                "mirror/claim_reward/complete_mirror_100%_assets.png") and not failed and not cfg.flood_3_exit:
+                    "mirror/claim_reward/complete_mirror_100%_assets.png") and not failed and not cfg.flood_3_exit:
                 failed = True
             # 如果回到主界面，退出循环
             if auto.find_element("home/drive_assets.png"):
@@ -364,12 +365,13 @@ class Mirror:
             if cfg.no_weekly_bonuses and auto.click_element("mirror/claim_reward/weekly_bonuses.png"):
                 continue
             if cfg.hard_mirror_single_bonuses:
-                bonuses = auto.find_element("mirror/claim_reward/weekly_bonuses.png",find_type='image_with_multiple_targets')
+                bonuses = auto.find_element("mirror/claim_reward/weekly_bonuses.png",
+                                            find_type='image_with_multiple_targets')
                 bonuses = sorted(bonuses, key=lambda x: x[0])
-                if len(bonuses)>1:
-                    for _ in range(len(bonuses)-1):
+                if len(bonuses) > 1:
+                    for _ in range(len(bonuses) - 1):
                         position = bonuses.pop(-1)
-                        auto.mouse_click(position[0],position[1])
+                        auto.mouse_click(position[0], position[1])
             if auto.click_element("mirror/claim_reward/claim_rewards_confirm_assets.png", threshold=0.75):
                 continue
             if auto.click_element("mirror/claim_reward/enkephalin_assets.png", threshold=0.75):  # 降低识别阈值
@@ -381,7 +383,7 @@ class Mirror:
                 if self.hard_switch and cfg.save_rewards:
                     pos = auto.find_element("mirror/claim_reward/claim_rewards_assets.png")
                     if pos:
-                        auto.click_element(pos[0]-300*(cfg.set_win_size/1440),pos[1])
+                        auto.click_element(pos[0] - 300 * (cfg.set_win_size / 1440), pos[1])
                     continue
                 elif auto.click_element("mirror/claim_reward/claim_rewards_assets.png"):
                     # TODO: 统计获取的coins
@@ -444,7 +446,7 @@ class Mirror:
     def enter_mir_with_star(self):
         coins = auto.find_element("mirror/road_to_mir/dreaming_star/coins_assets.png", threshold=0.9)
         scale = cfg.set_win_size / 1440
-        first_starlight = [coins[0]-1800*scale,coins[1]+300*scale]
+        first_starlight = [coins[0] - 1800 * scale, coins[1] + 300 * scale]
 
         loop_count = 30
         auto.model = 'clam'
@@ -456,7 +458,8 @@ class Mirror:
             if auto.find_element("mirror/road_to_mir/bleed_gift_assets.png"):
                 break
 
-            if self.use_starlight and auto.click_element("mirror/road_to_mir/dreaming_star/convert_star_to_cost_assets.png"):
+            if self.use_starlight and auto.click_element(
+                    "mirror/road_to_mir/dreaming_star/convert_star_to_cost_assets.png"):
                 continue
 
             if auto.click_element("mirror/road_to_mir/dreaming_star/select_star_confirm_assets.png"):
@@ -467,13 +470,14 @@ class Mirror:
                     auto.mouse_click(first_starlight[0] + 400 * i * scale, first_starlight[1])
                     sleep(cfg.mouse_action_interval)
             else:
-                for i in range(1,11):
+                for i in range(1, 11):
                     if i in self.opening_bonus_order:
                         index = self.opening_bonus_order.index(i)
-                        if index <=4:
+                        if index <= 4:
                             auto.mouse_click(first_starlight[0] + 400 * index * scale, first_starlight[1])
                         else:
-                            auto.mouse_click(first_starlight[0] + 400 * (index-5) * scale, first_starlight[1]+450*scale)
+                            auto.mouse_click(first_starlight[0] + 400 * (index - 5) * scale,
+                                             first_starlight[1] + 450 * scale)
                         sleep(cfg.mouse_action_interval)
 
             if auto.click_element("mirror/road_to_mir/dreaming_star/dreaming_star_enter_assets.png"):
@@ -502,7 +506,7 @@ class Mirror:
 
         team_system = self.system
         if self.opening_items:
-            team_system =all_systems[self.opening_items_system]
+            team_system = all_systems[self.opening_items_system]
         while True:
             # 自动截图
             if auto.take_screenshot() is None:
@@ -531,9 +535,12 @@ class Mirror:
 
             if self.opening_items:
                 start_gift_order = start_gift[self.opening_items_select]
-                auto.click_element(f"mirror/road_to_mir/select_init_gift/{team_system}_ego_gift_{start_gift_order[0]}.png")
-                auto.click_element(f"mirror/road_to_mir/select_init_gift/{team_system}_ego_gift_{start_gift_order[1]}.png")
-                auto.click_element(f"mirror/road_to_mir/select_init_gift/{team_system}_ego_gift_{start_gift_order[2]}.png")
+                auto.click_element(
+                    f"mirror/road_to_mir/select_init_gift/{team_system}_ego_gift_{start_gift_order[0]}.png")
+                auto.click_element(
+                    f"mirror/road_to_mir/select_init_gift/{team_system}_ego_gift_{start_gift_order[1]}.png")
+                auto.click_element(
+                    f"mirror/road_to_mir/select_init_gift/{team_system}_ego_gift_{start_gift_order[2]}.png")
             else:
                 auto.click_element(f"mirror/road_to_mir/select_init_gift/{team_system}_ego_gift_1.png")
                 auto.click_element(f"mirror/road_to_mir/select_init_gift/{team_system}_ego_gift_2.png")
@@ -666,7 +673,9 @@ class Mirror:
             if auto.find_element("mirror/road_in_mir/legend_assets.png"):
                 break
 
-            # 针对不同事件进行处理，优先选直接获取的，再选需要判定的，再选后续事件的，最后第一个事项
+            # 针对不同事件进行处理，优先选???与直接获取的，再选需要判定的，再选后续事件的，最后第一个事项
+            if auto.click_element("event/unknown_event.png"):
+                continue
             if positions_list := auto.find_element("event/select_to_gain_ego.png",
                                                    find_type="image_with_multiple_targets"):
                 positions_list = sorted(positions_list, key=lambda x: (x[1], x[0]))
@@ -813,12 +822,14 @@ class Mirror:
                         if auto.find_element(f"mirror/road_in_mir/acquire_ego_gift/{self.system}.png", my_crop=bbox,
                                              threshold=0.85):
                             my_list.insert(0, button)
-                            system_nums+=1
+                            system_nums += 1
                         else:
                             if self.second_system and (self.second_system_setting == 0 or (
                                     self.second_system_setting == 1 and self.shop.fuse_IV)):
-                                if auto.find_element(f"mirror/road_in_mir/acquire_ego_gift/{all_systems[self.second_system_select]}.png", my_crop=bbox,
-                                             threshold=0.85):
+                                if auto.find_element(
+                                        f"mirror/road_in_mir/acquire_ego_gift/{all_systems[self.second_system_select]}.png",
+                                        my_crop=bbox,
+                                        threshold=0.85):
                                     my_list.insert(system_nums, button)
                                     continue
                             my_list.append(button)

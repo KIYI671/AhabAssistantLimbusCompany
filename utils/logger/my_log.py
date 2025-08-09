@@ -14,10 +14,10 @@ for _name in ('stdin', 'stdout', 'stderr'):
 
 from nb_log import get_logger
 
-class Logger(metaclass=SingletonMeta):
 
+class Logger(metaclass=SingletonMeta):
     _project_root = None
-    
+
     # 公共的格式化字符串
     _common_formatter = logging.Formatter(
         '%(asctime)s - %(name)s - %(levelname)s - "%(caller_path)s:%(caller_line)d" - %(message)s',
@@ -64,7 +64,7 @@ class Logger(metaclass=SingletonMeta):
 
         # 装饰器正则表
         self._decorator_patterns = [
-            re.compile(r'.*[\\/]decorator[\\/].*\.py$', re.IGNORECASE), # 匹配所有 decorator 文件夹下的py文件
+            re.compile(r'.*[\\/]decorator[\\/].*\.py$', re.IGNORECASE),  # 匹配所有 decorator 文件夹下的py文件
         ]
 
     def _detect_project_root(self):
@@ -73,11 +73,11 @@ class Logger(metaclass=SingletonMeta):
         if hasattr(sys, '_MEIPASS'):
             Logger._project_root = Path(sys._MEIPASS)
             return
-        
+
         # 使用当前工作目录
         Logger._project_root = Path.cwd()
-  
-    def _get_caller_info(self) -> tuple[str,int]:
+
+    def _get_caller_info(self) -> tuple[str, int]:
         """
         获取堆栈内最近的且非log类的调用者信息 (自带过滤器)
         \n目前过滤了decorator目录
@@ -87,24 +87,23 @@ class Logger(metaclass=SingletonMeta):
         """
         stack = inspect.stack()
 
-        
-        
         # 寻找第一个非装饰器、非Logger的栈帧
         for frame_info in stack:
             frame = frame_info.frame
             filename = frame_info.filename
-            
+
             # 跳过当前类的方法
-            if frame_info.function in ['_get_caller_info','_short_get_caller_info','DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL']:
+            if frame_info.function in ['_get_caller_info', '_short_get_caller_info', 'DEBUG', 'INFO', 'WARNING',
+                                       'ERROR', 'CRITICAL']:
                 continue
-                
+
             # 跳过装饰器文件
             if any(pattern.match(filename) for pattern in self._decorator_patterns):
                 continue
-                
+
             # 获取文件绝对路径
             abs_path = Path(filename).resolve()
-            
+
             try:
                 # 转换为相对路径
                 rel_path = abs_path.relative_to(self._project_root)
@@ -114,7 +113,7 @@ class Logger(metaclass=SingletonMeta):
             except ValueError:
                 # 如果不在项目根目录下，返回绝对路径
                 return str(abs_path), frame_info.lineno
-        
+
         # 如果找不到合适的栈帧，返回未知
         return "unknown", 0
 
@@ -126,7 +125,7 @@ class Logger(metaclass=SingletonMeta):
     def INFO(self, msg):
         path, line = self._get_caller_info()
         extra = {'caller_path': path, 'caller_line': line}
-        
+
         self.debug_logger.info(msg, extra=extra)
         self.info_logger.info(msg, extra=extra)
         self.my_logger.info(msg)
@@ -134,7 +133,7 @@ class Logger(metaclass=SingletonMeta):
     def WARNING(self, msg):
         path, line = self._get_caller_info()
         extra = {'caller_path': path, 'caller_line': line}
-        
+
         self.debug_logger.warning(msg, extra=extra)
         self.info_logger.warning(msg, extra=extra)
         self.warning_logger.warning(msg, extra=extra)
@@ -143,7 +142,7 @@ class Logger(metaclass=SingletonMeta):
     def ERROR(self, msg):
         path, line = self._get_caller_info()
         extra = {'caller_path': path, 'caller_line': line}
-        
+
         self.debug_logger.error(msg, extra=extra)
         self.info_logger.error(msg, extra=extra)
         self.warning_logger.error(msg, extra=extra)
@@ -152,7 +151,7 @@ class Logger(metaclass=SingletonMeta):
     def CRITICAL(self, msg):
         path, line = self._get_caller_info()
         extra = {'caller_path': path, 'caller_line': line}
-        
+
         self.debug_logger.critical(msg, extra=extra)
         self.info_logger.critical(msg, extra=extra)
         self.warning_logger.critical(msg, extra=extra)

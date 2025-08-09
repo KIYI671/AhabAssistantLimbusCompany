@@ -65,7 +65,7 @@ class Battle:
         return new_time
 
     @begin_and_finish_time_log(task_name="一次战斗")
-    def fight(self,avoid_skill_3 = False):
+    def fight(self, avoid_skill_3=False):
         INIT_CHANCE = 16
         chance = INIT_CHANCE
         waiting = self._update_wait_time()
@@ -128,7 +128,7 @@ class Battle:
                 turn_ocr_result = auto.find_text_element("turn", turn_bbox)
                 if turn_ocr_result is not False:
                     auto.mouse_click_blank()
-                    if avoid_skill_3 and auto.find_element("battle/gear_left.png",threshold=0.9):
+                    if avoid_skill_3 and auto.find_element("battle/gear_left.png", threshold=0.9):
                         self._chain_battle()
                         msg = f"使用避免3技能模式开始战斗"
                     else:
@@ -145,7 +145,7 @@ class Battle:
                 # 如果正在战斗待机界面
                 if auto.click_element("battle/turn_assets.png") or auto.find_element("battle/win_rate_assets.png"):
                     auto.mouse_click_blank()
-                    if avoid_skill_3 and auto.find_element("battle/gear_left.png",threshold=0.9):
+                    if avoid_skill_3 and auto.find_element("battle/gear_left.png", threshold=0.9):
                         self._chain_battle()
                         msg = f"使用避免3技能模式开始战斗"
                     else:
@@ -271,7 +271,7 @@ class Battle:
                     [gear_left[0] + 250 * scale + 150 * scale * (i - 1), gear_left[1] + 50 * scale + 250 * scale])
             else:
                 skill_list.append([gear_left[0] + 250 * scale + 150 * scale * (i - 1), gear_left[1] + 50 * scale])
-        skill_list.append([gear_right[0],gear_right[1]+150*scale])
+        skill_list.append([gear_right[0], gear_right[1] + 150 * scale])
 
         auto.mouse_drag_link(skill_list)
 

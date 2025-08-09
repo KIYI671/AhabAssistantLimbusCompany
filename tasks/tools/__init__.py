@@ -22,6 +22,7 @@ class ToolManager:
         InfiniteBattles(root)
         root.mainloop()
 
+
 def start(tool: Literal["battle"]):
     """
     启动工具管理器的方法。

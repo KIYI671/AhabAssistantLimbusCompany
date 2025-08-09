@@ -135,7 +135,7 @@ class InfiniteBattles:
         """开始运行自动战斗。"""
         window = win32gui.FindWindow("UnityWndClass", "LimbusCompany")
         if window:
-            original_index  = self.get_z_order_index(window)
+            original_index = self.get_z_order_index(window)
             win32gui.SetWindowPos(
                 window,
                 win32con.HWND_TOP,

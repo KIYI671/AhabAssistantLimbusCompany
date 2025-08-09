@@ -62,7 +62,7 @@ theme_pack_list_hard:
   heartb: -5 # 狼夫
   line: -5 #轨道
   repressed: -5 # 人皮
-  unbound : -5 # 人皮
+  unbound: -5 # 人皮
   tangling: -5 # 卡塞蒂
   inert: -5 # 洋流、山茶花、时间杀人魔
   excessive: -5 # 山茶花

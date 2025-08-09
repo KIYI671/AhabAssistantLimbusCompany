@@ -28,13 +28,13 @@ class ToolsInterface(ScrollArea):
 
     def __init_card(self):
         self.tools_group = BaseSettingCardGroup(
-            QT_TRANSLATE_NOOP("BaseSettingCardGroup",'工具箱'),
+            QT_TRANSLATE_NOOP("BaseSettingCardGroup", '工具箱'),
             self.scroll_widget
         )
         self.auto_battle_card = BasePushSettingCard(
-            QT_TRANSLATE_NOOP("BasePushSettingCard",'运行'),
+            QT_TRANSLATE_NOOP("BasePushSettingCard", '运行'),
             FIF.CAFE,
-            QT_TRANSLATE_NOOP("BasePushSettingCard","自动战斗"),
+            QT_TRANSLATE_NOOP("BasePushSettingCard", "自动战斗"),
             parent=self.tools_group
         )
 

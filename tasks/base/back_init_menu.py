@@ -58,8 +58,8 @@ def back_init_menu():
             continue
 
         # 在刚进入游戏界面时
-        if clear_all_caches:= auto.find_element("base/clear_all_caches_assets.png",model="clam"):
-            auto.mouse_click(clear_all_caches[0], clear_all_caches[1]-100)
+        if clear_all_caches := auto.find_element("base/clear_all_caches_assets.png", model="clam"):
+            auto.mouse_click(clear_all_caches[0], clear_all_caches[1] - 100)
             continue
 
         auto.mouse_click_blank()

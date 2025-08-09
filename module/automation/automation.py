@@ -1,3 +1,4 @@
+import gc
 import math
 import random
 import time
@@ -23,6 +24,8 @@ class Automation(metaclass=SingletonMeta):
         self.screenshot = None
         self.init_input()
         self.img_cache = {}
+        self.img_cache_language = cfg.get_value("language_in_game")
+        self.img_cache_winsize = cfg.get_value("set_win_size")
         self.last_screenshot_time = 0
         self.last_click_time = 0
         self.model = 'clam'
@@ -87,7 +90,8 @@ class Automation(metaclass=SingletonMeta):
         """
         if find_type == 'image_with_multiple_targets' and len(coordinates) > 0:
             for c in coordinates:
-                self.mouse_action_with_pos(c, offset, action, times, dx, dy, find_type="image", interval=1, move_back=move_back)
+                self.mouse_action_with_pos(c, offset, action, times, dx, dy, find_type="image", interval=1,
+                                           move_back=move_back)
             return True
 
         if cfg.mouse_action_interval and interval == 0.5:
@@ -126,7 +130,7 @@ class Automation(metaclass=SingletonMeta):
 
         return True
 
-    def take_screenshot(self,gray = True):
+    def take_screenshot(self, gray=True):
         start_time = time.time()
         screenshot_interval_time = cfg.screenshot_interval if cfg.screenshot_interval else 0.85
         while True:
@@ -220,7 +224,7 @@ class Automation(metaclass=SingletonMeta):
                 return ocr_dict[text]
         return False
 
-    def find_text_element(self, target, my_crop=None, all_text=False,only_text = False):
+    def find_text_element(self, target, my_crop=None, all_text=False, only_text=False):
         if my_crop is not None:
             # 根据my_crop（为左上与右下四个坐标），截取self.screenshot的部分区域进行ocr
             cropped_image = self.screenshot.crop(my_crop)
@@ -300,8 +304,24 @@ class Automation(metaclass=SingletonMeta):
                 self.logger.ERROR(f"匹配图片特征失败:{e}")
             return None
 
+    def _clear_img_cache(self):
+        """清除图片缓存"""
+        self.img_cache.clear()
+        gc.collect()  # 强制垃圾回收，清理内存
+        log.DEBUG("图片缓存已清除")
+
+    def _check_cache_available(self):
+        if self.img_cache_language != cfg.get_value(
+            "language_in_game"
+        ) or self.img_cache_winsize != cfg.get_value("set_win_size"):
+            self._clear_img_cache()
+            self.img_cache_language = cfg.get_value("language_in_game")
+            self.img_cache_winsize = cfg.get_value("set_win_size")
+
     def find_image_element(self, target, threshold, cacheable=True, model='clam', my_crop=None):
         try:
+            if cacheable:
+                self._check_cache_available()
             if cacheable and target in self.img_cache:
                 bbox = self.img_cache[target]['bbox']
                 template = self.img_cache[target]['template']
@@ -326,7 +346,7 @@ class Automation(metaclass=SingletonMeta):
             self.logger.ERROR(f"寻找图片失败:{e}")
         return None
 
-    def get_screenshot_crop(self,crop):
+    def get_screenshot_crop(self, crop):
         self.take_screenshot(False)
         screenshot = np.array(self.screenshot)
         screenshot = screenshot[:, :, ::-1]
