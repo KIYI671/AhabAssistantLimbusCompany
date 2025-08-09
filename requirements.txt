@@ -9,7 +9,7 @@ darkdetect==0.8.0
 Deprecated==1.2.14
 idna==3.10
 logging_tree==1.10
-markdown
+markdown-it-py
 MouseInfo==0.1.3
 nb-libs==1.8
 nb-log==12.7
