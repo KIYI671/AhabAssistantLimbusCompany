@@ -91,6 +91,7 @@ def script_task():
     # 获取（启动）游戏对游戏窗口进行设置
     init_game()
 
+    global pic_path # 防止被认为局部变量
     if cfg.language_in_game == "zh_cn":
         pic_path.insert(0, "zh_cn")
     elif cfg.language_in_game == "en":
