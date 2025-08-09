@@ -93,6 +93,8 @@ def script_task():
 
     if cfg.language_in_game == "zh_cn":
         pic_path.insert(0, "zh_cn")
+    elif cfg.language_in_game == "en":
+        pic_path = ["share", "en"] # 不用删除怕以后出什么bug
 
     if cfg.resonate_with_Ahab:
         random_number = random.randint(1, 4)
