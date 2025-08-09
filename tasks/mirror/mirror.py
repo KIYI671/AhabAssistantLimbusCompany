@@ -673,7 +673,9 @@ class Mirror:
             if auto.find_element("mirror/road_in_mir/legend_assets.png"):
                 break
 
-            # 针对不同事件进行处理，优先选直接获取的，再选需要判定的，再选后续事件的，最后第一个事项
+            # 针对不同事件进行处理，优先选???与直接获取的，再选需要判定的，再选后续事件的，最后第一个事项
+            if auto.click_element("event/unknown_event.png"):
+                continue
             if positions_list := auto.find_element("event/select_to_gain_ego.png",
                                                    find_type="image_with_multiple_targets"):
                 positions_list = sorted(positions_list, key=lambda x: (x[1], x[0]))
