@@ -1,4 +1,4 @@
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, QT_TRANSLATE_NOOP
 from PyQt5.QtWidgets import QFrame, QVBoxLayout, QWidget, QHBoxLayout, QSizePolicy, QGridLayout
 from qfluentwidgets import FluentIcon as FIF, ExpandSettingCard
 from qfluentwidgets import ScrollArea, PrimaryPushButton, PushButton
@@ -6,8 +6,9 @@ from qfluentwidgets import ScrollArea, PrimaryPushButton, PushButton
 from app import *
 from app.base_combination import LabelWithComboBox, SinnerSelect, CheckBoxWithComboBox, CheckBoxWithLineEdit
 from app.base_tools import BaseCheckBox, BaseSettingLayout, BaseLabel, BaseComboBox
-from module.config import cfg
+from app.language_manager import LanguageManager
 
+from module.config import cfg
 
 class TeamSettingCard(QFrame):
     def __init__(self, team_num=0, parent=None):
@@ -28,6 +29,9 @@ class TeamSettingCard(QFrame):
         self.refresh_starlight_select()
 
         self.connect_mediator()
+        LanguageManager().register_component(self)
+        self.select_system.retranslateUi()
+        self.select_shop_strategy.retranslateUi()
 
     def __init_widget(self):
         self.main_layout = QVBoxLayout(self)
@@ -53,51 +57,51 @@ class TeamSettingCard(QFrame):
         self.gift_system_list_1 = QHBoxLayout()
         self.gift_system_list_2 = QHBoxLayout()
 
-        self.custom_layout = ExpandSettingCard(icon=FIF.EDIT, title="自定义设置", parent=self)
+        self.custom_layout = ExpandSettingCard(icon=FIF.EDIT, title=self.tr("自定义设置"), parent=self)
 
         self.setting_layout = QHBoxLayout()
 
         self.scroll_general.enableTransparentBackground()
 
     def __init_card(self):
-        self.select_team = LabelWithComboBox("选择队伍名称", "team_number", all_teams, vbox=False)
-        self.select_system = LabelWithComboBox("选择队伍体系", "team_system", all_systems, vbox=False)
-        self.select_shop_strategy = LabelWithComboBox("选择商店策略", "shop_strategy", shop_strategy, vbox=False)
+        self.select_team = LabelWithComboBox(self.tr("选择队伍名称"), "team_number", all_teams, vbox=False)
+        self.select_system = LabelWithComboBox(self.tr("选择队伍体系"), "team_system", all_systems, vbox=False)
+        self.select_shop_strategy = LabelWithComboBox(self.tr("选择商店策略"), "shop_strategy", shop_strategy, vbox=False)
 
-        self.sinner_YiSang = SinnerSelect("YiSang", "李箱", None, "./assets/app/sinner/YiSang.png")
-        self.sinner_Faust = SinnerSelect("Faust", "浮士德", None, "./assets/app/sinner/Faust.png")
-        self.sinner_DonQuixote = SinnerSelect("DonQuixote", "堂吉诃德", None, "./assets/app/sinner/DonQuixote.png")
-        self.sinner_Ryoshu = SinnerSelect("Ryoshu", "良秀", None, "./assets/app/sinner/Ryoshu.png")
-        self.sinner_Meursault = SinnerSelect("Meursault", "默尔索", None, "./assets/app/sinner/Meursault.png")
-        self.sinner_HongLu = SinnerSelect("HongLu", "鸿潞", None, "./assets/app/sinner/HongLu.png")
+        self.sinner_YiSang = SinnerSelect("YiSang", self.tr("李箱"), None, "./assets/app/sinner/YiSang.png")
+        self.sinner_Faust = SinnerSelect("Faust", self.tr("浮士德"), None, "./assets/app/sinner/Faust.png")
+        self.sinner_DonQuixote = SinnerSelect("DonQuixote", self.tr("堂吉诃德"), None, "./assets/app/sinner/DonQuixote.png")
+        self.sinner_Ryoshu = SinnerSelect("Ryoshu", self.tr("良秀"), None, "./assets/app/sinner/Ryoshu.png")
+        self.sinner_Meursault = SinnerSelect("Meursault", self.tr("默尔索"), None, "./assets/app/sinner/Meursault.png")
+        self.sinner_HongLu = SinnerSelect("HongLu", self.tr("鸿潞"), None, "./assets/app/sinner/HongLu.png")
 
-        self.sinner_Heathcliff = SinnerSelect("Heathcliff", "希斯克利夫", None, "./assets/app/sinner/Heathcliff.png")
-        self.sinner_Ishmael = SinnerSelect("Ishmael", "以实玛利", None, "./assets/app/sinner/Ishmael.png")
-        self.sinner_Rodion = SinnerSelect("Rodion", "罗佳", None, "./assets/app/sinner/Rodion.png")
-        self.sinner_Sinclair = SinnerSelect("Sinclair", "辛克莱", None, "./assets/app/sinner/Sinclair.png")
-        self.sinner_Outis = SinnerSelect("Outis", "奥提斯", None, "./assets/app/sinner/Outis.png")
-        self.sinner_Gregor = SinnerSelect("Gregor", "格里高尔", None, "./assets/app/sinner/Gregor.png")
+        self.sinner_Heathcliff = SinnerSelect("Heathcliff", self.tr("希斯克利夫"), None, "./assets/app/sinner/Heathcliff.png")
+        self.sinner_Ishmael = SinnerSelect("Ishmael", self.tr("以实玛利"), None, "./assets/app/sinner/Ishmael.png")
+        self.sinner_Rodion = SinnerSelect("Rodion", self.tr("罗佳"), None, "./assets/app/sinner/Rodion.png")
+        self.sinner_Sinclair = SinnerSelect("Sinclair", self.tr("辛克莱"), None, "./assets/app/sinner/Sinclair.png")
+        self.sinner_Outis = SinnerSelect("Outis", self.tr("奥提斯"), None, "./assets/app/sinner/Outis.png")
+        self.sinner_Gregor = SinnerSelect("Gregor", self.tr("格里高尔"), None, "./assets/app/sinner/Gregor.png")
 
-        self.shop_setting = BaseLabel("舍弃的体系")
+        self.shop_setting = BaseLabel(self.tr("舍弃的体系"))
         self.shop_setting.add_icon(FIF.DELETE)
 
-        self.burn = BaseCheckBox("system_burn", "./assets/app/status_effects/burn.png", "烧伤", icon_size=30)
-        self.bleed = BaseCheckBox("system_bleed", "./assets/app/status_effects/bleed.png", "流血", icon_size=30)
-        self.tremor = BaseCheckBox("system_tremor", "./assets/app/status_effects/tremor.png", "震颤", icon_size=30)
-        self.rupture = BaseCheckBox("system_rupture", "./assets/app/status_effects/rupture.png", "破裂", icon_size=30)
-        self.sinking = BaseCheckBox("system_sinking", "./assets/app/status_effects/sinking.png", "沉沦", icon_size=30)
+        self.burn = BaseCheckBox("system_burn", "./assets/app/status_effects/burn.png", self.tr("烧伤"), icon_size=30)
+        self.bleed = BaseCheckBox("system_bleed", "./assets/app/status_effects/bleed.png", self.tr("流血"), icon_size=30)
+        self.tremor = BaseCheckBox("system_tremor", "./assets/app/status_effects/tremor.png", self.tr("震颤"), icon_size=30)
+        self.rupture = BaseCheckBox("system_rupture", "./assets/app/status_effects/rupture.png", self.tr("破裂"), icon_size=30)
+        self.sinking = BaseCheckBox("system_sinking", "./assets/app/status_effects/sinking.png", self.tr("沉沦"), icon_size=30)
 
-        self.poise = BaseCheckBox("system_poise", "./assets/app/status_effects/poise.png", "呼吸", icon_size=30)
-        self.charge = BaseCheckBox("system_charge", "./assets/app/status_effects/charge.png", "充能", icon_size=30)
-        self.slash = BaseCheckBox("system_slash", "./assets/app/status_effects/slash.png", "斩击", icon_size=30)
-        self.pierce = BaseCheckBox("system_pierce", "./assets/app/status_effects/pierce.png", "突刺", icon_size=30)
-        self.blunt = BaseCheckBox("system_blunt", "./assets/app/status_effects/blunt.png", "打击", icon_size=30)
+        self.poise = BaseCheckBox("system_poise", "./assets/app/status_effects/poise.png", self.tr("呼吸"), icon_size=30)
+        self.charge = BaseCheckBox("system_charge", "./assets/app/status_effects/charge.png", self.tr("充能"), icon_size=30)
+        self.slash = BaseCheckBox("system_slash", "./assets/app/status_effects/slash.png", self.tr("斩击"), icon_size=30)
+        self.pierce = BaseCheckBox("system_pierce", "./assets/app/status_effects/pierce.png", self.tr("突刺"), icon_size=30)
+        self.blunt = BaseCheckBox("system_blunt", "./assets/app/status_effects/blunt.png", self.tr("打击"), icon_size=30)
 
         self.customize_settings_module = CustomizeSettingsModule()
 
-        self.cancel_button = PushButton("取消", self)
+        self.cancel_button = PushButton(self.tr("取消"), self)
         self.cancel_button.clicked.connect(self.cancel_team_setting)
-        self.confirm_button = PrimaryPushButton("保存", self)
+        self.confirm_button = PrimaryPushButton(self.tr("保存"), self)
         self.confirm_button.clicked.connect(self.save_team_setting)
 
     def __init_layout(self):
@@ -278,7 +282,39 @@ class TeamSettingCard(QFrame):
     def cancel_team_setting(self):
         mediator.close_setting.emit()
 
+    def retranslateUi(self):
+        self.select_system.retranslateUi()
+        self.select_shop_strategy.retranslateUi()
+        self.select_team.label.label.setText(self.tr("选择队伍名称"))
+        self.select_system.label.label.setText(self.tr("选择队伍体系"))
+        self.select_shop_strategy.label.label.setText(self.tr("选择商店策略"))
+        self.sinner_YiSang.label_str.setText(self.tr("李箱"))
+        self.sinner_Faust.label_str.setText(self.tr("浮士德"))
+        self.sinner_DonQuixote.label_str.setText(self.tr("堂吉诃德"))
+        self.sinner_Ryoshu.label_str.setText(self.tr("良秀"))
+        self.sinner_Meursault.label_str.setText(self.tr("默尔索"))
+        self.sinner_HongLu.label_str.setText(self.tr("鸿潞"))
+        self.sinner_Heathcliff.label_str.setText(self.tr("希斯克利夫"))
+        self.sinner_Ishmael.label_str.setText(self.tr("以实玛利"))
+        self.sinner_Rodion.label_str.setText(self.tr("罗佳"))
+        self.sinner_Sinclair.label_str.setText(self.tr("辛克莱"))
+        self.sinner_Outis.label_str.setText(self.tr("奥提斯"))
+        self.sinner_Gregor.label_str.setText(self.tr("格里高尔"))
+        self.shop_setting.label.setText(self.tr("舍弃的体系"))
 
+        self.burn.check_box.setText(self.tr("烧伤"))
+        self.bleed.check_box.setText(self.tr("流血"))
+        self.tremor.check_box.setText(self.tr("震颤"))
+        self.rupture.check_box.setText(self.tr("破裂"))
+        self.sinking.check_box.setText(self.tr("沉沦"))
+        self.poise.check_box.setText(self.tr("呼吸"))
+        self.charge.check_box.setText(self.tr("充能"))
+        self.slash.check_box.setText(self.tr("斩击"))
+        self.pierce.check_box.setText(self.tr("突刺"))
+        self.blunt.check_box.setText(self.tr("打击"))
+
+        self.cancel_button.setText(self.tr("取消"))
+        self.confirm_button.setText(self.tr("保存"))
 
 
 class CustomizeSettingsModule(QFrame):
@@ -288,6 +324,9 @@ class CustomizeSettingsModule(QFrame):
         self.__init_widget()
         self.__init_card()
         self.__init_layout()
+
+        LanguageManager().register_component(self)
+        self.retranslateUi()
 
     def __init_widget(self):
         self.first_line_widget = QWidget(self)
@@ -320,27 +359,55 @@ class CustomizeSettingsModule(QFrame):
         self.flood_shop = QHBoxLayout()
 
     def __init_card(self):
-        self.do_not_heal = BaseCheckBox("do_not_heal", None, "不治疗罪人")
-        self.do_not_buy = BaseCheckBox("do_not_buy", None, "不购买饰品")
-        self.do_not_fuse = BaseCheckBox("do_not_fuse", None, "不合成饰品")
-        self.do_not_sell = BaseCheckBox("do_not_sell", None, "不出售饰品")
-        self.do_not_enhance = BaseCheckBox("do_not_enhance", None, "不升级饰品")
+        self.do_not_heal = BaseCheckBox(
+            "do_not_heal", None, QT_TRANSLATE_NOOP("BaseCheckBox","不治疗罪人")
+        )
+        self.do_not_buy = BaseCheckBox(
+            "do_not_buy", None, QT_TRANSLATE_NOOP("BaseCheckBox","不购买饰品")
+        )
+        self.do_not_fuse = BaseCheckBox(
+            "do_not_fuse", None, QT_TRANSLATE_NOOP("BaseCheckBox","不合成饰品")
+        )
+        self.do_not_sell = BaseCheckBox(
+            "do_not_sell", None, QT_TRANSLATE_NOOP("BaseCheckBox","不出售饰品")
+        )
+        self.do_not_enhance = BaseCheckBox(
+            "do_not_enhance", None, QT_TRANSLATE_NOOP("BaseCheckBox","不升级饰品")
+        )
 
-        self.only_aggressive_fuse = BaseCheckBox("only_aggressive_fuse", None, "只激进合成")
-        self.do_not_system_fuse = BaseCheckBox("do_not_system_fuse", None, "不使用公式合成")
-        self.only_system_fuse = BaseCheckBox("only_system_fuse", None, "只使用公式合成")
+        self.only_aggressive_fuse = BaseCheckBox(
+            "only_aggressive_fuse", None, QT_TRANSLATE_NOOP("BaseCheckBox","只激进合成")
+        )
+        self.do_not_system_fuse = BaseCheckBox(
+            "do_not_system_fuse", None, QT_TRANSLATE_NOOP("BaseCheckBox","不使用公式合成")
+        )
+        self.only_system_fuse = BaseCheckBox(
+            "only_system_fuse", None, QT_TRANSLATE_NOOP("BaseCheckBox","只使用公式合成")
+        )
 
-        self.avoid_skill_3 = BaseCheckBox("avoid_skill_3", None, "链接战避免使用三技能")
-        self.re_formation_each_floor = BaseCheckBox("re_formation_each_floor", None, "每楼层重新编队")
-        self.use_starlight = BaseCheckBox("use_starlight", None, "开局星光换钱")
+        self.avoid_skill_3 = BaseCheckBox(
+            "avoid_skill_3", None, QT_TRANSLATE_NOOP("BaseCheckBox","链接战避免使用三技能")
+        )
+        self.re_formation_each_floor = BaseCheckBox(
+            "re_formation_each_floor", None, QT_TRANSLATE_NOOP("BaseCheckBox","每楼层重新编队")
+        )
+        self.use_starlight = BaseCheckBox(
+            "use_starlight", None, QT_TRANSLATE_NOOP("BaseCheckBox","开局星光换钱")
+        )
 
-        self.reward_cards = CheckBoxWithComboBox("reward_cards", "奖励卡优先度", None, "reward_cards_select",
-                                                 parent=self)
+        self.reward_cards = CheckBoxWithComboBox(
+            "reward_cards",  QT_TRANSLATE_NOOP("CheckBoxWithComboBox","奖励卡优先度"), 
+            None, "reward_cards_select", parent=self
+        )
         self.reward_cards.add_items(reward_cards)
 
-        self.choose_opening_bonus = BaseCheckBox("choose_opening_bonus", FIF.BUS, "自选开局加成", center=False)
+        self.choose_opening_bonus = BaseCheckBox(
+            "choose_opening_bonus", FIF.BUS, QT_TRANSLATE_NOOP("BaseCheckBox","自选开局加成"), 
+            center=False
+        )
 
-        self.starlight_1 = CheckBoxWithLineEdit("starlight_1", "星光1")
+        QT_TRANSLATE_NOOP("CustomizeSettingsModule","星光")
+        self.starlight_1 = CheckBoxWithLineEdit("starlight_1","星光1")
         self.starlight_2 = CheckBoxWithLineEdit("starlight_2","星光2")
         self.starlight_3 = CheckBoxWithLineEdit("starlight_3","星光3")
         self.starlight_4 = CheckBoxWithLineEdit("starlight_4","星光4")
@@ -352,42 +419,81 @@ class CustomizeSettingsModule(QFrame):
         self.starlight_9 = CheckBoxWithLineEdit("starlight_9","星光9")
         self.starlight_10 = CheckBoxWithLineEdit("starlight_10","星光10")
 
-        self.after_level_IV = CheckBoxWithComboBox("after_level_IV", "合成四级以后", None, "after_level_IV_select",
-                                                   parent=self)
+        self.after_level_IV = CheckBoxWithComboBox(
+            "after_level_IV", QT_TRANSLATE_NOOP("CheckBoxWithComboBox","合成四级以后"),
+            None, "after_level_IV_select",parent=self
+        )
         self.after_level_IV.add_items(after_fuse_level_IV)
-        self.shopping_strategy = CheckBoxWithComboBox("shopping_strategy", "购物策略", None, "shopping_strategy_select",
-                                                      parent=self)
+        self.shopping_strategy = CheckBoxWithComboBox(
+            "shopping_strategy", QT_TRANSLATE_NOOP("CheckBoxWithComboBox","购物策略"), 
+            None, "shopping_strategy_select",parent=self
+        )
         self.shopping_strategy.add_items(shopping_strategy)
 
-        self.opening_items = CheckBoxWithComboBox("opening_items", "自选开局饰品", None, "opening_items_system",
-                                                  parent=self)
+        self.opening_items = CheckBoxWithComboBox(
+            "opening_items", QT_TRANSLATE_NOOP("CheckBoxWithComboBox","自选开局饰品"), 
+            None, "opening_items_system",parent=self
+        )
         self.opening_items.add_items(all_systems)
         self.opening_items.add_combobox("opening_items_select")
         self.opening_items.add_times_for_additional(start_gift)
-
-        self.second_system = CheckBoxWithComboBox("second_system", "第二体系", None, "second_system_select",
-                                                  parent=self)
+        
+        self.second_system = CheckBoxWithComboBox(
+            "second_system", QT_TRANSLATE_NOOP("CheckBoxWithComboBox","第二体系"), 
+            None, "second_system_select",parent=self
+        )
         self.second_system.add_items(all_systems)
         self.second_system.add_combobox("second_system_setting")
         self.second_system.add_times_for_additional(second_systems)
-        self.second_system_fuse_IV = BaseCheckBox("second_system_fuse_IV", None, "合成四级")
-        self.second_system_buy = BaseCheckBox("second_system_buy", None, "购买")
-        self.second_system_select = BaseCheckBox("second_system_choose", None, "选取胜利奖励")
-        self.second_system_power_up = BaseCheckBox("second_system_power_up", None, "升级四级")
 
-        self.skill_replacement = CheckBoxWithComboBox("skill_replacement", "技能替换", None, "skill_replacement_select",
-                                                      parent=self)
+        self.second_system_fuse_IV = BaseCheckBox(
+            "second_system_fuse_IV", None, 
+            QT_TRANSLATE_NOOP("BaseCheckBox","合成四级")
+        )
+        self.second_system_buy = BaseCheckBox(
+            "second_system_buy", None, 
+            QT_TRANSLATE_NOOP("BaseCheckBox","购买")
+        )
+        self.second_system_select = BaseCheckBox(
+            "second_system_choose", None, 
+            QT_TRANSLATE_NOOP("BaseCheckBox","选取胜利奖励")
+        )
+        self.second_system_power_up = BaseCheckBox(
+            "second_system_power_up", None, 
+            QT_TRANSLATE_NOOP("BaseCheckBox","升级四级")
+        )
+
+        self.skill_replacement = CheckBoxWithComboBox(
+            "skill_replacement", QT_TRANSLATE_NOOP("CheckBoxWithComboBox","技能替换"), 
+            None, "skill_replacement_select",parent=self
+        )
         self.skill_replacement.add_items(skill_replacement_sinner)
         self.skill_replacement.add_combobox("skill_replacement_mode")
         self.skill_replacement.add_times_for_additional(skill_replacement_mode)
 
+        QT_TRANSLATE_NOOP("BaseLabel","忽略商店")
         self.ignore_shop = BaseLabel("忽略商店")
         self.ignore_shop.add_icon(FIF.CUT)
-        self.flood_shop_1 = BaseCheckBox("ignore_shop_1", None, "第一层")
-        self.flood_shop_2 = BaseCheckBox("ignore_shop_2", None, "第二层")
-        self.flood_shop_3 = BaseCheckBox("ignore_shop_3", None, "第三层")
-        self.flood_shop_4 = BaseCheckBox("ignore_shop_4", None, "第四层")
-        self.flood_shop_5 = BaseCheckBox("ignore_shop_5", None, "第五层")
+        self.flood_shop_1 = BaseCheckBox(
+            "ignore_shop_1", None, 
+            QT_TRANSLATE_NOOP("BaseCheckBox","第一层")
+        )
+        self.flood_shop_2 = BaseCheckBox(
+            "ignore_shop_2", None, 
+            QT_TRANSLATE_NOOP("BaseCheckBox","第二层")
+        )
+        self.flood_shop_3 = BaseCheckBox(
+            "ignore_shop_3", None, 
+            QT_TRANSLATE_NOOP("BaseCheckBox","第三层")
+        )
+        self.flood_shop_4 = BaseCheckBox(
+            "ignore_shop_4", None, 
+            QT_TRANSLATE_NOOP("BaseCheckBox","第四层")
+        )
+        self.flood_shop_5 = BaseCheckBox(
+            "ignore_shop_5", None, 
+            QT_TRANSLATE_NOOP("BaseCheckBox","第五层")
+        )
 
     def __init_layout(self):
         self.first_line.addWidget(self.do_not_heal)
@@ -454,3 +560,38 @@ class CustomizeSettingsModule(QFrame):
         self.main_layout.addWidget(self.second_system_widget)
         self.main_layout.addWidget(self.seventh_line_widget)
         self.main_layout.addWidget(self.eighth_line_widget)
+
+    def retranslateUi(self):
+        self.do_not_heal.retranslateUi()
+        self.do_not_buy.retranslateUi()
+        self.do_not_fuse.retranslateUi()
+        self.do_not_enhance.retranslateUi()
+        self.do_not_sell.retranslateUi()
+        self.do_not_system_fuse.retranslateUi()
+        self.only_aggressive_fuse.retranslateUi()
+        self.only_system_fuse.retranslateUi()
+        self.avoid_skill_3.retranslateUi()
+        self.use_starlight.retranslateUi()
+        self.reward_cards.retranslateUi()
+        self.choose_opening_bonus.retranslateUi()
+        self.re_formation_each_floor.retranslateUi()
+
+        starlight_text = self.tr("星光")
+        for index in range(1,11):
+            starlight = self.findChild(CheckBoxWithLineEdit,f"starlight_{index}")
+            starlight.box.setText(f"{starlight_text}{index}")
+            if index <= 5:
+                flood_shop = self.findChild(BaseCheckBox,f"ignore_shop_{index}")
+                flood_shop.retranslateUi()
+
+        self.after_level_IV.retranslateUi()
+        self.shopping_strategy.retranslateUi()
+        self.opening_items.retranslateUi()
+        self.second_system.retranslateUi()
+        self.second_system_fuse_IV.retranslateUi()
+        self.second_system_buy.retranslateUi()
+        self.second_system_select.retranslateUi()
+        self.second_system_power_up.retranslateUi()
+        self.skill_replacement.retranslateUi()
+        self.ignore_shop.retranslateUi()
+

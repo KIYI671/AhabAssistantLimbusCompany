@@ -1,8 +1,12 @@
-from PyQt5.QtCore import Qt, QUrl
-from PyQt5.QtGui import QDesktopServices
+from PyQt5.QtCore import Qt, QUrl, QT_TRANSLATE_NOOP
+from PyQt5.QtGui import QDesktopServices, QIcon
 from PyQt5.QtWidgets import QSizePolicy
-from qfluentwidgets import MessageBox, BodyLabel, FluentStyleSheet, PrimaryPushButton, LineEdit, ScrollArea
+from qfluentwidgets import MessageBox, BodyLabel, FluentStyleSheet, \
+    PrimaryPushButton, LineEdit, ScrollArea, InfoBar
+from qfluentwidgets.common.icon import FluentIconBase
+from qfluentwidgets.components.widgets.info_bar import InfoBarIcon, InfoBarPosition
 
+from app.language_manager import LanguageManager
 
 class MessageBoxHtml(MessageBox):
     def __init__(self, title: str, content: str, parent=None):
@@ -31,7 +35,8 @@ class MessageBoxHtml(MessageBox):
         self.scrollArea.setMinimumHeight(300)
 
         # 添加新的跳转按钮
-        self.jumpButton = PrimaryPushButton(self.tr('跳转 / JUMP'), self.buttonGroup)
+
+        self.jumpButton = PrimaryPushButton('跳转', self.buttonGroup)
         self.jumpButton.adjustSize()
         self.jumpButton.setAttribute(Qt.WA_LayoutUsesWidgetRect)
         self.jumpButton.setFocus()
@@ -71,8 +76,9 @@ class MessageBoxUpdate(MessageBoxHtml):
     def __init__(self, title: str, content: str, parent=None):
         super().__init__(title, content, parent)
 
-        self.yesButton.setText('下载 / DOWNLOAD')
-        self.cancelButton.setText('好的 / OK')
+        self.yesButton.setText(self.tr('下载'))
+        self.cancelButton.setText(self.tr('好的'))
+        self.jumpButton.setText(self.tr('跳转'))
 
 
 class MessageBoxConfirm(MessageBox):
@@ -102,12 +108,14 @@ class MessageBoxConfirm(MessageBox):
 class MessageBoxEdit(MessageBox):
     def __init__(self, title: str, content: str, parent=None):
         super().__init__(title, content, parent)
+        
+        self.text = title
 
         self.textLayout.removeWidget(self.contentLabel)
         self.contentLabel.clear()
 
-        self.yesButton.setText('确认')
-        self.cancelButton.setText('取消')
+        self.yesButton.setText(self.tr("确认"))
+        self.cancelButton.setText(self.tr("取消"))
 
         self.lineEdit = LineEdit(self)
         self.lineEdit.setText(self.content)
@@ -118,10 +126,50 @@ class MessageBoxEdit(MessageBox):
     def getText(self):
         return self.lineEdit.text()
 
+    def retranslateUi(self):
+        text = self.tr(self.text)
+        self.titleLabel.setText(text)
+
 
 class MessageBoxWarning(MessageBox):
     def __init__(self, title: str, content: str, parent=None):
         super().__init__(title, content, parent)
 
-        self.yesButton.setText('我已了解以上信息')
+        self.yesButton.setText(self.tr('我已了解以上信息'))
         self.cancelButton.setHidden(True)
+
+class BaseInfoBar(InfoBar):
+    def __init__(self, icon: InfoBarIcon | FluentIconBase | QIcon | str, title: str, content: str, orient=Qt.Horizontal, isClosable=True, duration=1000, position=InfoBarPosition.TOP_RIGHT, parent=None):
+        super().__init__(icon, title, content, orient, isClosable, duration, position, parent)
+
+    def retranslateUi(self):
+        self.titleLabel.setText(self.tr(self.title))
+        self.contentLabel.setText(self.tr(self.content))
+
+    @classmethod
+    def new(cls, icon, title, content, orient=Qt.Horizontal, isClosable=True, duration=1000,
+            position=InfoBarPosition.TOP_RIGHT, parent=None):
+        w = BaseInfoBar(icon, title, content, orient,
+                    isClosable, duration, position, parent)
+        w.show()
+        return w
+    
+    @classmethod
+    def info(cls, title, content, orient=Qt.Horizontal, isClosable=True, duration=1000,
+             position=InfoBarPosition.TOP_RIGHT, parent=None):
+        return cls.new(InfoBarIcon.INFORMATION, title, content, orient, isClosable, duration, position, parent)
+
+    @classmethod
+    def success(cls, title, content, orient=Qt.Horizontal, isClosable=True, duration=1000,
+                position=InfoBarPosition.TOP_RIGHT, parent=None):
+        return cls.new(InfoBarIcon.SUCCESS, title, content, orient, isClosable, duration, position, parent)
+
+    @classmethod
+    def warning(cls, title, content, orient=Qt.Horizontal, isClosable=True, duration=1000,
+                position=InfoBarPosition.TOP_RIGHT, parent=None):
+        return cls.new(InfoBarIcon.WARNING, title, content, orient, isClosable, duration, position, parent)
+
+    @classmethod
+    def error(cls, title, content, orient=Qt.Horizontal, isClosable=True, duration=1000,
+              position=InfoBarPosition.TOP_RIGHT, parent=None):
+        return cls.new(InfoBarIcon.ERROR, title, content, orient, isClosable, duration, position, parent)
