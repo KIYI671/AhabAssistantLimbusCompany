@@ -2,6 +2,7 @@ import ctypes
 import os
 import platform
 import random
+import win32process
 from sys import exc_info
 from time import sleep
 from traceback import format_exception
@@ -87,7 +88,7 @@ def init_game():
         screen.set_win()
 
 
-def script_task():
+def script_task() -> None|int:
     # 获取（启动）游戏对游戏窗口进行设置
     init_game()
 
@@ -176,30 +177,30 @@ def script_task():
             if after_completion == 1:
                 os.system("rundll32.exe powrprof.dll,SetSuspendState Sleep")
             elif after_completion == 2:
-                if platform.system() == "Windows":
-                    os.system("rundll32.exe powrprof.dll,SetSuspendState Hibernate")
+                os.system("rundll32.exe powrprof.dll,SetSuspendState Hibernate")
             elif after_completion == 3:
-                if platform.system() == "Windows":
-                    os.system("shutdown /s /t 30")
-            elif after_completion == 4:
-                if platform.system() == "Windows":
-                    _, pid = ctypes.windll.user32.GetWindowThreadProcessId(screen.handle._hWnd, None)
-                    os.system(f'taskkill /F /PID {pid}')
-            elif after_completion == 5:
-                if platform.system() == "Windows":
-                    os.system("taskkill /f /im AALC.exe")
-            elif after_completion == 6:
-                if platform.system() == "Windows":
-                    _, pid = ctypes.windll.user32.GetWindowThreadProcessId(screen.handle._hWnd, None)
-                    os.system(f'taskkill /F /PID {pid}')
-                    os.system("taskkill /f /im AALC.exe")
+                os.system("shutdown /s /t 30")
+            elif after_completion == 4 or after_completion == 6:
+                _, pid = win32process.GetWindowThreadProcessId(screen.handle._hWnd)
+                ret = os.system(f'taskkill /F /PID {pid}')
+                if ret == 0:
+                    log.INFO("成功关闭 Limbus Company")
+                elif ret == 128:
+                    log.ERROR("错误：进程不存在")
+                elif ret == 1:
+                    log.ERROR("错误：权限不足")
         except Exception as e:
             log.ERROR(f"脚本结束后的操作失败: {e}")
+
+        finally:
+            if after_completion == 5 or after_completion == 6:
+                return 0 # 正常退出信号
 
 
 class my_script_task(QThread):
     # 定义信号
     finished_signal = pyqtSignal()
+    kill_signal = pyqtSignal()
 
     def __init__(self):
         # 初始化，构造函数
@@ -251,7 +252,9 @@ class my_script_task(QThread):
 
     def _run(self):
         try:
-            script_task()
+            ret = script_task()
+            if ret == 0:
+                self.kill_signal.emit()
         except Exception as e:
             log.ERROR(f"出现错误: {e}")
             self.exc_traceback = ''.join(
