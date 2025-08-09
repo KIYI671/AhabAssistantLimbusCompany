@@ -187,13 +187,17 @@ class FarmingInterfaceLeft(QWidget):
         for check_box in task_check_box[1:5]:
             check_box.setChecked(False)
 
+    def stop_AALC(self):
+        log.DEBUG("即将关闭AALC")
+        sys.exit(0)
+
+
     def start_and_stop_tasks(self):
         # 检测是否有未保存的镜牢队伍设置
         if self.parent.parent.findChild(TeamSettingCard):
             list(self.parent.parent.pivot.items.values())[-1].click()
             mediator.save_warning.emit()
             return
-
         # 设置按下启动与停止按钮时，其他模块的启用与停用
         current_text = self.link_start_button.get_text()
         if current_text == "Link Start!":
@@ -248,6 +252,7 @@ class FarmingInterfaceLeft(QWidget):
             # 设置脚本线程为守护(当程序被关闭，一起停止)
             self.my_script.daemon = True
             self.my_script.finished_signal.connect(self.start_and_stop_tasks)
+            self.my_script.kill_signal.connect(self.stop_AALC)
             self.my_script.start()
         except Exception as e:
             log.ERROR(f"启动脚本失败: {e}")
