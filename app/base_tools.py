@@ -89,7 +89,7 @@ class BaseCheckBox(BaseLayout):
 
         self.check_box.toggled.connect(self.on_toggle)
 
-        if self.config_name in ["hard_mirror","no_weekly_bonuses"]:
+        if self.config_name in ["hard_mirror", "no_weekly_bonuses"]:
             self.check_box.setChecked(False)
 
     def set_checked(self, checked):
@@ -137,6 +137,7 @@ class BaseCheckBox(BaseLayout):
 
     def retranslateUi(self):
         self.check_box.setText(self.tr(self.check_box_title))
+
 
 class BaseButton(BaseLayout):
     def __init__(self, config_name, parent=None):
@@ -208,7 +209,8 @@ class ToSettingButton(BaseButton):
     def retranslateUi(self):
         self.edit_name.setText(self.tr("命名"))
         self.del_action.setText(self.tr("删除"))
-        
+
+
 class ChangePageButton(BaseButton):
     def __init__(self, config_name, icon: Union[str, QIcon, FluentIconBase, None] = FIF.SETTING, parent=None):
         super().__init__(config_name, parent=parent)
@@ -312,7 +314,7 @@ class BaseComboBox(BaseLayout):
         if self.items:
             index = 0
             for key in self.items:
-                self.combo_box.setItemText(index,self.tr(key))
+                self.combo_box.setItemText(index, self.tr(key))
                 index += 1
 
 

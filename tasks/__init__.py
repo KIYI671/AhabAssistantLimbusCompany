@@ -3,7 +3,7 @@ all_systems = {0: "burn", 1: "bleed", 2: "tremor", 3: "rupture", 4: "poise",
 all_sinners_name = ["YiSang", "Faust", "DonQuixote", "Ryoshu", "Meursault", "HongLu",
                     "Heathcliff", "Ishmael", "Rodion", "Sinclair", "Outis", "Gregor"]
 all_sinners_name_zh = ["李箱", "浮士德", "堂吉诃德", "良秀", "默尔索", "鸿潞",
-                    "希斯克利夫", "以实玛丽", "罗佳", "辛克莱", "奥提斯", "格里高尔"]
+                       "希斯克利夫", "以实玛丽", "罗佳", "辛克莱", "奥提斯", "格里高尔"]
 all_sinner = {
     "YiSang": 1, "Faust": 2, "DonQuixote": 3,
     "Ryoshu": 4, "Meursault": 5, "HongLu": 6,
@@ -12,12 +12,12 @@ all_sinner = {
     "Sinclair": 11, "Outis": 12, "Gregor": 13
 }
 
-start_gift = {0:[1,2,3],
-              1:[1,3,2],
-              2:[2,1,3],
-              3:[2,3,1],
-              4:[3,1,2],
-              5:[3,2,1]}
+start_gift = {0: [1, 2, 3],
+              1: [1, 3, 2],
+              2: [2, 1, 3],
+              3: [2, 3, 1],
+              4: [3, 1, 2],
+              5: [3, 2, 1]}
 system_cn_zh = {
     "burn": "烧伤",
     "bleed": "流血",
@@ -31,12 +31,12 @@ system_cn_zh = {
     "blunt": "打击"
 }
 
-sins = { # bgr values
-    "wrath"   : (  0,   0, 254),
-    "gloom"   : (239, 197,  26),
-    "sloth"   : ( 49, 205, 251),
-    "lust"    : (  0, 108, 254),
-    "pride"   : (213,  75,   1),
-    "gluttony": (  1, 228, 146),
-    "envy"    : (222,   1, 150),
+sins = {  # bgr values
+    "wrath": (0, 0, 254),
+    "gloom": (239, 197, 26),
+    "sloth": (49, 205, 251),
+    "lust": (0, 108, 254),
+    "pride": (213, 75, 1),
+    "gluttony": (1, 228, 146),
+    "envy": (222, 1, 150),
 }

@@ -8,9 +8,9 @@ from module.update.check_update import start_update_thread
 
 
 class OCRInstaller:
-    def __init__(self,log):
+    def __init__(self, log):
         self.logger = log
-        self.ocr_name,self.ocr_path = self._determine_ocr()
+        self.ocr_name, self.ocr_path = self._determine_ocr()
 
     def _cpu_support_avx2(self):
         """
@@ -20,13 +20,15 @@ class OCRInstaller:
 
     def _determine_ocr(self):
         if self._cpu_support_avx2():
-            ocr_name ="PaddleOCR-json"
+            ocr_name = "PaddleOCR-json"
             ocr_path = r".\3rdparty\PaddleOCR-json_v1.4.1\PaddleOCR-json.exe"
-            self.logger.DEBUG(f"CPU 支持 AVX2 指令集，使用 {ocr_name} \nThe CPU supports the AVX2 instruction set, using {ocr_name}")
+            self.logger.DEBUG(
+                f"CPU 支持 AVX2 指令集，使用 {ocr_name} \nThe CPU supports the AVX2 instruction set, using {ocr_name}")
         else:
             ocr_name = "RapidOCR-json"
             ocr_path = r".\3rdparty\RapidOCR-json_v0.2.0\RapidOCR-json.exe"
-            self.logger.INFO(f"CPU 不支持 AVX2 指令集，使用 {ocr_name} \nThe CPU does not support the AVX2 instruction set, use {ocr_name}")
+            self.logger.INFO(
+                f"CPU 不支持 AVX2 指令集，使用 {ocr_name} \nThe CPU does not support the AVX2 instruction set, use {ocr_name}")
         return ocr_name, ocr_path
 
     def check_and_install(self):
@@ -37,6 +39,7 @@ class OCRInstaller:
     def install_ocr(self):
         RapidOCR_url = "https://github.com/hiroi-sora/RapidOCR-json/releases/download/v0.2.0/RapidOCR-json_v0.2.0.7z"
         start_update_thread(RapidOCR_url)
+
 
 ocr_installer = OCRInstaller(log)
 ocr_installer.check_and_install()

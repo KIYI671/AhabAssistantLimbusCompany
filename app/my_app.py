@@ -23,6 +23,7 @@ from module.logger import log
 from module.update.check_update import check_update
 from app.language_manager import LanguageManager
 
+
 class Language(Enum):
     """ Language enumeration """
 
@@ -30,6 +31,7 @@ class Language(Enum):
     CHINESE_TRADITIONAL = QLocale(QLocale.Chinese, QLocale.HongKong)
     ENGLISH = QLocale(QLocale.English)
     AUTO = QLocale()
+
 
 # 使用无框窗口
 class MainWindow(FramelessWindow):
@@ -40,12 +42,11 @@ class MainWindow(FramelessWindow):
         self.setWindowIcon(QIcon('./assets/logo/my_icon_256X256.ico'))
         self.setWindowTitle(f"Ahab Assistant Limbus Company -  {cfg.version}")
         setThemeColor("#9c080b")
-        #self.hBoxLayout =QHBoxLayout(self)
-        #self.test_interface = TestInterface(self)
-        #self.hBoxLayout.setContentsMargins(0,0,0,0)
-        #self.hBoxLayout.addWidget(self.test_interface)
+        # self.hBoxLayout =QHBoxLayout(self)
+        # self.test_interface = TestInterface(self)
+        # self.hBoxLayout.setContentsMargins(0,0,0,0)
+        # self.hBoxLayout.addWidget(self.test_interface)
         LanguageManager().register_component(self)
-        
 
         # 禁用最大化
         self.titleBar.maxBtn.setHidden(True)
@@ -57,7 +58,7 @@ class MainWindow(FramelessWindow):
         self.progress_ring = ProgressRing(self)
         self.progress_ring.hide()
 
-        self.resize(1080,600)
+        self.resize(1080, 600)
         desktop = QApplication.desktop().availableGeometry()
         w, h = desktop.width(), desktop.height()
         self.move(w // 2 - self.width() // 2, h // 2 - self.height() // 2)
@@ -66,13 +67,13 @@ class MainWindow(FramelessWindow):
         self.stackedWidget = QStackedWidget(self)
         self.vBoxLayout = QVBoxLayout(self)
         self.HBoxLayout = QHBoxLayout(self)
-        #self.stackedWidget.setStyleSheet("border: 1px solid black;")
+        # self.stackedWidget.setStyleSheet("border: 1px solid black;")
         self.setStyleSheet("""
                             MainWindow {    
                                 background: #fdfdfd;        /* 背景色（可选） */
                             }
                         """)
-        
+
         self.farming_interface = FarmingInterface(self)
         if cfg.language_in_program == "zh_cn":
             self.help_interface = MarkdownViewer("./assets/doc/zh/How_to_use.md")
@@ -80,18 +81,18 @@ class MainWindow(FramelessWindow):
             self.help_interface = MarkdownViewer("./assets/doc/en/How_to_use_EN.md")
         self.tools_interface = ToolsInterface(self)
         self.setting_interface = SettingInterface(self)
-        #self.team_setting = TeamSettingCard(self)
+        # self.team_setting = TeamSettingCard(self)
 
         # add items to pivot
         self.addSubInterface(self.farming_interface, 'farming_interface', '一键长草')
         self.addSubInterface(self.help_interface, 'help_interface', '帮助')
         self.addSubInterface(self.tools_interface, 'tools_interface', '小工具')
         self.addSubInterface(self.setting_interface, 'setting_interface', '设置')
-        #self.addSubInterface(self.team_setting, 'team_setting', '队伍设置')
+        # self.addSubInterface(self.team_setting, 'team_setting', '队伍设置')
 
         self.HBoxLayout.addWidget(self.pivot)
         self.vBoxLayout.addSpacing(10)
-        self.vBoxLayout.addLayout(self.HBoxLayout,0)
+        self.vBoxLayout.addLayout(self.HBoxLayout, 0)
         self.vBoxLayout.addWidget(self.stackedWidget)
         self.vBoxLayout.setContentsMargins(30, 20, 30, 0)
         self.pivot.setMaximumHeight(50)
@@ -101,7 +102,7 @@ class MainWindow(FramelessWindow):
         self.pivot.currentItemChanged.connect(
             lambda k: self.stackedWidget.setCurrentWidget(self.findChild(QWidget, k)))
 
-        #self.stackedWidget.setStyleSheet("background-color: white;")
+        # self.stackedWidget.setStyleSheet("background-color: white;")
 
         # 将标题栏置顶
         self.titleBar.raise_()
@@ -116,14 +117,11 @@ class MainWindow(FramelessWindow):
 
         self.set_ring()
 
-
-
     def addSubInterface(self, widget: QLabel, objectName, text):
         widget.setObjectName(objectName)
-        #widget.setAlignment(Qt.AlignCenter)
+        # widget.setAlignment(Qt.AlignCenter)
         self.stackedWidget.addWidget(widget)
         self.pivot.addItem(routeKey=objectName, text=text)
-        
 
     def add_and_switch_to_page(self, target: str):
         try:
@@ -133,7 +131,7 @@ class MainWindow(FramelessWindow):
                 self.pivot.setCurrentItem("team_setting")
             else:
                 """切换页面（带越界保护）"""
-                self.addSubInterface(TeamSettingCard(num,self), 'team_setting', self.tr("队伍设置"))
+                self.addSubInterface(TeamSettingCard(num, self), 'team_setting', self.tr("队伍设置"))
                 list(self.pivot.items.values())[-1].click()
                 self.pivot.setCurrentItem("team_setting")
         except Exception as e:
@@ -202,21 +200,21 @@ class MainWindow(FramelessWindow):
         self.progress_ring.setValue(0)
         self.progress_ring.setTextVisible(True)
         self.progress_ring.setFixedSize(80, 80)
-        x = self.width()-100
-        y = self.height()-100
+        x = self.width() - 100
+        y = self.height() - 100
         self.progress_ring.move(x, y)
 
-    def set_progress_ring(self,value:int):
+    def set_progress_ring(self, value: int):
         self.progress_ring.setWindowFlag(Qt.WindowStaysOnTopHint)  # 保持最上层显示
         self.progress_ring.show()
         self.progress_ring.setValue(value)
 
-    def handle_link_click(self, url:str):
+    def handle_link_click(self, url: str):
         """处理帮助文档中的链接点击"""
         if url.endswith(".md"):
             self.help_interface.load_markdown(url)
 
-    def download_and_install(self,file_name):
+    def download_and_install(self, file_name):
         messages_box = MessageBoxConfirm(
             "更新提醒",
             "下载已经完成，是否开始更新",
@@ -228,10 +226,10 @@ class MainWindow(FramelessWindow):
             subprocess.Popen([source_file, assert_name], creationflags=subprocess.DETACHED_PROCESS)
 
     def retranslateUi(self):
-        self.pivot.setItemText("farming_interface",self.tr("一键长草"))
-        self.pivot.setItemText("help_interface",self.tr("帮助"))
-        self.pivot.setItemText("tools_interface",self.tr("小工具"))
-        self.pivot.setItemText("setting_interface",self.tr("设置"))
+        self.pivot.setItemText("farming_interface", self.tr("一键长草"))
+        self.pivot.setItemText("help_interface", self.tr("帮助"))
+        self.pivot.setItemText("tools_interface", self.tr("小工具"))
+        self.pivot.setItemText("setting_interface", self.tr("设置"))
 
         if "team_setting" in list(self.pivot.items.keys()):
-            self.pivot.setItemText("team_setting",self.tr("队伍设置"))
+            self.pivot.setItemText("team_setting", self.tr("队伍设置"))

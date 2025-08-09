@@ -8,7 +8,7 @@ from module.config import cfg
 class ScreenShot:
 
     @staticmethod
-    def take_screenshot(gray = True):
+    def take_screenshot(gray=True):
         """
         截取屏幕截图。
         :param gray: 是否将图片转化为灰度图

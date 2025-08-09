@@ -18,6 +18,7 @@ from module.ocr import ocr
 from tasks.base.script_task_scheme import my_script_task
 from app.language_manager import LanguageManager
 
+
 class FarmingInterface(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent=parent)
@@ -26,9 +27,9 @@ class FarmingInterface(QWidget):
         self.hbox_layout_left = QVBoxLayout(self)
         self.hbox_layout_center = QVBoxLayout(self)
         self.hbox_layout_right = QVBoxLayout(self)
-        self.hbox_layout.addLayout(self.hbox_layout_left,stretch=3)
-        self.hbox_layout.addLayout(self.hbox_layout_center,stretch=4)
-        self.hbox_layout.addLayout(self.hbox_layout_right,stretch=3)
+        self.hbox_layout.addLayout(self.hbox_layout_left, stretch=3)
+        self.hbox_layout.addLayout(self.hbox_layout_center, stretch=4)
+        self.hbox_layout.addLayout(self.hbox_layout_right, stretch=3)
 
         """
         self.setWidget(self.scroll_widget)
@@ -41,7 +42,7 @@ class FarmingInterface(QWidget):
         self.hbox_layout_center.addWidget(FarmingInterfaceCenter(self))
         self.hbox_layout_right.addWidget(FarmingInterfaceRight(self))
 
-        #self.setStyleSheet("border: 1px solid black;")
+        # self.setStyleSheet("border: 1px solid black;")
         # 启动快捷键监听
         self.listener = keyboard.GlobalHotKeys(
             {
@@ -64,7 +65,7 @@ class FarmingInterfaceLeft(QWidget):
         super().__init__(parent=parent)
         self.parent = parent
         self.setObjectName("FarmingInterfaceLeft")
-        
+
         self.__init_widget()
         self.__init_card()
         self.__init_layout()
@@ -72,7 +73,6 @@ class FarmingInterfaceLeft(QWidget):
         self.connect_mediator()
 
         LanguageManager().register_component(self)
-        
 
     def __init_widget(self):
         self.hbox_layout = QVBoxLayout(self)
@@ -81,49 +81,49 @@ class FarmingInterfaceLeft(QWidget):
         self.setting_options.setSpacing(10)
 
         self.setting_box = BaseSettingLayout()
-        #self.setting_box.setFrameShape(QFrame.StyledPanel)  # 带阴影的边框
-        #self.setting_box.setLineWidth(1)
+        # self.setting_box.setFrameShape(QFrame.StyledPanel)  # 带阴影的边框
+        # self.setting_box.setLineWidth(1)
         self.setting_box.setLayout(self.setting_layout)
 
     def __init_card(self):
-        
+
         self.set_windows = CheckBoxWithButton(
-            "set_windows", 
-            QT_TRANSLATE_NOOP("CheckBoxWithButton","窗口设置"), 
-            None, 
+            "set_windows",
+            QT_TRANSLATE_NOOP("CheckBoxWithButton", "窗口设置"),
+            None,
             "set_windows"
         )
         self.set_windows.set_box_enabled(False)
 
         self.daily_task = CheckBoxWithButton(
-            "daily_task", 
-            QT_TRANSLATE_NOOP("CheckBoxWithButton","日常任务"), 
-            None, 
+            "daily_task",
+            QT_TRANSLATE_NOOP("CheckBoxWithButton", "日常任务"),
+            None,
             "daily_task"
         )
 
         self.get_reward = CheckBoxWithButton(
-            "get_reward", 
-            QT_TRANSLATE_NOOP("CheckBoxWithButton","领取奖励"), 
-            None, 
+            "get_reward",
+            QT_TRANSLATE_NOOP("CheckBoxWithButton", "领取奖励"),
+            None,
             "get_reward"
         )
         self.buy_enkephalin = CheckBoxWithButton(
-           "buy_enkephalin",
-            QT_TRANSLATE_NOOP("CheckBoxWithButton","狂气换体"),
-            None, 
+            "buy_enkephalin",
+            QT_TRANSLATE_NOOP("CheckBoxWithButton", "狂气换体"),
+            None,
             "buy_enkephalin"
         )
         self.mirror = CheckBoxWithButton(
-            "mirror", 
-            QT_TRANSLATE_NOOP("CheckBoxWithButton","坐牢设置"), 
-            None, 
+            "mirror",
+            QT_TRANSLATE_NOOP("CheckBoxWithButton", "坐牢设置"),
+            None,
             "mirror"
         )
         self.resonate_with_Ahab = CheckBoxWithButton(
-            "resonate_with_Ahab", 
-            QT_TRANSLATE_NOOP("CheckBoxWithButton","亚哈共鸣"), 
-            None, 
+            "resonate_with_Ahab",
+            QT_TRANSLATE_NOOP("CheckBoxWithButton", "亚哈共鸣"),
+            None,
             "resonate_with_Ahab"
         )
 
@@ -134,19 +134,19 @@ class FarmingInterfaceLeft(QWidget):
             "select_all"
         )
         self.select_all.clicked.connect(self.select_all_function)
-        
+
         self.clear_all = NormalTextButton(
             QT_TRANSLATE_NOOP("NormalTextButton", "清空"),
             "clear_all"
         )
         self.clear_all.clicked.connect(self.clear_all_function)
 
-        self.then = BaseLabel(QT_TRANSLATE_NOOP("BaseLabel","之后"))
-        
+        self.then = BaseLabel(QT_TRANSLATE_NOOP("BaseLabel", "之后"))
+
         self.then_combobox = BaseComboBox("after_completion")
         self.then_combobox.add_items(set_after_completion_options)
         self.then_combobox.set_options(0)
-        self.link_start_button = NormalTextButton("Link Start!","link_start", 0)
+        self.link_start_button = NormalTextButton("Link Start!", "link_start", 0)
         self.link_start_button.clicked.connect(self.start_and_stop_tasks)
         self.link_start_button.button.setMinimumSize(130, 70)
         scale_factor = QtWidgets.QApplication.primaryScreen().logicalDotsPerInch() / 96  # Windows 标准 DPI 是 96
@@ -155,7 +155,6 @@ class FarmingInterfaceLeft(QWidget):
         font = self.link_start_button.button.font()  # 获取当前字体
         font.setPointSize(font_size)  # 设置字体大小（单位：点）
         self.link_start_button.button.setFont(font)  # 应用新字体
-
 
     def __init_layout(self):
         self.setting_options.addWidget(self.set_windows)
@@ -209,7 +208,6 @@ class FarmingInterfaceLeft(QWidget):
                 self.stop_script()
                 ocr.exit_ocr()
 
-
     def _disable_setting(self, parent):
         for child in parent.children():
             # 跳过非 QWidget 类型的子对象（如信号、槽等）
@@ -218,7 +216,7 @@ class FarmingInterfaceLeft(QWidget):
             if child.objectName() == "link_start":
                 continue
             # 检查是否为目标控件类型
-            if isinstance(child, (CheckBox, PushButton, ComboBox,SpinBox)):
+            if isinstance(child, (CheckBox, PushButton, ComboBox, SpinBox)):
                 child.setEnabled(False)
             else:
                 # 递归处理子部件的子部件（如布局中的嵌套控件）
@@ -232,7 +230,7 @@ class FarmingInterfaceLeft(QWidget):
             if child.objectName() == "set_windows":
                 continue
             # 检查是否为目标控件类型
-            if isinstance(child, (CheckBox, PushButton, ComboBox,SpinBox)):
+            if isinstance(child, (CheckBox, PushButton, ComboBox, SpinBox)):
                 child.setEnabled(True)
             else:
                 # 递归处理子部件的子部件（如布局中的嵌套控件）
@@ -294,7 +292,7 @@ class FarmingInterfaceCenter(QWidget):
         LanguageManager().register_component(self)
 
     def __init_widget(self):
-        #self.setting_box = CardWidget()
+        # self.setting_box = CardWidget()
         self.vbox = QVBoxLayout(self)
 
         self.setting_page = StackedWidget(self)
@@ -313,7 +311,7 @@ class FarmingInterfaceCenter(QWidget):
         self.setting_page.addWidget(self.buy_enkephalin)
         self.setting_page.addWidget(self.mirror)
         self.vbox.addWidget(self.setting_page)
-        #self.setting_box.setLayout(self.vbox)
+        # self.setting_box.setLayout(self.vbox)
 
     def __init_setting(self):
         self.setting_page.setCurrentIndex(cfg.get_value("default_page"))
@@ -338,6 +336,7 @@ class FarmingInterfaceCenter(QWidget):
         self.get_reward.retranslateUi()
         self.buy_enkephalin.retranslateUi()
         self.mirror.retranslateUi()
+
 
 class FarmingInterfaceRight(QWidget):
     def __init__(self, parent=None):
@@ -440,7 +439,6 @@ class FarmingInterfaceRight(QWidget):
     def connect_mediator(self):
         # 连接所有可能信号
         mediator.scroll_log_show.connect(self.set_scroll_log)
-
 
 
 if __name__ == '__main__':

@@ -78,12 +78,14 @@ def onetime_mir_process(team_setting):
         log.ERROR(msg)
         return False
 
+
 def init_game():
     game_process.start_game()
     while not screen.init_handle():
         sleep(10)
     if cfg.set_windows:
         screen.set_win()
+
 
 def script_task():
     # 获取（启动）游戏对游戏窗口进行设置
@@ -98,7 +100,7 @@ def script_task():
 
     # 如果是战斗中，先处理战斗
     get_reward = None
-    if auto.click_element("battle/turn_assets.png",take_screenshot=True):
+    if auto.click_element("battle/turn_assets.png", take_screenshot=True):
         get_reward = battle.fight()
 
     # 执行日常刷本任务
@@ -141,17 +143,17 @@ def script_task():
     if cfg.mirror:
         mir_times = cfg.set_mirror_count
         if cfg.infinite_dungeons:
-            mir_times=9999
+            mir_times = 9999
         if cfg.save_rewards:
-            mir_times=1
+            mir_times = 1
         if cfg.teams_be_select_num != 0:
             while mir_times > 0:
                 teams_order = cfg.teams_order
                 team_num = teams_order.index(1)
-                mirror_result = onetime_mir_process(cfg.get_value(f"team{team_num+1}_setting"))
+                mirror_result = onetime_mir_process(cfg.get_value(f"team{team_num + 1}_setting"))
                 if mirror_result:
-                    for index,value in enumerate(teams_order):
-                        if value ==0:
+                    for index, value in enumerate(teams_order):
+                        if value == 0:
                             continue
                         if teams_order[index] == 1:
                             teams_order[index] = cfg.teams_be_select_num

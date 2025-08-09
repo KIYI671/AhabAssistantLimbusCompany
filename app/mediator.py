@@ -1,5 +1,6 @@
 from PyQt5.QtCore import QObject, pyqtSignal
 
+
 class Mediator(QObject):
     switch_page = pyqtSignal(str)
     switch_team_setting = pyqtSignal(str)

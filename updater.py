@@ -25,14 +25,14 @@ class Updater:
         self.download_file_path = os.path.join(self.temp_path, self.file_name)
         self.extract_folder_path = os.path.join(self.temp_path, self.file_name.rsplit(".", 1)[0])
 
-
     def extract_file(self):
         """解压下载的文件。"""
         print("开始解压...")
         while True:
             try:
                 if os.path.exists(self.exe_path):
-                    subprocess.run([self.exe_path, "x", self.download_file_path, f"-o{self.temp_path}", "-aoa"], check=True)
+                    subprocess.run([self.exe_path, "x", self.download_file_path, f"-o{self.temp_path}", "-aoa"],
+                                   check=True)
                 else:
                     shutil.unpack_archive(self.download_file_path, self.temp_path)
                 print("解压完成")

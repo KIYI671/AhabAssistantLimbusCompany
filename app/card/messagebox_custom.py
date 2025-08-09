@@ -8,6 +8,7 @@ from qfluentwidgets.components.widgets.info_bar import InfoBarIcon, InfoBarPosit
 
 from app.language_manager import LanguageManager
 
+
 class MessageBoxHtml(MessageBox):
     def __init__(self, title: str, content: str, parent=None):
         super().__init__(title, content, parent)
@@ -108,7 +109,7 @@ class MessageBoxConfirm(MessageBox):
 class MessageBoxEdit(MessageBox):
     def __init__(self, title: str, content: str, parent=None):
         super().__init__(title, content, parent)
-        
+
         self.text = title
 
         self.textLayout.removeWidget(self.contentLabel)
@@ -138,8 +139,10 @@ class MessageBoxWarning(MessageBox):
         self.yesButton.setText(self.tr('我已了解以上信息'))
         self.cancelButton.setHidden(True)
 
+
 class BaseInfoBar(InfoBar):
-    def __init__(self, icon: InfoBarIcon | FluentIconBase | QIcon | str, title: str, content: str, orient=Qt.Horizontal, isClosable=True, duration=1000, position=InfoBarPosition.TOP_RIGHT, parent=None):
+    def __init__(self, icon: InfoBarIcon | FluentIconBase | QIcon | str, title: str, content: str, orient=Qt.Horizontal,
+                 isClosable=True, duration=1000, position=InfoBarPosition.TOP_RIGHT, parent=None):
         super().__init__(icon, title, content, orient, isClosable, duration, position, parent)
 
     def retranslateUi(self):
@@ -150,10 +153,10 @@ class BaseInfoBar(InfoBar):
     def new(cls, icon, title, content, orient=Qt.Horizontal, isClosable=True, duration=1000,
             position=InfoBarPosition.TOP_RIGHT, parent=None):
         w = BaseInfoBar(icon, title, content, orient,
-                    isClosable, duration, position, parent)
+                        isClosable, duration, position, parent)
         w.show()
         return w
-    
+
     @classmethod
     def info(cls, title, content, orient=Qt.Horizontal, isClosable=True, duration=1000,
              position=InfoBarPosition.TOP_RIGHT, parent=None):

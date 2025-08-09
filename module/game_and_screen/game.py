@@ -8,7 +8,7 @@ from utils.singletonmeta import SingletonMeta
 
 
 class Game(metaclass=SingletonMeta):
-    def __init__(self,logger):
+    def __init__(self, logger):
         self.game_path = cfg.game_path
         self.game_url = "steam://rungameid/1973530"
         self.log = logger

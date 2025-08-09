@@ -39,12 +39,12 @@ if __name__ == "__main__":
     if not mutex or last_error > 0:
         # 使用非零退出码表示错误
         sys.exit(1)
-        
+
     lang_manager = LanguageManager()
     lang = lang_manager.init_language()
     app = QApplication(sys.argv)
     app.setAttribute(Qt.AA_DontCreateNativeWidgetSiblings)
-    
+
     ui = MainWindow()
 
     QTimer.singleShot(50, lambda: lang_manager.set_language(lang))

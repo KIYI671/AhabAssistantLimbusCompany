@@ -16,15 +16,15 @@ def get_pass_prize():
             break
         if auto.click_element("pass/pass_missions_assets.png"):
             continue
-        if loop_count>=10:
+        if loop_count >= 10:
             if auto.click_element("home/season_assets.png"):
                 continue
         else:
             season_bbox = ImageUtils.get_bbox(ImageUtils.load_image("home/season_assets.png"))
             if auto.find_text_element("season", season_bbox):
-                auto.mouse_click((season_bbox[0]+season_bbox[2])/2, (season_bbox[1]+season_bbox[3])/2)
+                auto.mouse_click((season_bbox[0] + season_bbox[2]) / 2, (season_bbox[1] + season_bbox[3]) / 2)
                 continue
-        #else:
+        # else:
 
         auto.mouse_to_blank()
         loop_count -= 1

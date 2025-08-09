@@ -87,7 +87,8 @@ class Automation(metaclass=SingletonMeta):
         """
         if find_type == 'image_with_multiple_targets' and len(coordinates) > 0:
             for c in coordinates:
-                self.mouse_action_with_pos(c, offset, action, times, dx, dy, find_type="image", interval=1, move_back=move_back)
+                self.mouse_action_with_pos(c, offset, action, times, dx, dy, find_type="image", interval=1,
+                                           move_back=move_back)
             return True
 
         if cfg.mouse_action_interval and interval == 0.5:
@@ -126,7 +127,7 @@ class Automation(metaclass=SingletonMeta):
 
         return True
 
-    def take_screenshot(self,gray = True):
+    def take_screenshot(self, gray=True):
         start_time = time.time()
         screenshot_interval_time = cfg.screenshot_interval if cfg.screenshot_interval else 0.85
         while True:
@@ -220,7 +221,7 @@ class Automation(metaclass=SingletonMeta):
                 return ocr_dict[text]
         return False
 
-    def find_text_element(self, target, my_crop=None, all_text=False,only_text = False):
+    def find_text_element(self, target, my_crop=None, all_text=False, only_text=False):
         if my_crop is not None:
             # 根据my_crop（为左上与右下四个坐标），截取self.screenshot的部分区域进行ocr
             cropped_image = self.screenshot.crop(my_crop)
@@ -326,7 +327,7 @@ class Automation(metaclass=SingletonMeta):
             self.logger.ERROR(f"寻找图片失败:{e}")
         return None
 
-    def get_screenshot_crop(self,crop):
+    def get_screenshot_crop(self, crop):
         self.take_screenshot(False)
         screenshot = np.array(self.screenshot)
         screenshot = screenshot[:, :, ::-1]

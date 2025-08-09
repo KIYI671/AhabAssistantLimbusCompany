@@ -1,8 +1,6 @@
 from app.mediator import Mediator
 from PyQt5.QtCore import QT_TRANSLATE_NOOP
 
-
-
 mediator = Mediator()
 
 toggle_button_group = {}
@@ -22,67 +20,67 @@ page_name_and_index = {
 set_win_size_options = {"1920*1080": 1080, "2560*1440": 1440, "1280*720": 720, "1600*900": 900,
                         "3200*1800": 1800,
                         "3840*2160": 2160}
-set_win_position_options = {QT_TRANSLATE_NOOP("BaseComboBox","左上角（0，0）"): True}
-set_reduce_miscontact_options = {QT_TRANSLATE_NOOP("BaseComboBox",'是'): True}
+set_win_position_options = {QT_TRANSLATE_NOOP("BaseComboBox", "左上角（0，0）"): True}
+set_reduce_miscontact_options = {QT_TRANSLATE_NOOP("BaseComboBox", '是'): True}
 set_language_options = {'English': 'en', '简体中文': 'zh_cn'}
 set_lunacy_to_enkephalin_options = {
-    QT_TRANSLATE_NOOP("BaseComboBox","不换"): 0, QT_TRANSLATE_NOOP("BaseComboBox","换第一次"): 1, 
-    QT_TRANSLATE_NOOP("BaseComboBox","换第二次"): 2,QT_TRANSLATE_NOOP("BaseComboBox","换第三次"): 3
+    QT_TRANSLATE_NOOP("BaseComboBox", "不换"): 0, QT_TRANSLATE_NOOP("BaseComboBox", "换第一次"): 1,
+    QT_TRANSLATE_NOOP("BaseComboBox", "换第二次"): 2, QT_TRANSLATE_NOOP("BaseComboBox", "换第三次"): 3
 }
 set_get_prize_options = {
-    QT_TRANSLATE_NOOP("BaseComboBox","邮件+日/周常"): 0, 
-    QT_TRANSLATE_NOOP("BaseComboBox","日/周常"): 1, QT_TRANSLATE_NOOP("BaseComboBox","邮件"): 2
+    QT_TRANSLATE_NOOP("BaseComboBox", "邮件+日/周常"): 0,
+    QT_TRANSLATE_NOOP("BaseComboBox", "日/周常"): 1, QT_TRANSLATE_NOOP("BaseComboBox", "邮件"): 2
 }
 set_after_completion_options = {
-    QT_TRANSLATE_NOOP("BaseComboBox","无"): 0, QT_TRANSLATE_NOOP("BaseComboBox","睡眠"): 1, 
-    QT_TRANSLATE_NOOP("BaseComboBox","休眠"): 2,QT_TRANSLATE_NOOP("BaseComboBox","关机"): 3, 
-    QT_TRANSLATE_NOOP("BaseComboBox","退出游戏"): 4, QT_TRANSLATE_NOOP("BaseComboBox","退出AALC"): 5,
-    QT_TRANSLATE_NOOP("BaseComboBox","退出AALC和游戏"): 6
+    QT_TRANSLATE_NOOP("BaseComboBox", "无"): 0, QT_TRANSLATE_NOOP("BaseComboBox", "睡眠"): 1,
+    QT_TRANSLATE_NOOP("BaseComboBox", "休眠"): 2, QT_TRANSLATE_NOOP("BaseComboBox", "关机"): 3,
+    QT_TRANSLATE_NOOP("BaseComboBox", "退出游戏"): 4, QT_TRANSLATE_NOOP("BaseComboBox", "退出AALC"): 5,
+    QT_TRANSLATE_NOOP("BaseComboBox", "退出AALC和游戏"): 6
 }
 all_teams = {f"Team{i}": i for i in range(1, 21)}
 all_systems = {
-    QT_TRANSLATE_NOOP("BaseComboBox","烧伤"): 0, QT_TRANSLATE_NOOP("BaseComboBox","流血"): 1, 
-    QT_TRANSLATE_NOOP("BaseComboBox","震颤"): 2, QT_TRANSLATE_NOOP("BaseComboBox","破裂"): 3, 
-    QT_TRANSLATE_NOOP("BaseComboBox","呼吸"): 4,QT_TRANSLATE_NOOP("BaseComboBox","沉沦"): 5, 
-    QT_TRANSLATE_NOOP("BaseComboBox","充能"): 6, QT_TRANSLATE_NOOP("BaseComboBox","斩击"): 7, 
-    QT_TRANSLATE_NOOP("BaseComboBox","突刺"): 8, QT_TRANSLATE_NOOP("BaseComboBox","打击"): 9
+    QT_TRANSLATE_NOOP("BaseComboBox", "烧伤"): 0, QT_TRANSLATE_NOOP("BaseComboBox", "流血"): 1,
+    QT_TRANSLATE_NOOP("BaseComboBox", "震颤"): 2, QT_TRANSLATE_NOOP("BaseComboBox", "破裂"): 3,
+    QT_TRANSLATE_NOOP("BaseComboBox", "呼吸"): 4, QT_TRANSLATE_NOOP("BaseComboBox", "沉沦"): 5,
+    QT_TRANSLATE_NOOP("BaseComboBox", "充能"): 6, QT_TRANSLATE_NOOP("BaseComboBox", "斩击"): 7,
+    QT_TRANSLATE_NOOP("BaseComboBox", "突刺"): 8, QT_TRANSLATE_NOOP("BaseComboBox", "打击"): 9
 }
 shop_strategy = {
-    QT_TRANSLATE_NOOP("BaseComboBox","出售"): 0, QT_TRANSLATE_NOOP("BaseComboBox","合成"): 1, 
-    QT_TRANSLATE_NOOP("BaseComboBox","合成：四级优先"): 2
+    QT_TRANSLATE_NOOP("BaseComboBox", "出售"): 0, QT_TRANSLATE_NOOP("BaseComboBox", "合成"): 1,
+    QT_TRANSLATE_NOOP("BaseComboBox", "合成：四级优先"): 2
 }
 after_fuse_level_IV = {
-    QT_TRANSLATE_NOOP("BaseComboBox","商店策略改为出售"): 0, 
-    QT_TRANSLATE_NOOP("BaseComboBox","商店策略改为普通合成"): 1, 
-    QT_TRANSLATE_NOOP("BaseComboBox","合成第二体系四级饰品"): 2, 
-    QT_TRANSLATE_NOOP("BaseComboBox","跳过商店"): 3
+    QT_TRANSLATE_NOOP("BaseComboBox", "商店策略改为出售"): 0,
+    QT_TRANSLATE_NOOP("BaseComboBox", "商店策略改为普通合成"): 1,
+    QT_TRANSLATE_NOOP("BaseComboBox", "合成第二体系四级饰品"): 2,
+    QT_TRANSLATE_NOOP("BaseComboBox", "跳过商店"): 3
 }
 reward_cards = {
-    QT_TRANSLATE_NOOP("BaseComboBox","星光→饰品→钱→饰品/钱→罪孽"): 0, 
-    QT_TRANSLATE_NOOP("BaseComboBox","星光→钱→饰品→饰品/钱→罪孽"): 1, 
-    QT_TRANSLATE_NOOP("BaseComboBox","钱→饰品→饰品/钱→罪孽→星光"): 2,
-    QT_TRANSLATE_NOOP("BaseComboBox","饰品→钱→饰品/钱→罪孽→星光"): 3
+    QT_TRANSLATE_NOOP("BaseComboBox", "星光→饰品→钱→饰品/钱→罪孽"): 0,
+    QT_TRANSLATE_NOOP("BaseComboBox", "星光→钱→饰品→饰品/钱→罪孽"): 1,
+    QT_TRANSLATE_NOOP("BaseComboBox", "钱→饰品→饰品/钱→罪孽→星光"): 2,
+    QT_TRANSLATE_NOOP("BaseComboBox", "饰品→钱→饰品/钱→罪孽→星光"): 3
 }
 shopping_strategy = {
-    QT_TRANSLATE_NOOP("BaseComboBox","仅购买回血饰品"): 0, 
-    QT_TRANSLATE_NOOP("BaseComboBox","启用四级优先时：仅购买所有3-4级饰品"): 1, 
-    QT_TRANSLATE_NOOP("BaseComboBox","仅购买体系饰品"): 2, 
-    QT_TRANSLATE_NOOP("BaseComboBox","不购买体系饰品"): 3,
-    QT_TRANSLATE_NOOP("BaseComboBox","不购买回血饰品"): 4, 
-    QT_TRANSLATE_NOOP("BaseComboBox","启用四级优先时：不购买所有3-4级饰品"): 5
+    QT_TRANSLATE_NOOP("BaseComboBox", "仅购买回血饰品"): 0,
+    QT_TRANSLATE_NOOP("BaseComboBox", "启用四级优先时：仅购买所有3-4级饰品"): 1,
+    QT_TRANSLATE_NOOP("BaseComboBox", "仅购买体系饰品"): 2,
+    QT_TRANSLATE_NOOP("BaseComboBox", "不购买体系饰品"): 3,
+    QT_TRANSLATE_NOOP("BaseComboBox", "不购买回血饰品"): 4,
+    QT_TRANSLATE_NOOP("BaseComboBox", "启用四级优先时：不购买所有3-4级饰品"): 5
 }
 start_gift = {"1→2→3": 0, "1→3→2": 1, "2→1→3": 2, "2→3→1": 3, "3→1→2": 4, "3→2→1": 5}
 second_systems = {
-    QT_TRANSLATE_NOOP("BaseComboBox","合成第一体系四级饰品后"): 0, 
-    QT_TRANSLATE_NOOP("BaseComboBox","一直"): 1
+    QT_TRANSLATE_NOOP("BaseComboBox", "合成第一体系四级饰品后"): 0,
+    QT_TRANSLATE_NOOP("BaseComboBox", "一直"): 1
 }
 skill_replacement_sinner = {
-    QT_TRANSLATE_NOOP("BaseComboBox","配队首位"): 0, QT_TRANSLATE_NOOP("BaseComboBox","配队前3"): 1, 
-    QT_TRANSLATE_NOOP("BaseComboBox","配队前7"): 2, QT_TRANSLATE_NOOP("BaseComboBox","所有人"): 3
+    QT_TRANSLATE_NOOP("BaseComboBox", "配队首位"): 0, QT_TRANSLATE_NOOP("BaseComboBox", "配队前3"): 1,
+    QT_TRANSLATE_NOOP("BaseComboBox", "配队前7"): 2, QT_TRANSLATE_NOOP("BaseComboBox", "所有人"): 3
 }
 skill_replacement_mode = {"1→3": 0, "2→3": 1, "1→2": 2}
 
-blank_team_setting={}
+blank_team_setting = {}
 
 team_setting_template = {
     "team_system": 0,  # 队伍使用的体系
@@ -104,8 +102,8 @@ team_setting_template = {
     "do_not_heal": False,  # 不治疗
     "do_not_buy": False,  # 不购买
     "do_not_fuse": False,  # 不合成
-    "do_not_sell": False, # 不出售
-    "do_not_enhance":  False, # 不升级
+    "do_not_sell": False,  # 不出售
+    "do_not_enhance": False,  # 不升级
     "only_aggressive_fuse": False,  # 合成只采取激进策略
     "do_not_system_fuse": False,  # 不合成体系饰品
     "only_system_fuse": False,  # 只合成体系饰品
@@ -113,9 +111,9 @@ team_setting_template = {
     "re_formation_each_floor": False,  # 每个楼层重新编队
     "use_starlight": False,  # 使用开局星光换钱
     "reward_cards": False,  # 奖励卡优先度
-    "reward_cards_select": 0, # 自定义奖励卡优先度
+    "reward_cards_select": 0,  # 自定义奖励卡优先度
     "choose_opening_bonus": False,  # 自选开局加成
-    "opening_bonus_select": 0, # 开局加成已选数量
+    "opening_bonus_select": 0,  # 开局加成已选数量
     "opening_bonus": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],  # 启用的开局加成
     "opening_bonus_order": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],  # 启用的开局加成顺序
     "after_level_IV": False,  # 自定义合成四级后的操作
@@ -135,12 +133,11 @@ team_setting_template = {
     "ignore_shop": [0, 0, 0, 0, 0],  # 忽略商店楼层
 }
 
-
 all_sinners_name = ["YiSang", "Faust", "DonQuixote", "Ryoshu", "Meursault", "HongLu",
                     "Heathcliff", "Ishmael", "Rodion", "Sinclair", "Outis", "Gregor"]
 
 all_systems_name = {0: "burn", 1: "bleed", 2: "tremor", 3: "rupture", 4: "poise",
-               5: "sinking", 6: "charge", 7: "slash", 8: "pierce", 9: "blunt"}
+                    5: "sinking", 6: "charge", 7: "slash", 8: "pierce", 9: "blunt"}
 
 second_system_mode = ["second_system_fuse_IV",
                       "second_system_buy",
@@ -160,7 +157,7 @@ all_combobox_config_name = [
     "second_system_setting",
     "skill_replacement_select",
     "skill_replacement_mode",
- ]
+]
 
 all_checkbox_config_name = [
     "system_burn",
@@ -193,4 +190,3 @@ all_checkbox_config_name = [
     "skill_replacement",
     "ignore_shop"
 ]
-
