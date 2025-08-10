@@ -43,6 +43,7 @@ jobs:
           pyinstaller -F -i .\assets\logo\Updater.ico -n "AALC Updater" --exclude-module numpy --exclude-module pandas updater.py -y
           mkdir dist_release
           mv dist/* dist_release/
+          cp dist_release/"AALC Updater"* dist_release/AALC/
           cp -r 3rdparty dist_release/AALC/
           cp -r assets dist_release/AALC/
           cp LICENSE dist_release/AALC/

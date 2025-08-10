@@ -1,0 +1,61 @@
+name: Update Translation File
+
+on:
+  # 触发条件：当 push 到任意分支且修改了 myapp_en.ts 时运行
+  push:
+    paths:
+      - 'i18n/myapp_en.ts'
+
+jobs:
+  generate-and-commit-qm:
+    runs-on: ubuntu-latest  # 使用 Ubuntu 环境（兼容 Qt 安装）
+
+    steps:
+      # 步骤 1：检出代码（需获取完整历史以检测变更）
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # 必须设置为 0，否则无法检测历史变更
+
+      # 步骤 2：配置 Git 用户信息（用于提交）
+      - name: Set up Git user
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email '41898282+github-actions[bot]@users.noreply.github.com'
+
+      # 步骤 3：安装 Qt 工具链（包含 lrelease）
+      - name: Install Qt 5.15 tools (with lrelease)
+        run: |
+          # 添加 Qt 5.15 的 PPA（适用于 Ubuntu）
+          sudo add-apt-repository -y ppa:beineri/opt-qt-5.15.2-xenial
+          sudo apt update
+          # 安装 Qt 5.15.2 的工具包（包含 lrelease）
+          sudo apt install -y qt5152-tools
+
+      # 步骤 4：运行 lrelease 生成 .qm 文件
+      - name: Generate .qm file from .ts
+        run: |
+          # 执行 lrelease 命令（路径已通过环境变量添加）
+          lrelease ./i18n/myapp_en.ts -qm ./i18n/myapp_en.qm
+
+      # 步骤 5：检查 .qm 文件是否有实际变更（避免空提交）
+      - name: Check if .qm file changed
+        id: check-changes
+        run: |
+          # 比较当前 .qm 文件与上一次提交的版本
+          if git diff --quiet HEAD^ HEAD -- ./i18n/myapp_en.qm; then
+            echo "QM file has no changes. Skipping commit."
+            exit 1  # 无变更时退出，跳过后续提交步骤
+          fi
+        continue-on-error: true  # 允许此步骤失败（无变更时）
+
+      # 步骤 6：提交并推送 .qm 文件（仅当有变更时）
+      - name: Commit and push .qm file
+        if: steps.check-changes.outcome == 'success'  # 仅当有变更时执行
+        run: |
+          git add ./i18n/myapp_en.qm
+          git commit -m "i18n: Update myapp_en.qm from myapp_en.ts"
+          # 使用 GITHUB_TOKEN 推送（无需额外配置 SSH）
+          git push origin HEAD:${{ github.ref }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # 自动生成的令牌，用于授权推送
