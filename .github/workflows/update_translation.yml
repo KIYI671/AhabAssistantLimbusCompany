@@ -9,6 +9,8 @@ on:
 jobs:
   generate-and-commit-qm:
     runs-on: ubuntu-latest  # 使用 Ubuntu 环境（兼容 Qt 安装）
+    permissions:
+      contents: write  # 授予写入仓库内容的权限（用于推送 qm 文件）
 
     steps:
       # 步骤 1：检出代码（需获取完整历史以检测变更）
@@ -24,16 +26,13 @@ jobs:
           git config --global user.email '41898282+github-actions[bot]@users.noreply.github.com'
 
       # 步骤 3：安装 Qt 工具链（包含 lrelease）
-      - name: Install Qt 5.15 tools (with lrelease)
+      - name: Install lrelease
         run: |
-          # 添加 Qt 5.15 的 PPA（适用于 Ubuntu）
-          sudo add-apt-repository -y ppa:beineri/opt-qt-5.15.2-xenial
-          sudo apt update
-          # 安装 Qt 5.15.2 的工具包（包含 lrelease）
-          sudo apt install -y qt5152-tools
+          sudo apt-get update
+          sudo apt-get install -y qttools5-dev-tools  # Ubuntu 下安装 lrelease
 
       # 步骤 4：运行 lrelease 生成 .qm 文件
-      - name: Generate .qm file from .ts
+      - name: Generate QM file
         run: |
           # 执行 lrelease 命令（路径已通过环境变量添加）
           lrelease ./i18n/myapp_en.ts -qm ./i18n/myapp_en.qm
