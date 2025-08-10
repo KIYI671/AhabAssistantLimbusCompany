@@ -37,20 +37,8 @@ jobs:
           # 执行 lrelease 命令（路径已通过环境变量添加）
           lrelease ./i18n/myapp_en.ts -qm ./i18n/myapp_en.qm
 
-      # 步骤 5：检查 .qm 文件是否有实际变更（避免空提交）
-      - name: Check if .qm file changed
-        id: check-changes
-        run: |
-          # 比较当前 .qm 文件与上一次提交的版本
-          if git diff --quiet HEAD^ HEAD -- ./i18n/myapp_en.qm; then
-            echo "QM file has no changes. Skipping commit."
-            exit 1  # 无变更时退出，跳过后续提交步骤
-          fi
-        continue-on-error: true  # 允许此步骤失败（无变更时）
-
-      # 步骤 6：提交并推送 .qm 文件（仅当有变更时）
+      # 步骤 5：提交并推送 .qm 文件
       - name: Commit and push .qm file
-        if: steps.check-changes.outcome == 'success'  # 仅当有变更时执行
         run: |
           git add ./i18n/myapp_en.qm
           git commit -m "i18n: Update myapp_en.qm from myapp_en.ts"
