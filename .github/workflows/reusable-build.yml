@@ -40,7 +40,7 @@ jobs:
       - name: Install Qt
         uses: jurplel/install-qt-action@v4
         with:
-          version: '5.15.5'
+          version: '5.15.*'
           target: 'desktop'  # 目标平台（桌面端）
 
       # 生成 .qm 翻译文件
