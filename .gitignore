@@ -11,3 +11,4 @@ theme_pack_list.yaml
 logs
 pythonlogs
 i18n/myapp_zh_CN.ts
+i18n/myapp_en.qm

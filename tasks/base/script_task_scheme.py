@@ -91,11 +91,12 @@ def script_task() -> None | int:
     # 获取（启动）游戏对游戏窗口进行设置
     init_game()
 
-    global pic_path  # 防止被认为局部变量
+    from utils import pic_path
     if cfg.language_in_game == "zh_cn":
         pic_path.insert(0, "zh_cn")
     elif cfg.language_in_game == "en":
-        pic_path = ["share", "en"]  # 不用删除怕以后出什么bug
+        while pic_path[0] != "share":
+            pic_path.pop(0)
 
     if cfg.resonate_with_Ahab:
         random_number = random.randint(1, 4)

@@ -365,6 +365,7 @@ class PageMirror(PageCard):
         self.save_rewards = BaseCheckBox(
             "save_rewards", None,
             QT_TRANSLATE_NOOP("BaseCheckBox", "保存困牢奖励"),
+            tips=QT_TRANSLATE_NOOP("BaseCheckBox", "仅在进行困难镜牢时生效，普通难度不生效"),
             center=False
         )
         self.hard_mirror_single_bonuses = BaseCheckBox(

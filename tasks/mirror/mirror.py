@@ -379,11 +379,14 @@ class Mirror:
                     continue
             else:
                 if self.hard_switch and cfg.save_rewards:
-                    pos = auto.find_element("mirror/claim_reward/claim_rewards_assets.png")
+                    auto.click_element("mirror/claim_reward/claim_rewards_assets.png")
+                    sleep(1)
+                    pos = auto.find_element("mirror/claim_reward/use_enkephalin_assets.png", take_screenshot=True)
                     if pos:
-                        auto.click_element(pos[0] - 300 * (cfg.set_win_size / 1440), pos[1])
+                        auto.mouse_click(pos[0] - 300 * (cfg.set_win_size / 1440), pos[1])
                     continue
                 elif auto.click_element("mirror/claim_reward/claim_rewards_assets.png"):
+                    sleep(1)
                     # TODO: 统计获取的coins
                     continue
             if auto.click_element("mirror/claim_reward/use_enkephalin_assets.png", threshold=0.75):  # 降低识别阈值
