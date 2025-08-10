@@ -10,6 +10,7 @@ import win32process
 from PyQt5.QtCore import QThread, pyqtSignal, QMutex
 from playsound3 import playsound
 
+from module.ALI import auto_switch_language_in_game
 from module.automation import auto
 from module.config import cfg
 from module.decorator.decorator import begin_and_finish_time_log
@@ -25,7 +26,7 @@ from tasks.daily.luxcavation import EXP_luxcavation, thread_luxcavation
 from tasks.mirror.mirror import Mirror
 from tasks.teams.team_formation import select_battle_team
 from utils.utils import get_day_of_week, calculate_the_teams
-
+from utils import pic_path
 
 @begin_and_finish_time_log(task_name="一次经验本")
 # 一次经验本的过程
@@ -91,7 +92,18 @@ def script_task() -> None | int:
     # 获取（启动）游戏对游戏窗口进行设置
     init_game()
 
-    from utils import pic_path
+    
+    # 自动更改语言, 如果不支持则直接退出
+    if cfg.experimental_auto_lang:
+        ret = auto_switch_language_in_game(screen.handle._hWnd)
+        if ret == 2:
+            log.INFO("请切换游戏内语言并重启游戏后再试")
+            return
+    else:
+        if cfg.language_in_game == "-":
+            log.WARNING("自动切换语言已关闭但是并未设置语言! 请手动设置!")
+            return
+
     if cfg.language_in_game == "zh_cn":
         pic_path.insert(0, "zh_cn")
     elif cfg.language_in_game == "en":

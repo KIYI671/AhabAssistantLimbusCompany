@@ -159,6 +159,19 @@ class SettingInterface(ScrollArea):
             QT_TRANSLATE_NOOP("BasePrimaryPushSettingCard", '帮助我们改进 AhabAssistantLimbusCompany')
         )
 
+        self.experimental_group = BaseSettingCardGroup(
+            QT_TRANSLATE_NOOP("BaseSettingCardGroup", "实验性内容"),
+            self.scroll_widget
+        )
+
+        self.auto_lang_card = SwitchSettingCard(
+            FIF.DEVELOPER_TOOLS,
+            QT_TRANSLATE_NOOP("SwitchSettingCard", '自动检测并切换游戏语言'),
+            "",
+            config_name="experimental_auto_lang",
+            parent=self.experimental_group
+        )
+
     def __initLayout(self):
         self.game_setting_group.addSettingCard(self.game_setting_card)
 
@@ -178,12 +191,15 @@ class SettingInterface(ScrollArea):
         self.about_group.addSettingCard(self.qq_group_card)
         self.about_group.addSettingCard(self.feedback_card)
 
+        self.experimental_group.addSettingCard(self.auto_lang_card)
+
         self.expand_layout.addWidget(self.game_setting_group)
         self.expand_layout.addWidget(self.game_path_group)
         self.expand_layout.addWidget(self.personal_group)
         self.expand_layout.addWidget(self.update_group)
         self.expand_layout.addWidget(self.logs_group)
         self.expand_layout.addWidget(self.about_group)
+        self.expand_layout.addWidget(self.experimental_group)
 
     def set_style_sheet(self):
         self.setStyleSheet("""
@@ -201,6 +217,7 @@ class SettingInterface(ScrollArea):
         self.open_logs_card.clicked.connect(self.__onOpenLogsCardClicked)
 
         self.zoom_card.valueChanged.connect(self.__onZoomCardValueChanged)
+        self.auto_lang_card.switchButton.checkedChanged.connect(self.__onAutoLangCardChecked)
 
         self.github_card.clicked.connect(self.__openUrl("https://github.com/KIYI671/AhabAssistantLimbusCompany"))
         self.qq_group_card.clicked.connect(self.__openUrl("https://qm.qq.com/q/SdgSRPrssg"))
@@ -229,6 +246,22 @@ class SettingInterface(ScrollArea):
             parent=self
         )
         bar.retranslateUi()
+
+    def __onAutoLangCardChecked(self, Checked):
+        bar = BaseInfoBar.success(
+            title=QT_TRANSLATE_NOOP("BaseInfoBar", '更改将在重新启动后生效'),
+            content='',
+            orient=Qt.Horizontal,
+            isClosable=True,
+            position=InfoBarPosition.BOTTOM_RIGHT,
+            duration=5000,
+            parent=self
+        )
+        bar.retranslateUi()
+        if Checked:
+            cfg.set_value("language_in_game", "-")
+        else:
+            cfg.set_value("language_in_game", "en")
 
     def __openUrl(self, url):
         return lambda: QDesktopServices.openUrl(QUrl(url))
