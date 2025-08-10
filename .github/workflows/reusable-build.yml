@@ -38,9 +38,11 @@ jobs:
 
       # 安装 Qt 工具（包含 lrelease）
       - name: Install Qt
-        uses: actions/setup-qt@v3
+        uses: qt-actions/setup-qt@v2  # 使用 Qt 官方 Action
         with:
-          qt-version: '5.15.5'
+          version: '5.15.5'
+          target: 'desktop'  # 目标平台（桌面端）
+          arch: 'x64'        # 架构（Windows 推荐 x64）
 
       # 生成 .qm 翻译文件
       - name: Generate .qm translation file
