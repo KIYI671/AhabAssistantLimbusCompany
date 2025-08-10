@@ -5,6 +5,7 @@ on:
   push:
     paths:
       - 'i18n/myapp_en.ts'
+    tags-ignore: [ '**' ]  # 忽略所有Tag推送
 
 jobs:
   generate-and-commit-qm:
