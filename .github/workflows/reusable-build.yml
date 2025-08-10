@@ -30,10 +30,21 @@ jobs:
           pip install -r requirements.txt
           pip install pyinstaller
 
+      # 注入版本号
       - name: Inject version number
         run: |
           $filePath = "assets/config/version.txt"
           "${{ inputs.version }}" | Set-Content $filePath
+
+      # 安装 Qt 工具（包含 lrelease）
+      - name: Install Qt
+        uses: actions/setup-qt@v3
+        with:
+          qt-version: '5.15.5'
+
+      # 生成 .qm 翻译文件
+      - name: Generate .qm translation file
+        run: lrelease .\i18n\myapp_en.ts  # 确保路径与实际 .ts 文件位置一致
 
 
       # 打包项目
