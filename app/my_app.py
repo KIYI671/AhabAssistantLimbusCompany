@@ -216,8 +216,8 @@ class MainWindow(FramelessWindow):
 
     def download_and_install(self, file_name):
         messages_box = MessageBoxConfirm(
-            "更新提醒",
-            "下载已经完成，是否开始更新",
+            self.tr("更新提醒"),
+            self.tr("下载已经完成，是否开始更新"),
             self.window()
         )
         if messages_box.exec_():
