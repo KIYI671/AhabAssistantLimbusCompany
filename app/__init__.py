@@ -22,7 +22,6 @@ set_win_size_options = {"1920*1080": 1080, "2560*1440": 1440, "1280*720": 720, "
                         "3840*2160": 2160}
 set_win_position_options = {QT_TRANSLATE_NOOP("BaseComboBox", "左上角（0，0）"): True}
 set_reduce_miscontact_options = {QT_TRANSLATE_NOOP("BaseComboBox", '是'): True}
-set_language_options = {'English': 'en', '简体中文': 'zh_cn'}
 set_lunacy_to_enkephalin_options = {
     QT_TRANSLATE_NOOP("BaseComboBox", "不换"): 0, QT_TRANSLATE_NOOP("BaseComboBox", "换第一次"): 1,
     QT_TRANSLATE_NOOP("BaseComboBox", "换第二次"): 2, QT_TRANSLATE_NOOP("BaseComboBox", "换第三次"): 3

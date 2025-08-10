@@ -13,7 +13,7 @@ from app import *
 from app.base_combination import LabelWithComboBox, LabelWithSpinBox, MirrorTeamCombination, \
     MirrorSpinBox
 from app.base_tools import BaseCheckBox
-from app.language_manager import LanguageManager
+from app.language_manager import LanguageManager, SUPPORTED_GAME_LANG_NAME
 from module.config import cfg
 from .markdown_it_imgdiv import imgdiv_plugin, render_div_open, render_div_close
 
@@ -102,11 +102,21 @@ class PageSetWindows(PageCard):
             "set_recovery_window",
             set_reduce_miscontact_options
         )
-        self.language_in_game = LabelWithComboBox(
-            QT_TRANSLATE_NOOP("LabelWithComboBox", "游戏使用语言"),
-            "language_in_game",
-            set_language_options
-        )
+        if cfg.experimental_auto_lang:
+            self.language_in_game = LabelWithComboBox(
+                QT_TRANSLATE_NOOP("LabelWithComboBox", "游戏使用语言"),
+                "language_in_game",
+                SUPPORTED_GAME_LANG_NAME
+            )
+
+        else:
+            temp_dict = SUPPORTED_GAME_LANG_NAME
+            temp_dict.pop("(实验性功能) 自动识别")
+            self.language_in_game = LabelWithComboBox(
+                QT_TRANSLATE_NOOP("LabelWithComboBox", "游戏使用语言"),
+                "language_in_game",
+                temp_dict
+            )
 
         self.screenshot_interval = LabelWithSpinBox(
             QT_TRANSLATE_NOOP("LabelWithSpinBox", "截图间隔"),

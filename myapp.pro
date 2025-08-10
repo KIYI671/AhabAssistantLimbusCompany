@@ -9,9 +9,8 @@ SOURCES = main.py \
           app/base_combination.py \
           app/card/messagebox_custom.py \
           app/base_tools.py \
+          app/language_manager.py \
           module/update/check_update.py \
-          
-          
+          module/ALI/autoLangIdentification.py \ 
 
-TRANSLATIONS = i18n/myapp_en.ts \
-               i18n/myapp_zh_CN.ts
+TRANSLATIONS = i18n/myapp_en.ts

@@ -1,4 +1,4 @@
-from PyQt5.QtCore import QTranslator, QLocale, QLibraryInfo, QTimer
+from PyQt5.QtCore import QTranslator, QLocale, QLibraryInfo, QT_TRANSLATE_NOOP
 
 from PyQt5.QtWidgets import QApplication
 
@@ -14,27 +14,45 @@ SUPPORTED_LANG_CODE = {
     "zh_cn": "简体中文",  # 暂时是zh_cn 等之后全局替换
     "en": "English",
 }
+"""
+- 内容为UI支持的语言
+- 键为语言**代码**, 值为对应名称
+"""
 
 # 反转字典，方便设置界面显示语言名称
 SUPPORTED_LANG_NAME = {v: k for k, v in SUPPORTED_LANG_CODE.items()}
+"""
+- 内容为UI支持的语言
+- 键为对语言**名称**, 值为对应代码
+"""
+SUPPORTED_GAME_LANG_CODE = {
+    "-": QT_TRANSLATE_NOOP("BaseComboBox", "(实验性功能) 自动识别"),
+    "en": "English",
+    "zh_cn": "LLC_简体中文",
+}
+"""
+- 内容为图像识别支持的语言
+- 键为语言**代码**, 值为对应名称
+"""
 
+# 反转字典，方便设置界面显示语言名称
+SUPPORTED_GAME_LANG_NAME = {v: k for k, v in SUPPORTED_GAME_LANG_CODE.items()}
+"""
+- 内容为图像识别支持的语言
+- 键为对语言**名称**, 值为对应代码
+"""
 retranslateUi = "retranslateUi"
+"""触发的控件方法名称"""
 
 
 class LanguageManager(metaclass=SingletonMeta):
-    """语言管理器
+    """### 语言管理器
     ---
     \n通过`register_component(cls)`可以直接在对应文件下注册类
     \n通过`set_language`会触发注册过的类的`retranslateUi`方法, 如果该方法需要参数, 会且仅会传入一个参数, lang_code: `str`
-    \n该文件下(不是本类)有两个全局变量
-    - SUPPORTED_LANG_CODE: `dict`
-        - 键为语言**代码**, 值为对应名称
-    - SUPPORTED_LANG_NAME: `dict`
-        - 键为对语言**名称**, 值为对应代码
     """
 
     def __init__(self):
-
         self.app = QApplication.instance()
         self.translatable_components = []  # 存储所有需要翻译的组件
         self.settings_language = cfg.language_in_program
@@ -82,7 +100,7 @@ class LanguageManager(metaclass=SingletonMeta):
         if user_lang in SUPPORTED_LANG_CODE:
             return user_lang
 
-        main_lang = user_lang.split('_')[0]  # 截取主要语言代码
+        main_lang = user_lang.split("_")[0]  # 截取主要语言代码
 
         if main_lang in SUPPORTED_LANG_CODE:
             return main_lang
@@ -91,10 +109,9 @@ class LanguageManager(metaclass=SingletonMeta):
             if lang_code.startswith(main_lang):
                 return lang_code
 
-        return 'en'  # 默认英文
+        return "en"  # 默认英文
 
     def reload_translator(self, lang_code=None):
-
         if lang_code is None:
             lang_code = self.current_lang
 
@@ -105,13 +122,13 @@ class LanguageManager(metaclass=SingletonMeta):
         self.qt_translator = QTranslator()
         qt_path = QLibraryInfo.location(QLibraryInfo.TranslationsPath)
         if self.qt_translator.load(f"qt_{lang_code}", qt_path):
-            self.app.installTranslator(self.qt_translator)
+            self.app.installTranslator(self.qt_translator)  # type: ignore
 
         # 加载应用翻译
         self.app_translator = QTranslator()
         ts_path = "i18n"
         if self.app_translator.load(f"myapp_{lang_code}", ts_path):
-            self.app.installTranslator(self.app_translator)
+            self.app.installTranslator(self.app_translator)  # type: ignore
 
     def set_language(self, lang_code):
         """设置应用语言"""
@@ -140,7 +157,9 @@ class LanguageManager(metaclass=SingletonMeta):
                     if self.method_needs_args(getattr(component, retranslateUi)):
                         if lang_code is None:
                             component_name = self.check_component_name(component)
-                            raise ValueError(f"component {component_name}.{retranslateUi} 需要参数 但是为空")
+                            raise ValueError(
+                                f"component {component_name}.{retranslateUi} 需要参数 但是为空"
+                            )
                         component.retranslateUi(lang_code)
                     else:
                         component.retranslateUi()
@@ -158,10 +177,12 @@ class LanguageManager(metaclass=SingletonMeta):
         required_params = []
 
         for param in parameters.values():
-            if param.default == inspect.Parameter.empty:  # 没有默认值
-                if param.kind not in (inspect.Parameter.VAR_POSITIONAL, inspect.Parameter.VAR_KEYWORD):
-                    # 排除可变参数
-                    required_params.append(param)
+            if param.default == inspect.Parameter.empty and param.kind not in (
+                inspect.Parameter.VAR_POSITIONAL,
+                inspect.Parameter.VAR_KEYWORD,
+            ):
+                # 排除可变参数
+                required_params.append(param)
 
         if required_params:
             if required_params[0].name == "self" or required_params[0].name == "cls":
@@ -170,7 +191,6 @@ class LanguageManager(metaclass=SingletonMeta):
         return len(required_params) > 0
 
     def check_component_name(self, component) -> str:
-
         if component.objectName():
             return component.objectName()
         else:
