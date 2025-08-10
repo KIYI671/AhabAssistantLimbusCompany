@@ -1,9 +1,13 @@
+import os
+import platform
 import time
 from time import sleep
 
-import pyautogui
+import psutil
+import win32process
 
 from module.automation import auto
+from module.config import cfg
 from module.logger import log
 
 
@@ -13,8 +17,26 @@ def retry():
         now_time = time.time()
         if now_time - start_time > 45:
             log.INFO("已卡死在retry超过45秒，尝试关闭重启游戏")
-            pyautogui.hotkey('alt', 'f4')
+            if platform.system() == "Windows":
+                from module.game_and_screen import screen
+                _, pid = win32process.GetWindowThreadProcessId(screen.handle._hWnd)
+                os.system(f'taskkill /F /PID {pid}')
             sleep(10)
+            while True:
+                kill = False
+                for proc in psutil.process_iter(['name']):
+                    try:
+                        # 获取进程的可执行文件名（如 "notepad.exe"）
+                        proc_name = proc.info['name']
+                        # 精确匹配进程名（区分大小写，取决于系统）
+                        if cfg.game_process_name in proc_name:
+                            kill = True
+                            break
+                    except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
+                        # 忽略已终止、无权限或僵尸进程
+                        continue
+                if kill:
+                    break
             restart_game()
             return False
         # 自动截图

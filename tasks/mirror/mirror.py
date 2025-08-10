@@ -151,8 +151,8 @@ class Mirror:
             if auto.find_element("mirror/claim_reward/claim_rewards_assets.png") and auto.find_element(
                     "mirror/claim_reward/complete_mirror_100%_assets.png"):
                 break
-            if auto.find_element("mirror/claim_reward/enkephalin_assets.png", threshold=0.9):
-                continue
+            if auto.find_element("mirror/claim_reward/use_enkephalin_assets.png", threshold=0.9, model='clam'):
+                break
 
             # 选择楼层主题包的情况
             if auto.find_element("mirror/theme_pack/feature_theme_pack_assets.png"):
@@ -353,7 +353,7 @@ class Mirror:
                 auto.mouse_to_blank()
                 continue
             if not auto.find_element(
-                    "mirror/claim_reward/complete_mirror_100%_assets.png") and not failed and not cfg.flood_3_exit:
+                    "mirror/claim_reward/complete_mirror_100%_assets.png") and failed is False and cfg.flood_3_exit is True:
                 failed = True
             # 如果回到主界面，退出循环
             if auto.find_element("home/drive_assets.png"):
@@ -372,22 +372,25 @@ class Mirror:
                     for _ in range(len(bonuses) - 1):
                         position = bonuses.pop(-1)
                         auto.mouse_click(position[0], position[1])
-            if auto.click_element("mirror/claim_reward/claim_rewards_confirm_assets.png", threshold=0.75):
-                continue
-            if auto.click_element("mirror/claim_reward/enkephalin_assets.png", threshold=0.75):  # 降低识别阈值
+            if auto.click_element("mirror/claim_reward/claim_rewards_confirm_assets.png", threshold=0.75, model='clam'):
                 continue
             if failed:
                 if auto.click_element("mirror/claim_reward/claim_forfeit_assets.png"):
                     continue
             else:
                 if self.hard_switch and cfg.save_rewards:
-                    pos = auto.find_element("mirror/claim_reward/claim_rewards_assets.png")
+                    auto.click_element("mirror/claim_reward/claim_rewards_assets.png")
+                    sleep(1)
+                    pos = auto.find_element("mirror/claim_reward/use_enkephalin_assets.png", take_screenshot=True)
                     if pos:
-                        auto.click_element(pos[0] - 300 * (cfg.set_win_size / 1440), pos[1])
+                        auto.mouse_click(pos[0] - 300 * (cfg.set_win_size / 1440), pos[1])
                     continue
                 elif auto.click_element("mirror/claim_reward/claim_rewards_assets.png"):
+                    sleep(1)
                     # TODO: 统计获取的coins
                     continue
+            if auto.click_element("mirror/claim_reward/use_enkephalin_assets.png", threshold=0.75):  # 降低识别阈值
+                continue
             # 处理周年活动弹出的窗口
             if auto.click_element("home/close_anniversary_event_assets.png"):
                 continue

@@ -57,7 +57,7 @@
         <translation>Save hard mirror rewards</translation>
     </message>
     <message>
-        <location filename="../app/page_card.py" line="370"/>
+        <location filename="../app/page_card.py" line="371"/>
         <source>困牢单次加成</source>
         <translation>Hard mirror single bonus</translation>
     </message>
@@ -180,6 +180,11 @@
         <location filename="../app/page_card.py" line="349"/>
         <source>仅本次运行期间有效，重启AALC后失效</source>
         <translation>Only effective for this run, invalid after restart</translation>
+    </message>
+    <message>
+        <location filename="../app/page_card.py" line="365"/>
+        <source>仅在进行困难镜牢时生效，普通难度不生效</source>
+        <translation>Only effective for hard mirror, ineffective for normal mirror</translation>
     </message>
 </context>
 <context>
@@ -1017,7 +1022,7 @@
 <context>
     <name>MessageBoxEdit</name>
     <message>
-        <location filename="../app/base_combination.py" line="214"/>
+        <location filename="../app/base_combination.py" line="213"/>
         <source>设置备注名</source>
         <translation>Set a Custom Name</translation>
     </message>
@@ -1082,7 +1087,7 @@
 <context>
     <name>MirrorTeamCombination</name>
     <message>
-        <location filename="../app/base_combination.py" line="234"/>
+        <location filename="../app/base_combination.py" line="233"/>
         <source>备注名</source>
         <translation>Nickname</translation>
     </message>
@@ -1092,7 +1097,7 @@
         <translation>Team1</translation>
     </message>
     <message>
-        <location filename="../app/page_card.py" line="406"/>
+        <location filename="../app/page_card.py" line="407"/>
         <source>编队</source>
         <translation>Team</translation>
     </message>
@@ -1165,7 +1170,7 @@
         <translation>Mirror Chyan CDK</translation>
     </message>
     <message>
-        <location filename="../app/base_combination.py" line="428"/>
+        <location filename="../app/base_combination.py" line="427"/>
         <source>获取 CDK</source>
         <translation>Get CDK</translation>
     </message>
@@ -1211,12 +1216,12 @@
 <context>
     <name>SwitchSettingCard</name>
     <message>
-        <location filename="../app/base_combination.py" line="467"/>
+        <location filename="../app/base_combination.py" line="466"/>
         <source>关</source>
         <translation>OFF</translation>
     </message>
     <message>
-        <location filename="../app/base_combination.py" line="467"/>
+        <location filename="../app/base_combination.py" line="466"/>
         <source>开</source>
         <translation>ON</translation>
     </message>

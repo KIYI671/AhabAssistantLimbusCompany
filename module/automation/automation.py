@@ -24,8 +24,6 @@ class Automation(metaclass=SingletonMeta):
         self.screenshot = None
         self.init_input()
         self.img_cache = {}
-        self.img_cache_language = cfg.get_value("language_in_game")
-        self.img_cache_winsize = cfg.get_value("set_win_size")
         self.last_screenshot_time = 0
         self.last_click_time = 0
         self.model = 'clam'
@@ -304,24 +302,14 @@ class Automation(metaclass=SingletonMeta):
                 self.logger.ERROR(f"匹配图片特征失败:{e}")
             return None
 
-    def _clear_img_cache(self):
+    def clear_img_cache(self):
         """清除图片缓存"""
         self.img_cache.clear()
         gc.collect()  # 强制垃圾回收，清理内存
         log.DEBUG("图片缓存已清除")
 
-    def _check_cache_available(self):
-        if self.img_cache_language != cfg.get_value(
-            "language_in_game"
-        ) or self.img_cache_winsize != cfg.get_value("set_win_size"):
-            self._clear_img_cache()
-            self.img_cache_language = cfg.get_value("language_in_game")
-            self.img_cache_winsize = cfg.get_value("set_win_size")
-
     def find_image_element(self, target, threshold, cacheable=True, model='clam', my_crop=None):
         try:
-            if cacheable:
-                self._check_cache_available()
             if cacheable and target in self.img_cache:
                 bbox = self.img_cache[target]['bbox']
                 template = self.img_cache[target]['template']
