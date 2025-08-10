@@ -1,7 +1,7 @@
 import sys
 
 from PyQt5 import QtWidgets
-from PyQt5.QtCore import QFile, QTextStream, QTimer, QT_TRANSLATE_NOOP
+from PyQt5.QtCore import QFile, QTextStream, QTimer
 from PyQt5.QtWidgets import QApplication
 from pynput import keyboard
 from qfluentwidgets import TextEdit
@@ -9,6 +9,7 @@ from qfluentwidgets.window.stacked_widget import StackedWidget
 
 from app.base_combination import *
 from app.base_tools import *
+from app.language_manager import LanguageManager
 from app.page_card import PageSetWindows, PageDailyTask, PageLunacyToEnkephalin, PageGetPrize, PageMirror
 from app.team_setting_card import TeamSettingCard
 from module.automation import auto
@@ -16,7 +17,6 @@ from module.game_and_screen import screen
 from module.logger import log
 from module.ocr import ocr
 from tasks.base.script_task_scheme import my_script_task
-from app.language_manager import LanguageManager
 
 
 class FarmingInterface(QWidget):
@@ -190,7 +190,6 @@ class FarmingInterfaceLeft(QWidget):
         log.DEBUG("即将关闭AALC")
         sys.exit(0)
 
-
     def start_and_stop_tasks(self):
         # 检测是否有未保存的镜牢队伍设置
         if self.parent.parent.findChild(TeamSettingCard):
@@ -211,6 +210,7 @@ class FarmingInterfaceLeft(QWidget):
             if self.my_script and self.my_script.isRunning():
                 self.stop_script()
                 ocr.exit_ocr()
+                auto.clear_img_cache()
 
     def _disable_setting(self, parent):
         for child in parent.children():

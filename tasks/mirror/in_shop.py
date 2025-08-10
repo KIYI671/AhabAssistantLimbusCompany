@@ -926,10 +926,6 @@ class Shop:
 
     # 在商店的处理
     def in_shop(self, layer):
-        # 忽略楼层商店的情况
-        if layer <= 5 and self.ignore_shop[layer - 1]:
-            return
-
         heal = False
         sell = False
         buy = False
@@ -938,6 +934,10 @@ class Shop:
         skill = False
         try:
             while True:
+                # 忽略楼层商店的情况
+                if layer <= 5 and self.ignore_shop[layer - 1]:
+                    break
+
                 # 自动截图
                 if auto.take_screenshot() is None:
                     continue

@@ -56,7 +56,8 @@ def select_battle_team(num):
     if position := auto.find_element("battle/teams_assets.png"):
         my_position[0] += position[0]
         my_position[1] += position[1]
-        auto.mouse_drag(my_position[0], my_position[1], dy=1333 * scale, drag_time=0.3)
+        for _ in range(2):
+            auto.mouse_drag(my_position[0], my_position[1], dy=1333 * scale, drag_time=0.3)
         sleep(0.75)
         first_position = [position[0], position[1] + 70 * scale]
         if cfg.select_team_by_order:

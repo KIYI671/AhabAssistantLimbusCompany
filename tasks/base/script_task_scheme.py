@@ -1,12 +1,12 @@
-import ctypes
+import os
 import os
 import platform
 import random
-import win32process
 from sys import exc_info
 from time import sleep
 from traceback import format_exception
 
+import win32process
 from PyQt5.QtCore import QThread, pyqtSignal, QMutex
 from playsound3 import playsound
 
@@ -24,7 +24,6 @@ from tasks.daily.get_prize import get_pass_prize, get_mail_prize
 from tasks.daily.luxcavation import EXP_luxcavation, thread_luxcavation
 from tasks.mirror.mirror import Mirror
 from tasks.teams.team_formation import select_battle_team
-from utils import pic_path
 from utils.utils import get_day_of_week, calculate_the_teams
 
 
@@ -88,15 +87,15 @@ def init_game():
         screen.set_win()
 
 
-def script_task() -> None|int:
+def script_task() -> None | int:
     # 获取（启动）游戏对游戏窗口进行设置
     init_game()
 
-    global pic_path # 防止被认为局部变量
+    global pic_path  # 防止被认为局部变量
     if cfg.language_in_game == "zh_cn":
         pic_path.insert(0, "zh_cn")
     elif cfg.language_in_game == "en":
-        pic_path = ["share", "en"] # 不用删除怕以后出什么bug
+        pic_path = ["share", "en"]  # 不用删除怕以后出什么bug
 
     if cfg.resonate_with_Ahab:
         random_number = random.randint(1, 4)
@@ -194,7 +193,7 @@ def script_task() -> None|int:
 
         finally:
             if after_completion == 5 or after_completion == 6:
-                return 0 # 正常退出信号
+                return 0  # 正常退出信号
 
 
 class my_script_task(QThread):
@@ -255,6 +254,7 @@ class my_script_task(QThread):
             ret = script_task()
             if ret == 0:
                 self.kill_signal.emit()
+            auto.clear_img_cache()
         except Exception as e:
             log.ERROR(f"出现错误: {e}")
             self.exc_traceback = ''.join(
