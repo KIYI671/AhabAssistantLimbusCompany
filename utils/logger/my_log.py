@@ -5,14 +5,15 @@ import inspect
 import re
 from pathlib import Path
 
+from PyQt5.QtWidgets import QApplication
 from utils.singletonmeta import SingletonMeta
+from nb_log import get_logger
 
 # 修复nb_log的输出bug
 for _name in ('stdin', 'stdout', 'stderr'):
     if getattr(sys, _name) is None:
         setattr(sys, _name, open(os.devnull, 'r' if _name == 'stdin' else 'w', encoding='utf-8', errors='ignore'))
 
-from nb_log import get_logger
 
 
 class Logger(metaclass=SingletonMeta):
@@ -56,7 +57,8 @@ class Logger(metaclass=SingletonMeta):
                            log_path='./logs',
                            log_file_handler_type=3,
                            formatter_template=logging.Formatter(
-                               '%(asctime)s - %(message)s', "%H:%M:%S"))
+                               '%(asctime)s - %(message)s', "%H:%M:%S"))    
+    
 
     def __init__(self):
         if Logger._project_root is None:
@@ -67,6 +69,18 @@ class Logger(metaclass=SingletonMeta):
             re.compile(r'.*[\\/]decorator[\\/].*\.py$', re.IGNORECASE),  # 匹配所有 decorator 文件夹下的py文件
         ]
 
+        # 保存原始方法并创建包装方法
+        original_info = self.my_logger.info  # 直接获取原始方法
+        
+        # 使用闭包捕获原始方法
+        def wrapped_info(msg, *args, **kwargs):
+            translated_msg = self._translate_logger_message(msg)
+            translated_msg = translated_msg.format(*args, **kwargs) if args or kwargs else translated_msg
+            return original_info(translated_msg)
+        
+        # 替换实例方法, 使其支持format语法
+        self.my_logger.info = wrapped_info
+
     def _detect_project_root(self):
 
         # 打包环境下, 获取项目根目录
@@ -76,6 +90,16 @@ class Logger(metaclass=SingletonMeta):
 
         # 使用当前工作目录
         Logger._project_root = Path.cwd()
+
+
+    def _translate_logger_message(self, msg: str) -> str:
+        """
+        翻译日志消息
+        :param msg: 日志消息
+        :return: 翻译后的日志消息
+        """
+
+        return QApplication.translate("Logger", msg)
 
     def _get_caller_info(self) -> tuple[str, int]:
         """
@@ -122,37 +146,37 @@ class Logger(metaclass=SingletonMeta):
         extra = {'caller_path': path, 'caller_line': line}
         self.debug_logger.debug(msg, extra=extra)
 
-    def INFO(self, msg):
+    def INFO(self, msg, *args, **kwargs):
         path, line = self._get_caller_info()
         extra = {'caller_path': path, 'caller_line': line}
 
         self.debug_logger.info(msg, extra=extra)
         self.info_logger.info(msg, extra=extra)
-        self.my_logger.info(msg)
+        self.my_logger.info(msg, *args, **kwargs)
 
-    def WARNING(self, msg):
+    def WARNING(self, msg, *args, **kwargs):
         path, line = self._get_caller_info()
         extra = {'caller_path': path, 'caller_line': line}
 
         self.debug_logger.warning(msg, extra=extra)
         self.info_logger.warning(msg, extra=extra)
         self.warning_logger.warning(msg, extra=extra)
-        self.my_logger.info(msg)
+        self.my_logger.info(msg, *args, **kwargs)
 
-    def ERROR(self, msg):
+    def ERROR(self, msg, *args, **kwargs):
         path, line = self._get_caller_info()
         extra = {'caller_path': path, 'caller_line': line}
 
         self.debug_logger.error(msg, extra=extra)
         self.info_logger.error(msg, extra=extra)
         self.warning_logger.error(msg, extra=extra)
-        self.my_logger.info(msg)
+        self.my_logger.info(msg, *args, **kwargs)
 
-    def CRITICAL(self, msg):
+    def CRITICAL(self, msg, *args, **kwargs):
         path, line = self._get_caller_info()
         extra = {'caller_path': path, 'caller_line': line}
 
         self.debug_logger.critical(msg, extra=extra)
         self.info_logger.critical(msg, extra=extra)
         self.warning_logger.critical(msg, extra=extra)
-        self.my_logger.info(msg)
+        self.my_logger.info(msg, *args, **kwargs)
