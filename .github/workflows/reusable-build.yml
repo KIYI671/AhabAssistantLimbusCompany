@@ -45,7 +45,13 @@ jobs:
 
       # 生成 .qm 翻译文件
       - name: Generate .qm translation file
-        run: lrelease .\i18n\myapp_en.ts  # 确保路径与实际 .ts 文件位置一致
+        run: |
+          # 使用 PowerShell 批量处理所有 .ts 文件
+          Get-ChildItem -Path .\i18n\*.ts | ForEach-Object {
+              $qmPath = ".\i18n\$($_.BaseName).qm"
+              lrelease $_.FullName -qm $qmPath
+              Write-Host "Generated: $qmPath"
+          }
 
 
       # 打包项目
@@ -58,7 +64,8 @@ jobs:
           cp dist_release/"AALC Updater"* dist_release/AALC/
           cp -r 3rdparty dist_release/AALC/
           cp -r assets dist_release/AALC/
-          cp i18n dist_release/AALC/
+          mkdir dist_release/AALC/i18n
+          mv i18n/*.qm dist_release/AALC/i18n/
           cp LICENSE dist_release/AALC/
           cp README.md dist_release/AALC/
           cd dist_release
