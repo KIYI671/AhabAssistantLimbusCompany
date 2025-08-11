@@ -386,10 +386,10 @@ class BasePrimaryPushSettingCard(PrimaryPushSettingCard):
 
 
 class PushSettingCardMirrorchyan(SettingCard):
-    def __init__(self, text, icon: Union[str, QIcon, FluentIconBase], title, update_callback, config_name, parent=None):
+    def __init__(self, text, icon: Union[str, QIcon, FluentIconBase], title,content, update_callback, config_name, parent=None):
         self.config_value = str(cfg.get_value(config_name))
         self.update_callback = update_callback
-        super().__init__(icon, title, "", parent)
+        super().__init__(icon, title, content, parent)
 
         self.title = title
         self.button_text = text

@@ -443,17 +443,17 @@
 <context>
     <name>BaseInfoBar</name>
     <message>
-        <location filename="../module/update/check_update.py" line="239"/>
+        <location filename="../module/update/check_update.py" line="292"/>
         <source>当前是最新版本(＾∀＾●)</source>
         <translation>Current version is latest (＾∀＾●)</translation>
     </message>
     <message>
-        <location filename="../module/update/check_update.py" line="251"/>
+        <location filename="../module/update/check_update.py" line="304"/>
         <source>检测更新失败(╥╯﹏╰╥)</source>
         <translation>Checking update failed (╥╯﹏╰╥)</translation>
     </message>
     <message>
-        <location filename="../app/setting_interface.py" line="251"/>
+        <location filename="../app/setting_interface.py" line="253"/>
         <source>更改将在重新启动后生效</source>
         <translation>The changes will take effect after the restart</translation>
     </message>
@@ -474,37 +474,37 @@
 <context>
     <name>BasePrimaryPushSettingCard</name>
     <message>
-        <location filename="../app/setting_interface.py" line="132"/>
+        <location filename="../app/setting_interface.py" line="134"/>
         <source>日志</source>
         <translation>Logs</translation>
     </message>
     <message>
-        <location filename="../app/setting_interface.py" line="132"/>
+        <location filename="../app/setting_interface.py" line="134"/>
         <source>打开日志文件夹</source>
         <translation>Open logs folder</translation>
     </message>
     <message>
-        <location filename="../app/setting_interface.py" line="143"/>
+        <location filename="../app/setting_interface.py" line="145"/>
         <source>项目主页</source>
         <translation>Object repo</translation>
     </message>
     <message>
-        <location filename="../app/setting_interface.py" line="149"/>
+        <location filename="../app/setting_interface.py" line="151"/>
         <source>加入群聊</source>
         <translation>Join QQ group</translation>
     </message>
     <message>
-        <location filename="../app/setting_interface.py" line="149"/>
+        <location filename="../app/setting_interface.py" line="151"/>
         <source>QQ群</source>
         <translation>QQ group</translation>
     </message>
     <message>
-        <location filename="../app/setting_interface.py" line="155"/>
+        <location filename="../app/setting_interface.py" line="157"/>
         <source>提供反馈</source>
         <translation>Feedback</translation>
     </message>
     <message>
-        <location filename="../app/setting_interface.py" line="155"/>
+        <location filename="../app/setting_interface.py" line="157"/>
         <source>帮助我们改进 AhabAssistantLimbusCompany</source>
         <translation>Help us to enhance AhabAssistantLimbusCompany</translation>
     </message>
@@ -531,6 +531,11 @@
         <source>自动战斗</source>
         <translation>Auto Battle</translation>
     </message>
+    <message>
+        <location filename="../app/tools_interface.py" line="34"/>
+        <source>这只是一个为你自动按下P键和Enter键的小工具，不要怀抱太多期待</source>
+        <translation>It's just a gadget that automatically presses the P and Enter keys for you, so don't expect too much</translation>
+    </message>
 </context>
 <context>
     <name>BaseSettingCardGroup</name>
@@ -555,12 +560,12 @@
         <translation>Update Settings</translation>
     </message>
     <message>
-        <location filename="../app/setting_interface.py" line="121"/>
+        <location filename="../app/setting_interface.py" line="123"/>
         <source>日志设置</source>
         <translation>logs Settings</translation>
     </message>
     <message>
-        <location filename="../app/setting_interface.py" line="139"/>
+        <location filename="../app/setting_interface.py" line="141"/>
         <source>关于</source>
         <translation>About</translation>
     </message>
@@ -570,7 +575,7 @@
         <translation>Toolbox</translation>
     </message>
     <message>
-        <location filename="../app/setting_interface.py" line="162"/>
+        <location filename="../app/setting_interface.py" line="164"/>
         <source>实验性内容</source>
         <translation>Experimental sections</translation>
     </message>
@@ -772,7 +777,7 @@
     <message>
         <location filename="../app/farming_interface.py" line="246"/>
         <source>开始进行所有任务</source>
-        <translation type="finished">Starting all tasks</translation>
+        <translation type="obsolete">Starting all tasks</translation>
     </message>
 </context>
 <context>
@@ -1006,7 +1011,7 @@
     <message>
         <location filename="../module/ALI/autoLangIdentification.py" line="98"/>
         <source>自动切换失败, 不支持的游戏语言</source>
-        <translation type="finished">Auto switch failed, unsupported game language</translation>
+        <translation>Auto switch failed, unsupported game language</translation>
     </message>
 </context>
 <context>
@@ -1057,12 +1062,12 @@
     <message>
         <location filename="../app/my_app.py" line="218"/>
         <source>更新提醒</source>
-        <translation type="finished">Update Notice</translation>
+        <translation>Update Notice</translation>
     </message>
     <message>
         <location filename="../app/my_app.py" line="218"/>
         <source>下载已经完成，是否开始更新</source>
-        <translation type="finished">Download completed, would you like to start updating</translation>
+        <translation>Download completed, would you like to start updating</translation>
     </message>
 </context>
 <context>
@@ -1220,6 +1225,13 @@
         <source>获取 CDK</source>
         <translation>Get CDK</translation>
     </message>
+    <message>
+        <location filename="../app/setting_interface.py" line="112"/>
+        <source>Mirror酱是一个第三方应用分发平台，用于为github链接不畅的用户提供一个下载渠道，并支持其他多个项目的下载
+AALC自身完全开源且免费，无任何付费内容</source>
+        <translation>Mirror sauce is a third-party app distribution platform used to provide a download channel for users with poor github links and support the download of multiple other projects
+AALC itself is completely open source and free, with no paid content</translation>
+    </message>
 </context>
 <context>
     <name>SettingInterface</name>
@@ -1277,17 +1289,17 @@
         <translation>Join Beta update</translation>
     </message>
     <message>
-        <location filename="../app/setting_interface.py" line="125"/>
+        <location filename="../app/setting_interface.py" line="127"/>
         <source>自动清理日志</source>
         <translation>Auto clear up logs</translation>
     </message>
     <message>
-        <location filename="../app/setting_interface.py" line="125"/>
+        <location filename="../app/setting_interface.py" line="127"/>
         <source>自动清理一周前的日志</source>
         <translation>Auto clear up logs from a week ago</translation>
     </message>
     <message>
-        <location filename="../app/setting_interface.py" line="167"/>
+        <location filename="../app/setting_interface.py" line="169"/>
         <source>自动检测并切换游戏语言</source>
         <translation>Auto identify and switch game language</translation>
     </message>
@@ -1297,7 +1309,7 @@
     <message>
         <location filename="../app/team_setting_card.py" line="61"/>
         <source>自定义设置</source>
-        <translation>Custom settings</translation>
+        <translation type="obsolete">Custom settings</translation>
     </message>
     <message>
         <location filename="../app/team_setting_card.py" line="300"/>
@@ -1439,6 +1451,11 @@
         <source>打击</source>
         <translation>Blunt</translation>
     </message>
+    <message>
+        <location filename="../app/team_setting_card.py" line="61"/>
+        <source>自定义设置（设置存在冲突时，将根据优先级覆盖生效）</source>
+        <translation>Custom Settings (Settings with conflicts will be overridden according to priority)</translation>
+    </message>
 </context>
 <context>
     <name>ToSettingButton</name>
@@ -1463,7 +1480,7 @@
 Update Logs:</translation>
     </message>
     <message>
-        <location filename="../module/update/check_update.py" line="84"/>
+        <location filename="../module/update/check_update.py" line="111"/>
         <source>发现新版本：{Old_version} ——&gt; {New_version}
 更新日志:</source>
         <translation>Found New Version: {Old_version} ——&gt; {New_version}

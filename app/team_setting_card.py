@@ -1,4 +1,4 @@
-from PyQt5.QtCore import Qt, QT_TRANSLATE_NOOP
+from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QFrame, QVBoxLayout, QWidget, QHBoxLayout, QSizePolicy, QGridLayout
 from qfluentwidgets import FluentIcon as FIF, ExpandSettingCard
 from qfluentwidgets import ScrollArea, PrimaryPushButton, PushButton
@@ -7,7 +7,6 @@ from app import *
 from app.base_combination import LabelWithComboBox, SinnerSelect, CheckBoxWithComboBox, CheckBoxWithLineEdit
 from app.base_tools import BaseCheckBox, BaseSettingLayout, BaseLabel, BaseComboBox
 from app.language_manager import LanguageManager
-
 from module.config import cfg
 
 
@@ -58,7 +57,7 @@ class TeamSettingCard(QFrame):
         self.gift_system_list_1 = QHBoxLayout()
         self.gift_system_list_2 = QHBoxLayout()
 
-        self.custom_layout = ExpandSettingCard(icon=FIF.EDIT, title=self.tr("自定义设置"), parent=self)
+        self.custom_layout = ExpandSettingCard(icon=FIF.EDIT, title=self.tr("自定义设置（设置存在冲突时，将根据优先级覆盖生效）"), parent=self)
 
         self.setting_layout = QHBoxLayout()
 

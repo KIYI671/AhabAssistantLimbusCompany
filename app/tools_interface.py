@@ -35,6 +35,7 @@ class ToolsInterface(ScrollArea):
             QT_TRANSLATE_NOOP("BasePushSettingCard", '运行'),
             FIF.CAFE,
             QT_TRANSLATE_NOOP("BasePushSettingCard", "自动战斗"),
+            QT_TRANSLATE_NOOP("BasePushSettingCard", "这只是一个为你自动按下P键和Enter键的小工具，不要怀抱太多期待"),
             parent=self.tools_group
         )
 

@@ -113,6 +113,8 @@ class SettingInterface(ScrollArea):
             QT_TRANSLATE_NOOP("PushSettingCardMirrorchyan", '修改'),
             FIF.BOOK_SHELF,
             QT_TRANSLATE_NOOP("PushSettingCardMirrorchyan", "Mirror 酱 CDK"),
+            QT_TRANSLATE_NOOP("PushSettingCardMirrorchyan",
+                              'Mirror酱是一个第三方应用分发平台，用于为github链接不畅的用户提供一个下载渠道，并支持其他多个项目的下载\nAALC自身完全开源且免费，无任何付费内容'),
             self.parent,
             "mirrorchyan_cdk",
             parent=self.update_group,
