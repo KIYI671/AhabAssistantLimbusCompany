@@ -142,11 +142,11 @@ Users are required to comply with the rules of use and terms of service of the r
 
 ### Start screen
 
-![image](/assets/doc/image/README1.png)
+![image](/assets/doc/image/README1_en.png)
 
 ### The Mirror Dungeon team setup screen 
 
-![image](/assets/doc/image/README2.png)
+![image](/assets/doc/image/README2_en.png)
 
 ---
 ## Acknowledgements

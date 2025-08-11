@@ -141,10 +141,10 @@
 
 ### 开始界面
 
-![image](/assets/doc/image/README1.png)
+![image](/assets/doc/image/README1_zh_CN.png)
 ### 镜牢队伍设置界面
 
-![image](/assets/doc/image/README2.png)
+![image](/assets/doc/image/README2_zh_CN.png)
 
 ---
 ## 致谢
