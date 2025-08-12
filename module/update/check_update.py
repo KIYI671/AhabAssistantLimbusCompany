@@ -5,9 +5,9 @@ import subprocess
 from enum import Enum
 from threading import Thread
 
-from markdown_it import MarkdownIt
 import requests  # 导入requests模块，用于发送HTTP请求
 from PyQt5.QtCore import QThread, pyqtSignal, Qt, QT_TRANSLATE_NOOP
+from markdown_it import MarkdownIt
 from packaging.version import parse
 from qfluentwidgets import InfoBarPosition
 
@@ -70,7 +70,7 @@ class UpdateThread(QThread):
                 return
 
             # 获取最新发布版本的信息
-            data = self.check_update_info()
+            data = self.check_update_info_mirrorchyan()
             version = data['version_name']
             content = self.remove_images_from_markdown(data['release_note'])
             content = re.sub(r"\r\n\r\n\[.*?Mirror酱.*?CDK.*?下载\]\(https?://.*?mirrorchyan\.com[^\)]*\)", "",
@@ -80,7 +80,6 @@ class UpdateThread(QThread):
 
             # 比较当前版本和最新版本，如果最新版本更高，则准备更新
             if parse(version.lstrip('Vv')) > parse(cfg.version.lstrip('Vv')):
-
                 self.title = self.tr("发现新版本：{Old_version} ——> {New_version}\n更新日志:").format(
                     Old_version=cfg.version, New_version=version)
                 self.content = "<style>a {color: #586f50; font-weight: bold;}</style>" + md_renderer.render(content)
@@ -89,13 +88,67 @@ class UpdateThread(QThread):
                 # 如果没有新版本，则发送成功信号
                 self.updateSignal.emit(UpdateStatus.SUCCESS)
         except Exception as e:
-            # 异常处理，发送失败信号
-            log.ERROR(f"更新失败:{e}")
-            self.updateSignal.emit(UpdateStatus.FAILURE)
+            # 记录失败日志，尝试使用GitHub源检查更新
+            log.ERROR(f"从Mirror酱源检查更新失败:{e},尝试使用GitHub源检查更新")
+            try:
+                data = self.check_update_info_github()
+                version = data['tag_name']
+                content = self.remove_images_from_markdown(data['body'])
+                content = re.sub(r"\r\n\r\n\[.*?Mirror酱.*?CDK.*?下载\]\(https?://.*?mirrorchyan\.com[^\)]*\)", "",
+                                 content, flags=re.IGNORECASE)
+                assets_url = self.get_download_url_from_assets(data['assets'])
 
-    def check_update_info(self, cdk=''):
+                if cfg.update_source == "GitHub":
+                    content = content + "\n\n若下载速度较慢，可尝试使用 Mirror酱（设置 → 关于 → 更新源） 高速下载"
+
+                # 如果没有可用的下载 URL，则发送成功信号并返回
+                if assets_url is None:
+                    self.updateSignal.emit(UpdateStatus.SUCCESS)
+                    return
+
+                # 比较当前版本和最新版本，如果最新版本更高，则准备更新
+                if parse(version.lstrip('Vv')) > parse(cfg.version.lstrip('Vv')):
+                    self.title = self.tr("发现新版本：{Old_version} ——> {New_version}\n更新日志:").format(
+                    Old_version=cfg.version, New_version=version)
+                    self.content = "<style>a {color: #586f50; font-weight: bold;}</style>" + md_renderer.render(content)
+                    self.updateSignal.emit(UpdateStatus.UPDATE_AVAILABLE)
+                else:
+                    # 如果没有新版本，则发送成功信号
+                    self.updateSignal.emit(UpdateStatus.SUCCESS)
+            except Exception as e:
+                # 异常处理，发送失败信号
+                log.ERROR(f"Mirror酱源与GitHub源均检查更新失败:{e}")
+                self.updateSignal.emit(UpdateStatus.FAILURE)
+
+    def check_update_info_github(self):
         """
         从 GitHub 获取最新发布版本的信息。
+
+        返回:
+        最新发布版本的信息（JSON 格式）
+        """
+        if not cfg.update_prerelease_enable:
+            response = requests.get(
+                f"https://api.github.com/repos/{self.user}/{self.repo}/releases/latest",
+                timeout=10,
+                headers=cfg.useragent
+            )
+        else:
+            response = requests.get(
+                f"https://api.github.com/repos/{self.user}/{self.repo}/releases",
+                timeout=10,
+                headers=cfg.useragent
+            )
+        response.raise_for_status()
+        # 根据配置决定是否包含预发布版本
+        return response.json()[0] if cfg.update_prerelease_enable else response.json()
+
+    def check_update_info_mirrorchyan(self, cdk=''):
+        """
+        从 mirror酱 获取最新发布版本的信息。
+
+        参数:
+        cdk -- Mirror酱 CDK
 
         返回:
         最新发布版本的信息（JSON 格式）
@@ -155,7 +208,7 @@ class UpdateThread(QThread):
                     self.updateSignal.emit(UpdateStatus.FAILURE)
                     return None
                 # 符合Mirror酱条件
-                response = self.check_update_info(cfg.mirrorchyan_cdk)
+                response = self.check_update_info_mirrorchyan(cfg.mirrorchyan_cdk)
                 if response.status_code == 200:
                     mirrorchyan_data = response.json()
                     if mirrorchyan_data["code"] == 0 and mirrorchyan_data["msg"] == "success":

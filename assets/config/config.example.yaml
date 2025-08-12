@@ -19,7 +19,7 @@ mouse_action_interval: 0.5  # 鼠标操作间隔时间
 resonate_with_Ahab: False # 是否播放亚哈语录
 
 # 实验性功能
-experimental_auto_lang: True # 是否自动修改语言
+experimental_auto_lang: False # 是否自动修改语言
 
 # 自动更新
 check_update: True
@@ -74,7 +74,7 @@ no_weekly_bonuses: False # 不使用每周加成
 flood_3_exit: False # 只打三层
 infinite_dungeons: False # 无限刷牢
 save_rewards: False # 保存奖励不领
-hard_mirror_single_bonuses: True # 困难镜牢使用单次加成
+hard_mirror_single_bonuses: False # 困难镜牢使用单次加成
 teams_be_select_num: 0 # 被选中的队伍数量
 teams_be_select: [ False ] # 被选中的队伍
 teams_order: [ 0 ] # 队伍的顺序

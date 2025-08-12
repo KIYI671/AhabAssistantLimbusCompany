@@ -4,13 +4,9 @@
 
 [简体中文](/assets/doc/zh/FAQ.md) | **English**
 
+[*项目说明*](/README.md) | [*用法详解*](/assets/doc/zh/How_to_use.md) | [*README*](/assets/doc/en/README_EN.md) | [*How To Use*](/assets/doc/en/How_to_use_EN.md)
+
 </div>
-
----
-
-Q: Why doesn't the game start after running the script?
-
-A: The script currently does not have the function to automatically start the game.
 
 ---
 
@@ -53,6 +49,20 @@ A: Check if your computer has enabled night mode. For more details, refer to [th
 Q: I encountered the XXX theme pack, which led to the death of all members. Can I set it not to enter?
 
 A: Yes, you can set it not to enter. Please try [Setting Theme Pack Weight](/README_EN.md#theme-package-weight-setting) on your own.
+
+---
+
+Q: AALC does not automatically select the highest level of EXP and Thread
+
+A: AALC will automatically select the highest level of Luxcavation that you have cleared, so make sure you have cleared the highest level of Luxcavation once
+
+---
+
+Q: Where the numbers are supposed to be displayed in AALC, gibberish is displayed
+
+A: Please check the local language, it is currently known that if you use [Chinese (Simplified Chinese Characters, Hong Kong SAR)], this issue may occur.
+
+This problem does not affect normal use, and can be solved by filling in the numbers by yourself.
 
 ---
 

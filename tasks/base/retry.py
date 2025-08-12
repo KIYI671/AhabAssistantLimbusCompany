@@ -29,7 +29,7 @@ def retry():
                         # 获取进程的可执行文件名（如 "notepad.exe"）
                         proc_name = proc.info['name']
                         # 精确匹配进程名（区分大小写，取决于系统）
-                        if cfg.game_process_name in proc_name:
+                        if not cfg.game_process_name in proc_name:
                             kill = True
                             break
                     except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
