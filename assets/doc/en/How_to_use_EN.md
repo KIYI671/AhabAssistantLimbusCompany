@@ -4,9 +4,17 @@
 
 [简体中文](/assets/doc/zh/How_to_use.md) | **English**
 
+[*项目说明*](/README.md) | [*常见问题*](/assets/doc/zh/FAQ.md) | [*README*](/assets/doc/en/README_EN.md) | [*FAQ_EN*](/assets/doc/en/FAQ_EN.md)
+
 </div>
 
----
+<div align="center">
+
+You can use the **CTRL+Q** keys to terminate the script process during script execution (this may cause problems when the script starts again, which can be solved by restarting the script program)
+
+You can use the **ALT+P** keys to pause the script and the **ALT+R** keys to resume the script
+
+</div>
 
 ---
 

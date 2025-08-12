@@ -4,6 +4,15 @@
 
 **简体中文** | [English](/assets/doc/en/How_to_use_EN.md)
 
+[*项目说明*](/README.md) | [*常见问题*](/assets/doc/zh/FAQ.md) | [*README*](/assets/doc/en/README_EN.md) | [*FAQ_EN*](/assets/doc/en/FAQ_EN.md)
+
+</div>
+
+<div align="center">
+
+在脚本执行过程可以使用 **CTRL+Q** 按键终止脚本进程（此操作可能导致脚本再次启动时出现问题，可以通过重启脚本程序解决）
+
+使用 **ALT+P** 可以暂停脚本，使用 **ALT+R** 可以恢复脚本
 </div>
 
 ---
