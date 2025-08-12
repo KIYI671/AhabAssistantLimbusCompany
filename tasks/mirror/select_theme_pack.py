@@ -22,6 +22,17 @@ def select_theme_pack(hard_switch=False):
             theme_pack_list.update(theme_list.get_value("theme_pack_list_hard_cn"))
     refresh_times = 3
     while True:
+        
+        loop_count -= 1
+        if loop_count < 20:
+            auto.model = "normal"
+        if loop_count < 10:
+            auto.model = 'aggressive'
+        if loop_count < 0:
+            log.ERROR("无法选取主题包,尝试回到初始界面")
+            back_init_menu()
+            break
+
         # 自动截图
         if auto.take_screenshot() is None:
             continue
@@ -100,13 +111,3 @@ def select_theme_pack(hard_switch=False):
                 log.ERROR(f"选择主题包出错:{e},尝试回到初始界面")
                 back_init_menu()
                 break
-
-        loop_count -= 1
-        if loop_count < 20:
-            auto.model = "normal"
-        if loop_count < 10:
-            auto.model = 'aggressive'
-        if loop_count < 0:
-            log.ERROR("无法选取主题包,尝试回到初始界面")
-            back_init_menu()
-            break
