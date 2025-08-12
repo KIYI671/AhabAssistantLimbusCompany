@@ -122,39 +122,43 @@ class Screen(metaclass=SingletonMeta):
             self.logger.ERROR(f"检查屏幕分辨率失败: {e}")
 
     def reset_win(self):
-        hwnd = self.handle._hWnd
-        # 获取窗口的当前样式
-        style = win32gui.GetWindowLong(hwnd, win32con.GWL_STYLE)
-        # 获取窗口的当前扩展样式
-        ex_style = win32gui.GetWindowLong(hwnd, win32con.GWL_EXSTYLE)
+        try:
+            hwnd = self.handle._hWnd
+            # 获取窗口的当前样式
+            style = win32gui.GetWindowLong(hwnd, win32con.GWL_STYLE)
+            # 获取窗口的当前扩展样式
+            ex_style = win32gui.GetWindowLong(hwnd, win32con.GWL_EXSTYLE)
 
-        # 恢复窗口样式：标题栏、大小调整框、最大化按钮
-        style |= win32con.WS_CAPTION | win32con.WS_THICKFRAME | win32con.WS_MAXIMIZEBOX
-        # 应用修改后的样式
-        win32gui.SetWindowLong(hwnd, win32con.GWL_STYLE, style)
+            # 恢复窗口样式：标题栏、大小调整框、最大化按钮
+            style |= win32con.WS_CAPTION | win32con.WS_THICKFRAME | win32con.WS_MAXIMIZEBOX
+            # 应用修改后的样式
+            win32gui.SetWindowLong(hwnd, win32con.GWL_STYLE, style)
 
-        # 取消始终置顶
-        ex_style &= ~win32con.WS_EX_TOPMOST
-        # 应用修改后的扩展样式
-        win32gui.SetWindowLong(hwnd, win32con.GWL_EXSTYLE, ex_style)
+            # 取消始终置顶
+            ex_style &= ~win32con.WS_EX_TOPMOST
+            # 应用修改后的扩展样式
+            win32gui.SetWindowLong(hwnd, win32con.GWL_EXSTYLE, ex_style)
 
-        # 更新窗口，使样式改变生效
-        win32gui.SetWindowPos(hwnd, None, 0, 0, 0, 0,
-                              win32con.SWP_FRAMECHANGED | win32con.SWP_NOMOVE | win32con.SWP_NOSIZE | win32con.SWP_NOZORDER)
+            # 更新窗口，使样式改变生效
+            win32gui.SetWindowPos(hwnd, None, 0, 0, 0, 0,
+                                  win32con.SWP_FRAMECHANGED | win32con.SWP_NOMOVE | win32con.SWP_NOSIZE | win32con.SWP_NOZORDER)
 
-        # 恢复窗口状态
-        win32gui.ShowWindow(hwnd, win32con.SW_RESTORE)
-        win32gui.SetWindowPos(hwnd, win32con.HWND_NOTOPMOST, 0, 0, 0, 0, win32con.SWP_NOMOVE | win32con.SWP_NOSIZE)
+            # 恢复窗口状态
+            win32gui.ShowWindow(hwnd, win32con.SW_RESTORE)
+            win32gui.SetWindowPos(hwnd, win32con.HWND_NOTOPMOST, 0, 0, 0, 0, win32con.SWP_NOMOVE | win32con.SWP_NOSIZE)
 
-        # 获取窗口客户区的大小
-        client_rect = win32gui.GetClientRect(hwnd)
-        client_width = client_rect[2]
-        client_height = client_rect[3]
+            # 获取窗口客户区的大小
+            client_rect = win32gui.GetClientRect(hwnd)
+            client_width = client_rect[2]
+            client_height = client_rect[3]
 
-        # 获取窗口的大小（包括边框、标题栏等）
-        window_rect = win32gui.GetWindowRect(hwnd)
-        window_width = window_rect[2] - window_rect[0]
-        window_height = window_rect[3] - window_rect[1]
+            # 获取窗口的大小（包括边框、标题栏等）
+            window_rect = win32gui.GetWindowRect(hwnd)
+            window_width = window_rect[2] - window_rect[0]
+            window_height = window_rect[3] - window_rect[1]
 
-        win32gui.SetWindowPos(hwnd, win32con.HWND_NOTOPMOST, 0, 0, window_width * 2 - client_width,
-                              window_height * 2 - client_height, win32con.SWP_NOMOVE)
+            win32gui.SetWindowPos(hwnd, win32con.HWND_NOTOPMOST, 0, 0, window_width * 2 - client_width,
+                                  window_height * 2 - client_height, win32con.SWP_NOMOVE)
+        except Exception as e:
+            self.logger.ERROR(f"重置窗口失败: {e}")
+            return False

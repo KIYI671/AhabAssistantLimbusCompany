@@ -19,7 +19,7 @@ mouse_action_interval: 0.5  # 鼠标操作间隔时间
 resonate_with_Ahab: False # 是否播放亚哈语录
 
 # 实验性功能
-experimental_auto_lang: True # 是否自动修改语言
+experimental_auto_lang: False # 是否自动修改语言
 
 # 自动更新
 check_update: True
