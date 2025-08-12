@@ -7,13 +7,13 @@ from pathlib import Path
 
 from PyQt5.QtWidgets import QApplication
 from utils.singletonmeta import SingletonMeta
-from nb_log import get_logger
 
 # 修复nb_log的输出bug
 for _name in ('stdin', 'stdout', 'stderr'):
     if getattr(sys, _name) is None:
         setattr(sys, _name, open(os.devnull, 'r' if _name == 'stdin' else 'w', encoding='utf-8', errors='ignore'))
 
+from nb_log import get_logger
 
 
 class Logger(metaclass=SingletonMeta):
@@ -69,17 +69,37 @@ class Logger(metaclass=SingletonMeta):
             re.compile(r'.*[\\/]decorator[\\/].*\.py$', re.IGNORECASE),  # 匹配所有 decorator 文件夹下的py文件
         ]
 
-        # 保存原始方法并创建包装方法
-        original_info = self.my_logger.info  # 直接获取原始方法
+        self._decorate_logger()
+
+    def _decorate_logger(self):
+        """ 装饰日志记录器
+        \n 使用闭包装饰器来动态捕获传入信息, 从而实现翻译
+        \n 且能够支持传入参数的格式化, (format方法)
+        例子:
+        log.INFO("这是一个{}日志", "测试") >> 这是一个测试日志
+        log.INFO("这是一个{text}日志", text = "测试") >> 这是一个测试日志
+        第一个参数, 也就是msg参数, 会在info日志里被翻译, 如果被QT_TRANSLATE_NOOP标记 (content = "Logger")
+        但是在debug日志里不会被翻译, 却会被format方法格式化
+        """
+        # 定义一个闭包装饰器来捕获原始方法, 并设置输出的字符串是否翻译
+        def decorator_log(func, tr=False):
+
+            # 使用闭包捕获原始方法
+            def wrapped_log(level, msg, args, exc_info=None, extra=None, stack_info=False,
+             stacklevel=1, **kwargs):
+                if tr:
+                    translated_msg = self._translate_logger_message(msg)
+                else:
+                    translated_msg = msg
+                translated_msg = translated_msg.format(*args, **kwargs) if args or kwargs else translated_msg
+                return func(level, translated_msg, args=(), exc_info=exc_info, extra=extra, stack_info=stack_info,
+             stacklevel=stacklevel) # 原函数 // format方法来格式化多好(( 居然只支持类printf的
         
-        # 使用闭包捕获原始方法
-        def wrapped_info(msg, *args, **kwargs):
-            translated_msg = self._translate_logger_message(msg)
-            translated_msg = translated_msg.format(*args, **kwargs) if args or kwargs else translated_msg
-            return original_info(translated_msg)
-        
-        # 替换实例方法, 使其支持format语法
-        self.my_logger.info = wrapped_info
+            return wrapped_log # 新的_log函数
+        self.debug_logger._log = decorator_log(self.debug_logger._log)
+        self.my_logger._log = decorator_log(self.my_logger._log, tr=True)
+        self.info_logger._log = decorator_log(self.info_logger._log, tr=True)
+        self.warning_logger._log = decorator_log(self.warning_logger._log)
 
     def _detect_project_root(self):
 
@@ -141,42 +161,42 @@ class Logger(metaclass=SingletonMeta):
         # 如果找不到合适的栈帧，返回未知
         return "unknown", 0
 
-    def DEBUG(self, msg):
+    def DEBUG(self, msg, *args, **kwargs):
         path, line = self._get_caller_info()
         extra = {'caller_path': path, 'caller_line': line}
-        self.debug_logger.debug(msg, extra=extra)
+        self.debug_logger.debug(msg, extra=extra, *args, **kwargs)
 
     def INFO(self, msg, *args, **kwargs):
         path, line = self._get_caller_info()
         extra = {'caller_path': path, 'caller_line': line}
 
-        self.debug_logger.info(msg, extra=extra)
-        self.info_logger.info(msg, extra=extra)
+        self.debug_logger.info(msg, extra=extra, *args, **kwargs)
+        self.info_logger.info(msg, extra=extra, *args, **kwargs)
         self.my_logger.info(msg, *args, **kwargs)
 
     def WARNING(self, msg, *args, **kwargs):
         path, line = self._get_caller_info()
         extra = {'caller_path': path, 'caller_line': line}
 
-        self.debug_logger.warning(msg, extra=extra)
-        self.info_logger.warning(msg, extra=extra)
-        self.warning_logger.warning(msg, extra=extra)
+        self.debug_logger.warning(msg, extra=extra, *args, **kwargs)
+        self.info_logger.warning(msg, extra=extra, *args, **kwargs)
+        self.warning_logger.warning(msg, extra=extra, *args, **kwargs)
         self.my_logger.info(msg, *args, **kwargs)
 
     def ERROR(self, msg, *args, **kwargs):
         path, line = self._get_caller_info()
         extra = {'caller_path': path, 'caller_line': line}
 
-        self.debug_logger.error(msg, extra=extra)
-        self.info_logger.error(msg, extra=extra)
-        self.warning_logger.error(msg, extra=extra)
+        self.debug_logger.error(msg, extra=extra, *args, **kwargs)
+        self.info_logger.error(msg, extra=extra, *args, **kwargs)
+        self.warning_logger.error(msg, extra=extra, *args, **kwargs)
         self.my_logger.info(msg, *args, **kwargs)
 
     def CRITICAL(self, msg, *args, **kwargs):
         path, line = self._get_caller_info()
         extra = {'caller_path': path, 'caller_line': line}
 
-        self.debug_logger.critical(msg, extra=extra)
-        self.info_logger.critical(msg, extra=extra)
-        self.warning_logger.critical(msg, extra=extra)
+        self.debug_logger.critical(msg, extra=extra, *args, **kwargs)
+        self.info_logger.critical(msg, extra=extra, *args, **kwargs)
+        self.warning_logger.critical(msg, extra=extra, *args, **kwargs)
         self.my_logger.info(msg, *args, **kwargs)
