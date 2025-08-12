@@ -287,3 +287,5 @@ class SettingInterface(ScrollArea):
         self.github_card.retranslateUi()
         self.qq_group_card.retranslateUi()
         self.feedback_card.retranslateUi()
+        self.experimental_group.retranslateUi()
+        self.auto_lang_card.retranslateUi()
