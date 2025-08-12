@@ -5,8 +5,6 @@ from pathlib import Path
 import psutil
 import win32process
 from PyQt5.QtCore import QT_TRANSLATE_NOOP
-from PyQt5.QtWidgets import QApplication
-
 from app.language_manager import SUPPORTED_GAME_LANG_CODE
 
 from ..config import cfg
@@ -52,8 +50,12 @@ def auto_switch_language_in_game(hwnd: int) -> int:
             content = f.read()
         json_content = json.loads(content)
         lang_code = json_content.get("lang")
-    except Exception:
-        pass
+    except FileNotFoundError:
+        log.DEBUG(f"未找到语言配置文件: {json_path}")
+        lang_code = "-"
+    except Exception as e:
+        log.DEBUG(f"{type(e).__name__}, 读取语言配置文件时出错: {e}")
+        lang_code = "Unknown"
 
     lang_dict = {"-": "default", "LLC_zh-CN": "zh_cn"}
     if lang_code in lang_dict:
@@ -68,35 +70,20 @@ def auto_switch_language_in_game(hwnd: int) -> int:
         return 0
 
     if cfg.language_in_game == "-":
-        QT_TRANSLATE_NOOP("Logger", "当前游戏语言为 {current_game_lang}, 即将自动切换")
-        msg = QApplication.translate(
-            "Logger", "当前游戏语言为 {current_game_lang}, 即将自动切换"
-        )
-        log.INFO(msg.format(current_game_lang=output_lang_dict[lang_code]))
+        msg = QT_TRANSLATE_NOOP("Logger", "当前游戏语言为 {current_game_lang}, 即将自动切换")
+        log.INFO(msg, current_game_lang = output_lang_dict[lang_code])
     else:
-        QT_TRANSLATE_NOOP(
+        msg = QT_TRANSLATE_NOOP(
             "Logger",
             "当前游戏语言为 {current_game_lang}, 但是被错误设置成了 {setting_game_lang}",
         )
-        msg = QApplication.translate(
-            "Logger",
-            (
-                "当前游戏语言为 {current_game_lang}, 但是被错误设置成了 {setting_game_lang}"
-            ).format(
-                current_game_lang=output_lang_dict[lang_code],
-                setting_game_lang=output_lang_dict[cfg.language_in_game],
-            ),
-        )
-        msg = msg.format(
-            current_game_lang=output_lang_dict[lang_code],
-            setting_game_lang=output_lang_dict[cfg.language_in_game],
-        )
-        log.INFO(msg)
+        log.INFO(msg, current_game_lang = output_lang_dict[lang_code],
+                 setting_game_lang = output_lang_dict[cfg.language_in_game]
+                )
     if lang_code in SUPPORTED_GAME_LANG_CODE:
         cfg.set_value("language_in_game", lang_code)
         return 1
     msg = QT_TRANSLATE_NOOP("Logger", "自动切换失败, 不支持的游戏语言")
-    msg = QApplication.translate("Logger", msg)
     log.INFO(msg)
     return 2
 
