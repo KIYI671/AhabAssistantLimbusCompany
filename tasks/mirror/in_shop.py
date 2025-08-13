@@ -637,6 +637,7 @@ class Shop:
                 continue
 
             if auto.click_element("mirror/shop/sell_gift_confirm_assets.png"):
+                sleep(1)
                 continue
 
             if system_sell:

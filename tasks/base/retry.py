@@ -15,8 +15,8 @@ def retry():
     start_time = time.time()
     while True:
         now_time = time.time()
-        if now_time - start_time > 45:
-            log.INFO("已卡死在retry超过45秒，尝试关闭重启游戏")
+        if now_time - start_time > 90:
+            log.INFO("已卡死在retry超过90秒，尝试关闭重启游戏")
             if platform.system() == "Windows":
                 from module.game_and_screen import screen
                 _, pid = win32process.GetWindowThreadProcessId(screen.handle._hWnd)
