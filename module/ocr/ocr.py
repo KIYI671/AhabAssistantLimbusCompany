@@ -8,9 +8,10 @@ from PIL import Image
 from cv2 import createCLAHE
 
 from module.ocr.PPOCR_api import GetOcrApi
+from utils.singletonmeta import SingletonMeta
 
 
-class OCR:
+class OCR(metaclass=SingletonMeta):
     my_argument = {"config_path": "models/config_chinese.txt"}
 
     def __init__(self, exe_path, logger):

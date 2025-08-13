@@ -209,8 +209,8 @@ class FarmingInterfaceLeft(QWidget):
             mediator.refresh_teams_order.emit()
             if self.my_script and self.my_script.isRunning():
                 self.stop_script()
-                ocr.exit_ocr()
-                auto.clear_img_cache()
+            ocr.exit_ocr()
+            auto.clear_img_cache()
 
     def _disable_setting(self, parent):
         for child in parent.children():
