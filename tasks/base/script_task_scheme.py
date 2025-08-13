@@ -25,8 +25,9 @@ from tasks.daily.get_prize import get_pass_prize, get_mail_prize
 from tasks.daily.luxcavation import EXP_luxcavation, thread_luxcavation
 from tasks.mirror.mirror import Mirror
 from tasks.teams.team_formation import select_battle_team
-from utils.utils import get_day_of_week, calculate_the_teams
 from utils import pic_path
+from utils.utils import get_day_of_week, calculate_the_teams
+
 
 @begin_and_finish_time_log(task_name="一次经验本")
 # 一次经验本的过程
@@ -92,7 +93,6 @@ def script_task() -> None | int:
     # 获取（启动）游戏对游戏窗口进行设置
     init_game()
 
-    
     # 自动更改语言, 如果不支持则直接退出
     if cfg.experimental_auto_lang:
         ret = auto_switch_language_in_game(screen.handle._hWnd)
@@ -160,7 +160,7 @@ def script_task() -> None | int:
         mir_times = cfg.set_mirror_count
         if cfg.infinite_dungeons:
             mir_times = 9999
-        if cfg.save_rewards:
+        if cfg.save_rewards and cfg.hard_mirror:
             mir_times = 1
         if cfg.teams_be_select_num != 0:
             while mir_times > 0:

@@ -144,7 +144,8 @@ class Shop:
                 log.DEBUG("开始购买本体系饰品")
                 # 购买体系饰品
                 system_gift = auto.find_element(f"mirror/shop/enhance_gifts/shop_{self.system}.png",
-                                                find_type='image_with_multiple_targets', threshold=0.85)
+                                                find_type='image_with_multiple_targets', threshold=0.85,
+                                                take_screenshot=True)
                 for gift in system_gift:
                     auto.mouse_click(gift[0], gift[1])
                     sleep(1)
