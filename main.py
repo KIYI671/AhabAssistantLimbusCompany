@@ -9,7 +9,7 @@ from module.config import cfg
 os.chdir(
     os.path.dirname(sys.executable) if getattr(sys, 'frozen', False) else os.path.dirname(os.path.abspath(__file__)))
 
-"""# 获取管理员权限
+# 获取管理员权限
 import pyuac
 
 if not pyuac.isUserAdmin():
@@ -17,7 +17,7 @@ if not pyuac.isUserAdmin():
         pyuac.runAsAdmin(False)
         sys.exit(0)
     except Exception:
-        sys.exit(1)"""
+        sys.exit(1)
 
 from win32api import GetLastError
 from win32event import CreateMutex
