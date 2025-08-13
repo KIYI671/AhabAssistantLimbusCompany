@@ -35,6 +35,7 @@ class OCR(metaclass=SingletonMeta):
         if self.ocr is not None:
             self.ocr.exit()
             self.ocr = None
+            self.logger.DEBUG("OCR已退出")
 
     def run(self, image):
         """执行OCR识别，支持Image对象、文件路径和np.ndarray对象"""

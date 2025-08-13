@@ -210,6 +210,7 @@ class Automation(metaclass=SingletonMeta):
             if len(matches) == 0:
                 return []
             else:
+                log.DEBUG(f"找到{len(matches)}个目标：{matches}")
                 return matches
         except Exception as e:
             self.logger.ERROR(f"寻找图片出错:{e}")

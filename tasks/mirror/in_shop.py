@@ -96,6 +96,7 @@ class Shop:
             if self.shopping_strategy is False or (
                     self.shopping_strategy and self.shopping_strategy_select in (0, 1, 5)):
                 # 购买必买项（回血饰品）
+                log.DEBUG("开始购买必买项")
                 for commodity in must_purchase:
                     if auto.click_element(commodity, threshold=0.85):
                         while auto.click_element("mirror/shop/purchase_assets.png") is False:
@@ -112,6 +113,7 @@ class Shop:
                             continue
 
             if self.fuse_aggressive_switch:
+                log.DEBUG("开始购买强化素材")
                 if self.shopping_strategy is False or (
                         self.shopping_strategy and self.shopping_strategy_select in (1, 3, 4)):
                     if auto.click_element("mirror/shop/level_IV_to_buy.png", threshold=0.82):
@@ -139,6 +141,7 @@ class Shop:
 
             if self.shopping_strategy is False or (
                     self.shopping_strategy and self.shopping_strategy_select in (2, 4, 5)):
+                log.DEBUG("开始购买本体系饰品")
                 # 购买体系饰品
                 system_gift = auto.find_element(f"mirror/shop/enhance_gifts/shop_{self.system}.png",
                                                 find_type='image_with_multiple_targets', threshold=0.85)
