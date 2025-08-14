@@ -13,13 +13,14 @@
 如果想改变日志模板，可以设置 FORMATTER_KIND 参数，只带了7种模板，可以自定义添加喜欢的模板
 LOG_PATH 配置文件日志的保存路径的文件夹。
 """
-import sys
 # noinspection PyUnresolvedReferences
 import logging
 import os
+import socket
+import sys
 # noinspection PyUnresolvedReferences
 from pathlib import Path  # noqa
-import socket
+
 from pythonjsonlogger.jsonlogger import JsonFormatter
 
 # 项目中的print是否自动写入到文件中。值为None则不重定向print到文件中。 自动每天一个文件， 2023-06-30.my_proj.print,生成的文件位置在定义的LOG_PATH
@@ -52,8 +53,8 @@ LOG_FILE_BACKUP_COUNT = 10  # 对同一个日志文件，默认最多备份几�
 
 LOG_PATH = os.getenv("LOG_PATH")  # 优先从环境变量获取,启动代码之前可以 export LOG_PATH = '/你的日志目录/'
 if not LOG_PATH:
-    LOG_PATH = '/pythonlogs'  # 默认的日志文件夹,如果不写明磁盘名，则是项目代码所在磁盘的根目录下的/pythonlogs
-    # LOG_PATH = Path(__file__).absolute().parent / Path("pythonlogs")   #这么配置就会自动在你项目的根目录下创建pythonlogs文件夹了并写入。
+    #LOG_PATH = '/pythonlogs'  # 默认的日志文件夹,如果不写明磁盘名，则是项目代码所在磁盘的根目录下的/pythonlogs
+    LOG_PATH = Path(__file__).absolute().parent / Path("pythonlogs")   #这么配置就会自动在你项目的根目录下创建pythonlogs文件夹了并写入。
     if os.name == 'posix':  # linux非root用户和mac用户无法操作 /pythonlogs 文件夹，没有权限，默认修改为   home/[username]  下面了。例如你的linux用户名是  xiaomin，那么默认会创建并在 /home/xiaomin/pythonlogs文件夹下写入日志文件。
         home_path = os.environ.get("HOME", '/')  # 这个是获取linux系统的当前用户的主目录，不需要亲自设置
         LOG_PATH = Path(home_path) / Path('pythonlogs')  # linux mac 权限很严格，非root权限不能在/pythonlogs写入，修改一下默认值。

@@ -1,20 +1,23 @@
-import ctypes
+import os
 import os
 import platform
 import random
 from sys import exc_info
+from time import sleep
 from traceback import format_exception
 
+import win32process
 from PyQt5.QtCore import QThread, pyqtSignal, QMutex
 from playsound3 import playsound
 
+from module.ALI import auto_switch_language_in_game
 from module.automation import auto
 from module.config import cfg
 from module.decorator.decorator import begin_and_finish_time_log
+from module.game_and_screen import screen, game_process
 from module.logger import log
 from module.my_error.my_error import userStopError, unableToFindTeamError, unexpectNumError, cannotOperateGameError, \
     netWorkUnstableError, backMainWinError, withOutGameWinError, notWaitError, withOutPicError, withOutAdminError
-from module.screen import screen
 from tasks.base.back_init_menu import back_init_menu
 from tasks.base.make_enkephalin_module import lunacy_to_enkephalin, make_enkephalin_module
 from tasks.battle import battle
@@ -23,23 +26,16 @@ from tasks.daily.luxcavation import EXP_luxcavation, thread_luxcavation
 from tasks.mirror.mirror import Mirror
 from tasks.teams.team_formation import select_battle_team
 from utils import pic_path
-
-all_systems = {0: "burn", 1: "bleed", 2: "tremor", 3: "rupture", 4: "poise",
-               5: "sinking", 6: "charge", 7: "slash", 8: "pierce", 9: "blunt"}
-all_sinners_name = ["YiSang", "Faust", "DonQuixote", "Ryoshu", "Meursault", "HongLu",
-                    "Heathcliff", "Ishmael", "Rodion", "Sinclair", "Outis", "Gregor"]
-all_sinner = {
-    "YiSang": 1, "Faust": 2, "DonQuixote": 3,
-    "Ryoshu": 4, "Meursault": 5, "HongLu": 6,
-    "Heathcliff": 7, "Ishmael": 8, "Rodion": 9,
-    "Dante": 10,
-    "Sinclair": 11, "Outis": 12, "Gregor": 13
-}
+from utils.utils import get_day_of_week, calculate_the_teams
 
 
 @begin_and_finish_time_log(task_name="一次经验本")
 # 一次经验本的过程
-def onetime_EXP_process(team):
+def onetime_EXP_process():
+    if cfg.targeted_teaming_EXP:
+        team = cfg.get_value(f"EXP_day_{calculate_the_teams()}")
+    else:
+        team = cfg.daily_teams
     EXP_luxcavation()
     select_battle_team(team)
     if battle.to_battle() is False:
@@ -51,7 +47,11 @@ def onetime_EXP_process(team):
 
 @begin_and_finish_time_log(task_name="一次纽本")
 # 一次纽本的过程
-def onetime_thread_process(team):
+def onetime_thread_process():
+    if cfg.targeted_teaming_thread:
+        team = cfg.get_value(f"thread_day_{get_day_of_week()}")
+    else:
+        team = cfg.daily_teams
     thread_luxcavation()
     select_battle_team(team)
     if battle.to_battle() is False:
@@ -63,34 +63,13 @@ def onetime_thread_process(team):
 
 @begin_and_finish_time_log(task_name="一次镜牢")
 # 一次镜牢的过程
-def onetime_mir_process(the_selected_team_setting):
-    # 读取队伍配置、顺序
-    my_team = {}
-    sinner_team = []
-    shop_sell_list = []
-    hard_switch = cfg.get_value("hard_mirror")
-    no_weekly_bonuses = cfg.get_value('no_weekly_bonuses')
-    fuse_switch = the_selected_team_setting['fuse']
-    fuse_aggressive_switch = the_selected_team_setting['fuse_aggressive']
-    dont_convert_starlight_to_cost = cfg.get_value("dont_convert_starlight_to_cost")
-    dont_use_storaged_starlight = cfg.get_value("dont_use_storaged_starlight")
-    for sinner in all_sinners_name:
-        sinner_order = sinner + "_order"
-        if the_selected_team_setting[sinner]:
-            my_team[sinner] = int(the_selected_team_setting[sinner_order])
-    my_sorted_team = dict(sorted(my_team.items(), key=lambda item: item[1]))
-    for sinner in my_sorted_team:
-        sinner_team.append(all_sinner[sinner])
-    for num, shop_system in all_systems.items():
-        if the_selected_team_setting[shop_system]:
-            shop_sell_list.append(shop_system)
+def onetime_mir_process(team_setting):
     # 进行一次镜牢
     try:
-        mirror_adventure = Mirror(sinner_team, the_selected_team_setting["all_teams"], shop_sell_list, fuse_switch,
-                                  all_systems[the_selected_team_setting["all_system"]], fuse_aggressive_switch,
-                                  hard_switch, no_weekly_bonuses, dont_use_storaged_starlight, dont_convert_starlight_to_cost)
+        mirror_adventure = Mirror(team_setting)
         if mirror_adventure.run():
             del mirror_adventure
+            mirror_adventure = None
             back_init_menu()
             make_enkephalin_module()
             return True
@@ -102,29 +81,46 @@ def onetime_mir_process(the_selected_team_setting):
         return False
 
 
-def script_task():
-    # 对游戏窗口进行设置
-    screen.init_handle()
+def init_game():
+    game_process.start_game()
+    while not screen.init_handle():
+        sleep(10)
     if cfg.set_windows:
         screen.set_win()
 
-    if cfg.language == "zh_cn":
-        pic_path.insert(0, "zh_cn")
 
-    if cfg.play_audio:
+def script_task() -> None | int:
+    # 获取（启动）游戏对游戏窗口进行设置
+    init_game()
+
+    # 自动更改语言, 如果不支持则直接退出
+    if cfg.experimental_auto_lang:
+        ret = auto_switch_language_in_game(screen.handle._hWnd)
+        if ret == 2:
+            log.INFO("请切换游戏内语言并重启游戏后再试")
+            return
+    else:
+        if cfg.language_in_game == "-":
+            log.WARNING("自动切换语言已关闭但是并未设置语言! 请手动设置!")
+            return
+
+    if cfg.language_in_game == "zh_cn":
+        pic_path.insert(0, "zh_cn")
+    elif cfg.language_in_game == "en":
+        while pic_path[0] != "share":
+            pic_path.pop(0)
+
+    if cfg.resonate_with_Ahab:
         random_number = random.randint(1, 4)
         playsound(f"assets/audio/This_is_all_your_fault_{random_number}.mp3")
 
     # 如果是战斗中，先处理战斗
     get_reward = None
-    while auto.take_screenshot() is None:
-        continue
-    if auto.click_element("battle/turn_assets.png"):
+    if auto.click_element("battle/turn_assets.png", take_screenshot=True):
         get_reward = battle.fight()
 
     # 执行日常刷本任务
     if cfg.daily_task:
-        select_team = cfg.daily_teams
         back_init_menu()
         make_enkephalin_module()
         exp_times = cfg.set_EXP_count
@@ -134,9 +130,9 @@ def script_task():
         if get_reward and get_reward == "thread":
             thread_times -= 1
         for i in range(exp_times):
-            onetime_EXP_process(select_team)
+            onetime_EXP_process()
         for i in range(thread_times):
-            onetime_thread_process(select_team)
+            onetime_thread_process()
     # 执行奖励领取任务
     if cfg.get_reward:
         if cfg.set_get_prize == 0:
@@ -161,35 +157,29 @@ def script_task():
 
     # 执行镜牢任务
     if cfg.mirror:
-        all_teams = ["team1", "team2", "team3", "team4", "team5", "team6", "team7"]
         mir_times = cfg.set_mirror_count
-        all_my_team_setting = []
-        for team in all_teams:
-            if cfg.get_value(team):
-                sequence = "_order"
-                team_sequence = team + sequence
-                team_order = cfg.get_value(team_sequence)
-                setting = "_setting"
-                team_setting = team + setting
-                my_team_setting = cfg.get_value(team_setting)
-                this_team_setting = [team_order, my_team_setting, team_sequence]
-                all_my_team_setting.append(this_team_setting)
-        if len(all_my_team_setting) != 0:
+        if cfg.infinite_dungeons:
+            mir_times = 9999
+        if cfg.save_rewards and cfg.hard_mirror:
+            mir_times = 1
+        if cfg.teams_be_select_num != 0:
             while mir_times > 0:
-                the_selected_team_setting = None
-                for this_team in all_my_team_setting:
-                    if this_team[0] == 1:
-                        the_selected_team_setting = this_team[1]
-                        break
-                mirror_result = onetime_mir_process(the_selected_team_setting)
+                teams_order = cfg.teams_order
+                team_num = teams_order.index(1)
+                mirror_result = onetime_mir_process(cfg.get_value(f"team{team_num + 1}_setting"))
                 if mirror_result:
-                    for this_team in all_my_team_setting:
-                        if this_team[0] == 1:
-                            this_team[0] = len(all_my_team_setting)
-                        else:
-                            this_team[0] -= 1
-                        cfg.set_value(this_team[2], this_team[0])
+                    for index, value in enumerate(teams_order):
+                        if value == 0:
+                            continue
+                        if teams_order[index] == 1:
+                            teams_order[index] = cfg.teams_be_select_num
+                        elif teams_order[index] != 0:
+                            teams_order[index] -= 1
+                    cfg.set_value("teams_order", teams_order)
                     mir_times -= 1
+        else:
+            log.WARNING("没有选择任何队伍，请选择一个队伍进行镜牢任务")
+
     if cfg.set_reduce_miscontact:
         screen.reset_win()
 
@@ -199,30 +189,30 @@ def script_task():
             if after_completion == 1:
                 os.system("rundll32.exe powrprof.dll,SetSuspendState Sleep")
             elif after_completion == 2:
-                if platform.system() == "Windows":
-                    os.system("rundll32.exe powrprof.dll,SetSuspendState Hibernate")
+                os.system("rundll32.exe powrprof.dll,SetSuspendState Hibernate")
             elif after_completion == 3:
-                if platform.system() == "Windows":
-                    os.system("shutdown /s /t 30")
-            elif after_completion == 4:
-                if platform.system() == "Windows":
-                    _, pid = ctypes.windll.user32.GetWindowThreadProcessId(screen.handle._hWnd, None)
-                    os.system(f'taskkill /F /PID {pid}')
-            elif after_completion == 5:
-                if platform.system() == "Windows":
-                    os.system("taskkill /f /im AALC.exe")
-            elif after_completion == 6:
-                if platform.system() == "Windows":
-                    _, pid = ctypes.windll.user32.GetWindowThreadProcessId(screen.handle._hWnd, None)
-                    os.system(f'taskkill /F /PID {pid}')
-                    os.system("taskkill /f /im AALC.exe")
+                os.system("shutdown /s /t 30")
+            elif after_completion == 4 or after_completion == 6:
+                _, pid = win32process.GetWindowThreadProcessId(screen.handle._hWnd)
+                ret = os.system(f'taskkill /F /PID {pid}')
+                if ret == 0:
+                    log.INFO("成功关闭 Limbus Company")
+                elif ret == 128:
+                    log.ERROR("错误：进程不存在")
+                elif ret == 1:
+                    log.ERROR("错误：权限不足")
         except Exception as e:
             log.ERROR(f"脚本结束后的操作失败: {e}")
+
+        finally:
+            if after_completion == 5 or after_completion == 6:
+                return 0  # 正常退出信号
 
 
 class my_script_task(QThread):
     # 定义信号
     finished_signal = pyqtSignal()
+    kill_signal = pyqtSignal()
 
     def __init__(self):
         # 初始化，构造函数
@@ -274,7 +264,10 @@ class my_script_task(QThread):
 
     def _run(self):
         try:
-            script_task()
+            ret = script_task()
+            if ret == 0:
+                self.kill_signal.emit()
+            auto.clear_img_cache()
         except Exception as e:
             log.ERROR(f"出现错误: {e}")
             self.exc_traceback = ''.join(

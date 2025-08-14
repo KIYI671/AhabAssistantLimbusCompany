@@ -16,7 +16,7 @@ def back_init_menu():
         # 自动截图
         if auto.take_screenshot() is None:
             continue
-        if cfg.language == 'zh_cn':
+        if cfg.language_in_game == 'zh_cn':
             if auto.click_element("home/window_assets.png") and (
                     auto.find_element("home/mail_assets.png", model='normal') or auto.find_element(
                 "home/mail_cn_assets.png", model='normal')):
@@ -57,6 +57,11 @@ def back_init_menu():
         if auto.click_element("home/close_anniversary_event_assets.png"):
             continue
 
+        # 在刚进入游戏界面时
+        if clear_all_caches := auto.find_element("base/clear_all_caches_assets.png", model="clam"):
+            auto.mouse_click(clear_all_caches[0], clear_all_caches[1] - 100)
+            continue
+
         auto.mouse_click_blank()
         pyautogui.press('esc')
         retry()
@@ -67,4 +72,5 @@ def back_init_menu():
         if loop_count < 10:
             auto.model = 'aggressive'
         if loop_count < 0:
-            raise log.ERROR("无法返回主界面，不能进行下一步,请手动操作重试")
+            log.ERROR("无法返回主界面，不能进行下一步,请手动操作重试")
+            raise Exception("无法返回主界面")

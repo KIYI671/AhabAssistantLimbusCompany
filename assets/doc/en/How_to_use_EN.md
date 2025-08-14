@@ -4,25 +4,47 @@
 
 [简体中文](/assets/doc/zh/How_to_use.md) | **English**
 
+[*项目说明*](/README.md) | [*常见问题*](/assets/doc/zh/FAQ.md) | [*README*](/assets/doc/en/README_EN.md) | [*FAQ_EN*](/assets/doc/en/FAQ_EN.md)
+
+</div>
+
+<div align="center">
+
+You can use the **CTRL+Q** keys to terminate the script process during script execution (this may cause problems when the script starts again, which can be solved by restarting the script program)
+
+You can use the **ALT+P** keys to pause the script and the **ALT+R** keys to resume the script
+
 </div>
 
 ---
 
 ![image](/assets/doc/image/main_page.png)
 
-#### ① Lets you set the window resolution size
-#### ② Used to select the in-game language (i.e. it needs to be adapted to the in-game language)
-#### ③ It is used to speed up/slow down the script operation according to your own computer configuration
-#### ④ Click to jump to the settings page for each task (see below for details)
-#### ⑤ Click to select/deselect the tasks that will be executed when the script is launched
-#### ⑥ Log bar
-#### ⑦ The action to be performed after the script runs
+#### ① Used to display the current AALC version number, which can be stated when raising ISSUES
+#### ② The main page, where all game automation content is set
+#### ③ Help documentation (where you are)
+#### ④ Some gadgets that are split separately
+#### ⑤ Some other settings (including using the team name to identify or choosing the team serial number)
+#### ⑥ Click to select/deselect the tasks that will be executed when the script is launched
+#### ⑦ Click to jump to the settings page of each task (see below for the explanation of each page)
 #### ⑧ A small feature that doesn't matter
-#### ⑨ Click to start executing the script task
+#### ⑨ Tap to select all or clear all tasks
+#### ⑩ The action to be performed after the script runs
+#### ⑪ Click to start executing the script task
+#### ⑫ Set the resolution of the window, choose according to the computer configuration (1920*1080 or 2560*1440 is recommended)
+#### ⑬ Modify the language used in the game
+#### ⑭ More settings
+#### ⑮ Log bar
+![image](/assets/doc/image/page_01.png)
+#### ⑯ Speed up/slow down script operations appropriately according to your computer configuration, and just keep the default under normal circumstances
 
 ---
 
 ![image](/assets/doc/image/page_1.png)
+
+#### ⑰ Set the formation to be used (you can set the use of team name recognition or select the team serial number in ⑤
+#### ⑱ Configure different teams for different EXP levels at different times，If not checked, the team set in ⑰ will be used
+#### ⑲ Configure different teams for different Thread levels at different times，If not checked, the team set in ⑰ will be used
 
 ---
 
@@ -32,25 +54,28 @@
 
 ![image](/assets/doc/image/page_3.png)
 
+#### ⑳ In Dr.Grande mode, when the time to generate the next amount of stamina exceeds 5 minutes and 20 seconds, the Lunacy is converted into Enkephalin
+
 ---
 
 ![image](/assets/doc/image/page_4.png)
 
-#### ① Enable/Deactivate after clicking This team is used for the Mirror Prison
-#### ② Used to showcase the rotation order of the enabled teams
-#### ③ Advanced (Dangerous) features for difficulty mirroring and for canceling weekly bonuses
-#### ④ How many times the script was executed this time
-#### ⑤ Click to jump to the current team's Team Settings page
+#### ㉑ Check to enable this formation
+#### ㉒ The name of the team's notes can be set at ㉖
+#### ㉓ When this formation is enabled, the order of mirror dungeons for this formation will be displayed
+#### ㉔ Click the gear to enter the detailed settings
+#### ㉕ Add a new team
+#### ㉖ Set the name of the team's notes
+#### ㉗ Delete this team (when there is only one team, it cannot be deleted)
+#### ㉘ Check to enable difficult mirror dungeon (only valid for this AALC run, invalid after restart)
+#### ㉙ Check to not use weekly reward bonus (only valid for this AALC run, invalid after restart)
+#### ㉚ Check to only perform three layers of mirror dungeons, and exit at the fourth layer
+#### ㉛ Check to ignore the number of times to be imprisoned below, and automatically execute 9999 times
+#### ㉜ If the Mirror Dungeon is a Hard Mirror Dungeon, the reward will not be settled and you will be returned to the main page
+#### ㉝ Check to only get one weekly reward bonus per settlement when enabling difficult mirror dungeons
 
 ---
 
 ![image](/assets/doc/image/page_5.png)
 
-#### ① Select the system used by your team
-#### ② Select the team number to be used by the team
-#### ③ Enable/deactivate the currently selected role after clicking. When selected, the character selection order appears
-- From left to right, top to bottom, in the order of the 12 sinners (as in the game)
-#### ④ Enable/deactivate after clicking Discard for selected items, either for sale or as an asset
-#### ⑤ After clicking to switch the function, if it is not selected, sell the accessories of the selected system below, and use the accessories of the selected system below as materials for synthesis when selected
-#### ⑥ Click to enable/deactivate the aggressive mode of crafting accessories, using the three cosmetics of the highest level as materials (including the accessories of the team's system), and synthesizing the accessories of the fourth level of the system (after success, exit this mode in the mirror prison of the game)
-#### ⑦ Show off the fool-proof feature
+#### When the store policy is "Fuse: Level IV First", the aggressive synthesis option below and the synthesis level IV option of the second system will take effect

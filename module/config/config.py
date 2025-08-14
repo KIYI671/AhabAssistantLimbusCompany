@@ -3,8 +3,9 @@ import sys
 
 from ruamel.yaml import YAML
 
-from utils.singletonmeta import SingletonMeta
 from module.logger import log
+from utils.singletonmeta import SingletonMeta
+
 
 class Config(metaclass=SingletonMeta):
 
@@ -57,6 +58,8 @@ class Config(metaclass=SingletonMeta):
                     self._update_config(config[key], value)
                 else:
                     config[key] = value
+            elif any(sub in key for sub in ("_setting", "_remark_name")):
+                config[key] = value
 
     def save_config(self):
         """保存到配置文件"""
@@ -78,6 +81,14 @@ class Config(metaclass=SingletonMeta):
             self.config[key] = copy.deepcopy(value)
         else:
             self.config[key] = value
+
+        log.DEBUG(f"{key} change to: {value}") # 增加设置修改的信息
+        self.save_config()
+
+    def del_key(self, key):
+        """删除配置项并保存"""
+        self._load_config()
+        self.config.pop(key, None)
         self.save_config()
 
     def __getattr__(self, attr):
@@ -137,7 +148,7 @@ class Theme_pack_list(metaclass=SingletonMeta):
             return
         for key, value in new_config.items():
             config[key] = value
-        log.INFO(f"主题包名单已更新")
+        log.DEBUG(f"主题包名单已更新")
 
     def save_config(self):
         """保存到配置文件"""

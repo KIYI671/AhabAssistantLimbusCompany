@@ -8,10 +8,10 @@ from module.config import cfg
 class ScreenShot:
 
     @staticmethod
-    def take_screenshot():
+    def take_screenshot(gray=True):
         """
         截取屏幕截图。
-        :param move: 是否尝试移动鼠标，默认为False。
+        :param gray: 是否将图片转化为灰度图
         :return screenshot: 截取的屏幕截图。
         """
         # 根据配置获取窗口的高度
@@ -30,8 +30,11 @@ class ScreenShot:
         windll.user32.SetProcessDPIAware()
         # 进行全屏截图
         screenshot_temp = pyautogui.screenshot()
-        # 将截图转换为灰度图像
-        screenshot = screenshot_temp.convert('L')
+        if gray:
+            # 将截图转换为灰度图像
+            screenshot = screenshot_temp.convert('L')
+        else:
+            screenshot = screenshot_temp
 
         # 裁剪截图到指定的宽高
         screenshot = screenshot.crop((0, 0, size_width, size_height))

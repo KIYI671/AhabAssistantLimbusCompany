@@ -9,3 +9,5 @@ build.bat
 config.yaml
 theme_pack_list.yaml
 logs
+pythonlogs
+i18n/*.qm

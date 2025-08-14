@@ -1,10 +1,44 @@
+import os
+import platform
+import time
 from time import sleep
 
+import psutil
+import win32process
+
 from module.automation import auto
+from module.config import cfg
+from module.logger import log
 
 
 def retry():
+    start_time = time.time()
     while True:
+        now_time = time.time()
+        if now_time - start_time > 90:
+            log.INFO("已卡死在retry超过90秒，尝试关闭重启游戏")
+            if platform.system() == "Windows":
+                from module.game_and_screen import screen
+                _, pid = win32process.GetWindowThreadProcessId(screen.handle._hWnd)
+                os.system(f'taskkill /F /PID {pid}')
+            sleep(10)
+            while True:
+                kill = False
+                for proc in psutil.process_iter(['name']):
+                    try:
+                        # 获取进程的可执行文件名（如 "notepad.exe"）
+                        proc_name = proc.info['name']
+                        # 精确匹配进程名（区分大小写，取决于系统）
+                        if not cfg.game_process_name in proc_name:
+                            kill = True
+                            break
+                    except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
+                        # 忽略已终止、无权限或僵尸进程
+                        continue
+                if kill:
+                    break
+            restart_game()
+            return False
         # 自动截图
         if auto.take_screenshot() is None:
             continue
@@ -15,10 +49,21 @@ def retry():
             auto.mouse_click(position[0], position[1], times=3)
             continue
         if auto.click_element("base/retry.png", threshold=0.9):
+            auto.mouse_to_blank()
             continue
         if auto.find_element("base/retry_countdown.png") \
                 or auto.find_element("base/retry.png") \
                 or auto.find_element("base/try_again.png"):
             auto.click_element("base/retry.png", threshold=0.9)
             continue
+        if clear_all_caches := auto.find_element("base/clear_all_caches_assets.png", model="clam"):
+            auto.mouse_click(clear_all_caches[0], clear_all_caches[1] - 100)
+            continue
         break
+
+
+def restart_game():
+    from tasks.base.script_task_scheme import init_game
+    from tasks.base.back_init_menu import back_init_menu
+    init_game()
+    back_init_menu()

@@ -5,16 +5,6 @@ from module.config import cfg
 from module.decorator.decorator import begin_and_finish_time_log
 from module.logger import log
 
-all_sinner = {
-    1: "YiSang", 2: "Faust", 3: "DonQuixote",
-    4: "Ryoshu", 5: "Meursault", 6: "HongLu",
-    7: "Heathcliff", 8: "Ishmael", 9: "Rodion",
-    10: "Dante",
-    11: "Sinclair", 12: "Outis", 13: "Gregor"
-}
-
-pic_path = "teams/"
-
 
 # 清队
 def clean_team():
@@ -43,22 +33,22 @@ def team_formation(sinner_team):
     first_sinner = [announcer_position[0] + 350 * scale, announcer_position[1]]
     sleep(0.5)
 
-    for sinner in sinner_team:
-        name = pic_path + all_sinner[sinner] + '_assets.png'
-        if not auto.click_element(name):
-            if sinner <= 6:
-                auto.mouse_click(first_sinner[0] + 270 * (sinner - 1) * scale, first_sinner[1])
-            elif sinner <= 10:
-                auto.mouse_click(first_sinner[0] + 270 * (sinner - 7) * scale, first_sinner[1] + 500 * scale)
-            else:
-                auto.mouse_click(first_sinner[0] + 270 * (sinner - 8) * scale, first_sinner[1] + 500 * scale)
-            sleep(cfg.mouse_action_interval_time)
+    for i in range(1, 13):
+        if i in sinner_team:
+            sinner = sinner_team.index(i)
+        else:
+            return
+        if sinner <= 5:
+            auto.mouse_click(first_sinner[0] + 270 * sinner * scale, first_sinner[1])
+        else:
+            auto.mouse_click(first_sinner[0] + 270 * (sinner - 6) * scale, first_sinner[1] + 500 * scale)
+        sleep(cfg.mouse_action_interval)
 
 
 @begin_and_finish_time_log(task_name="寻找队伍")
 # 找队
 def select_battle_team(num):
-    scale = cfg.set_win_size / 1080
+    scale = cfg.set_win_size / 1440
     my_position = [0, 150 * scale]
     find = False
     while auto.take_screenshot() is None:
@@ -66,37 +56,51 @@ def select_battle_team(num):
     if position := auto.find_element("battle/teams_assets.png"):
         my_position[0] += position[0]
         my_position[1] += position[1]
-        auto.mouse_drag(my_position[0], my_position[1], dy=1000 * scale, drag_time=0.2)
-        if cfg.language == 'en':
-            team_name = "TEAMS#" + str(num)
-            team_name_error_correcting = "TFAMS#" + str(num)
-        elif cfg.language == 'zh_cn':
-            team_name = "编队#" + str(num)
-            team_name_error_correcting = "编队#" + str(num)
-        my_scale = cfg.set_win_size / 1440
-        position_bbox = (0, 0, position[0] + 130 * my_scale, position[1] + 400 * my_scale)
-        for i in range(10):
-            while auto.take_screenshot() is None:
-                continue
-            if auto.click_element(team_name, find_type="text", offset=False, my_crop=position_bbox):
-                find = True
-                break
-            if auto.click_element(team_name_error_correcting, find_type="text", offset=False, my_crop=position_bbox):
-                find = True
-                break
-            auto.mouse_drag(my_position[0], my_position[1], dy=-200 * scale, drag_time=1.5)
-            sleep(1)
-            while auto.take_screenshot() is None:
-                continue
-    if find:
-        msg = f"成功找到队伍 # {num}"
-        log.INFO(msg)
-        sleep(1)
-        return True
-    else:
-        msg = f"找不到队伍 # {num}"
-        log.INFO(msg)
-        return False
+        for _ in range(2):
+            auto.mouse_drag(my_position[0], my_position[1], dy=1333 * scale, drag_time=0.3)
+        sleep(0.75)
+        first_position = [position[0], position[1] + 70 * scale]
+        if cfg.select_team_by_order:
+            team_range = (num - 1) // 5
+            team_order = (num - 1) % 5
+            for _ in range(team_range):
+                auto.mouse_drag(first_position[0], first_position[1] + 375 * scale, dy=-385 * scale, drag_time=1.5)
+                sleep(1)
+            if num <= 15:
+                auto.mouse_click(first_position[0], first_position[1] + 75 * team_order * scale)
+            else:
+                auto.mouse_click(first_position[0], first_position[1] + 100 * scale + 75 * team_order * scale)
+        else:
+            if cfg.language_in_game == 'en':
+                team_name = "TEAMS#" + str(num)
+                team_name_error_correcting = "TFAMS#" + str(num)
+            elif cfg.language_in_game == 'zh_cn':
+                team_name = "编队#" + str(num)
+                team_name_error_correcting = "编队#" + str(num)
+            position_bbox = (0, 0, position[0] + 130 * scale, position[1] + 600 * scale)
+            for i in range(10):
+                while auto.take_screenshot() is None:
+                    continue
+                if auto.click_element(team_name, find_type="text", offset=False, my_crop=position_bbox):
+                    find = True
+                    break
+                if auto.click_element(team_name_error_correcting, find_type="text", offset=False,
+                                      my_crop=position_bbox):
+                    find = True
+                    break
+                auto.mouse_drag(my_position[0], my_position[1], dy=-267 * scale, drag_time=1.5)
+                sleep(1)
+                while auto.take_screenshot() is None:
+                    continue
+            if find:
+                msg = f"成功找到队伍 # {num}"
+                log.INFO(msg)
+                sleep(1)
+                return True
+            else:
+                msg = f"找不到队伍 # {num}"
+                log.INFO(msg)
+                return False
 
 
 @begin_and_finish_time_log(task_name="检查队伍剩余战斗力")

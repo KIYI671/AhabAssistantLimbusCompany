@@ -91,7 +91,11 @@ class Input(metaclass=SingletonMeta):
 
         pyautogui.moveTo(x, y)
         pyautogui.mouseDown()
-        pyautogui.dragTo(x + dx, y + dy, duration=drag_time)
+        pyautogui.moveTo(x + dx, y + dy, duration=drag_time)
+        if drag_time * 0.3 > 0.5:
+            sleep(drag_time * 0.3)
+        else:
+            sleep(0.5)
         pyautogui.mouseUp()
 
         if move_back and current_mouse_position:
@@ -121,7 +125,7 @@ class Input(metaclass=SingletonMeta):
         y = coordinate[1] + random.randint(0, 10)
         for i in range(times):
             pyautogui.click(x, y)
-        
+
         if move_back and current_mouse_position:
             self.mouse_move(current_mouse_position)
 
@@ -162,3 +166,17 @@ class Input(metaclass=SingletonMeta):
         """
         x, y = pyautogui.position()
         return (x, y)
+
+    def mouse_drag_link(self, position: list, drag_time=0.1):
+        """鼠标从指定位置拖动到指定位置
+        Args:
+            x (int): 起始x坐标
+            y (int): 起始y坐标
+            position (list): 目标位置列表
+            drag_time (float): 拖动时间
+        """
+        pyautogui.moveTo(position[0][0], position[0][1])
+        pyautogui.mouseDown()
+        for pos in position:
+            pyautogui.moveTo(pos[0], pos[1], duration=drag_time)
+        pyautogui.mouseUp()

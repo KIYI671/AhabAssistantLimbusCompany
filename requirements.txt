@@ -4,7 +4,7 @@ cffi==1.17.1
 chained_mode_time_tool==0.4
 charset-normalizer==3.4.0
 concurrent-log-handler==0.9.23
-cryptography==44.0.0
+cryptography~=44.0.1
 darkdetect==0.8.0
 Deprecated==1.2.14
 idna==3.10
@@ -25,7 +25,7 @@ PyGetWindow==0.0.9
 PyMsgBox==1.0.9
 pynput==1.7.7
 pyperclip==1.9.0
-PyQt-Fluent-Widgets==1.7.3
+PyQt-Fluent-Widgets==1.8.6
 PyQt5==5.15.11
 PyQt5-Frameless-Window==0.4.3
 PyQt5-Qt5==5.15.2
@@ -47,7 +47,10 @@ tzlocal==5.2
 urllib3==2.2.3
 wrapt==1.17.0
 pyuac~=0.0.3
-Markdown~=3.7
+markdown-it-py~=3.0.0
+linkify-it-py~=2.0.3
+mdit-py-plugins~=0.4.2
 packaging~=24.2
 playsound3~=2.5.2
 cpufeature~=0.2.1
+psutil~=7.0.0
