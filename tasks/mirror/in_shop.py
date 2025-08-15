@@ -248,7 +248,7 @@ class Shop:
             for position in my_gift_list:
                 if abs(position[0] - coordinates[0]) <= threshold * scale and abs(
                         position[1] - coordinates[1]) <= threshold * scale:
-                    my_gift_list.pop(position)
+                    my_gift_list.pop(my_gift_list.index(position))
 
             return my_gift_list
 
@@ -357,7 +357,7 @@ class Shop:
             for position in my_gift_list:
                 if abs(position[0] - 50 - coordinates[0]) <= threshold * scale and abs(
                         position[1] - 50 - coordinates[1]) <= threshold * scale:
-                    my_gift_list.pop(position)
+                    my_gift_list.pop(my_gift_list.index(position))
 
             return my_gift_list
 
