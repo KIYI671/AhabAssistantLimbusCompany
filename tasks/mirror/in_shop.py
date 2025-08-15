@@ -17,6 +17,8 @@ class Shop:
         # 获取舍弃的饰品体系列表
         self.shop_sell_list = []
         for system in list(all_systems.values()):
+            if system == self.system:
+                continue
             if team_setting[f"system_{system}"]:
                 self.shop_sell_list.append(system)
         self.fuse_switch = False if team_setting["shop_strategy"] == 0 else True  # 是否启动合成模式

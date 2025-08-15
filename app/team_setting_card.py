@@ -57,7 +57,9 @@ class TeamSettingCard(QFrame):
         self.gift_system_list_1 = QHBoxLayout()
         self.gift_system_list_2 = QHBoxLayout()
 
-        self.custom_layout = ExpandSettingCard(icon=FIF.EDIT, title=self.tr("自定义设置（设置存在冲突时，将根据优先级覆盖生效）"), parent=self)
+        self.custom_layout = ExpandSettingCard(icon=FIF.EDIT,
+                                               title=self.tr("自定义设置（设置存在冲突时，将根据优先级覆盖生效）"),
+                                               parent=self)
 
         self.setting_layout = QHBoxLayout()
 
@@ -289,6 +291,7 @@ class TeamSettingCard(QFrame):
         if check_box:
             check_box.set_checked(False)
             check_box.set_box_enabled(False)
+            self.team_setting[f"system_{all_systems_name[team_system]}"] = False
 
     def cancel_team_setting(self):
         mediator.close_setting.emit()
