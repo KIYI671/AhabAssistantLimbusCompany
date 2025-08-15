@@ -910,9 +910,17 @@ class Shop:
             else:
                 sinner_nums = 12
             if cfg.language_in_game == 'en':
-                sinner = [all_sinners_name[self.sinner_team.index(i + 1)] for i in range(sinner_nums)]
+                sinner = [
+                    all_sinners_name[self.sinner_team.index(i + 1)]
+                    for i in range(sinner_nums)
+                    if (i + 1) in self.sinner_team
+                ]
             else:
-                sinner = [all_sinners_name_zh[self.sinner_team.index(i + 1)] for i in range(sinner_nums)]
+                sinner = [
+                    all_sinners_name_zh[self.sinner_team.index(i + 1)]
+                    for i in range(sinner_nums)
+                    if (i + 1) in self.sinner_team
+                ]
             if auto.find_text_element(sinner, my_crop=bbox):
                 auto.mouse_click(module_position[0], module_position[1] - 100 * my_scale)
                 sleep(0.5)
