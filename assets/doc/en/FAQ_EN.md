@@ -4,7 +4,7 @@
 
 [简体中文](/assets/doc/zh/FAQ.md) | **English**
 
-[*项目说明*](/README.md) | [*用法详解*](/assets/doc/zh/How_to_use.md) | [*README*](/assets/doc/en/README_EN.md) | [*How To Use*](/assets/doc/en/How_to_use_EN.md)
+[*README*](/assets/doc/en/README_EN.md) | [*How To Use*](/assets/doc/en/How_to_use_EN.md)
 
 </div>
 

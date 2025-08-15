@@ -221,6 +221,12 @@ git pull
 
 ---
 
+## Join Us
+
+- Development Participation(Document Under Construction)
+- Translation Support: Refer to [Translation Guide](translateGuide.md)
+
+---
 ## At last
 
 If you found the software helpful, please click Star.
