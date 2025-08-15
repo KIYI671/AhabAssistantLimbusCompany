@@ -39,7 +39,8 @@ class SettingInterface(ScrollArea):
             "select_team_by_order",
             FIF.SEARCH,
             QT_TRANSLATE_NOOP('ComboBoxSettingCard', '选择队伍方式'),
-            QT_TRANSLATE_NOOP('ComboBoxSettingCard', '设置选择队伍方式'),
+            QT_TRANSLATE_NOOP('ComboBoxSettingCard',
+                              '使用队伍名为识别“TEAMS#XX”/“编队#XX”的队伍，使用序号为使用从上到下第X个队伍'),
             texts={
                 QT_TRANSLATE_NOOP('ComboBoxSettingCard', '使用队伍名'): False,
                 QT_TRANSLATE_NOOP('ComboBoxSettingCard', '使用队伍序号'): True

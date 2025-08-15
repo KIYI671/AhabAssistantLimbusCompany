@@ -14,6 +14,7 @@ from qframelesswindow import StandardTitleBar
 from app import mediator
 from app.card.messagebox_custom import MessageBoxWarning, MessageBoxConfirm
 from app.farming_interface import FarmingInterface
+from app.language_manager import LanguageManager
 from app.page_card import MarkdownViewer
 from app.setting_interface import SettingInterface
 from app.team_setting_card import TeamSettingCard
@@ -21,7 +22,6 @@ from app.tools_interface import ToolsInterface
 from module.config import cfg
 from module.logger import log
 from module.update.check_update import check_update
-from app.language_manager import LanguageManager
 
 
 class Language(Enum):
@@ -160,11 +160,19 @@ class MainWindow(FramelessWindow):
             self
         ).exec()
 
+    def show_tasks_warning(self):
+        MessageBoxWarning(
+            self.tr('任务设置出错'),
+            self.tr('未设置任何任务，请勾选主页面左边的选项框需要执行的任务'),
+            self
+        ).exec()
+
     def connect_mediator(self):
         # 连接所有可能信号
         mediator.switch_team_setting.connect(self.add_and_switch_to_page)
         mediator.close_setting.connect(self.close_setting_page)
         mediator.save_warning.connect(self.show_save_warning)
+        mediator.tasks_warning.connect(self.show_tasks_warning)
         mediator.update_progress.connect(self.set_progress_ring)
         mediator.download_complete.connect(self.download_and_install)
 

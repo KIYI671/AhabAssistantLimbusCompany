@@ -119,6 +119,10 @@ def script_task() -> None | int:
     if auto.click_element("battle/turn_assets.png", take_screenshot=True):
         get_reward = battle.fight()
 
+    if cfg.daily_task is False and cfg.get_reward is False and cfg.buy_enkephalin is False and cfg.mirror is False:
+        from app import mediator
+        mediator.tasks_warning.emit()
+
     # 执行日常刷本任务
     if cfg.daily_task:
         back_init_menu()
@@ -182,6 +186,8 @@ def script_task() -> None | int:
 
     if cfg.set_reduce_miscontact:
         screen.reset_win()
+
+    log.INFO("脚本任务已经完成")
 
     if platform.system() == "Windows":
         after_completion = cfg.after_completion
