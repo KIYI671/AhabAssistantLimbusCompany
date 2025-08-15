@@ -1,3 +1,4 @@
+import time
 from time import sleep
 
 from module.automation import auto
@@ -23,6 +24,7 @@ def get_node_weight(x, y):
 
 # 在默认缩放情况下，进行镜牢寻路
 def search_road_default_distance():
+    start_time = time.time()
     scale = cfg.set_win_size / 1440
     three_roads = [[500 * scale, 50 * scale],
                    [500 * scale, 450 * scale],
@@ -51,7 +53,12 @@ def search_road_default_distance():
                     return True
     # 如果中、下两个节点没有权重3的节点，查看所有节点的权重，选择权重最大的节点进入
     if bus_position := auto.find_element("mirror/mybus_default_distance.png", take_screenshot=True):
+        from tasks.base.retry import check_times
         while True:
+            if check_times(start_time):
+                from tasks.base.back_init_menu import back_init_menu
+                back_init_menu()
+                return False
             if 600 * scale < bus_position[1] < 700 * scale:
                 break
             dy = 650 * scale - bus_position[1]

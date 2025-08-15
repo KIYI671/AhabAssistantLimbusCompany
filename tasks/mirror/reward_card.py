@@ -2,6 +2,7 @@ from module.automation import auto
 from module.decorator.decorator import begin_and_finish_time_log
 from module.logger import log
 from tasks.base.retry import retry
+from utils.image_utils import ImageUtils
 
 reward_card_model = {0: ["gain_starlight", "gain_ego", "gain_cost", "gain_cost_and_ego", "gain_ego_resource"],
                      1: ["gain_starlight", "gain_ego", "gain_cost", "gain_cost_and_ego", "gain_ego_resource"],
@@ -48,6 +49,10 @@ def get_reward_card(model=0):
             return
     if retry() is False:
         return False
+    get_reward_card_confirm_bbox = ImageUtils.get_bbox(
+        ImageUtils.load_image("mirror/get_reward_card/get_reward_card_confirm_assets.png"))
+    auto.mouse_click((get_reward_card_confirm_bbox[0] + get_reward_card_confirm_bbox[2]) / 2,
+                     (get_reward_card_confirm_bbox[1] + get_reward_card_confirm_bbox[3]) / 2)
     while auto.click_element("mirror/get_reward_card/get_reward_card_confirm_assets.png", threshold=0.75):
         while auto.take_screenshot() is None:
             continue

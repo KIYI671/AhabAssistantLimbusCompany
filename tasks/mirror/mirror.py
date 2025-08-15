@@ -161,14 +161,19 @@ class Mirror:
                 if self.re_formation_each_floor:
                     self.first_battle = True
                 flood_num = self.flood - 1
-                if self.flood_times[flood_num] == 0:
+                if flood_num == 0:
                     self.flood_times[flood_num] = time.time()
                 else:
-                    self.flood_times[flood_num] = time.time() - self.flood_times[flood_num]
-                    msg = f"启动后第{self.flood}层卡包"
+                    self.flood_times[flood_num] = time.time() - self.flood_times[flood_num - 1]
+                    msg = f"启动后第{flood_num}层卡包"
                     to_log_with_time(msg, self.flood_times[flood_num])
                 self.get_flood_num = True
                 main_loop_count += 50
+                continue
+
+            # 遇到选择增益事件（少见）
+            if auto.click_element("mirror/road_in_mir/event_effect_button.png", threshold=0.75):
+                auto.click_element("mirror/road_in_mir/select_event_effect_confirm.png")
                 continue
 
             # 在镜牢中寻路
@@ -311,11 +316,6 @@ class Mirror:
                 self.select_init_ego_gift()
                 continue
 
-            # 遇到选择增益事件（少见）
-            if auto.click_element("mirror/road_in_mir/event_effect_button.png"):
-                auto.click_element("mirror/road_in_mir/select_event_effect_confirm.png")
-                continue
-
             # 取消十层
             if auto.find_element("mirror/infinity_mirror_assets.png"):
                 auto.click_element("mirror/infinity_mirror_close_assets.png")
@@ -362,8 +362,13 @@ class Mirror:
                 continue
             if auto.click_element("mirror/claim_reward/rewards_acquired_assets.png"):
                 continue
-            if cfg.no_weekly_bonuses and auto.click_element("mirror/claim_reward/weekly_bonuses.png"):
-                continue
+            if cfg.no_weekly_bonuses:
+                bonuses = auto.find_element("mirror/claim_reward/weekly_bonuses.png",
+                                            find_type='image_with_multiple_targets')
+                if len(bonuses) >= 1:
+                    for _ in range(len(bonuses)):
+                        position = bonuses.pop(-1)
+                        auto.mouse_click(position[0], position[1])
             if cfg.hard_mirror_single_bonuses:
                 bonuses = auto.find_element("mirror/claim_reward/weekly_bonuses.png",
                                             find_type='image_with_multiple_targets')
@@ -465,7 +470,7 @@ class Mirror:
                     "mirror/road_to_mir/dreaming_star/convert_star_to_cost_assets.png"):
                 continue
 
-            if auto.click_element("mirror/road_to_mir/dreaming_star/select_star_confirm_assets.png"):
+            if auto.click_element("mirror/road_to_mir/dreaming_star/select_star_confirm_assets.png", model="normal"):
                 break
 
             if not self.choose_opening_bonus:
@@ -628,6 +633,8 @@ class Mirror:
             if auto.take_screenshot() is None:
                 continue
             auto.mouse_to_blank()
+            if auto.click_element("home/drive_assets.png") or auto.find_element("home/window_assets.png"):
+                break
             if auto.click_element("mirror/road_in_mir/towindow&forfeit_confirm_assets.png"):
                 break
             if auto.click_element("mirror/road_in_mir/to_window_assets.png"):

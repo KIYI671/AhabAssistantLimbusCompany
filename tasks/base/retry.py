@@ -11,33 +11,40 @@ from module.config import cfg
 from module.logger import log
 
 
+def check_times(start_time):
+    now_time = time.time()
+    if now_time - start_time > 90:
+        log.INFO("已卡死在retry超过90秒，尝试关闭重启游戏")
+        if platform.system() == "Windows":
+            from module.game_and_screen import screen
+            _, pid = win32process.GetWindowThreadProcessId(screen.handle._hWnd)
+            os.system(f'taskkill /F /PID {pid}')
+        sleep(10)
+        while True:
+            kill = False
+            for proc in psutil.process_iter(['name']):
+                try:
+                    # 获取进程的可执行文件名（如 "notepad.exe"）
+                    proc_name = proc.info['name']
+                    # 精确匹配进程名（区分大小写，取决于系统）
+                    if not cfg.game_process_name in proc_name:
+                        kill = True
+                        break
+                except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
+                    # 忽略已终止、无权限或僵尸进程
+                    continue
+            if kill:
+                break
+        restart_game()
+        return True
+    else:
+        return False
+
+
 def retry():
     start_time = time.time()
     while True:
-        now_time = time.time()
-        if now_time - start_time > 90:
-            log.INFO("已卡死在retry超过90秒，尝试关闭重启游戏")
-            if platform.system() == "Windows":
-                from module.game_and_screen import screen
-                _, pid = win32process.GetWindowThreadProcessId(screen.handle._hWnd)
-                os.system(f'taskkill /F /PID {pid}')
-            sleep(10)
-            while True:
-                kill = False
-                for proc in psutil.process_iter(['name']):
-                    try:
-                        # 获取进程的可执行文件名（如 "notepad.exe"）
-                        proc_name = proc.info['name']
-                        # 精确匹配进程名（区分大小写，取决于系统）
-                        if not cfg.game_process_name in proc_name:
-                            kill = True
-                            break
-                    except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
-                        # 忽略已终止、无权限或僵尸进程
-                        continue
-                if kill:
-                    break
-            restart_game()
+        if check_times(start_time):
             return False
         # 自动截图
         if auto.take_screenshot() is None:
