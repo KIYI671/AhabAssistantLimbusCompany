@@ -82,6 +82,16 @@ class Config(metaclass=SingletonMeta):
         else:
             self.config[key] = value
 
+        # 防止 cdk 泄露
+        if key == "mirrorchyan_cdk":
+            if isinstance(value, str):
+                if len(value) >= 10:
+                    value = value[:3] + "****" + value[-3:]
+                else:
+                    value = value[:2] + "****"
+            else:
+                value = "****"
+
         log.DEBUG(f"{key} change to: {value}") # 增加设置修改的信息
         self.save_config()
 
