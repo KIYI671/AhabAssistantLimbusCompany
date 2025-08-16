@@ -21,6 +21,7 @@ class Updater:
 
         self.exe_path = os.path.abspath("./assets/binary/7za.exe")
         self.delete_folder_path = os.path.abspath("./assets/images")
+        self.changes_file_path = os.path.abspath("./update_temp/changes.json")
 
         self.download_file_path = os.path.join(self.temp_path, self.file_name)
         self.extract_folder_path = os.path.join(self.temp_path, self.file_name.rsplit(".", 1)[0])
@@ -43,17 +44,21 @@ class Updater:
 
     def cover_folder(self):
         """覆盖安装最新版本的文件。"""
-        print("开始覆盖安装...")
-        while True:
+        if not os.path.exists(self.changes_file_path):
             try:
                 if os.path.exists(self.delete_folder_path):
                     shutil.rmtree(self.delete_folder_path)
+            except Exception as e:
+                print(f"删除旧资源文件失败: {e}")
+        print("开始覆盖安装...")
+        while True:
+            try:
                 shutil.copytree(self.extract_folder_path, self.cover_folder_path, dirs_exist_ok=True)
                 print("覆盖安装完成")
                 break
             except Exception as e:
-                print(f"覆盖失败: {e}")
-                input("按回车键重试. . .")
+                print(f"覆盖安装失败: {e}")
+                input("按回车键重试. . . \n Press any key to continue")
 
     def terminate_processes(self):
         """终止相关进程以准备更新。"""
@@ -79,6 +84,8 @@ class Updater:
         try:
             os.remove(self.download_file_path)
             shutil.rmtree(self.extract_folder_path)
+            if os.path.exists(self.changes_file_path):
+                os.remove(self.changes_file_path)
             print("清理完成")
         except Exception as e:
             print(f"清理失败: {e}")
