@@ -166,6 +166,12 @@ def script_task() -> None | int:
             mir_times = 9999
         if cfg.save_rewards and cfg.hard_mirror:
             mir_times = 1
+        teams_be_select = sum(1 for team in cfg.teams_be_select if team)
+        if teams_be_select != cfg.teams_be_select_num:
+            cfg.set_value("teams_be_select_num", teams_be_select)
+            from utils.utils import check_teams_order
+            teams_order = check_teams_order(cfg.teams_order)
+            cfg.set_value("teams_order", teams_order)
         if cfg.teams_be_select_num != 0:
             while mir_times > 0:
                 teams_order = cfg.teams_order

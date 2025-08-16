@@ -79,6 +79,22 @@ def find_skill3(background, known_rgb, threshold=40, min_pixels=10):
 
     return merged
 
+def check_teams_order(lst):
+    # 收集所有非零元素的（值，原始索引）对
+    non_zero = [(val, idx) for idx, val in enumerate(lst) if val > 0]
+    # 按值降序排序，值相同时按原始索引升序排序
+    sorted_non_zero = sorted(non_zero, key=lambda x: (-x[0], x[1]))
+    # 初始化结果列表为全0
+    result = [0] * len(lst)
+    # 非零元素的数量
+    n = len(sorted_non_zero)
+    # 为每个非零元素分配对应的递增值
+    for i in range(n):
+        val, original_idx = sorted_non_zero[i]
+        # 最大的元素对应n，次大的对应n-1，依此类推
+        result[original_idx] = n - i
+    return result
+
 
 
 def encrypt_string(text: str, entropy: bytes = b'AALC') -> str:
