@@ -475,10 +475,12 @@ class PageMirror(PageCard):
     def refresh_team_setting_card(self):
         for i in range(1, 21):
             if cfg.get_value(f"team{i}_setting") is None and cfg.get_value(f"team{i + 1}_setting") is not None:
-                cfg.set_value(f"team{i}_setting", cfg.get_value(f"team{i + 1}_setting"))
-                cfg.del_key(f"team{i + 1}_setting")
-                cfg.set_value(f"team{i}_remark_name", cfg.get_value(f"team{i + 1}_remark_name"))
-                cfg.del_key(f"team{i + 1}_remark_name")
+                cfg.unsaved_set_value(f"team{i}_setting", cfg.get_value(f"team{i + 1}_setting"))
+                cfg.unsaved_del_key(f"team{i + 1}_setting")
+                cfg.unsaved_set_value(f"team{i}_remark_name", cfg.get_value(f"team{i + 1}_remark_name"))
+                cfg.unsaved_del_key(f"team{i + 1}_remark_name")
+        cfg.save_config()
+            
         self.get_setting()
 
     def refresh(self):

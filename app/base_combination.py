@@ -10,6 +10,7 @@ from app.card.messagebox_custom import MessageBoxEdit
 from app.language_manager import LanguageManager
 from module.update.check_update import check_update
 
+from utils.utils import encrypt_string, decrypt_string
 
 class CheckBoxWithButton(QFrame):
     def __init__(self, check_box_name, check_box_title, check_box_icon: Union[str, QIcon, FluentIconBase, None],
@@ -387,7 +388,7 @@ class BasePrimaryPushSettingCard(PrimaryPushSettingCard):
 
 class PushSettingCardMirrorchyan(SettingCard):
     def __init__(self, text, icon: Union[str, QIcon, FluentIconBase], title, update_callback, config_name, parent=None):
-        self.config_value = str(cfg.get_value(config_name))
+        self.config_value = decrypt_string(str(cfg.get_value(config_name)))
         self.update_callback = update_callback
         super().__init__(icon, title, "", parent)
 
@@ -409,7 +410,8 @@ class PushSettingCardMirrorchyan(SettingCard):
     def __onclicked(self):
         message_box = MessageBoxEdit(self.tr(self.title), self.config_value, self.window())
         if message_box.exec():
-            cfg.set_value(self.config_name, message_box.getText())
+            base64_cdk = encrypt_string(message_box.getText())
+            cfg.set_value(self.config_name, base64_cdk)
             self.contentLabel.setText(message_box.getText())
             self.config_value = message_box.getText()
             parent = self._find_parent(self)

@@ -120,9 +120,13 @@ class MessageBoxEdit(MessageBox):
 
         self.lineEdit = LineEdit(self)
         self.lineEdit.setText(self.content)
+        self.lineEdit.returnPressed.connect(self.yesButton.click)
+
         self.textLayout.addWidget(self.lineEdit, 0, Qt.AlignTop)
 
         self.buttonGroup.setMinimumWidth(400)
+
+        self.lineEdit.setFocus()
 
     def getText(self):
         return self.lineEdit.text()
