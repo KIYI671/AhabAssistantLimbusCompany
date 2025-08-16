@@ -95,6 +95,47 @@ class Config(metaclass=SingletonMeta):
         log.DEBUG(f"{key} change to: {value}") # 增加设置修改的信息
         self.save_config()
 
+    def just_load_config(self, path=None):
+        """仅加载配置文件，不保存"""
+        path = path or self.config_path
+        try:
+            with open(path, 'r', encoding='utf-8') as file:
+                loaded_config = self.yaml.load(file)
+            if loaded_config:
+                self._update_config(self.config, loaded_config)
+        except FileNotFoundError:
+            self.save_config()
+        except Exception as e:
+            sys.exit(f"配置文件{path}加载错误: {e}")
+
+    def unsaved_set_value(self, key, value):
+        """仅设置配置项的值 不保存"""
+        if self.config is None:
+            self.just_load_config()
+        if isinstance(value, (list, dict, set)):
+            self.config[key] = copy.deepcopy(value)
+        else:
+            self.config[key] = value
+
+        # 防止 cdk 泄露
+        if key == "mirrorchyan_cdk":
+            if isinstance(value, str):
+                if len(value) >= 10:
+                    value = value[:3] + "****" + value[-3:]
+                else:
+                    value = value[:2] + "****"
+            else:
+                value = "****"
+
+        log.DEBUG(f"{key} change to: {value}") # 增加设置修改的信息
+
+    def unsaved_del_key(self, key):
+        """仅删除配置项 不保存"""
+        if self.config is None:
+            self.just_load_config()
+        self.config.pop(key, None)
+
+
     def del_key(self, key):
         """删除配置项并保存"""
         self._load_config()
