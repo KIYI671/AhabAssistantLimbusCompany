@@ -106,17 +106,23 @@ def decrypt_string(encrypted_b64: str, entropy: bytes = b'AALC') -> str:
     """使用当前Windows用户凭据解密字符串"""
     if not encrypted_b64:
         return ""
-
-    # 解码Base64
-    encrypted_data = base64.b64decode(encrypted_b64)
     
-    # 解密数据
-    decrypted_data = win32crypt.CryptUnprotectData(
-        encrypted_data,
-        entropy,    # 必须与加密时相同的熵值
-        None,       # 保留
-        None,       # 提示信息
-        0           # 默认标志
-    )
+    if len(encrypted_b64) % 4 != 0:
+        return encrypted_b64
+    try:
+    # 解码Base64
+        encrypted_data = base64.b64decode(encrypted_b64)
+
+    
+        # 解密数据
+        decrypted_data = win32crypt.CryptUnprotectData(
+            encrypted_data,
+            entropy,    # 必须与加密时相同的熵值
+            None,       # 保留
+            None,       # 提示信息
+            0           # 默认标志
+        )
+    except Exception:
+        return encrypted_b64
     # 返回原始字符串
     return decrypted_data[1].decode('utf-8')
