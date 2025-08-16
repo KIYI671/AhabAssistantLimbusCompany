@@ -145,8 +145,12 @@ class Mirror:
                     continue
 
             # 镜牢结束领取奖励
-            if auto.find_element("mirror/claim_reward/battle_statistics_assets.png") and auto.click_element(
-                    "base/battle_finish_confirm_assets.png"):
+            if auto.find_element("mirror/claim_reward/battle_statistics_assets.png"):
+                if auto.click_element("mirror/claim_reward/claim_rewards_assets.png") is False:
+                    claim_rewards_bbox = ImageUtils.get_bbox(
+                        ImageUtils.load_image("mirror/claim_reward/claim_rewards_assets.png"))
+                    auto.mouse_click((claim_rewards_bbox[0] + claim_rewards_bbox[2]) / 2,
+                                     (claim_rewards_bbox[1] + claim_rewards_bbox[3]) / 2)
                 break
             if auto.find_element("mirror/claim_reward/claim_rewards_assets.png") and auto.find_element(
                     "mirror/claim_reward/complete_mirror_100%_assets.png"):
@@ -353,7 +357,7 @@ class Mirror:
                 auto.mouse_to_blank()
                 continue
             if not auto.find_element(
-                    "mirror/claim_reward/complete_mirror_100%_assets.png") and failed is False and cfg.flood_3_exit is True:
+                    "mirror/claim_reward/complete_mirror_100%_assets.png") and failed is False and cfg.flood_3_exit is False:
                 failed = True
             # 如果回到主界面，退出循环
             if auto.find_element("home/drive_assets.png"):
@@ -380,7 +384,9 @@ class Mirror:
             if auto.click_element("mirror/claim_reward/claim_rewards_confirm_assets.png", threshold=0.75, model='clam'):
                 continue
             if failed:
-                if auto.click_element("mirror/claim_reward/claim_forfeit_assets.png"):
+                if auto.click_element("mirror/claim_reward/claim_rewards_assets.png"):
+                    sleep(1)
+                if auto.click_element("mirror/claim_reward/claim_forfeit_assets.png",take_screenshot=True):
                     continue
             else:
                 if self.hard_switch and cfg.save_rewards:
