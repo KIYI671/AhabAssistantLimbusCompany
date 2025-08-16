@@ -17,6 +17,8 @@ from module.config import cfg
 from module.decorator.decorator import begin_and_finish_time_log
 from module.logger import log
 
+from utils.utils import decrypt_string
+
 md_renderer = MarkdownIt("gfm-like", {"html": True})
 
 
@@ -208,7 +210,8 @@ class UpdateThread(QThread):
                     self.updateSignal.emit(UpdateStatus.FAILURE)
                     return None
                 # 符合Mirror酱条件
-                response = self.check_update_info_mirrorchyan(cfg.mirrorchyan_cdk)
+                cdk = decrypt_string(cfg.mirrorchyan_cdk)
+                response = self.check_update_info_mirrorchyan(cdk)
                 if response.status_code == 200:
                     mirrorchyan_data = response.json()
                     if mirrorchyan_data["code"] == 0 and mirrorchyan_data["msg"] == "success":
