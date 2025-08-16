@@ -350,15 +350,17 @@ class Mirror:
 
         main_loop_count = 20
         auto.model = 'clam'
-        failed = False
+        failed = None
         while True:
             # 自动截图
             if auto.take_screenshot() is None:
                 auto.mouse_to_blank()
                 continue
             if not auto.find_element(
-                    "mirror/claim_reward/complete_mirror_100%_assets.png") and failed is False and cfg.flood_3_exit is False:
+                    "mirror/claim_reward/complete_mirror_100%_assets.png") and failed is None and cfg.flood_3_exit is False:
                 failed = True
+            if auto.find_element("mirror/claim_reward/complete_mirror_100%_assets.png"):
+                failed = False
             # 如果回到主界面，退出循环
             if auto.find_element("home/drive_assets.png"):
                 break
