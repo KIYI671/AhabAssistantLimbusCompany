@@ -70,9 +70,9 @@ class Mirror:
         self.event_total_time = 0
         self.event_times = 0
 
-        self.flood = 1
+        self.flood = 0
         self.get_flood_num = True
-        self.flood_times = [0, 0, 0, 0, 0]
+        self.flood_times = [time.time() for i in range(5)]
         self.LOOP_COUNT = 250
 
     def road_to_mir(self):
@@ -164,13 +164,12 @@ class Mirror:
                 select_theme_pack(self.hard_switch)
                 if self.re_formation_each_floor:
                     self.first_battle = True
-                flood_num = self.flood - 1
-                if flood_num == 0:
-                    self.flood_times[flood_num] = time.time()
-                else:
-                    self.flood_times[flood_num] = time.time() - self.flood_times[flood_num - 1]
-                    msg = f"启动后第{flood_num}层卡包"
-                    to_log_with_time(msg, self.flood_times[flood_num])
+                flood_num = self.flood # 0,1,2,3,4
+                if flood_num != 0:
+                    flood_time = time.time() - self.flood_times[flood_num - 1]
+                    msg = f"启动后第{self.flood}层卡包"
+                    to_log_with_time(msg, flood_time)
+                self.flood_times[flood_num] = time.time()
                 self.get_flood_num = True
                 main_loop_count += 50
                 continue
