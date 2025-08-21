@@ -1,5 +1,7 @@
 import copy
 import sys
+import threading
+import atexit
 
 from ruamel.yaml import YAML
 
@@ -11,6 +13,16 @@ class Config(metaclass=SingletonMeta):
 
     def __init__(self, version_path, example_path, config_path):
         self.yaml = YAML()
+        # 并发与延迟写控制
+        self._lock = threading.RLock()
+        self._save_timer = None
+        self._save_interval = 1.0  # 秒：在此时间窗口内的多次修改合并为一次写盘
+        self._pending_save = False
+        # 后台写盘线程
+        self._writer_event = threading.Event()
+        self._writer_thread = threading.Thread(target=self._writer_loop, name="ConfigWriter", daemon=True)
+        self._writer_thread.start()
+
         # 加载版本信息
         self.version = self._load_version(version_path)
         # 加载默认配置
@@ -19,6 +31,8 @@ class Config(metaclass=SingletonMeta):
         self.config_path = config_path
         # 加载实际配置，此方法会根据实际配置覆盖默认配置
         self._load_config()
+        # 进程退出前确保落盘
+        atexit.register(self.flush)
 
     def _load_version(self, version_path):
         """加载版本信息"""
@@ -44,9 +58,9 @@ class Config(metaclass=SingletonMeta):
                 loaded_config = self.yaml.load(file)
                 if loaded_config:
                     self._update_config(self.config, loaded_config)
-                    self.save_config()
+                    self._save_config()
         except FileNotFoundError:
-            self.save_config()
+            self._save_config()
         except Exception as e:
             sys.exit(f"配置文件{path}加载错误: {e}")
 
@@ -61,10 +75,15 @@ class Config(metaclass=SingletonMeta):
             elif any(sub in key for sub in ("_setting", "_remark_name")):
                 config[key] = value
 
-    def save_config(self):
-        """保存到配置文件"""
-        with open(self.config_path, 'w', encoding='utf-8') as file:
-            self.yaml.dump(self.config, file)
+    def _save_config(self):
+        """保存到配置文件（立即写盘）"""
+        # 拷贝快照后在锁外写盘，避免长时间持锁
+        with self._lock:
+            snapshot = copy.deepcopy(self.config)
+            path = self.config_path
+        y = YAML()
+        with open(path, 'w', encoding='utf-8') as file:
+            y.dump(snapshot, file)
 
     def get_value(self, key, default=None):
         """获取配置项的值，如果是可变对象，则返回其拷贝"""
@@ -75,19 +94,72 @@ class Config(metaclass=SingletonMeta):
         return value
 
     def set_value(self, key, value):
-        """设置配置项的值并保存"""
-        self._load_config()
-        if isinstance(value, (list, dict, set)):
-            self.config[key] = copy.deepcopy(value)
-        else:
-            self.config[key] = value
+        """设置配置项的值并延迟保存"""
+        with self._lock:
+            if isinstance(value, (list, dict, set)):
+                self.config[key] = copy.deepcopy(value)
+            else:
+                self.config[key] = value
 
-        # 防止 cdk 泄露
-        if key == "mirrorchyan_cdk":
-            value = "已加密"
+            # 防止 cdk 泄露
+            masked_value = "已加密" if key == "mirrorchyan_cdk" else value
+            log.DEBUG(f"{key} change to: {masked_value}")  # 增加设置修改的信息
 
-        log.DEBUG(f"{key} change to: {value}") # 增加设置修改的信息
-        self.save_config()
+            # 安排一次延迟保存
+            self._schedule_save()
+
+    def _schedule_save(self):
+        """在时间窗口内合并多次修改，只触发一次写盘。"""
+        with self._lock:
+            self._pending_save = True
+            # 取消已有的定时器，重新计时
+            if self._save_timer is not None:
+                try:
+                    self._save_timer.cancel()
+                except Exception:
+                    pass
+            self._save_timer = threading.Timer(self._save_interval, self._flush_save)
+            self._save_timer.daemon = True
+            self._save_timer.start()
+
+    def request_save(self):
+        """公开方法：请求一次延迟保存（不阻塞当前线程）。"""
+        self._schedule_save()
+
+    def _flush_save(self):
+        """定时器回调：触发一次后台写盘信号。"""
+        with self._lock:
+            if not self._pending_save:
+                return
+            self._pending_save = False
+            self._save_timer = None
+            self._writer_event.set()
+
+    def flush(self):
+        """立即将挂起的更改写入磁盘。"""
+        with self._lock:
+            if self._save_timer is not None:
+                try:
+                    self._save_timer.cancel()
+                except Exception:
+                    pass
+                self._save_timer = None
+            pending = self._pending_save
+            self._pending_save = False
+        if pending:
+            self._save_config()
+        
+    def _writer_loop(self):
+        """后台写盘线程：收到事件后把当前config写入文件"""
+        while True:
+            self._writer_event.wait()
+            try:
+                self._save_config()
+            except Exception as e:
+                log.ERROR(f"配置保存失败，错误信息：{e}")
+
+            # 等待下一次
+            self._writer_event.clear()
 
     def just_load_config(self, path=None):
         """仅加载配置文件，不保存"""
@@ -98,7 +170,7 @@ class Config(metaclass=SingletonMeta):
             if loaded_config:
                 self._update_config(self.config, loaded_config)
         except FileNotFoundError:
-            self.save_config()
+            self._schedule_save()
         except Exception as e:
             sys.exit(f"配置文件{path}加载错误: {e}")
 
@@ -128,7 +200,7 @@ class Config(metaclass=SingletonMeta):
         """删除配置项并保存"""
         self._load_config()
         self.config.pop(key, None)
-        self.save_config()
+        self._schedule_save()
 
     def __getattr__(self, attr):
         """允许通过属性访问配置项的值"""
