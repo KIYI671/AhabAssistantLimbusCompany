@@ -179,7 +179,6 @@ class MirrorTeamCombination(QFrame):
 
         self.hBoxLayout = QHBoxLayout(self)
         self.box = BaseCheckBox(check_box_name, check_box_icon, check_box_title, parent=self)
-        # self.box.hBoxLayout.widt
         self.button = ToSettingButton(button_name, parent=self)
 
         self.hBoxLayout.setAlignment(Qt.AlignCenter)
@@ -188,9 +187,9 @@ class MirrorTeamCombination(QFrame):
 
         self.remark_name = LineEdit()
         self.remark_name.setAlignment(Qt.AlignCenter)
-        self.remark_name.setReadOnly(True)
         self.remark_name.setPlaceholderText("备注名")
         self.remark_name.setMaximumWidth(100)
+        self.remark_name.textChanged.connect(self.remark_name_changed)
 
         self.order = LineEdit()
         self.order.setAlignment(Qt.AlignCenter)
@@ -207,6 +206,9 @@ class MirrorTeamCombination(QFrame):
 
         self.refresh_remark_name()
 
+    def remark_name_changed(self, text):
+        cfg.set_value(f"team{self.team_number}_remark_name", text)
+
     def edit_button_clicked(self):
         name = cfg.get_value(f"team{self.team_number}_remark_name")
         if name is None:
@@ -217,8 +219,9 @@ class MirrorTeamCombination(QFrame):
         )
         self.retranslateTempUi(message_box)
         if message_box.exec():
-            cfg.set_value(f"team{self.team_number}_remark_name", str(message_box.getText()))
-            self.refresh_remark_name()
+            new_name = str(message_box.getText())
+            cfg.set_value(f"team{self.team_number}_remark_name", new_name)
+            self.remark_name.setText(new_name)
 
     def delete_button_clicked(self):
         if len(team_toggle_button_group) > 1:
