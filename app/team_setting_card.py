@@ -83,7 +83,7 @@ class TeamSettingCard(QFrame):
                                               "./assets/app/sinner/DonQuixote.png")
         self.sinner_Ryoshu = SinnerSelect("Ryoshu", self.tr("良秀"), None, "./assets/app/sinner/Ryoshu.png")
         self.sinner_Meursault = SinnerSelect("Meursault", self.tr("默尔索"), None, "./assets/app/sinner/Meursault.png")
-        self.sinner_HongLu = SinnerSelect("HongLu", self.tr("鸿潞"), None, "./assets/app/sinner/HongLu.png")
+        self.sinner_HongLu = SinnerSelect("HongLu", self.tr("鸿璐"), None, "./assets/app/sinner/HongLu.png")
 
         self.sinner_Heathcliff = SinnerSelect("Heathcliff", self.tr("希斯克利夫"), None,
                                               "./assets/app/sinner/Heathcliff.png")
@@ -313,7 +313,7 @@ class TeamSettingCard(QFrame):
         self.sinner_DonQuixote.label_str.setText(self.tr("堂吉诃德"))
         self.sinner_Ryoshu.label_str.setText(self.tr("良秀"))
         self.sinner_Meursault.label_str.setText(self.tr("默尔索"))
-        self.sinner_HongLu.label_str.setText(self.tr("鸿潞"))
+        self.sinner_HongLu.label_str.setText(self.tr("鸿璐"))
         self.sinner_Heathcliff.label_str.setText(self.tr("希斯克利夫"))
         self.sinner_Ishmael.label_str.setText(self.tr("以实玛利"))
         self.sinner_Rodion.label_str.setText(self.tr("罗佳"))

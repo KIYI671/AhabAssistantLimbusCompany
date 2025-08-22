@@ -3,6 +3,7 @@ from time import sleep
 from module.automation import auto
 from module.config import cfg
 from module.decorator.decorator import begin_and_finish_time_log
+from module.logger import log
 
 
 def get_the_timing():
@@ -23,6 +24,7 @@ def get_the_timing():
                     minute = int(l[0][-2:])
                     seconds = int(l[1][:2])
                     if minute >= 5 and seconds >= 20:
+                        log.DEBUG(f"生成下一点体力的时间为{minute}分{seconds}秒，符合葛朗台模式操作")
                         return True
             except:
                 return False
