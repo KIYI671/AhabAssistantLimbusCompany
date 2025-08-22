@@ -5,7 +5,7 @@ from qfluentwidgets import FluentIcon as FIF, InfoBarPosition
 from qfluentwidgets import ScrollArea, ExpandLayout
 
 from app.base_combination import ComboBoxSettingCard, SwitchSettingCard, PushSettingCardMirrorchyan, \
-    BaseSettingCardGroup, BasePushSettingCard, BasePrimaryPushSettingCard
+    BaseSettingCardGroup, BasePushSettingCard, BasePrimaryPushSettingCard, PushSettingCardDate, PushSettingCardChance
 from app.card.messagebox_custom import BaseInfoBar
 from app.language_manager import SUPPORTED_LANG_NAME, LanguageManager
 from module.config import cfg
@@ -46,6 +46,26 @@ class SettingInterface(ScrollArea):
                 QT_TRANSLATE_NOOP('ComboBoxSettingCard', '使用队伍序号'): True
             },
             parent=self.game_setting_group
+        )
+        self.auto_hard_mirror_card = SwitchSettingCard(
+            FIF.PLAY,
+            QT_TRANSLATE_NOOP("SwitchSettingCard", '自动困难模式'),
+            QT_TRANSLATE_NOOP('SwitchSettingCard', '每周自动将前三场镜牢设置为困难模式执行'),
+            "auto_hard_mirror",
+            parent=self.game_setting_group
+        )
+        self.last_auto_hard_mirror_card = PushSettingCardDate(
+            self.tr('修改'),
+            FIF.DATE_TIME,
+            self.tr("上次自动切换困难镜牢的时间戳"),
+            "last_auto_change"
+        )
+        self.hard_mirror_chance_card = PushSettingCardChance(
+            self.tr('修改'),
+            FIF.UNIT,
+            self.tr("困难模式剩余次数"),
+            QT_TRANSLATE_NOOP("PushSettingCardChance", "第一次运行请手动设定，之后将自动修改"),
+            "hard_mirror_chance"
         )
 
         self.game_path_group = BaseSettingCardGroup(
@@ -175,6 +195,9 @@ class SettingInterface(ScrollArea):
 
     def __initLayout(self):
         self.game_setting_group.addSettingCard(self.game_setting_card)
+        self.game_setting_group.addSettingCard(self.auto_hard_mirror_card)
+        self.game_setting_group.addSettingCard(self.last_auto_hard_mirror_card)
+        self.game_setting_group.addSettingCard(self.hard_mirror_chance_card)
 
         self.game_path_group.addSettingCard(self.game_path_card)
 
@@ -270,6 +293,9 @@ class SettingInterface(ScrollArea):
     def retranslateUi(self):
         self.game_setting_group.retranslateUi()
         self.game_setting_card.retranslateUi()
+        self.auto_hard_mirror_card.retranslateUi()
+        self.last_auto_hard_mirror_card.retranslateUi()
+        self.hard_mirror_chance_card.retranslateUi()
         self.game_path_card.retranslateUi()
         self.game_path_group.retranslateUi()
         self.personal_group.retranslateUi()

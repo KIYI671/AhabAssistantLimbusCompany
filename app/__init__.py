@@ -1,5 +1,6 @@
-from app.mediator import Mediator
 from PyQt5.QtCore import QT_TRANSLATE_NOOP
+
+from app.mediator import Mediator
 
 mediator = Mediator()
 
@@ -60,6 +61,10 @@ reward_cards = {
     QT_TRANSLATE_NOOP("BaseComboBox", "钱→饰品→饰品/钱→罪孽→星光"): 2,
     QT_TRANSLATE_NOOP("BaseComboBox", "饰品→钱→饰品/钱→罪孽→星光"): 3
 }
+fixed_team_use = {
+    QT_TRANSLATE_NOOP("BaseComboBox", "困难镜牢"): 0,
+    QT_TRANSLATE_NOOP("BaseComboBox", "普通镜牢"): 1
+}
 shopping_strategy = {
     QT_TRANSLATE_NOOP("BaseComboBox", "仅购买回血饰品"): 0,
     QT_TRANSLATE_NOOP("BaseComboBox", "启用四级优先时：仅购买所有3-4级饰品"): 1,
@@ -109,6 +114,9 @@ team_setting_template = {
     "avoid_skill_3": False,  # 避免使用3技能
     "re_formation_each_floor": False,  # 每个楼层重新编队
     "use_starlight": False,  # 使用开局星光换钱
+    "aggressive_also_enhance": False,  # 激进合成期间也升级饰品
+    "fixed_team_use": False,  # 固定队伍用途
+    "fixed_team_use_select": 0,  # 固定队伍用途的选择项
     "reward_cards": False,  # 奖励卡优先度
     "reward_cards_select": 0,  # 自定义奖励卡优先度
     "choose_opening_bonus": False,  # 自选开局加成
@@ -147,6 +155,7 @@ all_combobox_config_name = [
     "team_number",
     "team_system",
     "shop_strategy",
+    "fixed_team_use_select",
     "reward_cards_select",
     "after_level_IV_select",
     "shopping_strategy_select",
@@ -180,6 +189,8 @@ all_checkbox_config_name = [
     "avoid_skill_3",
     "re_formation_each_floor",
     "use_starlight",
+    "aggressive_also_enhance",
+    "fixed_team_use",
     "reward_cards",
     "choose_opening_bonus",
     "after_level_IV",

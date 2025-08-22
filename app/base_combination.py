@@ -1,3 +1,5 @@
+import datetime
+
 from PyQt5.QtCore import QUrl
 from PyQt5.QtGui import QPixmap, QDesktopServices
 from PyQt5.QtWidgets import QPushButton
@@ -6,11 +8,11 @@ from qfluentwidgets import LineEdit, SettingCard, \
     PushSettingCard, PrimaryPushSettingCard
 
 from app.base_tools import *
-from app.card.messagebox_custom import MessageBoxEdit
+from app.card.messagebox_custom import MessageBoxEdit, MessageBoxDate, MessageBoxSpinbox
 from app.language_manager import LanguageManager
 from module.update.check_update import check_update
-
 from utils.utils import encrypt_string, decrypt_string
+
 
 class CheckBoxWithButton(QFrame):
     def __init__(self, check_box_name, check_box_title, check_box_icon: Union[str, QIcon, FluentIconBase, None],
@@ -471,3 +473,39 @@ class SwitchSettingCard(SettingCard):
         self.switchButton.setText(self.tr('开') if self.switchButton.checked else self.tr('关'))
         self.titleLabel.setText(self.tr(self.title))
         self.contentLabel.setText(self.tr(self.content))
+
+class PushSettingCardDate(BasePushSettingCard):
+    #clicked = pyqtSignal()
+    def __init__(self, text, icon: Union[str, QIcon, FluentIconBase], title, config_name, parent=None):
+        self.config_value = datetime.datetime.fromtimestamp(cfg.get_value(config_name))
+        super().__init__(text, icon, title, self.config_value.strftime('%Y-%m-%d %H:%M'), parent)
+        self.button.clicked.connect(self.__onclicked)
+
+    def __onclicked(self):
+        message_box = MessageBoxDate(self.title, self.config_value, self.window())
+        if message_box.exec():
+            time = message_box.getDateTime()
+            cfg.set_value(self.configname, time.timestamp())
+            self.contentLabel.setText(time.strftime('%Y-%m-%d %H:%M'))
+
+class PushSettingCardChance(BasePushSettingCard):
+
+    def __init__(self,text, icon: Union[str, QIcon, FluentIconBase], title, content=None, config_name: str = None,
+                 parent=None):
+        super().__init__(text,icon, title, content, parent)
+        self.config_name = config_name
+        self.line_text = LineEdit()
+        self.line_text.setAlignment(Qt.AlignCenter)
+        self.line_text.setReadOnly(True)
+        self.line_text.setMaximumWidth(60)
+        self.line_text.setText(str(cfg.get_value(self.config_name)))
+        current_count = self.hBoxLayout.count()
+        print(current_count)
+        self.hBoxLayout.insertWidget(current_count-2,self.line_text)
+        self.button.clicked.connect(self.__onclicked)
+
+    def __onclicked(self):
+        message_box = MessageBoxSpinbox(self.title,self.window())
+        if message_box.exec():
+            cfg.set_value(f"hard_mirror_chance", int(message_box.getValue()))
+            self.line_text.setText(str(message_box.getValue()))

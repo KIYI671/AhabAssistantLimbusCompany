@@ -20,7 +20,13 @@ class TeamSettingCard(QFrame):
 
         self.team_num = team_num
         if cfg.get_value(f"team{team_num}_setting"):
-            self.team_setting = cfg.get_value(f"team{team_num}_setting")
+            config_team_setting = cfg.get_value(f"team{team_num}_setting")
+            import copy
+            self.team_setting = copy.deepcopy(team_setting_template)
+            # 用配置中的值覆盖模板的同名key（仅处理模板中存在的key）
+            for key, value in config_team_setting.items():
+                if key in self.team_setting:  # 忽略模板中已删除的key
+                    self.team_setting[key] = value
         else:
             self.team_setting = dict(team_setting_template)
         self.dict_keys = list(team_setting_template.keys())
@@ -350,6 +356,9 @@ class CustomizeSettingsModule(QFrame):
         self.third_line_widget = QWidget(self)
         self.third_line = QHBoxLayout(self.third_line_widget)
 
+        self.features_patch_widget_1 = QWidget(self)
+        self.features_patch_line_1 = QHBoxLayout(self.features_patch_widget_1)
+
         self.star_layout = BaseSettingLayout(box_type=2, parent=self)
         self.star_layout.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
         self.star_layout.setMaximumHeight(150)
@@ -358,8 +367,8 @@ class CustomizeSettingsModule(QFrame):
 
         self.fourth_line_widget = QWidget(self)
         self.fourth_line = QHBoxLayout(self.fourth_line_widget)
-        self.reward_cards_widget = QWidget(self)
-        self.reward_cards_line = QVBoxLayout(self.reward_cards_widget)
+        self.features_patch_widget_2 = QWidget(self)
+        self.features_patch_line_2 = QVBoxLayout(self.features_patch_widget_2)
         self.fifth_line_widget = QWidget(self)
         self.fifth_line = QHBoxLayout(self.fifth_line_widget)
         self.second_system_widget = QWidget(self)
@@ -409,6 +418,15 @@ class CustomizeSettingsModule(QFrame):
             "use_starlight", None, QT_TRANSLATE_NOOP("BaseCheckBox", "开局星光换钱")
         )
 
+        self.aggressive_also_enhance = BaseCheckBox(
+            "aggressive_also_enhance", None, QT_TRANSLATE_NOOP("BaseCheckBox", "激进合成期间也升级饰品")
+        )
+
+        self.fixed_team_use = CheckBoxWithComboBox(
+            "fixed_team_use", QT_TRANSLATE_NOOP("CheckBoxWithComboBox", "固定队伍用途"),
+            None, "fixed_team_use_select", parent=self
+        )
+        self.fixed_team_use.add_items(fixed_team_use)
         self.reward_cards = CheckBoxWithComboBox(
             "reward_cards", QT_TRANSLATE_NOOP("CheckBoxWithComboBox", "奖励卡优先度"),
             None, "reward_cards_select", parent=self
@@ -524,6 +542,8 @@ class CustomizeSettingsModule(QFrame):
         self.third_line.addWidget(self.re_formation_each_floor)
         self.third_line.addWidget(self.use_starlight)
 
+        self.features_patch_line_1.addWidget(self.aggressive_also_enhance)
+
         self.star_list.addWidget(self.starlight_1, 0, 0)
         self.star_list.addWidget(self.starlight_2, 0, 1)
         self.star_list.addWidget(self.starlight_3, 0, 2)
@@ -540,7 +560,8 @@ class CustomizeSettingsModule(QFrame):
         self.fourth_line.addWidget(self.after_level_IV)
         self.fourth_line.addWidget(self.shopping_strategy)
 
-        self.reward_cards_line.addWidget(self.reward_cards)
+        self.features_patch_line_2.addWidget(self.fixed_team_use)
+        self.features_patch_line_2.addWidget(self.reward_cards)
 
         self.fifth_line.addWidget(self.opening_items, Qt.AlignLeft)
 
@@ -567,8 +588,9 @@ class CustomizeSettingsModule(QFrame):
         self.main_layout.addWidget(self.first_line_widget)
         self.main_layout.addWidget(self.second_line_widget)
         self.main_layout.addWidget(self.third_line_widget)
+        self.main_layout.addWidget(self.features_patch_widget_1)
         self.main_layout.addWidget(self.star_layout)
-        self.main_layout.addWidget(self.reward_cards_widget, Qt.AlignLeft)
+        self.main_layout.addWidget(self.features_patch_widget_2, Qt.AlignLeft)
         self.main_layout.addWidget(self.fourth_line_widget)
         self.main_layout.addWidget(self.fifth_line_widget)
         self.main_layout.addWidget(self.second_system_widget)
@@ -586,6 +608,8 @@ class CustomizeSettingsModule(QFrame):
         self.only_system_fuse.retranslateUi()
         self.avoid_skill_3.retranslateUi()
         self.use_starlight.retranslateUi()
+        self.aggressive_also_enhance.retranslateUi()
+        self.fixed_team_use.retranslateUi()
         self.reward_cards.retranslateUi()
         self.choose_opening_bonus.retranslateUi()
         self.re_formation_each_floor.retranslateUi()

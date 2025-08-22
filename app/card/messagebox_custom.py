@@ -1,12 +1,14 @@
-from PyQt5.QtCore import Qt, QUrl, QT_TRANSLATE_NOOP
+import datetime
+
+from PyQt5.QtCore import Qt, QUrl
 from PyQt5.QtGui import QDesktopServices, QIcon
 from PyQt5.QtWidgets import QSizePolicy
 from qfluentwidgets import MessageBox, BodyLabel, FluentStyleSheet, \
-    PrimaryPushButton, LineEdit, ScrollArea, InfoBar
+    PrimaryPushButton, LineEdit, ScrollArea, InfoBar, DateTimeEdit, SpinBox
 from qfluentwidgets.common.icon import FluentIconBase
 from qfluentwidgets.components.widgets.info_bar import InfoBarIcon, InfoBarPosition
 
-from app.language_manager import LanguageManager
+from module.config import cfg
 
 
 class MessageBoxHtml(MessageBox):
@@ -180,3 +182,53 @@ class BaseInfoBar(InfoBar):
     def error(cls, title, content, orient=Qt.Horizontal, isClosable=True, duration=1000,
               position=InfoBarPosition.TOP_RIGHT, parent=None):
         return cls.new(InfoBarIcon.ERROR, title, content, orient, isClosable, duration, position, parent)
+
+
+class MessageBoxDate(MessageBox):
+    def __init__(self, title: str, content: datetime, parent=None):
+        super().__init__(title, "", parent)
+
+        self.textLayout.removeWidget(self.contentLabel)
+        self.contentLabel.clear()
+
+        self.yesButton.setText('确认')
+        self.cancelButton.setText('取消')
+
+        self.datePicker = DateTimeEdit(self)
+        self.datePicker.setDateTime(content)
+
+        self.textLayout.addWidget(self.datePicker, 0, Qt.AlignTop)
+
+        self.buttonGroup.setMinimumWidth(480)
+
+    def getDateTime(self):
+        return self.datePicker.dateTime().toPyDateTime()
+
+
+class MessageBoxSpinbox(MessageBox):
+    def __init__(self, title: str, parent=None):
+        super().__init__(title, '', parent)
+
+        self.text = title
+
+        self.textLayout.removeWidget(self.contentLabel)
+        self.contentLabel.clear()
+
+        self.yesButton.setText(self.tr("确认"))
+        self.cancelButton.setText(self.tr("取消"))
+
+        self.box = SpinBox(self)
+        self.box.setValue(int(cfg.hard_mirror_chance))
+        self.box.setMinimum(0)
+        self.box.setMaximum(3)
+
+        self.textLayout.addWidget(self.box, 0, Qt.AlignTop)
+
+        self.buttonGroup.setMinimumWidth(250)
+
+    def getValue(self):
+        return self.box.value()
+
+    def retranslateUi(self):
+        text = self.tr(self.text)
+        self.titleLabel.setText(text)
