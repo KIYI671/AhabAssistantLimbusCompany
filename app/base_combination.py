@@ -418,7 +418,7 @@ class PushSettingCardMirrorchyan(SettingCard):
             check_update(parent, flag=True)
 
     def __onclicked2(self):
-        QDesktopServices.openUrl(QUrl("https://mirrorchyan.com/"))
+        QDesktopServices.openUrl(QUrl("https://mirrorchyan.com/?source=aalc_app"))
 
     def _find_parent(self, widget):
         while widget.parent() is not None:
