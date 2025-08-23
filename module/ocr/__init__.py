@@ -31,6 +31,9 @@ class OCRInstaller:
                 f"CPU 不支持 AVX2 指令集，使用 {ocr_name} \nThe CPU does not support the AVX2 instruction set, use {ocr_name}")
         return ocr_name, ocr_path
 
+    def check_again(self):
+        self._determine_ocr()
+
     def check_and_install(self):
         if not os.path.exists(self.ocr_path):
             self.logger.WARNING(f"OCR 路径不存在: {self.ocr_path}")
@@ -38,6 +41,7 @@ class OCRInstaller:
 
     def install_ocr(self):
         RapidOCR_url = "https://github.com/hiroi-sora/RapidOCR-json/releases/download/v0.2.0/RapidOCR-json_v0.2.0.7z"
+        self.logger.INFO("开始从Github源下载RapidOCR")
         start_update_thread(RapidOCR_url)
 
 

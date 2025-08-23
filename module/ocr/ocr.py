@@ -28,6 +28,8 @@ class OCR(metaclass=SingletonMeta):
                 atexit.register(self.exit_ocr)
             except Exception as e:
                 self.logger.ERROR(f"初始化OCR失败：{e}")
+                from module.ocr import ocr_installer
+                ocr_installer.check_again()
                 self.logger.ERROR("请尝试重新下载或解压")
                 raise Exception("初始化OCR失败")
 
