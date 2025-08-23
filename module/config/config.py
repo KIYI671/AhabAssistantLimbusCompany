@@ -1,7 +1,7 @@
+import atexit
 import copy
 import sys
 import threading
-import atexit
 
 from ruamel.yaml import YAML
 
@@ -258,7 +258,11 @@ class Theme_pack_list(metaclass=SingletonMeta):
         if config == new_config:
             return
         for key, value in new_config.items():
-            config[key] = value
+            if isinstance(value, dict):
+                for k, v in value.items():
+                    config[key][k] = v
+            else:
+                config[key] = value
         log.DEBUG(f"主题包名单已更新")
 
     def save_config(self):
