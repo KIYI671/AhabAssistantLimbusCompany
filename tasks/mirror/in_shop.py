@@ -57,6 +57,10 @@ class Shop:
         self.the_first_line_position = None
         self.replacement = False
 
+        # 用于记录已升级的ego饰品
+        self.enhance_gifts_list = []
+        self.enhance_gifts_progress = None
+
     class RestartGame(Exception):
         pass
 
@@ -71,9 +75,7 @@ class Shop:
             if auto.click_element("mirror/shop/power_up_assets.png"):
                 auto.mouse_to_blank()
                 sleep(0.5)
-                while auto.take_screenshot() is None:
-                    continue
-                if auto.click_element("mirror/shop/power_up_confirm_assets.png") is False:
+                if auto.click_element("mirror/shop/power_up_confirm_assets.png",take_screenshot=True) is False:
                     return True
                 sleep(3)
                 if retry() is False:
@@ -794,6 +796,12 @@ class Shop:
                 break
 
     def enhance_gifts(self):
+        def check_enhanced(pos):
+            for p in self.enhance_gifts_list:
+                if abs(pos[0] - p[0]) <= 10 and abs(pos[1] - p[1]) <= 10:
+                    return True
+            return False
+
         log.DEBUG("开始执行饰品升级模块")
 
         while True:
@@ -813,54 +821,63 @@ class Shop:
             if loop_try_count < -50:
                 log.ERROR("不应该发生这样的问题，请提交issue")
 
-        first_gift = True
         list_block = False
         loop_count = 30
         auto.model = 'clam'
+        system_level_IV=False
+        second_system_level_IV = False
         while True:
             # 自动截图
             if auto.take_screenshot() is None:
                 continue
+
             next_gift = True
-            if first_gift and auto.find_element(f"mirror/shop/enhance_gifts/big_{self.system}.png"):
-                if self.ego_gift_to_power_up() is False:
-                    next_gift = False
-                else:
-                    first_gift = False
-                    continue
+
+            # 升级本体系四级
+            if not system_level_IV:
+                if level_IV := auto.find_element(f"mirror/shop/level_IV_gifts/{self.system}_level_IV.png"):
+                    if check_enhanced(level_IV) is False:
+                        auto.mouse_click(level_IV[0],level_IV[1])
+                        if self.ego_gift_to_power_up() is False:
+                            break
+                        else:
+                            self.enhance_gifts_list.append(level_IV)
+                system_level_IV=True
+                continue
+
+            # 升级第二体系四级
+            if self.second_system and self.second_system_action[3] and second_system_level_IV is False:
+                if self.second_system_setting == 1 or (self.second_system_setting == 0 and self.fuse_IV is True):
+                    if level_IV_2 := auto.find_element(f"mirror/shop/level_IV_gifts/{self.second_system_select}_level_IV.png"):
+                        if check_enhanced(level_IV_2) is False:
+                            auto.mouse_click(level_IV_2[0], level_IV_2[1])
+                            if self.ego_gift_to_power_up() is False:
+                                break
+                            else:
+                                self.enhance_gifts_list.append(level_IV_2)
+                        second_system_level_IV = True
+                        continue
+
             if gifts := auto.find_element(f"mirror/shop/enhance_gifts/{self.system}.png",
                                           find_type="image_with_multiple_targets"):
                 gifts = sorted(gifts, key=lambda x: (x[1], x[0]))
-                all_true = True
                 for gift in gifts:
-                    auto.mouse_click(gift[0], gift[1])
-                    if self.ego_gift_to_power_up() is False:
-                        next_gift = False
-                        all_true = False
-                        break
-                if all_true:
-                    break
-
-            if self.second_system and self.second_system_action[3]:
-                if self.second_system_setting == 1 or (self.second_system_setting == 0 and self.fuse_IV is True):
-                    if gifts := auto.find_element(f"mirror/shop/enhance_gifts/{self.second_system_select}.png",
-                                                  find_type="image_with_multiple_targets"):
-                        gifts = sorted(gifts, key=lambda x: (x[1], x[0]))
-                        all_true = True
-                        for gift in gifts:
-                            auto.mouse_click(gift[0], gift[1])
-                            if self.ego_gift_to_power_up() is False:
-                                next_gift = False
-                                all_true = False
-                                break
-                        if all_true:
+                    if check_enhanced(gift) is False:
+                        auto.mouse_click(gift[0], gift[1])
+                        if self.ego_gift_to_power_up() is False:
+                            next_gift = False
                             break
+                        else:
+                            self.enhance_gifts_list.append(gift)
+                    else:
+                        continue
+                    next_gift = False
 
-            if list_block is False and auto.find_element("mirror/shop/gifts_list_block.png"):
-                block_position = auto.find_element("mirror/shop/gifts_list_block.png")
-                auto.mouse_drag(block_position[0], block_position[1], drag_time=1, dy=500)
-                list_block = True
-                continue
+            # if list_block is False and auto.find_element("mirror/shop/gifts_list_block.png"):
+            #     block_position = auto.find_element("mirror/shop/gifts_list_block.png")
+            #     auto.mouse_drag(block_position[0], block_position[1], drag_time=1, dy=500)
+            #     list_block = True
+            #     continue
 
             if next_gift is False:
                 break
