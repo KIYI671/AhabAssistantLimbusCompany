@@ -383,6 +383,11 @@ class PageMirror(PageCard):
             QT_TRANSLATE_NOOP("BaseCheckBox", "困牢单次加成"),
             center=False
         )
+        self.select_event_pack = BaseCheckBox(
+            "select_event_pack", None,
+            QT_TRANSLATE_NOOP("BaseCheckBox", "第五层选择（最左边）活动卡包"),
+            center=False
+        )
 
     def __init_layout(self):
         self.vbox_general.addWidget(self.team)
@@ -396,6 +401,7 @@ class PageMirror(PageCard):
         self.vbox_advanced.addWidget(self.infinite_dungeons)
         self.vbox_advanced.addWidget(self.save_rewards)
         self.vbox_advanced.addWidget(self.hard_mirror_single_bonuses)
+        self.vbox_advanced.addWidget(self.select_event_pack)
 
         self.card_layout.insertWidget(self.card_layout.count() - 1, self.mirror_count)
 
@@ -520,6 +526,7 @@ class PageMirror(PageCard):
         self.infinite_dungeons.retranslateUi()
         self.save_rewards.retranslateUi()
         self.hard_mirror_single_bonuses.retranslateUi()
+        self.select_event_pack.retranslateUi()
         for child in self.findChildren(MirrorTeamCombination):
             child.retranslateUi()
 

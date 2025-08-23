@@ -10,7 +10,7 @@ from utils.image_utils import ImageUtils
 
 @begin_and_finish_time_log(task_name="选择镜牢主题包")
 # 选择镜牢主题包
-def select_theme_pack(hard_switch=False):
+def select_theme_pack(hard_switch=False, flood=None):
     loop_count = 30
     auto.model = 'clam'
     scale = cfg.set_win_size / 1080
@@ -71,6 +71,15 @@ def select_theme_pack(hard_switch=False):
                 auto.mouse_click((hard_bbox[0] + hard_bbox[2]) // 2, (hard_bbox[1] + hard_bbox[3]) // 2)
 
         try:
+            if flood == 4:
+                if all_theme_pack := auto.find_element("mirror/theme_pack/theme_pack_features.png",
+                                                       find_type='image_with_multiple_targets'):
+                    all_theme_pack.sort(key=lambda pos: (pos[0], pos[1]))
+                    auto.mouse_drag_down(all_theme_pack[0][0], all_theme_pack[0][1])
+                    sleep(3)
+                    msg = "此次主题包选择了最左边的（活动）卡包"
+                    log.INFO(msg)
+                    return
             weight_list = []
             pack_name = []
             if all_theme_pack := auto.find_element("mirror/theme_pack/theme_pack_features.png",

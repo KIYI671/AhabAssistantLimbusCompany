@@ -50,7 +50,7 @@ class SettingInterface(ScrollArea):
         self.auto_hard_mirror_card = SwitchSettingCard(
             FIF.PLAY,
             QT_TRANSLATE_NOOP("SwitchSettingCard", '自动困难模式'),
-            QT_TRANSLATE_NOOP('SwitchSettingCard', '每周自动将前三场镜牢设置为困难模式执行'),
+            QT_TRANSLATE_NOOP('SwitchSettingCard', '每周自动将前三场镜牢设置为困难模式执行，请确认启用了“困牢单次加成”功能'),
             "auto_hard_mirror",
             parent=self.game_setting_group
         )
