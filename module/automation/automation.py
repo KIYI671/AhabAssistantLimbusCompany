@@ -41,6 +41,17 @@ class Automation(metaclass=SingletonMeta):
         self.mouse_to_blank = self.input_handler.mouse_to_blank
         self.mouse_drag_link = self.input_handler.mouse_drag_link
 
+    def check_pause(self) -> bool:
+        return self.input_handler.is_pause
+
+    def get_restore_time(self):
+        """
+        获取上一次结束暂停的时间
+        """
+        if self.input_handler.restore_time is None:
+            return None
+        return self.input_handler.restore_time
+
     def click_element(self, target, find_type="image", threshold=0.8, max_retries=1, take_screenshot=False,
                       offset=True, action="click", times=1, dx=0, dy=0, model=None, my_crop=None, click=True,
                       drag_time=None, interval=0.5):

@@ -10,7 +10,6 @@ from module.automation import auto
 from module.config import cfg
 from module.logger import log
 
-
 def check_times(start_time):
     now_time = time.time()
     if now_time - start_time > 90:
@@ -44,6 +43,8 @@ def check_times(start_time):
 def retry():
     start_time = time.time()
     while True:
+        if auto.get_restore_time() != None:
+                start_time = max(start_time, auto.get_restore_time())
         if check_times(start_time):
             return False
         # 自动截图
