@@ -477,6 +477,7 @@ class SwitchSettingCard(SettingCard):
 class PushSettingCardDate(BasePushSettingCard):
     #clicked = pyqtSignal()
     def __init__(self, text, icon: Union[str, QIcon, FluentIconBase], title, config_name, parent=None):
+        self.config_name = config_name
         self.config_value = datetime.datetime.fromtimestamp(cfg.get_value(config_name))
         super().__init__(text, icon, title, self.config_value.strftime('%Y-%m-%d %H:%M'), parent)
         self.button.clicked.connect(self.__onclicked)
@@ -485,7 +486,7 @@ class PushSettingCardDate(BasePushSettingCard):
         message_box = MessageBoxDate(self.title, self.config_value, self.window())
         if message_box.exec():
             time = message_box.getDateTime()
-            cfg.set_value(self.configname, time.timestamp())
+            cfg.set_value(self.config_name, time.timestamp())
             self.contentLabel.setText(time.strftime('%Y-%m-%d %H:%M'))
 
 class PushSettingCardChance(BasePushSettingCard):

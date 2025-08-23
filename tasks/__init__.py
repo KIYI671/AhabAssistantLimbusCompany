@@ -2,8 +2,8 @@ all_systems = {0: "burn", 1: "bleed", 2: "tremor", 3: "rupture", 4: "poise",
                5: "sinking", 6: "charge", 7: "slash", 8: "pierce", 9: "blunt"}
 all_sinners_name = ["YiSang", "Faust", "DonQuixote", "Ryoshu", "Meursault", "HongLu",
                     "Heathcliff", "Ishmael", "Rodion", "Sinclair", "Outis", "Gregor"]
-all_sinners_name_zh = ["李箱", "浮士德", "堂吉诃德", "良秀", "默尔索", "鸿璐",
-                       "希斯克利夫", "以实玛丽", "罗佳", "辛克莱", "奥提斯", "格里高尔"]
+all_sinners_name_zh = ["李箱", "浮士德", "堂吉", "良秀", "默尔索", "鸿璐",
+                       "希斯克利夫", "以实玛", "罗佳", "辛克莱", "奥提斯", "格里高尔"]
 all_sinner = {
     "YiSang": 1, "Faust": 2, "DonQuixote": 3,
     "Ryoshu": 4, "Meursault": 5, "HongLu": 6,

@@ -164,13 +164,18 @@ def script_task() -> None | int:
 
         # 判断是否启用了自动切换困牢
         if cfg.auto_hard_mirror:
+            from datetime import datetime
             if cfg.last_auto_change == 0:
                 get_timezone()
-                from datetime import datetime
-                cfg.set_value("last_auto_change", utc_now=datetime.now())
+                cfg.set_value("last_auto_change",datetime.now().timestamp())
+                cfg.flush()
             if check_hard_mirror_time():
+                log.INFO("识别到新的困牢周期，自动切换困难镜牢，设置困牢次数为3")
+                cfg.set_value("last_auto_change", datetime.now().timestamp())
                 cfg.set_value("hard_mirror", True)
                 cfg.set_value("hard_mirror_chance", 3)
+            if cfg.hard_mirror_chance>0:
+                cfg.set_value("hard_mirror", True)
 
         # 判断执行镜牢任务的次数
         mir_times = cfg.set_mirror_count

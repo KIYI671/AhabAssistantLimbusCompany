@@ -75,6 +75,8 @@ class Mirror:
         self.flood_times = [time.time() for i in range(5)]
         self.LOOP_COUNT = 250
 
+        self.bequest_from_the_previous_game = False
+
     def road_to_mir(self):
         loop_count = 30
         auto.model = 'clam'
@@ -84,6 +86,9 @@ class Mirror:
             if auto.take_screenshot() is None:
                 continue
             auto.mouse_to_blank()
+            if auto.find_element("mirror/claim_reward/clear_assets.png"):
+                self.bequest_from_the_previous_game = True
+                return True
             if auto.find_element("mirror/road_in_mir/legend_assets.png"):
                 break
             if auto.click_element("mirror/road_to_mir/resume_assets.png"):
@@ -306,11 +311,13 @@ class Mirror:
 
             # 在主界面时，开始进入镜牢
             if auto.click_element("home/drive_assets.png") or auto.find_element("home/window_assets.png"):
-                self.road_to_mir()
+                if self.road_to_mir() and self.bequest_from_the_previous_game:
+                    break
                 continue
             # 在镜牢界面，进入镜牢
             if auto.click_element("mirror/road_to_mir/enter_assets.png"):
-                self.road_to_mir()
+                if self.road_to_mir() and self.bequest_from_the_previous_game:
+                    break
                 continue
 
             # 初始饰品选择
@@ -346,6 +353,10 @@ class Mirror:
 
         msg = f"开始进行镜牢奖励领取"
         log.INFO(msg)
+
+        if self.bequest_from_the_previous_game:
+            self.get_reward_in_road()
+            return True
 
         main_loop_count = 20
         auto.model = 'clam'
@@ -886,6 +897,62 @@ class Mirror:
             except Exception as e:
                 log.ERROR(e)
                 continue
+
+    def get_reward_in_road(self):
+        main_loop_count = 20
+        auto.model = 'clam'
+        while True:
+            if auto.take_screenshot() is None:
+                auto.mouse_to_blank()
+                continue
+            # 如果回到主界面，退出循环
+            if auto.click_element("mirror/claim_reward/rewards_acquired_assets.png"):
+                return True
+            if cfg.no_weekly_bonuses:
+                bonuses = auto.find_element("mirror/claim_reward/weekly_bonuses.png",
+                                            find_type='image_with_multiple_targets')
+                if len(bonuses) >= 1:
+                    for _ in range(len(bonuses)):
+                        position = bonuses.pop(-1)
+                        auto.mouse_click(position[0], position[1])
+            if cfg.hard_mirror_single_bonuses:
+                bonuses = auto.find_element("mirror/claim_reward/weekly_bonuses.png",
+                                            find_type='image_with_multiple_targets')
+                bonuses = sorted(bonuses, key=lambda x: x[0])
+                if len(bonuses) > 1:
+                    for _ in range(len(bonuses) - 1):
+                        position = bonuses.pop(-1)
+                        auto.mouse_click(position[0], position[1])
+            if auto.click_element("mirror/claim_reward/claim_rewards_confirm_assets.png", threshold=0.75, model='clam'):
+                continue
+            if self.hard_switch and cfg.save_rewards:
+                auto.click_element("mirror/claim_reward/claim_rewards_assets.png")
+                sleep(1)
+                pos = auto.find_element("mirror/claim_reward/use_enkephalin_assets.png", take_screenshot=True)
+                if pos:
+                    auto.mouse_click(pos[0] - 300 * (cfg.set_win_size / 1440), pos[1])
+                continue
+            elif auto.click_element("mirror/claim_reward/claim_rewards_assets.png"):
+                sleep(1)
+                # TODO: 统计获取的coins
+                continue
+            if auto.click_element("mirror/claim_reward/use_enkephalin_assets.png", threshold=0.75):  # 降低识别阈值
+                continue
+            # 处理周年活动弹出的窗口
+            if auto.click_element("home/close_anniversary_event_assets.png"):
+                continue
+            retry()
+            main_loop_count -= 1
+            if main_loop_count % 3 == 0:
+                log.DEBUG(f"镜牢奖励识别次数剩余{main_loop_count}次")
+            if main_loop_count < 10:
+                auto.model = "normal"
+                log.DEBUG("识别模式切换到正常模式")
+            if main_loop_count < 5:
+                auto.model = 'aggressive'
+                log.DEBUG("识别模式切换到激进模式")
+            if main_loop_count < 0:
+                raise log.ERROR("镜牢奖励领取出错,请手动操作重试")
 
     @begin_and_finish_time_log(task_name="镜牢商店")
     def in_shop(self):

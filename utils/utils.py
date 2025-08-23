@@ -42,12 +42,11 @@ def get_timezone():
     cfg.set_value("timezone", round(diff_hours, 2))  # 保留二位小数，保存在配置文件中
 
 def check_hard_mirror_time():
-    time_format = "%Y-%m-%d %H:%M:%S"
-    try:
-        last_time = datetime.strptime(cfg.last_auto_change, time_format)
-        now_time = datetime.now()
-    except ValueError as e:
-        raise ValueError("时间格式错误，需为YYYY-MM-DD HH:MM:SS") from e
+    if cfg.last_auto_change == 0:
+        get_timezone()
+
+    last_time = datetime.fromtimestamp(cfg.last_auto_change)
+    now_time = datetime.now()
 
     if last_time >= now_time:
         return False  # 原始时间t1不早于t2，偏移后也不会
