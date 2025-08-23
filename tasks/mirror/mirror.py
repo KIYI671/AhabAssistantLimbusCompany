@@ -533,9 +533,14 @@ class Mirror:
         team_system = self.system
         if self.opening_items:
             team_system = all_systems[self.opening_items_system]
+        log.DEBUG("开始选择初始EGO")
         while True:
             # 自动截图
             if auto.take_screenshot() is None:
+                continue
+
+            if auto.click_element("mirror/road_in_mir/ego_gift_get_confirm_assets.png"):
+                auto.mouse_to_blank()
                 continue
 
             if auto.click_element("mirror/road_to_mir/activate_gift_search_on_assets.png"):
@@ -543,9 +548,6 @@ class Mirror:
 
             if auto.find_element("mirror/theme_pack/feature_theme_pack_assets.png"):
                 break
-
-            if auto.click_element("mirror/road_in_mir/ego_gift_get_confirm_assets.png"):
-                continue
 
             if team_system == "slash" or team_system == "pierce" or team_system == "blunt" and scroll == False:
                 slash_button = auto.find_element("mirror/road_to_mir/slash_gift_model_assets.png")
@@ -573,6 +575,7 @@ class Mirror:
                 auto.click_element(f"mirror/road_to_mir/select_init_gift/{team_system}_ego_gift_3.png")
 
             if auto.click_element("mirror/road_to_mir/select_init_ego_gifts_confirm_assets.png"):
+                sleep(1)
                 continue
 
             if retry() is False:
