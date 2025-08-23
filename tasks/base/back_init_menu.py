@@ -4,6 +4,7 @@ from module.automation import auto
 from module.config import cfg
 from module.decorator.decorator import begin_and_finish_time_log
 from module.logger import log
+from module.my_error.my_error import backMainWinError
 from tasks.base.retry import retry
 from tasks.mirror.reward_card import get_reward_card
 
@@ -73,4 +74,4 @@ def back_init_menu():
             auto.model = 'aggressive'
         if loop_count < 0:
             log.ERROR("无法返回主界面，不能进行下一步,请手动操作重试")
-            raise Exception("无法返回主界面")
+            raise backMainWinError("无法返回主界面")

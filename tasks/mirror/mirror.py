@@ -88,7 +88,7 @@ class Mirror:
                 break
             if auto.click_element("mirror/road_to_mir/resume_assets.png"):
                 break
-            if auto.click_element("mirror/road_to_mir/enter_mirror_assets.png"):
+            if auto.click_element("mirror/road_to_mir/enter_mirror_assets.png",threshold=0.78):
                 break
             infinity_bbox = ImageUtils.get_bbox(ImageUtils.load_image("mirror/road_to_mir/infinity_mirror_bbox.png"))
             infinity_bbox = (

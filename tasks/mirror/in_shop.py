@@ -224,10 +224,9 @@ class Shop:
                 if auto.click_element("mirror/shop/refresh_assets.png"):
                     refresh = True
                     sleep(3)
+                    if self.skill_replacement and self.replacement is False:
+                        self.replacement_skill()
                     continue
-                refresh = True
-                if self.skill_replacement and self.replacement is False:
-                    self.replacement_skill()
 
             if refresh_keyword is False:
                 auto.mouse_click_blank(times=3)
@@ -238,6 +237,8 @@ class Shop:
                     refresh_keyword = True
                     auto.mouse_click_blank()
                     sleep(3)
+                    if self.skill_replacement and self.replacement is False:
+                        self.replacement_skill()
                     continue
 
             break

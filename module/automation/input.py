@@ -1,5 +1,5 @@
 import random
-from time import sleep,time
+from time import sleep, time
 
 import pyautogui
 
@@ -26,8 +26,11 @@ class Input(metaclass=SingletonMeta):
         self.logger.INFO(msg)
 
     def wait_pause(self):
-        self.logger.INFO("AALC 已暂停")
+        pause_identity = False
         while self.is_pause:
+            if not pause_identity is False:
+                self.logger.INFO("AALC 已暂停")
+                pause_identity = True
             sleep(1)
         self.restore_time = time()
 
