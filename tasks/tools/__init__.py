@@ -15,6 +15,13 @@ class ToolManager:
                 self.run_battle()
         except Exception as e:
             log.ERROR(e)
+        finally:
+            from module.automation import auto
+            from module.game_and_screen import screen
+            from module.ocr import ocr
+            screen.reset_win()
+            ocr.exit_ocr()
+            auto.clear_img_cache()
 
     def run_battle(self):
         """自动战斗"""
