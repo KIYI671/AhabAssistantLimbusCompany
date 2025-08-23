@@ -43,8 +43,8 @@ def check_times(start_time):
 def retry():
     start_time = time.time()
     while True:
-        if auto.check_pause():
-            start_time = time.time()
+        if auto.get_restore_time() != None:
+                start_time = max(start_time, auto.get_restore_time())
         if check_times(start_time):
             return False
         # 自动截图

@@ -1,5 +1,5 @@
 import random
-from time import sleep
+from time import sleep,time
 
 import pyautogui
 
@@ -14,6 +14,7 @@ class Input(metaclass=SingletonMeta):
     def __init__(self, logger):
         self.is_pause = False
         self.logger = logger
+        self.restore_time = None
         # self.is_move_back = False  以后从配置里读取
 
     def set_pause(self):
@@ -25,8 +26,10 @@ class Input(metaclass=SingletonMeta):
         self.logger.INFO(msg)
 
     def wait_pause(self):
+        self.logger.INFO("AALC 已暂停")
         while self.is_pause:
             sleep(1)
+        self.restore_time = time()
 
     def mouse_click(self, x, y, times=1, move_back=False):
         """在指定坐标上执行点击操作
