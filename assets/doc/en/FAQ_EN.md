@@ -22,6 +22,12 @@ A: Check if you are using a language translation module (referring to localizati
 
 ---
 
+Q: After the battle ends, the script will not automatically click on the page, and it will take a while to exit the battle interface
+
+A: This is because you have selected an announcer with a particularly long voice, please turn off the option to "Wait for the announcer's voice to finish" at the bottom of the settings page
+
+---
+
 Q: Why does it stop moving as soon as it enters combat? Why can't my shortcut keys take effect?
 
 A: The auto - combat function configured in this script is executed using the < P > and < Enter > keys. Issues related to these keys may be due to the input method on your computer.
