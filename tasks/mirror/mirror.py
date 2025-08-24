@@ -698,6 +698,10 @@ class Mirror:
             # 自动截图
             if auto.take_screenshot() is None:
                 continue
+                
+            if retry() is False:
+                return False
+
 
             # 如果在战斗中或回到镜牢路线图中，则跳出循环
             if auto.find_element("battle/turn_assets.png"):
@@ -752,9 +756,8 @@ class Mirror:
 
             if auto.click_element("mirror/road_in_mir/ego_gift_get_confirm_assets.png"):
                 continue
+               
 
-            if retry() is False:
-                return False
             if auto.click_element("event/skip_assets.png", times=6):
                 continue
 
