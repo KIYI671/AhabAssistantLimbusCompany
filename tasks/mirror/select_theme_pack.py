@@ -71,7 +71,7 @@ def select_theme_pack(hard_switch=False, flood=None):
                 auto.mouse_click((hard_bbox[0] + hard_bbox[2]) // 2, (hard_bbox[1] + hard_bbox[3]) // 2)
 
         try:
-            if flood == 4:
+            if flood == 4 and cfg.select_event_pack:
                 if all_theme_pack := auto.find_element("mirror/theme_pack/theme_pack_features.png",
                                                        find_type='image_with_multiple_targets'):
                     all_theme_pack.sort(key=lambda pos: (pos[0], pos[1]))
