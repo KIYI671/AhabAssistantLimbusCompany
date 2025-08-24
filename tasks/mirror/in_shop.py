@@ -130,6 +130,8 @@ class Shop:
                             sleep(1)
                             while auto.take_screenshot() is None:
                                 continue
+                            if retry() is False:
+                                raise self.RestartGame()
                             auto.click_element("mirror/road_in_mir/ego_gift_get_confirm_assets.png")
                             continue
                         else:
@@ -139,6 +141,8 @@ class Shop:
                         sleep(1)
                         if auto.click_element("mirror/shop/purchase_assets.png", take_screenshot=True):
                             sleep(1)
+                            if retry() is False:
+                                raise self.RestartGame()
                             auto.click_element("mirror/road_in_mir/ego_gift_get_confirm_assets.png",
                                                take_screenshot=True)
                             continue
@@ -226,6 +230,8 @@ class Shop:
                 if auto.click_element("mirror/shop/refresh_assets.png"):
                     refresh = True
                     sleep(3)
+                    if retry() is False:
+                        raise self.RestartGame()
                     if self.skill_replacement and self.replacement is False:
                         self.replacement_skill()
                     continue
@@ -239,6 +245,8 @@ class Shop:
                     refresh_keyword = True
                     auto.mouse_click_blank()
                     sleep(3)
+                    if retry() is False:
+                        raise self.RestartGame()
                     if self.skill_replacement and self.replacement is False:
                         self.replacement_skill()
                     continue
@@ -344,6 +352,9 @@ class Shop:
                         break
                     loop_times -= 1
                     continue
+
+                if retry() is False:
+                    raise self.RestartGame()
 
             if fuse:
                 sleep(2)
@@ -494,6 +505,9 @@ class Shop:
                     if auto.click_element("mirror/shop/fuse_ego_gift_assets.png"):
                         continue
 
+                    if retry() is False:
+                        raise self.RestartGame()
+
             if fuse:
                 auto.click_element("mirror/shop/fuse_ego_gift_assets.png", take_screenshot=True)
                 continue
@@ -595,6 +609,9 @@ class Shop:
             if auto.click_element("mirror/shop/enhance_and_fuse_and_sell_confirm_assets.png", model="normal"):
                 continue
 
+            if retry() is False:
+                raise self.RestartGame()
+
             loop_count -= 1
             if loop_count < 20:
                 auto.model = "normal"
@@ -662,6 +679,8 @@ class Shop:
                             sleep(cfg.mouse_action_interval)
                         auto.click_element("mirror/shop/enhance_and_fuse_and_sell_confirm_assets.png", model='normal')
                         sleep(1)
+                        if retry() is False:
+                            raise self.RestartGame()
                         gift_sell = True
                         break
 
@@ -957,6 +976,8 @@ class Shop:
                 sleep(0.5)
                 auto.click_element("mirror/shop/skill_replacement_confirm_assets.png")
                 auto.click_element("mirror/shop/skill_replacement_confirm_assets.png")
+                if retry() is False:
+                    raise self.RestartGame()
                 self.replacement = True
 
     # 在商店的处理

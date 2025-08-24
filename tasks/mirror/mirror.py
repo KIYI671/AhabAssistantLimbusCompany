@@ -257,6 +257,7 @@ class Mirror:
                         self.re_start()
                 if auto.click_element("battle/chaim_to_battle_assets.png") or auto.click_element(
                         "battle/normal_to_battle_assets.png"):
+                    retry()
                     continue
 
             # 没有配队的情况
