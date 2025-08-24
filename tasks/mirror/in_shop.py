@@ -48,7 +48,8 @@ class Shop:
         self.skill_replacement_mode = team_setting["skill_replacement_mode"]
         self.ignore_shop = team_setting["ignore_shop"]  # 忽略的商店楼层
 
-        self.aggressive_also_enhance = team_setting["aggressive_also_enhance"]  # 激进合成期间也升级饰品
+        self.aggressive_also_enhance = team_setting[
+            "aggressive_also_enhance"] if "aggressive_also_enhance" in team_setting else False  # 激进合成期间也升级饰品
 
         self.fuse_IV = False
         self.fuse_second_IV = False
@@ -59,7 +60,6 @@ class Shop:
 
         # 用于记录已升级的ego饰品
         self.enhance_gifts_list = []
-        self.enhance_gifts_progress = None
 
     class RestartGame(Exception):
         pass

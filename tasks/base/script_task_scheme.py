@@ -199,7 +199,7 @@ def script_task() -> None | int:
                 team_num = teams_order.index(1)  # 获取序号1的队伍在队伍顺序中的位置
                 team_setting = cfg.get_value(f"team{team_num + 1}_setting")  # 获取序号1的队伍的配置
                 # 如果该队伍固定了用途，且不用途符合当前情况，将序号1的队伍移动到队伍顺序的最后
-                if team_setting["fixed_team_use"]:
+                if "fixed_team_use" in team_setting and team_setting["fixed_team_use"]:
                     if (team_setting["fixed_team_use_select"] == 0 and cfg.hard_mirror is False) or (
                             team_setting["fixed_team_use_select"] == 1 and cfg.hard_mirror is True):
                         for index, value in enumerate(teams_order):
