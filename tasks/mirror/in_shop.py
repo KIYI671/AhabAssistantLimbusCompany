@@ -1064,6 +1064,9 @@ class Shop:
                 # 自动截图
                 if auto.take_screenshot() is None:
                     continue
+                    
+                if retry() is False:
+                    raise self.RestartGame(
                 if auto.find_element("mirror/road_in_mir/legend_assets.png"):
                     break
                 if auto.click_element("mirror/shop/leave_shop_confirm_assets.png"):
