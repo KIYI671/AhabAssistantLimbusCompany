@@ -1,16 +1,20 @@
 import datetime
+import base64
+import pyperclip
 
-from PyQt5.QtCore import QUrl
+from PyQt5.QtCore import QUrl, Qt
 from PyQt5.QtGui import QPixmap, QDesktopServices
 from PyQt5.QtWidgets import QPushButton
 from qfluentwidgets import LineEdit, SettingCard, \
     IndicatorPosition, SwitchButton, SettingCardGroup, \
-    PushSettingCard, PrimaryPushSettingCard
+    PushSettingCard, PrimaryPushSettingCard, InfoBarPosition
 
 from app.base_tools import *
-from app.card.messagebox_custom import MessageBoxEdit, MessageBoxDate, MessageBoxSpinbox
+from app.card.messagebox_custom import MessageBoxEdit, MessageBoxDate, \
+    MessageBoxSpinbox, BaseInfoBar
 from app.language_manager import LanguageManager
 from module.update.check_update import check_update
+from module.my_error.my_error import settingsTypeError
 from utils.utils import encrypt_string, decrypt_string
 
 
@@ -202,11 +206,76 @@ class MirrorTeamCombination(QFrame):
         self.hBoxLayout.addWidget(self.remark_name)
         self.hBoxLayout.addWidget(self.order)
         self.hBoxLayout.addWidget(self.button)
-
+    
         self.button.edit_name.triggered.connect(self.edit_button_clicked)
         self.button.del_action.triggered.connect(self.delete_button_clicked)
+        self.button.copy_settings.triggered.connect(self.copy_team_settings)
+        self.button.paste_settings.triggered.connect(self.paste_team_settings)
 
         self.refresh_remark_name()
+
+    def copy_team_settings(self):
+        setting = str(cfg.get_value(f"team{self.team_number}_setting"))
+        setting = "||AALC_TEAM_SETTING||" + setting # 添加标识符
+        setting = base64.b64encode(setting.encode('utf-8')).decode('utf-8')
+        pyperclip.copy(setting)
+        bar = BaseInfoBar.success(
+            title=QT_TRANSLATE_NOOP("BaseInfoBar", '已复制到剪切板'),
+            content='',
+            orient=Qt.Horizontal,
+            isClosable=True,
+            position=InfoBarPosition.TOP,
+            duration=500,
+            parent=self.parent().parent()
+        )
+        bar.retranslateUi()
+
+
+    def paste_team_settings(self):
+        setting = pyperclip.paste().strip()
+        try:
+            setting = base64.b64decode(setting).decode('utf-8')
+            if "||AALC_TEAM_SETTING||" not in setting:
+                raise settingsTypeError("不是有效的AALC设置")
+            setting = setting.replace("||AALC_TEAM_SETTING||", "", 1)
+        except settingsTypeError:
+            bar = BaseInfoBar.error(
+                title=QT_TRANSLATE_NOOP("BaseInfoBar", '该设置不属于 AALC'),
+                content='',
+                orient=Qt.Horizontal,
+                isClosable=True,
+                position=InfoBarPosition.TOP,
+                duration=500,
+                parent=self.parent().parent()
+            )
+            bar.retranslateUi()
+            return
+        except Exception:
+            bar = BaseInfoBar.error(
+                title=QT_TRANSLATE_NOOP("BaseInfoBar", '不是有效的 AALC 设置'),
+                content='',
+                orient=Qt.Horizontal,
+                isClosable=True,
+                position=InfoBarPosition.TOP,
+                duration=500,
+                parent=self.parent().parent()
+            )
+            bar.retranslateUi()
+            return
+
+        data = cfg.yaml.load(setting)
+
+        cfg.set_value(f"team{self.team_number}_setting", data)
+        bar = BaseInfoBar.success(
+            title=QT_TRANSLATE_NOOP("BaseInfoBar", '已粘贴设置'),
+            content='',
+            orient=Qt.Horizontal,
+            isClosable=True,
+            position=InfoBarPosition.TOP,
+            duration=500,
+            parent=self.parent().parent()
+        )
+        bar.retranslateUi()
 
     def remark_name_changed(self, text):
         cfg.set_value(f"team{self.team_number}_remark_name", text)

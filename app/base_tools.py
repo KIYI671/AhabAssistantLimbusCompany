@@ -194,8 +194,12 @@ class ToSettingButton(BaseButton):
         self.menu = RoundMenu(parent=self)
         self.edit_name = QAction(FIF.EDIT.icon(), '命名')
         self.del_action = QAction(FIF.DELETE.icon(), '删除')
+        self.copy_settings = QAction(FIF.COPY.icon(), '复制')
+        self.paste_settings = QAction(FIF.PASTE.icon(), '粘贴')
         self.menu.addAction(self.edit_name)
         self.menu.addAction(self.del_action)
+        self.menu.addAction(self.copy_settings)
+        self.menu.addAction(self.paste_settings)
         self.button.setFlyout(self.menu)
 
         team_toggle_button_group.append(self.button)
@@ -215,6 +219,8 @@ class ToSettingButton(BaseButton):
     def retranslateUi(self):
         self.edit_name.setText(self.tr("命名"))
         self.del_action.setText(self.tr("删除"))
+        self.copy_settings.setText(self.tr("复制"))
+        self.paste_settings.setText(self.tr("粘贴"))
 
 
 class ChangePageButton(BaseButton):
