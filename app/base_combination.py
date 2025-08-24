@@ -15,8 +15,7 @@ from app.card.messagebox_custom import MessageBoxEdit, MessageBoxDate, \
 from app.language_manager import LanguageManager
 from module.update.check_update import check_update
 from module.my_error.my_error import settingsTypeError
-from utils.utils import encrypt_string, decrypt_string
-
+from utils.utils import encrypt_string, decrypt_string, get_timezone
 
 class CheckBoxWithButton(QFrame):
     def __init__(self, check_box_name, check_box_title, check_box_icon: Union[str, QIcon, FluentIconBase, None],
@@ -556,6 +555,7 @@ class PushSettingCardDate(BasePushSettingCard):
         message_box = MessageBoxDate(self.tr(self.title), self.config_value, self.window())
         if message_box.exec():
             time = message_box.getDateTime()
+            get_timezone()
             cfg.set_value(self.config_name, time.timestamp())
             self.contentLabel.setText(time.strftime('%Y-%m-%d %H:%M'))
 

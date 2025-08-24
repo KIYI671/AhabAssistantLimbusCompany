@@ -53,6 +53,8 @@ def check_hard_mirror_time():
     if last_time >= now_time:
         return False  # 原始时间t1不早于t2，偏移后也不会
 
+    if cfg.timezone is None:
+        get_timezone()
     # 应用时间偏移量（支持浮点数小时）
     offset = timedelta(hours=cfg.timezone)
     last_time_offset = last_time + offset
