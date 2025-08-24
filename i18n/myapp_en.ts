@@ -463,12 +463,12 @@
 <context>
     <name>BaseInfoBar</name>
     <message>
-        <location filename="../module/update/check_update.py" line="295"/>
+        <location filename="../module/update/check_update.py" line="294"/>
         <source>当前是最新版本(＾∀＾●)</source>
         <translation>Current version is latest (＾∀＾●)</translation>
     </message>
     <message>
-        <location filename="../module/update/check_update.py" line="307"/>
+        <location filename="../module/update/check_update.py" line="306"/>
         <source>检测更新失败(╥╯﹏╰╥)</source>
         <translation>Checking update failed (╥╯﹏╰╥)</translation>
     </message>
@@ -476,6 +476,26 @@
         <location filename="../app/setting_interface.py" line="278"/>
         <source>更改将在重新启动后生效</source>
         <translation>The changes will take effect after the restart</translation>
+    </message>
+    <message>
+        <location filename="../app/base_combination.py" line="222"/>
+        <source>已复制到剪切板</source>
+        <translation>Copied to clipboard</translation>
+    </message>
+    <message>
+        <location filename="../app/base_combination.py" line="242"/>
+        <source>该设置不属于 AALC</source>
+        <translation>This setting does not belong to AALC</translation>
+    </message>
+    <message>
+        <location filename="../app/base_combination.py" line="254"/>
+        <source>不是有效的 AALC 设置</source>
+        <translation>Not a valid AALC setting</translation>
+    </message>
+    <message>
+        <location filename="../app/base_combination.py" line="269"/>
+        <source>已粘贴设置</source>
+        <translation>Settings pasted</translation>
     </message>
 </context>
 <context>
@@ -554,7 +574,7 @@
     <message>
         <location filename="../app/tools_interface.py" line="34"/>
         <source>这只是一个为你自动按下P键和Enter键的小工具，不要怀抱太多期待</source>
-        <translation>It&apos;s just a gadget that automatically presses the P and Enter keys for you, so don&apos;t expect too much</translation>
+        <translation>It's just a gadget that automatically presses the P and Enter keys for you, so don't expect too much</translation>
     </message>
 </context>
 <context>
@@ -1082,7 +1102,7 @@
     <message>
         <location filename="../app/my_app.py" line="157"/>
         <source>存在未保存的设置，请执行保存或取消操作</source>
-        <translation>Didn&apos;t save settings, please do save or cancel</translation>
+        <translation>Didn't save settings, please do save or cancel</translation>
     </message>
     <message>
         <location filename="../app/my_app.py" line="239"/>
@@ -1111,9 +1131,22 @@
     </message>
 </context>
 <context>
+    <name>MessageBoxDate</name>
+    <message>
+        <location filename="../app/card/messagebox_custom.py" line="289"/>
+        <source>确认</source>
+        <translation type="finished">Confirm</translation>
+    </message>
+    <message>
+        <location filename="../app/card/messagebox_custom.py" line="290"/>
+        <source>取消</source>
+        <translation type="finished">Cancel</translation>
+    </message>
+</context>
+<context>
     <name>MessageBoxEdit</name>
     <message>
-        <location filename="../app/base_combination.py" line="218"/>
+        <location filename="../app/base_combination.py" line="287"/>
         <source>设置备注名</source>
         <translation>Set a Custom Name</translation>
     </message>
@@ -1144,14 +1177,14 @@
 <context>
     <name>MessageBoxSpinbox</name>
     <message>
-        <location filename="../app/card/messagebox_custom.py" line="217"/>
+        <location filename="../app/card/messagebox_custom.py" line="312"/>
         <source>确认</source>
-        <translation type="unfinished">Confirm</translation>
+        <translation>Confirm</translation>
     </message>
     <message>
-        <location filename="../app/card/messagebox_custom.py" line="218"/>
+        <location filename="../app/card/messagebox_custom.py" line="313"/>
         <source>取消</source>
-        <translation type="unfinished">Cancel</translation>
+        <translation>Cancel</translation>
     </message>
 </context>
 <context>
@@ -1191,7 +1224,7 @@
 <context>
     <name>MirrorTeamCombination</name>
     <message>
-        <location filename="../app/base_combination.py" line="239"/>
+        <location filename="../app/base_combination.py" line="308"/>
         <source>备注名</source>
         <translation>Nickname</translation>
     </message>
@@ -1271,7 +1304,7 @@
     <message>
         <location filename="../app/setting_interface.py" line="65"/>
         <source>修改</source>
-        <translation type="unfinished">Edit</translation>
+        <translation>Edit</translation>
     </message>
     <message>
         <location filename="../app/setting_interface.py" line="65"/>
@@ -1284,7 +1317,7 @@
     <message>
         <location filename="../app/setting_interface.py" line="58"/>
         <source>修改</source>
-        <translation type="unfinished">Edit</translation>
+        <translation>Edit</translation>
     </message>
     <message>
         <location filename="../app/setting_interface.py" line="58"/>
@@ -1305,7 +1338,7 @@
         <translation>Mirror Chyan CDK</translation>
     </message>
     <message>
-        <location filename="../app/base_combination.py" line="434"/>
+        <location filename="../app/base_combination.py" line="503"/>
         <source>获取 CDK</source>
         <translation>Get CDK</translation>
     </message>
@@ -1371,12 +1404,12 @@
 <context>
     <name>SwitchSettingCard</name>
     <message>
-        <location filename="../app/base_combination.py" line="473"/>
+        <location filename="../app/base_combination.py" line="542"/>
         <source>关</source>
         <translation>OFF</translation>
     </message>
     <message>
-        <location filename="../app/base_combination.py" line="473"/>
+        <location filename="../app/base_combination.py" line="542"/>
         <source>开</source>
         <translation>ON</translation>
     </message>
@@ -1572,14 +1605,24 @@
 <context>
     <name>ToSettingButton</name>
     <message>
-        <location filename="../app/base_tools.py" line="216"/>
+        <location filename="../app/base_tools.py" line="220"/>
         <source>命名</source>
         <translation>Rename</translation>
     </message>
     <message>
-        <location filename="../app/base_tools.py" line="217"/>
+        <location filename="../app/base_tools.py" line="221"/>
         <source>删除</source>
         <translation>Delete</translation>
+    </message>
+    <message>
+        <location filename="../app/base_tools.py" line="222"/>
+        <source>复制</source>
+        <translation>Copy</translation>
+    </message>
+    <message>
+        <location filename="../app/base_tools.py" line="223"/>
+        <source>粘贴</source>
+        <translation>Paste</translation>
     </message>
 </context>
 <context>
@@ -1592,7 +1635,7 @@
 Update Logs:</translation>
     </message>
     <message>
-        <location filename="../module/update/check_update.py" line="113"/>
+        <location filename="../module/update/check_update.py" line="112"/>
         <source>发现新版本：{Old_version} ——&gt; {New_version}
 更新日志:</source>
         <translation>Found New Version: {Old_version} ——&gt; {New_version}

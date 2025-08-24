@@ -44,7 +44,7 @@ def get_timezone():
 
 
 def check_hard_mirror_time():
-    if cfg.last_auto_change == 0:
+    if cfg.last_auto_change == 1715990400:
         get_timezone()
 
     last_time = datetime.fromtimestamp(cfg.last_auto_change)
@@ -53,6 +53,8 @@ def check_hard_mirror_time():
     if last_time >= now_time:
         return False  # 原始时间t1不早于t2，偏移后也不会
 
+    if cfg.timezone is None:
+        get_timezone()
     # 应用时间偏移量（支持浮点数小时）
     offset = timedelta(hours=cfg.timezone)
     last_time_offset = last_time + offset

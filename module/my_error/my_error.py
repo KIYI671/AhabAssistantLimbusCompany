@@ -126,3 +126,12 @@ class resolutionSettingError(Exception):
 
     def __str__(self):
         return self.errorInfo
+
+# 设置类型错误 设置的格式不符合AALC的设置格式
+class settingsTypeError(Exception):
+    def __init__(self, ErrorInfo):
+        super().__init__(ErrorInfo)
+        self.errorInfo = ErrorInfo
+
+    def __str__(self):
+        return self.errorInfo
