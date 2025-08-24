@@ -22,6 +22,7 @@ def get_day_of_week():
 
     return day
 
+
 def get_timezone():
     # 获取当前UTC时间（带时区信息）
     utc_now = datetime.now(ZoneInfo("UTC"))
@@ -40,6 +41,7 @@ def get_timezone():
     # 计算时间差（小时）
     diff_hours = (jst_offset - local_offset).total_seconds() / 3600
     cfg.set_value("timezone", round(diff_hours, 2))  # 保留二位小数，保存在配置文件中
+
 
 def check_hard_mirror_time():
     if cfg.last_auto_change == 0:
@@ -132,6 +134,7 @@ def find_skill3(background, known_rgb, threshold=40, min_pixels=10):
 
     return merged
 
+
 def check_teams_order(lst):
     # 收集所有非零元素的（值，原始索引）对
     non_zero = [(val, idx) for idx, val in enumerate(lst) if val > 0]
@@ -149,7 +152,6 @@ def check_teams_order(lst):
     return result
 
 
-
 def encrypt_string(text: str, entropy: bytes = b'AALC') -> str:
     """使用当前Windows用户凭据加密字符串"""
 
@@ -158,38 +160,38 @@ def encrypt_string(text: str, entropy: bytes = b'AALC') -> str:
 
     # 转换为字节
     data = text.encode('utf-8')
-    
+
     # 加密数据（只能由同一用户在同一机器上解密）
     encrypted_data = win32crypt.CryptProtectData(
         data,
-        None,       # 描述字符串（可选）
-        entropy,    # 额外熵值（增强安全性）
-        None,       # 保留
-        None,       # 提示信息
-        0           # 默认标志：CRYPTPROTECT_UI_FORBIDDEN
+        None,  # 描述字符串（可选）
+        entropy,  # 额外熵值（增强安全性）
+        None,  # 保留
+        None,  # 提示信息
+        0  # 默认标志：CRYPTPROTECT_UI_FORBIDDEN
     )
     # 返回Base64编码的加密结果
     return base64.b64encode(encrypted_data).decode('utf-8')
+
 
 def decrypt_string(encrypted_b64: str, entropy: bytes = b'AALC') -> str:
     """使用当前Windows用户凭据解密字符串"""
     if not encrypted_b64:
         return ""
-    
+
     if len(encrypted_b64) % 4 != 0:
         return encrypted_b64
     try:
-    # 解码Base64
+        # 解码Base64
         encrypted_data = base64.b64decode(encrypted_b64)
 
-    
         # 解密数据
         decrypted_data = win32crypt.CryptUnprotectData(
             encrypted_data,
-            entropy,    # 必须与加密时相同的熵值
-            None,       # 保留
-            None,       # 提示信息
-            0           # 默认标志
+            entropy,  # 必须与加密时相同的熵值
+            None,  # 保留
+            None,  # 提示信息
+            0  # 默认标志
         )
     except Exception:
         return encrypted_b64

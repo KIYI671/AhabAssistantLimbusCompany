@@ -1,11 +1,12 @@
+import inspect
 import logging
 import os
-import sys
-import inspect
 import re
+import sys
 from pathlib import Path
 
 from PyQt5.QtWidgets import QApplication
+
 from utils.singletonmeta import SingletonMeta
 
 # 修复nb_log的输出bug
@@ -57,8 +58,7 @@ class Logger(metaclass=SingletonMeta):
                            log_path='./logs',
                            log_file_handler_type=3,
                            formatter_template=logging.Formatter(
-                               '%(asctime)s - %(message)s', "%H:%M:%S"))    
-    
+                               '%(asctime)s - %(message)s', "%H:%M:%S"))
 
     def __init__(self):
         if Logger._project_root is None:
@@ -81,21 +81,23 @@ class Logger(metaclass=SingletonMeta):
         第一个参数, 也就是msg参数, 会在info日志里被翻译, 如果被QT_TRANSLATE_NOOP标记 (content = "Logger")
         但是在debug日志里不会被翻译, 却会被format方法格式化
         """
+
         # 定义一个闭包装饰器来捕获原始方法, 并设置输出的字符串是否翻译
         def decorator_log(func, tr=False):
 
             # 使用闭包捕获原始方法
             def wrapped_log(level, msg, args, exc_info=None, extra=None, stack_info=False,
-             stacklevel=1, **kwargs):
+                            stacklevel=1, **kwargs):
                 if tr:
                     translated_msg = self._translate_logger_message(msg)
                 else:
                     translated_msg = msg
                 translated_msg = translated_msg.format(*args, **kwargs) if args or kwargs else translated_msg
                 return func(level, translated_msg, args=(), exc_info=exc_info, extra=extra, stack_info=stack_info,
-             stacklevel=stacklevel) # 原函数 // format方法来格式化多好(( 居然只支持类printf的
-        
-            return wrapped_log # 新的_log函数
+                            stacklevel=stacklevel)  # 原函数 // format方法来格式化多好(( 居然只支持类printf的
+
+            return wrapped_log  # 新的_log函数
+
         self.debug_logger._log = decorator_log(self.debug_logger._log)
         self.my_logger._log = decorator_log(self.my_logger._log, tr=True)
         self.info_logger._log = decorator_log(self.info_logger._log, tr=True)
@@ -110,7 +112,6 @@ class Logger(metaclass=SingletonMeta):
 
         # 使用当前工作目录
         Logger._project_root = Path.cwd()
-
 
     def _translate_logger_message(self, msg: str) -> str:
         """

@@ -167,14 +167,14 @@ def script_task() -> None | int:
             from datetime import datetime
             if cfg.last_auto_change == 0:
                 get_timezone()
-                cfg.set_value("last_auto_change",datetime.now().timestamp())
+                cfg.set_value("last_auto_change", datetime.now().timestamp())
                 cfg.flush()
             if check_hard_mirror_time():
                 log.INFO("识别到新的困牢周期，自动切换困难镜牢，设置困牢次数为3")
                 cfg.set_value("last_auto_change", datetime.now().timestamp())
                 cfg.set_value("hard_mirror", True)
                 cfg.set_value("hard_mirror_chance", 3)
-            if cfg.hard_mirror_chance>0:
+            if cfg.hard_mirror_chance > 0:
                 cfg.set_value("hard_mirror", True)
 
         # 判断执行镜牢任务的次数
@@ -195,9 +195,9 @@ def script_task() -> None | int:
         # 开始执行镜牢任务
         if cfg.teams_be_select_num != 0:
             while mir_times > 0:
-                teams_order = cfg.teams_order # 复制一份队伍顺序
-                team_num = teams_order.index(1) # 获取序号1的队伍在队伍顺序中的位置
-                team_setting = cfg.get_value(f"team{team_num + 1}_setting") # 获取序号1的队伍的配置
+                teams_order = cfg.teams_order  # 复制一份队伍顺序
+                team_num = teams_order.index(1)  # 获取序号1的队伍在队伍顺序中的位置
+                team_setting = cfg.get_value(f"team{team_num + 1}_setting")  # 获取序号1的队伍的配置
                 # 如果该队伍固定了用途，且不用途符合当前情况，将序号1的队伍移动到队伍顺序的最后
                 if team_setting["fixed_team_use"]:
                     if (team_setting["fixed_team_use_select"] == 0 and cfg.hard_mirror is False) or (

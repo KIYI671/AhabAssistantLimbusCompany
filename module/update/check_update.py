@@ -16,7 +16,6 @@ from app.card.messagebox_custom import MessageBoxUpdate, BaseInfoBar
 from module.config import cfg
 from module.decorator.decorator import begin_and_finish_time_log
 from module.logger import log
-
 from utils.utils import decrypt_string
 
 md_renderer = MarkdownIt("gfm-like", {"html": True})
@@ -111,7 +110,7 @@ class UpdateThread(QThread):
                 # 比较当前版本和最新版本，如果最新版本更高，则准备更新
                 if parse(version.lstrip('Vv')) > parse(cfg.version.lstrip('Vv')):
                     self.title = self.tr("发现新版本：{Old_version} ——> {New_version}\n更新日志:").format(
-                    Old_version=cfg.version, New_version=version)
+                        Old_version=cfg.version, New_version=version)
                     self.content = "<style>a {color: #586f50; font-weight: bold;}</style>" + md_renderer.render(content)
                     self.updateSignal.emit(UpdateStatus.UPDATE_AVAILABLE)
                 else:

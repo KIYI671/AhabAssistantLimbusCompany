@@ -50,20 +50,23 @@ class SettingInterface(ScrollArea):
         self.auto_hard_mirror_card = SwitchSettingCard(
             FIF.PLAY,
             QT_TRANSLATE_NOOP("SwitchSettingCard", '自动困难模式'),
-            QT_TRANSLATE_NOOP('SwitchSettingCard', '每周自动将前三场镜牢设置为困难模式执行，请确认启用了“困牢单次加成”功能'),
+            QT_TRANSLATE_NOOP('SwitchSettingCard',
+                              '每周自动将前三场镜牢设置为困难模式执行，请确认启用了“困牢单次加成”功能'),
             "auto_hard_mirror",
             parent=self.game_setting_group
         )
         self.last_auto_hard_mirror_card = PushSettingCardDate(
-            self.tr('修改'),
+            QT_TRANSLATE_NOOP("PushSettingCardDate", '修改'),
             FIF.DATE_TIME,
-            self.tr("上次自动切换困难镜牢的时间戳"),
+            QT_TRANSLATE_NOOP('PushSettingCardDate',
+                              '上次自动切换困难镜牢的时间戳'),
             "last_auto_change"
         )
         self.hard_mirror_chance_card = PushSettingCardChance(
-            self.tr('修改'),
+            QT_TRANSLATE_NOOP("PushSettingCardChance", '修改'),
             FIF.UNIT,
-            self.tr("困难模式剩余次数"),
+            QT_TRANSLATE_NOOP('PushSettingCardChance',
+                              '困难模式剩余次数'),
             QT_TRANSLATE_NOOP("PushSettingCardChance", "第一次运行请手动设定，之后将自动修改"),
             "hard_mirror_chance"
         )

@@ -5,8 +5,8 @@ from pathlib import Path
 import psutil
 import win32process
 from PyQt5.QtCore import QT_TRANSLATE_NOOP
-from app.language_manager import SUPPORTED_GAME_LANG_CODE
 
+from app.language_manager import SUPPORTED_GAME_LANG_CODE
 from ..config import cfg
 from ..logger import log
 
@@ -71,15 +71,15 @@ def auto_switch_language_in_game(hwnd: int) -> int:
 
     if cfg.language_in_game == "-":
         msg = QT_TRANSLATE_NOOP("Logger", "当前游戏语言为 {current_game_lang}, 即将自动切换")
-        log.INFO(msg, current_game_lang = output_lang_dict[lang_code])
+        log.INFO(msg, current_game_lang=output_lang_dict[lang_code])
     else:
         msg = QT_TRANSLATE_NOOP(
             "Logger",
             "当前游戏语言为 {current_game_lang}, 但是被错误设置成了 {setting_game_lang}",
         )
-        log.INFO(msg, current_game_lang = output_lang_dict[lang_code],
-                 setting_game_lang = output_lang_dict[cfg.language_in_game]
-                )
+        log.INFO(msg, current_game_lang=output_lang_dict[lang_code],
+                 setting_game_lang=output_lang_dict[cfg.language_in_game]
+                 )
     if lang_code in SUPPORTED_GAME_LANG_CODE:
         cfg.set_value("language_in_game", lang_code)
         return 1

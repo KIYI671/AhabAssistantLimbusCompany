@@ -474,8 +474,9 @@ class SwitchSettingCard(SettingCard):
         self.titleLabel.setText(self.tr(self.title))
         self.contentLabel.setText(self.tr(self.content))
 
+
 class PushSettingCardDate(BasePushSettingCard):
-    #clicked = pyqtSignal()
+    # clicked = pyqtSignal()
     def __init__(self, text, icon: Union[str, QIcon, FluentIconBase], title, config_name, parent=None):
         self.config_name = config_name
         self.config_value = datetime.datetime.fromtimestamp(cfg.get_value(config_name))
@@ -489,11 +490,12 @@ class PushSettingCardDate(BasePushSettingCard):
             cfg.set_value(self.config_name, time.timestamp())
             self.contentLabel.setText(time.strftime('%Y-%m-%d %H:%M'))
 
+
 class PushSettingCardChance(BasePushSettingCard):
 
-    def __init__(self,text, icon: Union[str, QIcon, FluentIconBase], title, content=None, config_name: str = None,
+    def __init__(self, text, icon: Union[str, QIcon, FluentIconBase], title, content=None, config_name: str = None,
                  parent=None):
-        super().__init__(text,icon, title, content, parent)
+        super().__init__(text, icon, title, content, parent)
         self.config_name = config_name
         self.line_text = LineEdit()
         self.line_text.setAlignment(Qt.AlignCenter)
@@ -502,11 +504,11 @@ class PushSettingCardChance(BasePushSettingCard):
         self.line_text.setText(str(cfg.get_value(self.config_name)))
         current_count = self.hBoxLayout.count()
         print(current_count)
-        self.hBoxLayout.insertWidget(current_count-2,self.line_text)
+        self.hBoxLayout.insertWidget(current_count - 2, self.line_text)
         self.button.clicked.connect(self.__onclicked)
 
     def __onclicked(self):
-        message_box = MessageBoxSpinbox(self.title,self.window())
+        message_box = MessageBoxSpinbox(self.title, self.window())
         if message_box.exec():
             cfg.set_value(f"hard_mirror_chance", int(message_box.getValue()))
             self.line_text.setText(str(message_box.getValue()))

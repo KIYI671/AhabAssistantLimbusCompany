@@ -75,7 +75,7 @@ class Shop:
             if auto.click_element("mirror/shop/power_up_assets.png"):
                 auto.mouse_to_blank()
                 sleep(0.5)
-                if auto.click_element("mirror/shop/power_up_confirm_assets.png",take_screenshot=True) is False:
+                if auto.click_element("mirror/shop/power_up_confirm_assets.png", take_screenshot=True) is False:
                     return True
                 sleep(3)
                 if retry() is False:
@@ -843,7 +843,7 @@ class Shop:
         list_block = False
         loop_count = 30
         auto.model = 'clam'
-        system_level_IV=False
+        system_level_IV = False
         second_system_level_IV = False
         while True:
             # 自动截图
@@ -856,18 +856,19 @@ class Shop:
             if not system_level_IV:
                 if level_IV := auto.find_element(f"mirror/shop/level_IV_gifts/{self.system}_level_IV.png"):
                     if check_enhanced(level_IV) is False:
-                        auto.mouse_click(level_IV[0],level_IV[1])
+                        auto.mouse_click(level_IV[0], level_IV[1])
                         if self.ego_gift_to_power_up() is False:
                             break
                         else:
                             self.enhance_gifts_list.append(level_IV)
-                system_level_IV=True
+                system_level_IV = True
                 continue
 
             # 升级第二体系四级
             if self.second_system and self.second_system_action[3] and second_system_level_IV is False:
                 if self.second_system_setting == 1 or (self.second_system_setting == 0 and self.fuse_IV is True):
-                    if level_IV_2 := auto.find_element(f"mirror/shop/level_IV_gifts/{self.second_system_select}_level_IV.png"):
+                    if level_IV_2 := auto.find_element(
+                            f"mirror/shop/level_IV_gifts/{self.second_system_select}_level_IV.png"):
                         if check_enhanced(level_IV_2) is False:
                             auto.mouse_click(level_IV_2[0], level_IV_2[1])
                             if self.ego_gift_to_power_up() is False:

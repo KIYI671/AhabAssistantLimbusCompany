@@ -148,7 +148,7 @@ class Config(metaclass=SingletonMeta):
             self._pending_save = False
         if pending:
             self._save_config()
-        
+
     def _writer_loop(self):
         """后台写盘线程：收到事件后把当前config写入文件"""
         while True:
@@ -187,14 +187,13 @@ class Config(metaclass=SingletonMeta):
         if key == "mirrorchyan_cdk":
             value = "已加密"
 
-        log.DEBUG(f"{key} change to: {value}") # 增加设置修改的信息
+        log.DEBUG(f"{key} change to: {value}")  # 增加设置修改的信息
 
     def unsaved_del_key(self, key):
         """仅删除配置项 不保存"""
         if self.config is None:
             self.just_load_config()
         self.config.pop(key, None)
-
 
     def del_key(self, key):
         """删除配置项并保存"""

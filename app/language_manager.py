@@ -1,13 +1,13 @@
-from PyQt5.QtCore import QTranslator, QLocale, QLibraryInfo, QT_TRANSLATE_NOOP
+import inspect
 
+from PyQt5.QtCore import QTranslator, QLocale, QLibraryInfo, QT_TRANSLATE_NOOP
 from PyQt5.QtWidgets import QApplication
 
-from utils.singletonmeta import SingletonMeta
 from module.config import cfg
 from module.logger import log
-# from app.my_app import MainWindow # 不要导入这个
+from utils.singletonmeta import SingletonMeta
 
-import inspect
+# from app.my_app import MainWindow # 不要导入这个
 
 # 遵从 IETF BCP-47 除非和 Qt 的不一样
 SUPPORTED_LANG_CODE = {
@@ -178,8 +178,8 @@ class LanguageManager(metaclass=SingletonMeta):
 
         for param in parameters.values():
             if param.default == inspect.Parameter.empty and param.kind not in (
-                inspect.Parameter.VAR_POSITIONAL,
-                inspect.Parameter.VAR_KEYWORD,
+                    inspect.Parameter.VAR_POSITIONAL,
+                    inspect.Parameter.VAR_KEYWORD,
             ):
                 # 排除可变参数
                 required_params.append(param)

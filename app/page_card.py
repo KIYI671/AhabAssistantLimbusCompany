@@ -354,13 +354,13 @@ class PageMirror(PageCard):
             "hard_mirror", None,
             QT_TRANSLATE_NOOP("BaseCheckBox", "使用困难镜牢*"),
             center=False,
-            tips=QT_TRANSLATE_NOOP("BaseCheckBox","仅本次运行期间有效，重启AALC后失效")
+            tips=QT_TRANSLATE_NOOP("BaseCheckBox", "仅本次运行期间有效，重启AALC后失效")
         )
         self.no_weekly_bonuses = BaseCheckBox(
             "no_weekly_bonuses", None,
             QT_TRANSLATE_NOOP("BaseCheckBox", "不使用每周加成*"),
             center=False,
-            tips=QT_TRANSLATE_NOOP("BaseCheckBox","仅本次运行期间有效，重启AALC后失效")
+            tips=QT_TRANSLATE_NOOP("BaseCheckBox", "仅本次运行期间有效，重启AALC后失效")
         )
         self.flood_3_exit = BaseCheckBox(
             "flood_3_exit", None,
