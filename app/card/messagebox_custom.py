@@ -1,7 +1,7 @@
 import datetime
 
-from PyQt5.QtCore import Qt, QUrl
-from PyQt5.QtGui import QDesktopServices, QIcon
+from PyQt5.QtCore import Qt, QUrl, QDate
+from PyQt5.QtGui import QDesktopServices, QIcon, QWheelEvent, QKeyEvent
 from PyQt5.QtWidgets import QSizePolicy
 from qfluentwidgets import MessageBox, BodyLabel, FluentStyleSheet, \
     PrimaryPushButton, LineEdit, ScrollArea, InfoBar, DateTimeEdit, SpinBox
@@ -184,6 +184,102 @@ class BaseInfoBar(InfoBar):
         return cls.new(InfoBarIcon.ERROR, title, content, orient, isClosable, duration, position, parent)
 
 
+class BetterDateTimeEdit(DateTimeEdit):
+    """为`DateTimeEdit`添加时间进/退位的功能
+    \n更方便的选择时间"""
+    def __init__(self, parent=None):
+        super().__init__(parent)
+
+        self.last_min = None
+        self.last_hour = None
+        self.last_day = None
+        self.last_month = None
+
+        self.index_lock = False
+
+        self.setMinimumDate(QDate(2024, 5, 18)) # 设置最小日期为2024年5月18日
+
+        self.upButton.clicked.connect(self.handle_overflow)
+        self.downButton.clicked.connect(self.handle_overflow)
+
+
+    def handle_overflow(self, plus=True):
+        """处理时间溢出的情况"""
+        time = self.time()
+        date = self.date()
+        
+        # 处理分钟溢出和下溢
+        if self.currentSection() == self.MinuteSection and time.minute() == self.last_min:
+            if plus and time.minute() >= 59:
+                time.setHMS(time.hour() + 1, 0, time.second())
+            if not plus and time.minute() <= 0:
+                time.setHMS(time.hour() - 1, 59, time.second())
+        
+        # 处理小时溢出和下溢
+        if self.currentSection() == self.HourSection and time.hour() == self.last_hour:
+            if plus and time.hour() >= 23:
+                time.setHMS(0, time.minute(), time.second())
+                date = date.addDays(1)
+            if not plus and time.hour() <= 0:
+                time.setHMS(23, time.minute(), time.second())
+                date = date.addDays(-1)
+
+        # 处理天数溢出和下溢
+        if self.currentSection() == self.DaySection and date.day() == self.last_day:
+            days_in_month = date.daysInMonth()
+            if plus and date.day() >= days_in_month:
+                date = date.addMonths(1)
+                date = date.addDays(-date.day() + 1)
+            if not plus and date.day() <= 1:
+                date = date.addMonths(-1)
+                days_in_prev_month = date.daysInMonth()
+                date = date.addDays(days_in_prev_month - 1)
+
+        # 处理月份溢出和下溢
+        if self.currentSection() == self.MonthSection and date.month() == self.last_month:
+            if plus and date.month() >= 12:
+                date = date.addYears(1)
+                date = date.addMonths(-date.month() + 1)
+            if not plus and date.month() <= 1:
+                date = date.addYears(-1)
+                date = date.addMonths(11)
+
+        self.setTime(time)
+        self.setDate(date)
+        self.last_min = time.minute()
+        self.last_hour = time.hour()
+        self.last_day = date.day()
+        self.last_month = date.month()
+    
+    def wheelEvent(self, e: QWheelEvent | None) -> None:
+        super().wheelEvent(e)
+        if e is not None:
+            y = e.angleDelta().y() # 上下的滚动向量 上为正
+            x = e.angleDelta().x() # 左右的滚动向量 左为正
+            if y > 0:
+                self.handle_overflow(True)
+            elif y < 0:
+                self.handle_overflow(False)
+            if self.index_lock:
+                return
+            if x != 0:
+                self.index_lock = True
+            if x > 0:
+                self.setCurrentSectionIndex(self.currentSectionIndex() - 1)
+                self.index_lock = False
+            elif x < 0:
+                self.setCurrentSectionIndex(self.currentSectionIndex() + 1)
+                self.index_lock = False
+
+
+    def keyPressEvent(self, e: QKeyEvent | None) -> None:
+        super().keyPressEvent(e)
+        if e is not None:
+            if e.key() == Qt.Key_Up:
+                self.handle_overflow(True)
+            elif e.key() == Qt.Key_Down:
+                self.handle_overflow(False)
+
 class MessageBoxDate(MessageBox):
     def __init__(self, title: str, content: datetime, parent=None):
         super().__init__(title, "", parent)
@@ -194,7 +290,7 @@ class MessageBoxDate(MessageBox):
         self.yesButton.setText('确认')
         self.cancelButton.setText('取消')
 
-        self.datePicker = DateTimeEdit(self)
+        self.datePicker = BetterDateTimeEdit(self)
         self.datePicker.setDateTime(content)
 
         self.textLayout.addWidget(self.datePicker, 0, Qt.AlignTop)
