@@ -553,7 +553,7 @@ class PushSettingCardDate(BasePushSettingCard):
         self.button.clicked.connect(self.__onclicked)
 
     def __onclicked(self):
-        message_box = MessageBoxDate(self.title, self.config_value, self.window())
+        message_box = MessageBoxDate(self.tr(self.title), self.config_value, self.window())
         if message_box.exec():
             time = message_box.getDateTime()
             cfg.set_value(self.config_name, time.timestamp())
@@ -577,7 +577,7 @@ class PushSettingCardChance(BasePushSettingCard):
         self.button.clicked.connect(self.__onclicked)
 
     def __onclicked(self):
-        message_box = MessageBoxSpinbox(self.title, self.window())
+        message_box = MessageBoxSpinbox(self.tr(self.title), self.window())
         if message_box.exec():
             cfg.set_value(f"hard_mirror_chance", int(message_box.getValue()))
             self.line_text.setText(str(message_box.getValue()))

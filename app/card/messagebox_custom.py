@@ -287,8 +287,8 @@ class MessageBoxDate(MessageBox):
         self.textLayout.removeWidget(self.contentLabel)
         self.contentLabel.clear()
 
-        self.yesButton.setText('确认')
-        self.cancelButton.setText('取消')
+        self.yesButton.setText(self.tr('确认'))
+        self.cancelButton.setText(self.tr('取消'))
 
         self.datePicker = BetterDateTimeEdit(self)
         self.datePicker.setDateTime(content)
