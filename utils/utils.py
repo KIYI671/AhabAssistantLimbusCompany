@@ -44,7 +44,7 @@ def get_timezone():
 
 
 def check_hard_mirror_time():
-    if cfg.last_auto_change == 0:
+    if cfg.last_auto_change == 1715990400:
         get_timezone()
 
     last_time = datetime.fromtimestamp(cfg.last_auto_change)
