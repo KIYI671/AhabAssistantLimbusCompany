@@ -15,6 +15,7 @@ class Mediator(QObject):
     tasks_warning = pyqtSignal()
     update_progress = pyqtSignal(int)
     download_complete = pyqtSignal(str)
+    warning = pyqtSignal(str)
 
     # 单例实例（类变量）
     _instance = None

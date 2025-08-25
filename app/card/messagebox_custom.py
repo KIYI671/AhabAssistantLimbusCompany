@@ -143,7 +143,10 @@ class MessageBoxWarning(MessageBox):
         super().__init__(title, content, parent)
 
         self.yesButton.setText(self.tr('我已了解以上信息'))
+        if cfg.language_in_program == 'en':
+            self.buttonGroup.setMinimumWidth(350)
         self.cancelButton.setHidden(True)
+
 
 
 class BaseInfoBar(InfoBar):

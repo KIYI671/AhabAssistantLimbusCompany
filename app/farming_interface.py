@@ -196,6 +196,14 @@ class FarmingInterfaceLeft(QWidget):
             list(self.parent.parent.pivot.items.values())[-1].click()
             mediator.save_warning.emit()
             return
+        if cfg.mirror:
+            teams_be_select = cfg.get_value("teams_be_select")
+            for index in (i for i, t in enumerate(teams_be_select) if t is True):
+                team_setting = cfg.get_value(f"team{index+1}_setting")
+                if team_setting["sinners_be_select"]==0:
+                    message = self.tr("存在未配置角色选择的队伍：TEAM_{0}")
+                    mediator.warning.emit(message.format(index + 1))
+                    return
         # 设置按下启动与停止按钮时，其他模块的启用与停用
         current_text = self.link_start_button.get_text()
         if current_text == "Link Start!":

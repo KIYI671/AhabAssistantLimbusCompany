@@ -161,6 +161,13 @@ class MainWindow(FramelessWindow):
             self
         ).exec()
 
+    def show_warning(self, warning: str):
+        MessageBoxWarning(
+            self.tr('警告！'),
+            warning,
+            self
+        ).exec()
+
     def show_tasks_warning(self):
         MessageBoxWarning(
             self.tr('任务设置出错'),
@@ -176,6 +183,7 @@ class MainWindow(FramelessWindow):
         mediator.tasks_warning.connect(self.show_tasks_warning)
         mediator.update_progress.connect(self.set_progress_ring)
         mediator.download_complete.connect(self.download_and_install)
+        mediator.warning.connect(self.show_warning)
 
     @staticmethod
     def clean_old_logs():
