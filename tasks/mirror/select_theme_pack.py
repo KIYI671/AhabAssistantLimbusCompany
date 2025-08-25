@@ -24,17 +24,6 @@ def select_theme_pack(hard_switch=False, flood=None):
     refresh_times = 3
     difficulty = None
     while True:
-
-        loop_count -= 1
-        if loop_count < 20:
-            auto.model = "normal"
-        if loop_count < 10:
-            auto.model = 'aggressive'
-        if loop_count < 0:
-            log.ERROR("无法选取主题包,尝试回到初始界面")
-            back_init_menu()
-            break
-
         # 自动截图
         if auto.take_screenshot() is None:
             continue
@@ -42,6 +31,8 @@ def select_theme_pack(hard_switch=False, flood=None):
         if difficulty is None and auto.find_element(
                 "mirror/theme_pack/normal_assets.png") is None and auto.find_element(
             "mirror/theme_pack/hard_assets.png") is None:
+            if loop_count < 0:
+                break
             if loop_count < 5:
                 normal_bbox = ImageUtils.get_bbox(ImageUtils.load_image("mirror/theme_pack/normal_assets.png"))
                 hard_bbox = ImageUtils.get_bbox(ImageUtils.load_image("mirror/theme_pack/hard_assets.png"))
@@ -54,6 +45,8 @@ def select_theme_pack(hard_switch=False, flood=None):
                     difficulty = "normal"
                 elif "hard" in ocr_result:
                     difficulty = "hard"
+            loop_count -= 1
+            sleep(1)
             continue
 
         # 切换难度
@@ -141,3 +134,15 @@ def select_theme_pack(hard_switch=False, flood=None):
                 log.ERROR(f"选择主题包出错:{e},尝试回到初始界面")
                 back_init_menu()
                 break
+
+        loop_count -= 1
+        if loop_count < 20:
+            auto.model = "normal"
+        if loop_count < 10:
+            auto.model = 'aggressive'
+        if loop_count < 0:
+            log.ERROR("无法选取主题包,尝试回到初始界面")
+            back_init_menu()
+            break
+    log.ERROR("无法选取主题包,尝试回到初始界面")
+    back_init_menu()
