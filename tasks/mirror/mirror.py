@@ -60,6 +60,8 @@ class Mirror:
         self.second_system_select = team_setting["second_system_select"]  # 选择的第二体系
         self.second_system_setting = team_setting["second_system_setting"]  # 第二体系策略
 
+        self.defense_first_round = team_setting["defense_first_round"]  # 是否第一回合全员防御
+
         self.start_time = time.time()
         self.first_battle = True  # 判断是否首次进入战斗，如果是则重新配队
         self.hard_switch = cfg.hard_mirror
@@ -140,6 +142,8 @@ class Mirror:
             # 自动截图
             if auto.take_screenshot() is None:
                 continue
+
+            retry()
 
             if cfg.flood_3_exit and self.flood >= 4:
                 if auto.click_element("mirror/road_in_mir/towindow&forfeit_confirm_assets.png"):
@@ -269,13 +273,13 @@ class Mirror:
             # 在战斗中
             if battle.identify_keyword_turn and self.LOOP_COUNT - main_loop_count < 5:
                 if auto.find_element("battle/turn_assets.png") or auto.find_element("battle/in_mirror_assets.png"):
-                    self.battle_total_time += battle.fight(self.avoid_skill_3)
+                    self.battle_total_time += battle.fight(self.avoid_skill_3,self.defense_first_round)
                     continue
             else:
                 turn_bbox = ImageUtils.get_bbox(ImageUtils.load_image("battle/turn_assets.png"))
                 turn_ocr_result = auto.find_text_element("turn", turn_bbox)
                 if turn_ocr_result is not False:
-                    self.battle_total_time += battle.fight(self.avoid_skill_3)
+                    self.battle_total_time += battle.fight(self.avoid_skill_3,self.defense_first_round)
                     continue
 
             # 镜牢星光
@@ -698,10 +702,9 @@ class Mirror:
             # 自动截图
             if auto.take_screenshot() is None:
                 continue
-                
+
             if retry() is False:
                 return False
-
 
             # 如果在战斗中或回到镜牢路线图中，则跳出循环
             if auto.find_element("battle/turn_assets.png"):
@@ -756,7 +759,6 @@ class Mirror:
 
             if auto.click_element("mirror/road_in_mir/ego_gift_get_confirm_assets.png"):
                 continue
-               
 
             if auto.click_element("event/skip_assets.png", times=6):
                 continue

@@ -421,6 +421,9 @@ class CustomizeSettingsModule(QFrame):
         self.aggressive_also_enhance = BaseCheckBox(
             "aggressive_also_enhance", None, QT_TRANSLATE_NOOP("BaseCheckBox", "激进合成期间也升级饰品")
         )
+        self.defense_first_round = BaseCheckBox(
+            "defense_first_round", None, QT_TRANSLATE_NOOP("BaseCheckBox", "链接战第一回合全员防御")
+        )
 
         self.fixed_team_use = CheckBoxWithComboBox(
             "fixed_team_use", QT_TRANSLATE_NOOP("CheckBoxWithComboBox", "固定队伍用途"),
@@ -543,6 +546,7 @@ class CustomizeSettingsModule(QFrame):
         self.third_line.addWidget(self.use_starlight)
 
         self.features_patch_line_1.addWidget(self.aggressive_also_enhance)
+        self.features_patch_line_1.addWidget(self.defense_first_round)
 
         self.star_list.addWidget(self.starlight_1, 0, 0)
         self.star_list.addWidget(self.starlight_2, 0, 1)
@@ -609,6 +613,7 @@ class CustomizeSettingsModule(QFrame):
         self.avoid_skill_3.retranslateUi()
         self.use_starlight.retranslateUi()
         self.aggressive_also_enhance.retranslateUi()
+        self.defense_first_round.retranslateUi()
         self.fixed_team_use.retranslateUi()
         self.reward_cards.retranslateUi()
         self.choose_opening_bonus.retranslateUi()

@@ -65,7 +65,7 @@ class Battle:
         return new_time
 
     @begin_and_finish_time_log(task_name="一次战斗")
-    def fight(self, avoid_skill_3=False):
+    def fight(self, avoid_skill_3=False,defense_first_round=False):
         INIT_CHANCE = 16
         chance = INIT_CHANCE
         waiting = self._update_wait_time()
@@ -75,6 +75,7 @@ class Battle:
         first_battle_reward = None
         event_chance = 15
 
+        first_turn = True
         while True:
             # 自动截图
             if auto.take_screenshot() is None:
@@ -96,6 +97,7 @@ class Battle:
             if auto.find_element("battle/pause_assets.png"):
                 sleep(2 * waiting)  # 战斗播片中增大间隔
                 chance = INIT_CHANCE
+                first_turn = False
                 continue
 
             if in_mirror:
@@ -128,6 +130,15 @@ class Battle:
                 turn_ocr_result = auto.find_text_element("turn", turn_bbox)
                 if turn_ocr_result is not False:
                     auto.mouse_click_blank()
+                    if first_turn and defense_first_round and auto.find_element("battle/gear_left.png", threshold=0.9):
+                        msg = f"第一回合全员防御，开始战斗"
+                        if self._defense_first_round() is False:
+                            defense_first_round = False
+                            msg = "第一回合全员防御失败尝试其他操作"
+                            log.DEBUG(msg)
+                        else:
+                            log.DEBUG(msg)
+                            continue
                     if avoid_skill_3 and auto.find_element("battle/gear_left.png", threshold=0.9):
                         msg = f"使用避免3技能模式开始战斗"
                         if self._chain_battle() is False:
@@ -147,7 +158,12 @@ class Battle:
                 # 如果正在战斗待机界面
                 if auto.click_element("battle/turn_assets.png") or auto.find_element("battle/win_rate_assets.png"):
                     auto.mouse_click_blank()
-                    if avoid_skill_3 and auto.find_element("battle/gear_left.png", threshold=0.9):
+                    if first_turn and defense_first_round and auto.find_element("battle/gear_left.png", threshold=0.9):
+                        msg = f"第一回合全员防御，开始战斗"
+                        if self._defense_first_round() is False:
+                            defense_first_round = False
+                            msg = "第一回合全员防御失败，本场战斗改为P+Enter"
+                    elif avoid_skill_3 and auto.find_element("battle/gear_left.png", threshold=0.9):
                         msg = f"使用避免3技能模式开始战斗"
                         if self._chain_battle() is False:
                             avoid_skill_3 = False
@@ -276,6 +292,38 @@ class Battle:
                         [gear_left[0] + 250 * scale + 150 * scale * (i - 1), gear_left[1] + 50 * scale + 250 * scale])
                 else:
                     skill_list.append([gear_left[0] + 250 * scale + 150 * scale * (i - 1), gear_left[1] + 50 * scale])
+            skill_list.append([gear_right[0], gear_right[1] + 150 * scale])
+
+            auto.mouse_drag_link(skill_list)
+
+            sleep(1)
+        except Exception as e:
+            return False
+
+    def _defense_first_round(self):
+        try:
+            scale = cfg.set_win_size / 1440
+
+            gear_left = auto.find_element("battle/gear_left.png")
+
+            gear_1 = [gear_left[0] + 100 * scale, gear_left[1] - 35 * scale]
+            gear_right = auto.find_element("battle/gear_right.png")
+            gear_2 = [gear_right[0] - 100 * scale, gear_right[1]]
+
+            bbox = (gear_1[0], gear_1[1] - 15 * scale, gear_2[0], gear_1[1])
+
+            skill_nums = int((bbox[2] - bbox[0]) / (145 * scale))
+
+            skill_list = []
+
+            for i in range(1, skill_nums + 1):
+                skill_list.append([gear_left[0] + 250 * scale + 150 * scale * (i - 1), gear_left[1] + 50 * scale + 250 * scale])
+
+            for skill in skill_list:
+                auto.mouse_click(skill[0], skill[1])
+                sleep(cfg.mouse_action_interval // 1.5)
+
+            skill_list.insert(0, gear_left)
             skill_list.append([gear_right[0], gear_right[1] + 150 * scale])
 
             auto.mouse_drag_link(skill_list)

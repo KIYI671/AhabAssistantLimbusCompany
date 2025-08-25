@@ -115,6 +115,7 @@ team_setting_template = {
     "re_formation_each_floor": False,  # 每个楼层重新编队
     "use_starlight": False,  # 使用开局星光换钱
     "aggressive_also_enhance": False,  # 激进合成期间也升级饰品
+    "defense_first_round": False,  # 第一回合全员防御
     "fixed_team_use": False,  # 固定队伍用途
     "fixed_team_use_select": 0,  # 固定队伍用途的选择项
     "reward_cards": False,  # 奖励卡优先度
@@ -190,6 +191,7 @@ all_checkbox_config_name = [
     "re_formation_each_floor",
     "use_starlight",
     "aggressive_also_enhance",
+    "defense_first_round",
     "fixed_team_use",
     "reward_cards",
     "choose_opening_bonus",
