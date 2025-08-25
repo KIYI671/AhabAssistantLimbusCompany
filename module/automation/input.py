@@ -32,7 +32,7 @@ class Input(metaclass=SingletonMeta):
                 self.logger.INFO("AALC 已暂停")
                 pause_identity = True
             sleep(1)
-        self.restore_time = time()
+            self.restore_time = time()
 
     def mouse_click(self, x, y, times=1, move_back=False):
         """在指定坐标上执行点击操作
