@@ -572,7 +572,6 @@ class PushSettingCardChance(BasePushSettingCard):
         self.line_text.setMaximumWidth(60)
         self.line_text.setText(str(cfg.get_value(self.config_name)))
         current_count = self.hBoxLayout.count()
-        print(current_count)
         self.hBoxLayout.insertWidget(current_count - 2, self.line_text)
         self.button.clicked.connect(self.__onclicked)
 

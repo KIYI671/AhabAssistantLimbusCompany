@@ -13,7 +13,7 @@ from module.logger import log
 
 def check_times(start_time):
     now_time = time.time()
-    if int(now_time - start_time) % 10 == 0:
+    if int(now_time - start_time) > 9 and int(now_time - start_time) % 10 == 0:
         log.INFO(f"初始时间为{start_time}，此刻时间为{now_time}，已卡死{int(now_time - start_time)}秒")
     if now_time - start_time > 90:
         log.INFO("已卡死超过90秒，尝试关闭重启游戏")

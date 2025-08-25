@@ -165,8 +165,8 @@ def script_task() -> None | int:
         # 判断是否启用了自动切换困牢
         if cfg.auto_hard_mirror:
             from datetime import datetime
+            get_timezone()
             if cfg.last_auto_change == 1715990400:
-                get_timezone()
                 cfg.set_value("last_auto_change", datetime.now().timestamp())
                 cfg.flush()
             if check_hard_mirror_time():
