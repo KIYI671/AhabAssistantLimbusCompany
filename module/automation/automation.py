@@ -48,9 +48,7 @@ class Automation(metaclass=SingletonMeta):
         """
         获取上一次结束暂停的时间
         """
-        if self.input_handler.restore_time is None:
-            return None
-        return self.input_handler.restore_time
+        return self.input_handler.restore_time if self.input_handler.restore_time else 0
 
     def click_element(self, target, find_type="image", threshold=0.8, max_retries=1, take_screenshot=False,
                       offset=True, action="click", times=1, dx=0, dy=0, model=None, my_crop=None, click=True,

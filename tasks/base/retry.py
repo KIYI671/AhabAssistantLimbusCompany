@@ -13,8 +13,10 @@ from module.logger import log
 
 def check_times(start_time):
     now_time = time.time()
+    if int(now_time - start_time) % 10 == 0:
+        log.INFO(f"初始时间为{start_time}，此刻时间为{now_time}，已卡死{int(now_time - start_time)}秒")
     if now_time - start_time > 90:
-        log.INFO("已卡死在retry超过90秒，尝试关闭重启游戏")
+        log.INFO("已卡死超过90秒，尝试关闭重启游戏")
         if platform.system() == "Windows":
             from module.game_and_screen import screen
             _, pid = win32process.GetWindowThreadProcessId(screen.handle._hWnd)
@@ -44,7 +46,7 @@ def check_times(start_time):
 def retry():
     start_time = time.time()
     while True:
-        if auto.get_restore_time() != None:
+        if auto.get_restore_time() is not None:
             start_time = max(start_time, auto.get_restore_time())
         if check_times(start_time):
             return False

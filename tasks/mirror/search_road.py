@@ -55,7 +55,7 @@ def search_road_default_distance():
     if bus_position := auto.find_element("mirror/mybus_default_distance.png", take_screenshot=True):
         from tasks.base.retry import check_times
         while True:
-            if auto.get_restore_time() != None:
+            if auto.get_restore_time() is not None:
                 start_time = max(start_time, auto.get_restore_time())
             if check_times(start_time):
                 from tasks.base.back_init_menu import back_init_menu
