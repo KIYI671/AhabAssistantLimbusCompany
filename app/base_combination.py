@@ -1,8 +1,8 @@
-import datetime
 import base64
-import pyperclip
+import datetime
 
-from PyQt5.QtCore import QUrl, Qt
+import pyperclip
+from PyQt5.QtCore import QUrl
 from PyQt5.QtGui import QPixmap, QDesktopServices
 from PyQt5.QtWidgets import QPushButton
 from qfluentwidgets import LineEdit, SettingCard, \
@@ -13,9 +13,10 @@ from app.base_tools import *
 from app.card.messagebox_custom import MessageBoxEdit, MessageBoxDate, \
     MessageBoxSpinbox, BaseInfoBar
 from app.language_manager import LanguageManager
-from module.update.check_update import check_update
 from module.my_error.my_error import settingsTypeError
+from module.update.check_update import check_update
 from utils.utils import encrypt_string, decrypt_string, get_timezone
+
 
 class CheckBoxWithButton(QFrame):
     def __init__(self, check_box_name, check_box_title, check_box_icon: Union[str, QIcon, FluentIconBase, None],
@@ -554,10 +555,10 @@ class PushSettingCardDate(BasePushSettingCard):
     def __onclicked(self):
         message_box = MessageBoxDate(self.tr(self.title), self.config_value, self.window())
         if message_box.exec():
-            time = message_box.getDateTime()
+            self.config_value = message_box.getDateTime()
             get_timezone()
-            cfg.set_value(self.config_name, time.timestamp())
-            self.contentLabel.setText(time.strftime('%Y-%m-%d %H:%M'))
+            cfg.set_value(self.config_name, self.config_value.timestamp())
+            self.contentLabel.setText(self.config_value.strftime('%Y-%m-%d %H:%M'))
 
 
 class PushSettingCardChance(BasePushSettingCard):
