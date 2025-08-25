@@ -112,6 +112,7 @@ class MainWindow(FramelessWindow):
         self.show()
 
         self.clean_old_logs()
+        self.check_mirror_setting()
 
         check_update(self, flag=True)
 
@@ -211,6 +212,20 @@ class MainWindow(FramelessWindow):
         x = self.width() - 100
         y = self.height() - 100
         self.progress_ring.move(x, y)
+
+    def check_mirror_setting(self):
+        for team_num in range(1, 21):
+            if not cfg.get_value(f"team{team_num}_setting"):
+                return
+            config_team_setting = cfg.get_value(f"team{team_num}_setting")
+            import copy
+            from app import team_setting_template
+            team_setting = copy.deepcopy(team_setting_template)
+            # 用配置中的值覆盖模板的同名key（仅处理模板中存在的key）
+            for key, value in config_team_setting.items():
+                if key in team_setting:  # 忽略模板中已删除的key
+                    team_setting[key] = value
+            cfg.set_value(f"team{team_num}_setting", team_setting)
 
     def set_progress_ring(self, value: int):
         self.progress_ring.setWindowFlag(Qt.WindowStaysOnTopHint)  # 保持最上层显示
