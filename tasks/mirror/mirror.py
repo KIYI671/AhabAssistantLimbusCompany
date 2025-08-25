@@ -95,7 +95,7 @@ class Mirror:
                 break
             if auto.click_element("mirror/road_to_mir/resume_assets.png"):
                 break
-            if auto.click_element("mirror/road_to_mir/enter_mirror_assets.png",threshold=0.78):
+            if auto.click_element("mirror/road_to_mir/enter_mirror_assets.png", threshold=0.78):
                 break
             infinity_bbox = ImageUtils.get_bbox(ImageUtils.load_image("mirror/road_to_mir/infinity_mirror_bbox.png"))
             infinity_bbox = (
@@ -173,7 +173,7 @@ class Mirror:
                 select_theme_pack(self.hard_switch, self.flood)
                 if self.re_formation_each_floor:
                     self.first_battle = True
-                flood_num = self.flood # 0,1,2,3,4
+                flood_num = self.flood  # 0,1,2,3,4
                 if flood_num != 0:
                     flood_time = time.time() - self.flood_times[flood_num - 1]
                     msg = f"启动后第{self.flood}层卡包"
@@ -273,13 +273,13 @@ class Mirror:
             # 在战斗中
             if battle.identify_keyword_turn and self.LOOP_COUNT - main_loop_count < 5:
                 if auto.find_element("battle/turn_assets.png") or auto.find_element("battle/in_mirror_assets.png"):
-                    self.battle_total_time += battle.fight(self.avoid_skill_3,self.defense_first_round)
+                    self.battle_total_time += battle.fight(self.avoid_skill_3, self.defense_first_round)
                     continue
             else:
                 turn_bbox = ImageUtils.get_bbox(ImageUtils.load_image("battle/turn_assets.png"))
                 turn_ocr_result = auto.find_text_element("turn", turn_bbox)
                 if turn_ocr_result is not False:
-                    self.battle_total_time += battle.fight(self.avoid_skill_3,self.defense_first_round)
+                    self.battle_total_time += battle.fight(self.avoid_skill_3, self.defense_first_round)
                     continue
 
             # 镜牢星光
@@ -403,7 +403,7 @@ class Mirror:
             if failed:
                 if auto.click_element("mirror/claim_reward/claim_rewards_assets.png"):
                     sleep(1)
-                if auto.click_element("mirror/claim_reward/claim_forfeit_assets.png",take_screenshot=True):
+                if auto.click_element("mirror/claim_reward/claim_forfeit_assets.png", take_screenshot=True):
                     continue
             else:
                 if self.hard_switch and cfg.save_rewards:

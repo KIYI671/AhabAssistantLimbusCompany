@@ -65,7 +65,7 @@ class Battle:
         return new_time
 
     @begin_and_finish_time_log(task_name="一次战斗")
-    def fight(self, avoid_skill_3=False,defense_first_round=False):
+    def fight(self, avoid_skill_3=False, defense_first_round=False):
         INIT_CHANCE = 16
         chance = INIT_CHANCE
         waiting = self._update_wait_time()
@@ -317,7 +317,8 @@ class Battle:
             skill_list = []
 
             for i in range(1, skill_nums + 1):
-                skill_list.append([gear_left[0] + 250 * scale + 150 * scale * (i - 1), gear_left[1] + 50 * scale + 250 * scale])
+                skill_list.append(
+                    [gear_left[0] + 250 * scale + 150 * scale * (i - 1), gear_left[1] + 50 * scale + 250 * scale])
 
             for skill in skill_list:
                 auto.mouse_click(skill[0], skill[1])

@@ -206,7 +206,7 @@ class MirrorTeamCombination(QFrame):
         self.hBoxLayout.addWidget(self.remark_name)
         self.hBoxLayout.addWidget(self.order)
         self.hBoxLayout.addWidget(self.button)
-    
+
         self.button.edit_name.triggered.connect(self.edit_button_clicked)
         self.button.del_action.triggered.connect(self.delete_button_clicked)
         self.button.copy_settings.triggered.connect(self.copy_team_settings)
@@ -216,7 +216,7 @@ class MirrorTeamCombination(QFrame):
 
     def copy_team_settings(self):
         setting = str(cfg.get_value(f"team{self.team_number}_setting"))
-        setting = "||AALC_TEAM_SETTING||" + setting # 添加标识符
+        setting = "||AALC_TEAM_SETTING||" + setting  # 添加标识符
         setting = base64.b64encode(setting.encode('utf-8')).decode('utf-8')
         pyperclip.copy(setting)
         bar = BaseInfoBar.success(
@@ -229,7 +229,6 @@ class MirrorTeamCombination(QFrame):
             parent=self.parent().parent()
         )
         bar.retranslateUi()
-
 
     def paste_team_settings(self):
         setting = pyperclip.paste().strip()

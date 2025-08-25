@@ -48,8 +48,7 @@ class Shop:
         self.skill_replacement_mode = team_setting["skill_replacement_mode"]
         self.ignore_shop = team_setting["ignore_shop"]  # 忽略的商店楼层
 
-        self.aggressive_also_enhance = team_setting[
-            "aggressive_also_enhance"] if "aggressive_also_enhance" in team_setting else False  # 激进合成期间也升级饰品
+        self.aggressive_also_enhance = team_setting["aggressive_also_enhance"]  # 激进合成期间也升级饰品
 
         self.fuse_IV = False
         self.fuse_second_IV = False
@@ -1064,7 +1063,7 @@ class Shop:
                 # 自动截图
                 if auto.take_screenshot() is None:
                     continue
-                    
+
                 if retry() is False:
                     raise self.RestartGame()
                 if auto.find_element("mirror/road_in_mir/legend_assets.png"):

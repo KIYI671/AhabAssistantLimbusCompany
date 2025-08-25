@@ -148,7 +148,6 @@ class MessageBoxWarning(MessageBox):
         self.cancelButton.setHidden(True)
 
 
-
 class BaseInfoBar(InfoBar):
     def __init__(self, icon: InfoBarIcon | FluentIconBase | QIcon | str, title: str, content: str, orient=Qt.Horizontal,
                  isClosable=True, duration=1000, position=InfoBarPosition.TOP_RIGHT, parent=None):
@@ -190,6 +189,7 @@ class BaseInfoBar(InfoBar):
 class BetterDateTimeEdit(DateTimeEdit):
     """为`DateTimeEdit`添加时间进/退位的功能
     \n更方便的选择时间"""
+
     def __init__(self, parent=None):
         super().__init__(parent)
 
@@ -200,24 +200,23 @@ class BetterDateTimeEdit(DateTimeEdit):
 
         self.index_lock = False
 
-        self.setMinimumDate(QDate(2024, 5, 18)) # 设置最小日期为2024年5月18日
+        self.setMinimumDate(QDate(2024, 5, 18))  # 设置最小日期为2024年5月18日
 
         self.upButton.clicked.connect(self.handle_overflow)
         self.downButton.clicked.connect(self.handle_overflow)
-
 
     def handle_overflow(self, plus=True):
         """处理时间溢出的情况"""
         time = self.time()
         date = self.date()
-        
+
         # 处理分钟溢出和下溢
         if self.currentSection() == self.MinuteSection and time.minute() == self.last_min:
             if plus and time.minute() >= 59:
                 time.setHMS(time.hour() + 1, 0, time.second())
             if not plus and time.minute() <= 0:
                 time.setHMS(time.hour() - 1, 59, time.second())
-        
+
         # 处理小时溢出和下溢
         if self.currentSection() == self.HourSection and time.hour() == self.last_hour:
             if plus and time.hour() >= 23:
@@ -253,12 +252,12 @@ class BetterDateTimeEdit(DateTimeEdit):
         self.last_hour = time.hour()
         self.last_day = date.day()
         self.last_month = date.month()
-    
+
     def wheelEvent(self, e: QWheelEvent | None) -> None:
         super().wheelEvent(e)
         if e is not None:
-            y = e.angleDelta().y() # 上下的滚动向量 上为正
-            x = e.angleDelta().x() # 左右的滚动向量 左为正
+            y = e.angleDelta().y()  # 上下的滚动向量 上为正
+            x = e.angleDelta().x()  # 左右的滚动向量 左为正
             if y > 0:
                 self.handle_overflow(True)
             elif y < 0:
@@ -274,7 +273,6 @@ class BetterDateTimeEdit(DateTimeEdit):
                 self.setCurrentSectionIndex(self.currentSectionIndex() + 1)
                 self.index_lock = False
 
-
     def keyPressEvent(self, e: QKeyEvent | None) -> None:
         super().keyPressEvent(e)
         if e is not None:
@@ -282,6 +280,7 @@ class BetterDateTimeEdit(DateTimeEdit):
                 self.handle_overflow(True)
             elif e.key() == Qt.Key_Down:
                 self.handle_overflow(False)
+
 
 class MessageBoxDate(MessageBox):
     def __init__(self, title: str, content: datetime, parent=None):
