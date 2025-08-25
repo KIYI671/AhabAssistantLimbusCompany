@@ -63,6 +63,8 @@ def lunacy_to_enkephalin(times=0):
             # 葛朗台模式
             if cfg.Dr_Grandet_mode:
                 while get_the_timing() is False:
+                    if Grandet:
+                        break
                     sleep(2)
                 Grandet = True
             auto.click_element("enkephalin/enkephalin_confirm_assets.png")
