@@ -844,6 +844,7 @@ class Shop:
         auto.model = 'clam'
         system_level_IV = False
         second_system_level_IV = False
+        first_gift = True
         while True:
             # 自动截图
             if auto.take_screenshot() is None:
@@ -875,6 +876,15 @@ class Shop:
                             else:
                                 self.enhance_gifts_list.append(level_IV_2)
                         second_system_level_IV = True
+                        continue
+
+            if first_gift and system_level_IV is False:
+                if f_gift:= auto.find_element(f"mirror/shop/enhance_gifts/big_{self.system}.png"):
+                    if self.ego_gift_to_power_up() is False:
+                        break
+                    else:
+                        self.enhance_gifts_list.append(f_gift)
+                        first_gift = False
                         continue
 
             if gifts := auto.find_element(f"mirror/shop/enhance_gifts/{self.system}.png",
