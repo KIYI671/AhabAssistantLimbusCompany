@@ -470,9 +470,9 @@ class Shop:
                     if auto.find_element("mirror/road_in_mir/ego_gift_get_confirm_assets.png"):
                         if fuse_IV:
                             if cfg.language_in_game == "zh_cn":
-                                excluded_names = "残片"
+                                excluded_names = ["残片", "罪孽"]
                             else:
-                                excluded_names = ["fragment", "corrosion"]
+                                excluded_names = ["fragment", "corrosion", "resources"]
                             if auto.find_element(excluded_names, find_type="text"):
                                 pass
                             else:
@@ -879,7 +879,7 @@ class Shop:
                         continue
 
             if first_gift and system_level_IV is False:
-                if f_gift:= auto.find_element(f"mirror/shop/enhance_gifts/big_{self.system}.png"):
+                if f_gift := auto.find_element(f"mirror/shop/enhance_gifts/big_{self.system}.png"):
                     if self.ego_gift_to_power_up() is False:
                         break
                     else:
