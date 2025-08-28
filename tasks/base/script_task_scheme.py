@@ -26,7 +26,7 @@ from tasks.daily.luxcavation import EXP_luxcavation, thread_luxcavation
 from tasks.mirror.mirror import Mirror
 from tasks.teams.team_formation import select_battle_team
 from utils import pic_path
-from utils.utils import get_day_of_week, calculate_the_teams, get_timezone, check_hard_mirror_time
+from utils.utils import get_day_of_week, calculate_the_teams
 
 
 @begin_and_finish_time_log(task_name="一次经验本")
@@ -119,10 +119,6 @@ def script_task() -> None | int:
     if auto.click_element("battle/turn_assets.png", take_screenshot=True):
         get_reward = battle.fight()
 
-    if cfg.daily_task is False and cfg.get_reward is False and cfg.buy_enkephalin is False and cfg.mirror is False:
-        from app import mediator
-        mediator.tasks_warning.emit()
-
     # 执行日常刷本任务
     if cfg.daily_task:
         back_init_menu()
@@ -161,22 +157,6 @@ def script_task() -> None | int:
 
     # 执行镜牢任务
     if cfg.mirror:
-
-        # 判断是否启用了自动切换困牢
-        if cfg.auto_hard_mirror:
-            from datetime import datetime
-            get_timezone()
-            if cfg.last_auto_change == 1715990400:
-                cfg.set_value("last_auto_change", datetime.now().timestamp())
-                cfg.flush()
-            if check_hard_mirror_time():
-                log.INFO("识别到新的困牢周期，自动切换困难镜牢，设置困牢次数为3")
-                cfg.set_value("last_auto_change", datetime.now().timestamp())
-                cfg.set_value("hard_mirror", True)
-                cfg.set_value("hard_mirror_chance", 3)
-            if cfg.hard_mirror_chance > 0:
-                cfg.set_value("hard_mirror", True)
-
         # 判断执行镜牢任务的次数
         mir_times = cfg.set_mirror_count
         if cfg.infinite_dungeons:
@@ -184,36 +164,15 @@ def script_task() -> None | int:
         if cfg.save_rewards and cfg.hard_mirror:
             mir_times = 1
 
-        # 检查队伍配置状况
-        teams_be_select = sum(1 for team in cfg.teams_be_select if team)
-        if teams_be_select != cfg.teams_be_select_num:
-            cfg.set_value("teams_be_select_num", teams_be_select)
-            from utils.utils import check_teams_order
-            teams_order = check_teams_order(cfg.teams_order)
-            cfg.set_value("teams_order", teams_order)
-
         # 开始执行镜牢任务
-        if cfg.teams_be_select_num != 0:
-            while mir_times > 0:
-                teams_order = cfg.teams_order  # 复制一份队伍顺序
-                team_num = teams_order.index(1)  # 获取序号1的队伍在队伍顺序中的位置
-                team_setting = cfg.get_value(f"team{team_num + 1}_setting")  # 获取序号1的队伍的配置
-                # 如果该队伍固定了用途，且不用途符合当前情况，将序号1的队伍移动到队伍顺序的最后
-                if "fixed_team_use" in team_setting and team_setting["fixed_team_use"]:
-                    if (team_setting["fixed_team_use_select"] == 0 and cfg.hard_mirror is False) or (
-                            team_setting["fixed_team_use_select"] == 1 and cfg.hard_mirror is True):
-                        for index, value in enumerate(teams_order):
-                            if value == 0:
-                                continue
-                            if teams_order[index] == 1:
-                                teams_order[index] = cfg.teams_be_select_num
-                            elif teams_order[index] != 0:
-                                teams_order[index] -= 1
-                        cfg.set_value("teams_order", teams_order)
-                        continue
-                # 执行一次镜牢任务，根据执行结果进行处理
-                mirror_result = onetime_mir_process(team_setting)
-                if mirror_result:
+        while mir_times > 0:
+            teams_order = cfg.teams_order  # 复制一份队伍顺序
+            team_num = teams_order.index(1)  # 获取序号1的队伍在队伍顺序中的位置
+            team_setting = cfg.get_value(f"team{team_num + 1}_setting")  # 获取序号1的队伍的配置
+            # 如果该队伍固定了用途，且不用途符合当前情况，将序号1的队伍移动到队伍顺序的最后
+            if "fixed_team_use" in team_setting and team_setting["fixed_team_use"]:
+                if (team_setting["fixed_team_use_select"] == 0 and cfg.hard_mirror is False) or (
+                        team_setting["fixed_team_use_select"] == 1 and cfg.hard_mirror is True):
                     for index, value in enumerate(teams_order):
                         if value == 0:
                             continue
@@ -222,14 +181,24 @@ def script_task() -> None | int:
                         elif teams_order[index] != 0:
                             teams_order[index] -= 1
                     cfg.set_value("teams_order", teams_order)
-                    mir_times -= 1
-                    if cfg.hard_mirror and cfg.auto_hard_mirror:
-                        chance = cfg.hard_mirror_chance - 1
-                        cfg.set_value("hard_mirror_chance", chance)
-                        if chance == 0:
-                            cfg.set_value("hard_mirror", False)
-        else:
-            log.WARNING("没有选择任何队伍，请选择一个队伍进行镜牢任务")
+                    continue
+            # 执行一次镜牢任务，根据执行结果进行处理
+            mirror_result = onetime_mir_process(team_setting)
+            if mirror_result:
+                for index, value in enumerate(teams_order):
+                    if value == 0:
+                        continue
+                    if teams_order[index] == 1:
+                        teams_order[index] = cfg.teams_be_select_num
+                    elif teams_order[index] != 0:
+                        teams_order[index] -= 1
+                cfg.set_value("teams_order", teams_order)
+                mir_times -= 1
+                if cfg.hard_mirror and cfg.auto_hard_mirror:
+                    chance = cfg.hard_mirror_chance - 1
+                    cfg.set_value("hard_mirror_chance", chance)
+                    if chance == 0:
+                        cfg.set_value("hard_mirror", False)
 
     if cfg.set_reduce_miscontact:
         screen.reset_win()

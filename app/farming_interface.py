@@ -17,6 +17,7 @@ from module.game_and_screen import screen
 from module.logger import log
 from module.ocr import ocr
 from tasks.base.script_task_scheme import my_script_task
+from utils.utils import check_hard_mirror_time
 
 
 class FarmingInterface(QWidget):
@@ -190,20 +191,84 @@ class FarmingInterfaceLeft(QWidget):
         log.DEBUG("即将关闭AALC")
         sys.exit(0)
 
-    def start_and_stop_tasks(self):
+    def check_setting(self):
         # 检测是否有未保存的镜牢队伍设置
         if self.parent.parent.findChild(TeamSettingCard):
             list(self.parent.parent.pivot.items.values())[-1].click()
             mediator.save_warning.emit()
-            return
+            return False
+
         if cfg.mirror:
+            # 判断是否启用了自动切换困牢
+            if cfg.auto_hard_mirror:
+                from datetime import datetime
+                get_timezone()
+                if cfg.last_auto_change == 1715990400:
+                    cfg.set_value("last_auto_change", datetime.now().timestamp())
+                    cfg.flush()
+                if check_hard_mirror_time():
+                    log.INFO("识别到新的困牢周期，自动切换困难镜牢，设置困牢次数为3")
+                    cfg.set_value("last_auto_change", datetime.now().timestamp())
+                    cfg.set_value("hard_mirror", True)
+                    cfg.set_value("hard_mirror_chance", 3)
+                if cfg.hard_mirror_chance > 0:
+                    cfg.set_value("hard_mirror", True)
+
+            # 检查队伍配置状况
+            teams_be_select = sum(1 for team in cfg.teams_be_select if team)
+            if teams_be_select != cfg.teams_be_select_num:
+                cfg.set_value("teams_be_select_num", teams_be_select)
+                from utils.utils import check_teams_order
+                teams_order = check_teams_order(cfg.teams_order)
+                cfg.set_value("teams_order", teams_order)
+                cfg.flush()
+
+            if cfg.teams_be_select_num == 0:
+                message = self.tr("没有启用任何队伍，请选择一个队伍进行镜牢任务")
+                mediator.warning.emit(message)
+                return False
+
+            # 检测是否有未配置角色选择的队伍
             teams_be_select = cfg.get_value("teams_be_select")
             for index in (i for i, t in enumerate(teams_be_select) if t is True):
                 team_setting = cfg.get_value(f"team{index + 1}_setting")
                 if team_setting["sinners_be_select"] == 0:
                     message = self.tr("存在未配置角色选择的队伍：TEAM_{0}")
                     mediator.warning.emit(message.format(index + 1))
-                    return
+                    return False
+
+            # 检测配置的队伍能否顺利执行
+            useful = False
+            hard = cfg.hard_mirror
+            teams_be_select = cfg.get_value("teams_be_select")
+            for index in (i for i, t in enumerate(teams_be_select) if t is True):
+                team_setting = cfg.get_value(f"team{index + 1}_setting")
+                if team_setting["fixed_team_use"] is False:
+                    useful = True
+                    break
+                if team_setting["fixed_team_use_select"] == 1 and hard is False:
+                    useful = True
+                    break
+                if team_setting["fixed_team_use_select"] == 0 and hard is True:
+                    useful = True
+                    break
+            if useful is False:
+                if hard :
+                    message = self.tr("启用了困牢，但是无可用于困牢的队伍")
+                else:
+                    message = self.tr("启用了普牢，但是无可用于普牢的队伍")
+                mediator.warning.emit(message)
+                return False
+
+        if cfg.daily_task is False and cfg.get_reward is False and cfg.buy_enkephalin is False and cfg.mirror is False:
+            mediator.tasks_warning.emit()
+            return False
+
+    def start_and_stop_tasks(self):
+        # 启动前检查设置，防呆
+        if self.check_setting() is False:
+            return
+
         # 设置按下启动与停止按钮时，其他模块的启用与停用
         current_text = self.link_start_button.get_text()
         if current_text == "Link Start!":

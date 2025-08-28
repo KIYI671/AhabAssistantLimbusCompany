@@ -33,7 +33,24 @@ def get_the_timing():
 
 @begin_and_finish_time_log(task_name="体力换饼", calculate_time=False)
 def make_enkephalin_module(cancel=False):
+    import time
+    start_time = time.time()
+    last_log_time = None
     while True:
+        now_time = time.time()
+        if 60 > now_time - start_time > 20 and int(now_time - start_time) % 10 == 0:
+            if last_log_time is None or now_time - last_log_time > 5:
+                msg = f"已尝试狂气换体超过{int(now_time - start_time)}秒，如果非电脑硬件配置不足，请确认是否执行了正确的语言配置"
+                log.WARNING(msg)
+                last_log_time = now_time
+        if now_time - start_time > 60:
+            import pyautogui
+            from app import mediator
+            if last_log_time is None or now_time - last_log_time > 5:
+                log.WARNING("已尝试狂气换体超过1分钟，脚本将停止运行，请先检查语言配置，或检查电脑配置是否支持")
+                pyautogui.hotkey('ctrl', 'q')
+                message = "脚本卡死在狂气换体，请检查语言配置，或检查电脑配置是否支持"
+                mediator.warning.emit(message)
         # 自动截图
         if auto.take_screenshot() is None:
             continue
