@@ -506,7 +506,7 @@
 <context>
     <name>BaseLabel</name>
     <message>
-        <location filename="../app/farming_interface.py" line="144"/>
+        <location filename="../app/farming_interface.py" line="145"/>
         <source>之后</source>
         <translation>After</translation>
     </message>
@@ -579,7 +579,7 @@
     <message>
         <location filename="../app/tools_interface.py" line="34"/>
         <source>这只是一个为你自动按下P键和Enter键的小工具，不要怀抱太多期待</source>
-        <translation>It's just a gadget that automatically presses the P and Enter keys for you, so don't expect too much</translation>
+        <translation>It&apos;s just a gadget that automatically presses the P and Enter keys for you, so don&apos;t expect too much</translation>
     </message>
 </context>
 <context>
@@ -628,32 +628,32 @@
 <context>
     <name>CheckBoxWithButton</name>
     <message>
-        <location filename="../app/farming_interface.py" line="90"/>
+        <location filename="../app/farming_interface.py" line="91"/>
         <source>窗口设置</source>
         <translation>Win-Settings</translation>
     </message>
     <message>
-        <location filename="../app/farming_interface.py" line="98"/>
+        <location filename="../app/farming_interface.py" line="99"/>
         <source>日常任务</source>
         <translation>Daily Tasks</translation>
     </message>
     <message>
-        <location filename="../app/farming_interface.py" line="105"/>
+        <location filename="../app/farming_interface.py" line="106"/>
         <source>领取奖励</source>
         <translation>Claim Rewards</translation>
     </message>
     <message>
-        <location filename="../app/farming_interface.py" line="111"/>
+        <location filename="../app/farming_interface.py" line="112"/>
         <source>狂气换体</source>
         <translation>Lunacy2Enk</translation>
     </message>
     <message>
-        <location filename="../app/farming_interface.py" line="117"/>
+        <location filename="../app/farming_interface.py" line="118"/>
         <source>坐牢设置</source>
         <translation>Mir-Settings</translation>
     </message>
     <message>
-        <location filename="../app/farming_interface.py" line="123"/>
+        <location filename="../app/farming_interface.py" line="124"/>
         <source>亚哈共鸣</source>
         <translation>Ahab-Res</translation>
     </message>
@@ -835,9 +835,24 @@
         <translation type="obsolete">Starting all tasks</translation>
     </message>
     <message>
-        <location filename="../app/farming_interface.py" line="204"/>
+        <location filename="../app/farming_interface.py" line="236"/>
         <source>存在未配置角色选择的队伍：TEAM_{0}</source>
         <translation>There is a team with no configured role selection: TEAM_{0}</translation>
+    </message>
+    <message>
+        <location filename="../app/farming_interface.py" line="227"/>
+        <source>没有启用任何队伍，请选择一个队伍进行镜牢任务</source>
+        <translation>No team is enabled. Please select a team to start the Mirror Dungeon quest</translation>
+    </message>
+    <message>
+        <location filename="../app/farming_interface.py" line="257"/>
+        <source>启用了困牢，但是无可用于困牢的队伍</source>
+        <translation>Hardmode Mirror Dungeons are enabled, but there are no groups available for Hardmode Mirror Dungeons</translation>
+    </message>
+    <message>
+        <location filename="../app/farming_interface.py" line="259"/>
+        <source>启用了普牢，但是无可用于普牢的队伍</source>
+        <translation>Normal Mode Mirror Dungeon is enabled, but there are no groups available for Normal Mode Mirror Dungeon</translation>
     </message>
 </context>
 <context>
@@ -1112,7 +1127,7 @@
     <message>
         <location filename="../app/my_app.py" line="158"/>
         <source>存在未保存的设置，请执行保存或取消操作</source>
-        <translation>Didn't save settings, please do save or cancel</translation>
+        <translation>Didn&apos;t save settings, please do save or cancel</translation>
     </message>
     <message>
         <location filename="../app/my_app.py" line="262"/>
@@ -1270,12 +1285,12 @@
 <context>
     <name>NormalTextButton</name>
     <message>
-        <location filename="../app/farming_interface.py" line="132"/>
+        <location filename="../app/farming_interface.py" line="133"/>
         <source>全选</source>
         <translation>Select All</translation>
     </message>
     <message>
-        <location filename="../app/farming_interface.py" line="138"/>
+        <location filename="../app/farming_interface.py" line="139"/>
         <source>清空</source>
         <translation>Clear All</translation>
     </message>
