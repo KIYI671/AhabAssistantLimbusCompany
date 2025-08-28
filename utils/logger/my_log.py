@@ -64,9 +64,11 @@ class Logger(metaclass=SingletonMeta):
         if Logger._project_root is None:
             self._detect_project_root()
 
-        # 装饰器正则表
-        self._decorator_patterns = [
+        # 调用堆栈文件正则表
+        self._ignore_patterns = [
             re.compile(r'.*[\\/]decorator[\\/].*\.py$', re.IGNORECASE),  # 匹配所有 decorator 文件夹下的py文件
+            re.compile(r'^.*[\\/]module[\\/]config[\\/]config\.py$', re.IGNORECASE), # 匹配 module/config/config.py 文件
+            re.compile(r'^.*[\\/]module[\\/]automation[\\/].*\.py$', re.IGNORECASE) # 匹配 module/automation 目录下的所有py文件
         ]
 
         self._decorate_logger()
@@ -76,9 +78,9 @@ class Logger(metaclass=SingletonMeta):
         \n 使用闭包装饰器来动态捕获传入信息, 从而实现翻译
         \n 且能够支持传入参数的格式化, (format方法)
         例子:
-        log.INFO("这是一个{}日志", "测试") >> 这是一个测试日志
-        log.INFO("这是一个{text}日志", text = "测试") >> 这是一个测试日志
-        第一个参数, 也就是msg参数, 会在info日志里被翻译, 如果被QT_TRANSLATE_NOOP标记 (content = "Logger")
+        `log.INFO("这是一个{}日志", "测试")` >> `这是一个测试日志`
+        `log.INFO("这是一个{text}日志", text = "测试")` >> `这是一个测试日志`
+        第一个参数, 也就是`msg`参数, 会在info日志里被翻译, 如果被`QT_TRANSLATE_NOOP`标记 **(content = "Logger")**
         但是在debug日志里不会被翻译, 却会被format方法格式化
         """
 
@@ -143,7 +145,7 @@ class Logger(metaclass=SingletonMeta):
                 continue
 
             # 跳过装饰器文件
-            if any(pattern.match(filename) for pattern in self._decorator_patterns):
+            if any(pattern.match(filename) for pattern in self._ignore_patterns):
                 continue
 
             # 获取文件绝对路径
