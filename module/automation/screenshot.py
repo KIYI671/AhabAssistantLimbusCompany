@@ -1,4 +1,5 @@
 from ctypes import windll
+from PIL.Image import Image
 
 import pyautogui
 
@@ -8,11 +9,13 @@ from module.config import cfg
 class ScreenShot:
 
     @staticmethod
-    def take_screenshot(gray=True):
+    def take_screenshot(gray: bool = True) -> Image:
         """
         截取屏幕截图。
-        :param gray: 是否将图片转化为灰度图
-        :return screenshot: 截取的屏幕截图。
+        Args:
+            gray (bool): 是否将图片转化为灰度图
+        Returns:
+            screenshot: 截取的屏幕截图。
         """
         # 根据配置获取窗口的高度
         size_height = cfg.set_win_size
