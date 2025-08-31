@@ -17,7 +17,10 @@ class Input(metaclass=SingletonMeta):
         self.restore_time = None
         # self.is_move_back = False  以后从配置里读取
 
-    def set_pause(self):
+    def set_pause(self) -> None:
+        """
+        设置暂停状态
+        """
         self.is_pause = not self.is_pause  # 设置暂停状态
         if self.is_pause:
             msg = "操作将在下一次点击时暂停"
@@ -25,7 +28,10 @@ class Input(metaclass=SingletonMeta):
             msg = "继续操作"
         self.logger.INFO(msg)
 
-    def wait_pause(self):
+    def wait_pause(self) -> None:
+        """
+        当处于暂停状态时堵塞的进行等待
+        """
         pause_identity = False
         while self.is_pause:
             if not pause_identity is False:
@@ -34,7 +40,7 @@ class Input(metaclass=SingletonMeta):
             sleep(1)
             self.restore_time = time()
 
-    def mouse_click(self, x, y, times=1, move_back=False):
+    def mouse_click(self, x, y, times=1, move_back=False) -> bool:
         """在指定坐标上执行点击操作
 
         Args:
@@ -42,6 +48,8 @@ class Input(metaclass=SingletonMeta):
             y (int): y坐标
             times (int): 点击次数
             move_back (bool): 是否在点击后将鼠标移动回原位置
+        Returns:
+            bool (True) : 总是返回True表示操作执行完毕
         """
         if move_back:
             current_mouse_position = self.get_mouse_position()
@@ -59,7 +67,7 @@ class Input(metaclass=SingletonMeta):
 
         return True
 
-    def mouse_drag_down(self, x, y, move_back=True):
+    def mouse_drag_down(self, x, y, move_back=True) -> None:
         """鼠标从指定位置向下拖动
 
         Args:
@@ -82,7 +90,7 @@ class Input(metaclass=SingletonMeta):
         msg = f"选择卡包:({x},{y})"
         self.logger.DEBUG(msg)
 
-    def mouse_drag(self, x, y, drag_time=0.1, dx=0, dy=0, move_back=False):
+    def mouse_drag(self, x, y, drag_time=0.1, dx=0, dy=0, move_back=False) -> None:
         """鼠标从指定位置拖动到另一个位置
         Args:
             x (int): 起始x坐标
@@ -107,7 +115,12 @@ class Input(metaclass=SingletonMeta):
         if move_back and current_mouse_position:
             self.mouse_move(current_mouse_position)
 
-    def mouse_scroll(self, direction=-3):
+    def mouse_scroll(self, direction:int=-3) -> None:
+        """
+        进行鼠标滚动操作
+        Args:
+            direction (int): 滚动方向，正值表示拉近，负值表示缩小
+        """
         if direction <= 0:
             msg = "鼠标滚动滚轮，远离界面"
         else:
@@ -115,12 +128,14 @@ class Input(metaclass=SingletonMeta):
         self.logger.DEBUG(msg)
         pyautogui.scroll(direction)
 
-    def mouse_click_blank(self, coordinate=(1, 1), times=1, move_back=False):
+    def mouse_click_blank(self, coordinate=(1, 1), times=1, move_back=False) -> bool:
         """在空白位置点击鼠标
         Args:
             coordinate (tuple): 坐标元组 (x, y)
             times (int): 点击次数
             move_back (bool): 是否在点击后将鼠标移动回原位置
+        Returns:
+            bool (True) : 总是返回True表示操作执行完毕
         """
         if move_back:
             current_mouse_position = self.get_mouse_position()
@@ -138,7 +153,7 @@ class Input(metaclass=SingletonMeta):
         self.wait_pause()
         return True
 
-    def mouse_to_blank(self, coordinate=(1, 1), move_back=False):
+    def mouse_to_blank(self, coordinate=(1, 1), move_back=False) -> None:
         """鼠标移动到空白位置，避免遮挡
         Args:
             coordinate (tuple): 坐标元组 (x, y)
@@ -155,7 +170,7 @@ class Input(metaclass=SingletonMeta):
             self.mouse_move(current_mouse_position)
         self.wait_pause()
 
-    def mouse_move(self, coordinate=(1, 1)):
+    def mouse_move(self, coordinate=(1, 1)) -> None:
         """鼠标移动到指定坐标
 
         Args:
@@ -164,7 +179,7 @@ class Input(metaclass=SingletonMeta):
         pyautogui.moveTo(coordinate[0], coordinate[1])
         self.wait_pause()
 
-    def get_mouse_position(self):
+    def get_mouse_position(self) -> tuple[int, int]:
         """获取鼠标当前位置
 
         Returns:
@@ -173,7 +188,7 @@ class Input(metaclass=SingletonMeta):
         x, y = pyautogui.position()
         return (x, y)
 
-    def mouse_drag_link(self, position: list, drag_time=0.1):
+    def mouse_drag_link(self, position: list, drag_time=0.1) -> None:
         """鼠标从指定位置拖动到指定位置
         Args:
             x (int): 起始x坐标
