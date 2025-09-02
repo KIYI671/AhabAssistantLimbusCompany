@@ -38,6 +38,7 @@ jobs:
       - name: Install Qt
         uses: jurplel/install-qt-action@v4
         with:
+          cache: true
           version: '5.15.*'
           target: 'desktop'  # 目标平台（桌面端）
 
