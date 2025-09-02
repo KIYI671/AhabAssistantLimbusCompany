@@ -1,0 +1,42 @@
+[project]
+name = "ahab-assistant-limbus-company"
+description = "Ahab Assistant for Limbus Company: automation helper (GUI, OCR, tasks)."
+readme = "README.md"
+license = "AGPL-3.0-or-later"
+authors = [{ name = "KIYI671" }]
+keywords = ["limbus", "automation", "pyqt", "ocr", "game-assistant"]
+requires-python = ">=3.12"
+version = "1.0.9"
+
+dependencies = [
+    "PyQt5",
+    "PyQt-Fluent-Widgets>=1.8.6,<2.0.0",
+    "pyuac~=0.0.3",
+    "pywin32",
+    "PyAutoGUI",
+    "pynput",
+    "pyperclip",
+    "playsound3",
+    "requests",
+    "packaging",
+    "markdown-it-py",
+    "mdit-py-plugins",
+    "linkify-it-py",
+    "ruamel.yaml",
+    "numpy",
+    "opencv-python",
+    "pillow",
+    "cpufeature",
+    "psutil",
+    "nb-log",
+]
+
+[project.urls]
+Homepage = "https://github.com/KIYI671/AhabAssistantLimbusCompany"
+Source = "https://github.com/KIYI671/AhabAssistantLimbusCompany"
+Issues = "https://github.com/KIYI671/AhabAssistantLimbusCompany/issues"
+
+[tool.uv]
+managed = true
+dev-dependencies = []
+constraint-dependencies = ["pyqt5-qt5 <=5.15.2"] # version>5.15.3 doesn't have windows wheel
