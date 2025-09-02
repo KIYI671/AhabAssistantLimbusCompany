@@ -1,7 +1,9 @@
+from ast import List
 import gc
 import math
 import random
 import time
+from tkinter import Image
 
 import cv2
 import numpy as np
@@ -42,20 +44,26 @@ class Automation(metaclass=SingletonMeta):
         self.mouse_drag_link = self.input_handler.mouse_drag_link
 
     def check_pause(self) -> bool:
+        """
+        检查是否处于暂停状态
+
+        Returns:
+            bool: 是否处于暂停状态
+        """
         return self.input_handler.is_pause
 
-    def get_restore_time(self):
+    def get_restore_time(self) -> float:
         """
         获取上一次结束暂停的时间
+        Returns:
+            float: 上一次结束暂停的时间
         """
         return self.input_handler.restore_time if self.input_handler.restore_time else 0
 
     def click_element(self, target, find_type="image", threshold=0.8, max_retries=1, take_screenshot=False,
                       offset=True, action="click", times=1, dx=0, dy=0, model=None, my_crop=None, click=True,
                       drag_time=None, interval=0.5):
-        """查找并点击屏幕上的元素
-
-        """
+        """查找并点击屏幕上的元素"""
         if model is None:
             model = self.model
         coordinates = self.find_element(target, find_type, threshold, max_retries, take_screenshot, model=model,
@@ -84,16 +92,16 @@ class Automation(metaclass=SingletonMeta):
         return x, y
 
     def mouse_action_with_pos(self, coordinates, offset=True, action="click", times=1, drag_time=None, dx=0, dy=0,
-                              find_type=None, interval=0.5, move_back=False):
+                              find_type=None, interval=0.5, move_back=False) -> bool:
         """
         在指定坐标上执行点击操作
-        参数:
-        - coordinates: 坐标位置，用于计算点击位置
-        - offset: 是否使用偏移量计算点击位置，默认为True
-        - action: 鼠标操作类型，默认为"click"
-        - move_back: 是否在操作后将鼠标移动回原位置，默认为False
-        返回值:
-        - 总是返回True表示操作执行完毕
+        Args:
+            coordinates: 坐标位置，用于计算点击位置
+            offset: 是否使用偏移量计算点击位置，默认为True
+            action: 鼠标操作类型，默认为"click"
+            move_back: 是否在操作后将鼠标移动回原位置，默认为False
+        Returns:
+           bool (True) : 总是返回True表示操作执行完毕
         """
         if find_type == 'image_with_multiple_targets' and len(coordinates) > 0:
             for c in coordinates:
@@ -137,7 +145,14 @@ class Automation(metaclass=SingletonMeta):
 
         return True
 
-    def take_screenshot(self, gray=True):
+    def take_screenshot(self, gray: bool = True) -> Image:
+        """
+        截取当前屏幕并返回图像对象。
+        Args:
+            gray (bool): 是否将图像转换为灰度图，默认为True。
+        Returns:
+            Image: 截取当前屏幕的图像对象
+        """
         start_time = time.time()
         screenshot_interval_time = cfg.screenshot_interval if cfg.screenshot_interval else 0.85
         while True:
@@ -165,14 +180,16 @@ class Automation(metaclass=SingletonMeta):
                      model=None, my_crop=None):
         """
         查找元素，并根据指定的查找类型执行不同的查找策略。
-        :param target: 查找目标，可以是图像路径或文字。
-        :param find_type: 查找类型，例如'image', 'text'等。
-        :param threshold: 查找阈值，用于图像查找时的相似度匹配。
-        :param max_retries: 最大重试次数。
-        :param take_screenshot: 是否需要先截图。
-        :param model: 查找的策略,'clam' 为在模板图片位置查找，'normal' 为模板图片位置扩大范围查找，'aggressive' 为全截屏区域查找
-        :param my_crop: 用于OCR识别的已截取的部分图片
-        :return: 查找到的元素位置，或者在图像计数查找时返回计数。
+        Args:
+            target: 查找目标，可以是图像路径或文字。
+            find_type: 查找类型，例如'image', 'text'等。
+            threshold: 查找阈值，用于图像查找时的相似度匹配。
+            max_retries: 最大重试次数。
+            take_screenshot: 是否需要先截图。
+            model: 查找的策略,'clam' 为在模板图片位置查找，'normal' 为模板图片位置扩大范围查找，'aggressive' 为全截屏区域查找
+            my_crop: 用于OCR识别的已截取的部分图片
+        Returns:
+            查找到的元素位置，或者在图像计数查找时返回计数。
         """
         if model is None:
             model = self.model
@@ -206,7 +223,10 @@ class Automation(metaclass=SingletonMeta):
                 time.sleep(1)  # 在重试前等待一定时间
         return None
 
-    def find_image_with_multiple_targets(self, target, threshold):
+    def find_image_with_multiple_targets(self, target, threshold) -> List:
+        """
+        在当前截图中查找多个目标图像的位置
+        """
         try:
             template = ImageUtils.load_image(target)
             if "assets" in target:
@@ -226,6 +246,9 @@ class Automation(metaclass=SingletonMeta):
             return []
 
     def find_str_in_text(self, target, ocr_dict):
+        """
+        返回目标文本的坐标
+        """
         for text in ocr_dict.keys():
             if target.lower() in text.lower():
                 log.DEBUG(f"识别到目标：{text},坐标为：{ocr_dict[text]}")
@@ -233,6 +256,9 @@ class Automation(metaclass=SingletonMeta):
         return False
 
     def find_text_element(self, target, my_crop=None, all_text=False, only_text=False):
+        """
+        寻找文本元素所在的坐标位置
+        """
         if my_crop is not None:
             # 根据my_crop（为左上与右下四个坐标），截取self.screenshot的部分区域进行ocr
             cropped_image = self.screenshot.crop(my_crop)
@@ -272,6 +298,9 @@ class Automation(metaclass=SingletonMeta):
             return None
 
     def get_text_from_screenshot(self, my_crop=None):
+        """
+        从屏幕截图中提取文字
+        """
         if my_crop is not None:
             # 根据my_crop（为左上与右下四个坐标），截取self.screenshot的部分区域进行ocr
             cropped_image = self.screenshot.crop(my_crop)
@@ -285,6 +314,9 @@ class Automation(metaclass=SingletonMeta):
         return ocr_text_list
 
     def find_feature_element(self, target, pic_crop=None, min_matches=8):
+        """
+        寻找特征元素所在的坐标位置
+        """
         try:
             template = ImageUtils.load_image(target, resize=False)
             screenshot = np.array(self.screenshot)
@@ -312,13 +344,16 @@ class Automation(metaclass=SingletonMeta):
                 self.logger.ERROR(f"匹配图片特征失败:{e}")
             return None
 
-    def clear_img_cache(self):
+    def clear_img_cache(self) -> None:
         """清除图片缓存"""
         self.img_cache.clear()
         gc.collect()  # 强制垃圾回收，清理内存
         log.DEBUG("图片缓存已清除")
 
     def find_image_element(self, target, threshold, cacheable=True, model='clam', my_crop=None):
+        """
+        在当前截图中查找目标图像的位置
+        """
         try:
             if cacheable and target in self.img_cache:
                 bbox = self.img_cache[target]['bbox']
@@ -345,6 +380,9 @@ class Automation(metaclass=SingletonMeta):
         return None
 
     def get_screenshot_crop(self, crop):
+        """
+        获取指定区域的彩色截图
+        """
         self.take_screenshot(False)
         screenshot = np.array(self.screenshot)
         screenshot = screenshot[:, :, ::-1]
