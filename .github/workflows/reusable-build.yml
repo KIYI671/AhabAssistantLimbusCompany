@@ -15,20 +15,18 @@ jobs:
       - name: Checkout
         uses: actions/checkout@main
 
-      # 设置 Python 环境
-      - name: Setup Python
-        uses: actions/setup-python@v4
+      # 配置 uv 
+      - name: Setup UV for Python
+        uses: astral-sh/setup-uv@v6
         with:
-          python-version: "3.12"
-          cache: "pip"
-          cache-dependency-path: "requirements.txt"
+          enable-cache: true
+          cache-dependency-glob: |
+            **/uv.lock
 
       # 安装依赖
       - name: Install dependencies
         run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
-          pip install pyinstaller
+          uv sync --frozen
 
       # 注入版本号
       - name: Inject version number
@@ -57,8 +55,8 @@ jobs:
       # 打包项目
       - name: Build executable & Bundle resources
         run: |
-          pyinstaller main.spec
-          pyinstaller -F -i .\assets\logo\Updater.ico -n "AALC Updater" --exclude-module numpy --exclude-module pandas updater.py -y
+          uv run pyinstaller main.spec
+          uv run pyinstaller -F -i .\assets\logo\Updater.ico -n "AALC Updater" --exclude-module numpy --exclude-module pandas updater.py -y
           mkdir dist_release
           mv dist/* dist_release/
           cp dist_release/"AALC Updater"* dist_release/AALC/
