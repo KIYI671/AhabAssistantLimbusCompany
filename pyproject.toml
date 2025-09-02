@@ -38,5 +38,7 @@ Issues = "https://github.com/KIYI671/AhabAssistantLimbusCompany/issues"
 
 [tool.uv]
 managed = true
-dev-dependencies = []
-constraint-dependencies = ["pyqt5-qt5 <=5.15.2"] # version>5.15.3 doesn't have windows wheel
+dev-dependencies = ["pyinstaller"]
+constraint-dependencies = [
+    "pyqt5-qt5 <=5.15.2",
+] # version>5.15.3 doesn't have windows wheel
