@@ -1,13 +1,34 @@
 from ctypes import windll
 from PIL import Image
-
+from module.logger import log
 from module.config import cfg
-
+import pyautogui
 
 class ScreenShot:
     
     @staticmethod
-    def take_screenshot(gray: bool = True) -> Image.Image:
+    def take_screenshot(gray: bool = True) -> Image.Image | None:
+        """
+        截取屏幕截图
+        Args:
+            gray (bool): 是否转为灰度图
+        Returns:
+            PIL.Image: 截图图像
+        """
+        try:
+            return ScreenShot.take_screenshot_gdi(gray)
+        except Exception as e:
+            msg = f"GDI截图失败，尝试使用pyautogui截图，错误信息：{e}"
+            log.DEBUG(msg)
+            try:
+                return ScreenShot.take_screenshot_pyautogui(gray)
+            except Exception as e2:
+                msg = f"pyautogui截图失败，错误信息：{e2}"
+                log.DEBUG(msg)
+                return None
+
+    @staticmethod
+    def take_screenshot_gdi(gray: bool = True) -> Image.Image:
         """
         截取屏幕截图（避免HDR/系统渲染差异，直接从GDI获取）。
         Args:
@@ -67,3 +88,40 @@ class ScreenShot:
         image = image.crop((0, 0, size_width, size_height))
 
         return image
+    
+    @staticmethod
+    def take_screenshot_pyautogui(gray: bool = True) -> Image.Image:
+        """
+        截取屏幕截图,使用pyautogui。
+        Args:
+            gray (bool): 是否将图片转化为灰度图
+        Returns:
+            screenshot: 截取的屏幕截图。
+        """
+        # 根据配置获取窗口的高度
+        size_height = cfg.set_win_size
+        # 计算窗口的宽度，保持16:9的宽高比
+        size_width = size_height / 9 * 16
+
+        """# 如果move参数为True，则尝试移动鼠标到屏幕左上角
+        if move:
+            try:
+                pyautogui.moveTo(1, 1)
+            except:
+                pass"""
+
+        # 设置进程的DPI感知，以确保截图在不同DPI设置下正确显示
+        windll.user32.SetProcessDPIAware()
+        # 进行全屏截图
+        screenshot_temp = pyautogui.screenshot()
+        if gray:
+            # 将截图转换为灰度图像
+            screenshot = screenshot_temp.convert('L')
+        else:
+            screenshot = screenshot_temp
+
+        # 裁剪截图到指定的宽高
+        screenshot = screenshot.crop((0, 0, size_width, size_height))
+
+        # 返回裁剪后的截图
+        return screenshot
