@@ -77,6 +77,8 @@ class Mirror:
         self.flood_times = [time.time() for i in range(5)]
         self.LOOP_COUNT = 250
 
+        self.mirror_map = MirrorMap()
+
         self.bequest_from_the_previous_game = False
 
     def road_to_mir(self):
@@ -227,6 +229,12 @@ class Mirror:
                             flood = int(flood)
                             self.flood = flood
                             self.get_flood_num = False
+                        if self.floor - 1 == self.mirror_map.floor:
+                            self.mirror_map.next_floor()
+                        elif self.floor == self.mirror_map.floor:
+                            pass
+                        else:
+                            self.mirror_map.refresh_floor(self.floor)
                     except:
                         log.DEBUG("获取楼层失败，将在下次寻路时重新尝试获取")
                 while auto.take_screenshot() is None:
@@ -635,6 +643,10 @@ class Mirror:
     @begin_and_finish_time_log(task_name="镜牢寻路")
     def search_road(self):
         try:
+            if next_node := self.mirror_map.get_next_step():
+                if self.mirror_map.enter_next_node(next_node):
+                    return True
+            log.DEBUG("未能构建路线图，尝试使用最近节点法重新寻路")
             for _ in range(3):
                 while auto.take_screenshot() is None:
                     continue
