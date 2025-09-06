@@ -76,7 +76,7 @@ mirror: False # 是否进行自动镜牢
 set_mirror_count: 1 # 镜牢的次数
 hard_mirror: False # 进行困难镜牢
 no_weekly_bonuses: False # 不使用每周加成
-flood_3_exit: False # 只打三层
+floor_3_exit: False # 只打三层
 infinite_dungeons: False # 无限刷牢
 save_rewards: False # 保存奖励不领
 hard_mirror_single_bonuses: False # 困难镜牢使用单次加成
