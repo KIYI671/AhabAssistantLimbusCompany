@@ -1,8 +1,11 @@
 import time
 from time import sleep
 
+import cv2
+
 from module.automation import auto
 from module.config import cfg
+from module.logger import log
 from tasks.base.retry import retry
 
 
@@ -122,3 +125,57 @@ def search_road_farthest_distance():
         if auto.click_element("mirror/road_in_mir/enter_assets.png", take_screenshot=True):
             return True
     return False
+
+def divide_the_area_by_y(data):
+    # 步骤1：按y坐标从小到大排序（确保相近的y相邻）
+    sorted_by_y = sorted(data, key=lambda item: item[1][1])  # item[1]是坐标元组，item[1][1]是y值
+
+    # 步骤2：分组（y相近的归为一组，阈值可根据需求调整）
+    tolerance = 20  # y差值小于等于20视为相近（可根据实际数据调整）
+    groups = []
+    for item in sorted_by_y:
+        current_y = item[1][1]
+        if not groups:
+            # 第一个元素，新建组
+            groups.append([item])
+        else:
+            # 检查当前元素与最后一个组的最后一个元素的y差值
+            last_group_last_y = groups[-1][-1][1][1]
+            if current_y - last_group_last_y <= tolerance:
+                # 加入最后一个组
+                groups[-1].append(item)
+            else:
+                # 新建组
+                groups.append([item])
+    return groups
+
+
+def divide_the_area_by_x(data):
+    # 步骤1：按x坐标从小到大排序（确保相近的x相邻）
+    sorted_by_x = sorted(data, key=lambda item: item[1][0])
+
+    # 步骤2：分组（x相近的归为一组，阈值可根据需求调整）
+    tolerance = 80  # x差值小于等于tolerance视为相近
+    groups = []
+    for item in sorted_by_x:
+        current_x = item[1][0]
+        if not groups:
+            # 第一个元素，新建组
+            groups.append([item])
+        else:
+            # 检查当前元素与最后一个组的最后一个元素的x差值
+            last_group_last_x = groups[-1][-1][1][0]
+            if current_x - last_group_last_x <= tolerance:
+                # 加入最后一个组
+                groups[-1].append(item)
+            else:
+                # 新建组
+                groups.append([item])
+
+    # 步骤3：每个组内按y坐标从小到大排序
+    for group in groups:
+        group.sort(key=lambda item: item[1][1])
+
+    log.DEBUG(f"识别到的节点/线段分组后：{groups}")
+
+    return groups
