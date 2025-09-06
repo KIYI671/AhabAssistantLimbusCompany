@@ -307,6 +307,167 @@ def identify_nodes(bus_x):
 
     return node_list
 
+
+def identify_road(bus_x, min_length=160, merge_distance=230):
+    """
+    增强版LSD对角线检测，完整输出模块，显示方向标记和中心点
+
+    参数：
+        image_path (str): 输入图像路径
+        min_length (int): 线段最小长度阈值（用于筛选有效线段）
+        merge_distance (int): 线段合并的最大距离阈值（用于合并相近线段）
+    """
+    import numpy as np
+    import math
+
+    min_length = min_length * (cfg.set_win_size / 1440)
+
+    # === 可靠检测阶段 ===
+    def get_detected_lines(img):
+        """获取检测到的所有线段"""
+        lsd = cv2.createLineSegmentDetector(0)
+        detected = lsd.detect(img)
+        if detected and detected[0] is not None:
+            return detected[0]
+
+    auto.take_screenshot()
+    screenshot = np.array(auto.screenshot)
+    raw_lines = get_detected_lines(screenshot)  # 调用检测函数获取原始线段数据
+    if raw_lines is None or len(raw_lines) == 0:  # 检测结果为空
+        log.WARNING("⚠️ 未检测到任何线段")  # 提示无结果
+        return []  # 返回空列表
+
+    # 数据格式标准化（统一不同算法的输出格式）
+    segments_data = []
+    for line_info in raw_lines:
+        try:
+            # 提取线段坐标（不同算法返回格式可能不同，统一为[x1,y1,x2,y2]）
+            coords = line_info[0] if hasattr(line_info, '__len__') else line_info  # 处理数组或元组
+            x1, y1, x2, y2 = map(float, coords[:4])  # 转换为浮点数（保留精度）
+
+            # 计算线段基础参数
+            length = math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2)  # 线段长度（欧氏距离）
+            center_x = (x1 + x2) / 2  # 中心点x坐标
+            center_y = (y1 + y2) / 2  # 中心点y坐标
+
+            # 计算斜率和角度（角度范围0-180度，避免重复）
+            dx, dy = x2 - x1, y2 - y1  # 坐标差
+            slope = dy / dx if dx != 0 else float('inf')  # 斜率（dx=0时为无穷大，即垂直线）
+            angle = math.degrees(math.atan2(dy, dx)) % 180  # 角度（弧度转角度，取模180消除方向歧义）
+
+            # 存储为字典（结构化数据，方便后续处理）
+            segments_data.append({
+                'line': [int(x1), int(y1), int(x2), int(y2)],  # 整数坐标的线段端点
+                'length': length,  # 长度
+                'center': (center_x, center_y),  # 中心点（浮点数精度）
+                'slope': slope,  # 斜率
+                'angle': angle,  # 角度（0-180度）
+                'dx': dx,  # x坐标差（原始值）
+                'dy': dy  # y坐标差（原始值）
+            })
+        except:
+            continue  # 跳过格式错误的线段（异常处理）
+
+    # 筛选长度大于min_length的线段
+    diagonal_candidates = [s for s in segments_data if min_length <= s['length'] < 1000]  # 初始长度范围
+
+    if not diagonal_candidates:  # 若初始筛选无结果，放宽长度下限
+        diagonal_candidates = [s for s in segments_data if 50 <= s['length'] < 1000]  # 放宽到50px
+        if not diagonal_candidates:  # 若仍无结果，返回空
+            return []
+
+    # 按斜率合并（将同一方向、相近位置的线段合并为一条）
+    merged_records = []
+    directions = ['45°', '135°']  # 目标方向：45度和135度（常见对角线方向）
+
+    for direction_name in directions:
+        # 定义方向对应的角度范围（45度对应30-60度，135度对应120-150度，覆盖误差）
+        angle_limits = (30, 60) if direction_name == '45°' else (120, 150)
+        # 筛选当前方向的候选线段（角度在范围内的线段）
+        group = [s for s in diagonal_candidates if angle_limits[0] <= s['angle'] <= angle_limits[1]]
+
+        if not group:  # 当前方向无线段，跳过
+            continue
+
+        # 按线段长度降序排序（优先保留长线段作为基准）
+        group.sort(key=lambda x: x['length'], reverse=True)
+        used = set()  # 记录已合并的线段索引（避免重复合并）
+
+        for i, base_info in enumerate(group):  # 遍历每条线段作为基准
+            if i in used:  # 已被合并过，跳过
+                continue
+
+            cluster = [base_info]  # 当前线段的合并组（初始包含基准线段）
+            base_slope = base_info['slope']  # 基准线段斜率
+            base_center = base_info['center']  # 基准线段中心点
+
+            for j, other in enumerate(group):  # 遍历其他线段，寻找可合并的
+                if j <= i or j in used:  # 跳过自身或已合并的线段
+                    continue
+
+                # 条件1：斜率差异检查（允许±8度误差，垂直线特殊处理）
+                slope_diff = abs(base_slope - other['slope']) if base_slope != float('inf') else 0
+                if slope_diff > 8 and base_slope != float('inf'):
+                    continue  # 斜率差异过大，不合并
+
+                # 条件2：中心点距离检查（不超过merge_distance）
+                distance = math.sqrt(
+                    (base_center[0] - other['center'][0]) ** 2 + (base_center[1] - other['center'][1]) ** 2)
+                if distance <= merge_distance:
+                    cluster.append(other)  # 加入合并组
+                    used.add(j)  # 标记为已合并
+
+            # 合并组内线段，生成新的代表线段（基于所有点的最小二乘拟合）
+            # 提取组内所有线段的端点坐标（用于拟合）
+            all_x = [pt[0] for info in cluster for pt in [info['line'][:2], info['line'][2:]]]  # 所有点的x坐标
+            all_y = [pt[1] for info in cluster for pt in [info['line'][:2], info['line'][2:]]]  # 所有点的y坐标
+
+            if len(set(all_x)) > 1:  # 非垂直线（x坐标有变化），用线性拟合
+                slope, intercept = np.polyfit(all_x, all_y, 1)  # 最小二乘拟合直线（y = slope*x + intercept）
+                min_x, max_x = int(min(all_x)), int(max(all_x))  # 拟合直线的x范围（端点）
+                y_min = int(slope * min_x + intercept)  # 起点y坐标
+                y_max = int(slope * max_x + intercept)  # 终点y坐标
+                new_line = [min_x, y_min, max_x, y_max]  # 合并后的线段端点
+                new_center = ((min_x + max_x) / 2, (y_min + y_max) / 2)  # 合并后的中心点
+                new_slope = slope  # 合并后的斜率
+            else:  # 垂直线（x坐标不变），直接使用基准线段
+                new_line = cluster[0]['line']
+                new_center = cluster[0]['center']
+                new_slope = cluster[0]['slope']
+
+            # 仅保留长度≥min_length的合并结果（避免合并后线段过短）
+            if math.sqrt((new_line[2] - new_line[0]) ** 2 + (new_line[3] - new_line[1]) ** 2) >= min_length:
+                merged_records.append({
+                    'line': new_line,  # 合并后的线段端点
+                    'center': new_center,  # 合并后的中心点
+                    'slope': new_slope,  # 合并后的斜率
+                    'direction': direction_name,  # 方向（45°或135°）
+                    'length': math.sqrt((new_line[2] - new_line[0]) ** 2 + (new_line[3] - new_line[1]) ** 2),
+                    # 合并后的长度
+                    'merged_from': len(cluster)  # 合并的原始线段数量
+                })
+
+    segment_list = []
+
+    # 遍历每个字典并处理
+    for segment in merged_records:
+        # 提取class_name
+        class_name = segment['direction']
+        if class_name == '45°':
+            class_name = 'DOWN'
+        elif class_name == '135°':
+            class_name = 'UP'
+        center = segment['center']
+        if center[0] < bus_x + 50 * (cfg.set_win_size / 1440):
+            continue
+
+        # 组成子列表并添加到节点总列表
+        segment_list.append([class_name, center])
+
+    # 返回结构化数据
+    return segment_list
+
+
 def divide_the_area_by_y(data):
     # 步骤1：按y坐标从小到大排序（确保相近的y相邻）
     sorted_by_y = sorted(data, key=lambda item: item[1][1])  # item[1]是坐标元组，item[1][1]是y值
