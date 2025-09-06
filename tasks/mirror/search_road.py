@@ -9,6 +9,65 @@ from module.logger import log
 from tasks.base.retry import retry
 
 
+class MirrorMap:
+    def __init__(self, floor=1):
+        self.floor = floor
+        self.floor_map = []
+        self.map = {}
+
+    def get_next_step(self):
+        if len(self.floor_map) > 0:
+            next_step = self.floor_map.pop(0)
+            return next_step
+        else:
+            self.floor_map, self.floor_nodes = search_road_from_road_map()
+            if not isinstance(self.floor_map, list):
+                self.floor_map = list(self.floor_map)
+            self.map[f"floor{self.floor}"] = [self.floor_map[:], self.floor_nodes[:]]
+
+        if len(self.floor_map) > 0:
+            next_step = self.floor_map.pop(0)
+            return next_step
+        else:
+            return False
+
+    def enter_next_node(self, next_step):
+        if next_position := self._get_next_position(next_step):
+            auto.mouse_click(next_position[0], next_position[1])
+            sleep(0.75)
+            if auto.click_element("mirror/road_in_mir/enter_assets.png", take_screenshot=True):
+                return True
+        if auto.click_element("mirror/mybus_default_distance.png", take_screenshot=True):
+            sleep(0.75)
+            if auto.click_element("mirror/road_in_mir/enter_assets.png", take_screenshot=True):
+                return True
+        return False
+
+    def _get_next_position(self, direction):
+        scale = cfg.set_win_size / 1440
+        three_roads = [[500 * scale, 50 * scale],
+                       [500 * scale, 450 * scale],
+                       [500 * scale, -400 * scale]]
+        if direction == "M":
+            position = 0
+        elif direction == "D":
+            position = 1
+        elif direction == "U":
+            position = 2
+        for _ in range(3):
+            if bus_position := auto.find_element("mirror/mybus_default_distance.png", take_screenshot=True):
+                return [bus_position[0] + three_roads[position][0], bus_position[1] + three_roads[position][1]]
+            sleep(1)
+        return None
+
+    def next_floor(self):
+        self.floor += 1
+        self.floor_map = []
+
+    def refresh_floor(self, floor):
+        self.floor = floor
+
+
 def get_node_weight(x, y):
     scale = cfg.set_win_size / 1440
     road_node_bbox = (x - 125 * scale, y - 125 * scale, x + 125 * scale, y + 125 * scale)
