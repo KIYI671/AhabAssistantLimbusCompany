@@ -19,7 +19,7 @@ from tasks.battle import battle
 from tasks.event.event_handling import EventHandling
 from tasks.mirror.in_shop import Shop
 from tasks.mirror.reward_card import get_reward_card
-from tasks.mirror.search_road import search_road_default_distance, search_road_farthest_distance
+from tasks.mirror.search_road import search_road_default_distance, search_road_farthest_distance, MirrorMap
 from tasks.mirror.select_theme_pack import select_theme_pack
 from tasks.teams.team_formation import team_formation, select_battle_team, check_team
 from utils.image_utils import ImageUtils
