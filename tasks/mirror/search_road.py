@@ -185,6 +185,109 @@ def search_road_farthest_distance():
             return True
     return False
 
+
+def search_road_from_road_map():
+    start_time = time.time()
+    scale = cfg.set_win_size / 1440
+    road = []
+    bus = None
+
+    if bus_position := auto.find_element("mirror/mybus_default_distance.png", take_screenshot=True):
+        from tasks.base.retry import check_times
+        while True:
+            if auto.get_restore_time() is not None:
+                start_time = max(start_time, auto.get_restore_time())
+            if check_times(start_time):
+                from tasks.base.back_init_menu import back_init_menu
+                back_init_menu()
+                return False
+            if 675 * scale < bus_position[1] < 700 * scale and 150 * scale > bus_position[0]:
+                bus = bus_position
+                break
+            dx = 100 * scale - bus_position[0]
+            dy = 680 * scale - bus_position[1]
+            auto.mouse_drag(bus_position[0], bus_position[1], drag_time=1.5, dx=dx, dy=dy)
+            sleep(0.5)
+            auto.mouse_to_blank()
+
+            bus_position = auto.find_element("mirror/mybus_default_distance.png", take_screenshot=True)
+            if bus_position is None:
+                break
+
+    bus_pos = auto.find_element("mirror/mybus_default_distance.png")
+    all_nodes = identify_nodes(bus[0])
+    y_area = divide_the_area_by_y(all_nodes)
+    reset_position = False
+    initial_bus_pos = Position.MID
+    if len(y_area) == 2:
+        if bus_pos[1] > y_area[0][0][1][1] + 50 * scale:
+            reset_position = "Bottom"
+            initial_bus_pos = Position.BOTTOM
+        else:
+            reset_position = "Top"
+            initial_bus_pos = Position.TOP
+    elif len(y_area) == 1:
+        all_road = divide_the_area_by_x(identify_road(bus[0]))
+        if len(all_road) == 0:
+            road = ['M']
+        else:
+            if all_road[0][0][0] == "DOWN":
+                road = ['D']
+            else:
+                road = ['U']
+    if reset_position is not False:
+        if reset_position == "Bottom":
+            set_y_position = 1100 * scale
+        else:
+            set_y_position = 250 * scale
+        if bus_position := auto.find_element("mirror/mybus_default_distance.png", take_screenshot=True):
+            from tasks.base.retry import check_times
+            while True:
+                if auto.get_restore_time() is not None:
+                    start_time = max(start_time, auto.get_restore_time())
+                if check_times(start_time):
+                    from tasks.base.back_init_menu import back_init_menu
+                    back_init_menu()
+                    return False
+                if set_y_position - 50 * scale < bus_position[1] < set_y_position + 50 * scale and 500 * scale < \
+                        bus_position[0] < 600 * scale:
+                    bus = bus_position
+                    break
+                dx = 550 * scale - bus_position[0]
+                dy = set_y_position - bus_position[1]
+                auto.mouse_drag(bus_position[0], bus_position[1], drag_time=1.5, dx=dx, dy=dy)
+                sleep(0.5)
+                auto.mouse_to_blank()
+
+                bus_position = auto.find_element("mirror/mybus_default_distance.png", take_screenshot=True)
+                if bus_position is None:
+                    break
+        all_nodes = identify_nodes(bus[0])
+
+    if len(road) != 0:
+        return road
+
+    all_nodes_layer = divide_the_area_by_x(all_nodes)
+    all_road = divide_the_area_by_x(identify_road(bus[0]))
+
+    route_graph = RouteGraph(all_nodes_layer, initial_bus_pos=initial_bus_pos)
+    route_graph.init_road(all_road, bus[0], bus_pos[1])
+
+    min_weight, path = route_graph.find_min_weight_route()
+
+    if path:
+        # 生成方向列表
+        directions, road_class_list = route_graph.get_path_directions(path)
+        log.DEBUG(f"最小权重: {min_weight}")
+        log.DEBUG(f"路径方向: {directions}")
+        log.DEBUG(f"行走路径: {road_class_list}")
+        return directions, road_class_list
+    else:
+        log.WARNING("未能检测到有效路径")
+
+    return [], []
+
+
 # battle 是常规遭遇战，boss_battle 是boss战，event 是事件，hard_battle 是集中遭遇战（非拉链），hard_battle_2 是精锐遭遇战（有拉链）
 # shop 是商店，small_boss_battle 是异想体遭遇战
 
