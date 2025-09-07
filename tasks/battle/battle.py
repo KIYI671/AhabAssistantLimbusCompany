@@ -100,6 +100,15 @@ class Battle:
                 first_turn = False
                 continue
 
+            if auto.find_element("battle/dead_all.png"):
+                dead_select = auto.find_element("battle/dead_all.png", find_type="image_with_multiple_targets")
+                dead_select = sorted(dead_select, key=lambda y: y[1])
+                auto.mouse_click(dead_select[1][0], dead_select[1][1])
+
+                auto.click_element("battle/dead_all_confirm_assets.png")
+                sleep(1)
+                continue
+
             if in_mirror:
                 if dead_position := auto.find_element("battle/dead.png"):
                     my_scale = cfg.set_win_size / 1440

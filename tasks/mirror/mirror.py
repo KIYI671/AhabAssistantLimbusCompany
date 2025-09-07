@@ -72,9 +72,9 @@ class Mirror:
         self.event_total_time = 0
         self.event_times = 0
 
-        self.flood = 0
-        self.get_flood_num = True
-        self.flood_times = [time.time() for i in range(5)]
+        self.floor = 0
+        self.get_floor_num = True
+        self.floor_times = [time.time() for i in range(5)]
         self.LOOP_COUNT = 250
 
         self.mirror_map = MirrorMap()
@@ -108,6 +108,13 @@ class Mirror:
                 sleep(0.5)
                 continue
             if auto.click_element("home/mirror_dungeons_assets.png"):
+                continue
+            if auto.find_element("base/renew_confirm_assets.png", model="clam") and auto.find_element(
+                    "home/drive_assets.png", model="normal"):
+                auto.click_element("base/renew_confirm_assets.png")
+                back_init_menu()
+                continue
+            if auto.click_element("mirror/road_to_mir/quick_start_assets.png"):
                 continue
             if auto.click_element("home/drive_assets.png", model="normal"):
                 continue
@@ -147,7 +154,7 @@ class Mirror:
 
             retry()
 
-            if cfg.flood_3_exit and self.flood >= 4:
+            if cfg.floor_3_exit and self.floor >= 4:
                 if auto.click_element("mirror/road_in_mir/towindow&forfeit_confirm_assets.png"):
                     break
                 if auto.click_element("mirror/road_in_mir/forfeit_assets.png"):
@@ -172,16 +179,16 @@ class Mirror:
             # 选择楼层主题包的情况
             if auto.find_element("mirror/theme_pack/feature_theme_pack_assets.png"):
                 sleep(2)
-                select_theme_pack(self.hard_switch, self.flood)
+                select_theme_pack(self.hard_switch, self.floor)
                 if self.re_formation_each_floor:
                     self.first_battle = True
-                flood_num = self.flood  # 0,1,2,3,4
-                if flood_num != 0:
-                    flood_time = time.time() - self.flood_times[flood_num - 1]
-                    msg = f"启动后第{self.flood}层卡包"
-                    to_log_with_time(msg, flood_time)
-                self.flood_times[flood_num] = time.time()
-                self.get_flood_num = True
+                floor_num = self.floor  # 0,1,2,3,4
+                if floor_num != 0:
+                    floor_time = time.time() - self.floor_times[floor_num - 1]
+                    msg = f"启动后第{self.floor}层卡包"
+                    to_log_with_time(msg, floor_time)
+                self.floor_times[floor_num] = time.time()
+                self.get_floor_num = True
                 main_loop_count += 50
                 continue
 
@@ -205,30 +212,34 @@ class Mirror:
                         "mirror/claim_reward/complete_mirror_100%_assets.png"):
                     break
                 retry()
-                if self.get_flood_num:
-                    get_flood_bbox = ImageUtils.get_bbox(
-                        ImageUtils.load_image("mirror/road_in_mir/get_flood_bbox.png"))
-                    ocr_result = auto.find_text_element(None, my_crop=get_flood_bbox, only_text=True)
+                if self.get_floor_num:
+                    get_floor_bbox = ImageUtils.get_bbox(
+                        ImageUtils.load_image("mirror/road_in_mir/get_floor_bbox.png"))
+                    ocr_result = auto.find_text_element(None, my_crop=get_floor_bbox, only_text=True)
                     try:
                         if cfg.language_in_game == 'zh_cn':
                             result = ocr_result[-1].split("第")
-                            flood = result[1][0]
-                            flood = int(flood)
-                            self.flood = flood
-                            self.get_flood_num = False
+                            floor = result[1][0]
+                            floor = int(floor)
+                            self.floor = floor
+                            self.get_floor_num = False
                         elif cfg.language_in_game == 'en':
-                            get_flood_bbox = ImageUtils.get_bbox(
-                                ImageUtils.load_image("mirror/road_in_mir/get_flood_bbox.png"))
-                            sc = ImageUtils.crop(np.array(auto.screenshot), get_flood_bbox)
+                            get_floor_bbox = ImageUtils.get_bbox(
+                                ImageUtils.load_image("mirror/road_in_mir/get_floor_bbox.png"))
+                            sc = ImageUtils.crop(np.array(auto.screenshot), get_floor_bbox)
                             mask = cv2.inRange(sc, 75, 255)
                             result = ocr.run(mask)
                             ocr_result = [item["text"] for item in result["data"]]
                             ocr_result = "".join(ocr_result)
                             result = ocr_result.split(" ")
-                            flood = result[-1][0]
-                            flood = int(flood)
-                            self.flood = flood
-                            self.get_flood_num = False
+                            floor = result[-1][0]
+                            floor = int(floor)
+                            self.floor = floor
+                            self.get_floor_num = False
+                            floor = result[-1][0]
+                            floor = int(floor)
+                            self.floor = floor
+                            self.get_floor_num = False
                         if self.floor - 1 == self.mirror_map.floor:
                             self.mirror_map.next_floor()
                         elif self.floor == self.mirror_map.floor:
@@ -380,7 +391,7 @@ class Mirror:
                 auto.mouse_to_blank()
                 continue
             if not auto.find_element(
-                    "mirror/claim_reward/complete_mirror_100%_assets.png") and failed is None and cfg.flood_3_exit is False:
+                    "mirror/claim_reward/complete_mirror_100%_assets.png") and failed is None and cfg.floor_3_exit is False:
                 failed = True
             if auto.find_element("mirror/claim_reward/complete_mirror_100%_assets.png"):
                 failed = False
@@ -449,9 +460,9 @@ class Mirror:
         end_time = time.time()
         elapsed_time = end_time - start_time
 
-        last_flood_time = time.time() - self.flood_times[self.flood - 1]
-        msg = f"启动后第{self.flood}层卡包"
-        to_log_with_time(msg, last_flood_time)
+        last_floor_time = time.time() - self.floor_times[self.floor - 1]
+        msg = f"启动后第{self.floor}层卡包"
+        to_log_with_time(msg, last_floor_time)
 
         # 输出战斗总时间
         msg = f"此次镜牢在战斗"
@@ -977,4 +988,4 @@ class Mirror:
 
     @begin_and_finish_time_log(task_name="镜牢商店")
     def in_shop(self):
-        self.shop.in_shop(self.flood)
+        self.shop.in_shop(self.floor)

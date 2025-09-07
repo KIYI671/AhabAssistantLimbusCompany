@@ -379,7 +379,7 @@ class CustomizeSettingsModule(QFrame):
         self.seventh_line = QHBoxLayout(self.seventh_line_widget)
         self.eighth_line_widget = QWidget(self)
         self.eighth_line = QHBoxLayout(self.eighth_line_widget)
-        self.flood_shop = QHBoxLayout()
+        self.floor_shop = QHBoxLayout()
 
     def __init_card(self):
         self.do_not_heal = BaseCheckBox(
@@ -509,23 +509,23 @@ class CustomizeSettingsModule(QFrame):
         QT_TRANSLATE_NOOP("BaseLabel", "忽略商店")
         self.ignore_shop = BaseLabel("忽略商店")
         self.ignore_shop.add_icon(FIF.CUT)
-        self.flood_shop_1 = BaseCheckBox(
+        self.floor_shop_1 = BaseCheckBox(
             "ignore_shop_1", None,
             QT_TRANSLATE_NOOP("BaseCheckBox", "第一层")
         )
-        self.flood_shop_2 = BaseCheckBox(
+        self.floor_shop_2 = BaseCheckBox(
             "ignore_shop_2", None,
             QT_TRANSLATE_NOOP("BaseCheckBox", "第二层")
         )
-        self.flood_shop_3 = BaseCheckBox(
+        self.floor_shop_3 = BaseCheckBox(
             "ignore_shop_3", None,
             QT_TRANSLATE_NOOP("BaseCheckBox", "第三层")
         )
-        self.flood_shop_4 = BaseCheckBox(
+        self.floor_shop_4 = BaseCheckBox(
             "ignore_shop_4", None,
             QT_TRANSLATE_NOOP("BaseCheckBox", "第四层")
         )
-        self.flood_shop_5 = BaseCheckBox(
+        self.floor_shop_5 = BaseCheckBox(
             "ignore_shop_5", None,
             QT_TRANSLATE_NOOP("BaseCheckBox", "第五层")
         )
@@ -582,12 +582,12 @@ class CustomizeSettingsModule(QFrame):
 
         self.eighth_line.addWidget(self.ignore_shop)
         self.eighth_line.addSpacing(20)
-        self.flood_shop.addWidget(self.flood_shop_1)
-        self.flood_shop.addWidget(self.flood_shop_2)
-        self.flood_shop.addWidget(self.flood_shop_3)
-        self.flood_shop.addWidget(self.flood_shop_4)
-        self.flood_shop.addWidget(self.flood_shop_5)
-        self.eighth_line.addLayout(self.flood_shop, Qt.AlignLeft)
+        self.floor_shop.addWidget(self.floor_shop_1)
+        self.floor_shop.addWidget(self.floor_shop_2)
+        self.floor_shop.addWidget(self.floor_shop_3)
+        self.floor_shop.addWidget(self.floor_shop_4)
+        self.floor_shop.addWidget(self.floor_shop_5)
+        self.eighth_line.addLayout(self.floor_shop, Qt.AlignLeft)
 
         self.main_layout.addWidget(self.first_line_widget)
         self.main_layout.addWidget(self.second_line_widget)
@@ -624,8 +624,8 @@ class CustomizeSettingsModule(QFrame):
             starlight = self.findChild(CheckBoxWithLineEdit, f"starlight_{index}")
             starlight.box.setText(f"{starlight_text}{index}")
             if index <= 5:
-                flood_shop = self.findChild(BaseCheckBox, f"ignore_shop_{index}")
-                flood_shop.retranslateUi()
+                floor_shop = self.findChild(BaseCheckBox, f"ignore_shop_{index}")
+                floor_shop.retranslateUi()
 
         self.after_level_IV.retranslateUi()
         self.shopping_strategy.retranslateUi()

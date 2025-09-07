@@ -362,8 +362,8 @@ class PageMirror(PageCard):
             center=False,
             tips=QT_TRANSLATE_NOOP("BaseCheckBox", "仅本次运行期间有效，重启AALC后失效")
         )
-        self.flood_3_exit = BaseCheckBox(
-            "flood_3_exit", None,
+        self.floor_3_exit = BaseCheckBox(
+            "floor_3_exit", None,
             QT_TRANSLATE_NOOP("BaseCheckBox", "只打三层"),
             center=False
         )
@@ -397,7 +397,7 @@ class PageMirror(PageCard):
 
         self.vbox_advanced.addWidget(self.hard_mirror)
         self.vbox_advanced.addWidget(self.no_weekly_bonuses)
-        self.vbox_advanced.addWidget(self.flood_3_exit)
+        self.vbox_advanced.addWidget(self.floor_3_exit)
         self.vbox_advanced.addWidget(self.infinite_dungeons)
         self.vbox_advanced.addWidget(self.save_rewards)
         self.vbox_advanced.addWidget(self.hard_mirror_single_bonuses)
@@ -522,7 +522,7 @@ class PageMirror(PageCard):
         self.mirror_count.retranslateUi()
         self.hard_mirror.retranslateUi()
         self.no_weekly_bonuses.retranslateUi()
-        self.flood_3_exit.retranslateUi()
+        self.floor_3_exit.retranslateUi()
         self.infinite_dungeons.retranslateUi()
         self.save_rewards.retranslateUi()
         self.hard_mirror_single_bonuses.retranslateUi()
