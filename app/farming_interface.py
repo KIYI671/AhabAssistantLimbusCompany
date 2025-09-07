@@ -265,13 +265,12 @@ class FarmingInterfaceLeft(QWidget):
             return False
 
     def start_and_stop_tasks(self):
-        # 启动前检查设置，防呆
-        if self.check_setting() is False:
-            return
-
         # 设置按下启动与停止按钮时，其他模块的启用与停用
         current_text = self.link_start_button.get_text()
         if current_text == "Link Start!":
+            # 启动前检查设置，防呆
+            if self.check_setting() is False:
+                return
             self.link_start_button.set_text("S t o p !")
             self._disable_setting(self.parent)
             self.create_and_start_script()
