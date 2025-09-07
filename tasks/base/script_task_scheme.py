@@ -166,6 +166,24 @@ def script_task() -> None | int:
 
         # 开始执行镜牢任务
         while mir_times > 0:
+            # 检测配置的队伍能否顺利执行
+            useful = False
+            hard = cfg.hard_mirror
+            teams_be_select = cfg.get_value("teams_be_select")
+            for index in (i for i, t in enumerate(teams_be_select) if t is True):
+                team_setting = cfg.get_value(f"team{index + 1}_setting")
+                if team_setting["fixed_team_use"] is False:
+                    useful = True
+                    break
+                if team_setting["fixed_team_use_select"] == 1 and hard is False:
+                    useful = True
+                    break
+                if team_setting["fixed_team_use_select"] == 0 and hard is True:
+                    useful = True
+                    break
+            if useful is False:
+                break
+
             teams_order = cfg.teams_order  # 复制一份队伍顺序
             team_num = teams_order.index(1)  # 获取序号1的队伍在队伍顺序中的位置
             team_setting = cfg.get_value(f"team{team_num + 1}_setting")  # 获取序号1的队伍的配置
