@@ -77,7 +77,7 @@ class Mirror:
         self.floor_times = [time.time() for i in range(5)]
         self.LOOP_COUNT = 250
 
-        self.mirror_map = MirrorMap()
+        self.mirror_map = MirrorMap(hard_mode=self.hard_switch)
 
         self.bequest_from_the_previous_game = False
 
@@ -658,6 +658,11 @@ class Mirror:
                 if self.mirror_map.enter_next_node(next_node):
                     return True
             log.DEBUG("未能构建路线图，尝试使用最近节点法重新寻路")
+        except Exception as e:
+            log.ERROR(f"寻路出错:{e}")
+        finally:
+            auto.mouse_to_blank()
+        try:
             for _ in range(3):
                 while auto.take_screenshot() is None:
                     continue

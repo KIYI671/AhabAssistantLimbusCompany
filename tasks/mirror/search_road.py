@@ -10,20 +10,34 @@ from tasks.base.retry import retry
 
 
 class MirrorMap:
-    def __init__(self, floor=1):
+    def __init__(self, floor=1, hard_mode=False):
         self.floor = floor
         self.floor_map = []
         self.map = {}
+        self.hard_mode = hard_mode
 
     def get_next_step(self):
+        re_identify = False
         if len(self.floor_map) > 0:
             next_step = self.floor_map.pop(0)
-            return next_step
+            if next_step is not None:
+                return next_step
+            else:
+                re_identify = True
         else:
-            self.floor_map, self.floor_nodes = search_road_from_road_map()
-            if not isinstance(self.floor_map, list):
-                self.floor_map = list(self.floor_map)
-            self.map[f"floor{self.floor}"] = [self.floor_map[:], self.floor_nodes[:]]
+            re_identify = True
+
+        if re_identify is True:
+            if self.hard_mode is False:
+                self.floor_map, self.floor_nodes = search_road_from_road_map()
+                if not isinstance(self.floor_map, list):
+                    self.floor_map = list(self.floor_map)
+                self.map[f"floor{self.floor}"] = [self.floor_map[:], self.floor_nodes[:]]
+            else:
+                self.floor_map, self.floor_nodes = search_road_from_road_map(hard_mode=True)
+                if not isinstance(self.floor_map, list):
+                    self.floor_map = list(self.floor_map)
+                self.map[f"floor{self.floor}"] = [self.floor_map[:], self.floor_nodes[:]]
 
         if len(self.floor_map) > 0:
             next_step = self.floor_map.pop(0)
@@ -186,7 +200,7 @@ def search_road_farthest_distance():
     return False
 
 
-def search_road_from_road_map():
+def search_road_from_road_map(hard_mode=False):
     start_time = time.time()
     scale = cfg.set_win_size / 1440
     road = []
@@ -200,7 +214,7 @@ def search_road_from_road_map():
             if check_times(start_time):
                 from tasks.base.back_init_menu import back_init_menu
                 back_init_menu()
-                return False
+                return False, []
             if 675 * scale < bus_position[1] < 700 * scale and 150 * scale > bus_position[0]:
                 bus = bus_position
                 break
@@ -248,7 +262,7 @@ def search_road_from_road_map():
                 if check_times(start_time):
                     from tasks.base.back_init_menu import back_init_menu
                     back_init_menu()
-                    return False
+                    return False, []
                 if set_y_position - 50 * scale < bus_position[1] < set_y_position + 50 * scale and 500 * scale < \
                         bus_position[0] < 600 * scale:
                     bus = bus_position
@@ -265,12 +279,12 @@ def search_road_from_road_map():
         all_nodes = identify_nodes(bus[0])
 
     if len(road) != 0:
-        return road
+        return road, ["unknown"]
 
     all_nodes_layer = divide_the_area_by_x(all_nodes)
     all_road = divide_the_area_by_x(identify_road(bus[0]))
 
-    route_graph = RouteGraph(all_nodes_layer, initial_bus_pos=initial_bus_pos)
+    route_graph = RouteGraph(all_nodes_layer, initial_bus_pos=initial_bus_pos, hard_mode=hard_mode)
     route_graph.init_road(all_road, bus[0], bus_pos[1])
 
     min_weight, path = route_graph.find_min_weight_route()
@@ -633,7 +647,7 @@ all_node_weight = {'battle': 30, 'boss_battle': 1, 'event': 18, 'hard_battle': 7
                    'small_boss_battle': 999}
 
 DEFAULT_WEIGHT = 999  # 默认不可达权重
-MID_LINE_THRESHOLD = 50  # 中间线偏移阈值
+MID_LINE_THRESHOLD = 100  # 中间线偏移阈值
 
 
 class Position(Enum):
@@ -658,7 +672,7 @@ class Node:
 
 
 class RouteGraph:
-    def __init__(self, all_nodes: list, initial_bus_pos=Position.MID, mid_line=560):
+    def __init__(self, all_nodes: list, initial_bus_pos=Position.MID, mid_line=560, hard_mode=False):
         """
         初始化路线图
         """
@@ -668,6 +682,7 @@ class RouteGraph:
         self._add_new_layer()
         self._set_node(1, initial_bus_pos, "bus", 1)
         self.mid_line = mid_line * cfg.set_win_size / 1080
+        self.hard_mode = hard_mode
 
         self._init_node(all_nodes, self.mid_line)
 
@@ -698,31 +713,35 @@ class RouteGraph:
                     j].weight != DEFAULT_WEIGHT:
                     self.layers[f"layer{i}"][j].add_next_node(self.layers[f"layer{i + 1}"][j])
 
-        exit_flag = False
-        for j in [Position.TOP, Position.MID, Position.BOTTOM]:
-            if self.layers[f"layer{self.layer_nums}"][j].node_class in ["shop", "boss_battle"]:
-                exit_flag = True
-                break
-        if exit_flag is False:
-            self._add_new_layer()
-            self._set_node(self.layer_nums, Position.MID, "shop", 1)
+        if self.hard_mode is False:
+            exit_flag = False
             for j in [Position.TOP, Position.MID, Position.BOTTOM]:
-                self.layers[f"layer{self.layer_nums - 1}"][j].add_next_node(
-                    self.layers[f"layer{self.layer_nums}"][Position.MID])
+                if self.layers[f"layer{self.layer_nums}"][j].node_class in ["shop", "boss_battle"]:
+                    exit_flag = True
+                    break
+            if exit_flag is False:
+                self._add_new_layer()
+                self._set_node(self.layer_nums, Position.MID, "shop", 1)
+                for j in [Position.TOP, Position.MID, Position.BOTTOM]:
+                    self.layers[f"layer{self.layer_nums - 1}"][j].add_next_node(
+                        self.layers[f"layer{self.layer_nums}"][Position.MID])
 
-        exit_flag = False
-        for j in [Position.TOP, Position.MID, Position.BOTTOM]:
-            if self.layers[f"layer{self.layer_nums}"][j].node_class in ["boss_battle"]:
-                exit_flag = True
-                break
-        if exit_flag is False:
-            self._add_new_layer()
-            self._set_node(self.layer_nums, Position.MID, "boss_battle", 1)
+            exit_flag = False
             for j in [Position.TOP, Position.MID, Position.BOTTOM]:
-                self.layers[f"layer{self.layer_nums - 1}"][j].add_next_node(
-                    self.layers[f"layer{self.layer_nums}"][Position.MID])
+                if self.layers[f"layer{self.layer_nums}"][j].node_class in ["boss_battle"]:
+                    exit_flag = True
+                    break
+            if exit_flag is False:
+                self._add_new_layer()
+                self._set_node(self.layer_nums, Position.MID, "boss_battle", 1)
+                for j in [Position.TOP, Position.MID, Position.BOTTOM]:
+                    self.layers[f"layer{self.layer_nums - 1}"][j].add_next_node(
+                        self.layers[f"layer{self.layer_nums}"][Position.MID])
 
     def init_road(self, all_road, bus_x, bus_y):
+        if self.hard_mode is True:
+            if len(all_road)>2:
+                all_road = all_road[:2]
         road_layer = 1
         for layer_road in all_road:
             if layer_road[0][1][0] < bus_x:
@@ -755,61 +774,97 @@ class RouteGraph:
 
     def find_min_weight_route(self) -> tuple[float, list[Node]]:
         """
-        使用Dijkstra算法计算从入口到出口的最小权重路径
+        使用Dijkstra算法计算最小权重路径：
+        - 正常模式：优先寻找boss_battle出口，无出口则选任意可达节点
+        - 困难模式（hard_mode=True）：无boss_battle出口时，强制寻找layer3的有效节点（非DEFAULT_WEIGHT）
         返回：(最小总权重, 路径节点列表)
         """
         # 确定起点节点（layer1的初始公交位置）
         start_node = self.layers["layer1"][self.initial_bus_pos]
+        if start_node.weight == DEFAULT_WEIGHT:  # 起点不可达
+            return float('inf'), []
 
-        # 收集所有终点节点（boss_battle）
+        # 收集默认终点：所有boss_battle节点
         end_nodes = []
         for layer in self.layers.values():
             for pos_node in layer.values():
-                if pos_node.node_class in ["boss_battle"]:
+                if pos_node.node_class == "boss_battle" and pos_node.weight != DEFAULT_WEIGHT:
                     end_nodes.append(pos_node)
 
-        if not end_nodes:
-            return float('inf'), []  # 无出口
+        # 困难模式特殊处理：无boss_battle出口时，强制指向layer3的有效节点
+        if self.hard_mode and not end_nodes:
+            # 检查layer3是否存在（至少需要3层：初始层+all_nodes至少2层数据）
+            if "layer3" not in self.layers:
+                return float('inf'), []  # 无layer3，无法寻路
 
-        # 初始化距离字典，所有节点初始距离为无穷大，起点距离为自身权重
-        distances = {node: float('inf') for layer in self.layers.values() for pos_node in layer.values() for node in
-                     [pos_node]}
-        distances[start_node] = start_node.weight
+            layer3 = self.layers["layer3"]
+            # 收集layer3中所有权重有效的节点（非DEFAULT_WEIGHT）
+            for pos in [Position.TOP, Position.MID, Position.BOTTOM]:
+                node = layer3[pos]
+                if node.weight != DEFAULT_WEIGHT:
+                    end_nodes.append(node)
 
-        # 优先队列：(当前总权重, 节点唯一标识（避免比较Node）, 当前节点, 路径列表)
+            # 若layer3仍无有效节点，直接返回不可达
+            if not end_nodes:
+                return float('inf'), []
+
+        # 初始化距离字典（所有节点初始距离为无穷大）
+        all_nodes = [node for layer in self.layers.values() for node in layer.values()]
+        distances = {node: float('inf') for node in all_nodes}
+        distances[start_node] = start_node.weight  # 起点权重计入路径
+
+        # 优先队列：(当前总权重, 节点唯一ID, 当前节点)
         heap = []
-        heapq.heappush(heap, (start_node.weight, id(start_node), start_node, [start_node]))
-
-        # 记录已处理的节点（优化：当节点第一次弹出时，已找到最短路径）
-        processed = set()
+        heapq.heappush(heap, (start_node.weight, id(start_node), start_node))
+        processed = set()  # 记录已确定最短路径的节点
 
         while heap:
-            current_total, _, current_node, current_path = heapq.heappop(heap)  # 忽略辅助标识
-
+            current_total, _, current_node = heapq.heappop(heap)
             if current_node in processed:
                 continue
             processed.add(current_node)
 
-            # 到达终点，返回结果
-            if current_node in end_nodes:
-                return current_total, current_path
-
-            # 遍历所有邻接节点
+            # 遍历所有下一层节点
             for next_node in current_node.next_nodes:
                 if next_node in processed:
                     continue  # 已处理过，跳过
 
+                # 计算新路径总权重（累加当前路径权重+下一层节点权重）
                 new_total = current_total + next_node.weight
-                new_path = current_path + [next_node]
-
-                # 如果找到更短路径，更新并加入队列
                 if new_total < distances[next_node]:
                     distances[next_node] = new_total
-                    # 添加辅助标识（id(next_node)）确保堆能正确排序
-                    heapq.heappush(heap, (new_total, id(next_node), next_node, new_path))
+                    heapq.heappush(heap, (new_total, id(next_node), next_node))
 
-        # 无可达路径
-        return float('inf'), []
+        # 寻找最优节点：优先目标终点（boss_battle或layer3有效节点）
+        optimal_node = None
+        min_weight = float('inf')
+        for target_node in end_nodes:
+            if distances[target_node] < min_weight:
+                min_weight = distances[target_node]
+                optimal_node = target_node
+
+        # 无有效路径（所有目标节点不可达）
+        if optimal_node is None or min_weight == float('inf'):
+            return float('inf'), []
+
+        # 回溯路径（通过前驱节点）
+        path = []
+        current = optimal_node
+        while current is not None:
+            path.append(current)
+            # 寻找当前节点的前驱节点（需遍历所有节点的next_nodes反向查找）
+            # 注：原代码未记录前驱节点，此处补充反向查找逻辑
+            found = False
+            for node in all_nodes:
+                if current in node.next_nodes:
+                    current = node
+                    found = True
+                    break
+            if not found:
+                break  # 到达起点
+        path.reverse()  # 反转得到从起点到终点的顺序
+
+        return min_weight, path
 
     def get_path_directions(self, path: list[Node]) -> tuple[list[str], list[str]]:
         """
