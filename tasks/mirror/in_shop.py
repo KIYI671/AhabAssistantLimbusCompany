@@ -59,6 +59,7 @@ class Shop:
 
         # 用于记录已升级的ego饰品
         self.enhance_gifts_list = []
+        self.first_gift_enhance = False
 
     class RestartGame(Exception):
         pass
@@ -272,6 +273,14 @@ class Shop:
                 log.INFO("已有本体系四级饰品，切换到非激进模式")
                 return
 
+        if auto.find_element(f"mirror/shop/level_IV_gifts/{self.second_system_select}_level_IV.png", take_screenshot=True):
+            if self.fuse_IV is True:
+                self.fuse_switch = False
+                self.fuse_aggressive_switch = False
+                self.fuse_second_IV = True
+                log.INFO("已有本体系、第二体系的四级饰品，切换到出售模式")
+                return
+
         log.DEBUG("开始执行激进合成模块")
         while True:
             auto.mouse_to_blank()
@@ -297,7 +306,7 @@ class Shop:
                 protect_list.append(f"mirror/shop/level_IV_gifts/{self.second_system_select}_level_IV.png")
 
             for protect_gift in protect_list:
-                if protect_coordinates := auto.find_element(protect_gift):
+                if protect_coordinates := auto.find_element(protect_gift,threshold=0.7):
                     gift_list = processing_coordinates(gift_list, protect_coordinates)
 
             # 直到合成概率90%
@@ -718,11 +727,19 @@ class Shop:
             if auto.take_screenshot() is None:
                 continue
 
-            if auto.click_element(f"mirror/shop/keyword/keyword_{self.system}.png"):
-                while auto.take_screenshot() is None:
-                    continue
-                if auto.click_element("mirror/shop/fuse_gift_confirm_assets.png", model="normal"):
-                    break
+            if self.fuse_IV is True and self.second_system is True and self.fuse_second_IV is False and \
+                    self.second_system_action[0] is True and self.fuse_aggressive_switch is True:
+                if auto.click_element(f"mirror/shop/keyword/keyword_{self.second_system_select}.png"):
+                    while auto.take_screenshot() is None:
+                        continue
+                    if auto.click_element("mirror/shop/fuse_gift_confirm_assets.png", model="normal"):
+                        break
+            else:
+                if auto.click_element(f"mirror/shop/keyword/keyword_{self.system}.png"):
+                    while auto.take_screenshot() is None:
+                        continue
+                    if auto.click_element("mirror/shop/fuse_gift_confirm_assets.png", model="normal"):
+                        break
             if auto.click_element("mirror/shop/fuse_to_select_keyword_assets.png"):
                 continue
 
@@ -844,7 +861,6 @@ class Shop:
         auto.model = 'clam'
         system_level_IV = False
         second_system_level_IV = False
-        first_gift = True
         while True:
             # 自动截图
             if auto.take_screenshot() is None:
@@ -861,8 +877,8 @@ class Shop:
                             break
                         else:
                             self.enhance_gifts_list.append(level_IV)
-                system_level_IV = True
-                continue
+                    system_level_IV = True
+                    continue
 
             # 升级第二体系四级
             if self.second_system and self.second_system_action[3] and second_system_level_IV is False:
@@ -878,13 +894,13 @@ class Shop:
                         second_system_level_IV = True
                         continue
 
-            if first_gift and system_level_IV is False:
+            if self.first_gift_enhance is False and system_level_IV is False:
                 if f_gift := auto.find_element(f"mirror/shop/enhance_gifts/big_{self.system}.png"):
                     if self.ego_gift_to_power_up() is False:
                         break
                     else:
                         self.enhance_gifts_list.append(f_gift)
-                        first_gift = False
+                        self.first_gift_enhance = True
                         continue
 
             if gifts := auto.find_element(f"mirror/shop/enhance_gifts/{self.system}.png",
@@ -941,6 +957,10 @@ class Shop:
                 log.INFO("合成四级，跳过之后商店")
                 for i in range(5):
                     self.ignore_shop[i] = True
+            else:
+                self.fuse_switch = False
+                self.fuse_aggressive_switch = False
+                log.INFO("合成四级但设置出错，切换到出售模式")
             return
         self.fuse_aggressive_switch = False
         log.INFO("合成四级，切换到非激进模式")
