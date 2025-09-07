@@ -60,12 +60,14 @@ def make_enkephalin_module(cancel=False):
             auto.click_element("base/update_close_assets.png")
             from tasks.base.back_init_menu import back_init_menu
             back_init_menu()
+            start_time = time.time()
             continue
         if auto.find_element("base/renew_confirm_assets.png", model="clam") and auto.find_element(
                 "home/drive_assets.png", model="normal"):
             auto.click_element("base/renew_confirm_assets.png")
             from tasks.base.back_init_menu import back_init_menu
             back_init_menu()
+            start_time = time.time()
             continue
         if auto.find_element("enkephalin/use_lunacy_assets.png") is None:
             auto.click_element("home/enkephalin_box_assets.png")
