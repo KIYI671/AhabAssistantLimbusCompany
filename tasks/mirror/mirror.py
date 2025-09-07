@@ -107,6 +107,13 @@ class Mirror:
                 continue
             if auto.click_element("home/mirror_dungeons_assets.png"):
                 continue
+            if auto.find_element("base/renew_confirm_assets.png", model="clam") and auto.find_element(
+                    "home/drive_assets.png", model="normal"):
+                auto.click_element("base/renew_confirm_assets.png")
+                back_init_menu()
+                continue
+            if auto.click_element("mirror/road_to_mir/quick_start_assets.png"):
+                continue
             if auto.click_element("home/drive_assets.png", model="normal"):
                 continue
             if auto.find_element("mirror/road_to_mir/select_team_stars_assets.png"):

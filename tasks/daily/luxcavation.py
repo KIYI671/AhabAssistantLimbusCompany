@@ -24,6 +24,12 @@ def EXP_luxcavation():
             continue
         if auto.click_element("home/luxcavation_assets.png"):
             continue
+        if auto.find_element("base/renew_confirm_assets.png", model="clam") and auto.find_element("home/drive_assets.png",
+                                                                                              model="normal"):
+            auto.click_element("base/renew_confirm_assets.png")
+            from tasks.base.back_init_menu import back_init_menu
+            back_init_menu()
+            continue
         if auto.click_element("home/drive_assets.png"):
             continue
         auto.mouse_to_blank()
@@ -59,6 +65,12 @@ def thread_luxcavation():
         if auto.click_element("luxcavation/thread_assets.png"):
             continue
         if auto.click_element("home/luxcavation_assets.png"):
+            continue
+        if auto.find_element("base/renew_confirm_assets.png", model="clam") and auto.find_element("home/drive_assets.png",
+                                                                                              model="normal"):
+            auto.click_element("base/renew_confirm_assets.png")
+            from tasks.base.back_init_menu import back_init_menu
+            back_init_menu()
             continue
         if auto.click_element("home/drive_assets.png"):
             continue
