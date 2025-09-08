@@ -114,8 +114,9 @@ class Mirror:
                 auto.click_element("base/renew_confirm_assets.png")
                 back_init_menu()
                 continue
-            if auto.click_element("mirror/road_to_mir/quick_start_assets.png"):
-                continue
+            # bug已修复，从这里进可能会进轨道线，先注释掉
+            # if auto.click_element("mirror/road_to_mir/quick_start_assets.png"):
+            #     continue
             if auto.click_element("home/drive_assets.png", model="normal"):
                 continue
             if auto.find_element("mirror/road_to_mir/select_team_stars_assets.png"):
