@@ -330,9 +330,9 @@ class Shop:
 
                 if ego_gift_get_confirm := auto.find_element("mirror/road_in_mir/ego_gift_get_confirm_assets.png"):
                     if cfg.language_in_game == "zh_cn":
-                        excluded_names = "残片"
+                        excluded_names = ["残片", "罪孽"]
                     else:
-                        excluded_names = ["fragment", "corrosion"]
+                        excluded_names = ["fragment", "corrosion", "resources"]
                     if auto.find_element(excluded_names, find_type="text"):
                         fuse = True
                     else:
