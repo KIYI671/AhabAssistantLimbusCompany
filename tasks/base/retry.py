@@ -12,6 +12,7 @@ from module.logger import log
 
 
 def check_times(start_time):
+    """检查是否卡死超时，若是则尝试关闭重启游戏"""
     now_time = time.time()
     if int(now_time - start_time) > 9 and int(now_time - start_time) % 10 == 0:
         log.INFO(f"初始时间为{start_time}，此刻时间为{now_time}，已卡死{int(now_time - start_time)}秒")
@@ -44,6 +45,7 @@ def check_times(start_time):
 
 
 def retry():
+    """重试连接"""
     start_time = time.time()
     while True:
         if auto.get_restore_time() is not None:
@@ -74,6 +76,7 @@ def retry():
 
 
 def restart_game():
+    """重启游戏"""
     from tasks.base.script_task_scheme import init_game
     from tasks.base.back_init_menu import back_init_menu
     init_game()
