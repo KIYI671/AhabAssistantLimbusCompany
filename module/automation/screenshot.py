@@ -188,6 +188,11 @@ class ScreenShot:
             # 将numpy数组转换为PIL图像对象
             pil_image = Image.fromarray(capture_rgb)
 
+            # 将图片转换为灰度图
+            if gray:
+                pil_image = pil_image.convert("L")
+
+
             return pil_image
         except Exception as e:
             log.ERROR(f"后台截图报错: {e}")
