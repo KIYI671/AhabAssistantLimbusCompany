@@ -33,13 +33,14 @@ class OCR(metaclass=SingletonMeta):
                 self.logger.ERROR("请尝试重新下载或解压")
                 raise Exception("初始化OCR失败")
 
-    def exit_ocr(self):
+    def exit_ocr(self) -> None:
+        """退出OCR引擎"""
         if self.ocr is not None:
             self.ocr.exit()
             self.ocr = None
             self.logger.DEBUG("OCR已退出")
 
-    def run(self, image):
+    def run(self, image: Image.Image | np.ndarray | str) -> dict:
         """执行OCR识别，支持Image对象、文件路径和np.ndarray对象"""
         self.init_ocr()
         try:
@@ -65,9 +66,9 @@ class OCR(metaclass=SingletonMeta):
             return original_dist
         except Exception as e:
             self.logger.ERROR(e)
-            return "{}"
+            return {}
 
-    def log_results(self, modified_dist):
+    def log_results(self, modified_dist: dict) -> None:
         """记录OCR识别记录"""
         if "data" in modified_dist and "text" in modified_dist["data"][0]:
             print_list = [item["text"] for item in modified_dist["data"]]

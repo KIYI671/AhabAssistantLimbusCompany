@@ -34,7 +34,7 @@ class Config(metaclass=SingletonMeta):
         # 进程退出前确保落盘
         atexit.register(self.flush)
 
-    def _load_version(self, version_path):
+    def _load_version(self, version_path: str) -> str:
         """加载版本信息"""
         try:
             with open(version_path, 'r', encoding='utf-8') as file:
@@ -42,7 +42,7 @@ class Config(metaclass=SingletonMeta):
         except FileNotFoundError:
             sys.exit("版本文件未找到")
 
-    def _load_default_config(self, example_path):
+    def _load_default_config(self, example_path: str) -> dict:
         """加载默认配置信息"""
         try:
             with open(example_path, 'r', encoding='utf-8') as file:
@@ -50,7 +50,7 @@ class Config(metaclass=SingletonMeta):
         except FileNotFoundError:
             sys.exit("默认配置文件未找到")
 
-    def _load_config(self, path=None):
+    def _load_config(self, path = None) -> None:
         """加载用户配置文件，如未找到则保存默认配置"""
         path = path or self.config_path
         try:
@@ -64,7 +64,7 @@ class Config(metaclass=SingletonMeta):
         except Exception as e:
             sys.exit(f"配置文件{path}加载错误: {e}")
 
-    def _update_config(self, config, new_config):
+    def _update_config(self, config: dict, new_config: dict) -> None:
         """递归更新配置信息"""
         for key, value in new_config.items():
             if key in config:
@@ -75,7 +75,7 @@ class Config(metaclass=SingletonMeta):
             elif any(sub in key for sub in ("_setting", "_remark_name")):
                 config[key] = value
 
-    def _save_config(self):
+    def _save_config(self) -> None:
         """保存到配置文件（立即写盘）"""
         # 拷贝快照后在锁外写盘，避免长时间持锁
         with self._lock:
@@ -108,7 +108,7 @@ class Config(metaclass=SingletonMeta):
             # 安排一次延迟保存
             self._schedule_save()
 
-    def _schedule_save(self):
+    def _schedule_save(self) -> None:
         """在时间窗口内合并多次修改，只触发一次写盘。"""
         with self._lock:
             self._pending_save = True
@@ -122,11 +122,11 @@ class Config(metaclass=SingletonMeta):
             self._save_timer.daemon = True
             self._save_timer.start()
 
-    def request_save(self):
+    def request_save(self) -> None:
         """公开方法：请求一次延迟保存（不阻塞当前线程）。"""
         self._schedule_save()
 
-    def _flush_save(self):
+    def _flush_save(self) -> None:
         """定时器回调：触发一次后台写盘信号。"""
         with self._lock:
             if not self._pending_save:
@@ -135,7 +135,7 @@ class Config(metaclass=SingletonMeta):
             self._save_timer = None
             self._writer_event.set()
 
-    def flush(self):
+    def flush(self) -> None:
         """立即将挂起的更改写入磁盘。"""
         with self._lock:
             if self._save_timer is not None:
@@ -149,7 +149,7 @@ class Config(metaclass=SingletonMeta):
         if pending:
             self._save_config()
 
-    def _writer_loop(self):
+    def _writer_loop(self) -> None:
         """后台写盘线程：收到事件后把当前config写入文件"""
         while True:
             self._writer_event.wait()
@@ -161,7 +161,7 @@ class Config(metaclass=SingletonMeta):
             # 等待下一次
             self._writer_event.clear()
 
-    def just_load_config(self, path=None):
+    def just_load_config(self, path=None) -> None:
         """仅加载配置文件，不保存"""
         path = path or self.config_path
         try:
@@ -174,7 +174,7 @@ class Config(metaclass=SingletonMeta):
         except Exception as e:
             sys.exit(f"配置文件{path}加载错误: {e}")
 
-    def unsaved_set_value(self, key, value):
+    def unsaved_set_value(self, key, value) -> None:
         """仅设置配置项的值 不保存"""
         if self.config is None:
             self.just_load_config()
@@ -189,19 +189,19 @@ class Config(metaclass=SingletonMeta):
 
         log.DEBUG(f"{key} change to: {value}")  # 增加设置修改的信息
 
-    def unsaved_del_key(self, key):
+    def unsaved_del_key(self, key) -> None:
         """仅删除配置项 不保存"""
         if self.config is None:
             self.just_load_config()
         self.config.pop(key, None)
 
-    def del_key(self, key):
+    def del_key(self, key) -> None:
         """删除配置项并保存"""
         self._load_config()
         self.config.pop(key, None)
         self._schedule_save()
 
-    def __getattr__(self, attr):
+    def __getattr__(self, attr: str):
         """允许通过属性访问配置项的值"""
         if attr in self.config:
             value = self.config[attr]
@@ -222,7 +222,7 @@ class Theme_pack_list(metaclass=SingletonMeta):
         # 加载实际配置，此方法会根据实际配置覆盖默认配置
         self._load_config()
 
-    def _load_version(self, version_path):
+    def _load_version(self, version_path: str) -> str:
         """加载版本信息"""
         try:
             with open(version_path, 'r', encoding='utf-8') as file:
@@ -230,7 +230,7 @@ class Theme_pack_list(metaclass=SingletonMeta):
         except FileNotFoundError:
             sys.exit("主题包名单文件未找到")
 
-    def _load_default_config(self, example_path):
+    def _load_default_config(self, example_path: str) -> dict:
         """加载默认配置信息"""
         try:
             with open(example_path, 'r', encoding='utf-8') as file:
@@ -238,7 +238,7 @@ class Theme_pack_list(metaclass=SingletonMeta):
         except FileNotFoundError:
             sys.exit("默认主题包配置文件未找到")
 
-    def _load_config(self, path=None):
+    def _load_config(self, path=None) -> None:
         """加载用户配置文件，如未找到则保存默认配置"""
         path = path or self.theme_pack_list_path
         try:
@@ -252,7 +252,7 @@ class Theme_pack_list(metaclass=SingletonMeta):
         except Exception as e:
             sys.exit(f"配置文件{path}加载错误: {e}")
 
-    def _update_config(self, config, new_config):
+    def _update_config(self, config: dict, new_config: dict) -> None:
         """更新配置信息"""
         if config == new_config:
             return
@@ -277,7 +277,7 @@ class Theme_pack_list(metaclass=SingletonMeta):
             return copy.deepcopy(value)  # 使用深拷贝确保嵌套对象安全
         return value
 
-    def set_value(self, key, value):
+    def set_value(self, key, value) -> None:
         """设置配置项的值并保存"""
         self._load_config()
         if isinstance(value, (list, dict, set)):
@@ -286,7 +286,7 @@ class Theme_pack_list(metaclass=SingletonMeta):
             self.config[key] = value
         self.save_config()
 
-    def __getattr__(self, attr):
+    def __getattr__(self, attr: str):
         """允许通过属性访问配置项的值"""
         if attr in self.config:
             value = self.config[attr]

@@ -60,7 +60,7 @@ class UpdateThread(QThread):
         self.repo = "AhabAssistantLimbusCompany"
         self.new_version = ''
 
-    def run(self):
+    def run(self) -> None:
         """
         更新线程的主逻辑。
         检查是否有新版本，如果有，则发送更新可用信号；否则发送成功信号。

@@ -40,7 +40,8 @@ class Screen(metaclass=SingletonMeta):
             self.logger.ERROR(f"未能获取到游戏窗口: {e}")
             self.game.start_game()
 
-    def set_win(self):
+    def set_win(self) -> None:
+        """设置窗口大小与位置"""
         def _set_win():
             # 如果窗口最小化或不可见，先将其恢复
             if self.handle.isMinimized or not self.handle.isActive:
@@ -69,7 +70,8 @@ class Screen(metaclass=SingletonMeta):
             except Exception as e:
                 self.logger.ERROR(f"设置窗口出错: {e}")
 
-    def reduce_miscontact(self):
+    def reduce_miscontact(self) -> None:
+        """通过调整窗口置顶减少误触"""
         # 获取适用于win32gui与win32con的窗口句柄
         hwnd = self.handle._hWnd
 
@@ -92,15 +94,18 @@ class Screen(metaclass=SingletonMeta):
         # 将修改后的样式值 style 应用到窗口的样式属性上
         win32gui.SetWindowLong(hwnd, win32con.GWL_STYLE, style)
 
-    def adjust_win_size(self, set_win_size):
+    def adjust_win_size(self, set_win_size: int) -> None:
+        """调整窗口大小"""
         hwnd = self.handle._hWnd
         win32gui.SetWindowPos(hwnd, None, 0, 0, int(set_win_size * 16 / 9), set_win_size, win32con.SWP_NOMOVE)
 
-    def adjust_win_position(self, set_win_position):
+    def adjust_win_position(self, set_win_position: tuple) -> None:
+        """调整窗口位置"""
         hwnd = self.handle._hWnd
         win32gui.SetWindowPos(hwnd, None, 0, 0, 0, 0, win32con.SWP_NOSIZE)
 
-    def check_win_size(self, set_win_size):
+    def check_win_size(self, set_win_size: int) -> None:
+        """检查窗口大小是否合适，若不合适则切换全屏再切换回窗口模式"""
         try:
             screen_width = pyautogui.size().width
             screen_height = pyautogui.size().height
@@ -121,7 +126,8 @@ class Screen(metaclass=SingletonMeta):
         except Exception as e:
             self.logger.ERROR(f"检查屏幕分辨率失败: {e}")
 
-    def reset_win(self):
+    def reset_win(self) -> bool:
+        """重置窗口"""
         try:
             hwnd = self.handle._hWnd
             # 获取窗口的当前样式
@@ -162,3 +168,5 @@ class Screen(metaclass=SingletonMeta):
         except Exception as e:
             self.logger.ERROR(f"重置窗口失败: {e}")
             return False
+        else:
+            return True
