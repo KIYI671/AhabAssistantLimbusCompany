@@ -32,6 +32,7 @@ key_list = {
 
 
 class Input(metaclass=SingletonMeta):
+    """基于 `pyautogui` 的输入类, 仅支持前台操作"""
     # 禁用pyautogui的失败安全特性，防止意外中断
     pyautogui.FAILSAFE = False
 
@@ -144,6 +145,8 @@ class Input(metaclass=SingletonMeta):
         进行鼠标滚动操作
         Args:
             direction (int): 滚动方向，正值表示拉近，负值表示缩小
+        Returns:
+            bool (True) : 表示是否支持该操作
         """
         if direction <= 0:
             msg = "鼠标滚动滚轮，远离界面"
@@ -234,6 +237,9 @@ class Input(metaclass=SingletonMeta):
 
 
 class BackgroundInput(Input, metaclass=SingletonMeta):
+    """基于 `pywin32` 的输入类, 支持后台操作
+    \n 除了不支持滚轮事件, 其余同 `Input` 类
+    """
 
     def mouse_click(self, x, y, times=1, move_back=False) -> bool:
         """在指定坐标上执行点击操作
@@ -318,9 +324,12 @@ class BackgroundInput(Input, metaclass=SingletonMeta):
 
     def mouse_scroll(self, direction:int=-3) -> bool:
         """
+        不支持的方法\n
         进行鼠标滚动操作
         Args:
             direction (int): 滚动方向，正值表示拉近，负值表示缩小
+        Returns:
+            bool (False) : 表示是否支持该操作
         """
         # 不支持的方法
         return False
@@ -353,31 +362,6 @@ class BackgroundInput(Input, metaclass=SingletonMeta):
         self.wait_pause()
         return True
 
-    def mouse_to_blank(self, coordinate=(1, 1), move_back=False) -> None:
-        """鼠标移动到空白位置，避免遮挡
-        Args:
-            coordinate (tuple): 坐标元组 (x, y)
-            move_back (bool): 是否在移动后将鼠标移动回原位置
-        """
-        if move_back:
-            current_mouse_position = self.get_mouse_position()
-
-        msg = "鼠标移动到空白，避免遮挡"
-        self.logger.DEBUG(msg)
-        pyautogui.moveTo(coordinate[0], coordinate[1])
-
-        if move_back and current_mouse_position:
-            self.mouse_move(current_mouse_position)
-        self.wait_pause()
-
-    def mouse_move(self, coordinate=(1, 1)) -> None:
-        """鼠标移动到指定坐标
-
-        Args:
-            coordinate (tuple): 坐标元组 (x, y)
-        """
-        pyautogui.moveTo(coordinate[0], coordinate[1])
-        self.wait_pause()
 
     def mouse_drag_link(self, position: list, drag_time=0.1) -> None:
         """鼠标从指定位置拖动到指定位置
@@ -396,9 +380,11 @@ class BackgroundInput(Input, metaclass=SingletonMeta):
 
 
     def set_focus(self):
+        """将游戏窗口设置为输入焦点以让 Unity 接受输入事件
+        """
         hwnd = screen.handle._hWnd
         if hwnd:
-
+            # 如果最小化则显示
             placement = win32gui.GetWindowPlacement(hwnd)
             if placement[1] == win32con.SW_SHOWMINIMIZED:
                 win32gui.ShowWindow(hwnd, win32con.SW_RESTORE)
@@ -416,6 +402,11 @@ class BackgroundInput(Input, metaclass=SingletonMeta):
             print("未初始化hwnd")
 
     def mouse_down(self, x, y):
+        """鼠标左键按下
+        Args:
+            x (number): 相对于窗口左上角的 x 轴坐标
+            y (number): 相对于窗口左上角的 y 轴坐标
+        """
         x = int(x)
         y = int(y)
         hwnd = screen.handle._hWnd
@@ -423,6 +414,11 @@ class BackgroundInput(Input, metaclass=SingletonMeta):
         win32api.SendMessage(hwnd, win32con.WM_LBUTTONDOWN, 0, long_positon)
 
     def mouse_up(self, x, y):
+        """鼠标左键抬起
+        Args:
+            x (number): 相对于窗口左上角的 x 轴坐标
+            y (number): 相对于窗口左上角的 y 轴坐标
+        """
         x = int(x)
         y = int(y)
         hwnd = screen.handle._hWnd
@@ -430,6 +426,11 @@ class BackgroundInput(Input, metaclass=SingletonMeta):
         win32api.SendMessage(hwnd, win32con.WM_LBUTTONUP, 0, long_positon)
 
     def set_mouse_pos(self, x, y):
+        """移动光标位置
+        Args:
+            x (number): 相对于窗口左上角的 x 轴坐标
+            y (number): 相对于窗口左上角的 y 轴坐标
+        """
         x = int(x)
         y = int(y)
         hwnd = screen.handle._hWnd
@@ -437,16 +438,28 @@ class BackgroundInput(Input, metaclass=SingletonMeta):
         pyautogui.moveTo(rect[0] + x, rect[1] + y)
 
     def key_down(self, key: str):
+        """键盘按键按下
+        Args:
+            key (str): 按键名称
+        """
         hwnd = screen.handle._hWnd
         lparam = 0x00000001  # 重复次数为1
         win32api.SendMessage(hwnd, win32con.WM_KEYDOWN, key_list[key.lower()], lparam)
 
     def key_up(self, key: str):
+        """键盘按键抬起
+        Args:
+            key (str): 按键名称
+        """
         hwnd = screen.handle._hWnd
         lparam = 0xC0000001  # 转换状态为1（按键释放）
         win32api.SendMessage(hwnd, win32con.WM_KEYUP, key_list[key.lower()], lparam)
 
     def key_press(self, key):
+        """一次键盘按键操作
+        Args:
+            key (str): 按键名称
+        """
         self.set_focus()
         self.key_down(key)
         sleep(0.1)

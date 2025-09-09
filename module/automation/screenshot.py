@@ -141,48 +141,52 @@ class ScreenShot:
     @staticmethod
     def backgroud_screenshot(gray: bool = True) -> Image.Image:
         try:
-
+            # 查找游戏窗口句柄（Unity引擎创建的游戏窗口通常使用"UnityWndClass"类名）
             hwnd = win32gui.FindWindow("UnityWndClass", "LimbusCompany")
 
+            # 获取窗口的坐标和尺寸（返回(left, top, right, bottom)）
             rect = win32gui.GetWindowRect(hwnd)
-
             width, height = rect[2] - rect[0], rect[3] - rect[1]
 
+            # 获取窗口设备上下文(DC)，用于后续绘图操作
             hwnd_dc = win32gui.GetWindowDC(hwnd)
-
+            # 创建兼容的设备上下文
             mfc_dc = win32ui.CreateDCFromHandle(hwnd_dc)
-
+            # 创建内存设备上下文，用于临时存储位图
             save_dc = mfc_dc.CreateCompatibleDC()
-            save_bit_map = win32ui.CreateBitmap()
 
+            # 创建与窗口兼容的位图对象
+            save_bit_map = win32ui.CreateBitmap()
             save_bit_map.CreateCompatibleBitmap(mfc_dc, width, height)
 
+            # 将位图选入内存设备上下文
             save_dc.SelectObject(save_bit_map)
 
+            # 将窗口内容绘制到内存设备上下文中（PW_RENDERFULLCONTENT=3表示渲染全部内容）
             windll.user32.PrintWindow(hwnd, save_dc.GetSafeHdc(), 3)
 
+            # 获取位图信息（高度、宽度等）和像素数据
             bmpinfo = save_bit_map.GetInfo()
             bmpstr = save_bit_map.GetBitmapBits(True)
 
+            # 将原始字节数据转换为numpy数组，并重塑为4通道(BGRA)图像格式
             capture = np.frombuffer(bmpstr, dtype=np.uint8).reshape(
                 (bmpinfo["bmHeight"], bmpinfo["bmWidth"], 4)
             )
-
+            # 确保内存连续排列，并移除Alpha通道（保留BGR）
             capture = np.ascontiguousarray(capture)[..., :-1]
 
-            # 释放内存
-            win32gui.DeleteObject(save_bit_map.GetHandle())
-            save_dc.DeleteDC()
-            mfc_dc.DeleteDC()
-            win32gui.ReleaseDC(hwnd, hwnd_dc)
+            # 清理资源（按创建顺序逆序释放）
+            win32gui.DeleteObject(save_bit_map.GetHandle())  # 删除位图对象
+            save_dc.DeleteDC()  # 删除内存设备上下文
+            mfc_dc.DeleteDC()  # 删除兼容设备上下文
+            win32gui.ReleaseDC(hwnd, hwnd_dc)  # 释放窗口设备上下文
 
-            # BGRA 转 RGB
+            # 将BGR格式转换为RGB格式
             capture_rgb = cv2.cvtColor(capture, cv2.COLOR_BGRA2RGB)
             
-            # 将 NumPy 数组转换为 PIL 图像
+            # 将numpy数组转换为PIL图像对象
             pil_image = Image.fromarray(capture_rgb)
-            if gray:
-                pil_image = pil_image.convert("L")
 
             return pil_image
         except Exception as e:
