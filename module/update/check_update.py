@@ -300,7 +300,6 @@ def check_update(self, timeout=5, flag=False):
                 duration=1000,
                 parent=self
             )
-            bar.retranslateUi()
         else:
             # 显示检查更新失败的信息
             bar = BaseInfoBar.warning(
@@ -312,7 +311,6 @@ def check_update(self, timeout=5, flag=False):
                 duration=5000,
                 parent=self
             )
-            bar.retranslateUi()
 
     # 创建一个更新线程实例
     self.update_thread = UpdateThread(timeout, flag)

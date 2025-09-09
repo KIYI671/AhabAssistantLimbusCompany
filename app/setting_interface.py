@@ -254,7 +254,7 @@ class SettingInterface(ScrollArea):
 
         self.zoom_card.valueChanged.connect(self.__onZoomCardValueChanged)
         self.auto_lang_card.switchButton.checkedChanged.connect(self.__onAutoLangCardChecked)
-        self.background_mode_card.switchButton.checkedChanged.connect(self.__onAutoLangCardChecked)
+        self.background_mode_card.switchButton.checkedChanged.connect(self.__onZoomCardValueChanged)
 
         self.github_card.clicked.connect(self.__openUrl("https://github.com/KIYI671/AhabAssistantLimbusCompany"))
         self.qq_group_card.clicked.connect(self.__openUrl("https://qm.qq.com/q/SdgSRPrssg"))
@@ -282,7 +282,6 @@ class SettingInterface(ScrollArea):
             duration=5000,
             parent=self
         )
-        bar.retranslateUi()
 
     def __onAutoLangCardChecked(self, Checked):
         bar = BaseInfoBar.success(
@@ -294,7 +293,6 @@ class SettingInterface(ScrollArea):
             duration=5000,
             parent=self
         )
-        bar.retranslateUi()
         if Checked:
             cfg.set_value("language_in_game", "-")
         else:
