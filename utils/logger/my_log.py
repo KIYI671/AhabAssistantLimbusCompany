@@ -25,6 +25,10 @@ class Logger(metaclass=SingletonMeta):
         '%(asctime)s - %(name)s - %(levelname)s - "%(caller_path)s:%(caller_line)d" - %(message)s',
         "%Y-%m-%d %H:%M:%S"
     )
+    # 删除 uv 对根 logger 添加的 handler 以防止在控制台输出重复内容
+    root_logger = logging.getLogger()
+    for handler in root_logger.handlers[:]:
+        root_logger.removeHandler(handler)
 
     # 记录debug及以上级别日志
     debug_logger = get_logger('debugLogger',
