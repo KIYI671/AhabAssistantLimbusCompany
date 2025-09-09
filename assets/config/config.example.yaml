@@ -22,6 +22,7 @@ screenshot_interval: 0.85    # 截图间隔时间
 mouse_action_interval: 0.5  # 鼠标操作间隔时间
 
 resonate_with_Ahab: False # 是否播放亚哈语录
+background_click: True # 是否使用后台点击
 
 # 实验性功能
 experimental_auto_lang: False # 是否自动修改语言

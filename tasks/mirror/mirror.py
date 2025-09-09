@@ -9,7 +9,7 @@ from module.automation import auto
 from module.config import cfg
 from module.decorator.decorator import begin_and_finish_time_log
 from module.logger import log
-from module.my_error.my_error import unableToFindTeamError
+from module.my_error.my_error import unableToFindTeamError, InputAttributeError
 from module.ocr import ocr
 from tasks import all_systems, start_gift
 from tasks.base.back_init_menu import back_init_menu
@@ -679,6 +679,9 @@ class Mirror:
                     return True
                 if retry() is False:
                     return False
+        except InputAttributeError as e:
+            log.ERROR(f"寻路出错:{e}, 尝试重进镜牢")
+            pass
         except Exception as e:
             log.ERROR(f"寻路出错:{e}")
             return False
@@ -710,7 +713,7 @@ class Mirror:
                 continue
             if auto.click_element("mirror/road_in_mir/setting_assets.png"):
                 continue
-            pyautogui.press("esc")
+            auto.key_press("esc")
             time.sleep(1)
             if retry() is False:
                 return False

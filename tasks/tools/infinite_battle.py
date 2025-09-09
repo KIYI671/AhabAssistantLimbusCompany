@@ -1,7 +1,6 @@
 import tkinter as tk
 from time import sleep
 
-import pyautogui
 import win32con
 import win32gui
 
@@ -46,17 +45,17 @@ class InfiniteBattles:
         turn_ocr_result = auto.find_text_element("turn", turn_bbox)
         if turn_ocr_result is not False:
             auto.mouse_click_blank(move_back=True)
-            pyautogui.press('p')
+            auto.key_press('p')
             sleep(0.5)
-            pyautogui.press('enter')
+            auto.key_press('enter')
             self.identify_keyword_turn = False
 
     def _template_battle(self):
         if auto.click_element("battle/turn_assets.png") or auto.find_element("battle/win_rate_assets.png"):
             auto.mouse_click_blank(move_back=True)
-            pyautogui.press('p')
+            auto.key_press('p')
             sleep(0.5)
-            pyautogui.press('enter')
+            auto.key_press('enter')
             self.fail_count = 0
             return
         else:

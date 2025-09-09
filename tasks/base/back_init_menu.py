@@ -66,7 +66,7 @@ def back_init_menu():
             continue
 
         auto.mouse_click_blank()
-        pyautogui.press('esc')
+        auto.key_press('esc')
         retry()
 
         loop_count -= 1

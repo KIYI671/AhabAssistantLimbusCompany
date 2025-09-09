@@ -3,6 +3,11 @@ from PIL import Image
 from module.logger import log
 from module.config import cfg
 import pyautogui
+import win32gui
+import win32ui
+import cv2
+import numpy as np
+
 
 class ScreenShot:
     
@@ -15,17 +20,24 @@ class ScreenShot:
         Returns:
             PIL.Image: 截图图像
         """
-        try:
-            return ScreenShot.take_screenshot_gdi(gray)
-        except Exception as e:
-            msg = f"GDI截图失败，尝试使用pyautogui截图，错误信息：{e}"
-            log.DEBUG(msg)
+        if cfg.background_click:
             try:
-                return ScreenShot.take_screenshot_pyautogui(gray)
-            except Exception as e2:
-                msg = f"pyautogui截图失败，错误信息：{e2}"
-                log.DEBUG(msg)
+                return ScreenShot.backgroud_screenshot(gray)
+            except Exception as e:
+                log.DEBUG(f"后台截图报错 {type(e).__name__}: {e}")
                 return None
+        else:
+            try:
+                return ScreenShot.take_screenshot_gdi(gray)
+            except Exception as e:
+                msg = f"GDI截图失败，尝试使用pyautogui截图，错误信息：{e}"
+                log.DEBUG(msg)
+                try:
+                    return ScreenShot.take_screenshot_pyautogui(gray)
+                except Exception as e2:
+                    msg = f"pyautogui截图失败，错误信息：{e2}"
+                    log.DEBUG(msg)
+                    return None
 
     @staticmethod
     def take_screenshot_gdi(gray: bool = True) -> Image.Image:
@@ -125,3 +137,53 @@ class ScreenShot:
 
         # 返回裁剪后的截图
         return screenshot
+
+    @staticmethod
+    def backgroud_screenshot(gray: bool = True) -> Image.Image:
+        try:
+
+            hwnd = win32gui.FindWindow("UnityWndClass", "LimbusCompany")
+
+            rect = win32gui.GetWindowRect(hwnd)
+
+            width, height = rect[2] - rect[0], rect[3] - rect[1]
+
+            hwnd_dc = win32gui.GetWindowDC(hwnd)
+
+            mfc_dc = win32ui.CreateDCFromHandle(hwnd_dc)
+
+            save_dc = mfc_dc.CreateCompatibleDC()
+            save_bit_map = win32ui.CreateBitmap()
+
+            save_bit_map.CreateCompatibleBitmap(mfc_dc, width, height)
+
+            save_dc.SelectObject(save_bit_map)
+
+            windll.user32.PrintWindow(hwnd, save_dc.GetSafeHdc(), 3)
+
+            bmpinfo = save_bit_map.GetInfo()
+            bmpstr = save_bit_map.GetBitmapBits(True)
+
+            capture = np.frombuffer(bmpstr, dtype=np.uint8).reshape(
+                (bmpinfo["bmHeight"], bmpinfo["bmWidth"], 4)
+            )
+
+            capture = np.ascontiguousarray(capture)[..., :-1]
+
+            # 释放内存
+            win32gui.DeleteObject(save_bit_map.GetHandle())
+            save_dc.DeleteDC()
+            mfc_dc.DeleteDC()
+            win32gui.ReleaseDC(hwnd, hwnd_dc)
+
+            # BGRA 转 RGB
+            capture_rgb = cv2.cvtColor(capture, cv2.COLOR_BGRA2RGB)
+            
+            # 将 NumPy 数组转换为 PIL 图像
+            pil_image = Image.fromarray(capture_rgb)
+            if gray:
+                pil_image = pil_image.convert("L")
+
+            return pil_image
+        except Exception as e:
+            log.ERROR(f"后台截图报错: {e}")
