@@ -287,7 +287,7 @@ class BackgroundInput(Input, metaclass=SingletonMeta):
         self.set_focus()
         pyautogui.moveTo(x, y)
         self.mouse_down(x,y)
-        pyautogui.dragTo(x, y + int(300 * scale), duration=0.4)
+        pyautogui.moveTo(x, y + int(300 * scale), duration=0.4)
         self.mouse_up(x,y)
 
         if move_back and current_mouse_position:
