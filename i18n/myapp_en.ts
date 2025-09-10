@@ -478,7 +478,7 @@
         <translation>Checking update failed (╥╯﹏╰╥)</translation>
     </message>
     <message>
-        <location filename="../app/setting_interface.py" line="278"/>
+        <location filename="../app/setting_interface.py" line="288"/>
         <source>更改将在重新启动后生效</source>
         <translation>The changes will take effect after the restart</translation>
     </message>
@@ -519,37 +519,37 @@
 <context>
     <name>BasePrimaryPushSettingCard</name>
     <message>
-        <location filename="../app/setting_interface.py" line="156"/>
+        <location filename="../app/setting_interface.py" line="164"/>
         <source>日志</source>
         <translation>Logs</translation>
     </message>
     <message>
-        <location filename="../app/setting_interface.py" line="156"/>
+        <location filename="../app/setting_interface.py" line="164"/>
         <source>打开日志文件夹</source>
         <translation>Open logs folder</translation>
     </message>
     <message>
-        <location filename="../app/setting_interface.py" line="167"/>
+        <location filename="../app/setting_interface.py" line="175"/>
         <source>项目主页</source>
         <translation>Object repo</translation>
     </message>
     <message>
-        <location filename="../app/setting_interface.py" line="173"/>
+        <location filename="../app/setting_interface.py" line="181"/>
         <source>加入群聊</source>
         <translation>Join QQ group</translation>
     </message>
     <message>
-        <location filename="../app/setting_interface.py" line="173"/>
+        <location filename="../app/setting_interface.py" line="181"/>
         <source>QQ群</source>
         <translation>QQ group</translation>
     </message>
     <message>
-        <location filename="../app/setting_interface.py" line="179"/>
+        <location filename="../app/setting_interface.py" line="187"/>
         <source>提供反馈</source>
         <translation>Feedback</translation>
     </message>
     <message>
-        <location filename="../app/setting_interface.py" line="179"/>
+        <location filename="../app/setting_interface.py" line="187"/>
         <source>帮助我们改进 AhabAssistantLimbusCompany</source>
         <translation>Help us to enhance AhabAssistantLimbusCompany</translation>
     </message>
@@ -557,12 +557,12 @@
 <context>
     <name>BasePushSettingCard</name>
     <message>
-        <location filename="../app/setting_interface.py" line="78"/>
+        <location filename="../app/setting_interface.py" line="86"/>
         <source>修改</source>
         <translation>Edit</translation>
     </message>
     <message>
-        <location filename="../app/setting_interface.py" line="78"/>
+        <location filename="../app/setting_interface.py" line="86"/>
         <source>游戏路径</source>
         <translation>Game path</translation>
     </message>
@@ -579,7 +579,7 @@
     <message>
         <location filename="../app/tools_interface.py" line="34"/>
         <source>这只是一个为你自动按下P键和Enter键的小工具，不要怀抱太多期待</source>
-        <translation>It&apos;s just a gadget that automatically presses the P and Enter keys for you, so don&apos;t expect too much</translation>
+        <translation>It's just a gadget that automatically presses the P and Enter keys for you, so don't expect too much</translation>
     </message>
 </context>
 <context>
@@ -590,27 +590,27 @@
         <translation>Game Settings</translation>
     </message>
     <message>
-        <location filename="../app/setting_interface.py" line="74"/>
+        <location filename="../app/setting_interface.py" line="82"/>
         <source>启动游戏</source>
         <translation>Start Game</translation>
     </message>
     <message>
-        <location filename="../app/setting_interface.py" line="86"/>
+        <location filename="../app/setting_interface.py" line="94"/>
         <source>个性化</source>
         <translation>Personalization</translation>
     </message>
     <message>
-        <location filename="../app/setting_interface.py" line="114"/>
+        <location filename="../app/setting_interface.py" line="122"/>
         <source>更新设置</source>
         <translation>Update Settings</translation>
     </message>
     <message>
-        <location filename="../app/setting_interface.py" line="145"/>
+        <location filename="../app/setting_interface.py" line="153"/>
         <source>日志设置</source>
         <translation>logs Settings</translation>
     </message>
     <message>
-        <location filename="../app/setting_interface.py" line="163"/>
+        <location filename="../app/setting_interface.py" line="171"/>
         <source>关于</source>
         <translation>About</translation>
     </message>
@@ -620,7 +620,7 @@
         <translation>Toolbox</translation>
     </message>
     <message>
-        <location filename="../app/setting_interface.py" line="186"/>
+        <location filename="../app/setting_interface.py" line="194"/>
         <source>实验性内容</source>
         <translation>Experimental sections</translation>
     </message>
@@ -769,47 +769,47 @@
         <translation>Using Index</translation>
     </message>
     <message>
-        <location filename="../app/setting_interface.py" line="90"/>
+        <location filename="../app/setting_interface.py" line="98"/>
         <source>语言</source>
         <translation>Language</translation>
     </message>
     <message>
-        <location filename="../app/setting_interface.py" line="90"/>
+        <location filename="../app/setting_interface.py" line="98"/>
         <source>设置程序 UI 使用的语言</source>
         <translation>Set program language</translation>
     </message>
     <message>
-        <location filename="../app/setting_interface.py" line="125"/>
+        <location filename="../app/setting_interface.py" line="133"/>
         <source>更新源</source>
         <translation>Update source</translation>
     </message>
     <message>
-        <location filename="../app/setting_interface.py" line="125"/>
+        <location filename="../app/setting_interface.py" line="133"/>
         <source>选择更新源</source>
         <translation>Choose update source</translation>
     </message>
     <message>
-        <location filename="../app/setting_interface.py" line="125"/>
+        <location filename="../app/setting_interface.py" line="133"/>
         <source>Github源</source>
         <translation>Github</translation>
     </message>
     <message>
-        <location filename="../app/setting_interface.py" line="125"/>
+        <location filename="../app/setting_interface.py" line="133"/>
         <source>Mirror 酱</source>
         <translation>Mirror Chyan</translation>
     </message>
     <message>
-        <location filename="../app/setting_interface.py" line="98"/>
+        <location filename="../app/setting_interface.py" line="106"/>
         <source>缩放</source>
         <translation>Zoom</translation>
     </message>
     <message>
-        <location filename="../app/setting_interface.py" line="98"/>
+        <location filename="../app/setting_interface.py" line="106"/>
         <source>设置程序 UI 使用的缩放</source>
         <translation>Set program zoom</translation>
     </message>
     <message>
-        <location filename="../app/setting_interface.py" line="98"/>
+        <location filename="../app/setting_interface.py" line="106"/>
         <source>跟随系统</source>
         <translation>Follow system</translation>
     </message>
@@ -1127,7 +1127,7 @@
     <message>
         <location filename="../app/my_app.py" line="158"/>
         <source>存在未保存的设置，请执行保存或取消操作</source>
-        <translation>Didn&apos;t save settings, please do save or cancel</translation>
+        <translation>Didn't save settings, please do save or cancel</translation>
     </message>
     <message>
         <location filename="../app/my_app.py" line="262"/>
@@ -1363,12 +1363,12 @@
 <context>
     <name>PushSettingCardMirrorchyan</name>
     <message>
-        <location filename="../app/setting_interface.py" line="136"/>
+        <location filename="../app/setting_interface.py" line="144"/>
         <source>修改</source>
         <translation>Edit</translation>
     </message>
     <message>
-        <location filename="../app/setting_interface.py" line="136"/>
+        <location filename="../app/setting_interface.py" line="144"/>
         <source>Mirror 酱 CDK</source>
         <translation>Mirror Chyan CDK</translation>
     </message>
@@ -1449,22 +1449,22 @@
         <translation>ON</translation>
     </message>
     <message>
-        <location filename="../app/setting_interface.py" line="118"/>
+        <location filename="../app/setting_interface.py" line="126"/>
         <source>加入预览版更新渠道</source>
         <translation>Join Beta update</translation>
     </message>
     <message>
-        <location filename="../app/setting_interface.py" line="149"/>
+        <location filename="../app/setting_interface.py" line="157"/>
         <source>自动清理日志</source>
         <translation>Auto clear up logs</translation>
     </message>
     <message>
-        <location filename="../app/setting_interface.py" line="149"/>
+        <location filename="../app/setting_interface.py" line="157"/>
         <source>自动清理一周前的日志</source>
         <translation>Auto clear up logs from a week ago</translation>
     </message>
     <message>
-        <location filename="../app/setting_interface.py" line="191"/>
+        <location filename="../app/setting_interface.py" line="199"/>
         <source>自动检测并切换游戏语言</source>
         <translation>Auto identify and switch game language</translation>
     </message>
@@ -1477,6 +1477,16 @@
         <location filename="../app/setting_interface.py" line="50"/>
         <source>每周自动将前三场镜牢设置为困难模式执行，请确认启用了“困牢单次加成”功能</source>
         <translation>The first three Mirror Dungeons will be automatically set to Hard Mode each week</translation>
+    </message>
+    <message>
+        <location filename="../app/setting_interface.py" line="73"/>
+        <source>后台运行模式</source>
+        <translation type="finished">Backend operation mode</translation>
+    </message>
+    <message>
+        <location filename="../app/setting_interface.py" line="73"/>
+        <source>该模式下游戏不强制置顶, 但是&lt;font color=red&gt;游戏不能处于最小化状态!!&lt;/font&gt;</source>
+        <translation type="finished">In this mode, the game is not forced to be pinned, but &lt;font color=red&gt;it cannot be in a minimized state!! &lt;/font&gt;</translation>
     </message>
 </context>
 <context>

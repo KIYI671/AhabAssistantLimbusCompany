@@ -6,8 +6,33 @@ import pyautogui
 from module.config import cfg
 from utils.singletonmeta import SingletonMeta
 
+from ..game_and_screen import screen
+import win32api
+import win32gui
+import win32con
+
+
+key_list = {
+    'a': 0x41, 'b': 0x42, 'c': 0x43, 'd': 0x44, 'e': 0x45,
+    'f': 0x46, 'g': 0x47, 'h': 0x48, 'i': 0x49, 'j': 0x4A,
+    'k': 0x4B, 'l': 0x4C, 'm': 0x4D, 'n': 0x4E, 'o': 0x4F,
+    'p': 0x50, 'q': 0x51, 'r': 0x52, 's': 0x53, 't': 0x54,
+    'u': 0x55, 'v': 0x56, 'w': 0x57, 'x': 0x58, 'y': 0x59,
+    'z': 0x5A,
+    '0': 0x30, '1': 0x31, '2': 0x32, '3': 0x33, '4': 0x34,
+    '5': 0x35, '6': 0x36, '7': 0x37, '8': 0x38, '9': 0x39,
+    'enter': win32con.VK_RETURN,
+    'esc': win32con.VK_ESCAPE,
+    'space': win32con.VK_SPACE,
+    'tab': win32con.VK_TAB,
+    'shift': win32con.VK_SHIFT,
+    'ctrl': win32con.VK_CONTROL,
+    'alt': win32con.VK_MENU,
+}
+
 
 class Input(metaclass=SingletonMeta):
+    """基于 `pyautogui` 的输入类, 仅支持前台操作"""
     # 禁用pyautogui的失败安全特性，防止意外中断
     pyautogui.FAILSAFE = False
 
@@ -115,11 +140,13 @@ class Input(metaclass=SingletonMeta):
         if move_back and current_mouse_position:
             self.mouse_move(current_mouse_position)
 
-    def mouse_scroll(self, direction:int=-3) -> None:
+    def mouse_scroll(self, direction:int=-3) -> bool:
         """
         进行鼠标滚动操作
         Args:
             direction (int): 滚动方向，正值表示拉近，负值表示缩小
+        Returns:
+            bool (True) : 表示是否支持该操作
         """
         if direction <= 0:
             msg = "鼠标滚动滚轮，远离界面"
@@ -127,6 +154,7 @@ class Input(metaclass=SingletonMeta):
             msg = "鼠标滚动滚轮，拉近界面"
         self.logger.DEBUG(msg)
         pyautogui.scroll(direction)
+        return True
 
     def mouse_click_blank(self, coordinate=(1, 1), times=1, move_back=False) -> bool:
         """在空白位置点击鼠标
@@ -185,8 +213,7 @@ class Input(metaclass=SingletonMeta):
         Returns:
             tuple: 当前鼠标位置的元组 (x, y)
         """
-        x, y = pyautogui.position()
-        return (x, y)
+        return pyautogui.position()
 
     def mouse_drag_link(self, position: list, drag_time=0.1) -> None:
         """鼠标从指定位置拖动到指定位置
@@ -201,3 +228,241 @@ class Input(metaclass=SingletonMeta):
         for pos in position:
             pyautogui.moveTo(pos[0], pos[1], duration=drag_time)
         pyautogui.mouseUp()
+
+
+    def key_press(self, key):
+        return pyautogui.press(key)
+
+
+
+
+class BackgroundInput(Input, metaclass=SingletonMeta):
+    """基于 `pywin32` 的输入类, 支持后台操作
+    \n 除了不支持滚轮事件, 其余同 `Input` 类
+    """
+
+    def mouse_click(self, x, y, times=1, move_back=False) -> bool:
+        """在指定坐标上执行点击操作
+
+        Args:
+            x (int): x坐标
+            y (int): y坐标
+            times (int): 点击次数
+            move_back (bool): 是否在点击后将鼠标移动回原位置
+        Returns:
+            bool (True) : 总是返回True表示操作执行完毕
+        """
+        if move_back:
+            current_mouse_position = self.get_mouse_position()
+
+        msg = f"点击位置:({x},{y})"
+        self.logger.DEBUG(msg)
+        for i in range(times):
+            self.set_focus()
+            self.set_mouse_pos(x,y)
+            self.mouse_down(x,y)
+            sleep(0.01)
+            self.mouse_up(x,y)
+            # 多次点击执行很快所以暂停放到循环外
+
+        if move_back and current_mouse_position:
+            self.mouse_move(current_mouse_position)
+
+        self.wait_pause()
+
+        return True
+
+    def mouse_drag_down(self, x, y, move_back=True) -> None:
+        """鼠标从指定位置向下拖动
+
+        Args:
+            x (int): x坐标
+            y (int): y坐标
+            move_back (bool): 是否在拖动后将鼠标移动回原位置
+        """
+        if move_back:
+            current_mouse_position = self.get_mouse_position()
+
+        scale = cfg.set_win_size / 1080
+        self.set_focus()
+        pyautogui.moveTo(x, y)
+        self.mouse_down(x,y)
+        pyautogui.moveTo(x, y + int(300 * scale), duration=0.4)
+        self.mouse_up(x,y)
+
+        if move_back and current_mouse_position:
+            self.mouse_move(current_mouse_position)
+
+        msg = f"选择卡包:({x},{y})"
+        self.logger.DEBUG(msg)
+
+    def mouse_drag(self, x, y, drag_time=0.1, dx=0, dy=0, move_back=False) -> None:
+        """鼠标从指定位置拖动到另一个位置
+        Args:
+            x (int): 起始x坐标
+            y (int): 起始y坐标
+            drag_time (float): 拖动时间
+            dx (int): x方向拖动距离
+            dy (int): y方向拖动距离
+            move_back (bool): 是否在拖动后将鼠标移动回原位置
+        """
+        if move_back:
+            current_mouse_position = self.get_mouse_position()
+
+        self.set_focus()
+        pyautogui.moveTo(x, y)
+        self.mouse_down(x,y)
+        pyautogui.moveTo(x + dx, y + dy, duration=drag_time)
+        if drag_time * 0.3 > 0.5:
+            sleep(drag_time * 0.3)
+        else:
+            sleep(0.5)
+        self.mouse_up(x,y)
+
+        if move_back and current_mouse_position:
+            self.mouse_move(current_mouse_position)
+
+    def mouse_scroll(self, direction:int=-3) -> bool:
+        """
+        不支持的方法\n
+        进行鼠标滚动操作
+        Args:
+            direction (int): 滚动方向，正值表示拉近，负值表示缩小
+        Returns:
+            bool (False) : 表示是否支持该操作
+        """
+        # 不支持的方法
+        return False
+    def mouse_click_blank(self, coordinate=(1, 1), times=1, move_back=False) -> bool:
+        """在空白位置点击鼠标
+        Args:
+            coordinate (tuple): 坐标元组 (x, y)
+            times (int): 点击次数
+            move_back (bool): 是否在点击后将鼠标移动回原位置
+        Returns:
+            bool (True) : 总是返回True表示操作执行完毕
+        """
+        if move_back:
+            current_mouse_position = self.get_mouse_position()
+
+        msg = "点击（1，1）空白位置"
+        self.logger.DEBUG(msg)
+        x = coordinate[0] + random.randint(0, 10)
+        y = coordinate[1] + random.randint(0, 10)
+        for i in range(times):
+            self.set_focus()
+            self.set_mouse_pos(x,y)
+            self.mouse_down(x,y)
+            sleep(0.01)
+            self.mouse_up(x,y)
+
+        if move_back and current_mouse_position:
+            self.mouse_move(current_mouse_position)
+
+        self.wait_pause()
+        return True
+
+
+    def mouse_drag_link(self, position: list, drag_time=0.1) -> None:
+        """鼠标从指定位置拖动到指定位置
+        Args:
+            x (int): 起始x坐标
+            y (int): 起始y坐标
+            position (list): 目标位置列表
+            drag_time (float): 拖动时间
+        """
+        self.set_focus()
+        pyautogui.moveTo(position[0][0], position[0][1])
+        self.mouse_down(position[0][0], position[0][1])
+        for pos in position:
+            pyautogui.moveTo(pos[0], pos[1], duration=drag_time)
+        self.mouse_up(position[-1][-1], position[-1][-1])
+
+
+    def set_focus(self):
+        """将游戏窗口设置为输入焦点以让 Unity 接受输入事件
+        """
+        hwnd = screen.handle._hWnd
+        if hwnd:
+            # 如果最小化则显示
+            placement = win32gui.GetWindowPlacement(hwnd)
+            if placement[1] == win32con.SW_SHOWMINIMIZED:
+                win32gui.ShowWindow(hwnd, win32con.SW_RESTORE)
+                sleep(0.5)
+
+            # 设置窗口的输入状态
+            win32gui.EnableWindow(hwnd, True)
+            
+            # 发送激活消息（但不改变Z序）
+            win32gui.SendMessage(hwnd, win32con.WM_ACTIVATE, win32con.WA_ACTIVE, 0)
+            
+            # 设置焦点状态
+            win32gui.SendMessage(hwnd, win32con.WM_SETFOCUS, 0, 0)
+        else:
+            print("未初始化hwnd")
+
+    def mouse_down(self, x, y):
+        """鼠标左键按下
+        Args:
+            x (number): 相对于窗口左上角的 x 轴坐标
+            y (number): 相对于窗口左上角的 y 轴坐标
+        """
+        x = int(x)
+        y = int(y)
+        hwnd = screen.handle._hWnd
+        long_positon = win32api.MAKELONG(x, y)
+        win32api.SendMessage(hwnd, win32con.WM_LBUTTONDOWN, 0, long_positon)
+
+    def mouse_up(self, x, y):
+        """鼠标左键抬起
+        Args:
+            x (number): 相对于窗口左上角的 x 轴坐标
+            y (number): 相对于窗口左上角的 y 轴坐标
+        """
+        x = int(x)
+        y = int(y)
+        hwnd = screen.handle._hWnd
+        long_positon = win32api.MAKELONG(x, y)
+        win32api.SendMessage(hwnd, win32con.WM_LBUTTONUP, 0, long_positon)
+
+    def set_mouse_pos(self, x, y):
+        """移动光标位置
+        Args:
+            x (number): 相对于窗口左上角的 x 轴坐标
+            y (number): 相对于窗口左上角的 y 轴坐标
+        """
+        x = int(x)
+        y = int(y)
+        hwnd = screen.handle._hWnd
+        rect = win32gui.GetWindowRect(hwnd)
+        pyautogui.moveTo(rect[0] + x, rect[1] + y)
+
+    def key_down(self, key: str):
+        """键盘按键按下
+        Args:
+            key (str): 按键名称
+        """
+        hwnd = screen.handle._hWnd
+        lparam = 0x00000001  # 重复次数为1
+        win32api.SendMessage(hwnd, win32con.WM_KEYDOWN, key_list[key.lower()], lparam)
+
+    def key_up(self, key: str):
+        """键盘按键抬起
+        Args:
+            key (str): 按键名称
+        """
+        hwnd = screen.handle._hWnd
+        lparam = 0xC0000001  # 转换状态为1（按键释放）
+        win32api.SendMessage(hwnd, win32con.WM_KEYUP, key_list[key.lower()], lparam)
+
+    def key_press(self, key):
+        """一次键盘按键操作
+        Args:
+            key (str): 按键名称
+        """
+        self.set_focus()
+        self.key_down(key)
+        sleep(0.1)
+        self.key_up(key)
+
+

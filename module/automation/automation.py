@@ -10,13 +10,18 @@ import numpy as np
 
 from utils.image_utils import ImageUtils
 from utils.singletonmeta import SingletonMeta
-from .input import Input
+
 from .screenshot import ScreenShot
 from ..config import cfg
 from ..logger import log
 from ..ocr import ocr
 
-
+if cfg.background_click:
+    from .input import BackgroundInput as Input
+    log.DEBUG("使用后台点击模块")
+else:
+    from .input import Input
+    log.DEBUG("使用前台点击模块")
 class Automation(metaclass=SingletonMeta):
     """自动化管理类，用于管理与游戏窗口有关的自动化操作"""
 
@@ -42,6 +47,7 @@ class Automation(metaclass=SingletonMeta):
         self.wait_pause = self.input_handler.wait_pause
         self.mouse_to_blank = self.input_handler.mouse_to_blank
         self.mouse_drag_link = self.input_handler.mouse_drag_link
+        self.key_press = self.input_handler.key_press
 
     def check_pause(self) -> bool:
         """

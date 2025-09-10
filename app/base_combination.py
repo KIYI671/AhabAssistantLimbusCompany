@@ -228,7 +228,6 @@ class MirrorTeamCombination(QFrame):
             duration=500,
             parent=self.parent().parent()
         )
-        bar.retranslateUi()
 
     def paste_team_settings(self):
         setting = pyperclip.paste().strip()
@@ -247,7 +246,6 @@ class MirrorTeamCombination(QFrame):
                 duration=500,
                 parent=self.parent().parent()
             )
-            bar.retranslateUi()
             return
         except Exception:
             bar = BaseInfoBar.error(
@@ -259,7 +257,6 @@ class MirrorTeamCombination(QFrame):
                 duration=500,
                 parent=self.parent().parent()
             )
-            bar.retranslateUi()
             return
 
         data = cfg.yaml.load(setting)
@@ -274,7 +271,6 @@ class MirrorTeamCombination(QFrame):
             duration=500,
             parent=self.parent().parent()
         )
-        bar.retranslateUi()
 
     def remark_name_changed(self, text):
         cfg.set_value(f"team{self.team_number}_remark_name", text)

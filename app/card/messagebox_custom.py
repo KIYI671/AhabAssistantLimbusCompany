@@ -1,6 +1,6 @@
 import datetime
 
-from PyQt5.QtCore import Qt, QUrl, QDate
+from PyQt5.QtCore import Qt, QUrl, QDate, QCoreApplication
 from PyQt5.QtGui import QDesktopServices, QIcon, QWheelEvent, QKeyEvent
 from PyQt5.QtWidgets import QSizePolicy
 from qfluentwidgets import MessageBox, BodyLabel, FluentStyleSheet, \
@@ -153,14 +153,10 @@ class BaseInfoBar(InfoBar):
                  isClosable=True, duration=1000, position=InfoBarPosition.TOP_RIGHT, parent=None):
         super().__init__(icon, title, content, orient, isClosable, duration, position, parent)
 
-    def retranslateUi(self):
-        self.titleLabel.setText(self.tr(self.title))
-        self.contentLabel.setText(self.tr(self.content))
-
     @classmethod
     def new(cls, icon, title, content, orient=Qt.Horizontal, isClosable=True, duration=1000,
             position=InfoBarPosition.TOP_RIGHT, parent=None):
-        w = BaseInfoBar(icon, title, content, orient,
+        w = BaseInfoBar(icon, QCoreApplication.translate("BaseInfoBar", title), QCoreApplication.translate("BaseInfoBar", content), orient,
                         isClosable, duration, position, parent)
         w.show()
         return w

@@ -135,3 +135,12 @@ class settingsTypeError(Exception):
 
     def __str__(self):
         return self.errorInfo
+    
+# 输入类属性错误 该属性不存在或被废弃
+class InputAttributeError(Exception):
+    def __init__(self, ErrorInfo):
+        super().__init__(ErrorInfo)
+        self.errorInfo = ErrorInfo
+
+    def __str__(self):
+        return self.errorInfo

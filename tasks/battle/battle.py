@@ -1,6 +1,5 @@
 from time import sleep
 
-import pyautogui
 
 from module.automation import auto
 from module.config import cfg
@@ -154,9 +153,9 @@ class Battle:
                             avoid_skill_3 = False
                             msg = "使用避免三技能的链接战失败，本场战斗改为P+Enter"
                     else:
-                        pyautogui.press('p')
+                        auto.key_press('p')
                         sleep(0.5)
-                        pyautogui.press('enter')
+                        auto.key_press('enter')
                         msg = f"使用P+Enter开始战斗"
                     chance = INIT_CHANCE
                     log.DEBUG(msg)
@@ -178,9 +177,9 @@ class Battle:
                             avoid_skill_3 = False
                             msg = "使用避免三技能的链接战失败，本场战斗改为P+Enter"
                     else:
-                        pyautogui.press('p')
+                        auto.key_press('p')
                         sleep(0.5)
-                        pyautogui.press('enter')
+                        auto.key_press('enter')
                         msg = f"使用P+Enter开始战斗"
                     chance = INIT_CHANCE
                     log.DEBUG(msg)

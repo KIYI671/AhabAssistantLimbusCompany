@@ -44,10 +44,11 @@ class Screen(metaclass=SingletonMeta):
         """设置窗口大小与位置"""
         def _set_win():
             # 如果窗口最小化或不可见，先将其恢复
-            if self.handle.isMinimized or not self.handle.isActive:
+            if self.handle.isMinimized or (not self.handle.isActive and not cfg.background_click):
                 self.handle.restore()
             # 将窗口设为活动窗口
-            win32gui.SetForegroundWindow(self.handle._hWnd)
+            if not cfg.background_click:
+                win32gui.SetForegroundWindow(self.handle._hWnd)
             self.set_win_size = cfg.set_win_size
             self.set_win_position = cfg.set_win_position
             if cfg.set_windows:
@@ -79,7 +80,8 @@ class Screen(metaclass=SingletonMeta):
         windll.user32.SetProcessDPIAware()
 
         # 设置窗口始终置顶
-        win32gui.SetWindowPos(hwnd, win32con.HWND_TOPMOST, 0, 0, 0, 0, win32con.SWP_NOMOVE | win32con.SWP_NOSIZE)
+        if not cfg.background_click:
+            win32gui.SetWindowPos(hwnd, win32con.HWND_TOPMOST, 0, 0, 0, 0, win32con.SWP_NOMOVE | win32con.SWP_NOSIZE)
         # 获取窗口的当前样式属性值
         style = win32gui.GetWindowLong(hwnd, win32con.GWL_STYLE)
         # 移除窗口的标题栏

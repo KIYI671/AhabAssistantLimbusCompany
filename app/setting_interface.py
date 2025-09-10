@@ -70,6 +70,14 @@ class SettingInterface(ScrollArea):
             QT_TRANSLATE_NOOP("PushSettingCardChance", "第一次运行请手动设定，之后将自动修改"),
             "hard_mirror_chance"
         )
+        self.background_mode_card = SwitchSettingCard(
+            FIF.CONNECT,
+            QT_TRANSLATE_NOOP("SwitchSettingCard", '后台运行模式'),
+            QT_TRANSLATE_NOOP('SwitchSettingCard',
+                              '该模式下游戏不强制置顶, 但是<font color=red>游戏不能处于最小化状态!!</font>'),
+            "background_click",
+            parent=self.game_setting_group
+        )
 
         self.game_path_group = BaseSettingCardGroup(
             QT_TRANSLATE_NOOP("BaseSettingCardGroup", "启动游戏"),
@@ -201,6 +209,7 @@ class SettingInterface(ScrollArea):
         self.game_setting_group.addSettingCard(self.auto_hard_mirror_card)
         self.game_setting_group.addSettingCard(self.last_auto_hard_mirror_card)
         self.game_setting_group.addSettingCard(self.hard_mirror_chance_card)
+        self.game_setting_group.addSettingCard(self.background_mode_card)
 
         self.game_path_group.addSettingCard(self.game_path_card)
 
@@ -245,6 +254,7 @@ class SettingInterface(ScrollArea):
 
         self.zoom_card.valueChanged.connect(self.__onZoomCardValueChanged)
         self.auto_lang_card.switchButton.checkedChanged.connect(self.__onAutoLangCardChecked)
+        self.background_mode_card.switchButton.checkedChanged.connect(self.__onZoomCardValueChanged)
 
         self.github_card.clicked.connect(self.__openUrl("https://github.com/KIYI671/AhabAssistantLimbusCompany"))
         self.qq_group_card.clicked.connect(self.__openUrl("https://qm.qq.com/q/SdgSRPrssg"))
@@ -272,7 +282,6 @@ class SettingInterface(ScrollArea):
             duration=5000,
             parent=self
         )
-        bar.retranslateUi()
 
     def __onAutoLangCardChecked(self, Checked):
         bar = BaseInfoBar.success(
@@ -284,7 +293,6 @@ class SettingInterface(ScrollArea):
             duration=5000,
             parent=self
         )
-        bar.retranslateUi()
         if Checked:
             cfg.set_value("language_in_game", "-")
         else:
@@ -299,6 +307,7 @@ class SettingInterface(ScrollArea):
         self.auto_hard_mirror_card.retranslateUi()
         self.last_auto_hard_mirror_card.retranslateUi()
         self.hard_mirror_chance_card.retranslateUi()
+        self.background_mode_card.retranslateUi()
         self.game_path_card.retranslateUi()
         self.game_path_group.retranslateUi()
         self.personal_group.retranslateUi()

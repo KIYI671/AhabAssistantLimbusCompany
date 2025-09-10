@@ -3,6 +3,7 @@ from time import sleep
 
 import cv2
 
+from module.my_error.my_error import InputAttributeError
 from module.automation import auto
 from module.config import cfg
 from module.logger import log
@@ -171,7 +172,8 @@ def search_road_default_distance():
 def search_road_farthest_distance():
     scale = cfg.set_win_size / 1440
     auto.mouse_click_blank()
-    auto.mouse_scroll()
+    if not auto.mouse_scroll():
+        raise InputAttributeError("后台输入不支持滚轮操作!")
     while auto.take_screenshot() is None:
         continue
     if retry() is False:
