@@ -3,7 +3,6 @@ from time import sleep
 
 import cv2
 import numpy as np
-import pyautogui
 
 from module.automation import auto
 from module.config import cfg
@@ -660,7 +659,7 @@ class Mirror:
                     return True
             log.DEBUG("未能构建路线图，尝试使用最近节点法重新寻路")
         except Exception as e:
-            log.ERROR(f"寻路出错:{e}")
+            log.DEBUG(f"使用onnx模型寻路出错:{e}")
         finally:
             auto.mouse_to_blank()
         try:
