@@ -94,15 +94,19 @@ def script_task() -> None | int:
     init_game()
 
     # 自动更改语言, 如果不支持则直接退出
-    if cfg.experimental_auto_lang:
-        ret = auto_switch_language_in_game(screen.handle._hWnd)
-        if ret == 2:
-            log.INFO("请切换游戏内语言并重启游戏后再试")
-            return
-    else:
-        if cfg.language_in_game == "-":
-            log.WARNING("自动切换语言已关闭但是并未设置语言! 请手动设置!")
-            return
+    try:
+        if cfg.experimental_auto_lang:
+            ret = auto_switch_language_in_game(screen.handle._hWnd)
+            if ret == 2:
+                log.INFO(f"自动切换语言失败，使用英语尝试")
+                cfg.set_value("language_in_game", "en")
+        else:
+            if cfg.language_in_game == "-":
+                log.WARNING("自动切换语言已关闭但是并未设置语言! 即将使用英语尝试!")
+                cfg.set_value("language_in_game", "en")
+    except Exception as e:
+        log.ERROR(f"自动切换语言出错: {e}，使用英语尝试")
+        cfg.set_value("language_in_game", "en")
 
     if cfg.language_in_game == "zh_cn":
         pic_path.insert(0, "zh_cn")
