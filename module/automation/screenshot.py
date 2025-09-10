@@ -196,3 +196,25 @@ class ScreenShot:
             return pil_image
         except Exception as e:
             log.ERROR(f"后台截图报错: {e}")
+
+    @staticmethod
+    def screenshot_benchmark(test_time:int = 10)-> None:
+        """
+        截图性能测试
+        Args:
+            test_time (int): 测试次数
+        Returns:
+            float: 平均每次截图耗时（毫秒）
+        """
+        import time
+
+        try:
+            start_time = time.time()
+            for i in range(test_time):
+                ScreenShot.take_screenshot(gray=False)
+            end_time = time.time()
+            avg_time = (end_time - start_time) / test_time * 1000  # 转为毫秒
+            log.INFO(f"截图性能测试: {test_time}次截图平均耗时 {avg_time:.2f} ms")
+        except Exception as e:
+            log.INFO("截图性能测试失败")
+            log.DEBUG(f"截图性能测试报错: {e}")
