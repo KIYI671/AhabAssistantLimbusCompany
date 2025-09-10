@@ -2,15 +2,13 @@ import random
 from time import sleep, time
 
 import pyautogui
+import win32api
+import win32con
+import win32gui
 
 from module.config import cfg
 from utils.singletonmeta import SingletonMeta
-
 from ..game_and_screen import screen
-import win32api
-import win32gui
-import win32con
-
 
 key_list = {
     'a': 0x41, 'b': 0x42, 'c': 0x43, 'd': 0x44, 'e': 0x45,
@@ -140,7 +138,7 @@ class Input(metaclass=SingletonMeta):
         if move_back and current_mouse_position:
             self.mouse_move(current_mouse_position)
 
-    def mouse_scroll(self, direction:int=-3) -> bool:
+    def mouse_scroll(self, direction: int = -3) -> bool:
         """
         进行鼠标滚动操作
         Args:
@@ -229,11 +227,8 @@ class Input(metaclass=SingletonMeta):
             pyautogui.moveTo(pos[0], pos[1], duration=drag_time)
         pyautogui.mouseUp()
 
-
     def key_press(self, key):
         return pyautogui.press(key)
-
-
 
 
 class BackgroundInput(Input, metaclass=SingletonMeta):
@@ -259,10 +254,10 @@ class BackgroundInput(Input, metaclass=SingletonMeta):
         self.logger.DEBUG(msg)
         for i in range(times):
             self.set_focus()
-            self.set_mouse_pos(x,y)
-            self.mouse_down(x,y)
+            self.set_mouse_pos(x, y)
+            self.mouse_down(x, y)
             sleep(0.01)
-            self.mouse_up(x,y)
+            self.mouse_up(x, y)
             # 多次点击执行很快所以暂停放到循环外
 
         if move_back and current_mouse_position:
@@ -286,9 +281,9 @@ class BackgroundInput(Input, metaclass=SingletonMeta):
         scale = cfg.set_win_size / 1080
         self.set_focus()
         pyautogui.moveTo(x, y)
-        self.mouse_down(x,y)
+        self.mouse_down(x, y)
         pyautogui.moveTo(x, y + int(300 * scale), duration=0.4)
-        self.mouse_up(x,y)
+        self.mouse_up(x, y)
 
         if move_back and current_mouse_position:
             self.mouse_move(current_mouse_position)
@@ -311,18 +306,18 @@ class BackgroundInput(Input, metaclass=SingletonMeta):
 
         self.set_focus()
         pyautogui.moveTo(x, y)
-        self.mouse_down(x,y)
+        self.mouse_down(x, y)
         pyautogui.moveTo(x + dx, y + dy, duration=drag_time)
         if drag_time * 0.3 > 0.5:
             sleep(drag_time * 0.3)
         else:
             sleep(0.5)
-        self.mouse_up(x,y)
+        self.mouse_up(x, y)
 
         if move_back and current_mouse_position:
             self.mouse_move(current_mouse_position)
 
-    def mouse_scroll(self, direction:int=-3) -> bool:
+    def mouse_scroll(self, direction: int = -3) -> bool:
         """
         不支持的方法\n
         进行鼠标滚动操作
@@ -333,6 +328,7 @@ class BackgroundInput(Input, metaclass=SingletonMeta):
         """
         # 不支持的方法
         return False
+
     def mouse_click_blank(self, coordinate=(1, 1), times=1, move_back=False) -> bool:
         """在空白位置点击鼠标
         Args:
@@ -351,17 +347,16 @@ class BackgroundInput(Input, metaclass=SingletonMeta):
         y = coordinate[1] + random.randint(0, 10)
         for i in range(times):
             self.set_focus()
-            self.set_mouse_pos(x,y)
-            self.mouse_down(x,y)
+            self.set_mouse_pos(x, y)
+            self.mouse_down(x, y)
             sleep(0.01)
-            self.mouse_up(x,y)
+            self.mouse_up(x, y)
 
         if move_back and current_mouse_position:
             self.mouse_move(current_mouse_position)
 
         self.wait_pause()
         return True
-
 
     def mouse_drag_link(self, position: list, drag_time=0.1) -> None:
         """鼠标从指定位置拖动到指定位置
@@ -378,7 +373,6 @@ class BackgroundInput(Input, metaclass=SingletonMeta):
             pyautogui.moveTo(pos[0], pos[1], duration=drag_time)
         self.mouse_up(position[-1][-1], position[-1][-1])
 
-
     def set_focus(self):
         """将游戏窗口设置为输入焦点以让 Unity 接受输入事件
         """
@@ -392,10 +386,10 @@ class BackgroundInput(Input, metaclass=SingletonMeta):
 
             # 设置窗口的输入状态
             win32gui.EnableWindow(hwnd, True)
-            
+
             # 发送激活消息（但不改变Z序）
             win32gui.SendMessage(hwnd, win32con.WM_ACTIVATE, win32con.WA_ACTIVE, 0)
-            
+
             # 设置焦点状态
             win32gui.SendMessage(hwnd, win32con.WM_SETFOCUS, 0, 0)
         else:
@@ -464,5 +458,3 @@ class BackgroundInput(Input, metaclass=SingletonMeta):
         self.key_down(key)
         sleep(0.1)
         self.key_up(key)
-
-
