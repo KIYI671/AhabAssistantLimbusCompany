@@ -256,7 +256,6 @@ class BackgroundInput(Input, metaclass=SingletonMeta):
             self.set_focus()
             self.set_mouse_pos(x, y)
             self.mouse_down(x, y)
-            sleep(0.01)
             self.mouse_up(x, y)
             # 多次点击执行很快所以暂停放到循环外
 
@@ -349,7 +348,6 @@ class BackgroundInput(Input, metaclass=SingletonMeta):
             self.set_focus()
             self.set_mouse_pos(x, y)
             self.mouse_down(x, y)
-            sleep(0.01)
             self.mouse_up(x, y)
 
         if move_back and current_mouse_position:
@@ -456,5 +454,4 @@ class BackgroundInput(Input, metaclass=SingletonMeta):
         """
         self.set_focus()
         self.key_down(key)
-        sleep(0.1)
         self.key_up(key)
