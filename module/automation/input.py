@@ -113,7 +113,7 @@ class Input(metaclass=SingletonMeta):
         msg = f"选择卡包:({x},{y})"
         self.logger.DEBUG(msg)
 
-    def mouse_drag(self, x, y, drag_time=0.1, dx=0, dy=0, move_back=False) -> None:
+    def mouse_drag(self, x, y, drag_time=0.1, dx=0, dy=0, move_back=True) -> None:
         """鼠标从指定位置拖动到另一个位置
         Args:
             x (int): 起始x坐标
@@ -179,7 +179,7 @@ class Input(metaclass=SingletonMeta):
         self.wait_pause()
         return True
 
-    def mouse_to_blank(self, coordinate=(1, 1), move_back=False) -> None:
+    def mouse_to_blank(self, coordinate=(1, 1), move_back=True) -> None: # background未重载
         """鼠标移动到空白位置，避免遮挡
         Args:
             coordinate (tuple): 坐标元组 (x, y)
@@ -236,7 +236,7 @@ class BackgroundInput(Input, metaclass=SingletonMeta):
     \n 除了不支持滚轮事件, 其余同 `Input` 类
     """
 
-    def mouse_click(self, x, y, times=1, move_back=False) -> bool:
+    def mouse_click(self, x, y, times=1, move_back=True) -> bool:
         """在指定坐标上执行点击操作
 
         Args:
@@ -291,7 +291,7 @@ class BackgroundInput(Input, metaclass=SingletonMeta):
         msg = f"选择卡包:({x},{y})"
         self.logger.DEBUG(msg)
 
-    def mouse_drag(self, x, y, drag_time=0.1, dx=0, dy=0, move_back=False) -> None:
+    def mouse_drag(self, x, y, drag_time=0.1, dx=0, dy=0, move_back=True) -> None:
         """鼠标从指定位置拖动到另一个位置
         Args:
             x (int): 起始x坐标
@@ -329,7 +329,7 @@ class BackgroundInput(Input, metaclass=SingletonMeta):
         # 不支持的方法
         return False
 
-    def mouse_click_blank(self, coordinate=(1, 1), times=1, move_back=False) -> bool:
+    def mouse_click_blank(self, coordinate=(1, 1), times=1, move_back=True) -> bool:
         """在空白位置点击鼠标
         Args:
             coordinate (tuple): 坐标元组 (x, y)
