@@ -119,18 +119,18 @@ class LabelWithComboBox(QFrame):
         self.items = items
 
         if vbox:
-            self.layout = QVBoxLayout(self)
+            self.layout_ = QVBoxLayout(self)
         else:
-            self.layout = QHBoxLayout(self)
-        self.layout.setContentsMargins(0, 0, 0, 0)
+            self.layout_ = QHBoxLayout(self)
+        self.layout_.setContentsMargins(0, 0, 0, 0)
         self.label = BaseLabel(label_text)
         self.combo_box = BaseComboBox(config_name)
         self.combo_box.add_items(items)
-        self.layout.addWidget(self.label)
+        self.layout_.addWidget(self.label)
         if vbox is not True:
-            self.layout.addSpacing(10)
-        self.layout.addWidget(self.combo_box, Qt.AlignLeft)
-        self.layout.setAlignment(Qt.AlignCenter)
+            self.layout_.addSpacing(10)
+        self.layout_.addWidget(self.combo_box, Qt.AlignmentFlag.AlignLeft)
+        self.layout_.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.setMaximumHeight(80)
         self.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Fixed)
 
