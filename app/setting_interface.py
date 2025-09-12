@@ -78,7 +78,13 @@ class SettingInterface(ScrollArea):
             "background_click",
             parent=self.game_setting_group
         )
-
+        self.screenshot_benchmark_card = BasePrimaryPushSettingCard(
+            QT_TRANSLATE_NOOP("BasePrimaryPushSettingCard", '截图测试'),
+            FIF.CAMERA,
+            QT_TRANSLATE_NOOP("BasePrimaryPushSettingCard", '截图性能测试'),
+            QT_TRANSLATE_NOOP("BasePrimaryPushSettingCard", '测试截图功能的性能, 完成后将在消息栏显示结果'),
+            parent=self.game_setting_group
+        )
         self.game_path_group = BaseSettingCardGroup(
             QT_TRANSLATE_NOOP("BaseSettingCardGroup", "启动游戏"),
             self.scroll_widget
@@ -210,6 +216,7 @@ class SettingInterface(ScrollArea):
         self.game_setting_group.addSettingCard(self.last_auto_hard_mirror_card)
         self.game_setting_group.addSettingCard(self.hard_mirror_chance_card)
         self.game_setting_group.addSettingCard(self.background_mode_card)
+        self.game_setting_group.addSettingCard(self.screenshot_benchmark_card)
 
         self.game_path_group.addSettingCard(self.game_path_card)
 
@@ -251,6 +258,7 @@ class SettingInterface(ScrollArea):
     def __connect_signal(self):
         self.game_path_card.clicked.connect(self.__onGamePathCardClicked)
         self.open_logs_card.clicked.connect(self.__onOpenLogsCardClicked)
+        self.screenshot_benchmark_card.clicked.connect(self.__onScreenshotBenchmarkCardClicked)
 
         self.zoom_card.valueChanged.connect(self.__onZoomCardValueChanged)
         self.auto_lang_card.switchButton.checkedChanged.connect(self.__onAutoLangCardChecked)
@@ -271,6 +279,11 @@ class SettingInterface(ScrollArea):
     def __onOpenLogsCardClicked(self):
         import os
         os.startfile(os.path.abspath("./logs"))
+
+    def __onScreenshotBenchmarkCardClicked(self):
+        from module.automation import ScreenShot
+        ScreenShot.screenshot_benchmark()
+        
 
     def __onZoomCardValueChanged(self):
         bar = BaseInfoBar.success(
@@ -308,6 +321,7 @@ class SettingInterface(ScrollArea):
         self.last_auto_hard_mirror_card.retranslateUi()
         self.hard_mirror_chance_card.retranslateUi()
         self.background_mode_card.retranslateUi()
+        self.screenshot_benchmark_card.retranslateUi()
         self.game_path_card.retranslateUi()
         self.game_path_group.retranslateUi()
         self.personal_group.retranslateUi()

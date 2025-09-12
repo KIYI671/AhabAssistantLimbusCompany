@@ -101,6 +101,7 @@ def search_road_default_distance():
                    [500 * scale, 450 * scale],
                    [500 * scale, -400 * scale]]
 
+    auto.mouse_to_blank()
     while auto.take_screenshot() is None:
         continue
     if retry() is False:
