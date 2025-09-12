@@ -53,7 +53,7 @@ def thread_luxcavation():
             continue
         if auto.find_element("battle/teams_assets.png"):
             break
-        if auto.find_element("luxcavation/thread_lv.png", threshold=0.9):
+        if auto.find_element("luxcavation/thread_lv.png", threshold=0.85):
             if level := auto.find_element("luxcavation/thread_lv.png", find_type="image_with_multiple_targets"):
                 level = sorted(level, key=lambda y: y[1], reverse=True)
                 for lv in level:
