@@ -1,8 +1,8 @@
 import os
 
-from PyQt5.QtCore import Qt, QUrl, QCoreApplication
-from PyQt5.QtGui import QDesktopServices
-from PyQt5.QtWidgets import QWidget, QFrame, QHBoxLayout, QTextBrowser, QVBoxLayout
+from PySide6.QtCore import Qt, QUrl, QCoreApplication
+from PySide6.QtGui import QDesktopServices
+from PySide6.QtWidgets import QWidget, QFrame, QHBoxLayout, QTextBrowser, QVBoxLayout
 from markdown_it import MarkdownIt
 from mdit_py_plugins.anchors import anchors_plugin
 from qfluentwidgets import FluentIcon as FIF

@@ -9,8 +9,8 @@ requires-python = ">=3.12"
 version = "1.0.9"
 
 dependencies = [
-    "PyQt5",
-    "PyQt-Fluent-Widgets>=1.8.6,<2.0.0",
+    "pyside6>=6.9.2",
+    "pyside6-fluent-widgets>=1.8.7",
     "pyuac~=0.0.3",
     "pywin32",
     "PyAutoGUI",
@@ -40,6 +40,3 @@ Issues = "https://github.com/KIYI671/AhabAssistantLimbusCompany/issues"
 [tool.uv]
 managed = true
 dev-dependencies = ["pyinstaller"]
-constraint-dependencies = [
-    "pyqt5-qt5 <=5.15.2",
-] # version>5.15.3 doesn't have windows wheel

@@ -1,7 +1,7 @@
 import inspect
 
-from PyQt5.QtCore import QTranslator, QLocale, QLibraryInfo, QT_TRANSLATE_NOOP
-from PyQt5.QtWidgets import QApplication
+from PySide6.QtCore import QTranslator, QLocale, QLibraryInfo, QT_TRANSLATE_NOOP
+from PySide6.QtWidgets import QApplication
 
 from module.config import cfg
 from module.logger import log

@@ -2,9 +2,9 @@ import base64
 import datetime
 
 import pyperclip
-from PyQt5.QtCore import QUrl
-from PyQt5.QtGui import QPixmap, QDesktopServices
-from PyQt5.QtWidgets import QPushButton
+from PySide6.QtCore import QUrl, Signal
+from PySide6.QtGui import QPixmap, QDesktopServices
+from PySide6.QtWidgets import QPushButton
 from qfluentwidgets import LineEdit, SettingCard, \
     IndicatorPosition, SwitchButton, SettingCardGroup, \
     PushSettingCard, PrimaryPushSettingCard, InfoBarPosition
@@ -382,7 +382,7 @@ class SinnerSelect(QFrame):
 
 
 class ComboBoxSettingCard(SettingCard):
-    valueChanged = pyqtSignal()
+    valueChanged = Signal()
 
     def __init__(self, config_name: str, icon: Union[str, QIcon, FluentIconBase], title, content=None, texts=None,
                  parent=None):
@@ -503,7 +503,7 @@ class PushSettingCardMirrorchyan(SettingCard):
 class SwitchSettingCard(SettingCard):
     """ Setting card with switch button """
 
-    checkedChanged = pyqtSignal(bool)
+    checkedChanged = Signal(bool)
 
     def __init__(self, icon: Union[str, QIcon, FluentIconBase], title, content=None, config_name: str = None,
                  parent=None):

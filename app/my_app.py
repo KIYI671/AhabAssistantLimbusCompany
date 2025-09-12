@@ -4,9 +4,9 @@ import re
 import subprocess
 from enum import Enum
 
-from PyQt5.QtCore import Qt, QLocale
-from PyQt5.QtGui import QIcon
-from PyQt5.QtWidgets import QApplication, QHBoxLayout, QStackedWidget, QVBoxLayout, QLabel, QWidget
+from PySide6.QtCore import Qt, QLocale
+from PySide6.QtGui import QIcon
+from PySide6.QtWidgets import QApplication, QHBoxLayout, QStackedWidget, QVBoxLayout, QLabel, QWidget
 from qfluentwidgets import Pivot, setThemeColor, ProgressRing
 from qfluentwidgets.components.widgets.frameless_window import FramelessWindow
 from qframelesswindow import StandardTitleBar
@@ -20,6 +20,7 @@ from app.setting_interface import SettingInterface
 from app.team_setting_card import TeamSettingCard
 from app.tools_interface import ToolsInterface
 from module.config import cfg
+from module.game_and_screen import screen
 from module.logger import log
 from module.update.check_update import check_update
 
@@ -59,8 +60,9 @@ class MainWindow(FramelessWindow):
         self.progress_ring.hide()
 
         self.resize(1080, 600)
-        desktop = QApplication.desktop().availableGeometry()
-        w, h = desktop.width(), desktop.height()
+        screen = QApplication.primaryScreen()
+        geometry = screen.availableGeometry() if screen else self.geometry()
+        w, h = geometry.width(), geometry.height()
         self.move(w // 2 - self.width() // 2, h // 2 - self.height() // 2)
 
         self.pivot = Pivot(self)
@@ -253,7 +255,7 @@ class MainWindow(FramelessWindow):
             self.tr("下载已经完成，是否开始更新"),
             self.window()
         )
-        if messages_box.exec_():
+        if messages_box.exec():
             source_file = os.path.abspath("./AALC Updater.exe")
             assert_name = file_name
             subprocess.Popen([source_file, assert_name], creationflags=subprocess.DETACHED_PROCESS)

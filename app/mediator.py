@@ -1,21 +1,21 @@
-from PyQt5.QtCore import QObject, pyqtSignal
+from PySide6.QtCore import QObject, Signal
 
 
 class Mediator(QObject):
-    switch_page = pyqtSignal(str)
-    switch_team_setting = pyqtSignal(str)
-    delete_team_setting = pyqtSignal(str)
-    team_setting = pyqtSignal(dict)
-    close_setting = pyqtSignal()
-    refresh_teams_order = pyqtSignal()
-    sinner_be_selected = pyqtSignal()
-    scroll_log_show = pyqtSignal(str)
-    link_start = pyqtSignal()
-    save_warning = pyqtSignal()
-    tasks_warning = pyqtSignal()
-    update_progress = pyqtSignal(int)
-    download_complete = pyqtSignal(str)
-    warning = pyqtSignal(str)
+    switch_page = Signal(str)
+    switch_team_setting = Signal(str)
+    delete_team_setting = Signal(str)
+    team_setting = Signal(dict)
+    close_setting = Signal()
+    refresh_teams_order = Signal()
+    sinner_be_selected = Signal()
+    scroll_log_show = Signal(str)
+    link_start = Signal()
+    save_warning = Signal()
+    tasks_warning = Signal()
+    update_progress = Signal(int)
+    download_complete = Signal(str)
+    warning = Signal(str)
 
     # 单例实例（类变量）
     _instance = None

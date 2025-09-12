@@ -1,8 +1,8 @@
 import sys
 
-from PyQt5 import QtWidgets
-from PyQt5.QtCore import QFile, QTextStream, QTimer
-from PyQt5.QtWidgets import QApplication
+from PySide6 import QtWidgets
+from PySide6.QtCore import QFile, QTextStream, QTimer
+from PySide6.QtWidgets import QApplication
 from pynput import keyboard
 from qfluentwidgets import TextEdit, TransparentToolButton
 from qfluentwidgets.window.stacked_widget import StackedWidget
@@ -530,4 +530,4 @@ if __name__ == '__main__':
     app = QApplication(sys.argv)
     w = FarmingInterface()
     w.show()
-    app.exec_()
+    app.exec()

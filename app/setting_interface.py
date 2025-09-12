@@ -1,6 +1,6 @@
-from PyQt5.QtCore import QUrl, QT_TRANSLATE_NOOP, Qt
-from PyQt5.QtGui import QDesktopServices
-from PyQt5.QtWidgets import QWidget, QFileDialog
+from PySide6.QtCore import QUrl, QT_TRANSLATE_NOOP, Qt
+from PySide6.QtGui import QDesktopServices
+from PySide6.QtWidgets import QWidget, QFileDialog
 from qfluentwidgets import FluentIcon as FIF, InfoBarPosition
 from qfluentwidgets import ScrollArea, ExpandLayout
 

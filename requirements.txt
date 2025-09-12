@@ -25,11 +25,9 @@ PyGetWindow==0.0.9
 PyMsgBox==1.0.9
 pynput==1.7.7
 pyperclip==1.9.0
-PyQt-Fluent-Widgets==1.8.6
-PyQt5==5.15.11
-PyQt5-Frameless-Window==0.4.3
-PyQt5-Qt5==5.15.2
-PyQt5_sip==12.16.0
+PySide6>=6.9.2
+PySide6-Fluent-Widgets>=1.8.7
+pysidesix-frameless-window==0.7.3
 PyRect==0.2.0
 PyScreeze==1.0.1
 python-json-logger==0.1.10

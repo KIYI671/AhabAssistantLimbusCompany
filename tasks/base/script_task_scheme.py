@@ -7,7 +7,7 @@ from time import sleep
 from traceback import format_exception
 
 import win32process
-from PyQt5.QtCore import QThread, pyqtSignal, QMutex
+from PySide6.QtCore import QThread, Signal, QMutex
 from playsound3 import playsound
 
 from module.ALI import auto_switch_language_in_game, AutoSwitchCon
@@ -260,8 +260,8 @@ def script_task() -> None | int:
 
 class my_script_task(QThread):
     # 定义信号
-    finished_signal = pyqtSignal()
-    kill_signal = pyqtSignal()
+    finished_signal = Signal()
+    kill_signal = Signal()
 
     def __init__(self):
         # 初始化，构造函数

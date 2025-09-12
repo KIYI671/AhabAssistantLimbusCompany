@@ -6,7 +6,7 @@ from enum import Enum
 from threading import Thread
 
 import requests  # 导入requests模块，用于发送HTTP请求
-from PyQt5.QtCore import QThread, pyqtSignal, Qt, QT_TRANSLATE_NOOP
+from PySide6.QtCore import QThread, Signal, Qt, QT_TRANSLATE_NOOP
 from markdown_it import MarkdownIt
 from packaging.version import parse
 from qfluentwidgets import InfoBarPosition
@@ -38,10 +38,10 @@ class UpdateStatus(Enum):
 class UpdateThread(QThread):
     """
     更新线程类，用于在后台检查和处理软件更新。
-    该类继承自 QThread，使用 PyQt5 的信号机制来通知 GUI 线程更新状态。
+    该类继承自 QThread，使用 Qt 的信号机制来通知 GUI 线程更新状态。
     """
     # 定义更新信号，用于通知主线程更新状态
-    updateSignal = pyqtSignal(UpdateStatus)
+    updateSignal = Signal(UpdateStatus)
 
     def __init__(self, timeout, flag):
         """
@@ -284,7 +284,7 @@ def check_update(self, timeout=5, flag=False):
                 self.update_thread.content,
                 self.window()
             )
-            if messages_box.exec_():
+            if messages_box.exec():
                 # 如果用户确认更新，则从指定的URL下载更新资源
                 assets_url = self.update_thread.get_assets_url()
                 if assets_url:

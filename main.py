@@ -22,8 +22,8 @@ if not pyuac.isUserAdmin():
 from win32api import GetLastError
 from win32event import CreateMutex
 
-from PyQt5.QtCore import Qt, QTimer
-from PyQt5.QtWidgets import QApplication
+from PySide6.QtCore import Qt, QTimer
+from PySide6.QtWidgets import QApplication
 
 # 启用 DPI 缩放
 QApplication.setHighDpiScaleFactorRoundingPolicy(Qt.HighDpiScaleFactorRoundingPolicy.PassThrough)
@@ -54,4 +54,4 @@ if __name__ == "__main__":
 
     QTimer.singleShot(50, lambda: lang_manager.set_language(lang))
 
-    sys.exit(app.exec_())
+    sys.exit(app.exec())
