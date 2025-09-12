@@ -1,5 +1,4 @@
 import os
-import os
 import platform
 import random
 from sys import exc_info

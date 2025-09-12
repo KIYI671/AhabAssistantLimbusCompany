@@ -120,7 +120,7 @@ class LanguageManager(metaclass=SingletonMeta):
 
         # 加载Qt基础翻译
         self.qt_translator = QTranslator()
-        qt_path = QLibraryInfo.location(QLibraryInfo.TranslationsPath)
+        qt_path = QLibraryInfo.location(QLibraryInfo.LibraryPath.TranslationsPath)
         if self.qt_translator.load(f"qt_{lang_code}", qt_path):
             self.app.installTranslator(self.qt_translator)  # type: ignore
 

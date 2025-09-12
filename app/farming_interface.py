@@ -1,8 +1,7 @@
 import sys
 
-from PySide6 import QtWidgets
-from PySide6.QtCore import QFile, QTextStream, QTimer
-from PySide6.QtWidgets import QApplication
+from PySide6.QtCore import Qt, QFile, QTimer
+from PySide6.QtWidgets import QApplication, QTextEdit
 from pynput import keyboard
 from qfluentwidgets import TextEdit, TransparentToolButton
 from qfluentwidgets.window.stacked_widget import StackedWidget
@@ -95,7 +94,6 @@ class FarmingInterfaceLeft(QWidget):
         self.setting_box.setLayout(self.setting_layout)
 
     def __init_card(self):
-
         self.set_windows = CheckBoxWithButton(
             "set_windows",
             QT_TRANSLATE_NOOP("CheckBoxWithButton", "窗口设置"),
@@ -157,7 +155,7 @@ class FarmingInterfaceLeft(QWidget):
         self.link_start_button.clicked.connect(self.start_and_stop_tasks)
         self.link_start_button.button.setMinimumSize(130, 70)
         scale_factor = (
-            QtWidgets.QApplication.primaryScreen().logicalDotsPerInch() / 96
+            QApplication.primaryScreen().logicalDotsPerInch() / 96
         )  # Windows 标准 DPI 是 96
         font_size = min(14, int(14 / scale_factor))
         # 创建字体对象并设置大小
@@ -452,9 +450,7 @@ class FarmingInterfaceRight(QWidget):
 
     def __init_card(self):
         self.scroll_log_edit = TextEdit()
-        self.scroll_log_edit.setAutoFormatting(
-            QtWidgets.QTextEdit.AutoFormattingFlag.AutoAll
-        )
+        self.scroll_log_edit.setAutoFormatting(QTextEdit.AutoFormattingFlag.AutoAll)
         self.scroll_log_edit.setReadOnly(True)
 
     def __init_layout(self):
@@ -510,7 +506,7 @@ class FarmingInterfaceRight(QWidget):
             return
 
         # 清空文件内容
-        file.write("")
+        file.write(b"")
 
         # 关闭文件
         file.close()

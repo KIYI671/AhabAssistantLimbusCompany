@@ -28,9 +28,9 @@ from module.update.check_update import check_update
 class Language(Enum):
     """ Language enumeration """
 
-    CHINESE_SIMPLIFIED = QLocale(QLocale.Chinese, QLocale.China)
-    CHINESE_TRADITIONAL = QLocale(QLocale.Chinese, QLocale.HongKong)
-    ENGLISH = QLocale(QLocale.English)
+    CHINESE_SIMPLIFIED = QLocale(QLocale.Language.Chinese, QLocale.Country.China)
+    CHINESE_TRADITIONAL = QLocale(QLocale.Language.Chinese, QLocale.Country.HongKong)
+    ENGLISH = QLocale(QLocale.Language.English)
     AUTO = QLocale()
 
 

@@ -43,7 +43,7 @@ class TeamSettingCard(QFrame):
         self.main_layout = QVBoxLayout(self)
         self.scroll_general = ScrollArea(self)
         self.scroll_general.setWidgetResizable(True)
-        self.scroll_general.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self.scroll_general.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
 
         self.page_widget = QWidget()
         self.scroll_general.setWidget(self.page_widget)
