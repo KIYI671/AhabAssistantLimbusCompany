@@ -25,10 +25,8 @@ from win32event import CreateMutex
 from PySide6.QtCore import Qt, QTimer
 from PySide6.QtWidgets import QApplication
 
-# 启用 DPI 缩放
+# 禁止Qt自动舍入DPI缩放比例
 QApplication.setHighDpiScaleFactorRoundingPolicy(Qt.HighDpiScaleFactorRoundingPolicy.PassThrough)
-QApplication.setAttribute(Qt.AA_DontCreateNativeWidgetSiblings)
-QApplication.setAttribute(Qt.AA_UseHighDpiPixmaps)
 
 if __name__ == "__main__":
     # 构建互斥锁
