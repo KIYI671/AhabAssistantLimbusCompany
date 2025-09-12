@@ -34,21 +34,13 @@ jobs:
           $filePath = "assets/config/version.txt"
           "${{ inputs.version }}" | Set-Content $filePath
 
-      # 安装 Qt 工具（包含 lrelease）
-      - name: Install Qt
-        uses: jurplel/install-qt-action@v4
-        with:
-          cache: true
-          version: '5.15.*'
-          target: 'desktop'  # 目标平台（桌面端）
-
       # 生成 .qm 翻译文件
       - name: Generate .qm translation file
         run: |
           # 使用 PowerShell 批量处理所有 .ts 文件
           Get-ChildItem -Path .\i18n\*.ts | ForEach-Object {
               $qmPath = ".\i18n\$($_.BaseName).qm"
-              lrelease $_.FullName -qm $qmPath
+              uv run pyside6-lrelease $_.FullName -qm $qmPath
               Write-Host "Generated: $qmPath"
           }
 
