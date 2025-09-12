@@ -10,7 +10,13 @@ from qfluentwidgets.window.stacked_widget import StackedWidget
 from app.base_combination import *
 from app.base_tools import *
 from app.language_manager import LanguageManager
-from app.page_card import PageSetWindows, PageDailyTask, PageLunacyToEnkephalin, PageGetPrize, PageMirror
+from app.page_card import (
+    PageSetWindows,
+    PageDailyTask,
+    PageLunacyToEnkephalin,
+    PageGetPrize,
+    PageMirror,
+)
 from app.team_setting_card import TeamSettingCard
 from module.automation import auto
 from module.game_and_screen import screen
@@ -38,7 +44,7 @@ class FarmingInterface(QWidget):
         self.setViewportMargins(0, 0, 0, 5)
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)"""
 
-        self.setObjectName('settingInterface')
+        self.setObjectName("settingInterface")
         self.hbox_layout_left.addWidget(FarmingInterfaceLeft(self))
         self.hbox_layout_center.addWidget(FarmingInterfaceCenter(self))
         self.hbox_layout_right.addWidget(FarmingInterfaceRight(self))
@@ -94,7 +100,7 @@ class FarmingInterfaceLeft(QWidget):
             "set_windows",
             QT_TRANSLATE_NOOP("CheckBoxWithButton", "窗口设置"),
             None,
-            "set_windows"
+            "set_windows",
         )
         self.set_windows.set_box_enabled(False)
 
@@ -102,45 +108,43 @@ class FarmingInterfaceLeft(QWidget):
             "daily_task",
             QT_TRANSLATE_NOOP("CheckBoxWithButton", "日常任务"),
             None,
-            "daily_task"
+            "daily_task",
         )
 
         self.get_reward = CheckBoxWithButton(
             "get_reward",
             QT_TRANSLATE_NOOP("CheckBoxWithButton", "领取奖励"),
             None,
-            "get_reward"
+            "get_reward",
         )
         self.buy_enkephalin = CheckBoxWithButton(
             "buy_enkephalin",
             QT_TRANSLATE_NOOP("CheckBoxWithButton", "狂气换体"),
             None,
-            "buy_enkephalin"
+            "buy_enkephalin",
         )
         self.mirror = CheckBoxWithButton(
             "mirror",
             QT_TRANSLATE_NOOP("CheckBoxWithButton", "坐牢设置"),
             None,
-            "mirror"
+            "mirror",
         )
         self.resonate_with_Ahab = CheckBoxWithButton(
             "resonate_with_Ahab",
             QT_TRANSLATE_NOOP("CheckBoxWithButton", "亚哈共鸣"),
             None,
-            "resonate_with_Ahab"
+            "resonate_with_Ahab",
         )
 
         self.resonate_with_Ahab.button.setEnabled(False)
 
         self.select_all = NormalTextButton(
-            QT_TRANSLATE_NOOP("NormalTextButton", "全选"),
-            "select_all"
+            QT_TRANSLATE_NOOP("NormalTextButton", "全选"), "select_all"
         )
         self.select_all.clicked.connect(self.select_all_function)
 
         self.clear_all = NormalTextButton(
-            QT_TRANSLATE_NOOP("NormalTextButton", "清空"),
-            "clear_all"
+            QT_TRANSLATE_NOOP("NormalTextButton", "清空"), "clear_all"
         )
         self.clear_all.clicked.connect(self.clear_all_function)
 
@@ -152,7 +156,9 @@ class FarmingInterfaceLeft(QWidget):
         self.link_start_button = NormalTextButton("Link Start!", "link_start", 0)
         self.link_start_button.clicked.connect(self.start_and_stop_tasks)
         self.link_start_button.button.setMinimumSize(130, 70)
-        scale_factor = QtWidgets.QApplication.primaryScreen().logicalDotsPerInch() / 96  # Windows 标准 DPI 是 96
+        scale_factor = (
+            QtWidgets.QApplication.primaryScreen().logicalDotsPerInch() / 96
+        )  # Windows 标准 DPI 是 96
         font_size = min(14, int(14 / scale_factor))
         # 创建字体对象并设置大小
         font = self.link_start_button.button.font()  # 获取当前字体
@@ -204,6 +210,7 @@ class FarmingInterfaceLeft(QWidget):
             # 判断是否启用了自动切换困牢
             if cfg.auto_hard_mirror:
                 from datetime import datetime
+
                 get_timezone()
                 if cfg.last_auto_change == 1715990400:
                     cfg.set_value("last_auto_change", datetime.now().timestamp())
@@ -221,6 +228,7 @@ class FarmingInterfaceLeft(QWidget):
             if teams_be_select != cfg.teams_be_select_num:
                 cfg.set_value("teams_be_select_num", teams_be_select)
                 from utils.utils import check_teams_order
+
                 teams_order = check_teams_order(cfg.teams_order)
                 cfg.set_value("teams_order", teams_order)
                 cfg.flush()
@@ -262,7 +270,12 @@ class FarmingInterfaceLeft(QWidget):
                 mediator.warning.emit(message)
                 return False
 
-        if cfg.daily_task is False and cfg.get_reward is False and cfg.buy_enkephalin is False and cfg.mirror is False:
+        if (
+            cfg.daily_task is False
+            and cfg.get_reward is False
+            and cfg.buy_enkephalin is False
+            and cfg.mirror is False
+        ):
             mediator.tasks_warning.emit()
             return False
 
@@ -394,7 +407,9 @@ class FarmingInterfaceCenter(QWidget):
 
     def __init_setting(self):
         self.setting_page.setCurrentIndex(cfg.get_value("default_page"))
-        list(toggle_button_group.items())[cfg.get_value("default_page")][1].setChecked(True)
+        list(toggle_button_group.items())[cfg.get_value("default_page")][1].setChecked(
+            True
+        )
 
     def switch_to_page(self, target: str):
         try:
@@ -437,7 +452,9 @@ class FarmingInterfaceRight(QWidget):
 
     def __init_card(self):
         self.scroll_log_edit = TextEdit()
-        self.scroll_log_edit.setAutoFormatting(QtWidgets.QTextEdit.AutoAll)
+        self.scroll_log_edit.setAutoFormatting(
+            QtWidgets.QTextEdit.AutoFormattingFlag.AutoAll
+        )
         self.scroll_log_edit.setReadOnly(True)
 
     def __init_layout(self):
@@ -450,52 +467,50 @@ class FarmingInterfaceRight(QWidget):
             self.last_position = 0
 
     def load_log_text(self):
-
-        # 打开 log 文件，使用 UTF-8 编码
-        file = QFile('./logs/myLog.log')
-        if not file.open(QFile.ReadOnly | QFile.Text):
+        log_path = "./logs/myLog.log"
+        file = QFile(log_path)
+        if not file.exists():
+            return
+        if not file.open(QFile.ReadOnly):
             return
 
-        # 使用 QTextStream 读取文件内容，并指定 UTF-8 编码
-        stream = QTextStream(file)
-        stream.setCodec('UTF-8')  # 设置编码为 UTF-8
-
-        # 如果是首次读取，初始化 last_position
-        if not hasattr(self, 'last_position'):
+        if not hasattr(self, "last_position"):
             self.last_position = 0
 
-        # 从上次读取的位置继续读取
+        # 跳到上次读取位置
         file.seek(self.last_position)
-
-        new_content = ""
-        while not stream.atEnd():
-            line = stream.readLine()
-            new_content += line
-            if not stream.atEnd():
-                new_content += '\n'
-
-        # 更新文件读取位置
+        raw = file.readAll()  # QByteArray
         self.last_position = file.pos()
-
-        # 如果有新内容，追加到 QTextEdit 控件
-        if new_content:
-            self.scroll_log_edit.append(new_content)
-
-        # 如果用户滚动到底部，则自动滚动
-        if self.scroll_log_edit.verticalScrollBar().value() == self.scroll_log_edit.verticalScrollBar().maximum():
-            self.scroll_log_edit.moveCursor(self.scroll_log_edit.textCursor().End)
-
-        # 关闭文件
         file.close()
 
+        if not raw:
+            return
+
+        try:
+            new_content = bytes(raw).decode("utf-8", errors="replace")
+        except Exception:
+            new_content = str(raw)
+
+            # 追加内容
+        if new_content:
+            at_bottom = (
+                self.scroll_log_edit.verticalScrollBar().value()
+                == self.scroll_log_edit.verticalScrollBar().maximum()
+            )
+            # 按行追加，避免 QTextEdit.append 在多段文本中额外插入空行
+            for line in new_content.splitlines():
+                self.scroll_log_edit.append(line)
+            if at_bottom:
+                self.scroll_log_edit.moveCursor(self.scroll_log_edit.textCursor().End)
+
     def clear_all_log(self):
-        file = QFile('./logs/myLog.log')
+        file = QFile("./logs/myLog.log")
         if not file.open(QFile.WriteOnly | QFile.Text):
-            self.text_edit.append('无法打开文件')
+            self.scroll_log_edit.append("无法打开文件")
             return
 
         # 清空文件内容
-        file.write('')
+        file.write("")
 
         # 关闭文件
         file.close()
@@ -520,10 +535,11 @@ class FarmingInterfaceRight(QWidget):
         mediator.scroll_log_show.connect(self.set_scroll_log)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     # enable dpi scale
     QApplication.setHighDpiScaleFactorRoundingPolicy(
-        Qt.HighDpiScaleFactorRoundingPolicy.PassThrough)
+        Qt.HighDpiScaleFactorRoundingPolicy.PassThrough
+    )
     QApplication.setAttribute(Qt.AA_EnableHighDpiScaling)
     QApplication.setAttribute(Qt.AA_UseHighDpiPixmaps)
 

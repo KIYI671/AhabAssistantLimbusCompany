@@ -40,10 +40,8 @@ if __name__ == "__main__":
         # 使用非零退出码表示错误
         sys.exit(1)
 
-    if cfg.zoom_scale==0:
-        QApplication.setAttribute(Qt.AA_EnableHighDpiScaling)
-    else:
-        os.environ["QT_SCALE_FACTOR"] = str(cfg.zoom_scale/100)
+    if cfg.zoom_scale != 0:
+        os.environ["QT_SCALE_FACTOR"] = str(cfg.zoom_scale / 100)
 
     lang_manager = LanguageManager()
     lang = lang_manager.init_language()
