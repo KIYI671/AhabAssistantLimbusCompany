@@ -215,7 +215,7 @@ class MainWindow(FramelessWindow):
                     log.DEBUG(f"删除文件失败 {file_path}，错误原因: {str(e)}")
 
     def set_ring(self):
-        self.progress_ring.setWindowFlag(Qt.WindowStaysOnTopHint)  # 保持最上层显示
+        self.progress_ring.raise_() # 保持最上层显示
         self.progress_ring.setValue(0)
         self.progress_ring.setTextVisible(True)
         self.progress_ring.setFixedSize(80, 80)
@@ -238,8 +238,8 @@ class MainWindow(FramelessWindow):
             cfg.set_value(f"team{team_num}_setting", team_setting)
 
     def set_progress_ring(self, value: int):
-        self.progress_ring.setWindowFlag(Qt.WindowStaysOnTopHint)  # 保持最上层显示
         self.progress_ring.show()
+        self.progress_ring.raise_()  # 保持最上层显示
         self.progress_ring.setValue(value)
 
     def handle_link_click(self, url: str):
