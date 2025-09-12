@@ -1,5 +1,3 @@
-import pyautogui
-
 from module.automation import auto
 from module.config import cfg
 from module.decorator.decorator import begin_and_finish_time_log
@@ -48,6 +46,8 @@ def back_init_menu():
 
         # 等待加载情况
         if auto.find_element("base/waiting_assets.png"):
+            continue
+        if auto.find_element("base/waiting_2_assets.png"):
             continue
 
         # 左上角有后退键
