@@ -198,13 +198,17 @@ class ScreenShot:
             log.ERROR(f"后台截图报错: {e}")
 
     @staticmethod
-    def screenshot_benchmark(test_time:int = 10)-> None:
+    def screenshot_benchmark(test_time: int = 10) -> tuple[bool, float]:
         """
         截图性能测试
+
         Args:
-            test_time (int): 测试次数
+            test_time (int): 测试次数，默认为10次
+
         Returns:
-            float: 平均每次截图耗时（毫秒）
+            tuple (bool, str):
+            - bool: 测试是否成功
+            - float: 平均每次截图耗时（毫秒）
         """
         import time
 
@@ -214,7 +218,8 @@ class ScreenShot:
                 ScreenShot.take_screenshot(gray=False)
             end_time = time.time()
             avg_time = (end_time - start_time) / test_time * 1000  # 转为毫秒
-            log.INFO(f"截图性能测试: {test_time}次截图平均耗时 {avg_time:.2f} ms")
+            log.DEBUG(f"截图性能测试: {test_time}次截图平均耗时 {avg_time:.2f} ms")
+            return True, avg_time
         except Exception as e:
-            log.INFO("截图性能测试失败")
             log.DEBUG(f"截图性能测试报错: {e}")
+            return False, 0.0

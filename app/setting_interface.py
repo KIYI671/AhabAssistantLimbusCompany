@@ -82,7 +82,7 @@ class SettingInterface(ScrollArea):
             QT_TRANSLATE_NOOP("BasePrimaryPushSettingCard", '截图测试'),
             FIF.CAMERA,
             QT_TRANSLATE_NOOP("BasePrimaryPushSettingCard", '截图性能测试'),
-            QT_TRANSLATE_NOOP("BasePrimaryPushSettingCard", '测试截图功能的性能, 完成后将在消息栏显示结果'),
+            QT_TRANSLATE_NOOP("BasePrimaryPushSettingCard", '测试截图功能的性能'),
             parent=self.game_setting_group
         )
         self.game_path_group = BaseSettingCardGroup(
@@ -282,8 +282,31 @@ class SettingInterface(ScrollArea):
 
     def __onScreenshotBenchmarkCardClicked(self):
         from module.automation import ScreenShot
-        ScreenShot.screenshot_benchmark()
-        
+
+        flag, time = ScreenShot.screenshot_benchmark()
+        if flag:
+            msg = QT_TRANSLATE_NOOP("BaseInfoBar", "10次截图平均耗时 {time:.2f} ms")
+            BaseInfoBar.success(
+                title=QT_TRANSLATE_NOOP("BaseInfoBar", "截图测试结束"),
+                content=msg,
+                orient=Qt.Horizontal,
+                isClosable=True,
+                position=InfoBarPosition.BOTTOM_RIGHT,
+                duration=5000,
+                parent=self,
+                content_kwargs={"time": time},
+            )
+        else:
+            msg = QT_TRANSLATE_NOOP("BaseInfoBar", "截图性能测试失败")
+            BaseInfoBar.error(
+                title=QT_TRANSLATE_NOOP("BaseInfoBar", "截图测试结束"),
+                content=msg,
+                orient=Qt.Horizontal,
+                isClosable=True,
+                position=InfoBarPosition.BOTTOM_RIGHT,
+                duration=5000,
+                parent=self,
+            )
 
     def __onZoomCardValueChanged(self):
         bar = BaseInfoBar.success(

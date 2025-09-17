@@ -10,7 +10,18 @@ from app.language_manager import SUPPORTED_GAME_LANG_CODE
 from ..config import cfg
 from ..logger import log
 
-__all__ = ["auto_switch_language_in_game"]
+__all__ = ["auto_switch_language_in_game", "AutoSwitchCon"]
+
+
+class AutoSwitchCon:
+    "自动切换语言的返回值表达类"
+
+    FINISH: int = 0
+    "语言相同"
+    CHANGED: int = 1
+    "语言不同并自动切换"
+    FAILED: int = 2
+    "语言切换失败, 可能是不支持的语言"
 
 
 def auto_switch_language_in_game(hwnd: int) -> int:
@@ -39,7 +50,6 @@ def auto_switch_language_in_game(hwnd: int) -> int:
         path = Path(process.exe())
     except Exception:
         log.ERROR("获取路径时出错 ")
-
     if path is None:
         raise ValueError("未获取到程序路径")
     json_path = path.parent / "LimbusCompany_Data" / "Lang" / "config.json"
@@ -67,25 +77,29 @@ def auto_switch_language_in_game(hwnd: int) -> int:
         lang_code = get_game_language_from_registry()
 
     if lang_code == cfg.language_in_game:
-        return 0
+        return AutoSwitchCon.FINISH
 
     if cfg.language_in_game == "-":
-        msg = QT_TRANSLATE_NOOP("Logger", "当前游戏语言为 {current_game_lang}, 即将自动切换")
+        msg = QT_TRANSLATE_NOOP(
+            "Logger", "当前游戏语言为 {current_game_lang}, 即将自动切换"
+        )
         log.INFO(msg, current_game_lang=output_lang_dict[lang_code])
     else:
         msg = QT_TRANSLATE_NOOP(
             "Logger",
             "当前游戏语言为 {current_game_lang}, 但是被错误设置成了 {setting_game_lang}",
         )
-        log.INFO(msg, current_game_lang=output_lang_dict[lang_code],
-                 setting_game_lang=output_lang_dict[cfg.language_in_game]
-                 )
+        log.INFO(
+            msg,
+            current_game_lang=output_lang_dict[lang_code],
+            setting_game_lang=output_lang_dict[cfg.language_in_game],
+        )
     if lang_code in SUPPORTED_GAME_LANG_CODE:
         cfg.set_value("language_in_game", lang_code)
-        return 1
+        return AutoSwitchCon.CHANGED
     msg = QT_TRANSLATE_NOOP("Logger", "自动切换失败, 不支持的游戏语言")
     log.INFO(msg)
-    return 2
+    return AutoSwitchCon.FAILED
 
 
 def get_game_language_from_registry() -> str:

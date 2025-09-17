@@ -10,7 +10,7 @@ import win32process
 from PyQt5.QtCore import QThread, pyqtSignal, QMutex
 from playsound3 import playsound
 
-from module.ALI import auto_switch_language_in_game
+from module.ALI import auto_switch_language_in_game, AutoSwitchCon
 from module.automation import auto
 from module.config import cfg
 from module.decorator.decorator import begin_and_finish_time_log
@@ -97,7 +97,7 @@ def script_task() -> None | int:
     try:
         if cfg.experimental_auto_lang:
             ret = auto_switch_language_in_game(screen.handle._hWnd)
-            if ret == 2:
+            if ret == AutoSwitchCon.FAILED:
                 log.INFO(f"自动切换语言失败，使用英语尝试")
                 cfg.set_value("language_in_game", "en")
         else:
@@ -116,8 +116,7 @@ def script_task() -> None | int:
 
     if cfg.resonate_with_Ahab:
         random_number = random.randint(1, 4)
-        playsound(f"assets/audio/This_is_all_your_fault_{random_number}.mp3")
-
+        playsound(f"assets/audio/This_is_all_your_fault_{random_number}.mp3", block=False)
     # 如果是战斗中，先处理战斗
     get_reward = None
     if auto.click_element("battle/turn_assets.png", take_screenshot=True):
