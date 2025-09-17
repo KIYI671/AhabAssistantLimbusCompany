@@ -36,6 +36,8 @@ def make_enkephalin_module(cancel=False):
     import time
     start_time = time.time()
     last_log_time = None
+    first_popup_warning = True
+
     while True:
         now_time = time.time()
         if 60 > now_time - start_time > 20 and int(now_time - start_time) % 10 == 0:
@@ -44,11 +46,17 @@ def make_enkephalin_module(cancel=False):
                 log.WARNING(msg)
                 last_log_time = now_time
         if now_time - start_time > 60:
-            import pyautogui
             from app import mediator
-            if last_log_time is None or now_time - last_log_time > 5:
-                log.WARNING("已尝试狂气换体超过1分钟，脚本将停止运行，请先检查语言配置，或检查电脑配置是否支持")
-                pyautogui.hotkey('ctrl', 'q')
+
+            if first_popup_warning and (
+                last_log_time is None or now_time - last_log_time > 5
+            ):
+                # only do it once
+                first_popup_warning = False
+                log.WARNING(
+                    "已尝试狂气换体超过1分钟，脚本将停止运行，请先检查语言配置，或检查电脑配置是否支持"
+                )
+                mediator.link_start.emit()
                 message = "脚本卡死在狂气换体，请检查语言配置，或检查电脑配置是否支持"
                 mediator.warning.emit(message)
         # 自动截图

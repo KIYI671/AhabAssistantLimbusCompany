@@ -67,6 +67,8 @@ class FarmingInterfaceLeft(QWidget):
         self.parent = parent
         self.setObjectName("FarmingInterfaceLeft")
 
+        self.my_script = None
+
         self.__init_widget()
         self.__init_card()
         self.__init_layout()
@@ -279,8 +281,7 @@ class FarmingInterfaceLeft(QWidget):
             self.link_start_button.set_text("Link Start!")
             self._enable_setting(self.parent)
             mediator.refresh_teams_order.emit()
-            if self.my_script and self.my_script.isRunning():
-                self.stop_script()
+            self.stop_script()
             ocr.exit_ocr()
             auto.clear_img_cache()
 
@@ -329,6 +330,7 @@ class FarmingInterfaceLeft(QWidget):
 
     def stop_script(self):
         if self.my_script and self.my_script.isRunning():
+            log.DEBUG("正在终止脚本线程...")
             self.my_script.terminate()  # 终止线程
 
     def my_stop_shortcut(self):
