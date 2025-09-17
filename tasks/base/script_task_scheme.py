@@ -10,7 +10,7 @@ import win32process
 from PyQt5.QtCore import QThread, pyqtSignal, QMutex
 from playsound3 import playsound
 
-from module.ALI import auto_switch_language_in_game
+from module.ALI import auto_switch_language_in_game, AutoSwitchCon
 from module.automation import auto
 from module.config import cfg
 from module.decorator.decorator import begin_and_finish_time_log
@@ -97,7 +97,7 @@ def script_task() -> None | int:
     try:
         if cfg.experimental_auto_lang:
             ret = auto_switch_language_in_game(screen.handle._hWnd)
-            if ret == 2:
+            if ret == AutoSwitchCon.FAILED:
                 log.INFO(f"自动切换语言失败，使用英语尝试")
                 cfg.set_value("language_in_game", "en")
         else:
