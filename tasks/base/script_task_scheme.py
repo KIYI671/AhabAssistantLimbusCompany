@@ -116,8 +116,7 @@ def script_task() -> None | int:
 
     if cfg.resonate_with_Ahab:
         random_number = random.randint(1, 4)
-        playsound(f"assets/audio/This_is_all_your_fault_{random_number}.mp3")
-
+        playsound(f"assets/audio/This_is_all_your_fault_{random_number}.mp3", block=False)
     # 如果是战斗中，先处理战斗
     get_reward = None
     if auto.click_element("battle/turn_assets.png", take_screenshot=True):
