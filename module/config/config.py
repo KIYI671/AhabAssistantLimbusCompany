@@ -103,7 +103,7 @@ class Config(metaclass=SingletonMeta):
 
             # 防止 cdk 泄露
             masked_value = "已加密" if key == "mirrorchyan_cdk" else value
-            log.DEBUG(f"{key} change to: {masked_value}")  # 增加设置修改的信息
+            log.debug(f"{key} change to: {masked_value}")  # 增加设置修改的信息
 
             # 安排一次延迟保存
             self._schedule_save()
@@ -156,7 +156,7 @@ class Config(metaclass=SingletonMeta):
             try:
                 self._save_config()
             except Exception as e:
-                log.ERROR(f"配置保存失败，错误信息：{e}")
+                log.error(f"配置保存失败，错误信息：{e}")
 
             # 等待下一次
             self._writer_event.clear()
@@ -187,7 +187,7 @@ class Config(metaclass=SingletonMeta):
         if key == "mirrorchyan_cdk":
             value = "已加密"
 
-        log.DEBUG(f"{key} change to: {value}")  # 增加设置修改的信息
+        log.debug(f"{key} change to: {value}")  # 增加设置修改的信息
 
     def unsaved_del_key(self, key) -> None:
         """仅删除配置项 不保存"""
@@ -262,7 +262,7 @@ class Theme_pack_list(metaclass=SingletonMeta):
                     config[key][k] = v
             else:
                 config[key] = value
-        log.DEBUG(f"主题包名单已更新")
+        log.debug(f"主题包名单已更新")
 
     def save_config(self):
         """保存到配置文件"""

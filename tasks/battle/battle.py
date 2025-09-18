@@ -31,13 +31,13 @@ class Battle:
             loop_count -= 1
             if loop_count < 10:
                 auto.model = "normal"
-                log.DEBUG("识别模式切换到正常模式")
+                log.debug("识别模式切换到正常模式")
             if loop_count < 5:
                 auto.model = 'aggressive'
-                log.DEBUG("识别模式切换到激进模式")
+                log.debug("识别模式切换到激进模式")
             if loop_count < 0:
                 msg = "超出最大尝试次数,未能进入战斗"
-                log.ERROR(msg)
+                log.error(msg)
                 return False
 
     @staticmethod
@@ -58,7 +58,7 @@ class Battle:
         new_time = max(new_time, MIN_WAITING)  # 防止低于最小等待时间
         if fail_flag:
             msg = f"匹配失败，等待时间从{time:.3f}调整为{new_time:.3f}"
-            log.DEBUG(msg)
+            log.debug(msg)
 
         return new_time
 
@@ -142,9 +142,9 @@ class Battle:
                         if self._defense_first_round() is False:
                             defense_first_round = False
                             msg = "第一回合全员防御失败尝试其他操作"
-                            log.DEBUG(msg)
+                            log.debug(msg)
                         else:
-                            log.DEBUG(msg)
+                            log.debug(msg)
                             continue
                     if avoid_skill_3 and auto.find_element("battle/gear_left.png", threshold=0.9):
                         msg = f"使用避免3技能模式开始战斗"
@@ -157,7 +157,7 @@ class Battle:
                         auto.key_press('enter')
                         msg = f"使用P+Enter开始战斗"
                     chance = INIT_CHANCE
-                    log.DEBUG(msg)
+                    log.debug(msg)
                     waiting = self._update_wait_time(waiting, False, total_count)
                     self.identify_keyword_turn = False
                     continue
@@ -181,7 +181,7 @@ class Battle:
                         auto.key_press('enter')
                         msg = f"使用P+Enter开始战斗"
                     chance = INIT_CHANCE
-                    log.DEBUG(msg)
+                    log.debug(msg)
                     waiting = self._update_wait_time(waiting, False, total_count)
                     continue
 
@@ -264,7 +264,7 @@ class Battle:
             # 保留最多三位小数
             match_success_rate = (1 - fail_count / total_count) * 100
         msg = f"此次战斗匹配失败次数{fail_count} 匹配总次数{total_count} 匹配成功率{match_success_rate}%"
-        log.DEBUG(msg)
+        log.debug(msg)
         if self.first_battle:
             return first_battle_reward
         else:

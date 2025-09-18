@@ -194,7 +194,7 @@ class FarmingInterfaceLeft(QWidget):
             check_box.setChecked(False)
 
     def stop_AALC(self):
-        log.DEBUG("即将关闭AALC")
+        log.debug("即将关闭AALC")
         sys.exit(0)
 
     def check_setting(self):
@@ -214,7 +214,7 @@ class FarmingInterfaceLeft(QWidget):
                     cfg.set_value("last_auto_change", datetime.now().timestamp())
                     cfg.flush()
                 if check_hard_mirror_time():
-                    log.INFO("识别到新的困牢周期，自动切换困难镜牢，设置困牢次数为3")
+                    log.info("识别到新的困牢周期，自动切换困难镜牢，设置困牢次数为3")
                     cfg.set_value("last_auto_change", datetime.now().timestamp())
                     cfg.set_value("hard_mirror", True)
                     cfg.set_value("hard_mirror_chance", 3)
@@ -327,7 +327,7 @@ class FarmingInterfaceLeft(QWidget):
     def create_and_start_script(self):
         try:
             msg = f"开始进行所有任务"
-            log.INFO(msg)
+            log.info(msg)
             mediator.scroll_log_show.emit("clear")
             # 启动脚本线程
             self.my_script = my_script_task()
@@ -337,11 +337,11 @@ class FarmingInterfaceLeft(QWidget):
             self.my_script.kill_signal.connect(self.stop_AALC)
             self.my_script.start()
         except Exception as e:
-            log.ERROR(f"启动脚本失败: {e}")
+            log.error(f"启动脚本失败: {e}")
 
     def stop_script(self):
         if self.my_script and self.my_script.isRunning():
-            log.DEBUG("正在终止脚本线程...")
+            log.debug("正在终止脚本线程...")
             self.my_script.terminate()  # 终止线程
 
     def my_stop_shortcut(self):
@@ -416,7 +416,7 @@ class FarmingInterfaceCenter(QWidget):
             self.setting_page.setCurrentIndex(page_index)
             cfg.set_value("default_page", page_index)
         except Exception as e:
-            log.ERROR(f"【异常】switch_to_page 出错：{type(e).__name__}:{e}")
+            log.error(f"【异常】switch_to_page 出错：{type(e).__name__}:{e}")
 
     def connect_mediator(self):
         # 连接所有可能信号
@@ -463,7 +463,7 @@ class FarmingInterfaceRight(QWidget):
             self.last_position = 0
 
     def load_log_text(self):
-        log_path = "./logs/myLog.log"
+        log_path = "./logs/user.log"
         file = QFile(log_path)
         if not file.exists():
             return
@@ -500,7 +500,7 @@ class FarmingInterfaceRight(QWidget):
                 self.scroll_log_edit.moveCursor(self.scroll_log_edit.textCursor().End)
 
     def clear_all_log(self):
-        file = QFile("./logs/myLog.log")
+        file = QFile("./logs/user.log")
         if not file.open(QFile.WriteOnly | QFile.Text):
             self.scroll_log_edit.append("无法打开文件")
             return
@@ -532,11 +532,6 @@ class FarmingInterfaceRight(QWidget):
 
 
 if __name__ == "__main__":
-    # enable dpi scale
-    QApplication.setHighDpiScaleFactorRoundingPolicy(
-        Qt.HighDpiScaleFactorRoundingPolicy.PassThrough
-    )
-
     app = QApplication(sys.argv)
     w = FarmingInterface()
     w.show()

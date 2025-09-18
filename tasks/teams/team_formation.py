@@ -94,12 +94,12 @@ def select_battle_team(num):
                     continue
             if find:
                 msg = f"成功找到队伍 # {num}"
-                log.INFO(msg)
+                log.info(msg)
                 sleep(1)
                 return True
             else:
                 msg = f"找不到队伍 # {num}"
-                log.INFO(msg)
+                log.info(msg)
                 return False
 
 

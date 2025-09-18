@@ -10,7 +10,7 @@ from PySide6.QtGui import QIcon
 from module.automation import auto
 from module.config import cfg
 from utils.image_utils import ImageUtils
-
+from module.logger import log
 
 class BattleWorker(QThread):
     """战斗逻辑工作线程，避免阻塞UI"""
@@ -151,7 +151,7 @@ class BattleWorker(QThread):
         try:
             current_index = current_z_order.index(hwnd)
         except ValueError:
-            print("警告：目标窗口已不在顶层，无需恢复")
+            log.warning("目标窗口已不在顶层，无需恢复")
             return
 
         # 若目标窗口已在正确位置，无需操作
@@ -277,7 +277,7 @@ class InfiniteBattles(QWidget):
         """当发生错误时调用"""
         self.status_label.setText(f"状态：错误 - {error_msg[:50]}...")
         self.log_text.append(f"错误: {error_msg}")
-        print(f"战斗错误: {error_msg}")
+        log.error(f"战斗错误: {error_msg}")
 
     def closeEvent(self, event):
         """窗口关闭时停止所有定时器和工作线程"""

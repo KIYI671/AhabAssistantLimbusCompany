@@ -24,7 +24,7 @@ def get_the_timing():
                     minute = int(l[0][-2:])
                     seconds = int(l[1][:2])
                     if minute >= 5 and seconds >= 20:
-                        log.DEBUG(f"生成下一点体力的时间为{minute}分{seconds}秒，符合葛朗台模式操作")
+                        log.debug(f"生成下一点体力的时间为{minute}分{seconds}秒，符合葛朗台模式操作")
                         return True
             except:
                 return False
@@ -43,7 +43,7 @@ def make_enkephalin_module(cancel=False):
         if 60 > now_time - start_time > 20 and int(now_time - start_time) % 10 == 0:
             if last_log_time is None or now_time - last_log_time > 5:
                 msg = f"已尝试狂气换体超过{int(now_time - start_time)}秒，如果非电脑硬件配置不足，请确认是否执行了正确的语言配置"
-                log.WARNING(msg)
+                log.warning(msg)
                 last_log_time = now_time
         if now_time - start_time > 60:
             from app import mediator
@@ -53,7 +53,7 @@ def make_enkephalin_module(cancel=False):
             ):
                 # only do it once
                 first_popup_warning = False
-                log.WARNING(
+                log.warning(
                     "已尝试狂气换体超过1分钟，脚本将停止运行，请先检查语言配置，或检查电脑配置是否支持"
                 )
                 mediator.link_start.emit()

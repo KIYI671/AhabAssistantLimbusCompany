@@ -49,7 +49,8 @@ def auto_switch_language_in_game(hwnd: int) -> int:
         # 返回进程的可执行文件路径
         path = Path(process.exe())
     except Exception:
-        log.ERROR("获取路径时出错 ")
+        log.error("获取路径时出错 ")
+
     if path is None:
         raise ValueError("未获取到程序路径")
     json_path = path.parent / "LimbusCompany_Data" / "Lang" / "config.json"
@@ -61,10 +62,10 @@ def auto_switch_language_in_game(hwnd: int) -> int:
         json_content = json.loads(content)
         lang_code = json_content.get("lang")
     except FileNotFoundError:
-        log.DEBUG(f"未找到语言配置文件: {json_path}")
+        log.debug(f"未找到语言配置文件: {json_path}")
         lang_code = "-"
     except Exception as e:
-        log.DEBUG(f"{type(e).__name__}, 读取语言配置文件时出错: {e}")
+        log.debug(f"{type(e).__name__}, 读取语言配置文件时出错: {e}")
         lang_code = "Unknown"
 
     lang_dict = {"-": "default", "LLC_zh-CN": "zh_cn"}
@@ -83,13 +84,13 @@ def auto_switch_language_in_game(hwnd: int) -> int:
         msg = QT_TRANSLATE_NOOP(
             "Logger", "当前游戏语言为 {current_game_lang}, 即将自动切换"
         )
-        log.INFO(msg, current_game_lang=output_lang_dict[lang_code])
+        log.info(msg, current_game_lang=output_lang_dict[lang_code])
     else:
         msg = QT_TRANSLATE_NOOP(
             "Logger",
             "当前游戏语言为 {current_game_lang}, 但是被错误设置成了 {setting_game_lang}",
         )
-        log.INFO(
+        log.info(
             msg,
             current_game_lang=output_lang_dict[lang_code],
             setting_game_lang=output_lang_dict[cfg.language_in_game],
@@ -98,7 +99,7 @@ def auto_switch_language_in_game(hwnd: int) -> int:
         cfg.set_value("language_in_game", lang_code)
         return AutoSwitchCon.CHANGED
     msg = QT_TRANSLATE_NOOP("Logger", "自动切换失败, 不支持的游戏语言")
-    log.INFO(msg)
+    log.info(msg)
     return AutoSwitchCon.FAILED
 
 
@@ -119,7 +120,7 @@ def get_game_language_from_registry() -> str:
 
             # 验证数据类型
             if reg_type != winreg.REG_BINARY:
-                log.DEBUG(f"错误：值项类型为 {reg_type}，预期应为 REG_BINARY")
+                log.debug(f"错误：值项类型为 {reg_type}，预期应为 REG_BINARY")
                 return "Unknown"
 
             # 去除末尾的 NULL 字节并解码为字符串
@@ -131,11 +132,11 @@ def get_game_language_from_registry() -> str:
             return lang_list[lang_index]
 
     except FileNotFoundError:
-        log.DEBUG(f"注册表路径不存在: HKEY_CURRENT_USER\\{sub_key}")
+        log.debug(f"注册表路径不存在: HKEY_CURRENT_USER\\{sub_key}")
         return "Unknown"
     except PermissionError:
-        log.DEBUG("读取注册表时权限不足，请以管理员身份运行程序")
+        log.debug("读取注册表时权限不足，请以管理员身份运行程序")
         return "Unknown"
     except Exception as e:
-        log.DEBUG(f"处理数据时出错: {str(e)}")
+        log.debug(f"处理数据时出错: {str(e)}")
         return "Unknown"

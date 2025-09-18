@@ -24,19 +24,19 @@ class ScreenShot:
             try:
                 return ScreenShot.backgroud_screenshot(gray)
             except Exception as e:
-                log.DEBUG(f"后台截图报错 {type(e).__name__}: {e}")
+                log.debug(f"后台截图报错 {type(e).__name__}: {e}")
                 return None
         else:
             try:
                 return ScreenShot.take_screenshot_gdi(gray)
             except Exception as e:
                 msg = f"GDI截图失败，尝试使用pyautogui截图，错误信息：{e}"
-                log.DEBUG(msg)
+                log.debug(msg)
                 try:
                     return ScreenShot.take_screenshot_pyautogui(gray)
                 except Exception as e2:
                     msg = f"pyautogui截图失败，错误信息：{e2}"
-                    log.DEBUG(msg)
+                    log.debug(msg)
                     return None
 
     @staticmethod
@@ -195,7 +195,7 @@ class ScreenShot:
 
             return pil_image
         except Exception as e:
-            log.ERROR(f"后台截图报错: {e}")
+            log.error(f"后台截图报错: {e}")
 
     @staticmethod
     def screenshot_benchmark(test_time: int = 10) -> tuple[bool, float]:
@@ -218,8 +218,9 @@ class ScreenShot:
                 ScreenShot.take_screenshot(gray=False)
             end_time = time.time()
             avg_time = (end_time - start_time) / test_time * 1000  # 转为毫秒
-            log.DEBUG(f"截图性能测试: {test_time}次截图平均耗时 {avg_time:.2f} ms")
+            log.info(f"截图性能测试: {test_time}次截图平均耗时 {avg_time:.2f} ms")
             return True, avg_time
         except Exception as e:
-            log.DEBUG(f"截图性能测试报错: {e}")
+            log.info("截图性能测试失败")
+            log.debug(f"截图性能测试报错: {e}")
             return False, 0.0

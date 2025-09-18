@@ -90,7 +90,7 @@ class UpdateThread(QThread):
                 self.updateSignal.emit(UpdateStatus.SUCCESS)
         except Exception as e:
             # 记录失败日志，尝试使用GitHub源检查更新
-            log.ERROR(f"从Mirror酱源检查更新失败:{e},尝试使用GitHub源检查更新")
+            log.error(f"从Mirror酱源检查更新失败:{e},尝试使用GitHub源检查更新")
             try:
                 data = self.check_update_info_github()
                 version = data['tag_name']
@@ -118,7 +118,7 @@ class UpdateThread(QThread):
                     self.updateSignal.emit(UpdateStatus.SUCCESS)
             except Exception as e:
                 # 异常处理，发送失败信号
-                log.ERROR(f"Mirror酱源与GitHub源均检查更新失败:{e}")
+                log.error(f"Mirror酱源与GitHub源均检查更新失败:{e}")
                 self.updateSignal.emit(UpdateStatus.FAILURE)
 
     def check_update_info_github(self):
@@ -260,7 +260,7 @@ class UpdateThread(QThread):
                 return assets_url
         except Exception as e:
             # 异常处理，发送失败信号
-            log.ERROR(f"更新失败:{e}")
+            log.error(f"更新失败:{e}")
             self.updateSignal.emit(UpdateStatus.FAILURE)
 
 
@@ -347,7 +347,7 @@ def update(assets_url):
     """
     # 检查URL是否有效
     if not is_valid_url(assets_url):
-        log.ERROR("更新失败：获取的URL无效 ")
+        log.error("更新失败：获取的URL无效 ")
         return
 
     # 提取文件名
@@ -356,7 +356,7 @@ def update(assets_url):
         file_name = "AALC.zip"
     elif "AALC" in file_name:
         file_name = "AALC.7z"
-    log.INFO(f"正在下载 {file_name} ...")
+    log.info(f"正在下载 {file_name} ...")
 
     try:
         # 发起HTTP请求获取文件
@@ -381,7 +381,7 @@ def update(assets_url):
                         progress = int(downloaded / total_size * 100)
                         mediator.update_progress.emit(progress)
 
-        log.INFO(f"下载进度100%")
+        log.info(f"下载进度100%")
 
         if "OCR" in file_name:
             exe_path = os.path.abspath("./assets/binary/7za.exe")
@@ -392,7 +392,7 @@ def update(assets_url):
                     subprocess.run([exe_path, "x", download_file_path, f"-o{destination}", "-aoa"], check=True)
                 else:
                     shutil.unpack_archive(download_file_path, destination)
-                log.INFO("OCR解压完成，请重启AALC")
+                log.info("OCR解压完成，请重启AALC")
                 return True
             except Exception as e:
                 input("解压失败，按回车键重新解压. . .多次失败请手动下载更新")

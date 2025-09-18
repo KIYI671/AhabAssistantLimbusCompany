@@ -22,12 +22,12 @@ class OCRInstaller:
         if self._cpu_support_avx2():
             ocr_name = "PaddleOCR-json"
             ocr_path = r".\3rdparty\PaddleOCR-json_v1.4.1\PaddleOCR-json.exe"
-            self.logger.DEBUG(
+            self.logger.debug(
                 f"CPU 支持 AVX2 指令集，使用 {ocr_name} \nThe CPU supports the AVX2 instruction set, using {ocr_name}")
         else:
             ocr_name = "RapidOCR-json"
             ocr_path = r".\3rdparty\RapidOCR-json_v0.2.0\RapidOCR-json.exe"
-            self.logger.INFO(
+            self.logger.info(
                 f"CPU 不支持 AVX2 指令集，使用 {ocr_name} \nThe CPU does not support the AVX2 instruction set, use {ocr_name}")
         return ocr_name, ocr_path
 
@@ -41,7 +41,7 @@ class OCRInstaller:
 
     def install_ocr(self):
         RapidOCR_url = "https://github.com/hiroi-sora/RapidOCR-json/releases/download/v0.2.0/RapidOCR-json_v0.2.0.7z"
-        self.logger.INFO("开始从Github源下载RapidOCR")
+        self.logger.info("开始从Github源下载RapidOCR")
         start_update_thread(RapidOCR_url)
 
 

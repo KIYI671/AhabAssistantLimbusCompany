@@ -29,19 +29,19 @@ class Game(metaclass=SingletonMeta):
                 continue
 
         if not os.path.exists(self.game_path):
-            self.log.ERROR(f"游戏路径不存在：{self.game_path}，使用steam命令启动...")
+            self.log.error(f"游戏路径不存在：{self.game_path}，使用steam命令启动...")
             self.game_path_exists = False
 
         try:
             if self.game_path_exists:
                 os.startfile(self.game_path)
-                self.log.INFO(f"游戏启动：{self.game_path}")
+                self.log.info(f"游戏启动：{self.game_path}")
                 return True
             else:
                 # 调用系统打开该 URL（会触发 Steam 启动游戏）
                 webbrowser.open(self.game_url)
-                self.log.INFO(f"游戏使用steam命令启动")
+                self.log.info(f"游戏使用steam命令启动")
                 return True
         except Exception as e:
-            self.log.ERROR(f"启动游戏时发生错误：{e}")
+            self.log.error(f"启动游戏时发生错误：{e}")
         return False

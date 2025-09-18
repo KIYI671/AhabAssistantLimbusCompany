@@ -113,7 +113,6 @@ class MainWindow(FramelessWindow):
 
         self.show()
 
-        self.clean_old_logs()
         self.check_mirror_setting()
 
         check_update(self, flag=True)
@@ -140,7 +139,7 @@ class MainWindow(FramelessWindow):
                 list(self.pivot.items.values())[-1].click()
                 self.pivot.setCurrentItem("team_setting")
         except Exception as e:
-            log.ERROR(f"【异常】switch_to_page 出错：{type(e).__name__}:{e}")
+            log.error(f"【异常】switch_to_page 出错：{type(e).__name__}:{e}")
 
     def close_setting_page(self):
         try:
@@ -156,7 +155,7 @@ class MainWindow(FramelessWindow):
             page = None
             self.pivot.removeWidget("team_setting")
         except Exception as e:
-            print(f"【异常】delete_team 出错：{e}")
+            log.error(f"delete_team 出错：{e}")
 
     def show_save_warning(self):
         MessageBoxWarning(
@@ -188,33 +187,6 @@ class MainWindow(FramelessWindow):
         mediator.update_progress.connect(self.set_progress_ring)
         mediator.download_complete.connect(self.download_and_install)
         mediator.warning.connect(self.show_warning)
-
-    @staticmethod
-    def clean_old_logs():
-        if not cfg.clean_logs:
-            return
-        # 获取今日日期（date对象）
-        today = datetime.date.today()
-        # 计算阈值日期（七天前的日期）
-        threshold_date = today - datetime.timedelta(days=7)
-
-        # 遍历日志文件夹中的所有文件/目录
-        for filename in os.listdir("./logs"):
-            # 拼接完整文件路径
-            file_path = os.path.join("./logs", filename)
-
-            try:
-                file_date = datetime.datetime.strptime(filename[:10], "%Y-%m-%d").date()
-            except:
-                continue
-
-            # 判断是否早于阈值日期（需要删除）
-            if file_date < threshold_date:
-                try:
-                    os.remove(file_path)
-                    print(f"已删除过期日志文件: {file_path}")
-                except Exception as e:
-                    log.DEBUG(f"删除文件失败 {file_path}，错误原因: {str(e)}")
 
     def set_ring(self):
         self.progress_ring.raise_() # 保持最上层显示

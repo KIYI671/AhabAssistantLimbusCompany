@@ -294,12 +294,12 @@ def search_road_from_road_map(hard_mode=False):
     if path:
         # 生成方向列表
         directions, road_class_list = route_graph.get_path_directions(path)
-        log.DEBUG(f"最小权重: {min_weight}")
-        log.DEBUG(f"路径方向: {directions}")
-        log.DEBUG(f"行走路径: {road_class_list}")
+        log.debug(f"最小权重: {min_weight}")
+        log.debug(f"路径方向: {directions}")
+        log.debug(f"行走路径: {road_class_list}")
         return directions, road_class_list
     else:
-        log.WARNING("未能检测到有效路径")
+        log.warning("未能检测到有效路径")
 
     return [], []
 
@@ -453,7 +453,7 @@ def identify_road(bus_x, min_length=160, merge_distance=230):
     screenshot = np.array(auto.screenshot)
     raw_lines = get_detected_lines(screenshot)  # 调用检测函数获取原始线段数据
     if raw_lines is None or len(raw_lines) == 0:  # 检测结果为空
-        log.WARNING("⚠️ 未检测到任何线段")  # 提示无结果
+        log.warning("⚠️ 未检测到任何线段")  # 提示无结果
         return []  # 返回空列表
 
     # 数据格式标准化（统一不同算法的输出格式）
@@ -637,7 +637,7 @@ def divide_the_area_by_x(data):
     for group in groups:
         group.sort(key=lambda item: item[1][1])
 
-    log.DEBUG(f"识别到的节点/线段分组后：{groups}")
+    log.debug(f"识别到的节点/线段分组后：{groups}")
 
     return groups
 

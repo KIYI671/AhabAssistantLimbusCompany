@@ -16,7 +16,7 @@ class ToolManager:
             if tool == "battle":
                 self.run_battle()
         except Exception as e:
-            log.ERROR(e)
+            log.error(e)
 
 
     def run_battle(self):
@@ -24,7 +24,7 @@ class ToolManager:
         app = QApplication.instance()
         if app is None:
             # 无运行中的 Qt 应用，无法安全创建窗口
-            log.ERROR("未检测到正在运行的 Qt 应用，无法展示小工具窗口。请从主程序内启动该工具。")
+            log.error("未检测到正在运行的 Qt 应用，无法展示小工具窗口。请从主程序内启动该工具。")
             return
 
         def create_and_show():
@@ -38,7 +38,7 @@ class ToolManager:
                 # 窗口销毁时移除引用
                 w.destroyed.connect(lambda *_: hasattr(self, "_windows") and self._windows.remove(w) if w in self._windows else None)
             except Exception as e:
-                log.ERROR(e)
+                log.error(e)
 
         # 将创建窗口的操作排队到主线程事件循环
         QTimer.singleShot(0, app, create_and_show)

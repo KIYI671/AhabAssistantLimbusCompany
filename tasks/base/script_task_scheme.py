@@ -76,7 +76,7 @@ def onetime_mir_process(team_setting):
             return False
     except Exception as e:
         msg = f"镜牢行动出错: {e}"
-        log.ERROR(msg)
+        log.error(msg)
         return False
 
 def to_get_reward():
@@ -112,14 +112,14 @@ def script_task() -> None | int:
         if cfg.experimental_auto_lang:
             ret = auto_switch_language_in_game(screen.handle._hWnd)
             if ret == AutoSwitchCon.FAILED:
-                log.INFO(f"自动切换语言失败，使用英语尝试")
+                log.info(f"自动切换语言失败，使用英语尝试")
                 cfg.set_value("language_in_game", "en")
         else:
             if cfg.language_in_game == "-":
-                log.WARNING("自动切换语言已关闭但是并未设置语言! 即将使用英语尝试!")
+                log.warning("自动切换语言已关闭但是并未设置语言! 即将使用英语尝试!")
                 cfg.set_value("language_in_game", "en")
     except Exception as e:
-        log.ERROR(f"自动切换语言出错: {e}，使用英语尝试")
+        log.error(f"自动切换语言出错: {e}，使用英语尝试")
         cfg.set_value("language_in_game", "en")
 
     if cfg.language_in_game == "zh_cn":
@@ -229,7 +229,7 @@ def script_task() -> None | int:
     if cfg.set_reduce_miscontact:
         screen.reset_win()
 
-    log.INFO("脚本任务已经完成")
+    log.info("脚本任务已经完成")
 
     if platform.system() == "Windows":
         after_completion = cfg.after_completion
@@ -244,13 +244,13 @@ def script_task() -> None | int:
                 _, pid = win32process.GetWindowThreadProcessId(screen.handle._hWnd)
                 ret = os.system(f'taskkill /F /PID {pid}')
                 if ret == 0:
-                    log.INFO("成功关闭 Limbus Company")
+                    log.info("成功关闭 Limbus Company")
                 elif ret == 128:
-                    log.ERROR("错误：进程不存在")
+                    log.error("错误：进程不存在")
                 elif ret == 1:
-                    log.ERROR("错误：权限不足")
+                    log.error("错误：权限不足")
         except Exception as e:
-            log.ERROR(f"脚本结束后的操作失败: {e}")
+            log.error(f"脚本结束后的操作失败: {e}")
 
         finally:
             if after_completion == 5 or after_completion == 6:
@@ -296,12 +296,12 @@ class my_script_task(QThread):
             self.exception = e
         except Exception as e:
             self.exception = e
-            log.ERROR(f"出现错误: {e}")
+            log.error(f"出现错误: {e}")
         finally:
             if self.exc_traceback != '':
                 self.exc_traceback = ''.join(
                     format_exception(*exc_info()))
-                log.ERROR(self.exc_traceback)
+                log.error(self.exc_traceback)
                 self.mutex.unlock()
 
         self.finished_signal.emit()
@@ -317,8 +317,8 @@ class my_script_task(QThread):
                 self.kill_signal.emit()
             auto.clear_img_cache()
         except Exception as e:
-            log.ERROR(f"出现错误: {e}")
+            log.error(f"出现错误: {e}")
             self.exc_traceback = ''.join(
                 format_exception(*exc_info()))
-            log.ERROR(self.exc_traceback)
+            log.error(self.exc_traceback)
             self.mutex.unlock()

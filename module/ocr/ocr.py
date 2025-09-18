@@ -22,15 +22,15 @@ class OCR(metaclass=SingletonMeta):
     def init_ocr(self):
         if self.ocr is None:
             try:
-                self.logger.DEBUG("开始初始化OCR...")
+                self.logger.debug("开始初始化OCR...")
                 self.ocr = GetOcrApi(self.exe_path, self.my_argument)
-                self.logger.DEBUG("初始化OCR完成")
+                self.logger.debug("初始化OCR完成")
                 atexit.register(self.exit_ocr)
             except Exception as e:
-                self.logger.ERROR(f"初始化OCR失败：{e}")
+                self.logger.error(f"初始化OCR失败：{e}")
                 from module.ocr import ocr_installer
                 ocr_installer.check_again()
-                self.logger.ERROR("请尝试重新下载或解压")
+                self.logger.error("请尝试重新下载或解压")
                 raise Exception("初始化OCR失败")
 
     def exit_ocr(self) -> None:
@@ -38,7 +38,7 @@ class OCR(metaclass=SingletonMeta):
         if self.ocr is not None:
             self.ocr.exit()
             self.ocr = None
-            self.logger.DEBUG("OCR已退出")
+            self.logger.debug("OCR已退出")
 
     def run(self, image: Image.Image | np.ndarray | str) -> dict:
         """执行OCR识别，支持Image对象、文件路径和np.ndarray对象"""
@@ -65,13 +65,13 @@ class OCR(metaclass=SingletonMeta):
             self.log_results(original_dist)
             return original_dist
         except Exception as e:
-            self.logger.ERROR(e)
+            self.logger.error(e)
             return {}
 
     def log_results(self, modified_dist: dict) -> None:
         """记录OCR识别记录"""
         if "data" in modified_dist and "text" in modified_dist["data"][0]:
             print_list = [item["text"] for item in modified_dist["data"]]
-            self.logger.DEBUG(f"OCR识别结果：{print_list}")
+            self.logger.debug(f"OCR识别结果：{print_list}")
         else:
-            self.logger.DEBUG(f"OCR识别结果：{modified_dist}")
+            self.logger.debug(f"OCR识别结果：{modified_dist}")

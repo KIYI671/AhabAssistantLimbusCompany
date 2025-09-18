@@ -39,7 +39,7 @@ def EXP_luxcavation():
         if loop_count < 10:
             auto.model = 'aggressive'
         if loop_count < 0:
-            log.ERROR("无法进入经验本,不能进行下一步,此次经验本无效")
+            log.error("无法进入经验本,不能进行下一步,此次经验本无效")
             break
 
 
@@ -81,5 +81,5 @@ def thread_luxcavation():
         if loop_count < 10:
             auto.model = 'aggressive'
         if loop_count < 0:
-            log.ERROR("无法进入纽本,不能进行下一步,此次纽本无效")
+            log.error("无法进入纽本,不能进行下一步,此次纽本无效")
             break
