@@ -232,7 +232,7 @@ class Mirror:
                             sc = ImageUtils.crop(np.array(auto.screenshot), get_floor_bbox)
                             mask = cv2.inRange(sc, 75, 255)
                             result = ocr.run(mask)
-                            ocr_result = [item["text"] for item in result["data"]]
+                            ocr_result = [result.txts[i] for i in range(len(result.txts))]
                             ocr_result = "".join(ocr_result)
                             result = ocr_result.split(" ")
                             floor = result[-1][0]

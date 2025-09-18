@@ -294,7 +294,6 @@ class InfiniteBattles(QWidget):
             from module.game_and_screen import screen
             from module.ocr import ocr
             screen.reset_win()
-            ocr.exit_ocr()
             auto.clear_img_cache()
         except Exception:
             # 忽略清理异常，避免影响关闭

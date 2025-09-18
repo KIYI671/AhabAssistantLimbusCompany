@@ -293,7 +293,6 @@ class FarmingInterfaceLeft(QWidget):
             self._enable_setting(self.parent)
             mediator.refresh_teams_order.emit()
             self.stop_script()
-            ocr.exit_ocr()
             auto.clear_img_cache()
 
     def _disable_setting(self, parent):

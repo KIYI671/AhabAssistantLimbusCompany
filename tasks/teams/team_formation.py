@@ -72,8 +72,8 @@ def select_battle_team(num):
                 auto.mouse_click(first_position[0], first_position[1] + 100 * scale + 75 * team_order * scale)
         else:
             if cfg.language_in_game == 'en':
-                team_name = "TEAMS#" + str(num)
-                team_name_error_correcting = "TFAMS#" + str(num)
+                team_name = [f"TEAMS #{num}", f"TEAMS#{num}"]
+                team_name_error_correcting = f"TFAMS#{num}" 
             elif cfg.language_in_game == 'zh_cn':
                 team_name = "编队#" + str(num)
                 team_name_error_correcting = "编队#" + str(num)

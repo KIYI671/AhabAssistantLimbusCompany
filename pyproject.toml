@@ -26,11 +26,11 @@ dependencies = [
     "numpy",
     "opencv-python",
     "pillow",
-    "cpufeature",
     "psutil",
     "onnxruntime==1.20.1",
     "concurrent-log-handler>=0.9.28",
     "colorlog>=6.9.0",
+    "rapidocr>=3.4.0",
 ]
 
 [project.urls]

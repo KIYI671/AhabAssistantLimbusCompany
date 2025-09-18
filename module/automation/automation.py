@@ -270,16 +270,19 @@ class Automation(metaclass=SingletonMeta):
             ocr_result = ocr.run(cropped_image)
         else:
             ocr_result = ocr.run(self.screenshot)
-        if "data" in ocr_result and "text" in ocr_result["data"][0]:
-            ocr_text_list = [item["text"] for item in ocr_result["data"]]
+        if ocr_result.txts:
+            ocr_text_list = [ocr_result.txts[i] for i in range(len(ocr_result.txts))]
             if only_text:
                 return ocr_text_list
             ocr_position_list = []
-            for item in ocr_result["data"]:
-                x = (item["box"][0][0] + item["box"][3][0]) / 2
-                y = (item["box"][0][1] + item["box"][3][1]) / 2
+
+            for box in ocr_result.boxes:
+                x = (box[0][0] + box[2][0]) / 2
+                y = (box[0][1] + box[2][1]) / 2
                 ocr_position_list.append([x, y])
+
             ocr_dict = {text: position for text, position in zip(ocr_text_list, ocr_position_list)}
+            log.debug(f"识别到文本及其坐标：{ocr_dict}")
         else:
             ocr_dict = {}
         if ocr_dict == {}:
@@ -312,10 +315,11 @@ class Automation(metaclass=SingletonMeta):
             ocr_result = ocr.run(cropped_image)
         else:
             ocr_result = ocr.run(self.screenshot)
-        if "data" in ocr_result and "text" in ocr_result["data"][0]:
-            ocr_text_list = [item["text"] for item in ocr_result["data"]]
+        if ocr_result.txts:
+            ocr_text_list = [ocr_result.txts[i] for i in range(len(ocr_result.txts))]
         else:
             ocr_text_list = []
+        
         return ocr_text_list
 
     def find_feature_element(self, target, pic_crop=None, min_matches=8):
