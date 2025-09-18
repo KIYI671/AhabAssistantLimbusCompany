@@ -8,7 +8,7 @@ from module.automation import auto
 from module.config import cfg
 from module.decorator.decorator import begin_and_finish_time_log
 from module.logger import log
-from module.my_error.my_error import unableToFindTeamError, InputAttributeError
+from module.my_error.my_error import unableToFindTeamError, InputAttributeError, backMainWinError, cannotOperateGameError
 from module.ocr import ocr
 from tasks import all_systems, start_gift
 from tasks.base.back_init_menu import back_init_menu
@@ -369,7 +369,7 @@ class Mirror:
                 log.DEBUG("识别模式切换到激进模式，警告，道中识别可能会出错")
             if main_loop_count < 0:
                 if back_menu_count > 5:
-                    raise log.ERROR("镜牢道中出错,请手动操作重试")
+                    raise backMainWinError("镜牢道中出错,请手动操作重试")
                 log.ERROR("镜牢道中识别失败次数达到最大值,正在返回主界面")
                 back_init_menu()
                 back_menu_count += 1
@@ -452,7 +452,7 @@ class Mirror:
                 auto.model = 'aggressive'
                 log.DEBUG("识别模式切换到激进模式")
             if main_loop_count < 0:
-                raise log.ERROR("镜牢奖励领取出错,请手动操作重试")
+                raise cannotOperateGameError("镜牢奖励领取出错,请手动操作重试")
 
         if failed:
             return False
@@ -546,7 +546,7 @@ class Mirror:
                 auto.model = 'aggressive'
                 log.DEBUG("识别模式切换到激进模式")
             if loop_count < 0:
-                raise log.ERROR("无法进入镜牢，不能进行下一步,请手动操作重试")
+                raise cannotOperateGameError("无法进入镜牢，不能进行下一步,请手动操作重试")
 
     def select_init_ego_gift(self):
         scroll = False
@@ -992,7 +992,7 @@ class Mirror:
                 auto.model = 'aggressive'
                 log.DEBUG("识别模式切换到激进模式")
             if main_loop_count < 0:
-                raise log.ERROR("镜牢奖励领取出错,请手动操作重试")
+                raise cannotOperateGameError("镜牢奖励领取出错,请手动操作重试")
 
     @begin_and_finish_time_log(task_name="镜牢商店")
     def in_shop(self):

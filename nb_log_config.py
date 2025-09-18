@@ -47,7 +47,7 @@ SHOW_IMPORT_NB_LOG_CONFIG_PATH = True  # 是否打印读取的nb_log_config.py�
 WHITE_COLOR_CODE = 37  # 不同pycharm版本和主题,有的对白颜色生效的代号是97,有的是37, 这里可以设置 37和97, 如2023 pycahrm的console color,白颜色捕获的是97,如果这里写37,调节pycharm颜色没法调.
 
 DEFAULT_ADD_MULTIPROCESSING_SAFE_ROATING_FILE_HANDLER = False  # 是否默认同时将日志记录到记log文件记事本中，就是用户不指定 log_filename的值，会自动写入日志命名空间.log文件中。
-AUTO_WRITE_ERROR_LEVEL_TO_SEPARATE_FILE = True  # 自动把错误error级别以上日志写到单独的文件，根据log_filename名字自动生成错误文件日志名字。
+AUTO_WRITE_ERROR_LEVEL_TO_SEPARATE_FILE = False  # 自动把错误error级别以上日志写到单独的文件，根据log_filename名字自动生成错误文件日志名字。
 LOG_FILE_SIZE = 1000  # 单位是M,每个文件的切片大小，超过多少后就自动切割
 LOG_FILE_BACKUP_COUNT = 10  # 对同一个日志文件，默认最多备份几个文件，超过就删除了。
 
