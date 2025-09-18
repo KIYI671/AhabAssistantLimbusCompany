@@ -53,6 +53,9 @@ class Logger(metaclass=SingletonMeta):
             console_handler.setFormatter(console_formatter)
             console_handler.setLevel(logging.DEBUG)
 
+            # 创建日志目录
+            os.makedirs("./logs", exist_ok=True)
+
             # debug日志文件，按文件大小切割
             debug_file_handler = ConcurrentRotatingFileHandler(
                 "./logs/debugLog.log",
