@@ -9,14 +9,6 @@ import numpy as np
 from PIL import Image
 from cv2 import createCLAHE
 
-# patch rapidocr 避免污染全局logger
-from rapidocr.utils import log
-
-for handler in log.logger.handlers:
-    if isinstance(handler, logging.StreamHandler):
-        log.logger.removeHandler(handler)
-log.logger = log.Logger(log_level=logging.INFO, logger_name="RapidOCR").get_log()
-
 from rapidocr import EngineType, LangDet, LangRec, ModelType, OCRVersion, RapidOCR
 from rapidocr.utils.output import RapidOCROutput
 

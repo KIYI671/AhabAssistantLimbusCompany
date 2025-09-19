@@ -62,7 +62,7 @@ requires-dist = [
     { name = "pyside6-fluent-widgets", specifier = ">=1.8.7" },
     { name = "pyuac", specifier = "~=0.0.3" },
     { name = "pywin32" },
-    { name = "rapidocr", specifier = ">=3.4.0" },
+    { name = "rapidocr", specifier = ">=3.4.1" },
     { name = "requests" },
     { name = "ruamel-yaml" },
 ]
@@ -3527,7 +3527,7 @@ wheels = [
 
 [[package]]
 name = "rapidocr"
-version = "3.4.0"
+version = "3.4.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "colorlog" },
@@ -3543,7 +3543,7 @@ dependencies = [
     { name = "tqdm" },
 ]
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/e1/e4/09ec2657421f1f23eec6b40ecbee77bbf3ff053c1483d8f2ed62d285bcf3/rapidocr-3.4.0-py3-none-any.whl", hash = "sha256:08d72f4c3a566bc76ac5c8d65d1e1c39550222b3b41b73aef976914ce80f48db", size = 15055924, upload-time = "2025-09-06T10:05:32.735Z" },
+    { url = "https://files.pythonhosted.org/packages/f3/58/2320ca60d9fac735b68fedb3500f5705520fccf0a759ddaf59cd0e7e67d3/rapidocr-3.4.1-py3-none-any.whl", hash = "sha256:3e1e6b339a953282c9b3892c546ea7defa4e471df5e38295d8682bc79c7d5fc9", size = 15055933, upload-time = "2025-09-18T22:43:38.189Z" },
 ]
 
 [[package]]
