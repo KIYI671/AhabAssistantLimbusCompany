@@ -70,7 +70,8 @@ def make_enkephalin_module(cancel=False):
             start_time = time.time()
             continue
         if auto.find_element("enkephalin/use_lunacy_assets.png") is None:
-            auto.click_element("home/enkephalin_box_assets.png")
+            if auto.click_element("home/enkephalin_box_assets.png"):
+                sleep(0.5)
             continue
         auto.click_element("enkephalin/all_in_assets.png")
         auto.click_element("enkephalin/enkephalin_confirm_assets.png")
