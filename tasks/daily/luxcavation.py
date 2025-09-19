@@ -13,15 +13,14 @@ def EXP_luxcavation():
             continue
         if auto.find_element("battle/teams_assets.png"):
             break
-        if auto.click_element("luxcavation/exp_enter_1_assets.png", model='normal'):
-            sleep(1)
-            continue
-        if auto.click_element("luxcavation/exp_enter_2_assets.png", model='normal'):
-            sleep(1)
-            continue
-        if auto.click_element("luxcavation/exp_enter_3_assets.png", model='normal'):
-            sleep(1)
-            continue
+        if auto.find_element("luxcavation/exp_enter.png", threshold=0.85, take_screenshot=True):
+            if level := auto.find_element("luxcavation/exp_enter.png", find_type="image_with_multiple_targets"):
+                level = sorted(level, key=lambda x: x[0], reverse=True)
+                for lv in level:
+                    auto.mouse_click(lv[0], lv[1])
+                    sleep(0.5)
+                    if auto.find_element("battle/teams_assets.png", take_screenshot=True):
+                        break
         if auto.click_element("home/luxcavation_assets.png"):
             continue
         if auto.find_element("base/renew_confirm_assets.png", model="clam") and auto.find_element("home/drive_assets.png",
@@ -59,6 +58,7 @@ def thread_luxcavation():
                     level = sorted(level, key=lambda y: y[1], reverse=True)
                     for lv in level:
                         auto.mouse_click(lv[0], lv[1])
+                        sleep(0.5)
                         if auto.find_element("battle/teams_assets.png", take_screenshot=True):
                             break
             continue
