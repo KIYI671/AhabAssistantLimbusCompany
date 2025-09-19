@@ -9,9 +9,9 @@ def main():
     cmd = [
         "uv",
         "export",
-        "--no-hashes",
-        "--no-annotate",
-        "--no-dev",
+        "--no-hashes",   # 不包含package哈希
+        "--no-annotate", # 不包含这个包是由谁引入的注释
+        "--no-dev",      # 不包含开发依赖
         "--format",
         "requirements-txt",
     ]
@@ -24,6 +24,7 @@ def main():
 
     filtered = []
     for line in result.stdout.splitlines():
+        # 删除macOS和Linux特供的依赖
         if not (("darwin" in line or "linux" in line) and "sys_platform" in line):
             filtered.append(line)
 

@@ -33,6 +33,9 @@ dependencies = [
     "rapidocr>=3.4.1",
 ]
 
+[dependency-groups]
+dev = ["pyinstaller>=6.16.0", "ruff>=0.13.1"]
+
 [project.urls]
 Homepage = "https://github.com/KIYI671/AhabAssistantLimbusCompany"
 Source = "https://github.com/KIYI671/AhabAssistantLimbusCompany"
@@ -40,8 +43,8 @@ Issues = "https://github.com/KIYI671/AhabAssistantLimbusCompany/issues"
 
 [tool.uv]
 managed = true
-dev-dependencies = ["pyinstaller"]
 
+# used by `pyside6-project lupdate`
 [tool.pyside6-project]
 files = [
     "main.py",
