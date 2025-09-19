@@ -129,6 +129,8 @@ class MainWindow(FramelessWindow):
             num = int(re.search(r'team(\d+)_setting', target).group(1))
             if "team_setting" in list(self.pivot.items.keys()):
                 list(self.pivot.items.values())[-1].click()
+                message = self.tr("存在未保存的队伍设置")
+                mediator.warning.emit(message)
                 self.pivot.setCurrentItem("team_setting")
             else:
                 """切换页面（带越界保护）"""

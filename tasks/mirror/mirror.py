@@ -123,6 +123,9 @@ class Mirror:
             if auto.find_element("mirror/road_to_mir/dreaming_star/coins_assets.png"):
                 # 防止卡在星光选择
                 break
+            if auto.find_element("mirror/theme_pack/feature_theme_pack_assets.png"):
+                # 防止卡死在主题包页面
+                break
             if retry() is False:
                 return False
             loop_count -= 1

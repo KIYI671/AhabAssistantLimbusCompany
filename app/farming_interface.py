@@ -4,7 +4,7 @@ from PyQt5 import QtWidgets
 from PyQt5.QtCore import QFile, QTextStream, QTimer
 from PyQt5.QtWidgets import QApplication
 from pynput import keyboard
-from qfluentwidgets import TextEdit
+from qfluentwidgets import TextEdit, TransparentToolButton
 from qfluentwidgets.window.stacked_widget import StackedWidget
 
 from app.base_combination import *
@@ -253,7 +253,7 @@ class FarmingInterfaceLeft(QWidget):
                     useful = True
                     break
             if useful is False:
-                if hard :
+                if hard:
                     message = self.tr("启用了困牢，但是无可用于困牢的队伍")
                 else:
                     message = self.tr("启用了普牢，但是无可用于普牢的队伍")
@@ -292,7 +292,7 @@ class FarmingInterfaceLeft(QWidget):
             if child.objectName() == "link_start":
                 continue
             # 检查是否为目标控件类型
-            if isinstance(child, (CheckBox, PushButton, ComboBox, SpinBox)):
+            if isinstance(child, (CheckBox, PushButton, ComboBox, SpinBox, TransparentToolButton)):
                 child.setEnabled(False)
             else:
                 # 递归处理子部件的子部件（如布局中的嵌套控件）
@@ -306,7 +306,7 @@ class FarmingInterfaceLeft(QWidget):
             if child.objectName() == "set_windows":
                 continue
             # 检查是否为目标控件类型
-            if isinstance(child, (CheckBox, PushButton, ComboBox, SpinBox)):
+            if isinstance(child, (CheckBox, PushButton, ComboBox, SpinBox, TransparentToolButton)):
                 child.setEnabled(True)
             else:
                 # 递归处理子部件的子部件（如布局中的嵌套控件）

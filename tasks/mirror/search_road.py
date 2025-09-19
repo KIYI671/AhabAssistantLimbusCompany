@@ -205,6 +205,7 @@ def search_road_from_road_map(hard_mode=False):
 
     if bus_position := auto.find_element("mirror/mybus_default_distance.png", take_screenshot=True):
         from tasks.base.retry import check_times
+        change_times = 5
         while True:
             if auto.get_restore_time() is not None:
                 start_time = max(start_time, auto.get_restore_time())
@@ -223,6 +224,10 @@ def search_road_from_road_map(hard_mode=False):
 
             bus_position = auto.find_element("mirror/mybus_default_distance.png", take_screenshot=True)
             if bus_position is None:
+                break
+            change_times -= 1
+            if change_times <= 0:
+                bus = bus_position
                 break
 
     bus_pos = auto.find_element("mirror/mybus_default_distance.png")
