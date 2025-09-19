@@ -31,7 +31,7 @@ jobs:
       # 构建并打包程序
       - name: build & bundle
         run: |
-          uv run python ./build.py --version ${{ inputs.version }}
+          uv run python ./scripts/build.py --version ${{ inputs.version }}
 
       # 上传打包结果
       - name: Upload build artifacts
