@@ -113,6 +113,7 @@ def script_task() -> None | int:
     elif cfg.language_in_game == "en":
         while pic_path[0] != "share":
             pic_path.pop(0)
+        pic_path.insert(0, "en")
 
     if cfg.resonate_with_Ahab:
         random_number = random.randint(1, 4)
