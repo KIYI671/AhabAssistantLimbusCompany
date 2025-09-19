@@ -393,7 +393,8 @@ class Mirror:
             if not auto.find_element(
                     "mirror/claim_reward/complete_mirror_100%_assets.png") and failed is None and cfg.floor_3_exit is False:
                 failed = True
-            if auto.find_element("mirror/claim_reward/complete_mirror_100%_assets.png"):
+            if auto.find_element("mirror/claim_reward/complete_mirror_100%_assets.png") \
+                or auto.find_element("mirror/claim_reward/clear_assets.png"):
                 failed = False
             # 如果回到主界面，退出循环
             if auto.find_element("home/drive_assets.png"):
@@ -431,12 +432,16 @@ class Mirror:
                     pos = auto.find_element("mirror/claim_reward/use_enkephalin_assets.png", take_screenshot=True)
                     if pos:
                         auto.mouse_click(pos[0] - 300 * (cfg.set_win_size / 1440), pos[1])
+                        sleep(1)
                     continue
                 elif auto.click_element("mirror/claim_reward/claim_rewards_assets.png"):
                     sleep(1)
+                    if auto.click_element("mirror/claim_reward/use_enkephalin_assets.png", take_screenshot=True):
+                        sleep(1)
                     # TODO: 统计获取的coins
                     continue
             if auto.click_element("mirror/claim_reward/use_enkephalin_assets.png", threshold=0.75):  # 降低识别阈值
+                sleep(1)
                 continue
             # 处理周年活动弹出的窗口
             if auto.click_element("home/close_anniversary_event_assets.png"):
@@ -971,12 +976,16 @@ class Mirror:
                 pos = auto.find_element("mirror/claim_reward/use_enkephalin_assets.png", take_screenshot=True)
                 if pos:
                     auto.mouse_click(pos[0] - 300 * (cfg.set_win_size / 1440), pos[1])
+                    sleep(1)
                 continue
             elif auto.click_element("mirror/claim_reward/claim_rewards_assets.png"):
                 sleep(1)
+                if auto.click_element("mirror/claim_reward/use_enkephalin_assets.png", take_screenshot=True):
+                    sleep(1)
                 # TODO: 统计获取的coins
                 continue
             if auto.click_element("mirror/claim_reward/use_enkephalin_assets.png", threshold=0.75):  # 降低识别阈值
+                sleep(1)
                 continue
             # 处理周年活动弹出的窗口
             if auto.click_element("home/close_anniversary_event_assets.png"):
