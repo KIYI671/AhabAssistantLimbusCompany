@@ -53,14 +53,14 @@ def thread_luxcavation():
             continue
         if auto.find_element("battle/teams_assets.png"):
             break
-        if auto.find_element("luxcavation/thread_lv.png", threshold=0.85):
-            if level := auto.find_element("luxcavation/thread_lv.png", find_type="image_with_multiple_targets"):
-                level = sorted(level, key=lambda y: y[1], reverse=True)
-                for lv in level:
-                    auto.mouse_click(lv[0], lv[1])
-                    if auto.find_element("battle/teams_assets.png", take_screenshot=True):
-                        break
         if auto.click_element("luxcavation/thread_enter_assets.png", threshold=0.78):
+            if auto.find_element("luxcavation/thread_lv.png", threshold=0.85, take_screenshot=True):
+                if level := auto.find_element("luxcavation/thread_lv.png", find_type="image_with_multiple_targets"):
+                    level = sorted(level, key=lambda y: y[1], reverse=True)
+                    for lv in level:
+                        auto.mouse_click(lv[0], lv[1])
+                        if auto.find_element("battle/teams_assets.png", take_screenshot=True):
+                            break
             continue
         if auto.click_element("luxcavation/thread_assets.png"):
             continue
