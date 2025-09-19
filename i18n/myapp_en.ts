@@ -201,6 +201,11 @@
         <source>链接战第一回合全员防御</source>
         <translation>defense first round in normal encounters</translation>
     </message>
+    <message>
+        <location filename="../app/page_card.py" line="391"/>
+        <source>再次领取奖励</source>
+        <translation>re claim rewards again</translation>
+    </message>
 </context>
 <context>
     <name>BaseComboBox</name>
@@ -609,7 +614,7 @@
     <message>
         <location filename="../app/tools_interface.py" line="34"/>
         <source>这只是一个为你自动按下P键和Enter键的小工具，不要怀抱太多期待</source>
-        <translation>It's just a gadget that automatically presses the P and Enter keys for you, so don't expect too much</translation>
+        <translation>It&apos;s just a gadget that automatically presses the P and Enter keys for you, so don&apos;t expect too much</translation>
     </message>
 </context>
 <context>
@@ -1130,57 +1135,57 @@
 <context>
     <name>MainWindow</name>
     <message>
-        <location filename="../app/my_app.py" line="266"/>
+        <location filename="../app/my_app.py" line="268"/>
         <source>队伍设置</source>
         <translation>Team Settings</translation>
     </message>
     <message>
-        <location filename="../app/my_app.py" line="260"/>
+        <location filename="../app/my_app.py" line="262"/>
         <source>一键长草</source>
         <translation>One-Click Grass Mode</translation>
     </message>
     <message>
-        <location filename="../app/my_app.py" line="261"/>
+        <location filename="../app/my_app.py" line="263"/>
         <source>帮助</source>
         <translation>Help</translation>
     </message>
     <message>
-        <location filename="../app/my_app.py" line="263"/>
+        <location filename="../app/my_app.py" line="265"/>
         <source>设置</source>
         <translation>Settings</translation>
     </message>
     <message>
-        <location filename="../app/my_app.py" line="158"/>
+        <location filename="../app/my_app.py" line="160"/>
         <source>设置未保存</source>
         <translation>SETTINGS UNSAVE</translation>
     </message>
     <message>
-        <location filename="../app/my_app.py" line="158"/>
+        <location filename="../app/my_app.py" line="160"/>
         <source>存在未保存的设置，请执行保存或取消操作</source>
-        <translation>Didn't save settings, please do save or cancel</translation>
+        <translation>Didn&apos;t save settings, please do save or cancel</translation>
     </message>
     <message>
-        <location filename="../app/my_app.py" line="262"/>
+        <location filename="../app/my_app.py" line="264"/>
         <source>小工具</source>
         <translation>Gadget</translation>
     </message>
     <message>
-        <location filename="../app/my_app.py" line="249"/>
+        <location filename="../app/my_app.py" line="251"/>
         <source>更新提醒</source>
         <translation>Update Notice</translation>
     </message>
     <message>
-        <location filename="../app/my_app.py" line="249"/>
+        <location filename="../app/my_app.py" line="251"/>
         <source>下载已经完成，是否开始更新</source>
         <translation>Download completed, would you like to start updating</translation>
     </message>
     <message>
-        <location filename="../app/my_app.py" line="172"/>
+        <location filename="../app/my_app.py" line="174"/>
         <source>任务设置出错</source>
         <translation>Task settings are incorrect</translation>
     </message>
     <message>
-        <location filename="../app/my_app.py" line="172"/>
+        <location filename="../app/my_app.py" line="174"/>
         <source>未设置任何任务，请勾选主页面左边的选项框需要执行的任务</source>
         <translation>No task is set, check the task to be performed in the option box on the left side of the main page</translation>
     </message>
@@ -1190,9 +1195,14 @@
         <translation type="obsolete">Warning！</translation>
     </message>
     <message>
-        <location filename="../app/my_app.py" line="165"/>
+        <location filename="../app/my_app.py" line="167"/>
         <source>警告！</source>
         <translation>Warning！</translation>
+    </message>
+    <message>
+        <location filename="../app/my_app.py" line="132"/>
+        <source>存在未保存的队伍设置</source>
+        <translation>There are unsaved team settings</translation>
     </message>
 </context>
 <context>
@@ -1299,7 +1309,7 @@
         <translation>Team1</translation>
     </message>
     <message>
-        <location filename="../app/page_card.py" line="427"/>
+        <location filename="../app/page_card.py" line="432"/>
         <source>编队</source>
         <translation>Team</translation>
     </message>
