@@ -432,16 +432,16 @@ class Mirror:
                     pos = auto.find_element("mirror/claim_reward/use_enkephalin_assets.png", take_screenshot=True)
                     if pos:
                         auto.mouse_click(pos[0] - 300 * (cfg.set_win_size / 1440), pos[1])
-                        sleep(0.5)
+                        sleep(1)
                     continue
                 elif auto.click_element("mirror/claim_reward/claim_rewards_assets.png"):
                     sleep(1)
                     if auto.click_element("mirror/claim_reward/use_enkephalin_assets.png", take_screenshot=True):
-                        sleep(0.5)
+                        sleep(1)
                     # TODO: 统计获取的coins
                     continue
             if auto.click_element("mirror/claim_reward/use_enkephalin_assets.png", threshold=0.75):  # 降低识别阈值
-                sleep(0.5)
+                sleep(1)
                 continue
             # 处理周年活动弹出的窗口
             if auto.click_element("home/close_anniversary_event_assets.png"):
@@ -976,16 +976,16 @@ class Mirror:
                 pos = auto.find_element("mirror/claim_reward/use_enkephalin_assets.png", take_screenshot=True)
                 if pos:
                     auto.mouse_click(pos[0] - 300 * (cfg.set_win_size / 1440), pos[1])
-                    sleep(0.5)
+                    sleep(1)
                 continue
             elif auto.click_element("mirror/claim_reward/claim_rewards_assets.png"):
                 sleep(1)
                 if auto.click_element("mirror/claim_reward/use_enkephalin_assets.png", take_screenshot=True):
-                    sleep(0.5)
+                    sleep(1)
                 # TODO: 统计获取的coins
                 continue
             if auto.click_element("mirror/claim_reward/use_enkephalin_assets.png", threshold=0.75):  # 降低识别阈值
-                sleep(0.5)
+                sleep(1)
                 continue
             # 处理周年活动弹出的窗口
             if auto.click_element("home/close_anniversary_event_assets.png"):
