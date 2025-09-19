@@ -80,6 +80,21 @@ def onetime_mir_process(team_setting):
         log.ERROR(msg)
         return False
 
+def to_get_reward():
+    if cfg.set_get_prize == 0:
+        back_init_menu()
+        get_pass_prize()
+        back_init_menu()
+        get_mail_prize()
+        back_init_menu()
+    elif cfg.set_get_prize == 1:
+        back_init_menu()
+        get_pass_prize()
+        back_init_menu()
+    else:
+        back_init_menu()
+        get_mail_prize()
+        back_init_menu()
 
 def init_game():
     game_process.start_game()
@@ -139,20 +154,7 @@ def script_task() -> None | int:
             onetime_thread_process()
     # 执行奖励领取任务
     if cfg.get_reward:
-        if cfg.set_get_prize == 0:
-            back_init_menu()
-            get_pass_prize()
-            back_init_menu()
-            get_mail_prize()
-            back_init_menu()
-        elif cfg.set_get_prize == 1:
-            back_init_menu()
-            get_pass_prize()
-            back_init_menu()
-        else:
-            back_init_menu()
-            get_mail_prize()
-            back_init_menu()
+        to_get_reward()
 
     # 执行狂气换饼任务
     if cfg.buy_enkephalin:
@@ -221,6 +223,9 @@ def script_task() -> None | int:
                     cfg.set_value("hard_mirror_chance", chance)
                     if chance == 0:
                         cfg.set_value("hard_mirror", False)
+
+        if cfg.re_claim_rewards:
+            to_get_reward()
 
     if cfg.set_reduce_miscontact:
         screen.reset_win()

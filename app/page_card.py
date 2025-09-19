@@ -388,6 +388,11 @@ class PageMirror(PageCard):
             QT_TRANSLATE_NOOP("BaseCheckBox", "第五层选择（最左边）活动卡包"),
             center=False
         )
+        self.re_claim_rewards = BaseCheckBox(
+            "re_claim_rewards", None,
+            QT_TRANSLATE_NOOP("BaseCheckBox", "再次领取奖励"),
+            center=False
+        )
 
     def __init_layout(self):
         self.vbox_general.addWidget(self.team)
