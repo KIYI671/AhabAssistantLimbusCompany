@@ -195,7 +195,7 @@ class InfiniteBattles(QWidget):
         # 创建布局
         layout = QVBoxLayout()
         
-        if cfg.language_in_game == 'zh_cn':
+        if cfg.language_in_program == 'zh_cn':
             instruction_text = "你来到了\"都市\"，这里是不战斗就无法生存的修罗场\n\n幸好你得到了亚哈神力的相助\n\n\"亚哈降神附身代打\"获得了"
         else:
             instruction_text = "You have arrived at the 'The City', a crucible where survival is impossible without combat.\n\nFortunately, you have gained the aid of Ahab's divine power.\n\nEmpowered by Ahab's possession, she will fight for you."
