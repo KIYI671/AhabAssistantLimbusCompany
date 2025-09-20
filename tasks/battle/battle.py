@@ -1,6 +1,5 @@
 from time import sleep
 
-
 from module.automation import auto
 from module.config import cfg
 from module.decorator.decorator import begin_and_finish_time_log
@@ -283,14 +282,17 @@ class Battle:
 
             bbox = (gear_1[0], gear_1[1] - 15 * scale, gear_2[0], gear_1[1])
 
+            skill_nums = int((bbox[2] - bbox[0]) / (145 * scale))
+
+            if skill_nums >= 10:
+                bbox = (bbox[0] + 50 * scale, bbox[1], bbox[2], bbox[3])
+
             sc = auto.get_screenshot_crop(bbox)
 
             skill3 = []
             for sin in sins.keys():
                 skill3 += find_skill3(sc, sins[sin])
             skill3 = [round(x[0] / (145 * scale)) for x in skill3]
-
-            skill_nums = int((bbox[2] - bbox[0]) / (145 * scale))
 
             skill_list = [gear_left]
 
@@ -333,7 +335,7 @@ class Battle:
                 sleep(cfg.mouse_action_interval // 1.5)
 
             skill_list.insert(0, gear_left)
-            skill_list.append([gear_right[0], gear_right[1] + 150 * scale])
+            skill_list.append([gear_right[0] + 75 * scale, gear_right[1] + 150 * scale])
 
             auto.mouse_drag_link(skill_list)
 
