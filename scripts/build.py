@@ -78,9 +78,9 @@ redundant_files = [
     "PySide6/Qt6Network.dll", # 网络相关
     "PySide6/QtNetwork.pyd",
     
-    # rapidocr自带的模型文件，我们只用PPV5模型，可以删掉V4的
-    "rapidocr/models/ch_PP-OCRv4_rec_infer.onnx",
-    "rapidocr/models/ch_PP-OCRv4_det_infer.onnx",
+    # rapidocr自带的模型文件，我们只用PPV4模型，可以删掉V5的
+    "rapidocr/models/ch_PP-OCRv5_rec_mobile_infer.onnx",
+    "rapidocr/models/ch_PP-OCRv5_mobile_det.onnx",
     # rapidocr用来可视化识别结果的字体，我们不用这个功能
     "rapidocr/models/FZYTK.TTF",
     # opencv的videoio插件，我们不需要
