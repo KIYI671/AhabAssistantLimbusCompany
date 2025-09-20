@@ -1,26 +1,53 @@
 # -*- mode: python ; coding: utf-8 -*-
+from pathlib import Path
 
+import rapidocr
+
+block_cipher = None
+
+package_name = "rapidocr"
+install_dir = Path(rapidocr.__file__).resolve().parent
+
+onnx_paths = list(install_dir.rglob("*.onnx"))
+yaml_paths = list(install_dir.rglob("*.yaml"))
+
+onnx_add_data = [(str(v.parent), f"{package_name}/{v.parent.name}") for v in onnx_paths]
+
+yaml_add_data = []
+for v in yaml_paths:
+    if package_name == v.parent.name:
+        yaml_add_data.append((str(v.parent / "*.yaml"), package_name))
+    else:
+        yaml_add_data.append(
+            (str(v.parent / "*.yaml"), f"{package_name}/{v.parent.name}")
+        )
+
+add_data = list(set(yaml_add_data + onnx_add_data))
 
 a = Analysis(
-    ['main.py'],
+    ["main.py"],
     pathex=[],
     binaries=[],
-    datas=[],
-    excludes=['3rdparty'],
+    datas=add_data,
+    hiddenimports=[],
+    hookspath=[],
+    hooksconfig={},
+    runtime_hooks=[],
+    excludes=[],
+    win_no_prefer_redirects=False,
+    win_private_assemblies=False,
+    cipher=block_cipher,
     noarchive=False,
 )
 
-a.datas +=[('my_icon_256X256.ico','my_icon_256X256.ico','DATA')]
-
-pyz = PYZ(a.pure)
+pyz = PYZ(a.pure, a.zipped_data, cipher=block_cipher)
 
 exe = EXE(
     pyz,
     a.scripts,
-    a.datas,
     [],
     exclude_binaries=True,
-    name='AALC',
+    name="AALC",
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
@@ -31,14 +58,15 @@ exe = EXE(
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
-    icon='./assets/logo/my_icon_256X256.ico',
+    icon="./assets/logo/my_icon_256X256.ico",
 )
 coll = COLLECT(
     exe,
     a.binaries,
+    a.zipfiles,
     a.datas,
     strip=False,
     upx=True,
     upx_exclude=[],
-    name='AALC',
+    name="AALC",
 )

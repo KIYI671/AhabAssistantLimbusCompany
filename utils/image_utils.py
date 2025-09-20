@@ -46,13 +46,13 @@ class ImageUtils:
                 image = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
                 return image
         except FileNotFoundError:
-            log.ERROR(f"未找到图片： {image_path} ")
+            log.error(f"未找到图片： {image_path} ")
             return None
         except IOError:
-            log.ERROR(f"无法读取图片： {image_path}")
+            log.error(f"无法读取图片： {image_path}")
             return None
         except Exception as e:
-            log.ERROR(f"加载图片时发生错误： {e}")
+            log.error(f"加载图片时发生错误： {e}")
             return None
 
     @staticmethod
@@ -172,7 +172,7 @@ class ImageUtils:
                 center = (int(max_loc[0]) + w // 2, int(max_loc[1]) + h // 2)
                 return center, max_val
         except Exception as e:
-            log.ERROR(f"图片识别出现错误：{e}")
+            log.error(f"图片识别出现错误：{e}")
 
     @staticmethod
     def match_template_with_multiple_targets(screenshot, template, threshold):

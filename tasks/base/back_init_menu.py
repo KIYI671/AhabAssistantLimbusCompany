@@ -75,5 +75,5 @@ def back_init_menu():
         if loop_count < 10:
             auto.model = 'aggressive'
         if loop_count < 0:
-            log.ERROR("无法返回主界面，不能进行下一步,请手动操作重试")
+            log.error("无法返回主界面，不能进行下一步,请手动操作重试")
             raise backMainWinError("无法返回主界面")

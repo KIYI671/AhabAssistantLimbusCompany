@@ -45,7 +45,7 @@ def get_reward_card(model=0):
         if loop_count < 10:
             auto.model = 'aggressive'
         if loop_count < 0:
-            log.ERROR("无法获取奖励卡")
+            log.error("无法获取奖励卡")
             return
     if retry() is False:
         return False

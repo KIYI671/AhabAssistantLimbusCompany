@@ -1,8 +1,8 @@
 from typing import Union
 
-from PyQt5.QtCore import Qt, pyqtSignal
-from PyQt5.QtGui import QIcon, QFont
-from PyQt5.QtWidgets import QFrame, QHBoxLayout, QVBoxLayout, QSizePolicy, QWidget, QGridLayout, QAction
+from PySide6.QtCore import Qt, Signal
+from PySide6.QtGui import QIcon, QFont, QAction
+from PySide6.QtWidgets import QFrame, QHBoxLayout, QVBoxLayout, QSizePolicy, QWidget, QGridLayout
 from qfluentwidgets import FluentIcon as FIF
 from qfluentwidgets import FluentIconBase, CheckBox, ToggleToolButton, ToolButton, PushButton, \
     BodyLabel, ComboBox, DoubleSpinBox, SpinBox, RoundMenu, SplitToolButton
@@ -153,7 +153,7 @@ class BaseButton(BaseLayout):
 
 
 class NormalTextButton(BaseButton):
-    clicked = pyqtSignal()
+    clicked = Signal()
 
     def __init__(self, button_text, config_name, tactics=1, parent=None):
         super().__init__(config_name, parent=parent)

@@ -1,8 +1,8 @@
 import os
 
-from PyQt5.QtCore import Qt, QUrl, QCoreApplication
-from PyQt5.QtGui import QDesktopServices
-from PyQt5.QtWidgets import QWidget, QFrame, QHBoxLayout, QTextBrowser, QVBoxLayout
+from PySide6.QtCore import Qt, QUrl, QCoreApplication
+from PySide6.QtGui import QDesktopServices
+from PySide6.QtWidgets import QWidget, QFrame, QHBoxLayout, QTextBrowser, QVBoxLayout
 from markdown_it import MarkdownIt
 from mdit_py_plugins.anchors import anchors_plugin
 from qfluentwidgets import FluentIcon as FIF
@@ -16,7 +16,7 @@ from app.base_tools import BaseCheckBox
 from app.language_manager import LanguageManager, SUPPORTED_GAME_LANG_NAME
 from module.config import cfg
 from .markdown_it_imgdiv import imgdiv_plugin, render_div_open, render_div_close
-
+from module.logger import log
 
 class PageCard(QFrame):
 
@@ -469,7 +469,7 @@ class PageMirror(PageCard):
             team.deleteLater()
             team = None
         except Exception as e:
-            print(f"【异常】delete_team 出错：{e}")
+            log.error(f"delete_team 出错：{e}")
 
     def delete_team(self, target: str):
         try:
@@ -496,7 +496,7 @@ class PageMirror(PageCard):
 
             self.retranslateUi()
         except Exception as e:
-            print(f"【异常】delete_team 出错：{e}")
+            log.error(f"delete_team 出错：{e}")
 
     def refresh_team_setting_card(self):
         for i in range(1, 21):

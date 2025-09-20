@@ -1,6 +1,6 @@
-from PyQt5.QtCore import QUrl, QT_TRANSLATE_NOOP, Qt
-from PyQt5.QtGui import QDesktopServices
-from PyQt5.QtWidgets import QWidget, QFileDialog
+from PySide6.QtCore import QUrl, QT_TRANSLATE_NOOP, Qt
+from PySide6.QtGui import QDesktopServices
+from PySide6.QtWidgets import QWidget, QFileDialog
 from qfluentwidgets import FluentIcon as FIF, InfoBarPosition
 from qfluentwidgets import ScrollArea, ExpandLayout
 
@@ -160,13 +160,6 @@ class SettingInterface(ScrollArea):
             QT_TRANSLATE_NOOP("BaseSettingCardGroup", "日志设置"),
             self.scroll_widget
         )
-        self.logs_clean_card = SwitchSettingCard(
-            FIF.BROOM,
-            QT_TRANSLATE_NOOP("SwitchSettingCard", '自动清理日志'),
-            QT_TRANSLATE_NOOP("SwitchSettingCard", "自动清理一周前的日志"),
-            config_name="clean_logs",
-            parent=self.logs_group
-        )
         self.open_logs_card = BasePrimaryPushSettingCard(
             QT_TRANSLATE_NOOP("BasePrimaryPushSettingCard", '日志'),
             FIF.FOLDER_ADD,
@@ -227,7 +220,6 @@ class SettingInterface(ScrollArea):
         self.update_group.addSettingCard(self.update_source_card)
         self.update_group.addSettingCard(self.mirrorchyan_cdk_card)
 
-        self.logs_group.addSettingCard(self.logs_clean_card)
         self.logs_group.addSettingCard(self.open_logs_card)
 
         self.about_group.addSettingCard(self.github_card)
@@ -355,7 +347,6 @@ class SettingInterface(ScrollArea):
         self.check_update_card.retranslateUi()
         self.mirrorchyan_cdk_card.retranslateUi()
         self.logs_group.retranslateUi()
-        self.logs_clean_card.retranslateUi()
         self.about_group.retranslateUi()
         self.open_logs_card.retranslateUi()
         self.github_card.retranslateUi()

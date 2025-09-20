@@ -9,7 +9,7 @@ def begin_and_finish_time_log(task_name, calculate_time=True):
     def decorator(func):
         def wrapper(*args, **kw):
             msg = "开始执行 " + task_name
-            log.INFO(msg)
+            log.info(msg, stacklevel=2)
 
             # 计时开始
             start_time = time.time()
@@ -22,7 +22,7 @@ def begin_and_finish_time_log(task_name, calculate_time=True):
             elapsed_time = end_time - start_time
 
             msg = "结束执行 " + task_name
-            log.INFO(msg)
+            log.info(msg, stacklevel=2)
 
             if calculate_time:
                 # 将总秒数转换为小时、分钟和秒
@@ -31,7 +31,7 @@ def begin_and_finish_time_log(task_name, calculate_time=True):
                 time_string = f"{int(hours):02}:{int(minutes):02}:{int(seconds):02}"
 
                 time_msg = msg + " 耗时:" + time_string
-                log.DEBUG(time_msg)
+                log.debug(time_msg, stacklevel=2) # 让日志显示调用该装饰器的函数名和行号,而不是装饰器内的wrapper
 
             return elapsed_time
 

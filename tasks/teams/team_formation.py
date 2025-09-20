@@ -72,8 +72,8 @@ def select_battle_team(num):
                 auto.mouse_click(first_position[0], first_position[1] + 100 * scale + 75 * team_order * scale)
         else:
             if cfg.language_in_game == 'en':
-                team_name = "TEAMS#" + str(num)
-                team_name_error_correcting = "TFAMS#" + str(num)
+                team_name = [f"TEAMS #{num}", f"TEAMS#{num}"]
+                team_name_error_correcting = f"TFAMS#{num}" 
             elif cfg.language_in_game == 'zh_cn':
                 team_name = "编队#" + str(num)
                 team_name_error_correcting = "编队#" + str(num)
@@ -94,12 +94,12 @@ def select_battle_team(num):
                     continue
             if find:
                 msg = f"成功找到队伍 # {num}"
-                log.INFO(msg)
+                log.info(msg)
                 sleep(1)
                 return True
             else:
                 msg = f"找不到队伍 # {num}"
-                log.INFO(msg)
+                log.info(msg)
                 return False
 
 

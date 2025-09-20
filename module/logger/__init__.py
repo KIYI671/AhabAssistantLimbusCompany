@@ -1,3 +1,3 @@
-from utils.logger.my_log import Logger
+from .my_log import Logger
 
-log = Logger()
+log = Logger().get_logger()
