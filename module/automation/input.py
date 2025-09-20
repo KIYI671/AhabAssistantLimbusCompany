@@ -180,7 +180,7 @@ class Input(metaclass=SingletonMeta):
         self.wait_pause()
         return True
 
-    def mouse_to_blank(self, coordinate=(1, 1), move_back=True) -> None: # background未重载
+    def mouse_to_blank(self, coordinate=(1, 1), move_back=False) -> None:
         """鼠标移动到空白位置，避免遮挡
         Args:
             coordinate (tuple): 坐标元组 (x, y)
@@ -236,6 +236,18 @@ class BackgroundInput(Input, metaclass=SingletonMeta):
     """基于 `pywin32` 的输入类, 支持后台操作
     \n 除了不支持滚轮事件, 其余同 `Input` 类
     """
+
+    def mouse_to_blank(self, coordinate=(1, 1), move_back=True) -> None:
+        """鼠标移动到空白位置，避免遮挡（然而为了避免影响用户操作，这个暂时没用）
+        Args:
+            coordinate (tuple): 坐标元组 (x, y)
+            move_back (bool): 是否在移动后将鼠标移动回原位置
+        """
+        # FIXME：既不能影响用户操作，也要避免遮挡，似乎没有好办法
+
+        self.logger.debug("鼠标移动到空白，避免遮挡")
+
+        self.wait_pause()
 
     def mouse_click(self, x, y, times=1, move_back=True) -> bool:
         """在指定坐标上执行点击操作
