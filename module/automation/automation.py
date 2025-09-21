@@ -3,7 +3,7 @@ import gc
 import math
 import random
 import time
-from tkinter import Image
+from PIL.Image import Image
 
 import cv2
 import numpy as np
@@ -18,10 +18,10 @@ from ..ocr import ocr
 
 if cfg.background_click:
     from .input import BackgroundInput as Input
-    log.DEBUG("使用后台点击模块")
+    log.debug("使用后台点击模块")
 else:
     from .input import Input
-    log.DEBUG("使用前台点击模块")
+    log.debug("使用前台点击模块")
 class Automation(metaclass=SingletonMeta):
     """自动化管理类，用于管理与游戏窗口有关的自动化操作"""
 
@@ -176,7 +176,7 @@ class Automation(metaclass=SingletonMeta):
                     else:
                         return None
             except Exception as e:
-                self.logger.ERROR(f"截图失败:{e}")
+                self.logger.error(f"截图失败:{e}")
             time.sleep(1)
             if time.time() - start_time > 60:
                 raise RuntimeError("截图超时")
@@ -244,10 +244,10 @@ class Automation(metaclass=SingletonMeta):
             if len(matches) == 0:
                 return []
             else:
-                log.DEBUG(f"找到{len(matches)}个目标：{matches}")
+                log.debug(f"找到{len(matches)}个目标：{matches}")
                 return matches
         except Exception as e:
-            self.logger.ERROR(f"寻找图片出错:{e}")
+            self.logger.error(f"寻找图片出错:{e}")
             return []
 
     def find_str_in_text(self, target, ocr_dict):
@@ -256,7 +256,7 @@ class Automation(metaclass=SingletonMeta):
         """
         for text in ocr_dict.keys():
             if target.lower() in text.lower():
-                log.DEBUG(f"识别到目标：{text},坐标为：{ocr_dict[text]}")
+                log.debug(f"识别到目标：{text},坐标为：{ocr_dict[text]}")
                 return ocr_dict[text]
         return False
 
@@ -270,16 +270,19 @@ class Automation(metaclass=SingletonMeta):
             ocr_result = ocr.run(cropped_image)
         else:
             ocr_result = ocr.run(self.screenshot)
-        if "data" in ocr_result and "text" in ocr_result["data"][0]:
-            ocr_text_list = [item["text"] for item in ocr_result["data"]]
+        if ocr_result.txts:
+            ocr_text_list = [ocr_result.txts[i] for i in range(len(ocr_result.txts))]
             if only_text:
                 return ocr_text_list
             ocr_position_list = []
-            for item in ocr_result["data"]:
-                x = (item["box"][0][0] + item["box"][3][0]) / 2
-                y = (item["box"][0][1] + item["box"][3][1]) / 2
+
+            for box in ocr_result.boxes:
+                x = (box[0][0] + box[2][0]) / 2
+                y = (box[0][1] + box[2][1]) / 2
                 ocr_position_list.append([x, y])
+
             ocr_dict = {text: position for text, position in zip(ocr_text_list, ocr_position_list)}
+            log.debug(f"识别到文本及其坐标：{ocr_dict}")
         else:
             ocr_dict = {}
         if ocr_dict == {}:
@@ -312,10 +315,11 @@ class Automation(metaclass=SingletonMeta):
             ocr_result = ocr.run(cropped_image)
         else:
             ocr_result = ocr.run(self.screenshot)
-        if "data" in ocr_result and "text" in ocr_result["data"][0]:
-            ocr_text_list = [item["text"] for item in ocr_result["data"]]
+        if ocr_result.txts:
+            ocr_text_list = [ocr_result.txts[i] for i in range(len(ocr_result.txts))]
         else:
             ocr_text_list = []
+        
         return ocr_text_list
 
     def find_feature_element(self, target, pic_crop=None, min_matches=8):
@@ -338,7 +342,7 @@ class Automation(metaclass=SingletonMeta):
                     pic_crop = [int(i * cfg.set_win_size / 1440) for i in pic_crop]
                 screenshot = ImageUtils.crop(screenshot, pic_crop)
             result, num_matches = ImageUtils.feature_matching(template, screenshot, min_matches)
-            self.logger.DEBUG(
+            self.logger.debug(
                 f"匹配目标特征图片：{target.replace('./assets/images/', '')}结果{result}, 找到 {num_matches} 个匹配点")
             return result
         except Exception as e:
@@ -346,14 +350,14 @@ class Automation(metaclass=SingletonMeta):
             if "cv::flann" in error_message:
                 pass
             else:
-                self.logger.ERROR(f"匹配图片特征失败:{e}")
+                self.logger.error(f"匹配图片特征失败:{e}")
             return None
 
     def clear_img_cache(self) -> None:
         """清除图片缓存"""
         self.img_cache.clear()
         gc.collect()  # 强制垃圾回收，清理内存
-        log.DEBUG("图片缓存已清除")
+        log.debug("图片缓存已清除")
 
     def find_image_element(self, target, threshold, cacheable=True, model='clam', my_crop=None):
         """
@@ -376,12 +380,12 @@ class Automation(metaclass=SingletonMeta):
             if my_crop:
                 screenshot = ImageUtils.crop(screenshot, my_crop)
             center, matchVal = ImageUtils.match_template(screenshot, template, bbox, model)  # 匹配模板
-            self.logger.DEBUG(f"目标图片：{target.replace('./assets/images/', '')}, 相似度：{matchVal:.2f}, "
+            self.logger.debug(f"目标图片：{target.replace('./assets/images/', '')}, 相似度：{matchVal:.2f}, "
                               f"目标位置：{center}")
             if isinstance(matchVal, (int, float)) and not math.isinf(matchVal) and matchVal >= threshold:
                 return center
         except Exception as e:
-            self.logger.ERROR(f"寻找图片失败:{e}")
+            self.logger.error(f"寻找图片失败:{e}")
         return None
 
     def get_screenshot_crop(self, crop):

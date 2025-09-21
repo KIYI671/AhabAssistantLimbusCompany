@@ -4,9 +4,9 @@ import re
 import subprocess
 from enum import Enum
 
-from PyQt5.QtCore import Qt, QLocale
-from PyQt5.QtGui import QIcon
-from PyQt5.QtWidgets import QApplication, QHBoxLayout, QStackedWidget, QVBoxLayout, QLabel, QWidget
+from PySide6.QtCore import Qt, QLocale
+from PySide6.QtGui import QIcon
+from PySide6.QtWidgets import QApplication, QHBoxLayout, QStackedWidget, QVBoxLayout, QLabel, QWidget
 from qfluentwidgets import Pivot, setThemeColor, ProgressRing
 from qfluentwidgets.components.widgets.frameless_window import FramelessWindow
 from qframelesswindow import StandardTitleBar
@@ -20,6 +20,7 @@ from app.setting_interface import SettingInterface
 from app.team_setting_card import TeamSettingCard
 from app.tools_interface import ToolsInterface
 from module.config import cfg
+from module.game_and_screen import screen
 from module.logger import log
 from module.update.check_update import check_update
 
@@ -27,9 +28,9 @@ from module.update.check_update import check_update
 class Language(Enum):
     """ Language enumeration """
 
-    CHINESE_SIMPLIFIED = QLocale(QLocale.Chinese, QLocale.China)
-    CHINESE_TRADITIONAL = QLocale(QLocale.Chinese, QLocale.HongKong)
-    ENGLISH = QLocale(QLocale.English)
+    CHINESE_SIMPLIFIED = QLocale(QLocale.Language.Chinese, QLocale.Country.China)
+    CHINESE_TRADITIONAL = QLocale(QLocale.Language.Chinese, QLocale.Country.HongKong)
+    ENGLISH = QLocale(QLocale.Language.English)
     AUTO = QLocale()
 
 
@@ -59,8 +60,9 @@ class MainWindow(FramelessWindow):
         self.progress_ring.hide()
 
         self.resize(1080, 600)
-        desktop = QApplication.desktop().availableGeometry()
-        w, h = desktop.width(), desktop.height()
+        screen = QApplication.primaryScreen()
+        geometry = screen.availableGeometry() if screen else self.geometry()
+        w, h = geometry.width(), geometry.height()
         self.move(w // 2 - self.width() // 2, h // 2 - self.height() // 2)
 
         self.pivot = Pivot(self)
@@ -111,7 +113,6 @@ class MainWindow(FramelessWindow):
 
         self.show()
 
-        self.clean_old_logs()
         self.check_mirror_setting()
 
         check_update(self, flag=True)
@@ -138,7 +139,7 @@ class MainWindow(FramelessWindow):
                 list(self.pivot.items.values())[-1].click()
                 self.pivot.setCurrentItem("team_setting")
         except Exception as e:
-            log.ERROR(f"【异常】switch_to_page 出错：{type(e).__name__}:{e}")
+            log.error(f"【异常】switch_to_page 出错：{type(e).__name__}:{e}")
 
     def close_setting_page(self):
         try:
@@ -154,7 +155,7 @@ class MainWindow(FramelessWindow):
             page = None
             self.pivot.removeWidget("team_setting")
         except Exception as e:
-            print(f"【异常】delete_team 出错：{e}")
+            log.error(f"delete_team 出错：{e}")
 
     def show_save_warning(self):
         MessageBoxWarning(
@@ -187,35 +188,8 @@ class MainWindow(FramelessWindow):
         mediator.download_complete.connect(self.download_and_install)
         mediator.warning.connect(self.show_warning)
 
-    @staticmethod
-    def clean_old_logs():
-        if not cfg.clean_logs:
-            return
-        # 获取今日日期（date对象）
-        today = datetime.date.today()
-        # 计算阈值日期（七天前的日期）
-        threshold_date = today - datetime.timedelta(days=7)
-
-        # 遍历日志文件夹中的所有文件/目录
-        for filename in os.listdir("./logs"):
-            # 拼接完整文件路径
-            file_path = os.path.join("./logs", filename)
-
-            try:
-                file_date = datetime.datetime.strptime(filename[:10], "%Y-%m-%d").date()
-            except:
-                continue
-
-            # 判断是否早于阈值日期（需要删除）
-            if file_date < threshold_date:
-                try:
-                    os.remove(file_path)
-                    print(f"已删除过期日志文件: {file_path}")
-                except Exception as e:
-                    log.DEBUG(f"删除文件失败 {file_path}，错误原因: {str(e)}")
-
     def set_ring(self):
-        self.progress_ring.setWindowFlag(Qt.WindowStaysOnTopHint)  # 保持最上层显示
+        self.progress_ring.raise_() # 保持最上层显示
         self.progress_ring.setValue(0)
         self.progress_ring.setTextVisible(True)
         self.progress_ring.setFixedSize(80, 80)
@@ -238,8 +212,8 @@ class MainWindow(FramelessWindow):
             cfg.set_value(f"team{team_num}_setting", team_setting)
 
     def set_progress_ring(self, value: int):
-        self.progress_ring.setWindowFlag(Qt.WindowStaysOnTopHint)  # 保持最上层显示
         self.progress_ring.show()
+        self.progress_ring.raise_()  # 保持最上层显示
         self.progress_ring.setValue(value)
 
     def handle_link_click(self, url: str):
@@ -253,7 +227,7 @@ class MainWindow(FramelessWindow):
             self.tr("下载已经完成，是否开始更新"),
             self.window()
         )
-        if messages_box.exec_():
+        if messages_box.exec():
             source_file = os.path.abspath("./AALC Updater.exe")
             assert_name = file_name
             subprocess.Popen([source_file, assert_name], creationflags=subprocess.DETACHED_PROCESS)

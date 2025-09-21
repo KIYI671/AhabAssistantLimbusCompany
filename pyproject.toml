@@ -9,8 +9,8 @@ requires-python = ">=3.12"
 version = "1.0.9"
 
 dependencies = [
-    "PyQt5",
-    "PyQt-Fluent-Widgets>=1.8.6,<2.0.0",
+    "pyside6>=6.9.2",
+    "pyside6-fluent-widgets>=1.8.7",
     "pyuac~=0.0.3",
     "pywin32",
     "PyAutoGUI",
@@ -24,13 +24,17 @@ dependencies = [
     "linkify-it-py",
     "ruamel.yaml",
     "numpy",
-    "opencv-python",
+    "opencv-python-headless",
     "pillow",
-    "cpufeature",
     "psutil",
-    "nb-log",
     "onnxruntime==1.20.1",
+    "concurrent-log-handler>=0.9.28",
+    "colorlog>=6.9.0",
+    "rapidocr>=3.4.1",
 ]
+
+[dependency-groups]
+dev = ["pyinstaller>=6.16.0", "ruff>=0.13.1"]
 
 [project.urls]
 Homepage = "https://github.com/KIYI671/AhabAssistantLimbusCompany"
@@ -39,7 +43,24 @@ Issues = "https://github.com/KIYI671/AhabAssistantLimbusCompany/issues"
 
 [tool.uv]
 managed = true
-dev-dependencies = ["pyinstaller"]
-constraint-dependencies = [
-    "pyqt5-qt5 <=5.15.2",
-] # version>5.15.3 doesn't have windows wheel
+override-dependencies = ["opencv-python; python_version < '0'"]
+
+# used by `pyside6-project lupdate`
+[tool.pyside6-project]
+files = [
+    "main.py",
+    "app/__init__.py",
+    "app/my_app.py",
+    "app/page_card.py",
+    "app/setting_interface.py",
+    "app/farming_interface.py",
+    "app/tools_interface.py",
+    "app/team_setting_card.py",
+    "app/base_combination.py",
+    "app/card/messagebox_custom.py",
+    "app/base_tools.py",
+    "app/language_manager.py",
+    "module/update/check_update.py",
+    "module/ALI/autoLangIdentification.py",
+    "i18n/myapp_en.ts",
+]

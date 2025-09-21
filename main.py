@@ -22,13 +22,8 @@ if not pyuac.isUserAdmin():
 from win32api import GetLastError
 from win32event import CreateMutex
 
-from PyQt5.QtCore import Qt, QTimer
-from PyQt5.QtWidgets import QApplication
-
-# 启用 DPI 缩放
-QApplication.setHighDpiScaleFactorRoundingPolicy(Qt.HighDpiScaleFactorRoundingPolicy.PassThrough)
-QApplication.setAttribute(Qt.AA_DontCreateNativeWidgetSiblings)
-QApplication.setAttribute(Qt.AA_UseHighDpiPixmaps)
+from PySide6.QtCore import Qt, QTimer
+from PySide6.QtWidgets import QApplication
 
 if __name__ == "__main__":
     # 构建互斥锁
@@ -40,10 +35,8 @@ if __name__ == "__main__":
         # 使用非零退出码表示错误
         sys.exit(1)
 
-    if cfg.zoom_scale==0:
-        QApplication.setAttribute(Qt.AA_EnableHighDpiScaling)
-    else:
-        os.environ["QT_SCALE_FACTOR"] = str(cfg.zoom_scale/100)
+    if cfg.zoom_scale != 0:
+        os.environ["QT_SCALE_FACTOR"] = str(cfg.zoom_scale / 100)
 
     lang_manager = LanguageManager()
     lang = lang_manager.init_language()
@@ -54,4 +47,4 @@ if __name__ == "__main__":
 
     QTimer.singleShot(50, lambda: lang_manager.set_language(lang))
 
-    sys.exit(app.exec_())
+    sys.exit(app.exec())

@@ -15,10 +15,10 @@ def check_times(start_time):
     """检查是否卡死超时，若是则尝试关闭重启游戏"""
     now_time = time.time()
     if int(now_time - start_time) > 9 and int(now_time - start_time) % 10 == 0:
-        log.INFO(f"初始时间为{start_time}，此刻时间为{now_time}，已卡死{int(now_time - start_time)}秒")
+        log.info(f"初始时间为{start_time}，此刻时间为{now_time}，已卡死{int(now_time - start_time)}秒")
         sleep(1)
     if now_time - start_time > 90:
-        log.INFO("已卡死超过90秒，尝试关闭重启游戏")
+        log.info("已卡死超过90秒，尝试关闭重启游戏")
         if platform.system() == "Windows":
             from module.game_and_screen import screen
             _, pid = win32process.GetWindowThreadProcessId(screen.handle._hWnd)

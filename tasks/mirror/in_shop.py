@@ -88,11 +88,11 @@ class Shop:
             if loop_count < 10:
                 auto.model = 'aggressive'
             if loop_count < 0:
-                log.ERROR("无法升级ego饰品")
+                log.error("无法升级ego饰品")
                 break
 
     def buy_gifts(self):
-        log.DEBUG("开始执行饰品购买模块")
+        log.debug("开始执行饰品购买模块")
         refresh = False
         refresh_keyword = False
         while True:
@@ -102,7 +102,7 @@ class Shop:
             if self.shopping_strategy is False or (
                     self.shopping_strategy and self.shopping_strategy_select in (0, 1, 5)):
                 # 购买必买项（回血饰品）
-                log.DEBUG("开始购买必买项")
+                log.debug("开始购买必买项")
                 for commodity in must_purchase:
                     if auto.click_element(commodity, threshold=0.85):
                         while auto.click_element("mirror/shop/purchase_assets.png") is False:
@@ -119,7 +119,7 @@ class Shop:
                             continue
 
             if self.fuse_aggressive_switch:
-                log.DEBUG("开始购买强化素材")
+                log.debug("开始购买强化素材")
                 if self.shopping_strategy is False or (
                         self.shopping_strategy and self.shopping_strategy_select in (1, 3, 4)):
                     if auto.click_element("mirror/shop/level_IV_to_buy.png", threshold=0.82):
@@ -151,7 +151,7 @@ class Shop:
 
             if self.shopping_strategy is False or (
                     self.shopping_strategy and self.shopping_strategy_select in (2, 4, 5)):
-                log.DEBUG("开始购买本体系饰品")
+                log.debug("开始购买本体系饰品")
                 # 购买体系饰品
                 system_gift = auto.find_element(f"mirror/shop/enhance_gifts/shop_{self.system}.png",
                                                 find_type='image_with_multiple_targets', threshold=0.85,
@@ -213,12 +213,12 @@ class Shop:
                 my_money = auto.get_text_from_screenshot(money_bbox)
                 my_remaining_money = int(my_money[0])
                 if not isinstance(my_remaining_money, int):
-                    log.ERROR(f"获取剩余金钱失败")
+                    log.error(f"获取剩余金钱失败")
                     my_remaining_money = -1
                 else:
-                    log.DEBUG(f"剩余金钱：{my_remaining_money}")
+                    log.debug(f"剩余金钱：{my_remaining_money}")
             except Exception as e:
-                log.ERROR(f"获取剩余金钱失败：{e}")
+                log.error(f"获取剩余金钱失败：{e}")
                 my_remaining_money = -1
             if my_remaining_money <= 300:
                 refresh_keyword = True
@@ -270,7 +270,7 @@ class Shop:
         if auto.find_element(f"mirror/shop/level_IV_gifts/{self.system}_level_IV.png", take_screenshot=True):
             self.after_fuse_IV()
             if self.fuse_aggressive_switch is False:
-                log.INFO("已有本体系四级饰品，切换到非激进模式")
+                log.info("已有本体系四级饰品，切换到非激进模式")
                 return
 
         if auto.find_element(f"mirror/shop/level_IV_gifts/{self.second_system_select}_level_IV.png", take_screenshot=True):
@@ -278,10 +278,10 @@ class Shop:
                 self.fuse_switch = False
                 self.fuse_aggressive_switch = False
                 self.fuse_second_IV = True
-                log.INFO("已有本体系、第二体系的四级饰品，切换到出售模式")
+                log.info("已有本体系、第二体系的四级饰品，切换到出售模式")
                 return
 
-        log.DEBUG("开始执行激进合成模块")
+        log.debug("开始执行激进合成模块")
         while True:
             auto.mouse_to_blank()
             if auto.take_screenshot() is None:
@@ -406,7 +406,7 @@ class Shop:
 
             return unique_list
 
-        log.DEBUG("开始执行普通合成模块")
+        log.debug("开始执行普通合成模块")
         block = True
         while True:
             auto.mouse_to_blank()
@@ -447,7 +447,7 @@ class Shop:
             if len(my_list) <= 2:
                 if block is False:
                     msg = f"饰品舍弃列表数量不足，结束合成"
-                    log.DEBUG(msg)
+                    log.debug(msg)
                     return
             else:
                 for sequence in range(3):
@@ -457,7 +457,7 @@ class Shop:
                         sleep(0.75)
                     except IndexError:
                         msg = f"饰品舍弃列表已经没有第{sequence + 1}项了"
-                        log.DEBUG(msg)
+                        log.debug(msg)
                 select_gifts = True
 
             if select_gifts:
@@ -492,7 +492,7 @@ class Shop:
                                 if auto.find_element(system_name, find_type="text"):
                                     self.fuse_IV = True
                                     self.fuse_aggressive_switch = False
-                                    log.INFO("合成四级，切换到非激进模式")
+                                    log.info("合成四级，切换到非激进模式")
                             fuse = True
                             auto.click_element("mirror/road_in_mir/ego_gift_get_confirm_assets.png")
                             sleep(1)
@@ -539,7 +539,7 @@ class Shop:
         loop_count = 30
         auto.model = 'clam'
 
-        log.DEBUG("开始执行体系饰品合成模块")
+        log.debug("开始执行体系饰品合成模块")
         # 获取合成公式
         system_gifts = fusion_material[self.system]
         if len(system_gifts) == 2:
@@ -626,7 +626,7 @@ class Shop:
             if loop_count < 10:
                 auto.model = 'aggressive'
             if loop_count < 0:
-                log.ERROR("无法合成ego饰品")
+                log.error("无法合成ego饰品")
                 break
 
         if fusion:
@@ -635,10 +635,10 @@ class Shop:
                 self.fuse_system_gift_1 = True
             else:
                 self.fuse_system_gift_2 = True
-            log.DEBUG(msg)
+            log.debug(msg)
         else:
             msg = f"无法合成{self.system}体系饰品{times + 1}号"
-            log.DEBUG(msg)
+            log.debug(msg)
 
         auto.mouse_click_blank(times=3)
 
@@ -656,7 +656,7 @@ class Shop:
         list_block = False
         system_sell = True
         second = None
-        log.DEBUG("开始执行饰品出售模块")
+        log.debug("开始执行饰品出售模块")
         while True:
             # 自动截图
             if auto.take_screenshot() is None:
@@ -722,7 +722,7 @@ class Shop:
         loop_count = 15
         auto.model = 'clam'
         auto.mouse_to_blank()
-        log.DEBUG("开始执行饰品合成前置模块")
+        log.debug("开始执行饰品合成前置模块")
         while True:
             if auto.take_screenshot() is None:
                 continue
@@ -749,7 +749,7 @@ class Shop:
             if loop_count < 5:
                 auto.model = 'aggressive'
             if loop_count < 0:
-                log.ERROR("无法合成ego饰品")
+                log.error("无法合成ego饰品")
                 return False
 
             # 进入合成页面
@@ -799,7 +799,7 @@ class Shop:
         # 全体治疗
         loop_count = 5
         auto.model = 'clam'
-        log.DEBUG("开始执行罪人治疗模块")
+        log.debug("开始执行罪人治疗模块")
         sinner_be_heal = False
         while True:
             # 自动截图
@@ -827,7 +827,7 @@ class Shop:
             if loop_count < 1:
                 auto.model = 'aggressive'
             if loop_count < 0:
-                log.ERROR("治疗罪人失败")
+                log.error("治疗罪人失败")
                 break
 
     def enhance_gifts(self):
@@ -837,7 +837,7 @@ class Shop:
                     return True
             return False
 
-        log.DEBUG("开始执行饰品升级模块")
+        log.debug("开始执行饰品升级模块")
 
         while True:
             loop_try_count = 10
@@ -854,7 +854,7 @@ class Shop:
                     raise self.RestartGame()
 
             if loop_try_count < -50:
-                log.ERROR("不应该发生这样的问题，请提交issue")
+                log.error("不应该发生这样的问题，请提交issue")
 
         list_block = False
         loop_count = 30
@@ -933,7 +933,7 @@ class Shop:
             if loop_count < 10:
                 auto.model = 'aggressive'
             if loop_count < 0:
-                log.ERROR("升级ego饰品失败")
+                log.error("升级ego饰品失败")
                 break
 
         if retry() is False:
@@ -945,25 +945,25 @@ class Shop:
             if self.after_level_IV_select == 0:
                 self.fuse_switch = False
                 self.fuse_aggressive_switch = False
-                log.INFO("合成四级，切换到出售模式")
+                log.info("合成四级，切换到出售模式")
             elif self.after_level_IV_select == 1:
                 self.fuse_aggressive_switch = False
-                log.INFO("合成四级，切换到非激进模式")
+                log.info("合成四级，切换到非激进模式")
             elif self.after_level_IV_select == 2 and self.second_system is True and self.fuse_second_IV is False and \
                     self.second_system_action[0] is True:
                 self.fuse_aggressive_switch = True
-                log.DEBUG("合成四级，切换到第二体系四级合成")
+                log.debug("合成四级，切换到第二体系四级合成")
             elif self.after_level_IV_select == 3:
-                log.INFO("合成四级，跳过之后商店")
+                log.info("合成四级，跳过之后商店")
                 for i in range(5):
                     self.ignore_shop[i] = True
             else:
                 self.fuse_switch = False
                 self.fuse_aggressive_switch = False
-                log.INFO("合成四级但设置出错，切换到出售模式")
+                log.info("合成四级但设置出错，切换到出售模式")
             return
         self.fuse_aggressive_switch = False
-        log.INFO("合成四级，切换到非激进模式")
+        log.info("合成四级，切换到非激进模式")
 
     def replacement_skill(self):
         if module_position := auto.find_element("mirror/shop/skill_replacement_assets.png", take_screenshot=True):
@@ -1108,9 +1108,9 @@ class Shop:
                 if loop_count < 10:
                     auto.model = 'aggressive'
                 if loop_count < 0:
-                    log.ERROR("无法退出商店,尝试回到初始界面")
+                    log.error("无法退出商店,尝试回到初始界面")
                     back_init_menu()
                     break
         except self.RestartGame:
-            log.ERROR("执行商店操作期间出现错误，尝试重启游戏")
+            log.error("执行商店操作期间出现错误，尝试重启游戏")
             return

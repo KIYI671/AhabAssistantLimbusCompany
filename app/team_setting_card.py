@@ -1,5 +1,5 @@
-from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QFrame, QVBoxLayout, QWidget, QHBoxLayout, QSizePolicy, QGridLayout
+from PySide6.QtCore import Qt
+from PySide6.QtWidgets import QFrame, QVBoxLayout, QWidget, QHBoxLayout, QSizePolicy, QGridLayout
 from qfluentwidgets import FluentIcon as FIF, ExpandSettingCard
 from qfluentwidgets import ScrollArea, PrimaryPushButton, PushButton
 
@@ -43,7 +43,7 @@ class TeamSettingCard(QFrame):
         self.main_layout = QVBoxLayout(self)
         self.scroll_general = ScrollArea(self)
         self.scroll_general.setWidgetResizable(True)
-        self.scroll_general.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self.scroll_general.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
 
         self.page_widget = QWidget()
         self.scroll_general.setWidget(self.page_widget)

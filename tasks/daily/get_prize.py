@@ -34,7 +34,7 @@ def get_pass_prize():
         if loop_count < 5:
             auto.model = 'aggressive'
         if loop_count < 0:
-            log.ERROR("无法收取日常/周常")
+            log.error("无法收取日常/周常")
             return
     auto.click_element("pass/weekly_assets.png")
     loop_count = 15
@@ -48,7 +48,7 @@ def get_pass_prize():
         if loop_count < 5:
             auto.model = 'aggressive'
         if loop_count < 0:
-            log.ERROR("无法收取日常/周常")
+            log.error("无法收取日常/周常")
             break
 
 
@@ -75,5 +75,5 @@ def get_mail_prize():
         if loop_count < 10:
             auto.model = 'aggressive'
         if loop_count < 0:
-            log.ERROR("无法收取邮箱")
+            log.error("无法收取邮箱")
             break

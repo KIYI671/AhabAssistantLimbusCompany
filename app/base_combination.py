@@ -2,9 +2,9 @@ import base64
 import datetime
 
 import pyperclip
-from PyQt5.QtCore import QUrl
-from PyQt5.QtGui import QPixmap, QDesktopServices
-from PyQt5.QtWidgets import QPushButton
+from PySide6.QtCore import QUrl, Signal
+from PySide6.QtGui import QPixmap, QDesktopServices
+from PySide6.QtWidgets import QPushButton
 from qfluentwidgets import LineEdit, SettingCard, \
     IndicatorPosition, SwitchButton, SettingCardGroup, \
     PushSettingCard, PrimaryPushSettingCard, InfoBarPosition
@@ -119,18 +119,18 @@ class LabelWithComboBox(QFrame):
         self.items = items
 
         if vbox:
-            self.layout = QVBoxLayout(self)
+            self.layout_ = QVBoxLayout(self)
         else:
-            self.layout = QHBoxLayout(self)
-        self.layout.setContentsMargins(0, 0, 0, 0)
+            self.layout_ = QHBoxLayout(self)
+        self.layout_.setContentsMargins(0, 0, 0, 0)
         self.label = BaseLabel(label_text)
         self.combo_box = BaseComboBox(config_name)
         self.combo_box.add_items(items)
-        self.layout.addWidget(self.label)
+        self.layout_.addWidget(self.label)
         if vbox is not True:
-            self.layout.addSpacing(10)
-        self.layout.addWidget(self.combo_box, Qt.AlignLeft)
-        self.layout.setAlignment(Qt.AlignCenter)
+            self.layout_.addSpacing(10)
+        self.layout_.addWidget(self.combo_box, Qt.AlignmentFlag.AlignLeft)
+        self.layout_.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.setMaximumHeight(80)
         self.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Fixed)
 
@@ -382,7 +382,7 @@ class SinnerSelect(QFrame):
 
 
 class ComboBoxSettingCard(SettingCard):
-    valueChanged = pyqtSignal()
+    valueChanged = Signal()
 
     def __init__(self, config_name: str, icon: Union[str, QIcon, FluentIconBase], title, content=None, texts=None,
                  parent=None):
@@ -503,7 +503,7 @@ class PushSettingCardMirrorchyan(SettingCard):
 class SwitchSettingCard(SettingCard):
     """ Setting card with switch button """
 
-    checkedChanged = pyqtSignal(bool)
+    checkedChanged = Signal(bool)
 
     def __init__(self, icon: Union[str, QIcon, FluentIconBase], title, content=None, config_name: str = None,
                  parent=None):

@@ -22,7 +22,7 @@ class Screen(metaclass=SingletonMeta):
             windows = pyautogui.getWindowsWithTitle(self.title)
 
             while not windows:
-                self.logger.ERROR(f"未能获取到游戏窗口: {self.title},尝试启动游戏")
+                self.logger.error(f"未能获取到游戏窗口: {self.title},尝试启动游戏")
                 self.game.start_game()
                 sleep(30)
                 windows = pyautogui.getWindowsWithTitle(self.title)
@@ -31,13 +31,13 @@ class Screen(metaclass=SingletonMeta):
             self.handle = next((t for t in windows if t.title == self.title), None)
 
             if self.handle is None:
-                self.logger.ERROR(f"未能获取到游戏窗口: {self.title}")
+                self.logger.error(f"未能获取到游戏窗口: {self.title}")
                 self.game.start_game()
                 return False
             else:
                 return True
         except Exception as e:
-            self.logger.ERROR(f"未能获取到游戏窗口: {e}")
+            self.logger.error(f"未能获取到游戏窗口: {e}")
             self.game.start_game()
 
     def set_win(self) -> None:
@@ -69,7 +69,7 @@ class Screen(metaclass=SingletonMeta):
                 else:
                     break
             except Exception as e:
-                self.logger.ERROR(f"设置窗口出错: {e}")
+                self.logger.error(f"设置窗口出错: {e}")
 
     def reduce_miscontact(self) -> None:
         """通过调整窗口置顶减少误触"""
@@ -112,7 +112,7 @@ class Screen(metaclass=SingletonMeta):
             screen_width = pyautogui.size().width
             screen_height = pyautogui.size().height
             if screen_width < set_win_size * 16 / 9 or screen_height < set_win_size:
-                self.logger.ERROR(f"屏幕分辨率过低，请重新设定分辨率")
+                self.logger.error(f"屏幕分辨率过低，请重新设定分辨率")
                 pyautogui.hotkey('ctrl', 'q')
             pyautogui.hotkey('alt', 'enter')
             sleep(0.5)
@@ -126,7 +126,7 @@ class Screen(metaclass=SingletonMeta):
             if width == screen_width and height == screen_height:
                 pyautogui.hotkey('alt', 'enter')
         except Exception as e:
-            self.logger.ERROR(f"检查屏幕分辨率失败: {e}")
+            self.logger.error(f"检查屏幕分辨率失败: {e}")
 
     def reset_win(self) -> bool:
         """重置窗口"""
@@ -168,7 +168,7 @@ class Screen(metaclass=SingletonMeta):
             win32gui.SetWindowPos(hwnd, win32con.HWND_NOTOPMOST, 0, 0, window_width * 2 - client_width,
                                   window_height * 2 - client_height, win32con.SWP_NOMOVE)
         except Exception as e:
-            self.logger.ERROR(f"重置窗口失败: {e}")
+            self.logger.error(f"重置窗口失败: {e}")
             return False
         else:
             return True

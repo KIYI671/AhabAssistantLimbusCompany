@@ -1,5 +1,5 @@
-from PyQt5.QtCore import QT_TRANSLATE_NOOP
-from PyQt5.QtWidgets import QWidget
+from PySide6.QtCore import QT_TRANSLATE_NOOP
+from PySide6.QtWidgets import QWidget
 from qfluentwidgets import FluentIcon as FIF
 from qfluentwidgets import ScrollArea, ExpandLayout
 

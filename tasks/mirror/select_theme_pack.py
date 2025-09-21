@@ -71,7 +71,7 @@ def select_theme_pack(hard_switch=False, floor=None):
                     auto.mouse_drag_down(all_theme_pack[0][0], all_theme_pack[0][1])
                     sleep(3)
                     msg = "此次主题包选择了最左边的（活动）卡包"
-                    log.INFO(msg)
+                    log.info(msg)
                     return
             weight_list = []
             pack_name = []
@@ -105,11 +105,11 @@ def select_theme_pack(hard_switch=False, floor=None):
                     auto.mouse_drag_down(pack[0], pack[1])
                     sleep(3)
                     msg = f"此次选择卡包关键词：{pack_name[max_index]}"
-                    log.INFO(msg)
+                    log.info(msg)
                     return
 
         except Exception as e:
-            log.ERROR(e)
+            log.error(e)
             continue
 
         if refresh_times >= 0 and auto.click_element("mirror/theme_pack/refresh_assets.png"):
@@ -126,12 +126,12 @@ def select_theme_pack(hard_switch=False, floor=None):
                 pack = all_theme_pack[max_index]
                 auto.mouse_drag_down(pack[0], pack[1])
                 sleep(3)
-                log.DEBUG("无匹配最低阈值的主题包，选择最高权重主题包")
+                log.debug("无匹配最低阈值的主题包，选择最高权重主题包")
                 msg = f"无匹配最低阈值的主题包，选择最高权重主题包\n此次选择卡包关键词：{pack_name[max_index]}"
-                log.INFO(msg)
+                log.info(msg)
                 return
             except Exception as e:
-                log.ERROR(f"选择主题包出错:{e},尝试回到初始界面")
+                log.error(f"选择主题包出错:{e},尝试回到初始界面")
                 back_init_menu()
                 break
 
@@ -141,8 +141,8 @@ def select_theme_pack(hard_switch=False, floor=None):
         if loop_count < 10:
             auto.model = 'aggressive'
         if loop_count < 0:
-            log.ERROR("无法选取主题包,尝试回到初始界面")
+            log.error("无法选取主题包,尝试回到初始界面")
             back_init_menu()
             break
-    log.ERROR("无法选取主题包,尝试回到初始界面")
+    log.error("无法选取主题包,尝试回到初始界面")
     back_init_menu()

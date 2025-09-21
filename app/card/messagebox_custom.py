@@ -1,8 +1,8 @@
 import datetime
 
-from PyQt5.QtCore import Qt, QUrl, QDate, QCoreApplication
-from PyQt5.QtGui import QDesktopServices, QIcon, QWheelEvent, QKeyEvent
-from PyQt5.QtWidgets import QSizePolicy
+from PySide6.QtCore import Qt, QUrl, QDate, QCoreApplication
+from PySide6.QtGui import QDesktopServices, QIcon, QWheelEvent, QKeyEvent
+from PySide6.QtWidgets import QSizePolicy
 from qfluentwidgets import MessageBox, BodyLabel, FluentStyleSheet, \
     PrimaryPushButton, LineEdit, ScrollArea, InfoBar, DateTimeEdit, SpinBox
 from qfluentwidgets.common.icon import FluentIconBase

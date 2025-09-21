@@ -6,7 +6,7 @@ from enum import Enum
 from threading import Thread
 
 import requests  # 导入requests模块，用于发送HTTP请求
-from PyQt5.QtCore import QThread, pyqtSignal, Qt, QT_TRANSLATE_NOOP
+from PySide6.QtCore import QThread, Signal, Qt, QT_TRANSLATE_NOOP
 from markdown_it import MarkdownIt
 from packaging.version import parse
 from qfluentwidgets import InfoBarPosition
@@ -38,10 +38,10 @@ class UpdateStatus(Enum):
 class UpdateThread(QThread):
     """
     更新线程类，用于在后台检查和处理软件更新。
-    该类继承自 QThread，使用 PyQt5 的信号机制来通知 GUI 线程更新状态。
+    该类继承自 QThread，使用 Qt 的信号机制来通知 GUI 线程更新状态。
     """
     # 定义更新信号，用于通知主线程更新状态
-    updateSignal = pyqtSignal(UpdateStatus)
+    updateSignal = Signal(UpdateStatus)
 
     def __init__(self, timeout, flag):
         """
@@ -90,7 +90,7 @@ class UpdateThread(QThread):
                 self.updateSignal.emit(UpdateStatus.SUCCESS)
         except Exception as e:
             # 记录失败日志，尝试使用GitHub源检查更新
-            log.ERROR(f"从Mirror酱源检查更新失败:{e},尝试使用GitHub源检查更新")
+            log.error(f"从Mirror酱源检查更新失败:{e},尝试使用GitHub源检查更新")
             try:
                 data = self.check_update_info_github()
                 version = data['tag_name']
@@ -118,7 +118,7 @@ class UpdateThread(QThread):
                     self.updateSignal.emit(UpdateStatus.SUCCESS)
             except Exception as e:
                 # 异常处理，发送失败信号
-                log.ERROR(f"Mirror酱源与GitHub源均检查更新失败:{e}")
+                log.error(f"Mirror酱源与GitHub源均检查更新失败:{e}")
                 self.updateSignal.emit(UpdateStatus.FAILURE)
 
     def check_update_info_github(self):
@@ -260,7 +260,7 @@ class UpdateThread(QThread):
                 return assets_url
         except Exception as e:
             # 异常处理，发送失败信号
-            log.ERROR(f"更新失败:{e}")
+            log.error(f"更新失败:{e}")
             self.updateSignal.emit(UpdateStatus.FAILURE)
 
 
@@ -284,7 +284,7 @@ def check_update(self, timeout=5, flag=False):
                 self.update_thread.content,
                 self.window()
             )
-            if messages_box.exec_():
+            if messages_box.exec():
                 # 如果用户确认更新，则从指定的URL下载更新资源
                 assets_url = self.update_thread.get_assets_url()
                 if assets_url:
@@ -347,7 +347,7 @@ def update(assets_url):
     """
     # 检查URL是否有效
     if not is_valid_url(assets_url):
-        log.ERROR("更新失败：获取的URL无效 ")
+        log.error("更新失败：获取的URL无效 ")
         return
 
     # 提取文件名
@@ -356,7 +356,7 @@ def update(assets_url):
         file_name = "AALC.zip"
     elif "AALC" in file_name:
         file_name = "AALC.7z"
-    log.INFO(f"正在下载 {file_name} ...")
+    log.info(f"正在下载 {file_name} ...")
 
     try:
         # 发起HTTP请求获取文件
@@ -381,7 +381,7 @@ def update(assets_url):
                         progress = int(downloaded / total_size * 100)
                         mediator.update_progress.emit(progress)
 
-        log.INFO(f"下载进度100%")
+        log.info(f"下载进度100%")
 
         if "OCR" in file_name:
             exe_path = os.path.abspath("./assets/binary/7za.exe")
@@ -392,7 +392,7 @@ def update(assets_url):
                     subprocess.run([exe_path, "x", download_file_path, f"-o{destination}", "-aoa"], check=True)
                 else:
                     shutil.unpack_archive(download_file_path, destination)
-                log.INFO("OCR解压完成，请重启AALC")
+                log.info("OCR解压完成，请重启AALC")
                 return True
             except Exception as e:
                 input("解压失败，按回车键重新解压. . .多次失败请手动下载更新")
