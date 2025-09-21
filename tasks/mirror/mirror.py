@@ -101,7 +101,7 @@ class Mirror:
             infinity_bbox = ImageUtils.get_bbox(ImageUtils.load_image("mirror/road_to_mir/infinity_mirror_bbox.png"))
             infinity_bbox = (
                 infinity_bbox[2] - 50, infinity_bbox[1], infinity_bbox[2] + 100, infinity_bbox[3])  # 临时修复措施，调整裁切大小
-            if auto.find_text_element("on", infinity_bbox):
+            if not auto.find_text_element("off", infinity_bbox):
                 auto.click_element("mirror/road_to_mir/infinity_mirror_enter_assets.png")
             if auto.click_element("mirror/road_to_mir/enter_assets.png"):
                 sleep(0.5)
@@ -117,6 +117,7 @@ class Mirror:
             # if auto.click_element("mirror/road_to_mir/quick_start_assets.png"):
             #     continue
             if auto.click_element("home/drive_assets.png", model="normal"):
+                sleep(0.5)
                 continue
             if auto.find_element("mirror/road_to_mir/select_team_stars_assets.png"):
                 break
@@ -143,6 +144,7 @@ class Mirror:
         start_time = time.time()
 
         if auto.click_element("home/drive_assets.png") or auto.find_element("home/window_assets.png"):
+            sleep(0.5)
             make_enkephalin_module()
 
         main_loop_count = self.LOOP_COUNT
@@ -338,6 +340,7 @@ class Mirror:
 
             # 在主界面时，开始进入镜牢
             if auto.click_element("home/drive_assets.png") or auto.find_element("home/window_assets.png"):
+                sleep(0.5)
                 if self.road_to_mir() and self.bequest_from_the_previous_game:
                     break
                 continue
@@ -699,6 +702,7 @@ class Mirror:
                 continue
             auto.mouse_to_blank()
             if auto.click_element("home/drive_assets.png") or auto.find_element("home/window_assets.png"):
+                sleep(0.5)
                 break
             if auto.click_element("mirror/road_in_mir/towindow&forfeit_confirm_assets.png"):
                 break

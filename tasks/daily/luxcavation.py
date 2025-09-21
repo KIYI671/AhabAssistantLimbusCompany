@@ -30,6 +30,7 @@ def EXP_luxcavation():
             back_init_menu()
             continue
         if auto.click_element("home/drive_assets.png"):
+            sleep(0.5)
             continue
         auto.mouse_to_blank()
 
@@ -73,6 +74,7 @@ def thread_luxcavation():
             back_init_menu()
             continue
         if auto.click_element("home/drive_assets.png"):
+            sleep(0.5)
             continue
         auto.mouse_to_blank()
         loop_count -= 1
