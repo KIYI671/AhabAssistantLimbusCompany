@@ -3,7 +3,7 @@ import gc
 import math
 import random
 import time
-from tkinter import Image
+from PIL.Image import Image
 
 import cv2
 import numpy as np

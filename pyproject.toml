@@ -24,7 +24,7 @@ dependencies = [
     "linkify-it-py",
     "ruamel.yaml",
     "numpy",
-    "opencv-python",
+    "opencv-python-headless",
     "pillow",
     "psutil",
     "onnxruntime==1.20.1",
@@ -43,6 +43,7 @@ Issues = "https://github.com/KIYI671/AhabAssistantLimbusCompany/issues"
 
 [tool.uv]
 managed = true
+override-dependencies = ["opencv-python; python_version < '0'"]
 
 # used by `pyside6-project lupdate`
 [tool.pyside6-project]
