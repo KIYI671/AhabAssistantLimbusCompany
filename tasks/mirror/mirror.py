@@ -321,6 +321,9 @@ class Mirror:
                 "mirror/road_in_mir/acquire_ego_gift_reject_assets.png", model='clam'):
                 self.acquire_ego_gift(type=2)
                 continue
+            if main_loop_count<30 and auto.find_text_element(["拒绝饰品","refuse"]):
+                self.acquire_ego_gift(type=2)
+                continue
 
             # 如果遇到获取ego饰品的情况
             if auto.click_element("mirror/road_in_mir/ego_gift_get_confirm_assets.png"):
