@@ -117,6 +117,8 @@ def select_theme_pack(hard_switch=False, floor=None):
             auto.mouse_to_blank()
             sleep(1)
             continue
+        if refresh_times >= 0 and loop_count < 15:
+            auto.mouse_to_blank(move_back=False)
 
         # 如果多次刷新仍无达到优选阈值的主题包，则选择权重最大的主题包
         if refresh_times <= 0:
