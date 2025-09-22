@@ -432,8 +432,10 @@ class Shop:
                 gift = auto.find_element(my_sell_system, find_type="image_with_multiple_targets")
                 if gift:
                     if isinstance(gift, list):
+                        log.debug(f"识别到{len(gift)}个{sell_system}饰品")
                         gift_list.extend(list(g) for g in gift)
                     elif isinstance(gift, tuple):
+                        log.debug(f"识别到1个{sell_system}饰品")
                         gift_list.append(gift)
             # 对饰品位置列表进行排序、去重处理
             my_list = processing_coordinates(gift_list)
@@ -761,16 +763,21 @@ class Shop:
     def fuse_gift(self):
         # 激进合成
         if self.fuse_aggressive_switch and not self.only_system_fuse:
+            log.debug("开始执行第一次激进合成")
             if self.enter_fuse() is False:
                 return False
             self.fuse_useless_gifts_aggressive()
             auto.mouse_click_blank(times=3)
         if self.fuse_switch is False:
+            if self.fuse_IV is True and self.after_level_IV is True and self.after_level_IV_select == 3:
+                log.debug("合成四级后跳过商店，执行最后一次升级饰品")
+                self.enhance_gifts()
             return
         # 普通合成
         if self.only_aggressive_fuse or self.only_system_fuse:
             pass
         else:
+            log.debug("开始执行普通合成")
             if self.enter_fuse() is False:
                 return False
             self.fuse_useless_gifts()
@@ -778,11 +785,15 @@ class Shop:
 
         # 再次激进合成
         if self.fuse_aggressive_switch and self.fuse_IV is not True and not self.only_system_fuse:
+            log.debug("开始执行第二次激进合成")
             if self.enter_fuse() is False:
                 return False
             self.fuse_useless_gifts_aggressive()
             auto.mouse_click_blank(times=3)
         if self.fuse_switch is False:
+            if self.fuse_IV is True and self.after_level_IV is True and self.after_level_IV_select == 3:
+                log.debug("合成四级后跳过商店，执行最后一次升级饰品")
+                self.enhance_gifts()
             return
         # 合成体系饰品
         if not self.only_aggressive_fuse and not self.do_not_system_fuse:
@@ -791,6 +802,7 @@ class Shop:
             else:
                 fuse_times = 2
             for i in range(fuse_times):
+                log.debug(f"开始执行第{i + 1}次合成体系饰品")
                 self.fuse_system_gifts(i)
                 auto.mouse_click_blank(times=3)
 
@@ -966,6 +978,8 @@ class Shop:
         log.info("合成四级，切换到非激进模式")
 
     def replacement_skill(self):
+        msg = "执行商店技能替换任务"
+        log.debug(msg)
         if module_position := auto.find_element("mirror/shop/skill_replacement_assets.png", take_screenshot=True):
             my_scale = cfg.set_win_size / 1440
             bbox = (
@@ -1022,6 +1036,8 @@ class Shop:
             while True:
                 # 忽略楼层商店的情况
                 if layer <= 5 and self.ignore_shop[layer - 1]:
+                    msg = f"第{layer}楼层商店被忽略"
+                    log.info(msg)
                     break
 
                 # 自动截图
