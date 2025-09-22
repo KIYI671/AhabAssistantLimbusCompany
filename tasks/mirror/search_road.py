@@ -203,6 +203,11 @@ def search_road_from_road_map(hard_mode=False):
     road = []
     bus = None
 
+    if auto.click_element("mirror/mybus_default_distance.png", take_screenshot=True):
+        sleep(0.75)
+        if auto.click_element("mirror/road_in_mir/enter_assets.png", take_screenshot=True):
+            return True
+
     if bus_position := auto.find_element("mirror/mybus_default_distance.png", take_screenshot=True):
         from tasks.base.retry import check_times
         change_times = 5
