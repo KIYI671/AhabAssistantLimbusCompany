@@ -8,7 +8,8 @@ from module.automation import auto
 from module.config import cfg
 from module.decorator.decorator import begin_and_finish_time_log
 from module.logger import log
-from module.my_error.my_error import unableToFindTeamError, InputAttributeError, backMainWinError, cannotOperateGameError
+from module.my_error.my_error import unableToFindTeamError, InputAttributeError, backMainWinError, \
+    cannotOperateGameError
 from module.ocr import ocr
 from tasks import all_systems, start_gift
 from tasks.base.back_init_menu import back_init_menu
@@ -315,6 +316,11 @@ class Mirror:
             if auto.find_element("mirror/road_in_mir/acquire_ego_gift.png"):
                 self.acquire_ego_gift()
                 continue
+            if main_loop_count < 50 and auto.find_element("mirror/road_in_mir/acquire_ego_gift_box_assets.png",
+                                                          model='clam') and auto.find_element(
+                "mirror/road_in_mir/acquire_ego_gift_reject_assets.png", model='clam'):
+                self.acquire_ego_gift(type=2)
+                continue
 
             # 如果遇到获取ego饰品的情况
             if auto.click_element("mirror/road_in_mir/ego_gift_get_confirm_assets.png"):
@@ -400,7 +406,7 @@ class Mirror:
                     "mirror/claim_reward/complete_mirror_100%_assets.png") and failed is None and cfg.floor_3_exit is False:
                 failed = True
             if auto.find_element("mirror/claim_reward/complete_mirror_100%_assets.png") \
-                or auto.find_element("mirror/claim_reward/clear_assets.png"):
+                    or auto.find_element("mirror/claim_reward/clear_assets.png"):
                 failed = False
             # 如果回到主界面，退出循环
             if auto.find_element("home/drive_assets.png"):
@@ -696,10 +702,18 @@ class Mirror:
         except Exception as e:
             log.error(f"寻路出错:{e}")
             return False
+
+        start_time = time.time()
         while True:
+            from tasks.base.retry import check_times
             # 自动截图
             if auto.take_screenshot() is None:
                 continue
+            if auto.get_restore_time() is not None:
+                start_time = max(start_time, auto.get_restore_time())
+            if check_times(start_time):
+                back_init_menu()
+                return False
             auto.mouse_to_blank()
             if auto.click_element("home/drive_assets.png") or auto.find_element("home/window_assets.png"):
                 sleep(0.5)
@@ -831,10 +845,21 @@ class Mirror:
         self.event_total_time += event_elapsed_time
         self.event_times += 1
 
-    def acquire_ego_gift(self):
+    def acquire_ego_gift(self, type: int = 1):
         my_scale = cfg.set_win_size / 1440
         auto.model = 'clam'
         auto.mouse_to_blank()
+        if type == 2:
+            pos = auto.find_element("mirror/road_in_mir/acquire_ego_gift_reject_assets.png")
+            auto.mouse_click(pos[0], pos[1] - 500 * my_scale)
+            sleep(cfg.mouse_action_interval)
+            auto.mouse_click(pos[0] + 500 * my_scale, pos[1] - 500 * my_scale)
+            sleep(cfg.mouse_action_interval)
+            auto.click_element("mirror/road_in_mir/acquire_ego_gift_select_assets.png", model="normal")
+            time.sleep(2)
+            if retry() is False:
+                return False
+            return
         while True:
             if auto.take_screenshot() is None:
                 continue
