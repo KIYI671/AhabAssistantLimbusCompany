@@ -1,3 +1,4 @@
+import time
 from time import sleep
 
 from module.automation import auto
@@ -15,6 +16,7 @@ class Battle:
     def __init__(self):
         self.first_battle = False
         self.identify_keyword_turn = True
+        self.INIT_CHANCE = 16
 
     @staticmethod
     def to_battle():
@@ -62,10 +64,28 @@ class Battle:
 
         return new_time
 
+    def _battle_operation(self, first_turn: bool, defense_first_round: bool, avoid_skill_3: bool):
+        auto.mouse_click_blank()
+        if first_turn and defense_first_round and auto.find_element("battle/gear_left.png", threshold=0.9):
+            msg = f"第一回合全员防御，开始战斗"
+            if self._defense_first_round() is False:
+                defense_first_round = False
+                msg = "第一回合全员防御失败，本场战斗改为P+Enter"
+        elif avoid_skill_3 and auto.find_element("battle/gear_left.png", threshold=0.9):
+            msg = f"使用避免3技能模式开始战斗"
+            if self._chain_battle() is False:
+                avoid_skill_3 = False
+                msg = "使用避免三技能的链接战失败，本场战斗改为P+Enter"
+        else:
+            auto.key_press('p')
+            sleep(0.5)
+            auto.key_press('enter')
+            msg = f"使用P+Enter开始战斗"
+        log.debug(msg)
+
     @begin_and_finish_time_log(task_name="一次战斗")
     def fight(self, avoid_skill_3=False, defense_first_round=False):
-        INIT_CHANCE = 16
-        chance = INIT_CHANCE
+        chance = self.INIT_CHANCE
         waiting = self._update_wait_time()
         total_count = 0
         fail_count = 0
@@ -74,10 +94,18 @@ class Battle:
         event_chance = 15
 
         first_turn = True
+        start_time = time.time()
         while True:
+            from tasks.base.retry import check_times
             # 自动截图
             if auto.take_screenshot() is None:
                 continue
+            if auto.get_restore_time() is not None:
+                start_time = max(start_time, auto.get_restore_time())
+            if check_times(start_time,timeout=900):
+                from tasks.base.back_init_menu import back_init_menu
+                back_init_menu()
+                return False
 
             if auto.find_element("mirror/road_in_mir/legend_assets.png"):
                 return False
@@ -94,7 +122,7 @@ class Battle:
             # 如果正在交战过程
             if auto.find_element("battle/pause_assets.png"):
                 sleep(2 * waiting)  # 战斗播片中增大间隔
-                chance = INIT_CHANCE
+                chance = self.INIT_CHANCE
                 first_turn = False
                 continue
 
@@ -136,52 +164,31 @@ class Battle:
                 turn_bbox = ImageUtils.get_bbox(ImageUtils.load_image("battle/turn_assets.png"))
                 turn_ocr_result = auto.find_text_element("turn", turn_bbox)
                 if turn_ocr_result is not False:
-                    auto.mouse_click_blank()
-                    if first_turn and defense_first_round and auto.find_element("battle/gear_left.png", threshold=0.9):
-                        msg = f"第一回合全员防御，开始战斗"
-                        if self._defense_first_round() is False:
-                            defense_first_round = False
-                            msg = "第一回合全员防御失败尝试其他操作"
-                            log.debug(msg)
-                        else:
-                            log.debug(msg)
-                            continue
-                    if avoid_skill_3 and auto.find_element("battle/gear_left.png", threshold=0.9):
-                        msg = f"使用避免3技能模式开始战斗"
-                        if self._chain_battle() is False:
-                            avoid_skill_3 = False
-                            msg = "使用避免三技能的链接战失败，本场战斗改为P+Enter"
-                    else:
-                        auto.key_press('p')
-                        sleep(0.5)
-                        auto.key_press('enter')
-                        msg = f"使用P+Enter开始战斗"
-                    chance = INIT_CHANCE
-                    log.debug(msg)
+                    self._battle_operation(first_turn, defense_first_round, avoid_skill_3)
+                    chance = self.INIT_CHANCE
                     waiting = self._update_wait_time(waiting, False, total_count)
                     self.identify_keyword_turn = False
                     continue
             else:
                 # 如果正在战斗待机界面
                 if auto.click_element("battle/turn_assets.png") or auto.find_element("battle/win_rate_assets.png"):
-                    auto.mouse_click_blank()
-                    if first_turn and defense_first_round and auto.find_element("battle/gear_left.png", threshold=0.9):
-                        msg = f"第一回合全员防御，开始战斗"
-                        if self._defense_first_round() is False:
-                            defense_first_round = False
-                            msg = "第一回合全员防御失败，本场战斗改为P+Enter"
-                    elif avoid_skill_3 and auto.find_element("battle/gear_left.png", threshold=0.9):
-                        msg = f"使用避免3技能模式开始战斗"
-                        if self._chain_battle() is False:
-                            avoid_skill_3 = False
-                            msg = "使用避免三技能的链接战失败，本场战斗改为P+Enter"
-                    else:
-                        auto.key_press('p')
-                        sleep(0.5)
-                        auto.key_press('enter')
-                        msg = f"使用P+Enter开始战斗"
-                    chance = INIT_CHANCE
-                    log.debug(msg)
+                    self._battle_operation(first_turn, defense_first_round, avoid_skill_3)
+                    chance = self.INIT_CHANCE
+                    waiting = self._update_wait_time(waiting, False, total_count)
+                    continue
+            if chance < 5:
+                turn_bbox = ImageUtils.get_bbox(ImageUtils.load_image("battle/turn_assets.png"))
+                turn_ocr_result = auto.find_text_element("turn", turn_bbox)
+                if turn_ocr_result is not False or auto.click_element("battle/turn_assets.png") or auto.find_element(
+                    "battle/win_rate_assets.png") or auto.find_element("battle/win_rate_card.png"):
+                    self._battle_operation(first_turn, defense_first_round, avoid_skill_3)
+                    chance = self.INIT_CHANCE
+                    waiting = self._update_wait_time(waiting, False, total_count)
+                    continue
+            if chance==1:
+                if auto.find_text_element(["rate","胜率"]):
+                    self._battle_operation(first_turn, defense_first_round, avoid_skill_3)
+                    chance = self.INIT_CHANCE
                     waiting = self._update_wait_time(waiting, False, total_count)
                     continue
 
@@ -239,7 +246,7 @@ class Battle:
                 break
             if auto.find_element("mirror/road_in_mir/select_encounter_reward_card_assets.png"):
                 break
-            if chance <= (INIT_CHANCE // 2 + 1) and auto.find_element("teams/announcer_assets.png"):
+            if chance <= (self.INIT_CHANCE // 2 + 1) and auto.find_element("teams/announcer_assets.png"):
                 break
 
             # 如果交战过程误触，导致战斗暂停
