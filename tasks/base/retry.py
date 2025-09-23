@@ -71,7 +71,7 @@ def retry():
             auto.click_element("base/retry.png", threshold=0.9)
             continue
         if clear_all_caches := auto.find_element("base/clear_all_caches_assets.png", model="clam"):
-            auto.mouse_click(clear_all_caches[0], clear_all_caches[1] - 100)
+            # auto.mouse_click(clear_all_caches[0], clear_all_caches[1] - 100)
             continue
         break
 
