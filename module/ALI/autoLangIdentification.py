@@ -84,17 +84,18 @@ def auto_switch_language_in_game(hwnd: int) -> int:
         msg = QT_TRANSLATE_NOOP(
             "Logger", "当前游戏语言为 {current_game_lang}, 即将自动切换"
         )
-        log.info(msg, current_game_lang=output_lang_dict[lang_code])
+        formatted_msg = msg.format(current_game_lang=output_lang_dict[lang_code])
+        log.info(formatted_msg)
     else:
         msg = QT_TRANSLATE_NOOP(
             "Logger",
             "当前游戏语言为 {current_game_lang}, 但是被错误设置成了 {setting_game_lang}",
         )
-        log.info(
-            msg,
+        formatted_msg = msg.format(
             current_game_lang=output_lang_dict[lang_code],
             setting_game_lang=output_lang_dict[cfg.language_in_game],
         )
+        log.info(formatted_msg)
     if lang_code in SUPPORTED_GAME_LANG_CODE:
         cfg.set_value("language_in_game", lang_code)
         return AutoSwitchCon.CHANGED
