@@ -318,10 +318,10 @@ class Mirror:
                 continue
             if main_loop_count < 50 and auto.find_element("mirror/road_in_mir/acquire_ego_gift_box_assets.png",
                                                           model='clam') and auto.find_element(
-                "mirror/road_in_mir/acquire_ego_gift_reject_assets.png", model='clam'):
+                "mirror/road_in_mir/acquire_ego_gift_refuse_assets.png", model='clam'):
                 self.acquire_ego_gift(type=2)
                 continue
-            if main_loop_count<30 and auto.find_text_element(["拒绝饰品","refuse"]):
+            if main_loop_count < 30 and auto.find_text_element(["拒绝饰品", "refuse"]):
                 self.acquire_ego_gift(type=2)
                 continue
 
@@ -858,9 +858,9 @@ class Mirror:
         auto.mouse_to_blank()
         if type == 2:
             pos = auto.find_element("mirror/road_in_mir/acquire_ego_gift_reject_assets.png")
-            auto.mouse_click(pos[0], pos[1] - 500 * my_scale)
+            auto.mouse_click(pos[0] - 500 * my_scale, pos[1] - 500 * my_scale)
             sleep(cfg.mouse_action_interval)
-            auto.mouse_click(pos[0] + 500 * my_scale, pos[1] - 500 * my_scale)
+            auto.mouse_click(pos[0], pos[1] - 500 * my_scale)
             sleep(cfg.mouse_action_interval)
             auto.click_element("mirror/road_in_mir/acquire_ego_gift_select_assets.png", model="normal")
             time.sleep(2)
@@ -874,13 +874,13 @@ class Mirror:
             if auto.click_element("mirror/road_in_mir/ego_gift_get_confirm_assets.png"):
                 break
             try:
-                acquire_button = auto.find_element("mirror/road_in_mir/acquire_ego_gift.png",
-                                                   find_type='image_with_multiple_targets')
+                acquire_card = auto.find_element("mirror/road_in_mir/acquire_ego_gift_card.png",
+                                                 find_type="image_with_multiple_targets")
                 my_list = []
-                if len(acquire_button) == 2:
-                    for button in acquire_button:
-                        bbox = (button[0] - 350 * my_scale, button[1] - 50 * my_scale, button[0] + 150 * my_scale,
-                                button[1] + 250 * my_scale)
+                if len(acquire_card) == 2:
+                    for button in acquire_card:
+                        bbox = (button[0] - 50 * my_scale, button[1] - 300 * my_scale, button[0] + 450 * my_scale,
+                                button[1] + 350 * my_scale)
                         if cfg.language_in_game == "zh_cn":
                             ocr_result = auto.find_text_element("白棉花", bbox)
                         else:
@@ -894,10 +894,10 @@ class Mirror:
                         if retry() is False:
                             return False
                         return
-                elif len(acquire_button) == 1:
-                    for button in acquire_button:
-                        bbox = (button[0] - 350 * my_scale, button[1] - 50 * my_scale, button[0] + 150 * my_scale,
-                                button[1] + 250 * my_scale)
+                elif len(acquire_card) == 1:
+                    for button in acquire_card:
+                        bbox = (button[0] - 50 * my_scale, button[1] - 300 * my_scale, button[0] + 450 * my_scale,
+                                button[1] + 350 * my_scale)
                         if cfg.language_in_game == "zh_cn":
                             ocr_result = auto.find_text_element("白棉花", bbox)
                         else:
@@ -922,9 +922,9 @@ class Mirror:
                         return
                 else:
                     system_nums = 0
-                    for button in acquire_button:
-                        bbox = (button[0] - 350 * my_scale, button[1] - 50 * my_scale, button[0] + 150 * my_scale,
-                                button[1] + 250 * my_scale)
+                    for button in acquire_card:
+                        bbox = (button[0] - 50 * my_scale, button[1] - 300 * my_scale, button[0] + 450 * my_scale,
+                                button[1] + 350 * my_scale)
                         if cfg.language_in_game == "zh_cn":
                             ocr_result = auto.find_text_element("白棉花", bbox)
                         else:
