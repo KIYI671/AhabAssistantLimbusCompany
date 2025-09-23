@@ -85,9 +85,9 @@ class Battle:
             if self.mouse_click_rate:
                 my_scale = cfg.set_win_size / 1440
                 if pos:= auto.find_element("battle/win_rate_card.png"):
-                   pos = [pos[0] + 50 * my_scale, pos[1] - 50 * my_scale]
-                   auto.mouse_click(pos[0], pos[1])
-                   auto.click_element("battle/gear_right.png")
+                    pos = [pos[0] + 50 * my_scale, pos[1] - 50 * my_scale]
+                    auto.mouse_click(pos[0], pos[1])
+                    auto.click_element("battle/gear_right.png")
             else:
                 sleep(1)
                 if not auto.find_element("battle/pause_assets.png", threshold=0.75):
