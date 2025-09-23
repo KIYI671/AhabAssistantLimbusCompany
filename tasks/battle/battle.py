@@ -102,7 +102,7 @@ class Battle:
                 continue
             if auto.get_restore_time() is not None:
                 start_time = max(start_time, auto.get_restore_time())
-            if check_times(start_time,timeout=900):
+            if check_times(start_time, timeout=900, logs=False):
                 from tasks.base.back_init_menu import back_init_menu
                 back_init_menu()
                 return False
@@ -180,13 +180,13 @@ class Battle:
                 turn_bbox = ImageUtils.get_bbox(ImageUtils.load_image("battle/turn_assets.png"))
                 turn_ocr_result = auto.find_text_element("turn", turn_bbox)
                 if turn_ocr_result is not False or auto.click_element("battle/turn_assets.png") or auto.find_element(
-                    "battle/win_rate_assets.png") or auto.find_element("battle/win_rate_card.png"):
+                        "battle/win_rate_assets.png") or auto.find_element("battle/win_rate_card.png"):
                     self._battle_operation(first_turn, defense_first_round, avoid_skill_3)
                     chance = self.INIT_CHANCE
                     waiting = self._update_wait_time(waiting, False, total_count)
                     continue
-            if chance==1:
-                if auto.find_text_element(["rate","胜率"]):
+            if chance == 1:
+                if auto.find_text_element(["rate", "胜率"]):
                     self._battle_operation(first_turn, defense_first_round, avoid_skill_3)
                     chance = self.INIT_CHANCE
                     waiting = self._update_wait_time(waiting, False, total_count)
