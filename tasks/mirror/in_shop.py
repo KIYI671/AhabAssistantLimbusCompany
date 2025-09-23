@@ -273,7 +273,8 @@ class Shop:
                 log.info("已有本体系四级饰品，切换到非激进模式")
                 return
 
-        if auto.find_element(f"mirror/shop/level_IV_gifts/{self.second_system_select}_level_IV.png", take_screenshot=True):
+        if auto.find_element(f"mirror/shop/level_IV_gifts/{self.second_system_select}_level_IV.png",
+                             take_screenshot=True):
             if self.fuse_IV is True:
                 self.fuse_switch = False
                 self.fuse_aggressive_switch = False
@@ -306,7 +307,7 @@ class Shop:
                 protect_list.append(f"mirror/shop/level_IV_gifts/{self.second_system_select}_level_IV.png")
 
             for protect_gift in protect_list:
-                if protect_coordinates := auto.find_element(protect_gift,threshold=0.7):
+                if protect_coordinates := auto.find_element(protect_gift, threshold=0.7):
                     gift_list = processing_coordinates(gift_list, protect_coordinates)
 
             # 直到合成概率90%
@@ -806,8 +807,7 @@ class Shop:
                 self.fuse_system_gifts(i)
                 auto.mouse_click_blank(times=3)
 
-    @staticmethod
-    def heal_sinner():
+    def heal_sinner(self):
         # 全体治疗
         loop_count = 5
         auto.model = 'clam'
@@ -832,6 +832,9 @@ class Shop:
 
             if auto.click_element("mirror/shop/heal_sinner/heal_sinner_assets.png"):
                 continue
+
+            if retry() is False:
+                raise self.RestartGame()
 
             loop_count -= 1
             if loop_count < 3:
