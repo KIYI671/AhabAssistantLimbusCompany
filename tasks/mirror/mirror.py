@@ -306,6 +306,9 @@ class Mirror:
                 if turn_ocr_result is not False:
                     self.battle_total_time += battle.fight(self.avoid_skill_3, self.defense_first_round)
                     continue
+            if auto.find_element("battle/win_rate_card.png") and auto.find_element("battle/gear_right.png"):
+                self.battle_total_time += battle.fight(self.avoid_skill_3, self.defense_first_round)
+                continue
 
             # 镜牢星光
             if auto.find_element("mirror/road_to_mir/dreaming_star/coins_assets.png", threshold=0.9):
