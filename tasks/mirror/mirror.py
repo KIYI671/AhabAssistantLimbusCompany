@@ -221,39 +221,39 @@ class Mirror:
                 if self.get_floor_num:
                     get_floor_bbox = ImageUtils.get_bbox(
                         ImageUtils.load_image("mirror/road_in_mir/get_floor_bbox.png"))
-                    ocr_result = auto.find_text_element(None, my_crop=get_floor_bbox, only_text=True)
-                    try:
-                        if cfg.language_in_game == 'zh_cn':
-                            result = ocr_result[-1].split("第")
-                            floor = result[1][0]
-                            floor = int(floor)
-                            self.floor = floor
-                            self.get_floor_num = False
-                        elif cfg.language_in_game == 'en':
-                            get_floor_bbox = ImageUtils.get_bbox(
-                                ImageUtils.load_image("mirror/road_in_mir/get_floor_bbox.png"))
-                            sc = ImageUtils.crop(np.array(auto.screenshot), get_floor_bbox)
-                            mask = cv2.inRange(sc, 75, 255)
+                    sc = ImageUtils.crop(np.array(auto.screenshot), get_floor_bbox)
+                    mask = cv2.inRange(sc, 75, 255)
+                    for _ in range(5):
+                        try:
                             result = ocr.run(mask)
                             ocr_result = [result.txts[i] for i in range(len(result.txts))]
                             ocr_result = "".join(ocr_result)
-                            result = ocr_result.split(" ")
-                            floor = result[-1][0]
-                            floor = int(floor)
-                            self.floor = floor
-                            self.get_floor_num = False
-                            floor = result[-1][0]
-                            floor = int(floor)
-                            self.floor = floor
-                            self.get_floor_num = False
-                        if self.floor - 1 == self.mirror_map.floor:
-                            self.mirror_map.next_floor()
-                        elif self.floor == self.mirror_map.floor:
-                            pass
-                        else:
-                            self.mirror_map.refresh_floor(self.floor)
-                    except:
-                        log.debug("获取楼层失败，将在下次寻路时重新尝试获取")
+                            log.debug(f"对于楼层信息OCR得到：{ocr_result}")
+                            if cfg.language_in_game == 'zh_cn' and "第" in ocr_result:
+                                result = ocr_result.split("第")
+                                floor = result[-1][0]
+                                floor = int(floor)
+                                if 0 < floor <= 5:
+                                    self.floor = floor
+                                    self.get_floor_num = False
+                                    break
+                            elif cfg.language_in_game == 'en' and "oor" in ocr_result:
+                                result = ocr_result.split("oor")
+                                floor = result[-1][0]
+                                floor = int(floor)
+                                if 0 < floor <= 5:
+                                    self.floor = floor
+                                    self.get_floor_num = False
+                                    break
+                        except:
+                            continue
+                    if self.floor - 1 == self.mirror_map.floor:
+                        self.mirror_map.next_floor()
+                    elif self.floor == self.mirror_map.floor:
+                        pass
+                    else:
+                        self.mirror_map.refresh_floor(self.floor)
+
                 while auto.take_screenshot() is None:
                     continue
                 if auto.find_element("mirror/road_in_mir/legend_assets.png"):
@@ -313,7 +313,7 @@ class Mirror:
                 continue
 
             # 如果遇到选择ego饰品的情况
-            if auto.find_element("mirror/road_in_mir/acquire_ego_gift.png"):
+            if auto.find_element("mirror/road_in_mir/acquire_ego_gift_card.png"):
                 self.acquire_ego_gift()
                 continue
             if main_loop_count < 50 and auto.find_element("mirror/road_in_mir/acquire_ego_gift_box_assets.png",
