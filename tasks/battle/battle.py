@@ -258,7 +258,7 @@ class Battle:
 
             if auto.find_element("mirror/road_in_mir/legend_assets.png"):
                 break
-            if auto.find_element("mirror/road_in_mir/acquire_ego_gift.png"):
+            if auto.find_element("mirror/road_in_mir/acquire_ego_gift_card.png"):
                 break
             if auto.find_element("mirror/road_in_mir/select_encounter_reward_card_assets.png"):
                 break

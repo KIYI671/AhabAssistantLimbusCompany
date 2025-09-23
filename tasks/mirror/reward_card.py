@@ -24,7 +24,7 @@ def get_reward_card(model=0):
         auto.mouse_to_blank()
         if auto.find_element("mirror/road_in_mir/legend_assets.png"):
             break
-        if auto.find_element("mirror/road_in_mir/acquire_ego_gift.png"):
+        if auto.find_element("mirror/road_in_mir/acquire_ego_gift_card.png"):
             break
         if auto.click_element("mirror/get_reward_card/continue_choosing_assets.png", model='clam'):
             continue
