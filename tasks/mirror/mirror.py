@@ -675,6 +675,8 @@ class Mirror:
     def search_road(self):
         try:
             if next_node := self.mirror_map.get_next_step():
+                if next_node is True:
+                    return True
                 if self.mirror_map.enter_next_node(next_node):
                     return True
             log.debug("未能构建路线图，尝试使用最近节点法重新寻路")
@@ -692,6 +694,8 @@ class Mirror:
                 if retry() is False:
                     return False
             for _ in range(3):
+                if cfg.background_click:
+                    continue
                 while auto.take_screenshot() is None:
                     continue
                 if search_road_farthest_distance():

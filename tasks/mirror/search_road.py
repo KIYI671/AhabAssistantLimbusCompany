@@ -30,6 +30,8 @@ class MirrorMap:
 
         if re_identify is True:
             self.floor_map, self.floor_nodes = search_road_from_road_map(hard_mode=self.hard_mode)
+            if self.floor_map is True and self.floor_nodes is True:
+                return True
             if not isinstance(self.floor_map, list):
                 self.floor_map = list(self.floor_map)
             self.map[f"floor{self.floor}"] = [self.floor_map[:], self.floor_nodes[:]]
@@ -206,7 +208,7 @@ def search_road_from_road_map(hard_mode=False):
     if auto.click_element("mirror/mybus_default_distance.png", take_screenshot=True):
         sleep(0.75)
         if auto.click_element("mirror/road_in_mir/enter_assets.png", take_screenshot=True):
-            return True
+            return True, True
 
     if bus_position := auto.find_element("mirror/mybus_default_distance.png", take_screenshot=True):
         from tasks.base.retry import check_times
@@ -747,7 +749,7 @@ class RouteGraph:
 
     def init_road(self, all_road, bus_x, bus_y):
         if self.hard_mode is True:
-            if len(all_road)>2:
+            if len(all_road) > 2:
                 all_road = all_road[:2]
         road_layer = 1
         for layer_road in all_road:
