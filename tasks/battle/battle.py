@@ -16,6 +16,7 @@ class Battle:
     def __init__(self):
         self.first_battle = False
         self.identify_keyword_turn = True
+        self.mouse_click_rate = False
         self.INIT_CHANCE = 16
 
     @staticmethod
@@ -81,6 +82,18 @@ class Battle:
             sleep(0.5)
             auto.key_press('enter')
             msg = f"使用P+Enter开始战斗"
+            if self.mouse_click_rate:
+                my_scale = cfg.set_win_size / 1440
+                pos = auto.find_element("battle/win_rate_card.png")
+                pos = [pos[0] + 50 * my_scale, pos[1] - 50 * my_scale]
+                auto.mouse_click(pos[0], pos[1])
+                auto.click_element("battle/gear_right.png")
+            else:
+                sleep(1)
+                if not auto.find_element("battle/pause_assets.png", threshold=0.75):
+                    self.mouse_click_rate = True
+                else:
+                    self.mouse_click_rate = False
         log.debug(msg)
 
     @begin_and_finish_time_log(task_name="一次战斗")
@@ -190,6 +203,9 @@ class Battle:
                     self._battle_operation(first_turn, defense_first_round, avoid_skill_3)
                     chance = self.INIT_CHANCE
                     waiting = self._update_wait_time(waiting, False, total_count)
+                    sleep(1)
+                    if not auto.find_element("battle/pause_assets.png"):
+                        self.mouse_click_rate = True
                     continue
 
             # 如果战斗中途出现事件
