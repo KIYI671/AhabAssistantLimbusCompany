@@ -381,6 +381,7 @@ class Mirror:
                 log.debug(f"镜牢道中识别次数剩余{main_loop_count}次")
             if main_loop_count < 75:
                 auto.model = "normal"
+                auto.mouse_to_blank(move_back=False)
                 log.debug("识别模式切换到正常模式")
             if main_loop_count < 15:
                 auto.model = 'aggressive'
@@ -470,6 +471,7 @@ class Mirror:
                 log.debug(f"镜牢奖励识别次数剩余{main_loop_count}次")
             if main_loop_count < 10:
                 auto.model = "normal"
+                auto.mouse_to_blank(move_back=False)
                 log.debug("识别模式切换到正常模式")
             if main_loop_count < 5:
                 auto.model = 'aggressive'
@@ -564,6 +566,7 @@ class Mirror:
                 log.debug(f"进入镜牢识别次数剩余{loop_count}次")
             if loop_count < 20:
                 auto.model = "normal"
+                auto.mouse_to_blank(move_back=False)
                 log.debug("识别模式切换到正常模式")
             if loop_count < 10:
                 auto.model = 'aggressive'
@@ -632,6 +635,7 @@ class Mirror:
                 log.debug(f"选择藏品识别次数剩余{loop_count}次")
             if loop_count < 20:
                 auto.model = "normal"
+                auto.mouse_to_blank(move_back=False)
                 log.debug("识别模式切换到正常模式")
             if loop_count < 10:
                 auto.model = 'aggressive'
@@ -664,6 +668,7 @@ class Mirror:
                 log.debug(f"选择队伍识别次数剩余{loop_count}次")
             if loop_count < 20:
                 auto.model = "normal"
+                auto.mouse_to_blank(move_back=False)
                 log.debug("识别模式切换到正常模式")
             if loop_count < 10:
                 auto.model = 'aggressive'
@@ -840,6 +845,7 @@ class Mirror:
                 log.debug(f"事件处理识别次数剩余{loop_count}次")
             if loop_count < 20:
                 auto.model = "normal"
+                auto.mouse_to_blank(move_back=False)
                 log.debug("识别模式切换到正常模式")
             if loop_count < 10:
                 auto.model = 'aggressive'
@@ -1038,6 +1044,7 @@ class Mirror:
                 log.debug(f"镜牢奖励识别次数剩余{main_loop_count}次")
             if main_loop_count < 10:
                 auto.model = "normal"
+                auto.mouse_to_blank(move_back=False)
                 log.debug("识别模式切换到正常模式")
             if main_loop_count < 5:
                 auto.model = 'aggressive'
