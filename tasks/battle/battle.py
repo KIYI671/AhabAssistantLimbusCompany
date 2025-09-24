@@ -111,7 +111,6 @@ class Battle:
         while True:
             from tasks.base.retry import check_times
             # 自动截图
-            auto.mouse_to_blank()
             if auto.take_screenshot() is None:
                 continue
             if auto.get_restore_time() is not None:
@@ -191,6 +190,7 @@ class Battle:
                     waiting = self._update_wait_time(waiting, False, total_count)
                     continue
             if chance < 5:
+                auto.mouse_to_blank()
                 turn_bbox = ImageUtils.get_bbox(ImageUtils.load_image("battle/turn_assets.png"))
                 turn_ocr_result = auto.find_text_element("turn", turn_bbox)
                 if turn_ocr_result is not False or auto.click_element("battle/turn_assets.png") or auto.find_element(
@@ -200,6 +200,7 @@ class Battle:
                     waiting = self._update_wait_time(waiting, False, total_count)
                     continue
             if chance == 1:
+                auto.mouse_to_blank()
                 if auto.find_text_element(["rate", "胜率"]):
                     self._battle_operation(first_turn, defense_first_round, avoid_skill_3)
                     chance = self.INIT_CHANCE
