@@ -1,5 +1,6 @@
 import os
 import platform
+import queue
 import random
 from sys import exc_info
 from time import sleep
@@ -26,7 +27,7 @@ from tasks.mirror.mirror import Mirror
 from tasks.teams.team_formation import select_battle_team
 from utils import pic_path
 from utils.utils import get_day_of_week, calculate_the_teams
-
+from module.automation import taskqueue
 
 @begin_and_finish_time_log(task_name="一次经验本")
 # 一次经验本的过程
@@ -104,6 +105,7 @@ def init_game():
 
 
 def script_task() -> None | int:
+    scriptqueue = taskqueue.TaskQueue() # 初始化队列
     # 获取（启动）游戏对游戏窗口进行设置
     init_game()
 
@@ -137,8 +139,7 @@ def script_task() -> None | int:
     if auto.click_element("battle/turn_assets.png", take_screenshot=True):
         get_reward = battle.fight()
 
-    # 执行日常刷本任务
-    if cfg.daily_task:
+    def daily_task():
         back_init_menu()
         make_enkephalin_module()
         exp_times = cfg.set_EXP_count
@@ -151,17 +152,23 @@ def script_task() -> None | int:
             onetime_EXP_process()
         for i in range(thread_times):
             onetime_thread_process()
+    # 执行日常刷本任务
+    if cfg.daily_task:
+        scriptqueue.push(daily_task)
+
     # 执行奖励领取任务
     if cfg.get_reward:
-        to_get_reward()
+        scriptqueue.push(to_get_reward)
 
-    # 执行狂气换饼任务
-    if cfg.buy_enkephalin:
+    def enkephalin_task():
         back_init_menu()
         lunacy_to_enkephalin(times=cfg.set_lunacy_to_enkephalin)
+    # 执行狂气换饼任务
+    if cfg.buy_enkephalin:
+        scriptqueue.push(enkephalin_task)
 
     # 执行镜牢任务
-    if cfg.mirror:
+    def mirror_task():
         # 判断执行镜牢任务的次数
         mir_times = cfg.set_mirror_count
         if cfg.infinite_dungeons:
@@ -225,6 +232,13 @@ def script_task() -> None | int:
 
         if cfg.re_claim_rewards:
             to_get_reward()
+
+    if cfg.mirror:
+        scriptqueue.push(mirror_task)
+
+    while not scriptqueue.empty():
+        task = scriptqueue.pop()
+        task() # 执行任务
 
     if cfg.set_reduce_miscontact:
         screen.reset_win()
