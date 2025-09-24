@@ -717,8 +717,10 @@ class Mirror:
         except Exception as e:
             log.error(f"寻路出错:{e}")
             return False
-
+        if auto.click_element("mirror/road_in_mir/enter_assets.png", take_screenshot=True):
+            return True
         start_time = time.time()
+        log.info(f"寻路出错, 尝试重进镜牢")
         while True:
             from tasks.base.retry import check_times
             # 自动截图
@@ -730,6 +732,8 @@ class Mirror:
                 back_init_menu()
                 return False
             auto.mouse_to_blank()
+            if auto.click_element("mirror/road_in_mir/enter_assets.png"):
+                return True
             if auto.click_element("home/drive_assets.png") or auto.find_element("home/window_assets.png"):
                 sleep(0.5)
                 break
