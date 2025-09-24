@@ -1,4 +1,6 @@
+import asyncio
 import random
+from functools import partial
 from time import sleep, time
 
 import pyautogui
@@ -236,6 +238,35 @@ class BackgroundInput(Input, metaclass=SingletonMeta):
     """基于 `pywin32` 的输入类, 支持后台操作
     \n 除了不支持滚轮事件, 其余同 `Input` 类
     """
+    _ev = asyncio.new_event_loop()
+
+    async def ev_run_async(self, func, *args, timeout=0.15, **kwargs):
+        """
+        Args:
+            func: Sync function to call
+            *args:
+            timeout:
+            **kwargs:
+
+        Raises:
+            asyncio.TimeoutError: If function call timeout
+        """
+        func_wrapped = partial(func, *args, **kwargs)
+        # Increased timeout for slow PCs
+        # Default screenshot interval is 0.2s, so a 0.15s timeout would have a fast retry without extra time costs
+        result = await asyncio.wait_for(self._ev.run_in_executor(None, func_wrapped), timeout=timeout)
+        return result
+
+    @staticmethod
+    def to_blank(coordinate=(1, 1), current_mouse_position=(1, 1)) -> None:
+        """鼠标移动到空白位置，避免遮挡，用于异步操作
+        Args:
+            coordinate (tuple): 坐标元组 (x, y)
+            current_mouse_position (tuple): 记录鼠标回归位置的元组 (x, y)
+        """
+        pyautogui.moveTo(coordinate[0], coordinate[1])
+        sleep(2)
+        pyautogui.moveTo(current_mouse_position[0], current_mouse_position[1])
 
     def mouse_to_blank(self, coordinate=(1, 1), move_back=True) -> None:
         """鼠标移动到空白位置，避免遮挡（然而为了避免影响用户操作，这个暂时没用）
@@ -244,6 +275,11 @@ class BackgroundInput(Input, metaclass=SingletonMeta):
             move_back (bool): 是否在移动后将鼠标移动回原位置
         """
         # FIXME：既不能影响用户操作，也要避免遮挡，似乎没有好办法
+        if move_back:
+            current_mouse_position = self.get_mouse_position()
+            self._ev.run_until_complete(self.ev_run_async(self.to_blank, coordinate, current_mouse_position))
+        else:
+            pyautogui.moveTo(coordinate[0], coordinate[1])
 
         self.logger.debug("鼠标移动到空白，避免遮挡")
 
