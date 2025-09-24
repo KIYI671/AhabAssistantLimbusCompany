@@ -1,6 +1,5 @@
 import os
 import platform
-import queue
 import random
 from sys import exc_info
 from time import sleep
