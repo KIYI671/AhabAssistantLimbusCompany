@@ -188,12 +188,15 @@ class Mirror:
                 select_theme_pack(self.hard_switch, self.floor)
                 if self.re_formation_each_floor:
                     self.first_battle = True
-                floor_num = self.floor  # 0,1,2,3,4
-                if floor_num != 0:
-                    floor_time = time.time() - self.floor_times[floor_num - 1]
-                    msg = f"启动后第{self.floor}层卡包"
-                    to_log_with_time(msg, floor_time)
-                self.floor_times[floor_num] = time.time()
+                try:
+                    floor_num = self.floor  # 0,1,2,3,4
+                    if floor_num != 0:
+                        floor_time = time.time() - self.floor_times[floor_num - 1]
+                        msg = f"启动后第{self.floor}层卡包"
+                        to_log_with_time(msg, floor_time)
+                    self.floor_times[floor_num] = time.time()
+                except:
+                    log.info("楼层异常，可能是OCR识别错误，本轮镜牢层间的时间记录无效")
                 self.get_floor_num = True
                 main_loop_count += 50
                 continue
@@ -485,9 +488,12 @@ class Mirror:
         end_time = time.time()
         elapsed_time = end_time - start_time
 
-        last_floor_time = time.time() - self.floor_times[self.floor - 1]
-        msg = f"启动后第{self.floor}层卡包"
-        to_log_with_time(msg, last_floor_time)
+        try:
+            last_floor_time = time.time() - self.floor_times[self.floor - 1]
+            msg = f"启动后第{self.floor}层卡包"
+            to_log_with_time(msg, last_floor_time)
+        except:
+            log.info("楼层异常，可能是OCR识别错误，本轮镜牢层间的时间记录无效")
 
         # 输出战斗总时间
         msg = f"此次镜牢在战斗"
