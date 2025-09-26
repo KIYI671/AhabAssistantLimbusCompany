@@ -10,8 +10,6 @@ from app.language_manager import SUPPORTED_GAME_LANG_CODE
 from ..config import cfg
 from ..logger import log
 
-__all__ = ["auto_switch_language_in_game", "AutoSwitchCon"]
-
 
 class AutoSwitchCon:
     "自动切换语言的返回值表达类"
@@ -75,7 +73,11 @@ def auto_switch_language_in_game(hwnd: int) -> int:
         lang_code = "Unknown"
 
     if lang_code == "default":
-        lang_code = get_game_language_from_registry()
+        #  lang_list = ["한국어", "English", "日本語", "Unknown"]
+        lang_list = ["kr", "en", "jp", "Unknown"]
+        game_config = get_game_config_from_registry()
+        lang_index = game_config.get("_language", 3)
+        lang_code = lang_list[lang_index]
 
     if lang_code == cfg.language_in_game:
         return AutoSwitchCon.FINISH
@@ -104,13 +106,14 @@ def auto_switch_language_in_game(hwnd: int) -> int:
     return AutoSwitchCon.FAILED
 
 
-def get_game_language_from_registry() -> str:
-    """从注册表获取当前游戏的内置语言"""
+def get_game_config_from_registry() -> dict:
+    """从注册表获取当前游戏设置
+    Returns:
+        dict: 游戏设置的字典, 如果读取失败则返回空字典
+    """
     root = winreg.HKEY_CURRENT_USER
     sub_key = r"Software\ProjectMoon\LimbusCompany"
     value_name = "LocalSave.LocalGameOptionData_h467498167"
-    #  lang_list = ["한국어", "English", "日本語", "Unknown"]
-    lang_list = ["kr", "en", "jp", "Unknown"]
 
     try:
         # 打开注册表键
@@ -122,22 +125,22 @@ def get_game_language_from_registry() -> str:
             # 验证数据类型
             if reg_type != winreg.REG_BINARY:
                 log.debug(f"错误：值项类型为 {reg_type}，预期应为 REG_BINARY")
-                return "Unknown"
+                return {}
 
             # 去除末尾的 NULL 字节并解码为字符串
             json_str = raw_data.rstrip(b"\x00").decode("utf-8")
 
             # 解析 JSON 数据
-            config_data = json.loads(json_str)
-            lang_index = config_data.get("_language", 3)
-            return lang_list[lang_index]
+            config_data: dict = json.loads(json_str)
+
+            return config_data
 
     except FileNotFoundError:
         log.debug(f"注册表路径不存在: HKEY_CURRENT_USER\\{sub_key}")
-        return "Unknown"
+        return {}
     except PermissionError:
         log.debug("读取注册表时权限不足，请以管理员身份运行程序")
-        return "Unknown"
+        return {}
     except Exception as e:
         log.debug(f"处理数据时出错: {str(e)}")
-        return "Unknown"
+        return {}
