@@ -37,9 +37,8 @@ class Input(metaclass=SingletonMeta):
     # 禁用pyautogui的失败安全特性，防止意外中断
     pyautogui.FAILSAFE = False
 
-    def __init__(self, logger):
+    def __init__(self):
         self.is_pause = False
-        self.logger = logger
         self.restore_time = None
         # self.is_move_back = False  以后从配置里读取
 
@@ -52,7 +51,7 @@ class Input(metaclass=SingletonMeta):
             msg = "操作将在下一次点击时暂停"
         else:
             msg = "继续操作"
-        self.logger.info(msg)
+        log.info(msg)
 
     def wait_pause(self) -> None:
         """
@@ -61,7 +60,7 @@ class Input(metaclass=SingletonMeta):
         pause_identity = False
         while self.is_pause:
             if not pause_identity is False:
-                self.logger.info("AALC 已暂停")
+                log.info("AALC 已暂停")
                 pause_identity = True
             sleep(1)
             self.restore_time = time()
@@ -81,7 +80,7 @@ class Input(metaclass=SingletonMeta):
             current_mouse_position = self.get_mouse_position()
 
         msg = f"点击位置:({x},{y})"
-        self.logger.debug(msg)
+        log.debug(msg, stacklevel=2)
         for i in range(times):
             pyautogui.click(x, y)
             # 多次点击执行很快所以暂停放到循环外
@@ -114,7 +113,7 @@ class Input(metaclass=SingletonMeta):
             self.mouse_move(current_mouse_position)
 
         msg = f"选择卡包:({x},{y})"
-        self.logger.debug(msg)
+        log.debug(msg, stacklevel=2)
 
     def mouse_drag(self, x, y, drag_time=0.1, dx=0, dy=0, move_back=True) -> None:
         """鼠标从指定位置拖动到另一个位置
@@ -153,7 +152,7 @@ class Input(metaclass=SingletonMeta):
             msg = "鼠标滚动滚轮，远离界面"
         else:
             msg = "鼠标滚动滚轮，拉近界面"
-        self.logger.debug(msg)
+        log.debug(msg, stacklevel=2)
         pyautogui.scroll(direction)
         return True
 
@@ -170,7 +169,7 @@ class Input(metaclass=SingletonMeta):
             current_mouse_position = self.get_mouse_position()
 
         msg = "点击（1，1）空白位置"
-        self.logger.debug(msg)
+        log.debug(msg, stacklevel=2)
         x = coordinate[0] + random.randint(0, 10)
         y = coordinate[1] + random.randint(0, 10)
         for i in range(times):
@@ -192,7 +191,7 @@ class Input(metaclass=SingletonMeta):
             current_mouse_position = self.get_mouse_position()
 
         msg = "鼠标移动到空白，避免遮挡"
-        self.logger.debug(msg)
+        log.debug(msg, stacklevel=2)
         pyautogui.moveTo(coordinate[0], coordinate[1])
 
         if move_back and current_mouse_position:
@@ -248,7 +247,7 @@ class BackgroundInput(Input, metaclass=SingletonMeta):
         # FIXME：既不能影响用户操作，也要避免遮挡，似乎没有好办法
         pyautogui.moveTo(coordinate[0], coordinate[1])
 
-        self.logger.debug("鼠标移动到空白，避免遮挡")
+        log.debug("鼠标移动到空白，避免遮挡", stacklevel=2)
 
         self.wait_pause()
 
@@ -267,7 +266,7 @@ class BackgroundInput(Input, metaclass=SingletonMeta):
             current_mouse_position = self.get_mouse_position()
 
         msg = f"点击位置:({x},{y})"
-        self.logger.debug(msg)
+        log.debug(msg, stacklevel=2)
         for i in range(times):
             self.set_focus()
             self.set_mouse_pos(x, y)
@@ -304,7 +303,7 @@ class BackgroundInput(Input, metaclass=SingletonMeta):
             self.mouse_move(current_mouse_position)
 
         msg = f"选择卡包:({x},{y})"
-        self.logger.debug(msg)
+        log.debug(msg, stacklevel=2)
 
     def mouse_drag(self, x, y, drag_time=0.1, dx=0, dy=0, move_back=True) -> None:
         """鼠标从指定位置拖动到另一个位置
@@ -357,7 +356,7 @@ class BackgroundInput(Input, metaclass=SingletonMeta):
             current_mouse_position = self.get_mouse_position()
 
         msg = "点击（1，1）空白位置"
-        self.logger.debug(msg)
+        log.debug(msg, stacklevel=2)
         x = coordinate[0] + random.randint(0, 10)
         y = coordinate[1] + random.randint(0, 10)
         for i in range(times):

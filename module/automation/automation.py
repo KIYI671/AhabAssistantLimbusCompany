@@ -22,12 +22,12 @@ if cfg.background_click:
 else:
     from .input import Input
     log.debug("使用前台点击模块")
+
 class Automation(metaclass=SingletonMeta):
     """自动化管理类，用于管理与游戏窗口有关的自动化操作"""
 
-    def __init__(self, windows_title, logger):
+    def __init__(self, windows_title):
         self.windows_title = windows_title
-        self.logger = logger
         self.screenshot = None
         self.init_input()
         self.img_cache = {}
@@ -37,7 +37,7 @@ class Automation(metaclass=SingletonMeta):
 
     def init_input(self):
         """初始化输入处理器，将输入操作如点击、拖动等绑定至实例变量"""
-        self.input_handler = Input(self.logger)
+        self.input_handler = Input()
         self.mouse_click = self.input_handler.mouse_click
         self.mouse_click_blank = self.input_handler.mouse_click_blank
         self.mouse_drag = self.input_handler.mouse_drag
@@ -73,7 +73,7 @@ class Automation(metaclass=SingletonMeta):
         if model is None:
             model = self.model
         coordinates = self.find_element(target, find_type, threshold, max_retries, take_screenshot, model=model,
-                                        my_crop=my_crop)
+                                        my_crop=my_crop, addtional_stack=1)
         if coordinates:
             if click:
                 return self.mouse_action_with_pos(coordinates, offset, action, times, drag_time, dx, dy, find_type,
@@ -176,13 +176,13 @@ class Automation(metaclass=SingletonMeta):
                     else:
                         return None
             except Exception as e:
-                self.logger.error(f"截图失败:{e}")
+                log.error(f"截图失败:{e}")
             time.sleep(1)
             if time.time() - start_time > 60:
                 raise RuntimeError("截图超时")
 
     def find_element(self, target, find_type='image', threshold=0.8, max_retries=1, take_screenshot=False,
-                     model=None, my_crop=None):
+                     model=None, my_crop=None, addtional_stack=0):
         """
         查找元素，并根据指定的查找类型执行不同的查找策略。
         Args:
@@ -193,6 +193,7 @@ class Automation(metaclass=SingletonMeta):
             take_screenshot: 是否需要先截图。
             model: 查找的策略,'clam' 为在模板图片位置查找，'normal' 为模板图片位置扩大范围查找，'aggressive' 为全截屏区域查找
             my_crop: 用于OCR识别的已截取的部分图片
+            addtional_stack: 用于日志堆栈层级调整
         Returns:
             查找到的元素位置，或者在图像计数查找时返回计数。
         """
@@ -210,17 +211,17 @@ class Automation(metaclass=SingletonMeta):
                 center = None
                 if find_type in ['image']:
                     # 使用图像查找方法查找元素
-                    center = self.find_image_element(target, threshold, model=model, my_crop=my_crop)
+                    center = self.find_image_element(target, threshold, model=model, my_crop=my_crop, addtional_stack=addtional_stack)
                 elif find_type == 'text':
                     # 使用文本查找方法查找元素
-                    center = self.find_text_element(target, my_crop)
+                    center = self.find_text_element(target, my_crop, addtional_stack=addtional_stack)
                 if center:
                     return center
             elif find_type in ['feature']:
-                return self.find_feature_element(target, my_crop)
+                return self.find_feature_element(target, my_crop, addtional_stack=addtional_stack)
             elif find_type in ['image_with_multiple_targets']:
                 # 使用多目标图像查找方法查找元素
-                return self.find_image_with_multiple_targets(target, threshold)
+                return self.find_image_with_multiple_targets(target, threshold, addtional_stack=addtional_stack)
             else:
                 raise ValueError("错误的类型")
 
@@ -228,7 +229,7 @@ class Automation(metaclass=SingletonMeta):
                 time.sleep(1)  # 在重试前等待一定时间
         return None
 
-    def find_image_with_multiple_targets(self, target, threshold) -> List:
+    def find_image_with_multiple_targets(self, target, threshold, addtional_stack) -> List:
         """
         在当前截图中查找多个目标图像的位置
         """
@@ -244,10 +245,10 @@ class Automation(metaclass=SingletonMeta):
             if len(matches) == 0:
                 return []
             else:
-                log.debug(f"找到{len(matches)}个目标：{matches}")
+                log.debug(f"找到{len(matches)}个目标：{matches}", stacklevel=addtional_stack + 3)
                 return matches
         except Exception as e:
-            self.logger.error(f"寻找图片出错:{e}")
+            log.error(f"寻找图片出错:{e}")
             return []
 
     def find_str_in_text(self, target, ocr_dict):
@@ -260,7 +261,7 @@ class Automation(metaclass=SingletonMeta):
                 return ocr_dict[text]
         return False
 
-    def find_text_element(self, target, my_crop=None, all_text=False, only_text=False):
+    def find_text_element(self, target, my_crop=None, all_text=False, only_text=False, addtional_stack=0):
         """
         寻找文本元素所在的坐标位置
         """
@@ -282,7 +283,7 @@ class Automation(metaclass=SingletonMeta):
                 ocr_position_list.append([x, y])
 
             ocr_dict = {text: position for text, position in zip(ocr_text_list, ocr_position_list)}
-            log.debug(f"识别到文本及其坐标：{ocr_dict}")
+            log.debug(f"识别到文本及其坐标：{ocr_dict}", stacklevel=addtional_stack + 3)
         else:
             ocr_dict = {}
         if ocr_dict == {}:
@@ -322,7 +323,7 @@ class Automation(metaclass=SingletonMeta):
         
         return ocr_text_list
 
-    def find_feature_element(self, target, pic_crop=None, min_matches=8):
+    def find_feature_element(self, target, pic_crop=None, min_matches=8, addtional_stack=0):
         """
         寻找特征元素所在的坐标位置
         """
@@ -342,24 +343,26 @@ class Automation(metaclass=SingletonMeta):
                     pic_crop = [int(i * cfg.set_win_size / 1440) for i in pic_crop]
                 screenshot = ImageUtils.crop(screenshot, pic_crop)
             result, num_matches = ImageUtils.feature_matching(template, screenshot, min_matches)
-            self.logger.debug(
-                f"匹配目标特征图片：{target.replace('./assets/images/', '')}结果{result}, 找到 {num_matches} 个匹配点")
+            log.debug(
+                f"匹配目标特征图片：{target.replace('./assets/images/', '')}结果{result}, 找到 {num_matches} 个匹配点",
+                stacklevel=addtional_stack + 3,
+            )
             return result
         except Exception as e:
             error_message = str(e)
             if "cv::flann" in error_message:
                 pass
             else:
-                self.logger.error(f"匹配图片特征失败:{e}")
+                log.error(f"匹配图片特征失败:{e}")
             return None
 
     def clear_img_cache(self) -> None:
         """清除图片缓存"""
         self.img_cache.clear()
         gc.collect()  # 强制垃圾回收，清理内存
-        log.debug("图片缓存已清除")
+        log.debug("图片缓存已清除", stacklevel=2)
 
-    def find_image_element(self, target, threshold, cacheable=True, model='clam', my_crop=None):
+    def find_image_element(self, target, threshold, cacheable=True, model='clam', my_crop=None, addtional_stack=0):
         """
         在当前截图中查找目标图像的位置
         """
@@ -380,12 +383,15 @@ class Automation(metaclass=SingletonMeta):
             if my_crop:
                 screenshot = ImageUtils.crop(screenshot, my_crop)
             center, matchVal = ImageUtils.match_template(screenshot, template, bbox, model)  # 匹配模板
-            self.logger.debug(f"目标图片：{target.replace('./assets/images/', '')}, 相似度：{matchVal:.2f}, "
-                              f"目标位置：{center}")
+            log.debug(
+                f"目标图片：{target.replace('./assets/images/', '')}, 相似度：{matchVal:.2f}, "
+                f"目标位置：{center}",
+                stacklevel=addtional_stack + 3,
+            )
             if isinstance(matchVal, (int, float)) and not math.isinf(matchVal) and matchVal >= threshold:
                 return center
         except Exception as e:
-            self.logger.error(f"寻找图片失败:{e}")
+            log.error(f"寻找图片失败:{e}")
         return None
 
     def get_screenshot_crop(self, crop):

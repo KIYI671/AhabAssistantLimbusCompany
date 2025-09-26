@@ -2,6 +2,7 @@ from module.automation import auto
 from module.decorator.decorator import begin_and_finish_time_log
 from module.logger import log
 from utils.image_utils import ImageUtils
+from tasks.base.retry import retry
 
 
 @begin_and_finish_time_log(task_name="收取日常/周常", calculate_time=False)
@@ -12,7 +13,10 @@ def get_pass_prize():
         # 自动截图
         if auto.take_screenshot() is None:
             continue
-        if auto.click_element("pass/pass_coin.png", find_type='image_with_multiple_targets', interval=2):
+        if coordinates := auto.find_element("pass/pass_coin.png", find_type='image_with_multiple_targets'):
+            for coordinate in coordinates:
+                auto.mouse_click(coordinate[0], coordinate[1])
+                retry()
             break
         if auto.click_element("pass/pass_missions_assets.png"):
             continue
@@ -40,7 +44,10 @@ def get_pass_prize():
     loop_count = 15
     auto.model = 'clam'
     while True:
-        if auto.click_element("pass/pass_coin.png", find_type='image_with_multiple_targets', take_screenshot=True):
+        if coordinates := auto.find_element("pass/pass_coin.png", find_type='image_with_multiple_targets', take_screenshot=True):
+            for coordinate in coordinates:
+                auto.mouse_click(coordinate[0], coordinate[1])
+                retry()
             break
         loop_count -= 1
         if loop_count < 10:
