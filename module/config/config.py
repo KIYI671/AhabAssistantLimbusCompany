@@ -31,6 +31,7 @@ class Config(metaclass=SingletonMeta):
         self.config_path = config_path
         # 加载实际配置，此方法会根据实际配置覆盖默认配置
         self._load_config()
+        log.debug(f"配置文件已加载，版本号：{self.version}")
         # 进程退出前确保落盘
         atexit.register(self.flush)
 
@@ -103,7 +104,7 @@ class Config(metaclass=SingletonMeta):
 
             # 防止 cdk 泄露
             masked_value = "已加密" if key == "mirrorchyan_cdk" else value
-            log.debug(f"{key} change to: {masked_value}")  # 增加设置修改的信息
+            log.debug(f"{key} change to: {masked_value}", stacklevel=2)  # 增加设置修改的信息
 
             # 安排一次延迟保存
             self._schedule_save()
@@ -187,7 +188,7 @@ class Config(metaclass=SingletonMeta):
         if key == "mirrorchyan_cdk":
             value = "已加密"
 
-        log.debug(f"{key} change to: {value}")  # 增加设置修改的信息
+        log.debug(f"{key} change to: {value}", stacklevel=2)  # 增加设置修改的信息
 
     def unsaved_del_key(self, key) -> None:
         """仅删除配置项 不保存"""
