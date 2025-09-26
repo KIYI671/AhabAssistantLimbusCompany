@@ -84,7 +84,7 @@ class Battle:
             msg = f"使用P+Enter开始战斗"
             if self.mouse_click_rate:
                 my_scale = cfg.set_win_size / 1440
-                if pos:= auto.find_element("battle/win_rate_card.png"):
+                if pos := auto.find_element("battle/win_rate_card.png", threshold=0.75):
                     pos = [pos[0] + 50 * my_scale, pos[1] - 50 * my_scale]
                     auto.mouse_click(pos[0], pos[1])
                     auto.click_element("battle/gear_right.png")
@@ -190,15 +190,17 @@ class Battle:
                     waiting = self._update_wait_time(waiting, False, total_count)
                     continue
             if chance < 5:
+                auto.mouse_to_blank()
                 turn_bbox = ImageUtils.get_bbox(ImageUtils.load_image("battle/turn_assets.png"))
                 turn_ocr_result = auto.find_text_element("turn", turn_bbox)
                 if turn_ocr_result is not False or auto.click_element("battle/turn_assets.png") or auto.find_element(
-                        "battle/win_rate_assets.png") or auto.find_element("battle/win_rate_card.png"):
+                        "battle/win_rate_assets.png") or auto.find_element("battle/win_rate_card.png", threshold=0.75):
                     self._battle_operation(first_turn, defense_first_round, avoid_skill_3)
                     chance = self.INIT_CHANCE
                     waiting = self._update_wait_time(waiting, False, total_count)
                     continue
             if chance == 1:
+                auto.mouse_to_blank()
                 if auto.find_text_element(["rate", "胜率"]):
                     self._battle_operation(first_turn, defense_first_round, avoid_skill_3)
                     chance = self.INIT_CHANCE
@@ -329,6 +331,8 @@ class Battle:
 
             auto.mouse_drag_link(skill_list)
 
+            auto.mouse_to_blank()
+
             sleep(1)
         except Exception as e:
             return False
@@ -361,6 +365,8 @@ class Battle:
             skill_list.append([gear_right[0] + 75 * scale, gear_right[1] + 150 * scale])
 
             auto.mouse_drag_link(skill_list)
+
+            auto.mouse_to_blank()
 
             sleep(1)
         except Exception as e:

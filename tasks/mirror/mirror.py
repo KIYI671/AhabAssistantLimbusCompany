@@ -188,12 +188,15 @@ class Mirror:
                 select_theme_pack(self.hard_switch, self.floor)
                 if self.re_formation_each_floor:
                     self.first_battle = True
-                floor_num = self.floor  # 0,1,2,3,4
-                if floor_num != 0:
-                    floor_time = time.time() - self.floor_times[floor_num - 1]
-                    msg = f"启动后第{self.floor}层卡包"
-                    to_log_with_time(msg, floor_time)
-                self.floor_times[floor_num] = time.time()
+                try:
+                    floor_num = self.floor  # 0,1,2,3,4
+                    if floor_num != 0:
+                        floor_time = time.time() - self.floor_times[floor_num - 1]
+                        msg = f"启动后第{self.floor}层卡包"
+                        to_log_with_time(msg, floor_time)
+                    self.floor_times[floor_num] = time.time()
+                except:
+                    log.info("楼层异常，可能是OCR识别错误，本轮镜牢层间的时间记录无效")
                 self.get_floor_num = True
                 main_loop_count += 50
                 continue
@@ -381,6 +384,7 @@ class Mirror:
                 log.debug(f"镜牢道中识别次数剩余{main_loop_count}次")
             if main_loop_count < 75:
                 auto.model = "normal"
+                auto.mouse_to_blank(move_back=False)
                 log.debug("识别模式切换到正常模式")
             if main_loop_count < 15:
                 auto.model = 'aggressive'
@@ -470,6 +474,7 @@ class Mirror:
                 log.debug(f"镜牢奖励识别次数剩余{main_loop_count}次")
             if main_loop_count < 10:
                 auto.model = "normal"
+                auto.mouse_to_blank(move_back=False)
                 log.debug("识别模式切换到正常模式")
             if main_loop_count < 5:
                 auto.model = 'aggressive'
@@ -483,9 +488,12 @@ class Mirror:
         end_time = time.time()
         elapsed_time = end_time - start_time
 
-        last_floor_time = time.time() - self.floor_times[self.floor - 1]
-        msg = f"启动后第{self.floor}层卡包"
-        to_log_with_time(msg, last_floor_time)
+        try:
+            last_floor_time = time.time() - self.floor_times[self.floor - 1]
+            msg = f"启动后第{self.floor}层卡包"
+            to_log_with_time(msg, last_floor_time)
+        except:
+            log.info("楼层异常，可能是OCR识别错误，本轮镜牢层间的时间记录无效")
 
         # 输出战斗总时间
         msg = f"此次镜牢在战斗"
@@ -564,6 +572,7 @@ class Mirror:
                 log.debug(f"进入镜牢识别次数剩余{loop_count}次")
             if loop_count < 20:
                 auto.model = "normal"
+                auto.mouse_to_blank(move_back=False)
                 log.debug("识别模式切换到正常模式")
             if loop_count < 10:
                 auto.model = 'aggressive'
@@ -632,6 +641,7 @@ class Mirror:
                 log.debug(f"选择藏品识别次数剩余{loop_count}次")
             if loop_count < 20:
                 auto.model = "normal"
+                auto.mouse_to_blank(move_back=False)
                 log.debug("识别模式切换到正常模式")
             if loop_count < 10:
                 auto.model = 'aggressive'
@@ -664,6 +674,7 @@ class Mirror:
                 log.debug(f"选择队伍识别次数剩余{loop_count}次")
             if loop_count < 20:
                 auto.model = "normal"
+                auto.mouse_to_blank(move_back=False)
                 log.debug("识别模式切换到正常模式")
             if loop_count < 10:
                 auto.model = 'aggressive'
@@ -712,8 +723,10 @@ class Mirror:
         except Exception as e:
             log.error(f"寻路出错:{e}")
             return False
-
+        if auto.click_element("mirror/road_in_mir/enter_assets.png", take_screenshot=True):
+            return True
         start_time = time.time()
+        log.info(f"寻路出错, 尝试重进镜牢")
         while True:
             from tasks.base.retry import check_times
             # 自动截图
@@ -725,6 +738,8 @@ class Mirror:
                 back_init_menu()
                 return False
             auto.mouse_to_blank()
+            if auto.click_element("mirror/road_in_mir/enter_assets.png"):
+                return True
             if auto.click_element("home/drive_assets.png") or auto.find_element("home/window_assets.png"):
                 sleep(0.5)
                 break
@@ -840,6 +855,7 @@ class Mirror:
                 log.debug(f"事件处理识别次数剩余{loop_count}次")
             if loop_count < 20:
                 auto.model = "normal"
+                auto.mouse_to_blank(move_back=False)
                 log.debug("识别模式切换到正常模式")
             if loop_count < 10:
                 auto.model = 'aggressive'
@@ -1038,6 +1054,7 @@ class Mirror:
                 log.debug(f"镜牢奖励识别次数剩余{main_loop_count}次")
             if main_loop_count < 10:
                 auto.model = "normal"
+                auto.mouse_to_blank(move_back=False)
                 log.debug("识别模式切换到正常模式")
             if main_loop_count < 5:
                 auto.model = 'aggressive'

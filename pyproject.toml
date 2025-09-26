@@ -31,6 +31,7 @@ dependencies = [
     "concurrent-log-handler>=0.9.28",
     "colorlog>=6.9.0",
     "rapidocr>=3.4.1",
+    "tzdata>=2025.2",
 ]
 
 [dependency-groups]

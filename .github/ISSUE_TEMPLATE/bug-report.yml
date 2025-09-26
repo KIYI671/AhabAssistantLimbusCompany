@@ -36,6 +36,14 @@ body:
       placeholder: "简单描述你期待修复后的效果"
     validations:
       required: true
+  - type: textarea
+    id: log
+    attributes:
+      label: "运行日志 | Log Files"
+      description: 请将`logs`文件夹下最新的日志文件粘贴到这里。 Please paste the latest log file from the `logs` folder here.
+      placeholder: "通常位于`AALC安装目录/logs/`下, 名称包含`debuglog`的文件\n不上传日志可能会被无视或直接关闭此issue\n\nUsually located in the ` AALC installation directory/logs/`, the file name includes ` debuglog `\nIf you don't provide the log file, your issue may be ignored or closed directly."
+    validations:
+      required: true
   - type: input
     id: resolution
     attributes:
