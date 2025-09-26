@@ -1,4 +1,6 @@
+import asyncio
 import random
+from functools import partial
 from time import sleep, time
 
 import pyautogui
@@ -237,13 +239,14 @@ class BackgroundInput(Input, metaclass=SingletonMeta):
     \n 除了不支持滚轮事件, 其余同 `Input` 类
     """
 
-    def mouse_to_blank(self, coordinate=(1, 1), move_back=True) -> None:
+    def mouse_to_blank(self, coordinate=(1, 1), move_back=False) -> None:
         """鼠标移动到空白位置，避免遮挡（然而为了避免影响用户操作，这个暂时没用）
         Args:
             coordinate (tuple): 坐标元组 (x, y)
             move_back (bool): 是否在移动后将鼠标移动回原位置
         """
         # FIXME：既不能影响用户操作，也要避免遮挡，似乎没有好办法
+        pyautogui.moveTo(coordinate[0], coordinate[1])
 
         self.logger.debug("鼠标移动到空白，避免遮挡")
 
