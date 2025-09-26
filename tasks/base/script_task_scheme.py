@@ -76,6 +76,8 @@ def onetime_mir_process(team_setting):
             return False
     except Exception as e:
         msg = f"镜牢行动出错: {e}"
+        exc_traceback = ''.join(format_exception(*exc_info()))
+        msg += f"\n调用栈信息:\n{exc_traceback}"
         log.error(msg)
         return False
 
