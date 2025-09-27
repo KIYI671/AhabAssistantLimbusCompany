@@ -18,6 +18,7 @@ class Battle:
         self.identify_keyword_turn = True
         self.mouse_click_rate = False
         self.INIT_CHANCE = 16
+        self.running = True # 用于外部打断战斗逻辑执行
 
     @staticmethod
     def to_battle():
@@ -108,7 +109,7 @@ class Battle:
 
         first_turn = True
         start_time = time.time()
-        while True:
+        while self.running:
             from tasks.base.retry import check_times
             # 自动截图
             if auto.take_screenshot() is None:
