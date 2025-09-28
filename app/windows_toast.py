@@ -36,11 +36,15 @@ import winreg
 import sys
 
 APPID = "AALC_Notification"
+"""注册表内的应用ID"""
 APPNAME = "AALC"
+"""显示的通知名称"""
 ICONPATH = r"assets\logo\my_icon.png"
+"""图标路径"""
 
 
 class TemplateToast(Enum):
+    """通知模板"""
     NoneTemplate = 0
     TestTemplate = 1
     NormalTemplate = 2
@@ -49,6 +53,7 @@ class TemplateToast(Enum):
 def _register_hkey(
     appId: str = APPID, appName: str = APPNAME, iconPath: Path | None = None
 ):
+    """实际注册行为"""
     winreg.ConnectRegistry(None, winreg.HKEY_CURRENT_USER)
     keyPath = f"SOFTWARE\\Classes\\AppUserModelId\\{appId}"
     with winreg.CreateKeyEx(winreg.HKEY_CURRENT_USER, keyPath) as masterKey:
@@ -60,9 +65,8 @@ def _register_hkey(
 def _register_toast(
     key_name: str = APPID, app_name: str = APPNAME, icon_path: str = ICONPATH
 ) -> bool:
+    """注册通知"""
     try:
-        # 打开注册表键
-
         relative_path = icon_path
 
         absolute_path = Path(relative_path).resolve()
@@ -82,6 +86,7 @@ def unregister_toast(appId: str = APPID):
 
 
 def _unregister_toast(appId: str):
+    """实际注销行为"""
     keyPath = "SOFTWARE\\Classes\\AppUserModelId\\"
     with winreg.OpenKey(winreg.HKEY_CURRENT_USER, keyPath) as uperKey:
         winreg.DeleteKey(uperKey, appId)
@@ -97,6 +102,7 @@ def _send_template_toast(
     on_activated: Callable | None = None,
     **kwargs,
 ) -> bool:
+    """发送模板通知"""
     try:
         _register_toast(app_id, app_name, icon_path)
         if template is TemplateToast.TestTemplate:
@@ -111,6 +117,7 @@ def _send_template_toast(
 
 
 def _normal_template_toast(title, msg, app_id, on_activated, **kwargs):
+    """常用的模板通知"""
     toaster = InteractableWindowsToaster("AALC", app_id)
     toaster.clear_toasts()
     hero_image = ToastDisplayImage.fromPath(
@@ -141,37 +148,47 @@ def _normal_template_toast(title, msg, app_id, on_activated, **kwargs):
 
 
 def _test_template_toast(title, msg, app_id, on_activated):
+    """测试用的模板通知
+    展示了各种功能"""
+    # 创建通知管理器
     toaster = InteractableWindowsToaster("AALC", app_id)
+    # 清除之前的通知以刷新通知名称和图标
     toaster.clear_toasts()
+    # 创建图标, *altText* 是无障碍阅读器使用的文本
+    # 无位置参数为默认位置, 即通知内容中
     image1 = ToastDisplayImage.fromPath(imagePath=ICONPATH, altText="这是一个图标")
+    # Hero 位置为通知上方的大图
     image2 = ToastDisplayImage.fromPath(
         imagePath=ICONPATH, position=ToastImagePosition.Hero
     )
-
+    # AppLogo 位置为通知左侧的小图
     image3 = ToastDisplayImage.fromPath(
         imagePath=ICONPATH, position=ToastImagePosition.AppLogo
     )
+    # 按钮的图标 压缩为16x16
     botton_image = ToastImage(ICONPATH)
+    # 创建按钮, *tooltip* 为无障碍阅读器使用的文本
+    # arguments 是用户点击按钮时传递的参数
     botton1 = ToastButton(
         content="都是你的错",
         arguments="action=botton1",
         image=botton_image,
         tooltip="点我点我",
     )
-    botton_image = ToastImage(ICONPATH)
+    # colour 定义按钮颜色 有默认, 绿色, 红色三种
     botton2 = ToastButton(
         content="以实玛丽",
         arguments="action=botton2",
         image=botton_image,
         colour=ToastButtonColour.Green,
     )
-    botton_image = ToastImage(ICONPATH)
     botton3 = ToastButton(
         content="伊莎玛拉",
         arguments="action=botton3",
         image=botton_image,
         colour=ToastButtonColour.Red,
     )
+    # inContextMenu 定义按钮是否放在右上角的菜单中, 对于旧版本的 Windows (8+), 该按钮会被放置在通知下方, 即正常按钮的位置
     hide_botton = ToastButton(
         content="亚哈",
         arguments="action=hide",
@@ -179,12 +196,14 @@ def _test_template_toast(title, msg, app_id, on_activated):
         image=botton_image,
         colour=ToastButtonColour.Red,
     )
+    # 构建通知
     toast = Toast(
         text_fields=[title],
         duration=ToastDuration.Default,
         images=[image1, image2, image3],
         actions=[botton1, botton2, botton3, hide_botton],
     )
+    # 添加发送通知时的音频
     if cfg.resonate_with_Ahab:
         from random import randint
 
@@ -192,9 +211,11 @@ def _test_template_toast(title, msg, app_id, on_activated):
             Path(r"assets\audio\This_is_all_your_fault_" + f"{randint(1, 4)}.mp3")
         )
 
+    # 定义回调函数
     def on_click(args: ToastActivatedEventArgs):
         log.info(f"用户点击了通知，参数: {args.arguments}, 输入: {args.inputs}")
 
+    # 设置回调函数
     if on_activated is not None:
         toast.on_activated = on_activated
     else:
@@ -204,7 +225,8 @@ def _test_template_toast(title, msg, app_id, on_activated):
         toast.text_fields.append(msg)
     else:
         toast.text_fields += msg
-
+        
+    # 发送通知
     toaster.show_toast(toast)
 
 
@@ -226,6 +248,8 @@ def send_toast(
         app_id (str, optional): 应用ID.
         icon_path (str, optional): 图标路径.
         template (TemplateToast, optional): 使用的模板.
+        on_activated (Callable, optional): 用户点击通知时的回调函数.
+        **kwargs: 其他参数，传递给模板函数.
     Returns:
         bool: 发送是否成功
     """
@@ -255,7 +279,7 @@ if __name__ == "__main__":
     send_toast(
         "运行结束",
         ["第一行", "第二行", "第三行"],
-        template=TemplateToast.NormalTemplate,
+        template=TemplateToast.TestTemplate,
     )
     from time import sleep
 
