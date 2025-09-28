@@ -150,7 +150,7 @@ class Automation(metaclass=SingletonMeta):
 
         return True
 
-    def take_screenshot(self, gray: bool = True) -> Image:
+    def take_screenshot(self, gray: bool = True) -> Image | None:
         """
         截取当前屏幕并返回图像对象。
         Args:
@@ -162,19 +162,18 @@ class Automation(metaclass=SingletonMeta):
         screenshot_interval_time = cfg.screenshot_interval if cfg.screenshot_interval else 0.85
         while True:
             try:
+
+                if time.time() - self.last_screenshot_time < screenshot_interval_time:
+                    wait_time = max(screenshot_interval_time - (time.time() - self.last_screenshot_time), 0)
+                    time.sleep(wait_time)
+
                 result = ScreenShot.take_screenshot(gray)
                 if result:
                     self.screenshot = result
-                    if self.last_screenshot_time == 0:
-                        self.last_screenshot_time = time.time()
-                        interval_time = 100
-                    else:
-                        interval_time = time.time() - self.last_screenshot_time
-                    if interval_time > screenshot_interval_time:
-                        self.last_screenshot_time = time.time()
-                        return result
-                    else:
-                        return None
+                    self.last_screenshot_time = time.time()
+                    return result
+                else:
+                    return None
             except Exception as e:
                 log.error(f"截图失败:{e}")
             time.sleep(1)
