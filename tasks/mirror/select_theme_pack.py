@@ -98,6 +98,7 @@ def select_theme_pack(hard_switch=False, floor=None):
 
                 # 选择权重最大的主题包
                 max_weight = max(weight_list)
+                log.debug(f"当前主题包权重列表：{list(zip(pack_name, weight_list))}")
                 # 如果存在权重最大值大于等于优选阈值的主题包，则选择该主题包
                 if max_weight >= theme_list.preferred_thresholds:
                     max_index = weight_list.index(max_weight)
