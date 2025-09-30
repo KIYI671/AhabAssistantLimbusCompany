@@ -3,7 +3,7 @@ import traceback
 
 import win32con
 import win32gui
-from PySide6.QtWidgets import QWidget, QLabel, QVBoxLayout, QPushButton, QTextEdit
+from PySide6.QtWidgets import QWidget, QLabel, QVBoxLayout, QPushButton, QTextEdit, QHBoxLayout
 from PySide6.QtCore import QTimer, QThread, Signal, Qt
 from PySide6.QtGui import QIcon
 
@@ -11,6 +11,10 @@ from module.automation import auto
 from module.config import cfg
 from utils.image_utils import ImageUtils
 from module.logger import log
+from tasks.battle.battle import Battle
+from pynput import keyboard
+from module.game_and_screen import screen
+
 
 class BattleWorker(QThread):
     """战斗逻辑工作线程，避免阻塞UI"""
@@ -18,13 +22,13 @@ class BattleWorker(QThread):
     error_occurred = Signal(str)
     initialization_complete = Signal()
     
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, is_guard=False):
         super().__init__(parent)
         self.identify_keyword_turn = True
         self.fail_count = 0
         self.running = True
         self.initialized = False
-        
+        self.is_guard = is_guard
     def stop(self):
         self.running = False
         
@@ -60,21 +64,24 @@ class BattleWorker(QThread):
         window = win32gui.FindWindow("UnityWndClass", "LimbusCompany")
         if window:
             try:
-                original_index = self.get_z_order_index(window)
-                win32gui.SetWindowPos(
-                    window,
-                    win32con.HWND_TOP,
-                    0, 0, 0, 0,
-                    win32con.SWP_NOMOVE | win32con.SWP_NOSIZE | win32con.SWP_NOACTIVATE
-                )
+                if not cfg.background_click:
+                    original_index = self.get_z_order_index(window)
+                    win32gui.SetWindowPos(
+                        window,
+                        win32con.HWND_TOP,
+                        0, 0, 0, 0,
+                        win32con.SWP_NOMOVE | win32con.SWP_NOSIZE | win32con.SWP_NOACTIVATE
+                    )
                 auto.take_screenshot()
                 
                 if self.fail_count >= 5 or self.identify_keyword_turn is False:
                     self._ocr_battle()
+                elif self.is_guard:
+                    self._guard_battle()
                 else:
                     self._template_battle()
-
-                self.restore_target_z_order(window, original_index)
+                if not cfg.background_click:
+                    self.restore_target_z_order(window, original_index)
                 self.battle_executed.emit()
             except Exception as e:
                 self.error_occurred.emit(f"窗口操作错误: {str(e)}")
@@ -86,11 +93,24 @@ class BattleWorker(QThread):
         turn_bbox = ImageUtils.get_bbox(ImageUtils.load_image("battle/turn_assets.png"))
         turn_ocr_result = auto.find_text_element("turn", turn_bbox)
         if turn_ocr_result is not False:
+            self.fail_count = 0
+            # 守备战斗
+            if self.is_guard:
+                auto.mouse_click_blank(move_back=True)
+                Battle._defense_first_round(move_back=True)
+                auto.key_press("enter")
+                self.identify_keyword_turn = cfg.background_click
+                return
+            # 普通战斗
             auto.mouse_click_blank(move_back=True)
-            auto.key_press('p')
+            auto.key_press("p")
             sleep(0.5)
-            auto.key_press('enter')
-            self.identify_keyword_turn = False
+            auto.key_press("enter")
+            self.identify_keyword_turn = cfg.background_click
+        else:
+            self.fail_count += 1
+            wait_time = min(1 * (self.fail_count + 1), 8)  # 最大等待8秒
+            sleep(wait_time)
 
     def _template_battle(self):
         if auto.click_element("battle/turn_assets.png") or auto.find_element("battle/win_rate_assets.png"):
@@ -102,11 +122,22 @@ class BattleWorker(QThread):
             return
         else:
             self.fail_count += 1
-            sleep(1)
+            sleep(1*(self.fail_count+1))
+
+    def _guard_battle(self):
+        if auto.click_element("battle/turn_assets.png") or auto.find_element("battle/win_rate_assets.png"):
+            auto.mouse_click_blank(move_back=True)
+            Battle._defense_first_round()
+            auto.key_press('enter')
+            self.fail_count = 0
+            return
+        else:
+            self.fail_count += 1
+            sleep(1*(self.fail_count+1))
 
     def _set_win(self):
         try:
-            from module.game_and_screen import screen
+            
             hwnd = screen.handle
             win32gui.SetWindowPos(
                 hwnd._hWnd,  # 目标窗口句柄
@@ -184,7 +215,14 @@ class InfiniteBattles(QWidget):
         # 关闭时删除自身，不影响其他窗口/应用
         self.setAttribute(Qt.WA_DeleteOnClose, True)
         self.setup_ui()
-        self.start_battle()
+
+        # 启动快捷键监听
+        self.listener = keyboard.GlobalHotKeys(
+            {
+                "<ctrl>+q": self._on_stop_shortcut,
+            }
+        )
+        self.listener.start()
 
     def setup_ui(self):
         """配置窗口的基本属性和界面元素。"""
@@ -205,16 +243,19 @@ class InfiniteBattles(QWidget):
         layout.addWidget(self.instruction_label)
         
         # 添加状态显示标签
-        self.status_label = QLabel("状态：初始化中...")
+        self.status_label = QLabel("状态：等待开始...")
         self.status_label.setStyleSheet("QLabel { background-color: #f0f0f0; padding: 5px; border: 1px solid #ccc; }")
         layout.addWidget(self.status_label)
         
         # 添加控制按钮
-        button_layout = QVBoxLayout()
+        button_layout = QHBoxLayout()
         
-        self.start_stop_button = QPushButton("停止战斗")
+        self.start_stop_button = QPushButton("开始战斗")
         self.start_stop_button.clicked.connect(self.toggle_battle)
+        self.guard_button = QPushButton("守备战斗")
+        self.guard_button.clicked.connect(self.toggle_guard_battle)
         button_layout.addWidget(self.start_stop_button)
+        button_layout.addWidget(self.guard_button)
         
         layout.addLayout(button_layout)
         
@@ -226,16 +267,17 @@ class InfiniteBattles(QWidget):
         layout.addWidget(self.log_text)
         
         self.setLayout(layout)
-        
-    def start_battle(self):
+
+    def start_battle(self, is_guard=False):
         """启动战斗工作线程"""
         if self.worker is None or not self.worker.isRunning():
-            self.worker = BattleWorker()
+            self.worker = BattleWorker(is_guard=is_guard)
             self.worker.battle_executed.connect(self.on_battle_executed)
             self.worker.error_occurred.connect(self.on_error_occurred)
             self.worker.initialization_complete.connect(self.on_initialization_complete)
             self.worker.start()
             self.start_stop_button.setText("停止战斗")
+            self.guard_button.setText("停止战斗")
             self.log_text.append("正在初始化游戏...")
             self.status_label.setText("状态：初始化中...")
     
@@ -253,8 +295,10 @@ class InfiniteBattles(QWidget):
                 self.worker.terminate()
                 self.worker.wait(1000)
             self.start_stop_button.setText("开始战斗")
+            self.guard_button.setText("守备战斗")
             self.log_text.append("战斗线程已停止")
             self.status_label.setText("状态：已停止")
+            screen.reset_win()
     
     def toggle_battle(self):
         """切换战斗状态"""
@@ -262,7 +306,14 @@ class InfiniteBattles(QWidget):
             self.stop_battle()
         else:
             self.start_battle()
-    
+
+    def toggle_guard_battle(self):
+        """切换守备战斗状态"""
+        if self.worker and self.worker.isRunning():
+            self.stop_battle()
+        else:
+            self.start_battle(is_guard=True)
+
     def on_battle_executed(self):
         """当执行战斗时调用"""
         self.status_label.setText("状态：正在战斗...")
@@ -290,12 +341,15 @@ class InfiniteBattles(QWidget):
 
         # 资源清理
         try:
-            from module.automation import auto
-            from module.game_and_screen import screen
-            from module.ocr import ocr
             screen.reset_win()
             auto.clear_img_cache()
+            self.listener.stop()
         except Exception:
             # 忽略清理异常，避免影响关闭
             pass
         event.accept()
+
+    def _on_stop_shortcut(self):
+        """快捷键停止战斗"""
+        if self.worker and self.worker.isRunning():
+            self.stop_battle()
