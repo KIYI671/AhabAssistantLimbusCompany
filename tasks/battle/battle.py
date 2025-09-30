@@ -337,7 +337,8 @@ class Battle:
         except Exception as e:
             return False
 
-    def _defense_first_round(self):
+    @staticmethod
+    def _defense_first_round(move_back: bool = False) -> bool:
         try:
             scale = cfg.set_win_size / 1440
 
@@ -366,8 +367,9 @@ class Battle:
 
             auto.mouse_drag_link(skill_list)
 
-            auto.mouse_to_blank()
+            auto.mouse_to_blank(move_back=move_back)
 
             sleep(1)
+            return True
         except Exception as e:
             return False
