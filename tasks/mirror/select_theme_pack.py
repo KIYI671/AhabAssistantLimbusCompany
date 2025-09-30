@@ -78,6 +78,7 @@ def select_theme_pack(hard_switch=False, floor=None):
             if all_theme_pack := auto.find_element("mirror/theme_pack/theme_pack_features.png",
                                                    find_type='image_with_multiple_targets'):
                 if floor == 4 and cfg.skip_event_pack:
+                    all_theme_pack.sort(key=lambda pos: (pos[0], pos[1]))
                     all_theme_pack.pop(0) # 删除最左边的卡包
                 for pack in all_theme_pack:
                     top_left = (
