@@ -116,6 +116,9 @@ class SettingInterface(ScrollArea):
             QT_TRANSLATE_NOOP("ComboBoxSettingCard", '设置程序 UI 使用的缩放'),
             texts={
                 QT_TRANSLATE_NOOP("ComboBoxSettingCard", "跟随系统"): 0,
+                "50%": 50,
+                "75%": 75,
+                "90%": 90,
                 "100%": 100,
                 "125%": 125,
                 "150%": 150,
