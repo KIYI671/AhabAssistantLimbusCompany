@@ -3,11 +3,12 @@ import datetime
 
 import pyperclip
 from PySide6.QtCore import QUrl, Signal
-from PySide6.QtGui import QPixmap, QDesktopServices
+from PySide6.QtGui import QPixmap, QDesktopServices, QPainter, QColor
 from PySide6.QtWidgets import QPushButton
 from qfluentwidgets import LineEdit, SettingCard, \
     IndicatorPosition, SwitchButton, SettingCardGroup, \
-    PushSettingCard, PrimaryPushSettingCard, InfoBarPosition
+    PushSettingCard, PrimaryPushSettingCard, InfoBarPosition, \
+    ProgressBar
 
 from app.base_tools import *
 from app.card.messagebox_custom import MessageBoxEdit, MessageBoxDate, \
@@ -160,8 +161,8 @@ class LabelWithSpinBox(QFrame):
 
 
 class MirrorSpinBox(QFrame):
-    def __init__(self, label_text, box_name, double=False, min_value=0, min_step=1):
-        super().__init__()
+    def __init__(self, label_text, box_name, parent=None, double=False, min_value=0, min_step=1):
+        super().__init__(parent)
         self.box_layout = QHBoxLayout(self)
         self.text = label_text
         self.label = BaseLabel(label_text)
@@ -576,3 +577,85 @@ class PushSettingCardChance(BasePushSettingCard):
         if message_box.exec():
             cfg.set_value(f"hard_mirror_chance", int(message_box.getValue()))
             self.line_text.setText(str(message_box.getValue()))
+
+
+class TextProgressBar(ProgressBar):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setTextVisible(True)
+        if parent:
+            self.setObjectName(f"{parent.objectName()}::TextProgressBar")
+        else:
+            self.setObjectName("TextProgressBar")
+        self._text_color = QColor(0, 0, 0)
+        self.specialValue = 0
+
+    def setTextColor(self, color):
+        """设置文本颜色"""
+        self._text_color = QColor(color)
+        self.update()
+
+    def paintEvent(self, e):
+        painter = QPainter(self)
+        painter.setRenderHints(QPainter.Antialiasing)
+
+        painter.setPen(QColor(114, 114, 114, int(255 / 2)))
+
+        r = self.height() / 2
+        w = int(self.val / (self.maximum() - self.minimum()) * self.width())
+
+        # 绘制边框
+        painter.drawRoundedRect(0, 0, self.width(), self.height(), r + 2, r + 2)
+
+        painter.setPen(Qt.NoPen)
+
+        bc = QColor(255, 255, 255, int(255 / 2))
+        painter.setBrush(bc)
+
+        # 绘制背景
+        painter.drawRoundedRect(0, 0, self.width(), self.height(), r + 2, r + 2)
+
+        if self.minimum() >= self.maximum():
+            return
+
+        # draw bar
+        painter.setPen(Qt.NoPen)
+        painter.setBrush(self.barColor())
+
+        painter.drawRoundedRect(0, 0, w, self.height(), r, r)
+        # 然后绘制文本
+        if self.isTextVisible():
+            painter.setPen(self._text_color)
+            painter.setFont(self.font())
+
+            # 使用格式化文本
+            text = (
+                self.format()
+                .replace("%p", str(self.percentage()))
+                .replace("%v", str(self.value()))
+                .replace("%m", str(self.maximum()))
+                .replace("%raw", str(self.specialValue))
+            )
+
+            # 添加字体描边效果
+
+            painter.setPen(QColor(255, 255, 255, 155))
+            offsets = [(-1, -1), (-1, 0), (-1, 1),
+                    (0, -1),         (0, 1),
+                    (1, -1),  (1, 0), (1, 1)]
+
+            for dx, dy in offsets:
+                rect = self.rect().translated(dx, dy)
+                painter.drawText(rect, Qt.AlignCenter, text)
+
+            # 绘制主体文本
+            painter.setPen(self._text_color)
+            painter.drawText(self.rect(), Qt.AlignCenter, text)
+
+    def percentage(self):
+        """计算百分比"""
+        if self.maximum() <= self.minimum():
+            return 100
+        return int(
+            (self.value() - self.minimum()) * 100 / (self.maximum() - self.minimum())
+        )

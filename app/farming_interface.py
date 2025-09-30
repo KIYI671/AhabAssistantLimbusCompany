@@ -294,6 +294,7 @@ class FarmingInterfaceLeft(QWidget):
             mediator.refresh_teams_order.emit()
             self.stop_script()
             auto.clear_img_cache()
+            mediator.mirror_bar_kill_signal.emit()
 
     def _disable_setting(self, parent):
         for child in parent.children():
