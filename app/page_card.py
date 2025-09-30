@@ -388,6 +388,11 @@ class PageMirror(PageCard):
             QT_TRANSLATE_NOOP("BaseCheckBox", "第五层选择（最左边）活动卡包"),
             center=False
         )
+        self.skip_event_pack = BaseCheckBox(
+            "skip_event_pack", None,
+            QT_TRANSLATE_NOOP("BaseCheckBox", "第五层跳过（最左边）活动卡包"),
+            center=False
+        )
         self.re_claim_rewards = BaseCheckBox(
             "re_claim_rewards", None,
             QT_TRANSLATE_NOOP("BaseCheckBox", "再次领取奖励"),
@@ -407,6 +412,8 @@ class PageMirror(PageCard):
         self.vbox_advanced.addWidget(self.save_rewards)
         self.vbox_advanced.addWidget(self.hard_mirror_single_bonuses)
         self.vbox_advanced.addWidget(self.select_event_pack)
+        self.vbox_advanced.addWidget(self.skip_event_pack)
+        self.vbox_advanced.addWidget(self.re_claim_rewards)
 
         self.card_layout.insertWidget(self.card_layout.count() - 1, self.mirror_count)
 
@@ -532,6 +539,8 @@ class PageMirror(PageCard):
         self.save_rewards.retranslateUi()
         self.hard_mirror_single_bonuses.retranslateUi()
         self.select_event_pack.retranslateUi()
+        self.skip_event_pack.retranslateUi()
+        self.re_claim_rewards.retranslateUi()
         for child in self.findChildren(MirrorTeamCombination):
             child.retranslateUi()
 
