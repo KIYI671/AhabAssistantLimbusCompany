@@ -6,6 +6,7 @@ from module.my_error.my_error import backMainWinError
 from tasks.base.retry import retry
 from tasks.mirror.reward_card import get_reward_card
 
+from time import sleep
 
 @begin_and_finish_time_log(task_name="返回主界面")
 def back_init_menu():
@@ -52,6 +53,13 @@ def back_init_menu():
 
         # 左上角有后退键
         if auto.click_element("home/back_assets.png"):
+            continue
+
+        # 在战斗中
+        if auto.click_element("battle/setting_assets.png"):
+            sleep(1)
+            auto.click_element("battle/give_up_assets.png", take_screenshot=True)
+            auto.click_element("battle/normal_give_up_assets.png")
             continue
 
         # 周年活动弹出的窗口
