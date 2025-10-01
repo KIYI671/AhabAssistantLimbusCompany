@@ -208,18 +208,8 @@ class Shop:
 
             if retry() is False:
                 raise self.RestartGame()
-            try:
-                money_bbox = ImageUtils.get_bbox(ImageUtils.load_image("mirror/shop/my_money_bbox.png"))
-                my_money = auto.get_text_from_screenshot(money_bbox)
-                my_remaining_money = int(my_money[0])
-                if not isinstance(my_remaining_money, int):
-                    log.error(f"获取剩余金钱失败")
-                    my_remaining_money = -1
-                else:
-                    log.debug(f"剩余金钱：{my_remaining_money}")
-            except Exception as e:
-                log.error(f"获取剩余金钱失败：{e}")
-                my_remaining_money = -1
+
+            my_remaining_money = self._get_cost()
             if my_remaining_money <= 300:
                 refresh_keyword = True
             if my_remaining_money <= 200:
@@ -830,6 +820,11 @@ class Shop:
                 sinner_be_heal = True
                 continue
 
+            money = self._get_cost()
+            if money < 100:
+                log.debug("金币不足，无法治疗罪人")
+                break
+
             if auto.click_element("mirror/shop/heal_sinner/heal_sinner_assets.png"):
                 continue
 
@@ -1133,3 +1128,18 @@ class Shop:
         except self.RestartGame:
             log.error("执行商店操作期间出现错误，尝试重启游戏")
             return
+
+    def _get_cost(self) -> int:
+        """获取当前剩余的经费"""
+        my_remaining_money = -1
+        try:
+            money_bbox = ImageUtils.get_bbox(ImageUtils.load_image("mirror/shop/my_money_bbox.png"))
+            my_money = auto.get_text_from_screenshot(money_bbox)
+            my_remaining_money = int(my_money[0])
+            if not isinstance(my_remaining_money, int):
+                log.error("获取剩余金钱失败")
+            else:
+                log.debug(f"剩余金钱：{my_remaining_money}")
+        except Exception as e:
+            log.error(f"获取剩余金钱失败：{e}")
+        return my_remaining_money
