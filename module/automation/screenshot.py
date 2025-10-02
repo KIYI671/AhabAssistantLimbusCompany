@@ -36,7 +36,7 @@ class ScreenShot:
                     return None
         if cfg.background_click:
             try:
-                return ScreenShot.backgroud_screenshot(gray)
+                return ScreenShot.background_screenshot(gray)
             except Exception as e:
                 log.debug(f"后台截图报错 {type(e).__name__}: {e}")
                 return None
@@ -153,7 +153,7 @@ class ScreenShot:
         return screenshot
 
     @staticmethod
-    def backgroud_screenshot(gray: bool = True) -> Image.Image:
+    def background_screenshot(gray: bool = True) -> Image.Image:
         try:
             # 查找游戏窗口句柄（Unity引擎创建的游戏窗口通常使用"UnityWndClass"类名）
             hwnd = win32gui.FindWindow("UnityWndClass", "LimbusCompany")

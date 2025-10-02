@@ -16,7 +16,11 @@ class Mediator(QObject):
     update_progress = Signal(int)
     download_complete = Signal(str)
     warning = Signal(str)
-
+    finished_signal = Signal()
+    kill_signal = Signal()
+    mirror_signal = Signal(int, int) # 运行的当前次数和总次数
+    mirror_bar_kill_signal = Signal()
+    
     # 单例实例（类变量）
     _instance = None
 

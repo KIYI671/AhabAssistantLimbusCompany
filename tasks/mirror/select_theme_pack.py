@@ -77,6 +77,9 @@ def select_theme_pack(hard_switch=False, floor=None):
             pack_name = []
             if all_theme_pack := auto.find_element("mirror/theme_pack/theme_pack_features.png",
                                                    find_type='image_with_multiple_targets'):
+                if floor == 4 and cfg.skip_event_pack:
+                    all_theme_pack.sort(key=lambda pos: (pos[0], pos[1]))
+                    all_theme_pack.pop(0) # 删除最左边的卡包
                 for pack in all_theme_pack:
                     top_left = (
                         max(pack[0] - 210 * scale, 0),
@@ -98,6 +101,7 @@ def select_theme_pack(hard_switch=False, floor=None):
 
                 # 选择权重最大的主题包
                 max_weight = max(weight_list)
+                log.debug(f"当前主题包权重列表：{list(zip(pack_name, weight_list))}")
                 # 如果存在权重最大值大于等于优选阈值的主题包，则选择该主题包
                 if max_weight >= theme_list.preferred_thresholds:
                     max_index = weight_list.index(max_weight)

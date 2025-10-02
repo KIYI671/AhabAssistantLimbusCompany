@@ -2,11 +2,12 @@ import os
 import platform
 import random
 from sys import exc_info
-from time import sleep
+from time import sleep, time
+from datetime import datetime
 from traceback import format_exception
 
 import win32process
-from PySide6.QtCore import QThread, Signal, QMutex
+from PySide6.QtCore import QThread, QMutex, QT_TRANSLATE_NOOP
 from playsound3 import playsound
 
 from module.ALI import auto_switch_language_in_game, AutoSwitchCon, get_game_config_from_registry
@@ -26,7 +27,8 @@ from tasks.mirror.mirror import Mirror
 from tasks.teams.team_formation import select_battle_team
 from utils import pic_path
 from utils.utils import get_day_of_week, calculate_the_teams
-
+from app import mediator
+from app.windows_toast import send_toast, TemplateToast
 
 @begin_and_finish_time_log(task_name="一次经验本")
 # 一次经验本的过程
@@ -76,9 +78,10 @@ def onetime_mir_process(team_setting):
             return False
     except Exception as e:
         msg = f"镜牢行动出错: {e}"
+        exc_traceback = ''.join(format_exception(*exc_info()))
+        msg += f"\n调用栈信息:\n{exc_traceback}"
         log.error(msg)
         return False
-
 
 def to_get_reward():
     if cfg.set_get_prize == 0:
@@ -132,6 +135,7 @@ def script_task() -> None | int:
             from module.simulator.simulator_control import SimulatorControl
             simulator = SimulatorControl()
         auto.init_input()
+    start_time = time()
     # 获取（启动）游戏对游戏窗口进行设置
     init_game()
 
@@ -200,7 +204,8 @@ def script_task() -> None | int:
             mir_times = 9999
         if cfg.save_rewards and cfg.hard_mirror:
             mir_times = 1
-
+        finish_times = 0
+        mediator.mirror_signal.emit(0, mir_times)
         # 开始执行镜牢任务
         while mir_times > 0:
             # 检测配置的队伍能否顺利执行
@@ -255,6 +260,11 @@ def script_task() -> None | int:
                     if chance == 0:
                         cfg.set_value("hard_mirror", False)
 
+                # 更新进度条
+                finish_times += 1
+                mediator.mirror_signal.emit(finish_times, mir_times)
+
+        mediator.mirror_bar_kill_signal.emit()
         if cfg.re_claim_rewards:
             to_get_reward()
 
@@ -264,10 +274,22 @@ def script_task() -> None | int:
         if cfg.simulator_type == 0:
             from module.simulator.mumu_control import MumuControl
             MumuControl.clean_connect()
-        #auto.input_handler.clear_mnt()
 
 
     log.info("脚本任务已经完成")
+    QT_TRANSLATE_NOOP("WindowsToast", "AALC 运行结束")
+    QT_TRANSLATE_NOOP("WindowsToast", "所有任务已完成")
+    dt_start = datetime.fromtimestamp(start_time)
+    dt_end = datetime.fromtimestamp(time())
+    duration = dt_end - dt_start
+    secends = duration.total_seconds()
+    minutes, seconds = divmod(secends, 60)
+    hours, minutes = divmod(minutes, 60)
+    run_time = f"{int(hours):02}:{int(minutes):02}:{int(seconds):02}"
+    send_toast("AALC 运行结束", ["所有任务已完成", run_time], template=TemplateToast.NormalTemplate)
+    if cfg.resonate_with_Ahab:
+        random_number = random.randint(1, 4)
+        playsound(f"assets/audio/This_is_all_your_fault_{random_number}.mp3", block=False)
 
     if platform.system() == "Windows":
         after_completion = cfg.after_completion
@@ -296,9 +318,7 @@ def script_task() -> None | int:
 
 
 class my_script_task(QThread):
-    # 定义信号
-    finished_signal = Signal()
-    kill_signal = Signal()
+
 
     def __init__(self):
         # 初始化，构造函数
@@ -344,7 +364,7 @@ class my_script_task(QThread):
                 log.error(self.exc_traceback)
                 self.mutex.unlock()
 
-        self.finished_signal.emit()
+        mediator.finished_signal.emit()
 
     """def stop(self):
         self.running=False
@@ -354,7 +374,7 @@ class my_script_task(QThread):
         try:
             ret = script_task()
             if ret == 0:
-                self.kill_signal.emit()
+                mediator.kill_signal.emit()
             auto.clear_img_cache()
         except Exception as e:
             log.error(f"出现错误: {e}")

@@ -208,18 +208,8 @@ class Shop:
 
             if retry() is False:
                 raise self.RestartGame()
-            try:
-                money_bbox = ImageUtils.get_bbox(ImageUtils.load_image("mirror/shop/my_money_bbox.png"))
-                my_money = auto.get_text_from_screenshot(money_bbox)
-                my_remaining_money = int(my_money[0])
-                if not isinstance(my_remaining_money, int):
-                    log.error(f"获取剩余金钱失败")
-                    my_remaining_money = -1
-                else:
-                    log.debug(f"剩余金钱：{my_remaining_money}")
-            except Exception as e:
-                log.error(f"获取剩余金钱失败：{e}")
-                my_remaining_money = -1
+
+            my_remaining_money = self._get_cost()
             if my_remaining_money <= 300:
                 refresh_keyword = True
             if my_remaining_money <= 200:
@@ -267,7 +257,7 @@ class Shop:
 
             return my_gift_list
 
-        if auto.find_element(f"mirror/shop/level_IV_gifts/{self.system}_level_IV.png", take_screenshot=True):
+        if auto.find_element(f"mirror/shop/level_IV_gifts/{self.system}_level_IV.png", take_screenshot=True,threshold=0.75):
             self.after_fuse_IV()
             if self.fuse_aggressive_switch is False:
                 log.info("已有本体系四级饰品，切换到非激进模式")
@@ -809,7 +799,7 @@ class Shop:
 
     def heal_sinner(self):
         # 全体治疗
-        loop_count = 5
+        loop_count = 10
         auto.model = 'clam'
         log.debug("开始执行罪人治疗模块")
         sinner_be_heal = False
@@ -817,6 +807,15 @@ class Shop:
             # 自动截图
             if auto.take_screenshot() is None:
                 continue
+
+            loop_count -= 1
+            if loop_count < 3:
+                auto.model = "normal"
+            if loop_count < 1:
+                auto.model = 'aggressive'
+            if loop_count < 0:
+                log.error("治疗罪人失败")
+                break
 
             if sinner_be_heal is True and auto.click_element("mirror/shop/heal_sinner/heal_sinner_return_assets.png"):
                 if auto.find_element('mirror/shop/shop_coins_assets.png', take_screenshot=True):
@@ -830,20 +829,17 @@ class Shop:
                 sinner_be_heal = True
                 continue
 
+            money = self._get_cost()
+            if money < 100:
+                log.debug("金币不足，无法治疗罪人")
+                break
+
             if auto.click_element("mirror/shop/heal_sinner/heal_sinner_assets.png"):
                 continue
 
             if retry() is False:
                 raise self.RestartGame()
 
-            loop_count -= 1
-            if loop_count < 3:
-                auto.model = "normal"
-            if loop_count < 1:
-                auto.model = 'aggressive'
-            if loop_count < 0:
-                log.error("治疗罪人失败")
-                break
 
     def enhance_gifts(self):
         def check_enhanced(pos):
@@ -1133,3 +1129,18 @@ class Shop:
         except self.RestartGame:
             log.error("执行商店操作期间出现错误，尝试重启游戏")
             return
+
+    def _get_cost(self) -> int:
+        """获取当前剩余的经费"""
+        my_remaining_money = -1
+        try:
+            money_bbox = ImageUtils.get_bbox(ImageUtils.load_image("mirror/shop/my_money_bbox.png"))
+            my_money = auto.get_text_from_screenshot(money_bbox)
+            my_remaining_money = int(my_money[0])
+            if not isinstance(my_remaining_money, int):
+                log.error("获取剩余金钱失败")
+            else:
+                log.debug(f"剩余金钱：{my_remaining_money}")
+        except Exception as e:
+            log.error(f"获取剩余金钱失败：{e}")
+        return my_remaining_money
