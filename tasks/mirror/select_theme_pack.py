@@ -76,10 +76,10 @@ def select_theme_pack(hard_switch=False, floor=None):
             weight_list = []
             pack_name = []
             if all_theme_pack := auto.find_element("mirror/theme_pack/theme_pack_features.png",
-                                                   find_type='image_with_multiple_targets'):
+                                                   find_type='image_with_multiple_targets', take_screenshot=True):
                 if floor == 4 and cfg.skip_event_pack:
                     all_theme_pack.sort(key=lambda pos: (pos[0], pos[1]))
-                    all_theme_pack.pop(0) # 删除最左边的卡包
+                    all_theme_pack.pop(0)  # 删除最左边的卡包
                 for pack in all_theme_pack:
                     top_left = (
                         max(pack[0] - 210 * scale, 0),
@@ -93,7 +93,7 @@ def select_theme_pack(hard_switch=False, floor=None):
                         theme_pack_weight = result[0]
                         theme_pack_name = result[1]
                     else:
-                        theme_pack_weight = -2
+                        theme_pack_weight = -5
                         theme_pack_name = "unknown"
 
                     weight_list.append(theme_pack_weight)  # 采用最大值的形式，权重越大，优先级越高

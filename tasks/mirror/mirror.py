@@ -90,6 +90,8 @@ class Mirror:
             if auto.take_screenshot() is None:
                 continue
             auto.mouse_to_blank()
+            if retry() is False:
+                return False
             if auto.find_element("mirror/claim_reward/clear_assets.png"):
                 self.bequest_from_the_previous_game = True
                 return True
@@ -101,8 +103,8 @@ class Mirror:
                 break
             infinity_bbox = ImageUtils.get_bbox(ImageUtils.load_image("mirror/road_to_mir/infinity_mirror_bbox.png"))
             infinity_bbox = (
-                infinity_bbox[2] - 50, infinity_bbox[1], infinity_bbox[2] + 100, infinity_bbox[3])  # 临时修复措施，调整裁切大小
-            if not auto.find_text_element("off", infinity_bbox):
+                infinity_bbox[2] - 70, infinity_bbox[1], infinity_bbox[2] + 100, infinity_bbox[3])  # 临时修复措施，调整裁切大小
+            if not auto.find_text_element(["off", "ff"], infinity_bbox):
                 auto.click_element("mirror/road_to_mir/infinity_mirror_enter_assets.png")
             if auto.click_element("mirror/road_to_mir/enter_assets.png"):
                 sleep(0.5)
@@ -128,8 +130,6 @@ class Mirror:
             if auto.find_element("mirror/theme_pack/feature_theme_pack_assets.png"):
                 # 防止卡死在主题包页面
                 break
-            if retry() is False:
-                return False
             loop_count -= 1
             if loop_count < 20:
                 auto.model = "normal"
@@ -442,7 +442,8 @@ class Mirror:
                     for _ in range(len(bonuses) - 1):
                         position = bonuses.pop(-1)
                         auto.mouse_click(position[0], position[1])
-            if auto.click_element("mirror/claim_reward/claim_rewards_confirm_assets.png", threshold=0.75, model='clam',take_screenshot=True):
+            if auto.click_element("mirror/claim_reward/claim_rewards_confirm_assets.png", threshold=0.75, model='clam',
+                                  take_screenshot=True):
                 continue
             if failed:
                 if auto.click_element("mirror/claim_reward/claim_rewards_assets.png"):

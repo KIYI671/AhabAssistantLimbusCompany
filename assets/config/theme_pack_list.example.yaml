@@ -50,6 +50,7 @@ theme_pack_list:
   check: -5 # 霍恩海姆
   sweep: -5 # 深夜清扫
   Hatred: -5 # 绝望骑士
+  compassion: -5 # 明日方舟联动
 
 theme_pack_list_hard:
   20: 0 # 诺姆
@@ -139,6 +140,7 @@ theme_pack_list_cn:
   体险: -5 # 霍恩海姆
   清扫: -5 # 深夜清扫
   绝望: -5 # 绝望骑士
+  巡礼: -5 # 明日方舟联动
   unknown: -5 # 未汉化的新卡包
 
 theme_pack_list_hard_cn:
