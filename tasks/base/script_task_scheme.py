@@ -79,6 +79,7 @@ def onetime_mir_process(team_setting):
         log.error(msg)
         return False
 
+
 def to_get_reward():
     if cfg.set_get_prize == 0:
         back_init_menu()
@@ -96,14 +97,41 @@ def to_get_reward():
         back_init_menu()
 
 def init_game():
-    game_process.start_game()
-    while not screen.init_handle():
-        sleep(10)
-    if cfg.set_windows:
-        screen.set_win()
+    if cfg.simulator:
+        if cfg.simulator_type == 0:
+            from module.simulator.mumu_control import MumuControl
+            MumuControl.connection_device.start_game()
+        else:
+            from module.simulator.simulator_control import SimulatorControl
+            SimulatorControl.connection_device.start_game()
+    else:
+        game_process.start_game()
+        while not screen.init_handle():
+            sleep(10)
+        if cfg.set_windows:
+            screen.set_win()
 
 
 def script_task() -> None | int:
+    simulator = None
+    if cfg.simulator:
+        if cfg.simulator_type == 0:
+            mumu_instance_number = 0
+            if cfg.simulator_port == 0 and cfg.mumu_instance_number == -1:
+                log.info("未设置模拟器端口或实例编号，使用默认mumu模拟器")
+            elif cfg.simulator_port != 0:
+                if cfg.simulator_port == 16384 or (cfg.simulator_port - 16384) % 32 == 0:
+                    mumu_instance_number = 0 if cfg.simulator_port== 16384 else (cfg.simulator_port - 16384) // 32
+                else:
+                    log.info("设置的模拟器端口非常用默认端口，使用默认mumu模拟器")
+            elif cfg.mumu_instance_number != -1:
+                mumu_instance_number = cfg.mumu_instance_number
+            from module.simulator.mumu_control import MumuControl
+            simulator = MumuControl(instance_number=mumu_instance_number)
+        else:
+            from module.simulator.simulator_control import SimulatorControl
+            simulator = SimulatorControl()
+        auto.init_input()
     # 获取（启动）游戏对游戏窗口进行设置
     init_game()
 
@@ -121,7 +149,7 @@ def script_task() -> None | int:
     except Exception as e:
         log.error(f"自动切换语言出错: {e}，使用英语尝试")
         cfg.set_value("language_in_game", "en")
-    
+
     # 低渲染比例发出警告
     if get_game_config_from_registry().get("_renderingScale", -1) == 2:
         log.warning("当前游戏渲染比例为低, 可能会导致识别错误, 建议设置为中或更高")
@@ -230,8 +258,14 @@ def script_task() -> None | int:
         if cfg.re_claim_rewards:
             to_get_reward()
 
-    if cfg.set_reduce_miscontact:
+    if cfg.set_reduce_miscontact and not cfg.simulator:
         screen.reset_win()
+    if cfg.simulator:
+        if cfg.simulator_type == 0:
+            from module.simulator.mumu_control import MumuControl
+            MumuControl.clean_connect()
+        #auto.input_handler.clear_mnt()
+
 
     log.info("脚本任务已经完成")
 
@@ -278,6 +312,8 @@ class my_script_task(QThread):
 
         try:
             self._run()
+        except ConnectionError as e:
+            self.exception = e
         except userStopError as e:
             self.exception = e
         except unableToFindTeamError as e:

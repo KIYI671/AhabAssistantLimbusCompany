@@ -288,7 +288,25 @@ class FarmingInterfaceLeft(QWidget):
             self._disable_setting(self.parent)
             self.create_and_start_script()
         else:
-            screen.reset_win()
+            if cfg.simulator is False:
+                screen.reset_win()
+            else:
+                if cfg.simulator_type == 0:
+                    from module.simulator.mumu_control import MumuControl
+                    while True:
+                        try:
+                            MumuControl.clean_connect()
+                            break
+                        except:
+                            continue
+                else:
+                    from module.simulator.simulator_control import SimulatorControl
+                    while True:
+                        try:
+                            SimulatorControl.clean_connect()
+                            break
+                        except:
+                            continue
             self.link_start_button.set_text("Link Start!")
             self._enable_setting(self.parent)
             mediator.refresh_teams_order.emit()

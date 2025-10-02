@@ -16,20 +16,16 @@ from ..config import cfg
 from ..logger import log
 from ..ocr import ocr
 
-if cfg.background_click:
-    from .input import BackgroundInput as Input
-    log.debug("使用后台点击模块")
-else:
-    from .input import Input
-    log.debug("使用前台点击模块")
-
 class Automation(metaclass=SingletonMeta):
     """自动化管理类，用于管理与游戏窗口有关的自动化操作"""
 
     def __init__(self, windows_title):
         self.windows_title = windows_title
         self.screenshot = None
+        self.input_handler = None
+
         self.init_input()
+
         self.img_cache = {}
         self.last_screenshot_time = 0
         self.last_click_time = 0
@@ -37,7 +33,26 @@ class Automation(metaclass=SingletonMeta):
 
     def init_input(self):
         """初始化输入处理器，将输入操作如点击、拖动等绑定至实例变量"""
-        self.input_handler = Input()
+        if cfg.simulator:
+            if cfg.simulator_type == 0:
+                from ..simulator.mumu_control import MumuControl
+                if MumuControl.connection_device is not None:
+                    self.input_handler = MumuControl.connection_device
+            else:
+                from module.simulator.simulator_control import SimulatorControl
+                self.input_handler = SimulatorControl.connection_device
+        else:
+            if cfg.background_click:
+                from .input import BackgroundInput
+                log.debug("使用后台点击模块")
+                self.input_handler = BackgroundInput()
+            else:
+                from .input import Input
+                log.debug("使用前台点击模块")
+                self.input_handler = Input()
+        if self.input_handler is None:
+            from .input import BackgroundInput
+            self.input_handler = BackgroundInput()
         self.mouse_click = self.input_handler.mouse_click
         self.mouse_click_blank = self.input_handler.mouse_click_blank
         self.mouse_drag = self.input_handler.mouse_drag

@@ -359,7 +359,10 @@ class Battle:
 
             for skill in skill_list:
                 auto.mouse_click(skill[0], skill[1])
-                sleep(cfg.mouse_action_interval // 1.5)
+                if cfg.simulator:
+                    sleep(cfg.mouse_action_interval)
+                else:
+                    sleep(cfg.mouse_action_interval // 1.5)
 
             skill_list.insert(0, gear_left)
             skill_list.append([gear_right[0] + 75 * scale, gear_right[1] + 150 * scale])
