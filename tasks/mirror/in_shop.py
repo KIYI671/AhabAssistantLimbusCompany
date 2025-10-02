@@ -257,7 +257,7 @@ class Shop:
 
             return my_gift_list
 
-        if auto.find_element(f"mirror/shop/level_IV_gifts/{self.system}_level_IV.png", take_screenshot=True):
+        if auto.find_element(f"mirror/shop/level_IV_gifts/{self.system}_level_IV.png", take_screenshot=True,threshold=0.75):
             self.after_fuse_IV()
             if self.fuse_aggressive_switch is False:
                 log.info("已有本体系四级饰品，切换到非激进模式")
@@ -799,7 +799,7 @@ class Shop:
 
     def heal_sinner(self):
         # 全体治疗
-        loop_count = 5
+        loop_count = 10
         auto.model = 'clam'
         log.debug("开始执行罪人治疗模块")
         sinner_be_heal = False
@@ -807,6 +807,15 @@ class Shop:
             # 自动截图
             if auto.take_screenshot() is None:
                 continue
+
+            loop_count -= 1
+            if loop_count < 3:
+                auto.model = "normal"
+            if loop_count < 1:
+                auto.model = 'aggressive'
+            if loop_count < 0:
+                log.error("治疗罪人失败")
+                break
 
             if sinner_be_heal is True and auto.click_element("mirror/shop/heal_sinner/heal_sinner_return_assets.png"):
                 if auto.find_element('mirror/shop/shop_coins_assets.png', take_screenshot=True):
@@ -831,14 +840,6 @@ class Shop:
             if retry() is False:
                 raise self.RestartGame()
 
-            loop_count -= 1
-            if loop_count < 3:
-                auto.model = "normal"
-            if loop_count < 1:
-                auto.model = 'aggressive'
-            if loop_count < 0:
-                log.error("治疗罪人失败")
-                break
 
     def enhance_gifts(self):
         def check_enhanced(pos):

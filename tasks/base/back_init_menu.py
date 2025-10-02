@@ -71,6 +71,7 @@ def back_init_menu():
             if auto.click_element("base/update_confirm_assets.png"):
                 continue
             auto.mouse_click_blank()
+            sleep(5)
             continue
 
         auto.mouse_click_blank()

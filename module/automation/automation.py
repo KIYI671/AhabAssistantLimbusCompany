@@ -242,6 +242,7 @@ class Automation(metaclass=SingletonMeta):
             screenshot = np.array(self.screenshot)
             matches = ImageUtils.match_template_with_multiple_targets(screenshot, template, threshold)
             if len(matches) == 0:
+                log.debug(f"未找到任何目标图像{target}", stacklevel=addtional_stack + 3)
                 return []
             else:
                 log.debug(f"找到{len(matches)}个目标：{matches}", stacklevel=addtional_stack + 3)

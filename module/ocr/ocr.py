@@ -35,6 +35,13 @@ class OCR(metaclass=SingletonMeta):
     def run(self, image: Image.Image | np.ndarray | str) -> RapidOCROutput:
         """执行OCR识别，支持Image对象、文件路径和np.ndarray对象"""
         try:
+            # 将 PIL Image 对象转换为 OpenCV 图片对象
+            img_cv = cv2.cvtColor(np.array(image), cv2.COLOR_RGB2BGR)
+            # 将 OpenCV 图片对象转换为灰度模式
+            img_cv_gray = cv2.cvtColor(img_cv, cv2.COLOR_BGR2GRAY)
+            # 自适应均衡化(均值化后更亮)
+            clahe = createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
+            image = clahe.apply(img_cv_gray)
             results = self.engine(image)
             self.log_results(results)
             return results

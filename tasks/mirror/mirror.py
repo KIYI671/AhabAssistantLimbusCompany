@@ -433,14 +433,16 @@ class Mirror:
                         position = bonuses.pop(-1)
                         auto.mouse_click(position[0], position[1])
             if cfg.hard_mirror_single_bonuses:
+                log.debug("开启了困牢单次领取奖励，如果存在多次奖励，则将单次领取")
+                sleep(1)
                 bonuses = auto.find_element("mirror/claim_reward/weekly_bonuses.png",
-                                            find_type='image_with_multiple_targets')
+                                            find_type='image_with_multiple_targets', take_screenshot=True)
                 bonuses = sorted(bonuses, key=lambda x: x[0])
                 if len(bonuses) > 1:
                     for _ in range(len(bonuses) - 1):
                         position = bonuses.pop(-1)
                         auto.mouse_click(position[0], position[1])
-            if auto.click_element("mirror/claim_reward/claim_rewards_confirm_assets.png", threshold=0.75, model='clam'):
+            if auto.click_element("mirror/claim_reward/claim_rewards_confirm_assets.png", threshold=0.75, model='clam',take_screenshot=True):
                 continue
             if failed:
                 if auto.click_element("mirror/claim_reward/claim_rewards_assets.png"):
@@ -540,6 +542,9 @@ class Mirror:
                 break
 
             if self.use_starlight and auto.click_element(
+                    "mirror/road_to_mir/dreaming_star/no_convert_star_to_cost_assets.png"):
+                continue
+            if not self.use_starlight and auto.click_element(
                     "mirror/road_to_mir/dreaming_star/convert_star_to_cost_assets.png"):
                 continue
 
