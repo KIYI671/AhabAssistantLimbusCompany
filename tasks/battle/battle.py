@@ -18,7 +18,8 @@ class Battle:
         self.identify_keyword_turn = True
         self.mouse_click_rate = False
         self.INIT_CHANCE = 16
-        self.running = True # 用于外部打断战斗逻辑执行
+        self.running = True  # 用于外部打断战斗逻辑执行
+        self.defense_all_time = False
 
     @staticmethod
     def to_battle():
@@ -70,9 +71,14 @@ class Battle:
         auto.mouse_click_blank()
         if first_turn and defense_first_round and auto.find_element("battle/gear_left.png", threshold=0.9):
             msg = f"第一回合全员防御，开始战斗"
-            if self._defense_first_round() is False:
+            if self._defense_this_round() is False:
                 defense_first_round = False
                 msg = "第一回合全员防御失败，本场战斗改为P+Enter"
+        elif self.defense_all_time and auto.find_element("battle/gear_left.png", threshold=0.9):
+            msg = f"使用全员防御模式开始战斗"
+            if self._defense_this_round() is False:
+                defense_all_time = False
+                msg = "全员防御失败，本场战斗改为P+Enter"
         elif avoid_skill_3 and auto.find_element("battle/gear_left.png", threshold=0.9):
             msg = f"使用避免3技能模式开始战斗"
             if self._chain_battle() is False:
@@ -98,7 +104,7 @@ class Battle:
         log.debug(msg)
 
     @begin_and_finish_time_log(task_name="一次战斗")
-    def fight(self, avoid_skill_3=False, defense_first_round=False):
+    def fight(self, avoid_skill_3=False, defense_first_round=False, infinite_battle=False, defense_all_time=False):
         chance = self.INIT_CHANCE
         waiting = self._update_wait_time()
         total_count = 0
@@ -106,6 +112,8 @@ class Battle:
         in_mirror = False
         first_battle_reward = None
         event_chance = 15
+        if defense_all_time:
+            self.defense_all_time = defense_all_time
 
         first_turn = True
         start_time = time.time()
@@ -116,12 +124,14 @@ class Battle:
                 continue
             if auto.get_restore_time() is not None:
                 start_time = max(start_time, auto.get_restore_time())
-            if check_times(start_time, timeout=900, logs=False):
+            if infinite_battle is False and check_times(start_time, timeout=900, logs=False):
                 from tasks.base.back_init_menu import back_init_menu
                 back_init_menu()
                 return False
 
             if auto.find_element("mirror/road_in_mir/legend_assets.png"):
+                if infinite_battle:
+                    continue
                 return False
 
             # 战斗开始前的加载
@@ -233,6 +243,8 @@ class Battle:
                             finishes_bbox):
                         auto.mouse_click((finishes_bbox[0] + finishes_bbox[2]) // 2,
                                          (finishes_bbox[1] + finishes_bbox[3]) // 2)
+                        if infinite_battle:
+                            continue
                         break
                     else:
                         event_chance = -1
@@ -262,15 +274,25 @@ class Battle:
                     if auto.find_element("battle/clear_rewards_thread.png"):
                         first_battle_reward = "thread"
                 auto.click_element("battle/battle_finish_confirm_assets.png")
+                if infinite_battle:
+                    continue
                 break
 
             if auto.find_element("mirror/road_in_mir/legend_assets.png"):
+                if infinite_battle:
+                    continue
                 break
             if auto.find_element("mirror/road_in_mir/acquire_ego_gift_card.png"):
+                if infinite_battle:
+                    continue
                 break
             if auto.find_element("mirror/road_in_mir/select_encounter_reward_card_assets.png"):
+                if infinite_battle:
+                    continue
                 break
             if chance <= (self.INIT_CHANCE // 2 + 1) and auto.find_element("teams/announcer_assets.png"):
+                if infinite_battle:
+                    continue
                 break
 
             # 如果交战过程误触，导致战斗暂停
@@ -287,7 +309,11 @@ class Battle:
             # 统计失败次数
             fail_count += 1
             if chance < 0:
+                if infinite_battle:
+                    continue
                 break
+
+        self.defense_all_time = False
 
         if total_count == 0:
             match_success_rate = 100
@@ -344,7 +370,7 @@ class Battle:
             return False
 
     @staticmethod
-    def _defense_first_round(move_back: bool = False) -> bool:
+    def _defense_this_round(move_back: bool = False) -> bool:
         try:
             scale = cfg.set_win_size / 1440
 
