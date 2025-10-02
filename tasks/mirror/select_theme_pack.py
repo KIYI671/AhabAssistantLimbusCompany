@@ -93,7 +93,7 @@ def select_theme_pack(hard_switch=False, floor=None):
                         theme_pack_weight = result[0]
                         theme_pack_name = result[1]
                     else:
-                        theme_pack_weight = -2
+                        theme_pack_weight = -5
                         theme_pack_name = "unknown"
 
                     weight_list.append(theme_pack_weight)  # 采用最大值的形式，权重越大，优先级越高
