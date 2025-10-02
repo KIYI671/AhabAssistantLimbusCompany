@@ -81,6 +81,7 @@ infinite_dungeons: False # 无限刷牢
 save_rewards: False # 保存奖励不领
 hard_mirror_single_bonuses: False # 困难镜牢使用单次加成
 select_event_pack: False # 第五层选择（最左边）活动卡包
+skip_event_pack: False # 第五层跳过（最左边）活动卡包
 re_claim_rewards: False # 再次执行领取奖励任务
 teams_be_select_num: 0 # 被选中的队伍数量
 teams_be_select: [ False ] # 被选中的队伍
