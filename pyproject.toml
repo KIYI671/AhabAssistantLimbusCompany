@@ -32,6 +32,7 @@ dependencies = [
     "colorlog>=6.9.0",
     "rapidocr>=3.4.1",
     "tzdata>=2025.2",
+    "adbutils>=2.10.2",
 ]
 
 [dependency-groups]
