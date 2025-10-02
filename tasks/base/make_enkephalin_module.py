@@ -93,9 +93,10 @@ def make_enkephalin_module(cancel=False):
 def lunacy_to_enkephalin(times=0):
     make_enkephalin_module(cancel=False)
     auto.click_element("enkephalin/use_lunacy_assets.png")
+    sleep(0.5)
     Grandet = False
     while times > 0:
-        auto.mouse_to_blank()
+        auto.mouse_to_blank(move_back=False)
         # 自动截图
         if auto.take_screenshot() is None:
             continue
