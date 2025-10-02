@@ -210,6 +210,11 @@ class Battle:
                     if not auto.find_element("battle/pause_assets.png"):
                         self.mouse_click_rate = True
                     continue
+            if self.mouse_click_rate:
+                if auto.find_element("battle/win_rate_card.png", threshold=0.75):
+                    self._battle_operation(first_turn, defense_first_round, avoid_skill_3)
+                    chance = self.INIT_CHANCE
+                    waiting = self._update_wait_time(waiting, False, total_count)
 
             # 如果战斗中途出现事件
             if auto.find_element("event/choices_assets.png") and auto.find_element(
