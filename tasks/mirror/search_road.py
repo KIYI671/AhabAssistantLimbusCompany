@@ -131,7 +131,7 @@ def search_road_default_distance():
         while True:
             if auto.get_restore_time() is not None:
                 start_time = max(start_time, auto.get_restore_time())
-            if check_times(start_time):
+            if check_times(start_time, logs=False):
                 from tasks.base.back_init_menu import back_init_menu
                 back_init_menu()
                 return False
@@ -216,7 +216,7 @@ def search_road_from_road_map(hard_mode=False):
         while True:
             if auto.get_restore_time() is not None:
                 start_time = max(start_time, auto.get_restore_time())
-            if check_times(start_time):
+            if check_times(start_time, logs=False):
                 from tasks.base.back_init_menu import back_init_menu
                 back_init_menu()
                 return False, []
@@ -268,7 +268,7 @@ def search_road_from_road_map(hard_mode=False):
             while True:
                 if auto.get_restore_time() is not None:
                     start_time = max(start_time, auto.get_restore_time())
-                if check_times(start_time):
+                if check_times(start_time, logs=False):
                     from tasks.base.back_init_menu import back_init_menu
                     back_init_menu()
                     return False, []
