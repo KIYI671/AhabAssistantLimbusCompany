@@ -177,7 +177,8 @@ def script_task() -> None | int:
             mir_times = 9999
         if cfg.save_rewards and cfg.hard_mirror:
             mir_times = 1
-
+        finish_times = 0
+        mediator.mirror_signal.emit(0, mir_times)
         # 开始执行镜牢任务
         while mir_times > 0:
             # 检测配置的队伍能否顺利执行
@@ -232,6 +233,11 @@ def script_task() -> None | int:
                     if chance == 0:
                         cfg.set_value("hard_mirror", False)
 
+                # 更新进度条
+                finish_times += 1
+                mediator.mirror_signal.emit(finish_times, mir_times)
+
+        mediator.mirror_bar_kill_signal.emit()
         if cfg.re_claim_rewards:
             to_get_reward()
 

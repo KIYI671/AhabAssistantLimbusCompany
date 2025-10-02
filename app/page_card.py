@@ -11,7 +11,7 @@ from qfluentwidgets.window.stacked_widget import StackedWidget
 
 from app import *
 from app.base_combination import LabelWithComboBox, LabelWithSpinBox, MirrorTeamCombination, \
-    MirrorSpinBox
+    MirrorSpinBox, TextProgressBar
 from app.base_tools import BaseCheckBox
 from app.language_manager import LanguageManager, SUPPORTED_GAME_LANG_NAME
 from module.config import cfg
@@ -330,7 +330,7 @@ class PageMirror(PageCard):
 
         self.get_setting()
         self.refresh()
-
+        self.bar = None
         self.connect_mediator()
 
     def __init_card(self):
@@ -416,6 +416,68 @@ class PageMirror(PageCard):
         self.vbox_advanced.addWidget(self.re_claim_rewards)
 
         self.card_layout.insertWidget(self.card_layout.count() - 1, self.mirror_count)
+
+
+    def _create_mirror_bar(self, current: int, total: int) -> TextProgressBar:
+        """ 创建进度条 """
+        bar = TextProgressBar(self)
+
+        bar_width = int(200)
+        bar_height = int(bar_width / 10)
+        bar.setFixedHeight(bar_height)
+        bar.setFixedWidth(bar_width)
+        QT_TRANSLATE_NOOP("PageCard", "镜 牢 进 度 ")
+        text = self.tr("镜 牢 进 度 ")
+
+        x = (
+            self.mirror_count.width() / 2
+            - bar_width / 2
+            + self.mirror_count.box.width() / 4
+        )
+        y = 530
+        if total >= 9000:
+            bar.setFormat(f"{text}: %v / ∞")
+        else:
+            bar.setFormat(f"{text}: %v / %m")
+
+        bar.move(int(x), int(y))
+        bar.show()
+        bar.setRange(0, total)
+        bar.setValue(current)
+
+        return bar
+
+    
+    def update_mirror_bar(self, current: int, total: int):
+        """ 更新进度条 若不存在则新建"""
+        if self.bar is not None:
+            text = self.tr("镜 牢 进 度 ")
+            if total > self.bar.maximum() and total > 0:
+                self.bar.setRange(0, total)
+            self.bar.setValue(current)
+            if total >= 9000:
+                self.bar.specialValue = current
+                self.bar.setFormat(f"{text}: %raw / ∞")
+                self.bar.setValue(total)
+                self.bar.setUseAni(False)
+            elif total <= 0:
+                self.bar.hide()
+                self.bar.setFormat(f"{text}: %v / %m")
+            else:
+                if self.bar.isHidden():
+                    self.bar.show()
+                self.bar.setUseAni(True)
+                self.bar.setFormat(f"{text}: %v / %m")
+        else:
+            self.bar = self._create_mirror_bar(current, total)
+
+    def destroy_mirror_bar(self):
+        """ 销毁进度条 """
+        if self.bar is not None:
+            self.bar.hide()
+            self.bar.destroy()
+            self.bar.deleteLater()
+            self.bar = None
 
     def get_setting(self):
         team_toggle_button_group.clear()
@@ -529,6 +591,8 @@ class PageMirror(PageCard):
         # 连接所有可能信号
         mediator.delete_team_setting.connect(self.delete_team)
         mediator.refresh_teams_order.connect(self.refresh)
+        mediator.mirror_signal.connect(self.update_mirror_bar)
+        mediator.mirror_bar_kill_signal.connect(self.destroy_mirror_bar)
 
     def retranslateUi(self):
         self.mirror_count.retranslateUi()

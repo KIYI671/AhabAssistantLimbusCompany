@@ -294,6 +294,7 @@ class FarmingInterfaceLeft(QWidget):
             mediator.refresh_teams_order.emit()
             self.stop_script()
             auto.clear_img_cache()
+            mediator.mirror_bar_kill_signal.emit()
 
     def _disable_setting(self, parent):
         for child in parent.children():
@@ -303,7 +304,7 @@ class FarmingInterfaceLeft(QWidget):
             if child.objectName() == "link_start":
                 continue
             # 检查是否为目标控件类型
-            if isinstance(child, (CheckBox, PushButton, ComboBox, SpinBox, TransparentToolButton)):
+            if isinstance(child, (ToSettingButton, CheckBox, PushButton, ComboBox, SpinBox, TransparentToolButton)):
                 child.setEnabled(False)
             else:
                 # 递归处理子部件的子部件（如布局中的嵌套控件）
@@ -317,7 +318,7 @@ class FarmingInterfaceLeft(QWidget):
             if child.objectName() == "set_windows":
                 continue
             # 检查是否为目标控件类型
-            if isinstance(child, (CheckBox, PushButton, ComboBox, SpinBox, TransparentToolButton)):
+            if isinstance(child, (ToSettingButton, CheckBox, PushButton, ComboBox, SpinBox, TransparentToolButton)):
                 child.setEnabled(True)
             else:
                 # 递归处理子部件的子部件（如布局中的嵌套控件）

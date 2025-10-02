@@ -486,22 +486,22 @@
         <translation>The changes will take effect after the restart</translation>
     </message>
     <message>
-        <location filename="../app/base_combination.py" line="223"/>
+        <location filename="../app/base_combination.py" line="224"/>
         <source>已复制到剪切板</source>
         <translation>Copied to clipboard</translation>
     </message>
     <message>
-        <location filename="../app/base_combination.py" line="241"/>
+        <location filename="../app/base_combination.py" line="242"/>
         <source>该设置不属于 AALC</source>
         <translation>This setting does not belong to AALC</translation>
     </message>
     <message>
-        <location filename="../app/base_combination.py" line="252"/>
+        <location filename="../app/base_combination.py" line="253"/>
         <source>不是有效的 AALC 设置</source>
         <translation>Not a valid AALC setting</translation>
     </message>
     <message>
-        <location filename="../app/base_combination.py" line="266"/>
+        <location filename="../app/base_combination.py" line="267"/>
         <source>已粘贴设置</source>
         <translation>Settings pasted</translation>
     </message>
@@ -525,7 +525,7 @@
 <context>
     <name>BaseLabel</name>
     <message>
-        <location filename="../app/farming_interface.py" line="148"/>
+        <location filename="../app/farming_interface.py" line="149"/>
         <source>之后</source>
         <translation>After</translation>
     </message>
@@ -664,32 +664,32 @@
 <context>
     <name>CheckBoxWithButton</name>
     <message>
-        <location filename="../app/farming_interface.py" line="98"/>
+        <location filename="../app/farming_interface.py" line="99"/>
         <source>窗口设置</source>
         <translation>Win-Settings</translation>
     </message>
     <message>
-        <location filename="../app/farming_interface.py" line="106"/>
+        <location filename="../app/farming_interface.py" line="107"/>
         <source>日常任务</source>
         <translation>Daily Tasks</translation>
     </message>
     <message>
-        <location filename="../app/farming_interface.py" line="113"/>
+        <location filename="../app/farming_interface.py" line="114"/>
         <source>领取奖励</source>
         <translation>Claim Rewards</translation>
     </message>
     <message>
-        <location filename="../app/farming_interface.py" line="119"/>
+        <location filename="../app/farming_interface.py" line="120"/>
         <source>狂气换体</source>
         <translation>Lunacy2Enk</translation>
     </message>
     <message>
-        <location filename="../app/farming_interface.py" line="125"/>
+        <location filename="../app/farming_interface.py" line="126"/>
         <source>坐牢设置</source>
         <translation>Mir-Settings</translation>
     </message>
     <message>
-        <location filename="../app/farming_interface.py" line="131"/>
+        <location filename="../app/farming_interface.py" line="132"/>
         <source>亚哈共鸣</source>
         <translation>Ahab-Res</translation>
     </message>
@@ -1191,7 +1191,7 @@
 <context>
     <name>MessageBoxEdit</name>
     <message>
-        <location filename="../app/base_combination.py" line="283"/>
+        <location filename="../app/base_combination.py" line="284"/>
         <source>设置备注名</source>
         <translation>Set a Custom Name</translation>
     </message>
@@ -1267,7 +1267,7 @@
 <context>
     <name>MirrorTeamCombination</name>
     <message>
-        <location filename="../app/base_combination.py" line="303"/>
+        <location filename="../app/base_combination.py" line="304"/>
         <source>备注名</source>
         <translation>Nickname</translation>
     </message>
@@ -1277,7 +1277,7 @@
         <translation>Team1</translation>
     </message>
     <message>
-        <location filename="../app/page_card.py" line="433"/>
+        <location filename="../app/page_card.py" line="496"/>
         <source>编队</source>
         <translation>Team</translation>
     </message>
@@ -1292,12 +1292,12 @@
 <context>
     <name>NormalTextButton</name>
     <message>
-        <location filename="../app/farming_interface.py" line="139"/>
+        <location filename="../app/farming_interface.py" line="140"/>
         <source>全选</source>
         <translation>Select All</translation>
     </message>
     <message>
-        <location filename="../app/farming_interface.py" line="144"/>
+        <location filename="../app/farming_interface.py" line="145"/>
         <source>清空</source>
         <translation>Clear All</translation>
     </message>
@@ -1320,6 +1320,20 @@
         <location filename="../app/page_card.py" line="74"/>
         <source>高级设置</source>
         <translation>Advanced</translation>
+    </message>
+    <message>
+        <location filename="../app/page_card.py" line="423"/>
+        <source>镜 牢 进 度 </source>
+        <translation type="finished">Mirror Progress</translation>
+    </message>
+</context>
+<context>
+    <name>PageMirror</name>
+    <message>
+        <location filename="../app/page_card.py" line="424"/>
+        <location filename="../app/page_card.py" line="449"/>
+        <source>镜 牢 进 度 </source>
+        <translation>Mirror Progress</translation>
     </message>
 </context>
 <context>
@@ -1377,7 +1391,7 @@
         <translation>Mirror Chyan CDK</translation>
     </message>
     <message>
-        <location filename="../app/base_combination.py" line="498"/>
+        <location filename="../app/base_combination.py" line="499"/>
         <source>获取 CDK</source>
         <translation>Get CDK</translation>
     </message>
@@ -1432,15 +1446,15 @@
 <context>
     <name>SwitchSettingCard</name>
     <message>
-        <location filename="../app/base_combination.py" line="513"/>
-        <location filename="../app/base_combination.py" line="534"/>
-        <location filename="../app/base_combination.py" line="537"/>
+        <location filename="../app/base_combination.py" line="514"/>
+        <location filename="../app/base_combination.py" line="535"/>
+        <location filename="../app/base_combination.py" line="538"/>
         <source>关</source>
         <translation>OFF</translation>
     </message>
     <message>
-        <location filename="../app/base_combination.py" line="534"/>
-        <location filename="../app/base_combination.py" line="537"/>
+        <location filename="../app/base_combination.py" line="535"/>
+        <location filename="../app/base_combination.py" line="538"/>
         <source>开</source>
         <translation>ON</translation>
     </message>
@@ -1710,24 +1724,24 @@ Update Logs:</translation>
 <context>
     <name>WindowsToast</name>
     <message>
-        <location filename="../app/windows_toast.py" line="125"/>
+        <location filename="../app/windows_toast.py" line="132"/>
         <source>知道了</source>
         <translation>I Knew</translation>
     </message>
     <message>
-        <location filename="../app/windows_toast.py" line="128"/>
+        <location filename="../app/windows_toast.py" line="135"/>
         <source>关闭 AALC</source>
         <translation>Shut Down AALC</translation>
     </message>
     <message>
-        <location filename="../tasks/base/script_task_scheme.py" line="239"/>
+        <location filename="../tasks/base/script_task_scheme.py" line="249"/>
         <source>AALC 运行结束</source>
-        <translation type="finished">AALC Missions Completed</translation>
+        <translation>AALC Missions Completed</translation>
     </message>
     <message>
-        <location filename="../tasks/base/script_task_scheme.py" line="240"/>
+        <location filename="../tasks/base/script_task_scheme.py" line="250"/>
         <source>所有任务已完成</source>
-        <translation type="finished">All Tasks Done</translation>
+        <translation>All Tasks Done</translation>
     </message>
 </context>
 </TS>

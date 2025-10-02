@@ -7,6 +7,10 @@ from PySide6.QtGui import QIcon
 from module.config import cfg
 from tasks.battle.battle import Battle
 from module.logger import log
+from tasks.battle.battle import Battle
+from pynput import keyboard
+from module.game_and_screen import screen
+
 
 
 class BattleWorker(QThread):
@@ -15,12 +19,11 @@ class BattleWorker(QThread):
     battle_executed = Signal()
     error_occurred = Signal(str)
     initialization_complete = Signal()
-
     def __init__(self, parent=None):
         super().__init__(parent)
         self.initialized = False
         self.battle = Battle()  # 复用镜牢战斗逻辑
-
+        
     def stop(self):
         """停止工作线程"""
         self.battle.running = False
@@ -40,7 +43,6 @@ class BattleWorker(QThread):
                 self.error_occurred.emit(f"游戏初始化错误: {str(e)}")
                 self.msleep(2000)
                 return
-
         self.battle.fight()
 
     def _set_win(self):
@@ -73,7 +75,14 @@ class InfiniteBattles(QWidget):
         # 关闭时删除自身，不影响其他窗口/应用
         self.setAttribute(Qt.WA_DeleteOnClose, True)
         self.setup_ui()
-        self.start_battle()
+
+        # 启动快捷键监听
+        self.listener = keyboard.GlobalHotKeys(
+            {
+                "<ctrl>+q": self._on_stop_shortcut,
+            }
+        )
+        self.listener.start()
 
     def setup_ui(self):
         """配置窗口的基本属性和界面元素。"""
@@ -105,8 +114,9 @@ class InfiniteBattles(QWidget):
 
         self.start_stop_button = QPushButton("停止战斗")
         self.start_stop_button.clicked.connect(self.toggle_battle)
+        self.guard_button = QPushButton("守备战斗")
+        self.guard_button.clicked.connect(self.toggle_guard_battle)
         button_layout.addWidget(self.start_stop_button)
-
         layout.addLayout(button_layout)
 
         # 添加日志显示
@@ -123,6 +133,7 @@ class InfiniteBattles(QWidget):
         if not self.worker.isRunning():
             self.worker.start()
             self.start_stop_button.setText("停止战斗")
+            self.guard_button.setText("停止战斗")
             self.log_text.append("正在初始化游戏...")
             self.status_label.setText("状态：初始化中...")
 
@@ -184,13 +195,15 @@ class InfiniteBattles(QWidget):
 
         # 资源清理
         try:
-            from module.automation import auto
-            from module.game_and_screen import screen
-            from module.ocr import ocr
-
             screen.reset_win()
             auto.clear_img_cache()
+            self.listener.stop()
         except Exception:
             # 忽略清理异常，避免影响关闭
             pass
         event.accept()
+
+    def _on_stop_shortcut(self):
+        """快捷键停止战斗"""
+        if self.worker and self.worker.isRunning():
+            self.stop_battle()
