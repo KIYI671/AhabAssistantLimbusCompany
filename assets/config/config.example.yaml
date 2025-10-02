@@ -25,6 +25,11 @@ experimental_auto_lang: True # 是否自动修改语言
 
 # 实验性功能
 background_click: True # 是否使用后台点击
+simulator: False # 是否使用模拟器
+simulator_type: 0 # 0:mumu , 10:其他 。TODO:蓝迭 , 雷电 , 夜神 , 逍遥
+simulator_port: 0 # 端口
+mumu_instance_number: -1 # mumu模拟器的实例编号
+start_emulator_timeout: 120 # 启动模拟器超时时间
 
 # 自动更新
 check_update: True

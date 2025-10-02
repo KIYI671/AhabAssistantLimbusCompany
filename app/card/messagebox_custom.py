@@ -304,7 +304,7 @@ class MessageBoxDate(MessageBox):
 
 
 class MessageBoxSpinbox(MessageBox):
-    def __init__(self, title: str, parent=None):
+    def __init__(self, title: str, parent=None,max_value=3):
         super().__init__(title, '', parent)
 
         self.text = title
@@ -318,7 +318,7 @@ class MessageBoxSpinbox(MessageBox):
         self.box = SpinBox(self)
         self.box.setValue(int(cfg.hard_mirror_chance))
         self.box.setMinimum(0)
-        self.box.setMaximum(3)
+        self.box.setMaximum(max_value)
 
         self.textLayout.addWidget(self.box, 0, Qt.AlignTop)
 

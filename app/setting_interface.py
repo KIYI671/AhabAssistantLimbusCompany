@@ -68,7 +68,7 @@ class SettingInterface(ScrollArea):
             QT_TRANSLATE_NOOP('PushSettingCardChance',
                               '困难模式剩余次数'),
             QT_TRANSLATE_NOOP("PushSettingCardChance", "第一次运行请手动设定，之后将自动修改"),
-            "hard_mirror_chance"
+            config_name="hard_mirror_chance"
         )
         self.background_mode_card = SwitchSettingCard(
             FIF.CONNECT,
@@ -85,6 +85,53 @@ class SettingInterface(ScrollArea):
             QT_TRANSLATE_NOOP("BasePrimaryPushSettingCard", '测试截图功能的性能'),
             parent=self.game_setting_group
         )
+
+        self.simulator_setting_group = BaseSettingCardGroup(
+            QT_TRANSLATE_NOOP("BaseSettingCardGroup", "模拟器设置"),
+            self.scroll_widget
+        )
+        self.simulator_setting_card = SwitchSettingCard(
+            FIF.MINIMIZE,
+            QT_TRANSLATE_NOOP("SwitchSettingCard", '使用模拟器'),
+            "",
+            "simulator",
+            parent=self.simulator_setting_group
+        )
+        self.simulator_type_setting_card = ComboBoxSettingCard(
+            "simulator_type",
+            FIF.APPLICATION,
+            QT_TRANSLATE_NOOP('ComboBoxSettingCard', '模拟器类型'),
+            QT_TRANSLATE_NOOP('ComboBoxSettingCard',
+                              '选择使用的模拟器类型'),
+            texts={
+                QT_TRANSLATE_NOOP('ComboBoxSettingCard', 'MuMu模拟器(推荐)'): 0,
+                QT_TRANSLATE_NOOP('ComboBoxSettingCard', '其他模拟器'): 10
+            },
+            parent=self.simulator_setting_group
+        )
+        self.simulator_port_chance_card = PushSettingCardChance(
+            QT_TRANSLATE_NOOP("PushSettingCardChance", '修改'),
+            FIF.TRAIN,
+            QT_TRANSLATE_NOOP('PushSettingCardChance',
+                              '使用的模拟器端口号'),
+            65535,
+            "",
+            "simulator_port",
+            parent = self.simulator_setting_group
+        )
+        self.start_emulator_timeout_chance_card = PushSettingCardChance(
+            QT_TRANSLATE_NOOP("PushSettingCardChance", '修改'),
+            FIF.TRAIN,
+            QT_TRANSLATE_NOOP('PushSettingCardChance',
+                              '启动模拟器超时时间(秒)'),
+            3600,
+            "",
+            "start_emulator_timeout",
+            parent = self.simulator_setting_group
+        )
+
+
+
         self.game_path_group = BaseSettingCardGroup(
             QT_TRANSLATE_NOOP("BaseSettingCardGroup", "启动游戏"),
             self.scroll_widget
@@ -211,6 +258,11 @@ class SettingInterface(ScrollArea):
         self.game_setting_group.addSettingCard(self.background_mode_card)
         self.game_setting_group.addSettingCard(self.screenshot_benchmark_card)
 
+        self.simulator_setting_group.addSettingCard(self.simulator_setting_card)
+        self.simulator_setting_group.addSettingCard(self.simulator_type_setting_card)
+        self.simulator_setting_group.addSettingCard(self.simulator_port_chance_card)
+        self.simulator_setting_group.addSettingCard(self.start_emulator_timeout_chance_card)
+
         self.game_path_group.addSettingCard(self.game_path_card)
 
         self.personal_group.addSettingCard(self.language_card)
@@ -229,6 +281,7 @@ class SettingInterface(ScrollArea):
         self.experimental_group.addSettingCard(self.auto_lang_card)
 
         self.expand_layout.addWidget(self.game_setting_group)
+        self.expand_layout.addWidget(self.simulator_setting_group)
         self.expand_layout.addWidget(self.game_path_group)
         self.expand_layout.addWidget(self.personal_group)
         self.expand_layout.addWidget(self.update_group)
@@ -337,6 +390,11 @@ class SettingInterface(ScrollArea):
         self.hard_mirror_chance_card.retranslateUi()
         self.background_mode_card.retranslateUi()
         self.screenshot_benchmark_card.retranslateUi()
+        self.simulator_setting_group.retranslateUi()
+        self.simulator_setting_card.retranslateUi()
+        self.simulator_type_setting_card.retranslateUi()
+        self.simulator_port_chance_card.retranslateUi()
+        self.start_emulator_timeout_chance_card.retranslateUi()
         self.game_path_card.retranslateUi()
         self.game_path_group.retranslateUi()
         self.personal_group.retranslateUi()
