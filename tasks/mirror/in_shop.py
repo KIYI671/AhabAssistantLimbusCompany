@@ -257,7 +257,8 @@ class Shop:
 
             return my_gift_list
 
-        if auto.find_element(f"mirror/shop/level_IV_gifts/{self.system}_level_IV.png", take_screenshot=True,threshold=0.75):
+        if auto.find_element(f"mirror/shop/level_IV_gifts/{self.system}_level_IV.png", take_screenshot=True,
+                             threshold=0.75):
             self.after_fuse_IV()
             if self.fuse_aggressive_switch is False:
                 log.info("已有本体系四级饰品，切换到非激进模式")
@@ -602,6 +603,16 @@ class Shop:
         while fusion:
             if auto.take_screenshot() is None:
                 continue
+
+            loop_count -= 1
+            if loop_count < 20:
+                auto.model = "normal"
+            if loop_count < 10:
+                auto.model = 'aggressive'
+            if loop_count < 0:
+                log.error("无法合成ego饰品")
+                break
+
             auto.mouse_to_blank()
 
             if auto.click_element("mirror/road_in_mir/ego_gift_get_confirm_assets.png"):
@@ -612,15 +623,6 @@ class Shop:
 
             if retry() is False:
                 raise self.RestartGame()
-
-            loop_count -= 1
-            if loop_count < 20:
-                auto.model = "normal"
-            if loop_count < 10:
-                auto.model = 'aggressive'
-            if loop_count < 0:
-                log.error("无法合成ego饰品")
-                break
 
         if fusion:
             msg = f"成功合成{self.system}体系饰品{times + 1}号"
@@ -839,7 +841,6 @@ class Shop:
 
             if retry() is False:
                 raise self.RestartGame()
-
 
     def enhance_gifts(self):
         def check_enhanced(pos):
