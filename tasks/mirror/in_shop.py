@@ -811,9 +811,9 @@ class Shop:
                 continue
 
             loop_count -= 1
-            if loop_count < 3:
+            if loop_count < 5:
                 auto.model = "normal"
-            if loop_count < 1:
+            if loop_count < 2:
                 auto.model = 'aggressive'
             if loop_count < 0:
                 log.error("治疗罪人失败")
@@ -831,10 +831,14 @@ class Shop:
                 sinner_be_heal = True
                 continue
 
-            money = self._get_cost()
-            if money < 100:
-                log.debug("金币不足，无法治疗罪人")
-                break
+            if loop_count < 5:
+                money = self._get_cost()
+                try:
+                    if money < 100:
+                        log.debug("金币不足，无法治疗罪人")
+                        break
+                except:
+                    continue
 
             if auto.click_element("mirror/shop/heal_sinner/heal_sinner_assets.png"):
                 continue
@@ -864,6 +868,7 @@ class Shop:
             if loop_try_count < 0:  # issue 171
                 if retry() is False:
                     raise self.RestartGame()
+                return False
 
             if loop_try_count < -50:
                 log.error("不应该发生这样的问题，请提交issue")
