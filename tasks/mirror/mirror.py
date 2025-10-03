@@ -425,23 +425,6 @@ class Mirror:
                 continue
             if auto.click_element("mirror/claim_reward/rewards_acquired_assets.png"):
                 continue
-            if cfg.no_weekly_bonuses:
-                bonuses = auto.find_element("mirror/claim_reward/weekly_bonuses.png",
-                                            find_type='image_with_multiple_targets')
-                if len(bonuses) >= 1:
-                    for _ in range(len(bonuses)):
-                        position = bonuses.pop(-1)
-                        auto.mouse_click(position[0], position[1])
-            if cfg.hard_mirror_single_bonuses:
-                log.debug("开启了困牢单次领取奖励，如果存在多次奖励，则将单次领取")
-                sleep(1)
-                bonuses = auto.find_element("mirror/claim_reward/weekly_bonuses.png",
-                                            find_type='image_with_multiple_targets', take_screenshot=True)
-                bonuses = sorted(bonuses, key=lambda x: x[0])
-                if len(bonuses) > 1:
-                    for _ in range(len(bonuses) - 1):
-                        position = bonuses.pop(-1)
-                        auto.mouse_click(position[0], position[1])
             if auto.click_element("mirror/claim_reward/claim_rewards_confirm_assets.png", threshold=0.75, model='clam',
                                   take_screenshot=True):
                 continue
@@ -461,6 +444,31 @@ class Mirror:
                     continue
                 elif auto.click_element("mirror/claim_reward/claim_rewards_assets.png"):
                     sleep(1)
+                    if cfg.no_weekly_bonuses:
+                        bonuses = auto.find_element(
+                            "mirror/claim_reward/weekly_bonuses.png",
+                            find_type="image_with_multiple_targets",
+                        )
+                        if len(bonuses) >= 1:
+                            for _ in range(len(bonuses)):
+                                position = bonuses.pop(-1)
+                                auto.mouse_click(position[0], position[1])
+                    if cfg.hard_mirror_single_bonuses:
+                        log.debug(
+                            "开启了困牢单次领取奖励，如果存在多次奖励，则将单次领取"
+                        )
+                        sleep(1)
+                        bonuses = auto.find_element(
+                            "mirror/claim_reward/weekly_bonuses.png",
+                            find_type="image_with_multiple_targets",
+                            take_screenshot=True,
+                        )
+                        bonuses = sorted(bonuses, key=lambda x: x[0])
+                        if len(bonuses) > 1:
+                            for _ in range(len(bonuses) - 1):
+                                position = bonuses.pop(-1)
+                                auto.mouse_click(position[0], position[1])
+
                     if auto.click_element("mirror/claim_reward/use_enkephalin_assets.png", take_screenshot=True):
                         sleep(1)
                     # TODO: 统计获取的coins
