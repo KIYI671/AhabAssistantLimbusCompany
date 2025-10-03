@@ -27,6 +27,10 @@ def back_init_menu():
         # 自动截图
         if auto.take_screenshot() is None:
             continue
+
+        if retry() is False:
+            return False
+
         if cfg.language_in_game == 'zh_cn':
             if auto.click_element("home/window_assets.png") and (
                     auto.find_element("home/mail_assets.png", model='normal') or auto.find_element(
@@ -87,7 +91,6 @@ def back_init_menu():
 
         auto.mouse_click_blank()
         auto.key_press('esc')
-        retry()
 
         loop_count -= 1
         if loop_count < 20:
