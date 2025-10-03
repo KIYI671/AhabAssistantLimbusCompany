@@ -33,8 +33,6 @@ usual_key_code = {
 }
 
 
-
-
 class NemuIpcIncompatible(Exception):
     pass
 
@@ -603,13 +601,14 @@ class MumuControl:
         self.up()
         time.sleep(0.035)
 
-    def swipe(self, x1, y1, x2, y2, duration):
-        points = insert_swipe(p0=(x1, y1), p3=(x2, y2))
+    def swipe(self, x1, y1, x2, y2, duration, min_distance=10):
+        points = insert_swipe(p0=(x1, y1), p3=(x2, y2), min_distance=min_distance)
 
         for point in points:
             self.down(*point)
-            time.sleep(0.010)
+            time.sleep(duration / min_distance)
 
+        time.sleep(0.2)
         self.up()
         time.sleep(0.050)
 
@@ -722,7 +721,7 @@ class MumuControl:
         """占位"""
         return 0, 0
 
-    def mouse_drag_link(self, position: list, drag_time=0.1) -> None:
+    def mouse_drag_link(self, position: list, drag_time=1, min_distance=10) -> None:
         """鼠标从指定位置拖动到指定位置
         Args:
             x (int): 起始x坐标
@@ -733,14 +732,15 @@ class MumuControl:
         self.down(position[0][0], position[0][1])
         p = (position[0][0], position[0][1])
         for pos in position[1:]:
-            points = insert_swipe(p0=(p[0], p[1]), p3=(pos[0], pos[1]))
+            points = insert_swipe(p0=(p[0], p[1]), p3=(pos[0], pos[1]), min_distance=min_distance)
 
             for point in points:
                 self.down(*point)
-                time.sleep(0.010)
+                time.sleep(drag_time / min_distance)
 
             p = pos
 
+        time.sleep(0.5)
         self.up()
         time.sleep(0.050)
 
