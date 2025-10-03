@@ -67,6 +67,7 @@ class SettingInterface(ScrollArea):
             FIF.UNIT,
             QT_TRANSLATE_NOOP('PushSettingCardChance',
                               '困难模式剩余次数'),
+            3,
             QT_TRANSLATE_NOOP("PushSettingCardChance", "第一次运行请手动设定，之后将自动修改"),
             config_name="hard_mirror_chance"
         )
