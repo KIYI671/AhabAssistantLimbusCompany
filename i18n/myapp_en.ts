@@ -60,6 +60,11 @@
         <translation>Hard mirror single bonus</translation>
     </message>
     <message>
+        <location filename="../app/page_card.py" line="393"/>
+        <source>第五层跳过（最左边）活动卡包</source>
+        <translation type="finished">No select the leftmost theme pack on the fifth floor</translation>
+    </message>
+    <message>
         <location filename="../app/team_setting_card.py" line="387"/>
         <source>不治疗罪人</source>
         <translation>No heal sinners</translation>
@@ -199,9 +204,9 @@
         <translation>defense first round in normal encounters</translation>
     </message>
     <message>
-        <location filename="../app/page_card.py" line="393"/>
+        <location filename="../app/page_card.py" line="398"/>
         <source>再次领取奖励</source>
-        <translation>re claim rewards again</translation>
+        <translation>Claim rewards again</translation>
     </message>
 </context>
 <context>
@@ -480,8 +485,8 @@
         <translation>Checking update failed (╥╯﹏╰╥)</translation>
     </message>
     <message>
-        <location filename="../app/setting_interface.py" line="305"/>
-        <location filename="../app/setting_interface.py" line="316"/>
+        <location filename="../app/setting_interface.py" line="308"/>
+        <location filename="../app/setting_interface.py" line="319"/>
         <source>更改将在重新启动后生效</source>
         <translation>The changes will take effect after the restart</translation>
     </message>
@@ -506,18 +511,18 @@
         <translation>Settings pasted</translation>
     </message>
     <message>
-        <location filename="../app/setting_interface.py" line="281"/>
+        <location filename="../app/setting_interface.py" line="284"/>
         <source>10次截图平均耗时 {time:.2f} ms</source>
         <translation>Average screenshot time over 10 attempts: {time:.2f} ms</translation>
     </message>
     <message>
-        <location filename="../app/setting_interface.py" line="282"/>
-        <location filename="../app/setting_interface.py" line="294"/>
+        <location filename="../app/setting_interface.py" line="285"/>
+        <location filename="../app/setting_interface.py" line="297"/>
         <source>截图测试结束</source>
         <translation>Screenshot test completed</translation>
     </message>
     <message>
-        <location filename="../app/setting_interface.py" line="293"/>
+        <location filename="../app/setting_interface.py" line="296"/>
         <source>截图性能测试失败</source>
         <translation>Screenshot performance test failed</translation>
     </message>
@@ -538,39 +543,39 @@
 <context>
     <name>BasePrimaryPushSettingCard</name>
     <message>
-        <location filename="../app/setting_interface.py" line="164"/>
+        <location filename="../app/setting_interface.py" line="167"/>
         <source>日志</source>
         <translation>Logs</translation>
     </message>
     <message>
-        <location filename="../app/setting_interface.py" line="166"/>
+        <location filename="../app/setting_interface.py" line="169"/>
         <source>打开日志文件夹</source>
         <translation>Open logs folder</translation>
     </message>
     <message>
-        <location filename="../app/setting_interface.py" line="175"/>
-        <location filename="../app/setting_interface.py" line="177"/>
+        <location filename="../app/setting_interface.py" line="178"/>
+        <location filename="../app/setting_interface.py" line="180"/>
         <source>项目主页</source>
         <translation>Object repo</translation>
     </message>
     <message>
-        <location filename="../app/setting_interface.py" line="181"/>
+        <location filename="../app/setting_interface.py" line="184"/>
         <source>加入群聊</source>
         <translation>Join QQ group</translation>
     </message>
     <message>
-        <location filename="../app/setting_interface.py" line="183"/>
+        <location filename="../app/setting_interface.py" line="186"/>
         <source>QQ群</source>
         <translation>QQ group</translation>
     </message>
     <message>
-        <location filename="../app/setting_interface.py" line="187"/>
-        <location filename="../app/setting_interface.py" line="189"/>
+        <location filename="../app/setting_interface.py" line="190"/>
+        <location filename="../app/setting_interface.py" line="192"/>
         <source>提供反馈</source>
         <translation>Feedback</translation>
     </message>
     <message>
-        <location filename="../app/setting_interface.py" line="191"/>
+        <location filename="../app/setting_interface.py" line="194"/>
         <source>帮助我们改进 AhabAssistantLimbusCompany</source>
         <translation>Help us to enhance AhabAssistantLimbusCompany</translation>
     </message>
@@ -636,17 +641,17 @@
         <translation>Personalization</translation>
     </message>
     <message>
-        <location filename="../app/setting_interface.py" line="129"/>
+        <location filename="../app/setting_interface.py" line="132"/>
         <source>更新设置</source>
         <translation>Update Settings</translation>
     </message>
     <message>
-        <location filename="../app/setting_interface.py" line="160"/>
+        <location filename="../app/setting_interface.py" line="163"/>
         <source>日志设置</source>
         <translation>logs Settings</translation>
     </message>
     <message>
-        <location filename="../app/setting_interface.py" line="171"/>
+        <location filename="../app/setting_interface.py" line="174"/>
         <source>关于</source>
         <translation>About</translation>
     </message>
@@ -656,7 +661,7 @@
         <translation>Toolbox</translation>
     </message>
     <message>
-        <location filename="../app/setting_interface.py" line="194"/>
+        <location filename="../app/setting_interface.py" line="197"/>
         <source>实验性内容</source>
         <translation>Experimental sections</translation>
     </message>
@@ -804,22 +809,22 @@
         <translation>Set program language</translation>
     </message>
     <message>
-        <location filename="../app/setting_interface.py" line="142"/>
+        <location filename="../app/setting_interface.py" line="145"/>
         <source>更新源</source>
         <translation>Update source</translation>
     </message>
     <message>
-        <location filename="../app/setting_interface.py" line="143"/>
+        <location filename="../app/setting_interface.py" line="146"/>
         <source>选择更新源</source>
         <translation>Choose update source</translation>
     </message>
     <message>
-        <location filename="../app/setting_interface.py" line="145"/>
+        <location filename="../app/setting_interface.py" line="148"/>
         <source>Github源</source>
         <translation>Github</translation>
     </message>
     <message>
-        <location filename="../app/setting_interface.py" line="146"/>
+        <location filename="../app/setting_interface.py" line="149"/>
         <source>Mirror 酱</source>
         <translation>Mirror Chyan</translation>
     </message>
@@ -1277,7 +1282,7 @@
         <translation>Team1</translation>
     </message>
     <message>
-        <location filename="../app/page_card.py" line="496"/>
+        <location filename="../app/page_card.py" line="502"/>
         <source>编队</source>
         <translation>Team</translation>
     </message>
@@ -1322,16 +1327,16 @@
         <translation>Advanced</translation>
     </message>
     <message>
-        <location filename="../app/page_card.py" line="423"/>
+        <location filename="../app/page_card.py" line="430"/>
         <source>镜 牢 进 度 </source>
-        <translation type="finished">Mirror Progress</translation>
+        <translation>Mirror Progress</translation>
     </message>
 </context>
 <context>
     <name>PageMirror</name>
     <message>
-        <location filename="../app/page_card.py" line="424"/>
-        <location filename="../app/page_card.py" line="449"/>
+        <location filename="../app/page_card.py" line="432"/>
+        <location filename="../app/page_card.py" line="455"/>
         <source>镜 牢 进 度 </source>
         <translation>Mirror Progress</translation>
     </message>
@@ -1381,12 +1386,12 @@
 <context>
     <name>PushSettingCardMirrorchyan</name>
     <message>
-        <location filename="../app/setting_interface.py" line="151"/>
+        <location filename="../app/setting_interface.py" line="154"/>
         <source>修改</source>
         <translation>Edit</translation>
     </message>
     <message>
-        <location filename="../app/setting_interface.py" line="153"/>
+        <location filename="../app/setting_interface.py" line="156"/>
         <source>Mirror 酱 CDK</source>
         <translation>Mirror Chyan CDK</translation>
     </message>
@@ -1459,7 +1464,7 @@
         <translation>ON</translation>
     </message>
     <message>
-        <location filename="../app/setting_interface.py" line="134"/>
+        <location filename="../app/setting_interface.py" line="137"/>
         <source>加入预览版更新渠道</source>
         <translation>Join Beta update</translation>
     </message>
@@ -1472,7 +1477,7 @@
         <translation type="vanished">Auto clear up logs from a week ago</translation>
     </message>
     <message>
-        <location filename="../app/setting_interface.py" line="200"/>
+        <location filename="../app/setting_interface.py" line="203"/>
         <source>自动检测并切换游戏语言</source>
         <translation>Auto identify and switch game language</translation>
     </message>
