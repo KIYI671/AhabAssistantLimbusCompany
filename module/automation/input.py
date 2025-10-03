@@ -245,7 +245,7 @@ class BackgroundInput(Input, metaclass=SingletonMeta):
             move_back (bool): 是否在移动后将鼠标移动回原位置
         """
         # FIXME：既不能影响用户操作，也要避免遮挡，似乎没有好办法
-        pyautogui.moveTo(coordinate[0], coordinate[1])
+        self._mouse_move_to(coordinate[0], coordinate[1])
 
         log.debug("鼠标移动到空白，避免遮挡", stacklevel=2)
 
@@ -268,8 +268,8 @@ class BackgroundInput(Input, metaclass=SingletonMeta):
         msg = f"点击位置:({x},{y})"
         log.debug(msg, stacklevel=2)
         for i in range(times):
-            self.set_focus()
             self.set_mouse_pos(x, y)
+            self.set_focus()
             self.mouse_down(x, y)
             self.mouse_up(x, y)
             # 多次点击执行很快所以暂停放到循环外
@@ -294,9 +294,9 @@ class BackgroundInput(Input, metaclass=SingletonMeta):
 
         scale = cfg.set_win_size / 1080
         self.set_focus()
-        pyautogui.moveTo(x, y)
+        self._mouse_move_to(x, y)
         self.mouse_down(x, y)
-        pyautogui.moveTo(x, y + int(300 * scale), duration=0.4)
+        self._mouse_move_to(x, y + int(300 * scale), duration=0.4)
         self.mouse_up(x, y)
 
         if move_back and current_mouse_position:
@@ -317,11 +317,10 @@ class BackgroundInput(Input, metaclass=SingletonMeta):
         """
         if move_back:
             current_mouse_position = self.get_mouse_position()
-
+        self._mouse_move_to(x, y)
         self.set_focus()
-        pyautogui.moveTo(x, y)
         self.mouse_down(x, y)
-        pyautogui.moveTo(x + dx, y + dy, duration=drag_time)
+        self._mouse_move_to(x + dx, y + dy, duration=drag_time)
         if drag_time * 0.3 > 0.5:
             sleep(drag_time * 0.3)
         else:
@@ -360,8 +359,8 @@ class BackgroundInput(Input, metaclass=SingletonMeta):
         x = coordinate[0] + random.randint(0, 10)
         y = coordinate[1] + random.randint(0, 10)
         for i in range(times):
-            self.set_focus()
             self.set_mouse_pos(x, y)
+            self.set_focus()
             self.mouse_down(x, y)
             self.mouse_up(x, y)
 
@@ -379,11 +378,11 @@ class BackgroundInput(Input, metaclass=SingletonMeta):
             position (list): 目标位置列表
             drag_time (float): 拖动时间
         """
+        self._mouse_move_to(position[0][0], position[0][1])
         self.set_focus()
-        pyautogui.moveTo(position[0][0], position[0][1])
         self.mouse_down(position[0][0], position[0][1])
         for pos in position:
-            pyautogui.moveTo(pos[0], pos[1], duration=drag_time)
+            self._mouse_move_to(pos[0], pos[1], duration=drag_time)
         self.mouse_up(position[-1][-1], position[-1][-1])
 
     def set_focus(self):
@@ -419,6 +418,7 @@ class BackgroundInput(Input, metaclass=SingletonMeta):
         hwnd = screen.handle._hWnd
         long_positon = win32api.MAKELONG(x, y)
         win32api.SendMessage(hwnd, win32con.WM_LBUTTONDOWN, 0, long_positon)
+        sleep(0.0001)
 
     def mouse_up(self, x, y):
         """鼠标左键抬起
@@ -431,6 +431,7 @@ class BackgroundInput(Input, metaclass=SingletonMeta):
         hwnd = screen.handle._hWnd
         long_positon = win32api.MAKELONG(x, y)
         win32api.SendMessage(hwnd, win32con.WM_LBUTTONUP, 0, long_positon)
+        sleep(0.001)
 
     def set_mouse_pos(self, x, y):
         """移动光标位置
@@ -442,7 +443,7 @@ class BackgroundInput(Input, metaclass=SingletonMeta):
         y = int(y)
         hwnd = screen.handle._hWnd
         rect = win32gui.GetWindowRect(hwnd)
-        pyautogui.moveTo(rect[0] + x, rect[1] + y)
+        self._mouse_move_to(rect[0] + x, rect[1] + y)
 
     def key_down(self, key: str):
         """键盘按键按下
@@ -470,3 +471,32 @@ class BackgroundInput(Input, metaclass=SingletonMeta):
         self.set_focus()
         self.key_down(key)
         self.key_up(key)
+
+    def mouse_move(self, coordinate=(1, 1)) -> None:
+        """鼠标移动到指定坐标
+
+        Args:
+            coordinate (tuple): 坐标元组 (x, y)
+        """
+        self._mouse_move_to(coordinate[0], coordinate[1])
+        self.wait_pause()
+
+    def _mouse_move_to(self, x, y, duration: float = 0):
+        """将鼠标移动到指定位置（绝对于屏幕坐标）
+
+        Args:
+            x (int): x坐标
+            y (int): y坐标
+        """
+        x = int(x)
+        y = int(y)
+        if duration <= 0:
+            win32api.SetCursorPos((x, y))
+        else:
+            start_x, start_y = self.get_mouse_position()
+            steps = int(duration / 0.01)
+            for i in range(steps):
+                new_x = int(start_x + (x - start_x) * (i + 1) / steps)
+                new_y = int(start_y + (y - start_y) * (i + 1) / steps)
+                win32api.SetCursorPos((new_x, new_y))
+                sleep(0.01)
