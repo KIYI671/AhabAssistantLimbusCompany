@@ -226,7 +226,7 @@ class Mirror:
                         ImageUtils.load_image("mirror/road_in_mir/get_floor_bbox.png"))
                     sc = ImageUtils.crop(np.array(auto.screenshot), get_floor_bbox)
                     mask = cv2.inRange(sc, 75, 255)
-                    for _ in range(5):
+                    for i in range(5):
                         try:
                             result = ocr.run(mask)
                             ocr_result = [result.txts[i] for i in range(len(result.txts))]
@@ -249,6 +249,12 @@ class Mirror:
                                     self.get_floor_num = False
                                     break
                         except:
+                            while auto.take_screenshot() is None:
+                                continue
+                            get_floor_bbox = ImageUtils.get_bbox(
+                                ImageUtils.load_image("mirror/road_in_mir/get_floor_bbox.png"))
+                            sc = ImageUtils.crop(np.array(auto.screenshot), get_floor_bbox)
+                            mask = cv2.inRange(sc, int(75 - i * 2.5), 255)
                             continue
                     if self.floor - 1 == self.mirror_map.floor:
                         self.mirror_map.next_floor()
