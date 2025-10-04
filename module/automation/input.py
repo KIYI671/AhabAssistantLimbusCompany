@@ -2,6 +2,7 @@ import asyncio
 import random
 from functools import partial
 from time import sleep, time
+from pywintypes import error as PyWinTypesError
 
 import pyautogui
 import win32api
@@ -509,12 +510,32 @@ class BackgroundInput(Input, metaclass=SingletonMeta):
         x = int(x)
         y = int(y)
         if duration <= 0:
-            win32api.SetCursorPos((x, y))
+            self._set_mouse_pos(x, y)
         else:
             start_x, start_y = self.get_mouse_position()
             steps = int(duration / 0.01)
             for i in range(steps):
                 new_x = int(start_x + (x - start_x) * (i + 1) / steps)
                 new_y = int(start_y + (y - start_y) * (i + 1) / steps)
-                win32api.SetCursorPos((new_x, new_y))
+                self._set_mouse_pos(new_x, new_y)
                 sleep(0.01)
+
+    def _set_mouse_pos(self, x: int, y: int):
+        """将鼠标移动到指定位置（绝对于屏幕坐标）
+
+        Args:
+            x (int): x坐标
+            y (int): y坐标
+        """
+        try:
+            win32api.SetCursorPos((x, y))
+        except PyWinTypesError as e:
+            # 奇怪的权限冲突 (183:当文件已存在时，无法创建该文件。)
+            # 偶尔出现不影响使用
+            import ctypes
+
+            log.debug(f"鼠标移动失败: {e}")
+            try:
+                ctypes.windll.user32.SetCursorPos(x, y)
+            except Exception as e:
+                log.error(f"鼠标移动失败: {type(e)}: {e}")
