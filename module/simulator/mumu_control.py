@@ -692,7 +692,7 @@ class MumuControl:
 
         for point in points:
             self.down(*point)
-            time.sleep(0.010)
+            time.sleep(0.020)
 
         if drag_time * 0.3 > 0.5:
             time.sleep(drag_time * 0.3)
@@ -721,7 +721,7 @@ class MumuControl:
         """占位"""
         return 0, 0
 
-    def mouse_drag_link(self, position: list, drag_time=1, min_distance=10) -> None:
+    def mouse_drag_link(self, position: list, drag_time=0.25, min_distance=10) -> None:
         """鼠标从指定位置拖动到指定位置
         Args:
             x (int): 起始x坐标

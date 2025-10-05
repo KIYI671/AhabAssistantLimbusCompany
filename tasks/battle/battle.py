@@ -422,7 +422,7 @@ class Battle:
                     sleep(cfg.mouse_action_interval // 1.5)
 
             skill_list.insert(0, gear_left)
-            skill_list.append([gear_right[0] + 75 * scale, gear_right[1] + 150 * scale])
+            skill_list.append([gear_right[0] + 100 * scale, gear_right[1] + 150 * scale])
 
             auto.mouse_drag_link(skill_list)
 

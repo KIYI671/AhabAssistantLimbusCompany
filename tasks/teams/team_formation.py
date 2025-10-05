@@ -88,7 +88,7 @@ def select_battle_team(num):
                                       my_crop=position_bbox):
                     find = True
                     break
-                auto.mouse_drag(my_position[0], my_position[1], dy=-267 * scale, drag_time=1.5)
+                auto.mouse_drag(first_position[0], first_position[1] + 375 * scale, dy=-385 * scale, drag_time=1.5)
                 sleep(1)
                 while auto.take_screenshot() is None:
                     continue
