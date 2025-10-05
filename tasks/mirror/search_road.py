@@ -45,11 +45,11 @@ class MirrorMap:
     def enter_next_node(self, next_step):
         if next_position := self._get_next_position(next_step):
             auto.mouse_click(next_position[0], next_position[1])
-            sleep(0.75)
+            sleep(1.25)
             if auto.click_element("mirror/road_in_mir/enter_assets.png", take_screenshot=True):
                 return True
         if auto.click_element("mirror/mybus_default_distance.png", take_screenshot=True):
-            sleep(0.75)
+            sleep(1.25)
             if auto.click_element("mirror/road_in_mir/enter_assets.png", take_screenshot=True):
                 return True
         return False
