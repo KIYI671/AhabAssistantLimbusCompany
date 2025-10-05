@@ -725,6 +725,8 @@ class Mirror:
                 if search_road_default_distance():
                     sleep(1)
                     return True
+                if auto.click_element("mirror/road_in_mir/enter_assets.png"):
+                    return True
                 if retry() is False:
                     return False
             for _ in range(3):
