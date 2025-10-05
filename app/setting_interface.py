@@ -101,9 +101,9 @@ class SettingInterface(ScrollArea):
         self.simulator_type_setting_card = ComboBoxSettingCard(
             "simulator_type",
             FIF.APPLICATION,
-            QT_TRANSLATE_NOOP('ComboBoxSettingCard', '模拟器类型'),
+            QT_TRANSLATE_NOOP('ComboBoxSettingCard', '模拟器连接配置'),
             QT_TRANSLATE_NOOP('ComboBoxSettingCard',
-                              '选择使用的模拟器类型'),
+                              '选择使用的模拟器'),
             texts={
                 QT_TRANSLATE_NOOP('ComboBoxSettingCard', 'MuMu模拟器(推荐)'): 0,
                 QT_TRANSLATE_NOOP('ComboBoxSettingCard', '其他模拟器'): 10
@@ -124,7 +124,7 @@ class SettingInterface(ScrollArea):
             QT_TRANSLATE_NOOP("PushSettingCardChance", '修改'),
             FIF.TRAIN,
             QT_TRANSLATE_NOOP('PushSettingCardChance',
-                              '启动模拟器超时时间(秒)'),
+                              '仅限MUMU模拟器——启动模拟器超时时间(秒)'),
             3600,
             "",
             "start_emulator_timeout",
