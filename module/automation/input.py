@@ -437,7 +437,7 @@ class BackgroundInput(Input, metaclass=SingletonMeta):
         hwnd = screen.handle._hWnd
         long_positon = win32api.MAKELONG(x, y)
         win32api.SendMessage(hwnd, win32con.WM_LBUTTONDOWN, 0, long_positon)
-        sleep(0.0001)
+        sleep(0.01)
 
     def mouse_up(self, x, y):
         """鼠标左键抬起
@@ -450,7 +450,7 @@ class BackgroundInput(Input, metaclass=SingletonMeta):
         hwnd = screen.handle._hWnd
         long_positon = win32api.MAKELONG(x, y)
         win32api.SendMessage(hwnd, win32con.WM_LBUTTONUP, 0, long_positon)
-        sleep(0.001)
+        sleep(0.01)
 
     def set_mouse_pos(self, x, y):
         """移动光标位置
