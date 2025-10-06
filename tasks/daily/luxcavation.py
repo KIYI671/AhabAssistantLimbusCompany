@@ -13,6 +13,10 @@ def EXP_luxcavation():
             continue
         if auto.find_element("battle/teams_assets.png"):
             break
+        if auto.find_element("home/first_prompt_assets.png", model="clam") and auto.find_element(
+                "home/back_assets.png", model="normal"):
+            auto.click_element("home/back_assets.png")
+            continue
         if auto.find_element("luxcavation/exp_enter.png", threshold=0.85, take_screenshot=True):
             if level := auto.find_element("luxcavation/exp_enter.png", find_type="image_with_multiple_targets"):
                 level = sorted(level, key=lambda x: x[0], reverse=True)
@@ -23,8 +27,9 @@ def EXP_luxcavation():
                         break
         if auto.click_element("home/luxcavation_assets.png"):
             continue
-        if auto.find_element("base/renew_confirm_assets.png", model="clam") and auto.find_element("home/drive_assets.png",
-                                                                                              model="normal"):
+        if auto.find_element("base/renew_confirm_assets.png", model="clam") and auto.find_element(
+                "home/drive_assets.png",
+                model="normal"):
             auto.click_element("base/renew_confirm_assets.png")
             from tasks.base.back_init_menu import back_init_menu
             back_init_menu()
@@ -53,6 +58,10 @@ def thread_luxcavation():
             continue
         if auto.find_element("battle/teams_assets.png"):
             break
+        if auto.find_element("home/first_prompt_assets.png", model="clam") and auto.find_element(
+                "home/back_assets.png", model="normal"):
+            auto.click_element("home/back_assets.png")
+            continue
         if auto.click_element("luxcavation/thread_enter_assets.png", threshold=0.78):
             if auto.find_element("luxcavation/thread_lv.png", threshold=0.85, take_screenshot=True):
                 if level := auto.find_element("luxcavation/thread_lv.png", find_type="image_with_multiple_targets"):
@@ -67,8 +76,9 @@ def thread_luxcavation():
             continue
         if auto.click_element("home/luxcavation_assets.png"):
             continue
-        if auto.find_element("base/renew_confirm_assets.png", model="clam") and auto.find_element("home/drive_assets.png",
-                                                                                              model="normal"):
+        if auto.find_element("base/renew_confirm_assets.png", model="clam") and auto.find_element(
+                "home/drive_assets.png",
+                model="normal"):
             auto.click_element("base/renew_confirm_assets.png")
             from tasks.base.back_init_menu import back_init_menu
             back_init_menu()

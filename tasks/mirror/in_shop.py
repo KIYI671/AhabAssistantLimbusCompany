@@ -105,6 +105,7 @@ class Shop:
                 log.debug("开始购买必买项")
                 for commodity in must_purchase:
                     if auto.click_element(commodity, threshold=0.85):
+                        buy_chance = 10
                         while auto.click_element("mirror/shop/purchase_assets.png") is False:
                             while auto.take_screenshot() is None:
                                 continue
@@ -112,7 +113,12 @@ class Shop:
                                 raise self.RestartGame()
                             if auto.click_element("mirror/road_in_mir/ego_gift_get_confirm_assets.png"):
                                 break
-                            continue
+                            buy_chance -= 1
+                            if buy_chance <= 5:
+                                auto.click_element(commodity, threshold=0.85)
+                            if buy_chance <= 0:
+                                auto.mouse_click_blank(times=3)
+                                break
                         sleep(1)
                         auto.click_element("mirror/road_in_mir/ego_gift_get_confirm_assets.png", take_screenshot=True)
                         while auto.take_screenshot() is None:
