@@ -532,10 +532,9 @@ class BackgroundInput(Input, metaclass=SingletonMeta):
         except PyWinTypesError as e:
             # 奇怪的权限冲突 (183:当文件已存在时，无法创建该文件。)
             # 偶尔出现不影响使用
-            import ctypes
 
             log.debug(f"鼠标移动失败: {e}")
             try:
-                ctypes.windll.user32.SetCursorPos(x, y)
+                pyautogui.moveTo(x, y)
             except Exception as e:
                 log.error(f"鼠标移动失败: {type(e)}: {e}")
