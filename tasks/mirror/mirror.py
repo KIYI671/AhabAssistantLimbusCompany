@@ -79,6 +79,8 @@ class Mirror:
 
         self.mirror_map = MirrorMap(hard_mode=self.hard_switch)
 
+        self.pass_coins = None
+
         self.bequest_from_the_previous_game = False
 
     def road_to_mir(self):
@@ -475,9 +477,46 @@ class Mirror:
                                 position = bonuses.pop(-1)
                                 auto.mouse_click(position[0], position[1])
 
+                    coins_bbox = ImageUtils.get_bbox(ImageUtils.load_image("mirror/claim_reward/coins_bbox.png"))
+                    for _ in range(5):
+                        try:
+                            sc = ImageUtils.crop(np.array(auto.screenshot), coins_bbox)
+                            result = ocr.run(sc)
+                            ocr_result = [result.txts[i] for i in range(len(result.txts))]
+                            ocr_result = "".join(ocr_result)
+                            ocr_result = ocr_result.lower()
+                            if "x" in ocr_result:
+                                ocr_result = ocr_result.split("x")
+                                self.pass_coins = int(ocr_result[-1])
+                                break
+                        except:
+                            continue
+                    if self.pass_coins is None:
+                        for _ in range(5):
+                            try:
+                                scale = cfg.set_win_size / 1440
+                                if coins_pos := auto.find_element("mirror/claim_reward/coins.png"):
+                                    coins_bbox = [coins_pos[0], coins_pos[1] - 40 * scale, coins_pos[0] + 100 * scale,
+                                                  coins_pos[1] + 40 * scale]
+                                    sc = ImageUtils.crop(np.array(auto.screenshot), coins_bbox)
+                                    result = ocr.run(sc)
+                                    ocr_result = [result.txts[i] for i in range(len(result.txts))]
+                                    ocr_result = "".join(ocr_result)
+                                    ocr_result = ocr_result.lower()
+                                    if "x" in ocr_result:
+                                        ocr_result = ocr_result.split("x")
+                                        self.pass_coins = int(ocr_result[-1])
+                                        break
+                            except:
+                                continue
+                        if self.pass_coins:
+                            msg = f"本次镜牢领取{self.pass_coins}个通行证经验"
+                            log.info(msg)
+                        else:
+                            msg = "无法识别通行证经验数量，可能是UI发生变化"
+                            log.warning(msg)
                     if auto.click_element("mirror/claim_reward/use_enkephalin_assets.png", take_screenshot=True):
                         sleep(1)
-                    # TODO: 统计获取的coins
                     continue
             if auto.click_element("mirror/claim_reward/use_enkephalin_assets.png", threshold=0.75):  # 降低识别阈值
                 sleep(1)
