@@ -309,14 +309,23 @@ class PageLunacyToEnkephalin(PageCard):
             center=False
         )
 
+        self.skip_enkephalin = BaseCheckBox(
+            "skip_enkephalin", None,
+            QT_TRANSLATE_NOOP("BaseCheckBox", "不自动兑换脑啡肽 (?)"),
+            tips=QT_TRANSLATE_NOOP("BaseCheckBox", "勾选后除狂气换体以外不执行兑换脑啡肽的操作"),
+            center=False
+        )
+
     def __init_layout(self):
         self.vbox_general.addWidget(self.set_lunacy_to_enkephalin)
 
         self.vbox_advanced.addWidget(self.Dr_Grandet_mode)
+        self.vbox_advanced.addWidget(self.skip_enkephalin)
 
     def retranslateUi(self):
         self.set_lunacy_to_enkephalin.retranslateUi()
         self.Dr_Grandet_mode.retranslateUi()
+        self.skip_enkephalin.retranslateUi()
         super().retranslateUi()
 
 
