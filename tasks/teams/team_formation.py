@@ -53,7 +53,10 @@ def select_battle_team(num):
     find = False
     while auto.take_screenshot() is None:
         continue
-    if position := auto.find_element("battle/teams_assets.png"):
+    if auto.find_element("home/first_prompt_assets.png", model="clam") and auto.find_element(
+            "home/back_assets.png", model="normal"):
+        auto.click_element("home/back_assets.png")
+    if position := auto.find_element("battle/teams_assets.png", take_screenshot=True):
         my_position[0] += position[0]
         my_position[1] += position[1]
         for _ in range(3):
@@ -73,7 +76,7 @@ def select_battle_team(num):
         else:
             if cfg.language_in_game == 'en':
                 team_name = [f"TEAMS #{num}", f"TEAMS#{num}"]
-                team_name_error_correcting = f"TFAMS#{num}" 
+                team_name_error_correcting = f"TFAMS#{num}"
             elif cfg.language_in_game == 'zh_cn':
                 team_name = "编队#" + str(num)
                 team_name_error_correcting = "编队#" + str(num)

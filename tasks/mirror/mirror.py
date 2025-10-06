@@ -94,6 +94,10 @@ class Mirror:
             auto.mouse_to_blank()
             if retry() is False:
                 return False
+            if auto.find_element("home/first_prompt_assets.png", model="clam") and auto.find_element(
+                    "home/back_assets.png", model="normal"):
+                auto.click_element("home/back_assets.png")
+                continue
             if auto.find_element("mirror/claim_reward/clear_assets.png"):
                 self.bequest_from_the_previous_game = True
                 return True
@@ -382,6 +386,11 @@ class Mirror:
             # 取消十层
             if auto.find_element("mirror/infinity_mirror_assets.png"):
                 auto.click_element("mirror/infinity_mirror_close_assets.png")
+                continue
+
+            if auto.find_element("home/first_prompt_assets.png", model="clam") and auto.find_element(
+                    "home/back_assets.png", model="normal"):
+                auto.click_element("home/back_assets.png")
                 continue
 
             # 防卡死
