@@ -22,7 +22,8 @@ def EXP_luxcavation():
                 level = sorted(level, key=lambda x: x[0], reverse=True)
                 for lv in level:
                     auto.mouse_click(lv[0], lv[1])
-                    sleep(0.5)
+                    sleep(1)
+                    auto.mouse_to_blank()
                     if auto.find_element("battle/teams_assets.png", take_screenshot=True):
                         break
         if auto.click_element("home/luxcavation_assets.png"):
@@ -68,7 +69,8 @@ def thread_luxcavation():
                     level = sorted(level, key=lambda y: y[1], reverse=True)
                     for lv in level:
                         auto.mouse_click(lv[0], lv[1])
-                        sleep(0.5)
+                        sleep(1)
+                        auto.mouse_to_blank()
                         if auto.find_element("battle/teams_assets.png", take_screenshot=True):
                             break
             continue

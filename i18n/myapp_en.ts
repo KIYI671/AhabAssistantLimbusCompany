@@ -30,39 +30,49 @@
         <translation>Grandet mode</translation>
     </message>
     <message>
-        <location filename="../app/page_card.py" line="355"/>
+        <location filename="../app/page_card.py" line="314"/>
+        <source>不自动兑换脑啡肽 (?)</source>
+        <translation type="finished">Do not automatic exchange enkephalin (?)</translation>
+    </message>
+    <message>
+        <location filename="../app/page_card.py" line="315"/>
+        <source>勾选后除狂气换体以外不执行兑换脑啡肽的操作</source>
+        <translation type="finished">After checking, do not perform the operation of exchanging enkephalin except for lunacy to enkephalin</translation>
+    </message>
+    <message>
+        <location filename="../app/page_card.py" line="364"/>
         <source>使用困难镜牢*</source>
         <translation>Hard mode*</translation>
     </message>
     <message>
-        <location filename="../app/page_card.py" line="361"/>
+        <location filename="../app/page_card.py" line="370"/>
         <source>不使用每周加成*</source>
         <translation>Non-weekly bonus*</translation>
     </message>
     <message>
-        <location filename="../app/page_card.py" line="367"/>
+        <location filename="../app/page_card.py" line="376"/>
         <source>只打三层</source>
         <translation>Only floor 3</translation>
     </message>
     <message>
-        <location filename="../app/page_card.py" line="372"/>
+        <location filename="../app/page_card.py" line="381"/>
         <source>无限坐牢</source>
         <translation>Infinite farming</translation>
     </message>
     <message>
-        <location filename="../app/page_card.py" line="377"/>
+        <location filename="../app/page_card.py" line="386"/>
         <source>保存困牢奖励</source>
         <translation>Save hard mirror rewards</translation>
     </message>
     <message>
-        <location filename="../app/page_card.py" line="383"/>
+        <location filename="../app/page_card.py" line="392"/>
         <source>困牢单次加成</source>
         <translation>Hard mirror single bonus</translation>
     </message>
     <message>
-        <location filename="../app/page_card.py" line="393"/>
+        <location filename="../app/page_card.py" line="402"/>
         <source>第五层跳过（最左边）活动卡包</source>
-        <translation type="finished">No select the leftmost theme pack on the fifth floor</translation>
+        <translation>No select the leftmost theme pack on the fifth floor</translation>
     </message>
     <message>
         <location filename="../app/team_setting_card.py" line="387"/>
@@ -178,18 +188,18 @@
         <translation>Only formula fuse</translation>
     </message>
     <message>
-        <location filename="../app/page_card.py" line="358"/>
-        <location filename="../app/page_card.py" line="364"/>
+        <location filename="../app/page_card.py" line="367"/>
+        <location filename="../app/page_card.py" line="373"/>
         <source>仅本次运行期间有效，重启AALC后失效</source>
         <translation>Only effective for this run, invalid after restart</translation>
     </message>
     <message>
-        <location filename="../app/page_card.py" line="378"/>
+        <location filename="../app/page_card.py" line="387"/>
         <source>仅在进行困难镜牢时生效，普通难度不生效</source>
         <translation>Only effective for hard mirror, ineffective for normal mirror</translation>
     </message>
     <message>
-        <location filename="../app/page_card.py" line="388"/>
+        <location filename="../app/page_card.py" line="397"/>
         <source>第五层选择（最左边）活动卡包</source>
         <translation>Select the leftmost theme pack on the fifth floor</translation>
     </message>
@@ -204,7 +214,7 @@
         <translation>defense first round in normal encounters</translation>
     </message>
     <message>
-        <location filename="../app/page_card.py" line="398"/>
+        <location filename="../app/page_card.py" line="407"/>
         <source>再次领取奖励</source>
         <translation>Claim rewards again</translation>
     </message>
@@ -1264,7 +1274,7 @@
 <context>
     <name>MirrorSpinBox</name>
     <message>
-        <location filename="../app/page_card.py" line="344"/>
+        <location filename="../app/page_card.py" line="353"/>
         <source>坐牢次数</source>
         <translation>Farming times</translation>
     </message>
@@ -1277,12 +1287,12 @@
         <translation>Nickname</translation>
     </message>
     <message>
-        <location filename="../app/page_card.py" line="339"/>
+        <location filename="../app/page_card.py" line="348"/>
         <source>编队1</source>
         <translation>Team1</translation>
     </message>
     <message>
-        <location filename="../app/page_card.py" line="502"/>
+        <location filename="../app/page_card.py" line="511"/>
         <source>编队</source>
         <translation>Team</translation>
     </message>
@@ -1327,7 +1337,7 @@
         <translation>Advanced</translation>
     </message>
     <message>
-        <location filename="../app/page_card.py" line="430"/>
+        <location filename="../app/page_card.py" line="439"/>
         <source>镜 牢 进 度 </source>
         <translation>Mirror Progress</translation>
     </message>
@@ -1335,8 +1345,8 @@
 <context>
     <name>PageMirror</name>
     <message>
-        <location filename="../app/page_card.py" line="432"/>
-        <location filename="../app/page_card.py" line="455"/>
+        <location filename="../app/page_card.py" line="441"/>
+        <location filename="../app/page_card.py" line="464"/>
         <source>镜 牢 进 度 </source>
         <translation>Mirror Progress</translation>
     </message>

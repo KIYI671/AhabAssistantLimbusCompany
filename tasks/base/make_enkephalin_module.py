@@ -32,7 +32,14 @@ def get_the_timing():
 
 
 @begin_and_finish_time_log(task_name="体力换饼", calculate_time=False)
-def make_enkephalin_module(cancel=False):
+def make_enkephalin_module(cancel=True, skip=True):
+    """体力换饼的模块
+    Args:
+        cancel (bool): 是否点击取消按钮 (即关闭换体界面)
+        skip (bool): 是否遵循设置跳过换体 (优先于cfg.skip_enkephalin)
+    """
+    if skip and cfg.skip_enkephalin:
+        return
     import time
     start_time = time.time()
     last_log_time = None
@@ -91,7 +98,7 @@ def make_enkephalin_module(cancel=False):
 
 @begin_and_finish_time_log(task_name="狂气换体", calculate_time=False)
 def lunacy_to_enkephalin(times=0):
-    make_enkephalin_module(cancel=False)
+    make_enkephalin_module(cancel=False, skip=False)
     auto.click_element("enkephalin/use_lunacy_assets.png")
     sleep(0.5)
     Grandet = False
@@ -133,4 +140,4 @@ def lunacy_to_enkephalin(times=0):
             continue
         break
     auto.click_element("enkephalin/enkephalin_cancel_assets.png")
-    make_enkephalin_module()
+    make_enkephalin_module(skip=False)

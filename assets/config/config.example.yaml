@@ -70,6 +70,7 @@ set_get_prize: 0 # 0 领取邮件和通行证日常与周常，1 只领取通行
 buy_enkephalin: False # 是否自动购买体力
 set_lunacy_to_enkephalin: 2 # 0 不购买，1 购买一次，2 购买两次，3 购买三次
 Dr_Grandet_mode: False
+skip_enkephalin: False # 跳过换体
 
 # 是否进行自动镜牢
 mirror: False # 是否进行自动镜牢

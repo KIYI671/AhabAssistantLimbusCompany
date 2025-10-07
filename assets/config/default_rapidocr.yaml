@@ -1,0 +1,120 @@
+Global:
+    text_score: 0.5
+
+    use_det: true
+    use_cls: true
+    use_rec: true
+
+    min_height: 30
+    width_height_ratio: 8
+    max_side_len: 1600 # 限制最大边长为1600px
+    min_side_len: 30
+
+    return_word_box: false
+    return_single_char_box: false
+
+    font_path: null
+    log_level: "info" # debug / info / warning / error / critical
+
+EngineConfig:
+    onnxruntime:
+        intra_op_num_threads: 2 # 图像操作并行线程数 限制为 2 防止占用过多 CPU 资源 同时不损失过多性能 也能防止资源抢占 下同
+        inter_op_num_threads: 2 # 节点并行线程数
+        enable_cpu_mem_arena: false
+
+        cpu_ep_cfg:
+            arena_extend_strategy: "kSameAsRequested"
+
+        use_cuda: false
+        cuda_ep_cfg:
+            device_id: 0
+            arena_extend_strategy: "kNextPowerOfTwo"
+            cudnn_conv_algo_search: "EXHAUSTIVE"
+            do_copy_in_default_stream: true
+
+        use_dml: false
+        dm_ep_cfg: null
+
+        use_cann: false
+        cann_ep_cfg:
+            device_id: 0
+            arena_extend_strategy: "kNextPowerOfTwo"
+            npu_mem_limit:  21474836480 # 20 * 1024 * 1024 * 1024
+            op_select_impl_mode: "high_performance"
+            optypelist_for_implmode: "Gelu"
+            enable_cann_graph: true
+
+    openvino:
+        inference_num_threads: -1
+        performance_hint: null
+        performance_num_requests: -1
+        enable_cpu_pinning: null
+        num_streams: -1
+        enable_hyper_threading: null
+        scheduling_core_type: null
+
+    paddle:
+        cpu_math_library_num_threads: -1
+        use_npu: false
+        npu_id: 0
+        use_cuda: false
+        gpu_id: 0
+        gpu_mem: 500
+
+    torch:
+        use_cuda: false
+        gpu_id: 0
+
+Det:
+    engine_type: "onnxruntime"
+    lang_type: "ch"
+    model_type: "mobile"
+    ocr_version: "PP-OCRv4"
+
+    task_type: "det"
+
+    model_path: null
+    model_dir: null
+
+    limit_side_len: 736
+    limit_type: min
+    std: [ 0.5, 0.5, 0.5 ]
+    mean: [ 0.5, 0.5, 0.5 ]
+
+    thresh: 0.3
+    box_thresh: 0.5
+    max_candidates: 1000
+    unclip_ratio: 1.6
+    use_dilation: true
+    score_mode: fast
+
+Cls:
+    engine_type: "onnxruntime"
+    lang_type: "ch"
+    model_type: "mobile"
+    ocr_version: "PP-OCRv4"
+
+    task_type: "cls"
+
+    model_path: null
+    model_dir: null
+
+    cls_image_shape: [3, 48, 192]
+    cls_batch_num: 6
+    cls_thresh: 0.9
+    label_list: ["0", "180"]
+
+Rec:
+    engine_type: "onnxruntime"
+    lang_type: "ch"
+    model_type: "mobile"
+    ocr_version: "PP-OCRv4"
+
+    task_type: "rec"
+
+    model_path: null
+    model_dir: null
+
+    rec_keys_path: null
+    rec_img_shape: [3, 48, 320]
+    rec_batch_num: 6
