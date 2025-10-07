@@ -29,7 +29,8 @@ class OCR(metaclass=SingletonMeta):
                 "Rec.lang_type": LangRec.CH,
                 "Rec.model_type": ModelType.MOBILE,
                 "Rec.ocr_version": OCRVersion.PPOCRV4,
-            }
+            },
+            config_path=r"assets\config\default_rapidocr.yaml",
         )
 
     def run(self, image: Image.Image | np.ndarray | str) -> RapidOCROutput:
