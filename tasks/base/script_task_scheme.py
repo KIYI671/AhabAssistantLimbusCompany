@@ -131,7 +131,7 @@ def script_task() -> None | int:
     if get_game_config_from_registry().get("_renderingScale", -1) == 2:
         log.warning("当前游戏渲染比例为低, 可能会导致识别错误, 建议设置为中或更高")
 
-    if cfg.language_in_game == "zh_cn":
+    if cfg.language_in_game == "zh_cn" and pic_path[0] != "zh_cn":
         pic_path.insert(0, "zh_cn")
     elif cfg.language_in_game == "en":
         while pic_path[0] != "share":
