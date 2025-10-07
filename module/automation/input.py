@@ -251,8 +251,8 @@ class BackgroundInput(Input, metaclass=SingletonMeta):
             current_mouse_position = self.get_mouse_position()
             rect = win32gui.GetWindowRect(screen.handle._hWnd)
             if (
-                current_mouse_position[0] > rect[0] + rect[2]
-                or current_mouse_position[1] > rect[1] + rect[3]
+                current_mouse_position[0] > rect[2]
+                or current_mouse_position[1] > rect[3]
             ):
                 # 在窗口右下角外
                 log.debug("当前鼠标位置不在游戏窗口内，取消移动到空白", stacklevel=2)
