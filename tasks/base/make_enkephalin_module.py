@@ -6,7 +6,7 @@ from module.decorator.decorator import begin_and_finish_time_log
 from module.logger import log
 
 
-def get_the_timing():
+def get_the_timing(return_time = False):
     if module_position := auto.find_element("enkephalin/lunacy_assets.png", take_screenshot=True):
         my_scale = cfg.set_win_size / 1440
         bbox = (
@@ -23,12 +23,48 @@ def get_the_timing():
                     l = s.split(":")
                     minute = int(l[0][-2:])
                     seconds = int(l[1][:2])
+                    if return_time:
+                        return minute * 60 + seconds
                     if minute >= 5 and seconds >= 20:
                         log.debug(f"生成下一点体力的时间为{minute}分{seconds}秒，符合葛朗台模式操作")
                         return True
             except:
                 return False
         return False
+
+def get_current_enkephalin():
+    from utils.image_utils import ImageUtils
+    import numpy as np
+    from module.ocr import ocr
+    import cv2
+    enkephalin_bbox = ImageUtils.get_bbox(ImageUtils.load_image("enkephalin/enkephalin_now_bbox.png"))
+    for _ in range(5):
+        try:
+            while auto.take_screenshot() is None:
+                continue
+            sc = ImageUtils.crop(np.array(auto.screenshot), enkephalin_bbox)
+            _, binary_image = cv2.threshold(sc, 110, 255, cv2.THRESH_BINARY)
+            result = ocr.run(binary_image)
+            ocr_result = [result.txts[i] for i in range(len(result.txts))]
+            ocr_result = "".join(ocr_result)
+            ocr_result = ocr_result.lower()
+            if "/" in ocr_result:
+                ocr_result = ocr_result.split("/")
+                current_enkephalin = int(ocr_result[0])
+                return current_enkephalin
+        except:
+            continue
+    try:
+        sc = ImageUtils.crop(np.array(auto.screenshot), enkephalin_bbox)
+        _, binary_image = cv2.threshold(sc, 150, 255, cv2.THRESH_BINARY)
+        result = ocr.run(binary_image)
+        ocr_result = [result.txts[i] for i in range(len(result.txts))]
+        ocr_result = "".join(ocr_result)
+        current_enkephalin = int(ocr_result[0])
+        return current_enkephalin
+    except:
+        pass
+    return None
 
 
 @begin_and_finish_time_log(task_name="体力换饼", calculate_time=False)
