@@ -1,6 +1,7 @@
 from PySide6.QtCore import QT_TRANSLATE_NOOP
 
 from app.mediator import Mediator
+from module.config import cfg
 
 mediator = Mediator()
 
@@ -86,60 +87,7 @@ skill_replacement_mode = {"1→3": 0, "2→3": 1, "1→2": 2}
 
 blank_team_setting = {}
 
-team_setting_template = {
-    "team_system": 0,  # 队伍使用的体系
-    "team_number": 1,  # 使用的队伍序号
-    "shop_strategy": 0,  # 商店策略
-    "sinners_be_select": 0,  # 有几名罪人被选中
-    "chosen_sinners": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],  # 有哪几名罪人被选中
-    "sinner_order": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],  # 罪人被选中的顺序
-    "system_burn": False,  # 弃置燃烧饰品
-    "system_bleed": False,  # 弃置流血饰品
-    "system_tremor": False,  # 弃置震颤饰品
-    "system_rupture": False,  # 弃置破裂饰品
-    "system_poise": False,  # 弃置呼吸饰品
-    "system_sinking": False,  # 弃置沉沦饰品
-    "system_charge": False,  # 弃置充能饰品
-    "system_slash": False,  # 弃置斩击饰品
-    "system_pierce": False,  # 弃置穿刺饰品
-    "system_blunt": False,  # 弃置打击饰品
-    "do_not_heal": False,  # 不治疗
-    "do_not_buy": False,  # 不购买
-    "do_not_fuse": False,  # 不合成
-    "do_not_sell": False,  # 不出售
-    "do_not_enhance": False,  # 不升级
-    "only_aggressive_fuse": False,  # 合成只采取激进策略
-    "do_not_system_fuse": False,  # 不合成体系饰品
-    "only_system_fuse": False,  # 只合成体系饰品
-    "avoid_skill_3": False,  # 避免使用3技能
-    "re_formation_each_floor": False,  # 每个楼层重新编队
-    "use_starlight": False,  # 使用开局星光换钱
-    "aggressive_also_enhance": False,  # 激进合成期间也升级饰品
-    "defense_first_round": False,  # 第一回合全员防御
-    "fixed_team_use": False,  # 固定队伍用途
-    "fixed_team_use_select": 0,  # 固定队伍用途的选择项
-    "reward_cards": False,  # 奖励卡优先度
-    "reward_cards_select": 0,  # 自定义奖励卡优先度
-    "choose_opening_bonus": False,  # 自选开局加成
-    "opening_bonus_select": 0,  # 开局加成已选数量
-    "opening_bonus": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],  # 启用的开局加成
-    "opening_bonus_order": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],  # 启用的开局加成顺序
-    "after_level_IV": False,  # 自定义合成四级后的操作
-    "after_level_IV_select": 0,  # 合成四级后的操作
-    "shopping_strategy": False,  # 自定义商店策略
-    "shopping_strategy_select": 0,  # 商店策略
-    "opening_items": False,  # 自定义开局道具
-    "opening_items_select": 0,  # 开局道具体系
-    "opening_items_system": 0,  # 开局道具选择顺序
-    "second_system": False,  # 自定义第二体系
-    "second_system_select": 0,  # 第二体系启用时间
-    "second_system_setting": 0,  # 第二体系启用时间
-    "second_system_action": [0, 0, 0, 0],  # 第二体系行动模式
-    "skill_replacement": False,  # 自定义技能替换
-    "skill_replacement_select": 0,  # 技能替换设置
-    "skill_replacement_mode": 0,  # 技能替换模式
-    "ignore_shop": [0, 0, 0, 0, 0],  # 忽略商店楼层
-}
+team_setting_template = cfg._load_default_config().get("team1_setting", {})
 
 all_sinners_name = ["YiSang", "Faust", "DonQuixote", "Ryoshu", "Meursault", "HongLu",
                     "Heathcliff", "Ishmael", "Rodion", "Sinclair", "Outis", "Gregor"]
