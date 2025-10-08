@@ -137,7 +137,7 @@ def script_task() -> None | int:
         else:
             from module.simulator.simulator_control import SimulatorControl
             simulator = SimulatorControl()
-        auto.init_input()
+    auto.init_input()
     start_time = time()
     # 获取（启动）游戏对游戏窗口进行设置
     init_game()
