@@ -8,18 +8,17 @@ import sys
 from module.logger import log
 from tasks.base.script_task_scheme import init_game
 from tasks.tools.infinite_battle import InfiniteBattles
+from tasks.tools.production_module import ProductionModule
 
 
 class ToolManager:
-    def run(self, tool: Literal["battle"]):
+    def run(self, tool: Literal["battle", "production"]):
         try:
-            if tool == "battle":
-                self.run_battle()
+            self.run_tools(tool)
         except Exception as e:
             log.error(e)
 
-
-    def run_battle(self):
+    def run_tools(self, tool):
         """自动战斗：在主线程事件循环中展示新窗口"""
         app = QApplication.instance()
         if app is None:
@@ -29,14 +28,22 @@ class ToolManager:
 
         def create_and_show():
             try:
-                w = InfiniteBattles()
+                w = None
+                if tool == "battle":
+                    w = InfiniteBattles()
+                elif tool == "production":
+                    w = ProductionModule()
+                if w is None:
+                    log.error(f"工具 {tool} 未能成功启动")
+                    return
                 w.show()
                 # 持有引用，避免被 GC 过早销毁
                 if not hasattr(self, "_windows"):
                     self._windows = []
                 self._windows.append(w)
                 # 窗口销毁时移除引用
-                w.destroyed.connect(lambda *_: hasattr(self, "_windows") and self._windows.remove(w) if w in self._windows else None)
+                w.destroyed.connect(
+                    lambda *_: hasattr(self, "_windows") and self._windows.remove(w) if w in self._windows else None)
             except Exception as e:
                 log.error(e)
 
@@ -44,8 +51,7 @@ class ToolManager:
         QTimer.singleShot(0, app, create_and_show)
 
 
-
-def start(tool: Literal["battle"]):
+def start(tool: Literal["battle", "production"]):
     """
     启动工具管理器的方法。
     :param tool: 启动工具，可以是"battle"。

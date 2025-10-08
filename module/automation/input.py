@@ -251,8 +251,8 @@ class BackgroundInput(Input, metaclass=SingletonMeta):
             current_mouse_position = self.get_mouse_position()
             rect = win32gui.GetWindowRect(screen.handle._hWnd)
             if (
-                current_mouse_position[0] > rect[0] + rect[2]
-                or current_mouse_position[1] > rect[1] + rect[3]
+                current_mouse_position[0] > rect[2]
+                or current_mouse_position[1] > rect[3]
             ):
                 # 在窗口右下角外
                 log.debug("当前鼠标位置不在游戏窗口内，取消移动到空白", stacklevel=2)
@@ -437,7 +437,7 @@ class BackgroundInput(Input, metaclass=SingletonMeta):
         hwnd = screen.handle._hWnd
         long_positon = win32api.MAKELONG(x, y)
         win32api.SendMessage(hwnd, win32con.WM_LBUTTONDOWN, 0, long_positon)
-        sleep(0.0001)
+        sleep(0.01)
 
     def mouse_up(self, x, y):
         """鼠标左键抬起
@@ -450,7 +450,7 @@ class BackgroundInput(Input, metaclass=SingletonMeta):
         hwnd = screen.handle._hWnd
         long_positon = win32api.MAKELONG(x, y)
         win32api.SendMessage(hwnd, win32con.WM_LBUTTONUP, 0, long_positon)
-        sleep(0.001)
+        sleep(0.01)
 
     def set_mouse_pos(self, x, y):
         """移动光标位置
@@ -532,10 +532,9 @@ class BackgroundInput(Input, metaclass=SingletonMeta):
         except PyWinTypesError as e:
             # 奇怪的权限冲突 (183:当文件已存在时，无法创建该文件。)
             # 偶尔出现不影响使用
-            import ctypes
 
             log.debug(f"鼠标移动失败: {e}")
             try:
-                ctypes.windll.user32.SetCursorPos(x, y)
+                pyautogui.moveTo(x, y)
             except Exception as e:
                 log.error(f"鼠标移动失败: {type(e)}: {e}")

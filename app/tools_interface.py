@@ -38,9 +38,17 @@ class ToolsInterface(ScrollArea):
             QT_TRANSLATE_NOOP("BasePushSettingCard", "这只是一个为你自动按下P键和Enter键的小工具，不要怀抱太多期待"),
             parent=self.tools_group
         )
+        self.auto_production_card = BasePushSettingCard(
+            QT_TRANSLATE_NOOP("BasePushSettingCard", '运行'),
+            FIF.CAFE,
+            QT_TRANSLATE_NOOP("BasePushSettingCard", "自动体力换饼"),
+            QT_TRANSLATE_NOOP("BasePushSettingCard", "辅助自动换饼小工具，防止体力溢出"),
+            parent=self.tools_group
+        )
 
     def __initLayout(self):
         self.tools_group.addSettingCard(self.auto_battle_card)
+        self.tools_group.addSettingCard(self.auto_production_card)
 
         self.expand_layout.addWidget(self.tools_group)
 
@@ -57,7 +65,9 @@ class ToolsInterface(ScrollArea):
 
     def __connect_signal(self):
         self.auto_battle_card.clicked.connect(lambda: tools.start("battle"))
+        self.auto_production_card.clicked.connect(lambda: tools.start("production"))
 
     def retranslateUi(self):
         self.tools_group.retranslateUi()
         self.auto_battle_card.retranslateUi()
+        self.auto_production_card.retranslateUi()
