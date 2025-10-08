@@ -30,6 +30,7 @@ from utils.utils import get_day_of_week, calculate_the_teams
 from app import mediator
 from app.windows_toast import send_toast, TemplateToast
 
+
 @begin_and_finish_time_log(task_name="一次经验本")
 # 一次经验本的过程
 def onetime_EXP_process():
@@ -69,10 +70,13 @@ def onetime_mir_process(team_setting):
     try:
         mirror_adventure = Mirror(team_setting)
         if mirror_adventure.run():
+            coins = mirror_adventure.pass_coins
             del mirror_adventure
             mirror_adventure = None
             back_init_menu()
             make_enkephalin_module()
+            if coins is not None:
+                return coins
             return True
         else:
             return False
@@ -82,6 +86,7 @@ def onetime_mir_process(team_setting):
         msg += f"\n调用栈信息:\n{exc_traceback}"
         log.error(msg)
         return False
+
 
 def to_get_reward():
     if cfg.set_get_prize == 0:
@@ -98,6 +103,7 @@ def to_get_reward():
         back_init_menu()
         get_mail_prize()
         back_init_menu()
+
 
 def init_game():
     game_process.start_game()
@@ -126,7 +132,7 @@ def script_task() -> None | int:
     except Exception as e:
         log.error(f"自动切换语言出错: {e}，使用英语尝试")
         cfg.set_value("language_in_game", "en")
-    
+
     # 低渲染比例发出警告
     if get_game_config_from_registry().get("_renderingScale", -1) == 2:
         log.warning("当前游戏渲染比例为低, 可能会导致识别错误, 建议设置为中或更高")
@@ -171,6 +177,9 @@ def script_task() -> None | int:
 
     # 执行镜牢任务
     if cfg.mirror:
+        # 记录获取的通行证经验
+        coins = 0
+        clear_nums = 0
         # 判断执行镜牢任务的次数
         mir_times = cfg.set_mirror_count
         if cfg.infinite_dungeons:
@@ -233,6 +242,15 @@ def script_task() -> None | int:
                     if chance == 0:
                         cfg.set_value("hard_mirror", False)
 
+                clear_nums += 1
+                if isinstance(mirror_result, int):
+                    coins += mirror_result
+                    msg = f"已完成 {clear_nums} 次镜牢，共获取 {coins} 个通行证经验（可能存在识别错误未能计入）"
+                    log.info(msg)
+                else:
+                    msg = f"已完成 {clear_nums} 次镜牢，本次未能识别到获取的通行证经验，目前共获取 {coins} 个通行证经验"
+                    log.info(msg)
+
                 # 更新进度条
                 finish_times += 1
                 mediator.mirror_signal.emit(finish_times, mir_times)
@@ -286,7 +304,6 @@ def script_task() -> None | int:
 
 
 class my_script_task(QThread):
-
 
     def __init__(self):
         # 初始化，构造函数
