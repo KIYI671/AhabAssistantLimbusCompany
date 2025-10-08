@@ -70,13 +70,10 @@ def onetime_mir_process(team_setting):
     try:
         mirror_adventure = Mirror(team_setting)
         if mirror_adventure.run():
-            coins = mirror_adventure.pass_coins
             del mirror_adventure
             mirror_adventure = None
             back_init_menu()
             make_enkephalin_module()
-            if coins is not None:
-                return coins
             return True
         else:
             return False
@@ -204,9 +201,6 @@ def script_task() -> None | int:
 
     # 执行镜牢任务
     if cfg.mirror:
-        # 记录获取的通行证经验
-        coins = 0
-        clear_nums = 0
         # 判断执行镜牢任务的次数
         mir_times = cfg.set_mirror_count
         if cfg.infinite_dungeons:
@@ -269,18 +263,11 @@ def script_task() -> None | int:
                     if chance == 0:
                         cfg.set_value("hard_mirror", False)
 
-                clear_nums += 1
-                if isinstance(mirror_result, int):
-                    coins += mirror_result
-                    msg = f"已完成 {clear_nums} 次镜牢，共获取 {coins} 个通行证经验（可能存在识别错误未能计入）"
-                    log.info(msg)
-                else:
-                    msg = f"已完成 {clear_nums} 次镜牢，本次未能识别到获取的通行证经验，目前共获取 {coins} 个通行证经验"
-                    log.info(msg)
-
                 # 更新进度条
                 finish_times += 1
                 mediator.mirror_signal.emit(finish_times, mir_times)
+                msg = f"已完成 {finish_times} 次镜牢"
+                log.info(msg)
 
         mediator.mirror_bar_kill_signal.emit()
         if cfg.re_claim_rewards:
