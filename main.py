@@ -25,6 +25,10 @@ from win32event import CreateMutex
 from PySide6.QtCore import Qt, QTimer
 from PySide6.QtWidgets import QApplication
 
+QApplication.setHighDpiScaleFactorRoundingPolicy(Qt.HighDpiScaleFactorRoundingPolicy.PassThrough)
+QApplication.setAttribute(Qt.AA_DontCreateNativeWidgetSiblings)
+QApplication.setAttribute(Qt.AA_EnableHighDpiScaling)
+
 if __name__ == "__main__":
     # 构建互斥锁
     mutex = CreateMutex(None, False, 'AALC.Running')
