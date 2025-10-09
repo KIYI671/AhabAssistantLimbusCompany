@@ -465,6 +465,7 @@ class Mirror:
                         bonuses = auto.find_element(
                             "mirror/claim_reward/weekly_bonuses.png",
                             find_type="image_with_multiple_targets",
+                            take_screenshot=True
                         )
                         if len(bonuses) >= 1:
                             for _ in range(len(bonuses)):
