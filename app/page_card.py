@@ -407,6 +407,11 @@ class PageMirror(PageCard):
             QT_TRANSLATE_NOOP("BaseCheckBox", "再次领取奖励"),
             center=False
         )
+        self.not_skip_whitegossypium = BaseCheckBox(
+            "not_skip_whitegossypium", None,
+            QT_TRANSLATE_NOOP("BaseCheckBox", "不跳过白棉花"),
+            center=False
+        )
 
     def __init_layout(self):
         self.vbox_general.addWidget(self.team)
@@ -423,6 +428,7 @@ class PageMirror(PageCard):
         self.vbox_advanced.addWidget(self.select_event_pack)
         self.vbox_advanced.addWidget(self.skip_event_pack)
         self.vbox_advanced.addWidget(self.re_claim_rewards)
+        self.vbox_advanced.addWidget(self.not_skip_whitegossypium)
 
         self.card_layout.insertWidget(self.card_layout.count() - 1, self.mirror_count)
 
@@ -614,6 +620,7 @@ class PageMirror(PageCard):
         self.select_event_pack.retranslateUi()
         self.skip_event_pack.retranslateUi()
         self.re_claim_rewards.retranslateUi()
+        self.not_skip_whitegossypium.retranslateUi()
         for child in self.findChildren(MirrorTeamCombination):
             child.retranslateUi()
 

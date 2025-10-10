@@ -169,11 +169,13 @@ class Shop:
                         continue
                     if self.system == 'bleed':
                         if cfg.language_in_game == 'en':
-                            if auto.find_text_element(["white", "gossypium"], all_text=True):
-                                auto.mouse_click_blank(times=2)
+                            if not cfg.not_skip_whitegossypium:
+                                if auto.find_text_element(["white", "gossypium"], all_text=True):
+                                    auto.mouse_click_blank(times=2)
                         elif cfg.language_in_game == 'zh_cn':
-                            if auto.find_text_element("白棉花"):
-                                auto.mouse_click_blank(times=2)
+                            if not cfg.not_skip_whitegossypium:
+                                if auto.find_text_element("白棉花"):
+                                    auto.mouse_click_blank(times=2)
                         sleep(1)
                     if auto.click_element("mirror/shop/purchase_assets.png", take_screenshot=True):
                         sleep(1)
@@ -196,11 +198,13 @@ class Shop:
                             continue
                         if self.system == 'bleed':
                             if cfg.language_in_game == 'en':
-                                if auto.find_text_element(["white", "gossypium"], all_text=True):
-                                    auto.mouse_click_blank(times=2)
+                                if not cfg.not_skip_whitegossypium:
+                                    if auto.find_text_element(["white", "gossypium"], all_text=True):
+                                        auto.mouse_click_blank(times=2)
                             elif cfg.language_in_game == 'zh_cn':
-                                if auto.find_text_element("白棉花"):
-                                    auto.mouse_click_blank(times=2)
+                                if not cfg.not_skip_whitegossypium:
+                                    if auto.find_text_element("白棉花"):
+                                        auto.mouse_click_blank(times=2)
                             sleep(1)
                         if auto.click_element("mirror/shop/purchase_assets.png", take_screenshot=True):
                             sleep(1)
