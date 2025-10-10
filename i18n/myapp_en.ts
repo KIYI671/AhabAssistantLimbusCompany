@@ -632,6 +632,36 @@
         <source>这只是一个为你自动按下P键和Enter键的小工具，不要怀抱太多期待</source>
         <translation>It&apos;s just a gadget that automatically presses the P and Enter keys for you, so don&apos;t expect too much</translation>
     </message>
+    <message>
+        <location filename="../app/tools_interface.py" line="42"/>
+        <source>运行</source>
+        <translation>Run</translation>
+    </message>
+    <message>
+        <location filename="../app/tools_interface.py" line="44"/>
+        <source>自动体力换饼</source>
+        <translation>Auto Stamina Replacement</translation>
+    </message>
+    <message>
+        <location filename="../app/tools_interface.py" line="45"/>
+        <source>辅助自动换饼小工具，防止体力溢出</source>
+        <translation>It&apos;s just a gadget that automatically replaces the cogito for you, preventing stamina overflow</translation>
+    </message>
+    <message>
+        <location filename="../app/tools_interface.py" line="49"/>
+        <source>运行</source>
+        <translation>Run</translation>
+    </message>
+    <message>
+        <location filename="../app/tools_interface.py" line="51"/>
+        <source>截图小工具</source>
+        <translation>Screenshot Tool</translation>
+    </message>
+    <message>
+        <location filename="../app/tools_interface.py" line="52"/>
+        <source>辅助截图小工具</source>
+        <translation>It&apos;s just a gadget that takes screenshots for you</translation>
+    </message>
 </context>
 <context>
     <name>BaseSettingCardGroup</name>

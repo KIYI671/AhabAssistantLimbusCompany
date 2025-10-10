@@ -1,3 +1,4 @@
+import re
 import threading
 from typing import Literal
 
@@ -9,10 +10,11 @@ from module.logger import log
 from tasks.base.script_task_scheme import init_game
 from tasks.tools.infinite_battle import InfiniteBattles
 from tasks.tools.production_module import ProductionModule
+from tasks.tools.screenshot_module import ScreenshotGet
 
 
 class ToolManager:
-    def run(self, tool: Literal["battle", "production"]):
+    def run(self, tool: Literal["battle", "production", "screenshot"]):
         try:
             self.run_tools(tool)
         except Exception as e:
@@ -33,6 +35,10 @@ class ToolManager:
                     w = InfiniteBattles()
                 elif tool == "production":
                     w = ProductionModule()
+                elif tool == "screenshot":
+                    w = ScreenshotGet()
+                    w.run()
+                    return
                 if w is None:
                     log.error(f"工具 {tool} 未能成功启动")
                     return
@@ -51,7 +57,7 @@ class ToolManager:
         QTimer.singleShot(0, app, create_and_show)
 
 
-def start(tool: Literal["battle", "production"]):
+def start(tool: Literal["battle", "production", "screenshot"]):
     """
     启动工具管理器的方法。
     :param tool: 启动工具，可以是"battle"。
