@@ -1,4 +1,3 @@
-from calendar import c
 import os
 
 from PySide6.QtCore import Qt, QUrl, QCoreApplication
