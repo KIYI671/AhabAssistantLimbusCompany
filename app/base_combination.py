@@ -260,9 +260,14 @@ class MirrorTeamCombination(QFrame):
             )
             return
 
-        data = cfg.yaml.load(setting)
+        data: dict = cfg.yaml.load(setting)
+        from app import team_setting_template
+        from copy import deepcopy
 
-        cfg.set_value(f"team{self.team_number}_setting", data)
+        default_config = deepcopy(team_setting_template)
+        cfg._update_config(default_config, data)
+
+        cfg.set_value(f"team{self.team_number}_setting", default_config)
         bar = BaseInfoBar.success(
             title=QT_TRANSLATE_NOOP("BaseInfoBar", '已粘贴设置'),
             content='',

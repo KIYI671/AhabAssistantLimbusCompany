@@ -43,8 +43,12 @@ class Config(metaclass=SingletonMeta):
         except FileNotFoundError:
             sys.exit("版本文件未找到")
 
-    def _load_default_config(self, example_path: str) -> dict:
+    def _load_default_config(self, example_path: str = "") -> dict:
         """加载默认配置信息"""
+        if example_path == "":
+            example_path = self.example_path
+        else:
+            self.example_path = example_path
         try:
             with open(example_path, 'r', encoding='utf-8') as file:
                 return self.yaml.load(file) or {}
