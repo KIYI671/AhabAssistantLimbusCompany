@@ -168,12 +168,12 @@ class Shop:
                     while auto.take_screenshot() is None:
                         continue
                     if self.system == 'bleed' and not cfg.not_skip_whitegossypium:
-                            if cfg.language_in_game == 'en':
-                                if auto.find_text_element(["white", "gossypium"], all_text=True):
-                                    auto.mouse_click_blank(times=2)
-                            elif cfg.language_in_game == 'zh_cn':
-                                if auto.find_text_element("白棉花"):
-                                    auto.mouse_click_blank(times=2)
+                        if cfg.language_in_game == 'en':
+                            if auto.find_text_element(["white", "gossypium"], all_text=True):
+                                auto.mouse_click_blank(times=2)
+                        elif cfg.language_in_game == 'zh_cn':
+                            if auto.find_text_element("白棉花"):
+                                auto.mouse_click_blank(times=2)
                         sleep(1)
                     if auto.click_element("mirror/shop/purchase_assets.png", take_screenshot=True):
                         sleep(1)
@@ -861,8 +861,8 @@ class Shop:
 
         log.debug("开始执行饰品升级模块")
 
+        loop_try_count = 10
         while True:
-            loop_try_count = 10
             # 自动截图
             if auto.take_screenshot() is None:
                 continue
@@ -878,6 +878,7 @@ class Shop:
 
             if loop_try_count < -50:
                 log.error("不应该发生这样的问题，请提交issue")
+                return False
 
         list_block = False
         loop_count = 30
