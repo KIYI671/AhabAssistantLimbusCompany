@@ -1338,8 +1338,8 @@
     </message>
     <message>
         <location filename="../app/page_card.py" line="442"/>
-        <source>镜 牢 进 度 </source>
-        <translation>Mirror Progress</translation>
+        <source>镜 牢 进 度 ( 普 通 ) </source>
+        <translation>Mirror Progress (Normal)</translation>
     </message>
     <message>
         <location filename="../app/page_card.py" line="467"/>
@@ -1352,8 +1352,8 @@
     <message>
         <location filename="../app/page_card.py" line="444"/>
         <location filename="../app/page_card.py" line="469"/>
-        <source>镜 牢 进 度 </source>
-        <translation>Mirror Progress</translation>
+        <source>镜 牢 进 度 ( 普 通 ) </source>
+        <translation>Mirror Progress (Normal)</translation>
     </message>
     <message>
         <location filename="../app/page_card.py" line="444"/>
