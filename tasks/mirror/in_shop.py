@@ -167,13 +167,13 @@ class Shop:
                     sleep(1)
                     while auto.take_screenshot() is None:
                         continue
-                    if self.system == 'bleed':
-                        if cfg.language_in_game == 'en':
-                            if auto.find_text_element(["white", "gossypium"], all_text=True):
-                                auto.mouse_click_blank(times=2)
-                        elif cfg.language_in_game == 'zh_cn':
-                            if auto.find_text_element("白棉花"):
-                                auto.mouse_click_blank(times=2)
+                    if self.system == 'bleed' and not cfg.not_skip_whitegossypium:
+                            if cfg.language_in_game == 'en':
+                                if auto.find_text_element(["white", "gossypium"], all_text=True):
+                                    auto.mouse_click_blank(times=2)
+                            elif cfg.language_in_game == 'zh_cn':
+                                if auto.find_text_element("白棉花"):
+                                    auto.mouse_click_blank(times=2)
                         sleep(1)
                     if auto.click_element("mirror/shop/purchase_assets.png", take_screenshot=True):
                         sleep(1)
@@ -194,7 +194,7 @@ class Shop:
                         sleep(1)
                         while auto.take_screenshot() is None:
                             continue
-                        if self.system == 'bleed':
+                        if self.system == 'bleed' and not cfg.not_skip_whitegossypium:
                             if cfg.language_in_game == 'en':
                                 if auto.find_text_element(["white", "gossypium"], all_text=True):
                                     auto.mouse_click_blank(times=2)
