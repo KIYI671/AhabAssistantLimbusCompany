@@ -407,6 +407,11 @@ class PageMirror(PageCard):
             QT_TRANSLATE_NOOP("BaseCheckBox", "再次领取奖励"),
             center=False
         )
+        self.not_skip_whitegossypium = BaseCheckBox(
+            "not_skip_whitegossypium", None,
+            QT_TRANSLATE_NOOP("BaseCheckBox", "不跳过白棉花"),
+            center=False
+        )
 
     def __init_layout(self):
         self.vbox_general.addWidget(self.team)
@@ -423,6 +428,7 @@ class PageMirror(PageCard):
         self.vbox_advanced.addWidget(self.select_event_pack)
         self.vbox_advanced.addWidget(self.skip_event_pack)
         self.vbox_advanced.addWidget(self.re_claim_rewards)
+        self.vbox_advanced.addWidget(self.not_skip_whitegossypium)
 
         self.card_layout.insertWidget(self.card_layout.count() - 1, self.mirror_count)
 
@@ -436,7 +442,10 @@ class PageMirror(PageCard):
         bar.setFixedHeight(bar_height)
         bar.setFixedWidth(bar_width)
         QT_TRANSLATE_NOOP("PageCard", "镜 牢 进 度 ")
-        text = self.tr("镜 牢 进 度 ")
+        if cfg.hard_mirror:
+            text = self.tr("镜 牢 进 度 ( 困 难 ) ")
+        else:
+            text = self.tr("镜 牢 进 度 ( 普 通 ) ")
 
         x = (
             self.mirror_count.width() / 2
@@ -460,7 +469,10 @@ class PageMirror(PageCard):
     def update_mirror_bar(self, current: int, total: int):
         """ 更新进度条 若不存在则新建"""
         if self.bar is not None:
-            text = self.tr("镜 牢 进 度 ")
+            if cfg.hard_mirror:
+                text = self.tr("镜 牢 进 度 ( 困 难 ) ")
+            else:
+                text = self.tr("镜 牢 进 度 ( 普 通 ) ")
             if total > self.bar.maximum() and total > 0:
                 self.bar.setRange(0, total)
             self.bar.setValue(current)
@@ -483,6 +495,7 @@ class PageMirror(PageCard):
     def destroy_mirror_bar(self):
         """ 销毁进度条 """
         if self.bar is not None:
+            log.info(f"已完成{"困难镜牢" if cfg.hard_mirror else "普通镜牢"}进度 {self.bar.value()} / {self.bar.maximum()}")
             self.bar.hide()
             self.bar.destroy()
             self.bar.deleteLater()
@@ -614,6 +627,7 @@ class PageMirror(PageCard):
         self.select_event_pack.retranslateUi()
         self.skip_event_pack.retranslateUi()
         self.re_claim_rewards.retranslateUi()
+        self.not_skip_whitegossypium.retranslateUi()
         for child in self.findChildren(MirrorTeamCombination):
             child.retranslateUi()
 
