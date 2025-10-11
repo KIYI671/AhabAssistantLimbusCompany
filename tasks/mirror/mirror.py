@@ -971,11 +971,10 @@ class Mirror:
                     for button in acquire_card:
                         bbox = (button[0] - 50 * my_scale, button[1] - 300 * my_scale, button[0] + 450 * my_scale,
                                 button[1] + 350 * my_scale)
-                        if cfg.language_in_game == "zh_cn":
-                            if not cfg.not_skip_whitegossypium:
+                        if not cfg.not_skip_whitegossypium:
+                            if cfg.language_in_game == "zh_cn":                                
                                 ocr_result = auto.find_text_element("白棉花", bbox)
-                        else:
-                            if not cfg.not_skip_whitegossypium:
+                            else:
                                 ocr_result = auto.find_text_element(["white", "gossypium"], bbox)
                         if isinstance(ocr_result, list):
                             if len(ocr_result) >= 2:
@@ -990,11 +989,10 @@ class Mirror:
                     for button in acquire_card:
                         bbox = (button[0] - 50 * my_scale, button[1] - 300 * my_scale, button[0] + 450 * my_scale,
                                 button[1] + 350 * my_scale)
-                        if cfg.language_in_game == "zh_cn":
-                            if not cfg.not_skip_whitegossypium:
+                        if not cfg.not_skip_whitegossypium:
+                            if cfg.language_in_game == "zh_cn":                                
                                 ocr_result = auto.find_text_element("白棉花", bbox)
-                        else:
-                            if not cfg.not_skip_whitegossypium:
+                            else:
                                 ocr_result = auto.find_text_element(["white", "gossypium"], bbox)
                         if isinstance(ocr_result, list):
                             if len(ocr_result) >= 2:
@@ -1019,11 +1017,10 @@ class Mirror:
                     for button in acquire_card:
                         bbox = (button[0] - 50 * my_scale, button[1] - 300 * my_scale, button[0] + 450 * my_scale,
                                 button[1] + 350 * my_scale)
-                        if cfg.language_in_game == "zh_cn":
-                            if not cfg.not_skip_whitegossypium:
+                        if not cfg.not_skip_whitegossypium:
+                            if cfg.language_in_game == "zh_cn":                                
                                 ocr_result = auto.find_text_element("白棉花", bbox)
-                        else:
-                            if not cfg.not_skip_whitegossypium:
+                            else:
                                 ocr_result = auto.find_text_element(["white", "gossypium"], bbox)
                         if ocr_result:
                             continue
