@@ -228,11 +228,11 @@ class SettingInterface(ScrollArea):
             QT_TRANSLATE_NOOP("BasePrimaryPushSettingCard", '项目主页'),
             "https://github.com/KIYI671/AhabAssistantLimbusCompany"
         )
-        self.qq_group_card = BasePrimaryPushSettingCard(
+        self.discord_group_card = BasePrimaryPushSettingCard(
             QT_TRANSLATE_NOOP("BasePrimaryPushSettingCard", '加入群聊'),
             FIF.EXPRESSIVE_INPUT_ENTRY,
-            QT_TRANSLATE_NOOP("BasePrimaryPushSettingCard", 'QQ群'),
-            "946227774"
+            QT_TRANSLATE_NOOP("BasePrimaryPushSettingCard", 'discord群'),
+            "https://discord.gg/vUAw98cEVe"
         )
         self.feedback_card = BasePrimaryPushSettingCard(
             QT_TRANSLATE_NOOP("BasePrimaryPushSettingCard", '提供反馈'),
@@ -279,7 +279,7 @@ class SettingInterface(ScrollArea):
         self.logs_group.addSettingCard(self.open_logs_card)
 
         self.about_group.addSettingCard(self.github_card)
-        self.about_group.addSettingCard(self.qq_group_card)
+        self.about_group.addSettingCard(self.discord_group_card)
         self.about_group.addSettingCard(self.feedback_card)
 
         self.experimental_group.addSettingCard(self.auto_lang_card)
@@ -314,7 +314,7 @@ class SettingInterface(ScrollArea):
         self.background_mode_card.switchButton.checkedChanged.connect(self.__onZoomCardValueChanged)
 
         self.github_card.clicked.connect(self.__openUrl("https://github.com/KIYI671/AhabAssistantLimbusCompany"))
-        self.qq_group_card.clicked.connect(self.__openUrl("https://qm.qq.com/q/SdgSRPrssg"))
+        self.discord_group_card.clicked.connect(self.__openUrl("https://discord.gg/vUAw98cEVe"))
         self.feedback_card.clicked.connect(
             self.__openUrl("https://github.com/KIYI671/AhabAssistantLimbusCompany/issues"))
 
@@ -412,7 +412,7 @@ class SettingInterface(ScrollArea):
         self.about_group.retranslateUi()
         self.open_logs_card.retranslateUi()
         self.github_card.retranslateUi()
-        self.qq_group_card.retranslateUi()
+        self.discord_group_card.retranslateUi()
         self.feedback_card.retranslateUi()
         self.experimental_group.retranslateUi()
         self.auto_lang_card.retranslateUi()

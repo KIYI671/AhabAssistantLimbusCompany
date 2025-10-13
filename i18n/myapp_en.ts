@@ -1179,18 +1179,29 @@
         <translation>Advanced</translation>
     </message>
     <message>
-        <location filename="../app/page_card.py" line="439"/>
-        <source>镜 牢 进 度 </source>
-        <translation>Mirror Progress</translation>
+        <location filename="../app/page_card.py" line="442"/>
+        <source>镜 牢 进 度 ( 普 通 ) </source>
+        <translation>Mirror Progress (Normal)</translation>
+    </message>
+    <message>
+        <location filename="../app/page_card.py" line="467"/>
+        <source>镜 牢 进 度 ( 困 难 ) </source>
+        <translation>Hard Mode Mirror Progress</translation>
     </message>
 </context>
 <context>
     <name>PageMirror</name>
     <message>
-        <location filename="../app/page_card.py" line="441"/>
-        <location filename="../app/page_card.py" line="464"/>
-        <source>镜 牢 进 度 </source>
-        <translation>Mirror Progress</translation>
+        <location filename="../app/page_card.py" line="444"/>
+        <location filename="../app/page_card.py" line="469"/>
+        <source>镜 牢 进 度 ( 普 通 ) </source>
+        <translation>Mirror Progress (Normal)</translation>
+    </message>
+    <message>
+        <location filename="../app/page_card.py" line="444"/>
+        <location filename="../app/page_card.py" line="467"/>
+        <source>镜 牢 进 度 ( 困 难 ) </source>
+        <translation>Hard Mode Mirror Progress</translation>
     </message>
 </context>
 <context>

@@ -101,6 +101,8 @@ class Mirror:
             if auto.find_element("mirror/claim_reward/clear_assets.png"):
                 self.bequest_from_the_previous_game = True
                 return True
+            if auto.find_element('mirror/shop/shop_coins_assets.png'):
+                break
             if auto.find_element("mirror/road_in_mir/legend_assets.png"):
                 break
             if auto.click_element("mirror/road_to_mir/resume_assets.png"):
@@ -465,6 +467,7 @@ class Mirror:
                         bonuses = auto.find_element(
                             "mirror/claim_reward/weekly_bonuses.png",
                             find_type="image_with_multiple_targets",
+                            take_screenshot=True
                         )
                         if len(bonuses) >= 1:
                             for _ in range(len(bonuses)):
@@ -970,10 +973,11 @@ class Mirror:
                     for button in acquire_card:
                         bbox = (button[0] - 50 * my_scale, button[1] - 300 * my_scale, button[0] + 450 * my_scale,
                                 button[1] + 350 * my_scale)
-                        if cfg.language_in_game == "zh_cn":
-                            ocr_result = auto.find_text_element("白棉花", bbox)
-                        else:
-                            ocr_result = auto.find_text_element(["white", "gossypium"], bbox)
+                        if not cfg.not_skip_whitegossypium:
+                            if cfg.language_in_game == "zh_cn":                                
+                                ocr_result = auto.find_text_element("白棉花", bbox)
+                            else:
+                                ocr_result = auto.find_text_element(["white", "gossypium"], bbox)
                         if isinstance(ocr_result, list):
                             if len(ocr_result) >= 2:
                                 continue
@@ -987,10 +991,11 @@ class Mirror:
                     for button in acquire_card:
                         bbox = (button[0] - 50 * my_scale, button[1] - 300 * my_scale, button[0] + 450 * my_scale,
                                 button[1] + 350 * my_scale)
-                        if cfg.language_in_game == "zh_cn":
-                            ocr_result = auto.find_text_element("白棉花", bbox)
-                        else:
-                            ocr_result = auto.find_text_element(["white", "gossypium"], bbox)
+                        if not cfg.not_skip_whitegossypium:
+                            if cfg.language_in_game == "zh_cn":                                
+                                ocr_result = auto.find_text_element("白棉花", bbox)
+                            else:
+                                ocr_result = auto.find_text_element(["white", "gossypium"], bbox)
                         if isinstance(ocr_result, list):
                             if len(ocr_result) >= 2:
                                 time.sleep(1)
@@ -1014,10 +1019,11 @@ class Mirror:
                     for button in acquire_card:
                         bbox = (button[0] - 50 * my_scale, button[1] - 300 * my_scale, button[0] + 450 * my_scale,
                                 button[1] + 350 * my_scale)
-                        if cfg.language_in_game == "zh_cn":
-                            ocr_result = auto.find_text_element("白棉花", bbox)
-                        else:
-                            ocr_result = auto.find_text_element(["white", "gossypium"], bbox)
+                        if not cfg.not_skip_whitegossypium:
+                            if cfg.language_in_game == "zh_cn":                                
+                                ocr_result = auto.find_text_element("白棉花", bbox)
+                            else:
+                                ocr_result = auto.find_text_element(["white", "gossypium"], bbox)
                         if ocr_result:
                             continue
                         if auto.find_element(f"mirror/road_in_mir/acquire_ego_gift/{self.system}.png", my_crop=bbox,

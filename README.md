@@ -7,8 +7,12 @@
 ### FACE THE <font color= #ff0000>S</font><font color= #b40001>I</font><font color= #690001>N</font>,SAVE THE <font color=#ffd700>E</font><font color=#f8da39>.</font><font color=#f1dd72>G</font><font color=#eae0aa>.</font><font color= #e3e3e3>O</font>
 
 ---
-
 <br>
+<div>
+    <a href="https://discord.gg/vUAw98cEVe">
+        <img src="https://cdn.simpleicons.org/discord" alt="Discord" width="24" height="24">
+    </a>
+</div>
 <div>
     <img alt="version" src="https://img.shields.io/github/v/release/KIYI671/AhabAssistantLimbusCompany?color=%239c080b&style=flat-square">
     <img alt="download" src="https://img.shields.io/github/downloads/KIYI671/AhabAssistantLimbusCompany/total?style=flat-square&color=4096d8">
