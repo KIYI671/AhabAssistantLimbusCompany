@@ -9,7 +9,7 @@
 ---
 <br>
 <div>
-    <a href="https://discord.gg/bVzCuBU4bC">
+    <a href="https://discord.gg/vUAw98cEVe">
         <img src="https://cdn.simpleicons.org/discord" alt="Discord" width="24" height="24">
     </a>
 </div>
