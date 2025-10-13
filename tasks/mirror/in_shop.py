@@ -665,6 +665,9 @@ class Shop:
 
             gift_sell = False
 
+            if retry() is False:
+                raise self.RestartGame()
+
             if self.second_system and self.second_system_action[0] and second is None:
                 if protect_gift := auto.find_element(
                         f"mirror/shop/level_IV_gifts/{self.second_system_select}_level_IV.png"):
