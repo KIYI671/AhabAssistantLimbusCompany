@@ -59,4 +59,6 @@ def get_reward_card(model=0):
         auto.mouse_to_blank()
         if auto.click_element("mirror/get_reward_card/continue_choosing_assets.png", model='clam'):
             break
+        if retry() is False:
+            return False
         continue
