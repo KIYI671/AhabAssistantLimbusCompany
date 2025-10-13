@@ -1,9 +1,12 @@
-from PySide6.QtCore import QT_TRANSLATE_NOOP
+import time
+
+from PySide6.QtCore import QT_TRANSLATE_NOOP, Qt
 from PySide6.QtWidgets import QWidget
-from qfluentwidgets import FluentIcon as FIF
+from qfluentwidgets import FluentIcon as FIF, InfoBarPosition
 from qfluentwidgets import ScrollArea, ExpandLayout
 
 from app.base_combination import BaseSettingCardGroup, BasePushSettingCard
+from app.card.messagebox_custom import BaseInfoBar
 from app.language_manager import LanguageManager
 from tasks import tools
 
@@ -75,9 +78,23 @@ class ToolsInterface(ScrollArea):
         self.auto_battle_card.clicked.connect(lambda: tools.start("battle"))
         self.auto_production_card.clicked.connect(lambda: tools.start("production"))
         self.get_screenshot_card.clicked.connect(lambda: tools.start("screenshot"))
+        time_str = time.strftime("%Y%m%d_%H%M%S", time.localtime())
+        self.get_screenshot_card.clicked.connect(
+            lambda: self.__onZoomCardValueChanged("截图完成", f"图片保存为 AALC > screenshot_{time_str}.png"))
 
     def retranslateUi(self):
         self.tools_group.retranslateUi()
         self.auto_battle_card.retranslateUi()
         self.auto_production_card.retranslateUi()
         self.get_screenshot_card.retranslateUi()
+
+    def __onZoomCardValueChanged(self, title: str, msg: str):
+        bar = BaseInfoBar.success(
+            title=QT_TRANSLATE_NOOP("BaseInfoBar", title),
+            content=QT_TRANSLATE_NOOP("BaseInfoBar", msg),
+            orient=Qt.Horizontal,
+            isClosable=True,
+            position=InfoBarPosition.BOTTOM_RIGHT,
+            duration=-1,
+            parent=self
+        )
