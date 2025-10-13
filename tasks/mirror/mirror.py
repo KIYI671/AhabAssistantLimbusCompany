@@ -293,6 +293,10 @@ class Mirror:
                     team_formation(self.sinner_team)
                     self.first_battle = False
                     continue
+                # 战斗配队失败的情况
+                if auto.click_element("teams/none_sinner_assets.png", model='clam'):
+                    self.first_battle = True
+                    continue
                 # 检测罪人幸存人数是否少于10人
                 if not (auto.find_element("teams/12_sinner_live_assets.png") or
                         auto.find_element("teams/11_sinner_live_assets.png") or
