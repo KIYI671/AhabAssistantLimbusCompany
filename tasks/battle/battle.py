@@ -78,7 +78,7 @@ class Battle:
                 sleep(0.5)
                 auto.key_press('enter')
             sleep(2)
-            if not auto.find_element("battle/pause_assets.png",take_screenshot=True):
+            if not auto.find_element("battle/pause_assets.png", take_screenshot=True):
                 auto.key_press('p')
                 sleep(0.5)
                 auto.key_press('enter')
@@ -166,6 +166,11 @@ class Battle:
             # 判断是否为镜牢战斗
             if in_mirror is False and auto.find_element("battle/in_mirror_assets.png", model="aggressive"):
                 in_mirror = True
+
+            if view_status := auto.find_element("battle/view_status_assets.png", model="clam"):
+                my_scale = cfg.set_win_size / 1440
+                auto.click_element(view_status[0] + 100 * my_scale, view_status[1] - 500 * my_scale)
+                continue
 
             # 如果正在交战过程
             if auto.find_element("battle/pause_assets.png"):
