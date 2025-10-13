@@ -101,6 +101,8 @@ class Mirror:
             if auto.find_element("mirror/claim_reward/clear_assets.png"):
                 self.bequest_from_the_previous_game = True
                 return True
+            if auto.find_element('mirror/shop/shop_coins_assets.png'):
+                break
             if auto.find_element("mirror/road_in_mir/legend_assets.png"):
                 break
             if auto.click_element("mirror/road_to_mir/resume_assets.png"):
