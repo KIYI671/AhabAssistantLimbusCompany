@@ -103,7 +103,7 @@ def select_theme_pack(hard_switch=False, floor=None):
                 max_weight = max(weight_list)
                 log.debug(f"当前主题包权重列表：{list(zip(pack_name, weight_list))}")
                 # 如果存在权重最大值大于等于优选阈值的主题包，则选择该主题包
-                if max_weight >= theme_list.preferred_thresholds:
+                if max_weight >= int(theme_list.preferred_thresholds):
                     max_index = weight_list.index(max_weight)
                     pack = all_theme_pack[max_index]
                     auto.mouse_drag_down(pack[0], pack[1])
@@ -113,7 +113,7 @@ def select_theme_pack(hard_switch=False, floor=None):
                     return
 
         except Exception as e:
-            log.error(e)
+            log.error(f"识别主题包出错:{e}")
             continue
 
         if refresh_times >= 0 and auto.click_element("mirror/theme_pack/refresh_assets.png"):
