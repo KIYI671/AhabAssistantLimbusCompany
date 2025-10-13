@@ -45,10 +45,18 @@ class ToolsInterface(ScrollArea):
             QT_TRANSLATE_NOOP("BasePushSettingCard", "辅助自动换饼小工具，防止体力溢出"),
             parent=self.tools_group
         )
+        self.get_screenshot_card = BasePushSettingCard(
+            QT_TRANSLATE_NOOP("BasePushSettingCard", '运行'),
+            FIF.CAFE,
+            QT_TRANSLATE_NOOP("BasePushSettingCard", "截图小工具"),
+            QT_TRANSLATE_NOOP("BasePushSettingCard", "辅助截图小工具"),
+            parent=self.tools_group
+        )
 
     def __initLayout(self):
         self.tools_group.addSettingCard(self.auto_battle_card)
         self.tools_group.addSettingCard(self.auto_production_card)
+        self.tools_group.addSettingCard(self.get_screenshot_card)
 
         self.expand_layout.addWidget(self.tools_group)
 
@@ -66,8 +74,10 @@ class ToolsInterface(ScrollArea):
     def __connect_signal(self):
         self.auto_battle_card.clicked.connect(lambda: tools.start("battle"))
         self.auto_production_card.clicked.connect(lambda: tools.start("production"))
+        self.get_screenshot_card.clicked.connect(lambda: tools.start("screenshot"))
 
     def retranslateUi(self):
         self.tools_group.retranslateUi()
         self.auto_battle_card.retranslateUi()
         self.auto_production_card.retranslateUi()
+        self.get_screenshot_card.retranslateUi()
