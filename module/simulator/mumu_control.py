@@ -504,6 +504,7 @@ class MumuControl:
             raise NemuIpcError('nemu_capture_display在get_resolution（）期间失败')
         self.width = width_ptr.contents.value
         self.height = height_ptr.contents.value
+        log.debug(f'获取到模拟器分辨率: {self.width} x {self.height}')
 
     def screenshot(self, timeout=0.15):
         """
@@ -514,7 +515,8 @@ class MumuControl:
         if self.connect_id == 0:
             self.connect()
 
-        self.get_resolution()
+        if self.height == 0:
+            self.get_resolution()
 
         width_ptr = ctypes.pointer(ctypes.c_int(self.width))
         height_ptr = ctypes.pointer(ctypes.c_int(self.height))
