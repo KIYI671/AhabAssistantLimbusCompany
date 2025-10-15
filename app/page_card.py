@@ -1,6 +1,6 @@
 import os
 
-from PySide6.QtCore import Qt, QUrl, QCoreApplication
+from PySide6.QtCore import Qt, QUrl, QCoreApplication, QRect
 from PySide6.QtGui import QDesktopServices
 from PySide6.QtWidgets import QWidget, QFrame, QHBoxLayout, QTextBrowser, QVBoxLayout
 from markdown_it import MarkdownIt
@@ -22,7 +22,7 @@ class PageCard(QFrame):
 
     def __init__(self, parent=None):
         super().__init__(parent=parent)
-        self.parent = parent
+
 
         self.card_layout = QVBoxLayout(self)
         self.all_page = StackedWidget(self)
@@ -81,7 +81,7 @@ class PageCard(QFrame):
 class PageSetWindows(PageCard):
     def __init__(self, parent=None):
         super().__init__(parent=parent)
-        self.parent = parent
+
         self.__init_card()
         self.__init_layout()
         self.setObjectName("page_set_windows")
@@ -152,7 +152,7 @@ class PageSetWindows(PageCard):
 class PageDailyTask(PageCard):
     def __init__(self, parent=None):
         super().__init__(parent=parent)
-        self.parent = parent
+
         self.__init_card()
         self.__init_layout()
         self.setObjectName("page_daily_task")
@@ -270,7 +270,7 @@ class PageDailyTask(PageCard):
 class PageGetPrize(PageCard):
     def __init__(self, parent=None):
         super().__init__(parent=parent)
-        self.parent = parent
+
         self.__init_card()
         self.__init_layout()
         self.setObjectName("page_get_prize")
@@ -292,7 +292,7 @@ class PageGetPrize(PageCard):
 class PageLunacyToEnkephalin(PageCard):
     def __init__(self, parent=None):
         super().__init__(parent=parent)
-        self.parent = parent
+
         self.__init_card()
         self.__init_layout()
         self.setObjectName("page_lunacy_to_enkephalin")
@@ -332,10 +332,11 @@ class PageLunacyToEnkephalin(PageCard):
 class PageMirror(PageCard):
     def __init__(self, parent=None):
         super().__init__(parent=parent)
-        self.parent = parent
+
+        self.setObjectName("page_mirror")
         self.__init_card()
         self.__init_layout()
-        self.setObjectName("page_mirror")
+        
 
         self.get_setting()
         self.refresh()
@@ -354,7 +355,7 @@ class PageMirror(PageCard):
             "set_mirror_count"
         )
 
-        self.add_team = QHBoxLayout(self)
+        self.add_team = QHBoxLayout()
         self.add_team_button = TransparentToolButton(FIF.ADD, None)
         self.add_team_button.setMinimumWidth(200)
         self.add_team_button.clicked.connect(self.new_team)
@@ -647,8 +648,8 @@ def transform_image_url(self, tokens, idx, options, env):
 
 
 class MarkdownViewer(QWidget):
-    def __init__(self, file_path: str):
-        super().__init__()
+    def __init__(self, file_path: str, parent = None):
+        super().__init__(parent = parent)
         layout = QVBoxLayout(self)
         self.setLayout(layout)
 

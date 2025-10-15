@@ -42,6 +42,7 @@ class MainWindow(FramelessWindow):
         self.setTitleBar(StandardTitleBar(self))
         self.setWindowIcon(QIcon('./assets/logo/my_icon_256X256.ico'))
         self.setWindowTitle(f"Ahab Assistant Limbus Company -  {cfg.version}")
+        self.setObjectName("MainWindow")
         setThemeColor("#9c080b")
         # self.hBoxLayout =QHBoxLayout(self)
         # self.test_interface = TestInterface(self)
@@ -68,7 +69,7 @@ class MainWindow(FramelessWindow):
         self.pivot = Pivot(self)
         self.stackedWidget = QStackedWidget(self)
         self.vBoxLayout = QVBoxLayout(self)
-        self.HBoxLayout = QHBoxLayout(self)
+        self.HBoxLayout = QHBoxLayout()
         # self.stackedWidget.setStyleSheet("border: 1px solid black;")
         self.setStyleSheet("""
                             MainWindow {    
@@ -119,7 +120,7 @@ class MainWindow(FramelessWindow):
 
         self.set_ring()
 
-    def addSubInterface(self, widget: QLabel, objectName, text):
+    def addSubInterface(self, widget: QWidget, objectName, text):
         widget.setObjectName(objectName)
         # widget.setAlignment(Qt.AlignCenter)
         self.stackedWidget.addWidget(widget)

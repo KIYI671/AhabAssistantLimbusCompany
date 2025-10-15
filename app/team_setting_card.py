@@ -13,6 +13,7 @@ from module.config import cfg
 class TeamSettingCard(QFrame):
     def __init__(self, team_num=0, parent=None):
         super().__init__(parent)
+        self.setObjectName("TeamSettingCard")
         self.__init_widget()
         self.__init_card()
         self.__init_layout()
@@ -340,6 +341,7 @@ class TeamSettingCard(QFrame):
 class CustomizeSettingsModule(QFrame):
     def __init__(self, parent=None):
         super().__init__(parent)
+        self.setObjectName("CustomizeSettingsModule")
         self.main_layout = QVBoxLayout(self)
         self.__init_widget()
         self.__init_card()
