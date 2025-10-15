@@ -341,6 +341,7 @@ class PageMirror(PageCard):
         self.get_setting()
         self.refresh()
         self.bar = None
+        self.bar_layout = None
         self.connect_mediator()
 
     def __init_card(self):
@@ -437,29 +438,28 @@ class PageMirror(PageCard):
     def _create_mirror_bar(self, current: int, total: int) -> TextProgressBar:
         """ 创建进度条 """
         bar = TextProgressBar(self)
+        self.bar_layout = QVBoxLayout()
+        self.bar_layout.addWidget(bar)
 
         bar_width = int(200)
         bar_height = int(bar_width / 10)
         bar.setFixedHeight(bar_height)
         bar.setFixedWidth(bar_width)
+        self.bar_layout.setAlignment(Qt.AlignRight)
+        self.bar_layout.setContentsMargins(0, 0, 32, 0)
+        self.card_layout.insertLayout(1, self.bar_layout)
+
         QT_TRANSLATE_NOOP("PageCard", "镜 牢 进 度 ")
         if cfg.hard_mirror:
             text = self.tr("镜 牢 进 度 ( 困 难 ) ")
         else:
             text = self.tr("镜 牢 进 度 ( 普 通 ) ")
 
-        x = (
-            self.mirror_count.width() / 2
-            - bar_width / 2
-            + self.mirror_count.box.width() / 4
-        )
-        y = 530
         if total >= 9000:
             bar.setFormat(f"{text}: %v / ∞")
         else:
             bar.setFormat(f"{text}: %v / %m")
 
-        bar.move(int(x), int(y))
         bar.show()
         bar.setRange(0, total)
         bar.setValue(current)
@@ -501,6 +501,9 @@ class PageMirror(PageCard):
             self.bar.destroy()
             self.bar.deleteLater()
             self.bar = None
+        if self.bar_layout is not None:
+            self.bar_layout.deleteLater()
+            self.bar_layout = None
 
     def get_setting(self):
         team_toggle_button_group.clear()
