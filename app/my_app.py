@@ -4,7 +4,7 @@ import re
 import subprocess
 from enum import Enum
 
-from PySide6.QtCore import Qt, QLocale
+from PySide6.QtCore import Qt, QLocale, QTimer
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QApplication, QHBoxLayout, QStackedWidget, QVBoxLayout, QLabel, QWidget
 from qfluentwidgets import Pivot, setThemeColor, ProgressRing
@@ -137,8 +137,7 @@ class MainWindow(FramelessWindow):
             else:
                 """切换页面（带越界保护）"""
                 self.addSubInterface(TeamSettingCard(num), 'team_setting', self.tr("队伍设置"))
-                list(self.pivot.items.values())[-1].click()
-                self.pivot.setCurrentItem("team_setting")
+                QTimer.singleShot(0, lambda: self.pivot.setCurrentItem("team_setting"))
         except Exception as e:
             log.error(f"【异常】switch_to_page 出错：{type(e).__name__}:{e}")
 
