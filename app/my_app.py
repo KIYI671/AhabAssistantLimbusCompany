@@ -66,8 +66,8 @@ class MainWindow(FramelessWindow):
         w, h = geometry.width(), geometry.height()
         self.move(w // 2 - self.width() // 2, h // 2 - self.height() // 2)
 
-        self.pivot = Pivot(self)
-        self.stackedWidget = QStackedWidget(self)
+        self.pivot = Pivot()
+        self.stackedWidget = QStackedWidget()
         self.vBoxLayout = QVBoxLayout(self)
         self.HBoxLayout = QHBoxLayout()
         # self.stackedWidget.setStyleSheet("border: 1px solid black;")
@@ -136,7 +136,7 @@ class MainWindow(FramelessWindow):
                 self.pivot.setCurrentItem("team_setting")
             else:
                 """切换页面（带越界保护）"""
-                self.addSubInterface(TeamSettingCard(num, self), 'team_setting', self.tr("队伍设置"))
+                self.addSubInterface(TeamSettingCard(num), 'team_setting', self.tr("队伍设置"))
                 list(self.pivot.items.values())[-1].click()
                 self.pivot.setCurrentItem("team_setting")
         except Exception as e:
