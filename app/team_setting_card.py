@@ -165,7 +165,10 @@ class TeamSettingCard(QFrame):
         self.layout_.addLayout(self.select_sinner_layout_2)
         self.layout_.addWidget(self.gift_system_layout)
         self.layout_.addWidget(self.custom_layout)
-        self.layout_.addLayout(self.setting_layout)
+
+        self.main_layout.addLayout(self.setting_layout)
+        self.main_layout.addSpacing(15)
+        self.setting_layout.setContentsMargins(10, 0, 10, 0)  # 手动对齐其他组件
 
         self.custom_layout.viewLayout.addWidget(self.customize_settings_module)
 
