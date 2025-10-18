@@ -103,6 +103,25 @@ def to_get_reward():
 
 
 def init_game():
+    simulator = None
+    if cfg.simulator:
+        if cfg.simulator_type == 0:
+            mumu_instance_number = 0
+            if cfg.simulator_port == 0 and cfg.mumu_instance_number == -1:
+                log.info("未设置模拟器端口或实例编号，使用默认mumu模拟器")
+            elif cfg.simulator_port != 0:
+                if cfg.simulator_port == 16384 or (cfg.simulator_port - 16384) % 32 == 0:
+                    mumu_instance_number = 0 if cfg.simulator_port == 16384 else (cfg.simulator_port - 16384) // 32
+                else:
+                    log.info("设置的模拟器端口非常用默认端口，使用默认mumu模拟器")
+            elif cfg.mumu_instance_number != -1:
+                mumu_instance_number = cfg.mumu_instance_number
+            from module.simulator.mumu_control import MumuControl
+            simulator = MumuControl(instance_number=mumu_instance_number)
+        else:
+            from module.simulator.simulator_control import SimulatorControl
+            simulator = SimulatorControl()
+    auto.init_input()
     if cfg.simulator:
         if cfg.simulator_type == 0:
             from module.simulator.mumu_control import MumuControl
@@ -119,25 +138,6 @@ def init_game():
 
 
 def script_task() -> None | int:
-    simulator = None
-    if cfg.simulator:
-        if cfg.simulator_type == 0:
-            mumu_instance_number = 0
-            if cfg.simulator_port == 0 and cfg.mumu_instance_number == -1:
-                log.info("未设置模拟器端口或实例编号，使用默认mumu模拟器")
-            elif cfg.simulator_port != 0:
-                if cfg.simulator_port == 16384 or (cfg.simulator_port - 16384) % 32 == 0:
-                    mumu_instance_number = 0 if cfg.simulator_port== 16384 else (cfg.simulator_port - 16384) // 32
-                else:
-                    log.info("设置的模拟器端口非常用默认端口，使用默认mumu模拟器")
-            elif cfg.mumu_instance_number != -1:
-                mumu_instance_number = cfg.mumu_instance_number
-            from module.simulator.mumu_control import MumuControl
-            simulator = MumuControl(instance_number=mumu_instance_number)
-        else:
-            from module.simulator.simulator_control import SimulatorControl
-            simulator = SimulatorControl()
-    auto.init_input()
     start_time = time()
     # 获取（启动）游戏对游戏窗口进行设置
     init_game()
