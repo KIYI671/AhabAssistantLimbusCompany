@@ -2,6 +2,10 @@ name: mirrorchyan_release
 
 on:
   workflow_dispatch:
+    inputs:
+        tag:
+            default: ''
+            required: false
 #   release:
 #     types: [released]
 
@@ -13,6 +17,7 @@ jobs:
       - uses: MirrorChyan/uploading-action@v1
         with:
           filetype: latest-release
+          tag: ${{ inputs.tag }}
           filename: "AALC_*.7z"
           p7zip: true
           mirrorchyan_rid: AALC
