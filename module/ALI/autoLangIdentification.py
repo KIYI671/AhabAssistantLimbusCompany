@@ -28,7 +28,7 @@ def auto_switch_language_in_game(hwnd: int) -> int:
     ---
 
     Returns:
-        int: 从0-2三种情况
+        int: 从0-2三种情况 可以查看AutoSwitchCon类
             - 0: 当前语言相同
             - 1: 当前语言不同, 但位于支持的语言列表中 (自动切换)
             - 2: 当前语言不同, 且不支持
@@ -46,19 +46,22 @@ def auto_switch_language_in_game(hwnd: int) -> int:
 
         # 返回进程的可执行文件路径
         path = Path(process.exe())
-    except Exception:
-        log.error("获取路径时出错 ")
+    except Exception as e:
+        log.error(f"获取路径时出错: {e}")
 
     if path is None:
         raise ValueError("未获取到程序路径")
     json_path = path.parent / "LimbusCompany_Data" / "Lang" / "config.json"
     lang_code = None
 
+    log.debug(f"游戏设置路径: {json_path}")
+
     try:
         with open(json_path, "r") as f:
             content = f.read()
-        json_content = json.loads(content)
-        lang_code = json_content.get("lang")
+        json_content: dict = json.loads(content)
+        log.debug(f"读取语言配置文件内容: {json_content}")
+        lang_code = json_content.get("lang", "Unknown")
     except FileNotFoundError:
         log.debug(f"未找到语言配置文件: {json_path}")
         lang_code = "-"
