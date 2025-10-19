@@ -36,7 +36,7 @@ jobs:
       - name: Trigger MirrorChyanUploading
         shell: bash
         run: |
-          gh workflow run --repo $GITHUB_REPOSITORY mirrorchyan_release
-          gh workflow run --repo $GITHUB_REPOSITORY mirrorchyan_release_note
+          gh workflow run --repo $GITHUB_REPOSITORY mirrorchyan_release -f tag=${{ github.ref_name }}
+          gh workflow run --repo $GITHUB_REPOSITORY mirrorchyan_release_note -f tag=${{ github.ref_name }}
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
