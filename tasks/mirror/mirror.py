@@ -233,7 +233,8 @@ class Mirror:
                     get_floor_bbox = ImageUtils.get_bbox(
                         ImageUtils.load_image("mirror/road_in_mir/get_floor_bbox.png"))
                     sc = ImageUtils.crop(np.array(auto.screenshot), get_floor_bbox)
-                    mask = cv2.inRange(sc, 75, 255)
+                    sc = cv2.bitwise_not(sc)
+                    mask = cv2.inRange(sc, 220, 255)
                     for i in range(5):
                         try:
                             result = ocr.run(mask)
