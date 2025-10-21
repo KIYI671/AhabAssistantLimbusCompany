@@ -2,7 +2,7 @@ import base64
 import datetime
 
 import pyperclip
-from PySide6.QtCore import QUrl, Signal
+from PySide6.QtCore import QUrl, Signal, QObject
 from PySide6.QtGui import QPixmap, QDesktopServices, QPainter, QColor
 from PySide6.QtWidgets import QPushButton
 from qfluentwidgets import LineEdit, SettingCard, \
@@ -330,8 +330,8 @@ class SinnerSelect(QFrame):
         self.setObjectName(config_name)
         # self.setFixedHeight(300)
         self.vBoxLayout = QVBoxLayout(self)
-        self.hBoxLayout_up = QHBoxLayout(self)
-        self.hBoxLayout_down = QHBoxLayout(self)
+        self.hBoxLayout_up = QHBoxLayout()
+        self.hBoxLayout_down = QHBoxLayout()
         self.box = BaseCheckBox(config_name, check_box_icon, '', parent=self)
         self.line_edit = LineEdit()
         self.line_edit.setAlignment(Qt.AlignCenter)
@@ -462,7 +462,7 @@ class BasePrimaryPushSettingCard(PrimaryPushSettingCard):
 
 
 class PushSettingCardMirrorchyan(SettingCard):
-    def __init__(self, text, icon: Union[str, QIcon, FluentIconBase], title, update_callback, config_name, parent=None):
+    def __init__(self, text, icon: Union[str, QIcon, FluentIconBase], title, update_callback, config_name, parent: QObject | None = None):
         self.config_value = decrypt_string(str(cfg.get_value(config_name)))
         self.update_callback = update_callback
         super().__init__(icon, title, "", parent)
