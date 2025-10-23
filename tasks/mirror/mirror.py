@@ -233,7 +233,8 @@ class Mirror:
                     get_floor_bbox = ImageUtils.get_bbox(
                         ImageUtils.load_image("mirror/road_in_mir/get_floor_bbox.png"))
                     sc = ImageUtils.crop(np.array(auto.screenshot), get_floor_bbox)
-                    mask = cv2.inRange(sc, 75, 255)
+                    sc = cv2.bitwise_not(sc)
+                    mask = cv2.inRange(sc, 220, 255)
                     for i in range(5):
                         try:
                             result = ocr.run(mask)
@@ -982,9 +983,9 @@ class Mirror:
                                 ocr_result = auto.find_text_element("白棉花", bbox)
                             else:
                                 ocr_result = auto.find_text_element(["white", "gossypium"], bbox)
-                        if isinstance(ocr_result, list):
-                            if len(ocr_result) >= 2:
-                                continue
+                            if isinstance(ocr_result, list):
+                                if len(ocr_result) >= 2:
+                                    continue
                         auto.mouse_click(button[0], button[1])
                         auto.click_element("mirror/road_in_mir/acquire_ego_gift_select_assets.png", model="normal")
                         time.sleep(2)
@@ -1000,18 +1001,18 @@ class Mirror:
                                 ocr_result = auto.find_text_element("白棉花", bbox)
                             else:
                                 ocr_result = auto.find_text_element(["white", "gossypium"], bbox)
-                        if isinstance(ocr_result, list):
-                            if len(ocr_result) >= 2:
-                                time.sleep(1)
-                                auto.click_element("mirror/road_in_mir/refuse_gift_assets.png",
-                                                   take_screenshot=True)
-                                sleep(1)
-                                auto.click_element("mirror/road_in_mir/refuse_gift_confirm_assets.png",
-                                                   take_screenshot=True)
-                                time.sleep(2)
-                                if retry() is False:
-                                    return False
-                                return
+                            if isinstance(ocr_result, list):
+                                if len(ocr_result) >= 2:
+                                    time.sleep(1)
+                                    auto.click_element("mirror/road_in_mir/refuse_gift_assets.png",
+                                                       take_screenshot=True)
+                                    sleep(1)
+                                    auto.click_element("mirror/road_in_mir/refuse_gift_confirm_assets.png",
+                                                       take_screenshot=True)
+                                    time.sleep(2)
+                                    if retry() is False:
+                                        return False
+                                    return
                         auto.mouse_click(button[0], button[1])
                         auto.click_element("mirror/road_in_mir/acquire_ego_gift_select_assets.png", model="normal")
                         time.sleep(2)
@@ -1028,8 +1029,8 @@ class Mirror:
                                 ocr_result = auto.find_text_element("白棉花", bbox)
                             else:
                                 ocr_result = auto.find_text_element(["white", "gossypium"], bbox)
-                        if ocr_result:
-                            continue
+                            if ocr_result:
+                                continue
                         if auto.find_element(f"mirror/road_in_mir/acquire_ego_gift/{self.system}.png", my_crop=bbox,
                                              threshold=0.85):
                             my_list.insert(0, button)

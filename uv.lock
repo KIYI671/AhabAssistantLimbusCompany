@@ -85,7 +85,7 @@ requires-dist = [
     { name = "pynput" },
     { name = "pyperclip" },
     { name = "pyside6", specifier = ">=6.9.2" },
-    { name = "pyside6-fluent-widgets", specifier = ">=1.8.7" },
+    { name = "pyside6-fluent-widgets", specifier = ">=1.9.1" },
     { name = "pyuac", specifier = "~=0.0.3" },
     { name = "pywin32" },
     { name = "rapidocr", specifier = ">=3.4.1" },
@@ -3461,30 +3461,30 @@ wheels = [
 
 [[package]]
 name = "pyside6-fluent-widgets"
-version = "1.8.7"
+version = "1.9.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "darkdetect" },
     { name = "pyside6" },
     { name = "pysidesix-frameless-window" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/aa/4e/5da209f42eca96587efb32305e90d681055ce70d6b93f6515142a81982fd/pyside6_fluent_widgets-1.8.7.tar.gz", hash = "sha256:d2e479b75521e23d82e745e71d6e681da1398e07ffb7de8dba800a48d54f4954", size = 1440578, upload-time = "2025-08-22T11:30:52.341Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/52/37/6522f7c9926e212204036d9cca467b9c2151ed9d4987b4f0f701c91a750a/pyside6_fluent_widgets-1.9.1.tar.gz", hash = "sha256:dc64be855b422ecba63893e71dc5b9753e3196da7e3bcf355e2796cf90c6cfac", size = 1442742, upload-time = "2025-10-12T09:50:09.6Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/53/44/19030810581d895f6918711128acdc9c5ecfea1a1ef269932686f3996652/pyside6_fluent_widgets-1.8.7-py3-none-any.whl", hash = "sha256:71c9149098a5ab50b5dea1d890d1b0d1b819f246ae478fc01ec451179bb3b569", size = 1533968, upload-time = "2025-08-22T11:30:49.197Z" },
+    { url = "https://files.pythonhosted.org/packages/72/d5/8326585b83ea7eb0e18eb1e7025fcd853ff63832ef4aec3719c489253e81/pyside6_fluent_widgets-1.9.1-py3-none-any.whl", hash = "sha256:9c56ba8fcdcdca2a388cb11871101ba642d085a2717c43b64f935ec23c6b1c69", size = 1536206, upload-time = "2025-10-12T09:50:05.921Z" },
 ]
 
 [[package]]
 name = "pysidesix-frameless-window"
-version = "0.7.3"
+version = "0.7.4"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "pycocoa", marker = "sys_platform == 'darwin'" },
     { name = "pyobjc", marker = "sys_platform == 'darwin'" },
     { name = "pywin32", marker = "sys_platform == 'win32'" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/9d/82/e5862a1823c15b62cfeabd3da0b6ea2007a0ca084dafe680b78f9827a92a/pysidesix_frameless_window-0.7.3.tar.gz", hash = "sha256:e9af71c9340e608a34596b8b5d5acebd818076815724d6d1db5ab814bc832844", size = 22769, upload-time = "2025-05-20T14:00:39.115Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/be/f2/dde32565af5ae10841f4288a22f71debb6bf529b6b8149f629042f31e557/pysidesix_frameless_window-0.7.4.tar.gz", hash = "sha256:1b14ee5bf5438d6f5823e9a108a9d3c04c096f7db733b75f7e91e009684b0be0", size = 22771, upload-time = "2025-10-10T13:17:32.024Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/36/a7/d06588105e8d3ede3e892871fa06d6e0365a7f88e42388f9fdbe61ccb77b/pysidesix_frameless_window-0.7.3-py3-none-any.whl", hash = "sha256:d39c17140bd0eef32bcf34d8697ab06244295709062db9f0b6b41f946ac5eb99", size = 30583, upload-time = "2025-05-20T14:00:37.045Z" },
+    { url = "https://files.pythonhosted.org/packages/3d/1e/5bfb71bb258d7fe5b6a89197ae1d8b318ea6895ba5e5b2cdabed0956b07d/pysidesix_frameless_window-0.7.4-py3-none-any.whl", hash = "sha256:26eca5f28e1e08ff8e619de6b8a8c19aa85fe3c07efc2bf05693015430c7ea68", size = 30595, upload-time = "2025-10-10T13:17:30.885Z" },
 ]
 
 [[package]]

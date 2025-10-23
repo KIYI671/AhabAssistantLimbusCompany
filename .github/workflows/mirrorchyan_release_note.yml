@@ -2,6 +2,10 @@ name: mirrorchyan_release_note
 
 on:
   workflow_dispatch:
+    inputs:
+        tag:
+            default: ''
+            required: false
   release:
     types: [edited]
 
@@ -14,6 +18,7 @@ jobs:
         uses: MirrorChyan/release-note-action@v1
         with:
           mirrorchyan_rid: AALC
+          version_name: ${{ inputs.tag }}
 
           upload_token: ${{ secrets.MirrorChyanUploadToken }}
           owner: KIYI671

@@ -1,10 +1,14 @@
 import time
 from time import sleep
 
+import cv2
+import numpy as np
+
 from module.automation import auto
 from module.config import cfg
 from module.decorator.decorator import begin_and_finish_time_log
 from module.logger import log
+from module.ocr import ocr
 from tasks import sins
 from tasks.base.retry import retry
 from tasks.event.event_handling import EventHandling
@@ -214,9 +218,16 @@ class Battle:
 
             if fail_count >= 5 or self.identify_keyword_turn is False:
                 # 如果多次识别不到战斗界面
-                turn_bbox = ImageUtils.get_bbox(ImageUtils.load_image("battle/turn_assets.png"))
-                turn_ocr_result = auto.find_text_element("turn", turn_bbox)
-                if turn_ocr_result is not False:
+                try:
+                    turn_bbox = ImageUtils.get_bbox(ImageUtils.load_image("battle/turn_assets.png"))
+                    sc = ImageUtils.crop(np.array(auto.screenshot), turn_bbox)
+                    sc = cv2.inRange(sc, 50, 255)
+                    result = ocr.run(sc)
+                    ocr_result = [result.txts[i] for i in range(len(result.txts))]
+                    ocr_result = "".join(ocr_result)
+                except:
+                    ocr_result = ''
+                if "turn" in ocr_result:
                     self._battle_operation(first_turn, defense_first_round, avoid_skill_3)
                     chance = self.INIT_CHANCE
                     waiting = self._update_wait_time(waiting, False, total_count)
@@ -232,9 +243,16 @@ class Battle:
             if chance < 5:
                 if not infinite_battle:
                     auto.mouse_to_blank()
-                turn_bbox = ImageUtils.get_bbox(ImageUtils.load_image("battle/turn_assets.png"))
-                turn_ocr_result = auto.find_text_element("turn", turn_bbox)
-                if turn_ocr_result is not False or auto.click_element("battle/turn_assets.png") or auto.find_element(
+                try:
+                    turn_bbox = ImageUtils.get_bbox(ImageUtils.load_image("battle/turn_assets.png"))
+                    sc = ImageUtils.crop(np.array(auto.screenshot), turn_bbox)
+                    sc = cv2.inRange(sc, 50, 255)
+                    result = ocr.run(sc)
+                    ocr_result = [result.txts[i] for i in range(len(result.txts))]
+                    ocr_result = "".join(ocr_result)
+                except:
+                    ocr_result = ''
+                if "turn" in ocr_result or auto.click_element("battle/turn_assets.png") or auto.find_element(
                         "battle/win_rate_assets.png") or auto.find_element("battle/win_rate_card.png", threshold=0.75):
                     self._battle_operation(first_turn, defense_first_round, avoid_skill_3)
                     chance = self.INIT_CHANCE

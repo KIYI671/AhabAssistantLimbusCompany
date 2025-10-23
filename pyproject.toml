@@ -10,7 +10,7 @@ version = "1.0.9"
 
 dependencies = [
     "pyside6>=6.9.2",
-    "pyside6-fluent-widgets>=1.8.7",
+    "pyside6-fluent-widgets>=1.9.1",
     "pyuac~=0.0.3",
     "pywin32",
     "PyAutoGUI",

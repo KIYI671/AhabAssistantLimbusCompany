@@ -1,3 +1,4 @@
+import os
 import sys
 
 from PySide6.QtCore import Qt, QFile, QTimer
@@ -482,6 +483,12 @@ class FarmingInterfaceRight(QWidget):
 
     def load_log_text(self):
         log_path = "./logs/user.log"
+        if not os.path.exists(log_path):
+            return
+        else:
+            file_size_mb = os.path.getsize(log_path) / (1024 * 1024)
+            if file_size_mb > 50:
+                os.remove(log_path)
         file = QFile(log_path)
         if not file.exists():
             return
