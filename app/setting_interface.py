@@ -154,7 +154,7 @@ class SettingInterface(ScrollArea):
             QT_TRANSLATE_NOOP("PushSettingCardMirrorchyan", '修改'),
             FIF.BOOK_SHELF,
             QT_TRANSLATE_NOOP("PushSettingCardMirrorchyan", "Mirror 酱 CDK"),
-            self.parent,
+            self.parent(),
             "mirrorchyan_cdk",
             parent=self.update_group,
         )

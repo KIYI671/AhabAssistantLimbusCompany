@@ -4,7 +4,7 @@ import re
 import subprocess
 from enum import Enum
 
-from PySide6.QtCore import Qt, QLocale
+from PySide6.QtCore import Qt, QLocale, QTimer
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QApplication, QHBoxLayout, QStackedWidget, QVBoxLayout, QLabel, QWidget
 from qfluentwidgets import Pivot, setThemeColor, ProgressRing
@@ -42,6 +42,7 @@ class MainWindow(FramelessWindow):
         self.setTitleBar(StandardTitleBar(self))
         self.setWindowIcon(QIcon('./assets/logo/my_icon_256X256.ico'))
         self.setWindowTitle(f"Ahab Assistant Limbus Company -  {cfg.version}")
+        self.setObjectName("MainWindow")
         setThemeColor("#9c080b")
         # self.hBoxLayout =QHBoxLayout(self)
         # self.test_interface = TestInterface(self)
@@ -65,10 +66,10 @@ class MainWindow(FramelessWindow):
         w, h = geometry.width(), geometry.height()
         self.move(w // 2 - self.width() // 2, h // 2 - self.height() // 2)
 
-        self.pivot = Pivot(self)
-        self.stackedWidget = QStackedWidget(self)
+        self.pivot = Pivot()
+        self.stackedWidget = QStackedWidget()
         self.vBoxLayout = QVBoxLayout(self)
-        self.HBoxLayout = QHBoxLayout(self)
+        self.HBoxLayout = QHBoxLayout()
         # self.stackedWidget.setStyleSheet("border: 1px solid black;")
         self.setStyleSheet("""
                             MainWindow {    
@@ -119,7 +120,7 @@ class MainWindow(FramelessWindow):
 
         self.set_ring()
 
-    def addSubInterface(self, widget: QLabel, objectName, text):
+    def addSubInterface(self, widget: QWidget, objectName, text):
         widget.setObjectName(objectName)
         # widget.setAlignment(Qt.AlignCenter)
         self.stackedWidget.addWidget(widget)
@@ -135,9 +136,8 @@ class MainWindow(FramelessWindow):
                 self.pivot.setCurrentItem("team_setting")
             else:
                 """切换页面（带越界保护）"""
-                self.addSubInterface(TeamSettingCard(num, self), 'team_setting', self.tr("队伍设置"))
-                list(self.pivot.items.values())[-1].click()
-                self.pivot.setCurrentItem("team_setting")
+                self.addSubInterface(TeamSettingCard(num), 'team_setting', self.tr("队伍设置"))
+                QTimer.singleShot(0, lambda: self.pivot.setCurrentItem("team_setting"))
         except Exception as e:
             log.error(f"【异常】switch_to_page 出错：{type(e).__name__}:{e}")
 

@@ -13,6 +13,7 @@ from module.config import cfg
 class TeamSettingCard(QFrame):
     def __init__(self, team_num=0, parent=None):
         super().__init__(parent)
+        self.setObjectName("TeamSettingCard")
         self.__init_widget()
         self.__init_card()
         self.__init_layout()
@@ -41,7 +42,7 @@ class TeamSettingCard(QFrame):
 
     def __init_widget(self):
         self.main_layout = QVBoxLayout(self)
-        self.scroll_general = ScrollArea(self)
+        self.scroll_general = ScrollArea()
         self.scroll_general.setWidgetResizable(True)
         self.scroll_general.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
 
@@ -64,8 +65,7 @@ class TeamSettingCard(QFrame):
         self.gift_system_list_2 = QHBoxLayout()
 
         self.custom_layout = ExpandSettingCard(icon=FIF.EDIT,
-                                               title=self.tr("自定义设置（设置存在冲突时，将根据优先级覆盖生效）"),
-                                               parent=self)
+                                               title=self.tr("自定义设置（设置存在冲突时，将根据优先级覆盖生效）"))
 
         self.setting_layout = QHBoxLayout()
 
@@ -119,9 +119,9 @@ class TeamSettingCard(QFrame):
 
         self.customize_settings_module = CustomizeSettingsModule()
 
-        self.cancel_button = PushButton(self.tr("取消"), self)
+        self.cancel_button = PushButton(self.tr("取消"))
         self.cancel_button.clicked.connect(self.cancel_team_setting)
-        self.confirm_button = PrimaryPushButton(self.tr("保存"), self)
+        self.confirm_button = PrimaryPushButton(self.tr("保存"))
         self.confirm_button.clicked.connect(self.save_team_setting)
 
     def __init_layout(self):
@@ -164,7 +164,10 @@ class TeamSettingCard(QFrame):
         self.layout_.addLayout(self.select_sinner_layout_2)
         self.layout_.addWidget(self.gift_system_layout)
         self.layout_.addWidget(self.custom_layout)
-        self.layout_.addLayout(self.setting_layout)
+
+        self.main_layout.addLayout(self.setting_layout)
+        self.main_layout.addSpacing(15)
+        self.setting_layout.setContentsMargins(10, 0, 10, 0)  # 手动对齐其他组件
 
         self.custom_layout.viewLayout.addWidget(self.customize_settings_module)
 
@@ -340,6 +343,7 @@ class TeamSettingCard(QFrame):
 class CustomizeSettingsModule(QFrame):
     def __init__(self, parent=None):
         super().__init__(parent)
+        self.setObjectName("CustomizeSettingsModule")
         self.main_layout = QVBoxLayout(self)
         self.__init_widget()
         self.__init_card()
@@ -349,35 +353,35 @@ class CustomizeSettingsModule(QFrame):
         self.retranslateUi()
 
     def __init_widget(self):
-        self.first_line_widget = QWidget(self)
+        self.first_line_widget = QWidget()
         self.first_line = QHBoxLayout(self.first_line_widget)
-        self.second_line_widget = QWidget(self)
+        self.second_line_widget = QWidget()
         self.second_line = QHBoxLayout(self.second_line_widget)
-        self.third_line_widget = QWidget(self)
+        self.third_line_widget = QWidget()
         self.third_line = QHBoxLayout(self.third_line_widget)
 
-        self.features_patch_widget_1 = QWidget(self)
+        self.features_patch_widget_1 = QWidget()
         self.features_patch_line_1 = QHBoxLayout(self.features_patch_widget_1)
 
-        self.star_layout = BaseSettingLayout(box_type=2, parent=self)
+        self.star_layout = BaseSettingLayout(box_type=2)
         self.star_layout.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
         self.star_layout.setMaximumHeight(150)
         self.star_layout.setMaximumWidth(950)
         self.star_list = QGridLayout()
 
-        self.fourth_line_widget = QWidget(self)
+        self.fourth_line_widget = QWidget()
         self.fourth_line = QHBoxLayout(self.fourth_line_widget)
-        self.features_patch_widget_2 = QWidget(self)
+        self.features_patch_widget_2 = QWidget()
         self.features_patch_line_2 = QVBoxLayout(self.features_patch_widget_2)
-        self.fifth_line_widget = QWidget(self)
+        self.fifth_line_widget = QWidget()
         self.fifth_line = QHBoxLayout(self.fifth_line_widget)
-        self.second_system_widget = QWidget(self)
+        self.second_system_widget = QWidget()
         self.second_system_layout = QVBoxLayout(self.second_system_widget)
         self.second_system_line1 = QHBoxLayout()
         self.second_system_line2 = QHBoxLayout()
-        self.seventh_line_widget = QWidget(self)
+        self.seventh_line_widget = QWidget()
         self.seventh_line = QHBoxLayout(self.seventh_line_widget)
-        self.eighth_line_widget = QWidget(self)
+        self.eighth_line_widget = QWidget()
         self.eighth_line = QHBoxLayout(self.eighth_line_widget)
         self.floor_shop = QHBoxLayout()
 
@@ -427,12 +431,12 @@ class CustomizeSettingsModule(QFrame):
 
         self.fixed_team_use = CheckBoxWithComboBox(
             "fixed_team_use", QT_TRANSLATE_NOOP("CheckBoxWithComboBox", "固定队伍用途"),
-            None, "fixed_team_use_select", parent=self
+            None, "fixed_team_use_select"
         )
         self.fixed_team_use.add_items(fixed_team_use)
         self.reward_cards = CheckBoxWithComboBox(
             "reward_cards", QT_TRANSLATE_NOOP("CheckBoxWithComboBox", "奖励卡优先度"),
-            None, "reward_cards_select", parent=self
+            None, "reward_cards_select"
         )
         self.reward_cards.add_items(reward_cards)
 
@@ -456,18 +460,18 @@ class CustomizeSettingsModule(QFrame):
 
         self.after_level_IV = CheckBoxWithComboBox(
             "after_level_IV", QT_TRANSLATE_NOOP("CheckBoxWithComboBox", "合成四级以后"),
-            None, "after_level_IV_select", parent=self
+            None, "after_level_IV_select"
         )
         self.after_level_IV.add_items(after_fuse_level_IV)
         self.shopping_strategy = CheckBoxWithComboBox(
             "shopping_strategy", QT_TRANSLATE_NOOP("CheckBoxWithComboBox", "购物策略"),
-            None, "shopping_strategy_select", parent=self
+            None, "shopping_strategy_select"
         )
         self.shopping_strategy.add_items(shopping_strategy)
 
         self.opening_items = CheckBoxWithComboBox(
             "opening_items", QT_TRANSLATE_NOOP("CheckBoxWithComboBox", "自选开局饰品"),
-            None, "opening_items_system", parent=self
+            None, "opening_items_system"
         )
         self.opening_items.add_items(all_systems)
         self.opening_items.add_combobox("opening_items_select")
@@ -475,7 +479,7 @@ class CustomizeSettingsModule(QFrame):
 
         self.second_system = CheckBoxWithComboBox(
             "second_system", QT_TRANSLATE_NOOP("CheckBoxWithComboBox", "第二体系"),
-            None, "second_system_select", parent=self
+            None, "second_system_select"
         )
         self.second_system.add_items(all_systems)
         self.second_system.add_combobox("second_system_setting")
@@ -500,7 +504,7 @@ class CustomizeSettingsModule(QFrame):
 
         self.skill_replacement = CheckBoxWithComboBox(
             "skill_replacement", QT_TRANSLATE_NOOP("CheckBoxWithComboBox", "技能替换"),
-            None, "skill_replacement_select", parent=self
+            None, "skill_replacement_select"
         )
         self.skill_replacement.add_items(skill_replacement_sinner)
         self.skill_replacement.add_combobox("skill_replacement_mode")
