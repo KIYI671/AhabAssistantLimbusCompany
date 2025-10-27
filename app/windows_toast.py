@@ -1,18 +1,39 @@
-from windows_toasts import (
-    InteractableWindowsToaster,
-    Toast,
-    ToastInputTextBox,
-    ToastInputSelectionBox,
-    ToastSelection,
-    ToastButton,
-    ToastDuration,
-    ToastDisplayImage,
-    ToastImagePosition,
-    ToastImage,
-    ToastButtonColour,
-    ToastActivatedEventArgs,
-    ToastAudio,
-)
+try:
+    from windows_toasts import (
+        InteractableWindowsToaster,
+        Toast,
+        ToastInputTextBox,
+        ToastInputSelectionBox,
+        ToastSelection,
+        ToastButton,
+        ToastDuration,
+        ToastDisplayImage,
+        ToastImagePosition,
+        ToastImage,
+        ToastButtonColour,
+        ToastActivatedEventArgs,
+        ToastAudio,
+    )
+    IMPORT_SUCCESS = True
+except ImportError:
+    IMPORT_SUCCESS = False
+    from typing import TYPE_CHECKING
+    if TYPE_CHECKING:
+        from windows_toasts import (
+            InteractableWindowsToaster,
+            Toast,
+            ToastInputTextBox,
+            ToastInputSelectionBox,
+            ToastSelection,
+            ToastButton,
+            ToastDuration,
+            ToastDisplayImage,
+            ToastImagePosition,
+            ToastImage,
+            ToastButtonColour,
+            ToastActivatedEventArgs,
+            ToastAudio,
+        )
 
 try:
     from ..module.logger import log  # 正常导入方式
@@ -88,8 +109,11 @@ def unregister_toast(appId: str = APPID):
 def _unregister_toast(appId: str):
     """实际注销行为"""
     keyPath = "SOFTWARE\\Classes\\AppUserModelId\\"
-    with winreg.OpenKey(winreg.HKEY_CURRENT_USER, keyPath) as uperKey:
-        winreg.DeleteKey(uperKey, appId)
+    try:
+        with winreg.OpenKey(winreg.HKEY_CURRENT_USER, keyPath) as uperKey:
+            winreg.DeleteKey(uperKey, appId)
+    except Exception as e:
+        log.error(f"通过注册表注销通知时出错: {type(e)}: {e}")
 
 
 def _send_template_toast(
@@ -253,6 +277,8 @@ def send_toast(
     Returns:
         bool: 发送是否成功
     """
+    if IMPORT_SUCCESS is False:
+        return True
     if template is not TemplateToast.NoneTemplate:
         title = QApplication.translate("WindowsToast", title)
         if isinstance(msg, str):
@@ -283,5 +309,5 @@ if __name__ == "__main__":
     )
     from time import sleep
 
-    sleep(5)
+    # sleep(5)
     # unregister_toast(APPID)
