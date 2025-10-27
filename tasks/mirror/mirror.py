@@ -442,6 +442,7 @@ class Mirror:
             if auto.find_element("mirror/claim_reward/complete_mirror_100%_assets.png") \
                     or auto.find_element("mirror/claim_reward/clear_assets.png"):
                 failed = False
+                log.debug("镜牢完成度100%，能够正常领取奖励")
             # 如果回到主界面，退出循环
             if auto.find_element("home/drive_assets.png"):
                 break
