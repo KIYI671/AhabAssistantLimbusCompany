@@ -15,7 +15,7 @@ try:
         ToastAudio,
     )
     IMPORT_SUCCESS = True
-except Exception:
+except ImportError:
     IMPORT_SUCCESS = False
     from typing import TYPE_CHECKING
     if TYPE_CHECKING:
@@ -309,5 +309,5 @@ if __name__ == "__main__":
     )
     from time import sleep
 
-    sleep(5)
+    # sleep(5)
     # unregister_toast(APPID)
