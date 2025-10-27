@@ -17,7 +17,7 @@ def get_day_of_week():
     day = now_time.isoweekday()  # isoweekday() 返回 1（周一）~7（周日）
     hour = now_time.hour  # 小时（0-23）
 
-    if hour < 6 & day != 1:  # 如果是凌晨0点到6点之间，且不是周一，则视为前一天 （修复周一凌晨判断传参为0的bug）
+    if hour < 6 and day != 1:  # 如果是凌晨0点到6点之间，且不是周一，则视为前一天 （修复周一凌晨判断传参为0的bug）
         day -= 1
     else:
         day = 7
