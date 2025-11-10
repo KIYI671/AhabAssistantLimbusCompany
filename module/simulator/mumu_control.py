@@ -12,7 +12,7 @@ from time import sleep
 import cv2
 import numpy as np
 from adbutils import adb, AdbError
-
+from utils.utils import run_as_user
 from module.config import cfg
 from module.logger import log
 from module.simulator import insert_swipe
@@ -292,7 +292,7 @@ class MumuControl:
         try:
             # 使用mumumanager控制模拟器开启与关闭
             command = [self.exe_path, "control", "-v", str(self.multi_instance_number), "launch"]
-            subprocess.run(command)
+            run_as_user(command)
             # 等待模拟器启动完成
             for _ in range(cfg.start_emulator_timeout):
                 time.sleep(1)
