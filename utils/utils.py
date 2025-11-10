@@ -201,12 +201,12 @@ def decrypt_string(encrypted_b64: str, entropy: bytes = b'AALC') -> str:
     # 返回原始字符串
     return decrypted_data[1].decode('utf-8')
 
-def run_as_user(command:list[str]) -> subprocess.CompletedProcess:
+def run_as_user(command:list[str], **kwargs) -> subprocess.CompletedProcess:
     """使用用户权限运行命令"""
     
     cmd_command = ["cmd", "/c"]
     cmd_command.extend(command)
     
-    result = subprocess.run(cmd_command)
+    result = subprocess.run(cmd_command, **kwargs)
 
     return result
