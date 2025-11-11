@@ -11,7 +11,8 @@ from qfluentwidgets import Pivot, setThemeColor, ProgressRing
 from qfluentwidgets.components.widgets.frameless_window import FramelessWindow
 from qframelesswindow import StandardTitleBar
 
-from app import mediator
+from app import mediator, AnnouncementStatus
+from app.announcement_board import AnnouncementBoard, Announcement, AnnouncementThread
 from app.card.messagebox_custom import MessageBoxWarning, MessageBoxConfirm
 from app.farming_interface import FarmingInterface
 from app.language_manager import LanguageManager
@@ -119,6 +120,8 @@ class MainWindow(FramelessWindow):
 
         self.set_ring()
 
+        self.show_announcement_board()
+
     def addSubInterface(self, widget: QLabel, objectName, text):
         widget.setObjectName(objectName)
         # widget.setAlignment(Qt.AlignCenter)
@@ -189,7 +192,7 @@ class MainWindow(FramelessWindow):
         mediator.warning.connect(self.show_warning)
 
     def set_ring(self):
-        self.progress_ring.raise_() # 保持最上层显示
+        self.progress_ring.raise_()  # 保持最上层显示
         self.progress_ring.setValue(0)
         self.progress_ring.setTextVisible(True)
         self.progress_ring.setFixedSize(80, 80)
@@ -240,3 +243,29 @@ class MainWindow(FramelessWindow):
 
         if "team_setting" in list(self.pivot.items.keys()):
             self.pivot.setItemText("team_setting", self.tr("队伍设置"))
+
+    def show_announcement_board(self):
+
+        def handler_update(status):
+            """
+            公告处理函数，根据不同的公告状态执行不同的操作。
+            :param status: 公告状态。
+            """
+            if status == AnnouncementStatus.ANNO_AVAILABLE:
+                # 当有新公告时，弹出公告栏
+                messages_box = AnnouncementBoard(
+                    self.announcement_thread.announcement,
+                    self.window()
+                )
+                messages_box.show()
+                messages_box.setDefault(0)
+
+        try:
+            # 创建一个公告线程实例
+            self.announcement_thread = AnnouncementThread()
+            # 将公告处理函数连接到更新线程的信号
+            self.announcement_thread.AnnouncementSignal.connect(handler_update)
+            # 启动公告线程
+            self.announcement_thread.start()
+        except Exception as e:
+            log.error(f"show_announcement_board 出错：{e}")

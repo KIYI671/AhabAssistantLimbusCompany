@@ -8,6 +8,8 @@ language_in_game: en # 游戏语言
 after_completion: 0 # 脚本结束后的操作
 language_in_program: '' # 程序语言
 
+announcement: 1715990400 # 公告板时间戳
+
 auto_hard_mirror: False # 周四自动切换困难镜牢
 last_auto_change : 1715990400 # 上次自动切换困难镜牢的时间戳
 hard_mirror_chance : 0 # 困难镜牢剩余次数
