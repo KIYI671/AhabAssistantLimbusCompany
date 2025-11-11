@@ -527,12 +527,12 @@ class Mirror:
                                         break
                             except:
                                 continue
-                        if self.pass_coins:
-                            msg = f"本次镜牢领取{self.pass_coins}个通行证经验"
-                            log.info(msg)
-                        else:
-                            msg = "无法识别通行证经验数量，可能是UI发生变化"
-                            log.warning(msg)
+                    if self.pass_coins:
+                        msg = f"本次镜牢领取{self.pass_coins}个通行证经验"
+                        log.info(msg)
+                    else:
+                        msg = "无法识别通行证经验数量，可能是UI发生变化"
+                        log.warning(msg)
                     if auto.click_element("mirror/claim_reward/use_enkephalin_assets.png", take_screenshot=True):
                         sleep(1)
                     continue
