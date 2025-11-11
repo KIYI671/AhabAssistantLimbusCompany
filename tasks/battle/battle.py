@@ -185,8 +185,16 @@ class Battle:
 
             if auto.find_element("battle/dead_all.png"):
                 dead_select = auto.find_element("battle/dead_all.png", find_type="image_with_multiple_targets")
-                dead_select = sorted(dead_select, key=lambda y: y[1])
-                auto.mouse_click(dead_select[1][0], dead_select[1][1])
+                if len(dead_select) == 3:
+                    dead_select = sorted(dead_select, key=lambda y: y[1])
+                    auto.mouse_click(dead_select[1][0], dead_select[1][1])
+                else:
+                    confirm_button = auto.find_element("battle/dead_all_confirm_assets.png")
+                    try:
+                        my_scale = cfg.set_win_size / 1440
+                        auto.mouse_click(confirm_button[0] + 200 * my_scale, confirm_button[1] - 350 * my_scale)
+                    except:
+                        continue
 
                 auto.click_element("battle/dead_all_confirm_assets.png")
                 sleep(1)
