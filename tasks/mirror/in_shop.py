@@ -1133,11 +1133,14 @@ class Shop:
                     continue
                 if auto.click_element("mirror/shop/leave_assets.png"):
                     continue
+                if auto.click_element("mirror/shop/heal_sinner/heal_sinner_return_assets.png"):
+                    continue
                 loop_count -= 1
                 if loop_count < 20:
                     auto.model = "normal"
                 if loop_count < 10:
                     auto.model = 'aggressive'
+                    auto.mouse_click_blank(times=3)
                 if loop_count < 0:
                     log.error("无法退出商店,尝试回到初始界面")
                     back_init_menu()
