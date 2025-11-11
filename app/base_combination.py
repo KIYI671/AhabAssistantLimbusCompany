@@ -564,23 +564,25 @@ class PushSettingCardDate(BasePushSettingCard):
 
 class PushSettingCardChance(BasePushSettingCard):
 
-    def __init__(self, text, icon: Union[str, QIcon, FluentIconBase], title, content=None, config_name: str = None,
+    def __init__(self, text, icon: Union[str, QIcon, FluentIconBase], title, max_value=3, content=None,
+                 config_name: str = None,
                  parent=None):
         super().__init__(text, icon, title, content, parent)
         self.config_name = config_name
+        self.max_value = max_value
         self.line_text = LineEdit()
         self.line_text.setAlignment(Qt.AlignCenter)
         self.line_text.setReadOnly(True)
-        self.line_text.setMaximumWidth(60)
+        self.line_text.setMaximumWidth(100)
         self.line_text.setText(str(cfg.get_value(self.config_name)))
         current_count = self.hBoxLayout.count()
         self.hBoxLayout.insertWidget(current_count - 2, self.line_text)
         self.button.clicked.connect(self.__onclicked)
 
     def __onclicked(self):
-        message_box = MessageBoxSpinbox(self.tr(self.title), self.window())
+        message_box = MessageBoxSpinbox(self.tr(self.title), self.window(), self.max_value)
         if message_box.exec():
-            cfg.set_value(f"hard_mirror_chance", int(message_box.getValue()))
+            cfg.set_value(f"{self.config_name}", int(message_box.getValue()))
             self.line_text.setText(str(message_box.getValue()))
 
 
@@ -646,8 +648,8 @@ class TextProgressBar(ProgressBar):
 
             painter.setPen(QColor(255, 255, 255, 155))
             offsets = [(-1, -1), (-1, 0), (-1, 1),
-                    (0, -1),         (0, 1),
-                    (1, -1),  (1, 0), (1, 1)]
+                       (0, -1), (0, 1),
+                       (1, -1), (1, 0), (1, 1)]
 
             for dx, dy in offsets:
                 rect = self.rect().translated(dx, dy)

@@ -1,3 +1,4 @@
+import time
 from ctypes import windll
 from PIL import Image
 from module.logger import log
@@ -20,6 +21,19 @@ class ScreenShot:
         Returns:
             PIL.Image: 截图图像
         """
+        if cfg.simulator:
+            if cfg.simulator_type ==0:
+                try:
+                    return ScreenShot.mumu_screenshot(gray)
+                except Exception as e:
+                    log.debug(f"MUMU截图报错 {type(e).__name__}: {e}")
+                    return None
+            elif cfg.simulator_type ==10:
+                try:
+                    return ScreenShot.adb_screenshot(gray)
+                except Exception as e:
+                    log.debug(f"adb截图报错 {type(e).__name__}: {e}")
+                    return None
         if cfg.background_click:
             try:
                 return ScreenShot.background_screenshot(gray)
@@ -224,3 +238,48 @@ class ScreenShot:
             log.info("截图性能测试失败")
             log.debug(f"截图性能测试报错: {e}")
             return False, 0.0
+
+    @staticmethod
+    def mumu_screenshot(gray: bool = True) -> Image.Image:
+        """
+        截图
+
+        Args:
+            gray (bool): 是否转换为灰度图，默认为True
+
+        Returns:
+            Image.Image: 截图图像
+        """
+        from module.simulator.mumu_control import MumuControl
+        if MumuControl.connection_device is not None:
+            image = MumuControl.connection_device.screenshot()
+            mumu_image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
+            mumu_image = Image.fromarray(mumu_image)
+            if gray:
+                mumu_image = mumu_image.convert("L")
+            return mumu_image
+        else:
+            log.error("未连接到MuMu模拟器")
+            raise ConnectionError("未连接到MuMu模拟器")
+
+    @staticmethod
+    def adb_screenshot(gray: bool = True) -> Image.Image:
+        """
+        截图
+
+        Args:
+            gray (bool): 是否转换为灰度图，默认为True
+
+        Returns:
+            Image.Image: 截图图像
+        """
+        from module.simulator.simulator_control import SimulatorControl
+        if SimulatorControl.connection_device is not None:
+            image = SimulatorControl.connection_device.screenshot()
+            image = Image.fromarray(image)
+            if gray:
+                image = image.convert("L")
+            return image
+        else:
+            log.error("未连接到adb设备")
+            raise ConnectionError("未连接到adb设备")

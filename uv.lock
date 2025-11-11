@@ -11,10 +11,29 @@ resolution-markers = [
 overrides = [{ name = "opencv-python", marker = "python_full_version < '0'" }]
 
 [[package]]
+name = "adbutils"
+version = "2.10.2"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "deprecation" },
+    { name = "pillow" },
+    { name = "requests" },
+    { name = "retry2" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/00/fa/8fe6bd60e17fdb7586822f0bdd6233488d370c1e523adfacf58741514562/adbutils-2.10.2.tar.gz", hash = "sha256:353d2d4ca6c0b76b53c717c41f2ca10f3cf2d0de6aa72b3e2d2f7da19bddc495", size = 188780, upload-time = "2025-09-08T09:13:46.694Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/d0/9b/85b83ddbb007c7de9c4cf1c17250bc83b6da3c9c04c6ff6ec5614a97f88a/adbutils-2.10.2-py3-none-macosx_10_9_intel.macosx_10_9_x86_64.macosx_10_10_intel.macosx_10_10_x86_64.whl", hash = "sha256:24da344f0c3668ed5edfdd17103900ae4c418b0dab3e2c8c7826a27b1fe2f811", size = 6707192, upload-time = "2025-09-08T09:13:40.104Z" },
+    { url = "https://files.pythonhosted.org/packages/8b/8d/3941093da5514f8d63808ac1e543af382f10f1f5aa8fb1f4bc17a25c6182/adbutils-2.10.2-py3-none-manylinux1_x86_64.whl", hash = "sha256:73439db888a2576c7f63d2d650dced474d9260db75d222ed7de922b15c57a531", size = 3578148, upload-time = "2025-09-08T09:13:42.721Z" },
+    { url = "https://files.pythonhosted.org/packages/0c/5d/502b336df134180e1792b9a2feccf2d8dedfdb68d8d5eee57a77c970c182/adbutils-2.10.2-py3-none-win32.whl", hash = "sha256:485832408daf246c35bba69212c519514ddd6908d04998230c394f2feb964502", size = 3338767, upload-time = "2025-09-08T09:13:44.237Z" },
+    { url = "https://files.pythonhosted.org/packages/9c/8d/52d0ec236ca354bf03f9ae9c2263ee95e989ba02fb749f105a6b938e4122/adbutils-2.10.2-py3-none-win_amd64.whl", hash = "sha256:e2aa8e0b8a07bfe41a49f470f981b8a3d17b6955415a1c168a4d397bc4bc5036", size = 3338770, upload-time = "2025-09-08T09:13:45.419Z" },
+]
+
+[[package]]
 name = "ahab-assistant-limbus-company"
 version = "1.0.9"
 source = { virtual = "." }
 dependencies = [
+    { name = "adbutils" },
     { name = "colorlog" },
     { name = "concurrent-log-handler" },
     { name = "linkify-it-py" },
@@ -49,6 +68,7 @@ dev = [
 
 [package.metadata]
 requires-dist = [
+    { name = "adbutils", specifier = ">=2.10.2" },
     { name = "colorlog", specifier = ">=6.9.0" },
     { name = "concurrent-log-handler", specifier = ">=0.9.28" },
     { name = "linkify-it-py" },
@@ -65,7 +85,7 @@ requires-dist = [
     { name = "pynput" },
     { name = "pyperclip" },
     { name = "pyside6", specifier = ">=6.9.2" },
-    { name = "pyside6-fluent-widgets", specifier = ">=1.8.7" },
+    { name = "pyside6-fluent-widgets", specifier = ">=1.9.1" },
     { name = "pyuac", specifier = "~=0.0.3" },
     { name = "pywin32" },
     { name = "rapidocr", specifier = ">=3.4.1" },
@@ -208,6 +228,18 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/43/fa/6d96a0978d19e17b68d634497769987b16c8f4cd0a7a05048bec693caa6b/decorator-5.2.1.tar.gz", hash = "sha256:65f266143752f734b0a7cc83c46f4618af75b8c5911b00ccb61d0ac9b6da0360", size = 56711, upload-time = "2025-02-24T04:41:34.073Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/4e/8c/f3147f5c4b73e7550fe5f9352eaa956ae838d5c51eb58e7a25b9f3e2643b/decorator-5.2.1-py3-none-any.whl", hash = "sha256:d316bb415a2d9e2d2b3abcc4084c6502fc09240e292cd76a76afc106a1c8e04a", size = 9190, upload-time = "2025-02-24T04:41:32.565Z" },
+]
+
+[[package]]
+name = "deprecation"
+version = "2.1.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "packaging" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/5a/d3/8ae2869247df154b64c1884d7346d412fed0c49df84db635aab2d1c40e62/deprecation-2.1.0.tar.gz", hash = "sha256:72b3bde64e5d778694b0cf68178aed03d15e15477116add3fb773e581f9518ff", size = 173788, upload-time = "2020-04-20T14:23:38.738Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/02/c3/253a89ee03fc9b9682f1541728eb66db7db22148cd94f89ab22528cd1e1b/deprecation-2.1.0-py2.py3-none-any.whl", hash = "sha256:a10811591210e1fb0e768a8c25517cabeabcba6f0bf96564f8ff45189f90b14a", size = 11178, upload-time = "2020-04-20T14:23:36.581Z" },
 ]
 
 [[package]]
@@ -3429,30 +3461,30 @@ wheels = [
 
 [[package]]
 name = "pyside6-fluent-widgets"
-version = "1.8.7"
+version = "1.9.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "darkdetect" },
     { name = "pyside6" },
     { name = "pysidesix-frameless-window" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/aa/4e/5da209f42eca96587efb32305e90d681055ce70d6b93f6515142a81982fd/pyside6_fluent_widgets-1.8.7.tar.gz", hash = "sha256:d2e479b75521e23d82e745e71d6e681da1398e07ffb7de8dba800a48d54f4954", size = 1440578, upload-time = "2025-08-22T11:30:52.341Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/52/37/6522f7c9926e212204036d9cca467b9c2151ed9d4987b4f0f701c91a750a/pyside6_fluent_widgets-1.9.1.tar.gz", hash = "sha256:dc64be855b422ecba63893e71dc5b9753e3196da7e3bcf355e2796cf90c6cfac", size = 1442742, upload-time = "2025-10-12T09:50:09.6Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/53/44/19030810581d895f6918711128acdc9c5ecfea1a1ef269932686f3996652/pyside6_fluent_widgets-1.8.7-py3-none-any.whl", hash = "sha256:71c9149098a5ab50b5dea1d890d1b0d1b819f246ae478fc01ec451179bb3b569", size = 1533968, upload-time = "2025-08-22T11:30:49.197Z" },
+    { url = "https://files.pythonhosted.org/packages/72/d5/8326585b83ea7eb0e18eb1e7025fcd853ff63832ef4aec3719c489253e81/pyside6_fluent_widgets-1.9.1-py3-none-any.whl", hash = "sha256:9c56ba8fcdcdca2a388cb11871101ba642d085a2717c43b64f935ec23c6b1c69", size = 1536206, upload-time = "2025-10-12T09:50:05.921Z" },
 ]
 
 [[package]]
 name = "pysidesix-frameless-window"
-version = "0.7.3"
+version = "0.7.4"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "pycocoa", marker = "sys_platform == 'darwin'" },
     { name = "pyobjc", marker = "sys_platform == 'darwin'" },
     { name = "pywin32", marker = "sys_platform == 'win32'" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/9d/82/e5862a1823c15b62cfeabd3da0b6ea2007a0ca084dafe680b78f9827a92a/pysidesix_frameless_window-0.7.3.tar.gz", hash = "sha256:e9af71c9340e608a34596b8b5d5acebd818076815724d6d1db5ab814bc832844", size = 22769, upload-time = "2025-05-20T14:00:39.115Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/be/f2/dde32565af5ae10841f4288a22f71debb6bf529b6b8149f629042f31e557/pysidesix_frameless_window-0.7.4.tar.gz", hash = "sha256:1b14ee5bf5438d6f5823e9a108a9d3c04c096f7db733b75f7e91e009684b0be0", size = 22771, upload-time = "2025-10-10T13:17:32.024Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/36/a7/d06588105e8d3ede3e892871fa06d6e0365a7f88e42388f9fdbe61ccb77b/pysidesix_frameless_window-0.7.3-py3-none-any.whl", hash = "sha256:d39c17140bd0eef32bcf34d8697ab06244295709062db9f0b6b41f946ac5eb99", size = 30583, upload-time = "2025-05-20T14:00:37.045Z" },
+    { url = "https://files.pythonhosted.org/packages/3d/1e/5bfb71bb258d7fe5b6a89197ae1d8b318ea6895ba5e5b2cdabed0956b07d/pysidesix_frameless_window-0.7.4-py3-none-any.whl", hash = "sha256:26eca5f28e1e08ff8e619de6b8a8c19aa85fe3c07efc2bf05693015430c7ea68", size = 30595, upload-time = "2025-10-10T13:17:30.885Z" },
 ]
 
 [[package]]
@@ -3576,6 +3608,17 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/c9/74/b3ff8e6c8446842c3f5c837e9c3dfcfe2018ea6ecef224c710c85ef728f4/requests-2.32.5.tar.gz", hash = "sha256:dbba0bac56e100853db0ea71b82b4dfd5fe2bf6d3754a8893c3af500cec7d7cf", size = 134517, upload-time = "2025-08-18T20:46:02.573Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/1e/db/4254e3eabe8020b458f1a747140d32277ec7a271daf1d235b70dc0b4e6e3/requests-2.32.5-py3-none-any.whl", hash = "sha256:2462f94637a34fd532264295e186976db0f5d453d1cdd31473c85a6a161affb6", size = 64738, upload-time = "2025-08-18T20:46:00.542Z" },
+]
+
+[[package]]
+name = "retry2"
+version = "0.9.5"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "decorator" },
+]
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/97/49/1cae6d9b932378cc75f902fa70648945b7ea7190cb0d09ff83b47de3e60a/retry2-0.9.5-py2.py3-none-any.whl", hash = "sha256:f7fee13b1e15d0611c462910a6aa72a8919823988dd0412152bc3719c89a4e55", size = 6013, upload-time = "2023-01-11T21:49:08.397Z" },
 ]
 
 [[package]]

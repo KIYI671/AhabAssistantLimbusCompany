@@ -7,7 +7,7 @@ from enum import Enum
 from PySide6.QtCore import Qt, QLocale
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QApplication, QHBoxLayout, QStackedWidget, QVBoxLayout, QLabel, QWidget
-from qfluentwidgets import Pivot, setThemeColor, ProgressRing
+from qfluentwidgets import Pivot, setThemeColor, ProgressRing, qconfig
 from qfluentwidgets.components.widgets.frameless_window import FramelessWindow
 from qframelesswindow import StandardTitleBar
 
@@ -39,8 +39,30 @@ class Language(Enum):
 class MainWindow(FramelessWindow):
     def __init__(self):
         super().__init__()
+
+        font_families = [
+            "Segoe UI",  # Windows 现代UI字体
+            "Microsoft YaHei",  # 微软雅黑
+            "微软雅黑",  # 微软雅黑中文名
+            "Noto Sans CJK SC",  # 跨平台中文字体
+            "sans-serif",  # 最后回退到无衬线字体
+            "SansSerif",  # 无衬线字体另一个名称
+        ]
+        qconfig.fontFamilies.value = font_families
+
+        title_bar = StandardTitleBar(self)
+        title_bar.titleLabel.setStyleSheet("""
+            QLabel{
+                background: transparent;
+                font-family: "Segoe UI", "Microsoft YaHei", "微软雅黑", "PingFang SC", "Hiragino Sans GB", sans-serif;
+                font-size: 13px;
+                padding: 0 4px
+            }
+        """)
+
+
         # 设置标准标题栏，如果不设置则无法展示标题
-        self.setTitleBar(StandardTitleBar(self))
+        self.setTitleBar(title_bar)
         self.setWindowIcon(QIcon('./assets/logo/my_icon_256X256.ico'))
         self.setWindowTitle(f"Ahab Assistant Limbus Company -  {cfg.version}")
         setThemeColor("#9c080b")
