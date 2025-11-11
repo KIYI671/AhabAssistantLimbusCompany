@@ -1,4 +1,5 @@
 import base64
+import subprocess
 from datetime import datetime, timedelta, time
 from zoneinfo import ZoneInfo  # Python 3.9+ 内置模块
 
@@ -199,3 +200,13 @@ def decrypt_string(encrypted_b64: str, entropy: bytes = b'AALC') -> str:
         return encrypted_b64
     # 返回原始字符串
     return decrypted_data[1].decode('utf-8')
+
+def run_as_user(command:list[str], **kwargs) -> subprocess.CompletedProcess:
+    """使用用户权限运行命令"""
+    
+    cmd_command = ["cmd", "/c"]
+    cmd_command.extend(command)
+    
+    result = subprocess.run(cmd_command, **kwargs)
+
+    return result
