@@ -1,5 +1,6 @@
 import time
 from time import sleep
+from datetime import datetime
 
 import cv2
 import numpy as np
@@ -390,7 +391,7 @@ class Battle:
 
             gear_left = auto.find_element("battle/gear_left.png")
 
-            gear_1 = [gear_left[0] + 100 * scale, gear_left[1] - 35 * scale]
+            gear_1 = [gear_left[0] + 94 * scale, gear_left[1] - 37 * scale]
             gear_right = auto.find_element("battle/gear_right.png")
             gear_2 = [gear_right[0] - 100 * scale, gear_right[1]]
 
