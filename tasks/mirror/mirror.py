@@ -495,6 +495,7 @@ class Mirror:
                                 position = bonuses.pop(-1)
                                 auto.mouse_click(position[0], position[1])
 
+                    auto.take_screenshot()
                     coins_bbox = ImageUtils.get_bbox(ImageUtils.load_image("mirror/claim_reward/coins_bbox.png"))
                     for _ in range(5):
                         try:
