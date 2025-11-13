@@ -41,6 +41,8 @@ def select_theme_pack(hard_switch=False, floor=None):
                                    max(normal_bbox[2], hard_bbox[2]),
                                    max(normal_bbox[3], hard_bbox[3])]
                 ocr_result = auto.find_text_element(None, my_crop=difficulty_bbox, only_text=True)
+                if not isinstance(ocr_result, str):
+                    continue
                 if "normal" in ocr_result:
                     difficulty = "normal"
                 elif "hard" in ocr_result:
