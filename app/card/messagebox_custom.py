@@ -103,6 +103,8 @@ class MessageBoxConfirm(MessageBox):
         self.buttonLayout.addWidget(self.cancelButton, 1, Qt.AlignVCenter)
         self.buttonLayout.addWidget(self.yesButton, 1, Qt.AlignVCenter)
         self.textLayout.addWidget(self.contentLabel, 0, Qt.AlignTop)
+        self.yesButton.setText(self.tr('确认'))
+        self.cancelButton.setText(self.tr('取消'))
 
     def open_url(self, url):
         QDesktopServices.openUrl(QUrl(url))

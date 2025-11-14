@@ -44,11 +44,12 @@ class FarmingInterface(QWidget):
         self.setViewportMargins(0, 0, 0, 5)
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)"""
 
-        
-        self.hbox_layout_left.addWidget(FarmingInterfaceLeft())
-        self.hbox_layout_center.addWidget(FarmingInterfaceCenter())
-        self.hbox_layout_right.addWidget(FarmingInterfaceRight())
-
+        self.interface_left = FarmingInterfaceLeft()
+        self.interface_center = FarmingInterfaceCenter()
+        self.interface_right = FarmingInterfaceRight()
+        self.hbox_layout_left.addWidget(self.interface_left)
+        self.hbox_layout_center.addWidget(self.interface_center)
+        self.hbox_layout_right.addWidget(self.interface_right)
         # self.setStyleSheet("border: 1px solid black;")
         # 启动快捷键监听
         self.listener = keyboard.GlobalHotKeys(

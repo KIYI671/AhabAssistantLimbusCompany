@@ -120,6 +120,23 @@ class MainWindow(FramelessWindow):
 
         self.set_ring()
 
+    def closeEvent(self, e):
+        if (
+            self.farming_interface.interface_left.my_script is not None
+            and self.farming_interface.interface_left.my_script.running
+        ):
+            message_box = MessageBoxConfirm(
+                self.tr("有正在进行的任务"),
+                self.tr("脚本正在运行中，确定要退出程序吗？"),
+                self.window()
+            )
+            if message_box.exec():
+                self.farming_interface.interface_left.my_script.terminate()
+            else:
+                e.ignore()
+                return
+        return super().closeEvent(e)
+
     def addSubInterface(self, widget: QWidget, objectName, text):
         widget.setObjectName(objectName)
         # widget.setAlignment(Qt.AlignCenter)
