@@ -290,6 +290,13 @@ class MumuControl:
 
     def start(self):
         try:
+            keptlive = self.get_app_keptlive()
+            if keptlive:
+                log.info(f"检测到启用了应用后台保活功能，即将关闭")
+                if self.get_launch_status() == 'start_finished':
+                    log.info(f"检测到模拟器处于启用状态，为关闭应用后台保活，需执行重启")
+                    self.stop()
+                self.disable_app_keptlive()
             # 使用mumumanager控制模拟器开启与关闭
             command = [self.exe_path, "control", "-v", str(self.multi_instance_number), "launch"]
             run_as_user(command)
@@ -346,11 +353,23 @@ class MumuControl:
             self.mumu_control_api_backend()
             self.get_nemu_client_path()
 
+    def get_app_keptlive(self):
+        # 获取应用保活状态
+        try:
+            command = f""" "{self.exe_path}" setting -v {self.multi_instance_number} -k app_keptlive"""
+            proc = subprocess.run(command, shell=True, universal_newlines=True, capture_output=True)
+            proc_result = json.loads(proc.stdout.strip())
+            result = bool(proc_result["app_keptlive"] == "true")
+            return result
+        except:
+            self.mumu_control_api_backend()
+            return self.get_app_keptlive()
+
     def disable_app_keptlive(self):
         # 关闭后台保活
         try:
             command = f""" "{self.exe_path}" setting -v {self.multi_instance_number} -k app_keptlive -val false"""
-            subprocess.run(command, universal_newlines=True, capture_output=True)
+            subprocess.run(command, shell=True, universal_newlines=True, capture_output=True)
         except:
             self.mumu_control_api_backend()
             self.disable_app_keptlive()
