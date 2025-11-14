@@ -524,6 +524,12 @@ class MumuControl:
         self.width = width_ptr.contents.value
         self.height = height_ptr.contents.value
         log.debug(f'获取到模拟器分辨率: {self.width} x {self.height}')
+        if int(cfg.set_win_size) != int(self.height):
+            if self.height in (720, 900, 1080, 1440, 1800, 2160):
+                cfg.set_value('set_win_size', self.height)
+                from module.automation import auto
+                auto.clear_img_cache()
+                log.debug(f'自动将AALC识别的分辨率适配模拟器设置: {self.width} x {self.height}')
 
     def screenshot(self, timeout=0.15):
         """
