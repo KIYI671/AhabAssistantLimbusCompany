@@ -240,7 +240,12 @@ class MumuControl:
     def start_game(self):
         if self.device is None:
             self.device = adb.device(self.get_mumu_adb_port())
-        self.device.app_start(self.game_package_name)
+        try:
+            self.device.app_start(self.game_package_name)
+        except:
+            log.error(f'启动游戏失败，请确认是否安装了Limbus Company')
+            sleep(10)
+            self.start_game()
 
     def mumu_control_api_backend(self):
         if os.name == 'nt':
