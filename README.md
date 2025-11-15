@@ -22,48 +22,47 @@
     <img alt="platform" src="https://img.shields.io/badge/platform-Windows-blue?style=flat-square&color=4096d8">
 </div>
 
-  **简体中文** | [English](assets/doc/en/README_EN.md)
+**简体中文** | [English](assets/doc/en/README_EN.md)
 
-  遇到问题，请在提问前查看：[FAQ](assets/doc/zh/FAQ.md)
+遇到问题，请在提问前查看：[FAQ](assets/doc/zh/FAQ.md)
 
   ---
 
-  本项目为非科班出身、非计算机从业人员心血来潮的作品
+本项目为非科班出身、非计算机从业人员心血来潮的作品
 
-  是一个掺杂了第三方项目、基于图像识别和文字识别技术实现的
-  
-  手游Limbus Company的PC端小助手
-  
-  可以帮助玩家自动完成日常任务、镜牢挑战等操作，一键护肝（~~除了写代码的~~）
+是一个掺杂了第三方项目、基于图像识别和文字识别技术实现的
 
-  此项目旨在帮助大家减少Limbus游玩过程中反复枯燥的部分，从而更好地享受里面精彩的剧情、演出和机制
+手游Limbus Company的PC端小助手
+
+可以帮助玩家自动完成日常任务、镜牢挑战等操作，一键护肝（~~除了写代码的~~）
+
+此项目旨在帮助大家减少Limbus游玩过程中反复枯燥的部分，从而更好地享受里面精彩的剧情、演出和机制
 
 </div>
-
 
 ## 功能简介
 
 - **自动日常**：自动刷经验本、纽本，领取日常/周常奖励，领取邮件
 - **狂气换体**：自动识别并使用狂气换体力，自动合成脑啡肽模块（饼）
 - **自动镜牢**：全自动坐牢
-  - 支持多队伍轮换、循环战斗
-  - 支持自定义队伍饰品体系选择
-  - 支持镜牢主题包根据权重自动识别筛选
-  - 配置智能路线规划（优先选择事件节点）
+    - 支持多队伍轮换、循环战斗
+    - 支持自定义队伍饰品体系选择
+    - 支持镜牢主题包根据权重自动识别筛选
+    - 配置智能路线规划（优先选择事件节点）
 
 - 仿MAA式GUI
 - 自动检查版本更新
-  - 自动下载最新版本
-  - 自动执行更新操作
+    - 自动下载最新版本
+    - 自动执行更新操作
 - 所见即所得，操作简单
 - 支持多分辨率游戏窗口执行
 - 支持在任务完成后，执行自动关闭游戏或关机等操作
-  
+
 ### 特色功能
 
 - 自动选队，有两种模式：
-  - 根据OCR获取队伍名称选择队伍（必须保持初始队伍名称，如【TEAM #1】）
-  - 根据队伍序号选择队伍
+    - 根据OCR获取队伍名称选择队伍（必须保持初始队伍名称，如【TEAM #1】）
+    - 根据队伍序号选择队伍
 - 镜牢根据权重自动选择主题包
 - 支持使用英语（EN），简体中文（zh_cn）作为游戏语言时运行
 - 自动远离镜牢饰品：白棉花
@@ -72,7 +71,8 @@
 
 ## 下载方式
 
-点击[Releases](https://github.com/KIYI671/AhabAssistantLimbusCompany/releases)并下载最新版中命名为【AALC-Vx.x.x】的文件，解压后运行AALC.exe即可。
+点击[Releases](https://github.com/KIYI671/AhabAssistantLimbusCompany/releases)
+并下载最新版中命名为【AALC-Vx.x.x】的文件，解压后运行AALC.exe即可。
 
 因为技术力不足，还搞了GUI和使用第三方OCR，所以导致文件比较大
 
@@ -100,6 +100,7 @@
 使用记事本或者其他文本编辑器打开后，可以仿照格式自行配置主题包权重，或自行添加主题包识别文字
 
 #### 修改流程
+
 - 先运行一次AALC.exe（新用户）
 - AALC文件夹下出现theme_pack_list.yaml文件
 - 修改theme_pack_list.yaml文件
@@ -118,7 +119,8 @@
 ## 注意事项
 
 - 建议使用 1920 * 1080 和 2160 * 1440 的分辨率运行</br> 未测试屏幕小于1920 * 1080的情况，不太建议在小于该分辨率下使用
-- **请将设置-图像中的材质质量和渲染比例设为高，普通FPS和战斗FPS均设为60，后处理设为关闭**以便于软件进行识别。若设备性能无法满足也请尽量将**渲染比例设为高**，否则软件识别可能存在困难。
+- **请将设置-图像中的材质质量和渲染比例设为高，普通FPS和战斗FPS均设为60，后处理设为关闭**以便于软件进行识别。若设备性能无法满足也请尽量将
+  **渲染比例设为高**，否则软件识别可能存在困难。
 - 游戏程序将在脚本启动后，被设置为窗口模式，中间如果出现切换全屏后又退出的行为，是正常的行为，无需担心
 - 如果您启动了 steam 或其他软件的性能展示功能，应尽量避免遮盖游戏画面，否则可能导致脚本使用过程出现问题
 - 脚本支持使用简体中文作为游戏语言时运行，但仅支持使用零协的中文本地化语言包与字体
@@ -133,16 +135,16 @@
 
 配置了获取管理员权限的代码，是为了确保运行顺利
 
-该项目除了检查更新功能外，纯离线运行
+该项目除了检查更新与公告展示功能外，纯离线运行
 
 软件图标素材来源网图，不属于 AGPL v3 协议开源的内容，如有侵权，请及时联系作者删除
 
-部分图像与音频素材来自 [边狱巴士中文WIKI](https://limbuscompany.huijiwiki.com/wiki/) 与 [月海伦娜](https://yuehailunna.lofter.com/) ，应要求进行声明
+部分图像与音频素材来自 [边狱巴士中文WIKI](https://limbuscompany.huijiwiki.com/wiki/)
+与 [月海伦娜](https://yuehailunna.lofter.com/) ，应要求进行声明
 
 用户在使用过程中需自行遵守相关平台的使用规则与服务条款。因使用本软件可能导致的游戏账号封禁、违规行为等一切后果，作者概不负责。用户需对自身行为负责，并承担使用本软件可能带来的所有风险。
 
 ---
-
 
 ## 图示样例
 
@@ -151,26 +153,29 @@
 ### 开始界面
 
 ![image](/assets/doc/image/README1_zh_CN.png)
+
 ### 镜牢队伍设置界面
 
 ![image](/assets/doc/image/README2_zh_CN.png)
 
 ---
+
 ## 致谢
 
 ### 单独致谢
 
 AALC的项目离不开以下开源项目的帮助
 
-| 项目      | 链接                                                                              | -                                         |
-|---------|---------------------------------------------------------------------------------|-------------------------------------------|
-| LALC    | [LixAssistantLimbusCompany](https://github.com/HSLix/LixAssistantLimbusCompany) | 感谢大佬的开源，让我能通过一步步跟进重写大佬的项目，从而学习、开始自己的项目    |
-| OCR文字识别 | [PaddleOCR-json](https://github.com/hiroi-sora/PaddleOCR-json)                  | 没有它就没有自动识别队伍、自动识别镜牢主题包的功能                 |
-| 图形界面组件库 | [PyQt-Fluent-Widgets](https://github.com/zhiyiYo/PyQt-Fluent-Widgets)           | 虽然只是用到了基础的部件，没怎么开发潜力，但是基础的部件已经让GUI的美观性UP了 |
-| 三月七小助手  | [March7thAssistant](https://github.com/moesnow/March7thAssistant)               | 从大佬这里学到了挺多                                |
-
+| 项目      | 链接                                                                                | -                                         |
+|---------|-----------------------------------------------------------------------------------|-------------------------------------------|
+| LALC    | [LixAssistantLimbusCompany](https://github.com/HSLix/LixAssistantLimbusCompany)   | 感谢大佬的开源，让我能通过一步步跟进重写大佬的项目，从而学习、开始自己的项目    |
+| OCR文字识别 | [PaddleOCR-json](https://github.com/hiroi-sora/PaddleOCR-json)                    | 没有它就没有自动识别队伍、自动识别镜牢主题包的功能                 |
+| 图形界面组件库 | [PyQt-Fluent-Widgets](https://github.com/zhiyiYo/PyQt-Fluent-Widgets)             | 虽然只是用到了基础的部件，没怎么开发潜力，但是基础的部件已经让GUI的美观性UP了 |
+| 三月七小助手  | [March7thAssistant](https://github.com/moesnow/March7thAssistant)                 | 从大佬这里学到了挺多                                |
+| BAAS    | [blue_archive_auto_script](https://github.com/pur1fying/blue_archive_auto_script) | 从大佬这里学习了模拟器相关代码                           |
 
 ### 统一致谢
+
 直接或间接参与到本软件开发的所有人员
 
 包括在网络上分享各种教程的大佬们
@@ -181,22 +186,21 @@ AALC的项目离不开以下开源项目的帮助
 
 ## 贡献者
 
-感谢以下开发者对 AALC 作出的卓越贡献： 
+感谢以下开发者对 AALC 作出的卓越贡献：
 
 <a href="https://github.com/KIYI671/AhabAssistantLimbusCompany/graphs/contributors">
   <img src="https://contrib.rocks/image?repo=KIYI671/AhabAssistantLimbusCompany" />
 </a>
 
 ## 未来计划
+
 - [ ] 运行结束后统计获取的通行证等级和经验卡数量、纽数量
 - [ ] 自适应窗口位置，可以不用左上角
 - [ ] 将运行期间的统计生成为excel文件或图表，提高可阅读性
-- [ ] 可以选择不将体力合成为模块（饼）
 - [ ] 完善代码函数注释文档
 - [ ] 针对主题包配置提供GUI
 - [ ] 持续修复BUG
 - [ ] ……
-- [ ] <font size=1>后台操作？支持模拟器？</font>
 
 ---
 
