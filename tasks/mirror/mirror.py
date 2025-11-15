@@ -683,13 +683,13 @@ class Mirror:
             if auto.find_element("mirror/theme_pack/feature_theme_pack_assets.png"):
                 break
 
-            if team_system == "slash" or team_system == "pierce" or team_system == "blunt" and scroll == False:
-                slash_button = auto.find_element("mirror/road_to_mir/slash_gift_model_assets.png")
-                if slash_button is not None:
+            if (team_system == "slash" or team_system == "pierce" or team_system == "blunt") and scroll == False:
+                while slash_button := auto.find_element("mirror/road_to_mir/slash_gift_1.png"):
                     auto.mouse_drag(slash_button[0], slash_button[1], drag_time=0.2, dx=0, dy=-400)
                     sleep(0.5)
-                    continue
-                scroll = True
+                    if auto.find_element("mirror/road_to_mir/blunt_gift_1_assets.png", take_screenshot=True):
+                        scroll = True
+                        break
 
             if auto.click_element(f"mirror/road_to_mir/{team_system}_gift_assets.png") and select_system == False:
                 select_system = True
@@ -981,7 +981,7 @@ class Mirror:
                         bbox = (button[0] - 50 * my_scale, button[1] - 300 * my_scale, button[0] + 450 * my_scale,
                                 button[1] + 350 * my_scale)
                         if not cfg.not_skip_whitegossypium:
-                            if cfg.language_in_game == "zh_cn":                                
+                            if cfg.language_in_game == "zh_cn":
                                 ocr_result = auto.find_text_element("白棉花", bbox)
                             else:
                                 ocr_result = auto.find_text_element(["white", "gossypium"], bbox)
@@ -999,7 +999,7 @@ class Mirror:
                         bbox = (button[0] - 50 * my_scale, button[1] - 300 * my_scale, button[0] + 450 * my_scale,
                                 button[1] + 350 * my_scale)
                         if not cfg.not_skip_whitegossypium:
-                            if cfg.language_in_game == "zh_cn":                                
+                            if cfg.language_in_game == "zh_cn":
                                 ocr_result = auto.find_text_element("白棉花", bbox)
                             else:
                                 ocr_result = auto.find_text_element(["white", "gossypium"], bbox)
@@ -1027,7 +1027,7 @@ class Mirror:
                         bbox = (button[0] - 50 * my_scale, button[1] - 300 * my_scale, button[0] + 450 * my_scale,
                                 button[1] + 350 * my_scale)
                         if not cfg.not_skip_whitegossypium:
-                            if cfg.language_in_game == "zh_cn":                                
+                            if cfg.language_in_game == "zh_cn":
                                 ocr_result = auto.find_text_element("白棉花", bbox)
                             else:
                                 ocr_result = auto.find_text_element(["white", "gossypium"], bbox)
