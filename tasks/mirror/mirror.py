@@ -454,6 +454,13 @@ class Mirror:
                                   take_screenshot=True):
                 continue
             if failed:
+                auto.mouse_click_blank()
+                sleep(0.5)
+                complete_mirror_bbox = ImageUtils.get_bbox(
+                    ImageUtils.load_image("mirror/claim_reward/complete_mirror_100%_assets.png"))
+                if auto.find_text_element("100", complete_mirror_bbox):
+                    failed = False
+                    continue
                 if auto.click_element("mirror/claim_reward/claim_rewards_assets.png"):
                     sleep(1)
                 if auto.click_element("mirror/claim_reward/claim_forfeit_assets.png", take_screenshot=True):
