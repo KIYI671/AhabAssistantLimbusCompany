@@ -203,12 +203,22 @@ def decrypt_string(encrypted_b64: str, entropy: bytes = b'AALC') -> str:
     # 返回原始字符串
     return decrypted_data[1].decode('utf-8')
 
-def run_as_user(command:list[str], **kwargs) -> subprocess.CompletedProcess:
-    """使用用户权限运行命令"""
-    
-    cmd_command = ["cmd", "/c"]
-    cmd_command.extend(command)
-    
-    result = subprocess.run(cmd_command, **kwargs)
 
-    return result
+def run_as_user(command: list[str], **kwargs):
+    """使用用户权限运行命令"""
+    import tempfile, os
+    # 创建临时批处理文件
+    with tempfile.NamedTemporaryFile(delete=False, suffix='.bat') as bat:
+        bat.write(f'@echo off\n{subprocess.list2cmdline(command)}\n')
+        bat_path = bat.name
+
+    # 使用任务计划程序以当前用户身份运行
+    scheduler = 'schtasks /create /tn "TempNonAdminTask" /sc once /st 00:00 /ru %USERPROFILE% /tr "{}"'.format(bat_path)
+    subprocess.run(scheduler, shell=True)
+
+    # 立即执行任务
+    subprocess.run('schtasks /run /tn "TempNonAdminTask"', shell=True)
+
+    # 清理任务和文件
+    subprocess.run('schtasks /delete /tn "TempNonAdminTask" /f', shell=True)
+    os.unlink(bat_path)
