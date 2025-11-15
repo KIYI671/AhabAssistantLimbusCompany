@@ -10,6 +10,14 @@
 
 ---
 
+Q: Infinity is stuck on the crafting module interface
+
+A: Turn off "Experimental Features" at the bottom of the settings, and then check AALC's "Game Language" setting to make sure it is consistent with the game
+
+If it still doesn't work, check if you have changed the game picture quality, enabled HDR on your monitor, or modified the game font, or use other mods (such as battle voice bubbles, etc.)
+
+---
+
 Q: Why can't the XXX function be implemented or the script run after running it?
 
 A: Please first try closing the script, then right-click and select "Run as administrator". If the issue persists, please continue to check below.
@@ -69,6 +77,12 @@ Q: Where the numbers are supposed to be displayed in AALC, gibberish is displaye
 A: Please check the local language, it is currently known that if you use [Chinese (Simplified Chinese Characters, Hong Kong SAR)], this issue may occur.
 
 This problem does not affect normal use, and can be solved by filling in the numbers by yourself.
+
+---
+
+Q: When I open AALC, an error window pops up: no OPENSSL_Applink
+
+A: On your computer, delete the SSLKEYLOGFILE in Windows Settings - >Advanced System Settings - > environment variables and restart AALC
 
 ---
 
