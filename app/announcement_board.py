@@ -137,7 +137,10 @@ class AnnouncementBoard(QDialog):
 
         # 创建ALL公告页面
         msg = self.tr("滚动至底部可关闭公告")
-        self.all = Announcement(None, "ALL", f"<h4>{msg}</h4>", content_type="markdown")
+        self.all = Announcement(None, "ALL", f"<h4>{msg}</h4>"
+                                             "<h3>Ahab Assistant Limbus Company</h3>"
+                                             f"<h3>{cfg.version}</h3>",
+                                content_type="markdown")
         self.content_stack.addWidget(self.all)
 
         # 存储标题和内容的映射
