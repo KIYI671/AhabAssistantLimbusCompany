@@ -47,7 +47,7 @@ class SimulatorControl:
         self.is_pause = False
         self.restore_time = None
         self.simulator_device = None
-        #self.simulator_control = None
+        # self.simulator_control = None
         self.simulator_max_x = None
         self.simulator_port = None
 
@@ -105,7 +105,7 @@ class SimulatorControl:
         self.simulator_control = MNTDevice(target_serial)
 
         result = subprocess.run(
-            ["adb", "shell", "wm", "size"],
+            ["adb", "-s", target_serial, "shell", "wm", "size"],
             capture_output=True,
             text=True
         )
