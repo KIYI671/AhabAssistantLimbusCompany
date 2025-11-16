@@ -208,16 +208,18 @@ def run_as_user(command: list[str], **kwargs):
     """使用用户权限运行命令"""
     import tempfile, os
     # 创建临时批处理文件
-    with tempfile.NamedTemporaryFile(delete=False, suffix='.bat') as bat:
+    with tempfile.NamedTemporaryFile(delete=False, suffix='.bat',mode = 'w') as bat:
         bat.write(f'@echo off\n{subprocess.list2cmdline(command)}\n')
         bat_path = bat.name
 
     # 使用任务计划程序以当前用户身份运行
-    scheduler = 'schtasks /create /tn "TempNonAdminTask" /sc once /st 00:00 /ru %USERPROFILE% /tr "{}"'.format(bat_path)
+    scheduler = f'schtasks /create /tn "TempNonAdminTask" /sc once /st 23:59 /ru {os.environ["USERNAME"]} /tr "{bat_path}"'
     subprocess.run(scheduler, shell=True)
 
     # 立即执行任务
     subprocess.run('schtasks /run /tn "TempNonAdminTask"', shell=True)
+    from time import sleep
+    sleep(2)
 
     # 清理任务和文件
     subprocess.run('schtasks /delete /tn "TempNonAdminTask" /f', shell=True)
