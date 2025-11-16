@@ -252,7 +252,8 @@ class MumuControl:
             try:
                 import winreg
                 # 读取注册表中的键值
-                software_name = ["MuMuPlayer-12.0", "MuMuPlayer", "MuMuPlayerGlobal-12.0", "MuMuPlayerGlobal"]
+                software_name = ["MuMuPlayer-12.0", "MuMuPlayer", "MuMuPlayerGlobal-12.0", "MuMuPlayerGlobal",
+                                 "YXArkNights-12.0"]
                 key = None
                 for name in software_name:
                     try:
@@ -266,6 +267,8 @@ class MumuControl:
                 mumu_version, _ = winreg.QueryValueEx(key, "DisplayVersion")
                 winreg.CloseKey(key)
             except:
+                log.error(f"读取注册表失败，无法获取MuMu安装路径，也可能是未安装MuMu模拟器，或使用了某种特供版本",
+                          exc_info=True)
                 return None
             # 修改路径，使其指向MuMuManager.exe
             self.exe_path = os.path.join(self.install_path, "MuMuManager.exe")
