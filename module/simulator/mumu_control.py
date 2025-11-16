@@ -302,6 +302,8 @@ class MumuControl:
                     log.info(f"检测到模拟器处于启用状态，为关闭应用后台保活，需执行重启")
                     self.stop()
                 self.disable_app_keptlive()
+            else:
+                log.debug(f"未启用应用后台保活功能,可正常运行")
             # 使用mumumanager控制模拟器开启与关闭
             command = [self.exe_path, "control", "-v", str(self.multi_instance_number), "launch"]
             run_as_user(command)

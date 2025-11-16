@@ -8,6 +8,7 @@ import numpy as np
 import win32crypt
 
 from module.config import cfg
+from module.logger import log
 
 
 def get_day_of_week():
@@ -205,8 +206,9 @@ def decrypt_string(encrypted_b64: str, entropy: bytes = b'AALC') -> str:
 
 
 def run_as_user(command: list[str], **kwargs):
-    """使用用户权限运行命令"""
+    """使用任务计划程序以当前用户身份运行命令"""
     import tempfile, os
+    log.debug(f"使用用户权限运行命令: {command}")
     # 创建临时批处理文件
     with tempfile.NamedTemporaryFile(delete=False, suffix='.bat',mode = 'w') as bat:
         bat.write(f'@echo off\n{subprocess.list2cmdline(command)}\n')
@@ -214,13 +216,25 @@ def run_as_user(command: list[str], **kwargs):
 
     # 使用任务计划程序以当前用户身份运行
     scheduler = f'schtasks /create /tn "TempNonAdminTask" /sc once /st 23:59 /ru {os.environ["USERNAME"]} /tr "{bat_path}"'
-    subprocess.run(scheduler, shell=True)
+    scheduler_log = subprocess.run(scheduler, shell=True, capture_output=True, text=True)
+    log.debug(f"任务计划程序输出: {scheduler_log.stdout}")
+    if scheduler_log.returncode != 0:
+        log.error(f"任务计划程序创建失败: {scheduler_log.stderr}")
+        return False
 
     # 立即执行任务
-    subprocess.run('schtasks /run /tn "TempNonAdminTask"', shell=True)
+    scheduler_log = subprocess.run('schtasks /run /tn "TempNonAdminTask"', shell=True, capture_output=True, text=True)
+    log.debug(f"任务计划程序输出: {scheduler_log.stdout}")
+    if scheduler_log.returncode != 0:
+        log.error(f"任务计划程序运行失败: {scheduler_log.stderr}")
+        return False
     from time import sleep
     sleep(2)
 
     # 清理任务和文件
-    subprocess.run('schtasks /delete /tn "TempNonAdminTask" /f', shell=True)
+    scheduler_log = subprocess.run('schtasks /delete /tn "TempNonAdminTask" /f', shell=True, capture_output=True, text=True)
+    log.debug(f"任务计划程序输出: {scheduler_log.stdout}")
+    if scheduler_log.returncode != 0:
+        log.error(f"任务计划程序删除失败: {scheduler_log.stderr}")
+        return False
     os.unlink(bat_path)
