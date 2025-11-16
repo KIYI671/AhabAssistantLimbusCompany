@@ -16,7 +16,7 @@ the script starts again, which can be solved by restarting the script program)
 
 You can use the **ALT+P** keys to pause the script and the **ALT+R** keys to resume the script
 
-The method of using the simulator is at the [bottom of this article](/assets/doc/en/How_to_use_EN.md#模拟器用法)
+The method of using the simulator is at the [bottom of this article](#simulator-usage)
 </div>
 
 ---
