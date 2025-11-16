@@ -243,8 +243,8 @@ class MumuControl:
         try:
             self.device.app_start(self.game_package_name)
         except:
-            log.error(f'启动游戏失败，请确认是否安装了Limbus Company')
-            sleep(10)
+            log.error(f'启动游戏失败，请确认是否安装了Limbus Company，五秒后将重新尝试启动')
+            sleep(5)
             self.start_game()
 
     def mumu_control_api_backend(self):
@@ -407,7 +407,7 @@ class MumuControl:
                 raise  # 重新抛出异常或处理
 
         except subprocess.CalledProcessError as cmd_err:
-            log.error(f"命令执行失败！返回码: {cmd_err.returncode}, 错误输出: {cmd_err.stderr}")
+            log.debug(f"命令执行失败！返回码: {cmd_err.returncode}, 错误输出: {cmd_err.stderr}")
             # 可选：根据业务需求返回默认值或重新抛出
             return False
         except Exception as e:
