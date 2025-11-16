@@ -366,12 +366,33 @@ class MumuControl:
         try:
             log.debug(f"开始获取应用保活状态")
             command = f""" "{self.exe_path}" setting -v {self.multi_instance_number} -k app_keptlive"""
-            proc = subprocess.run(command, shell=True, universal_newlines=True, capture_output=True)
-            proc_result = json.loads(proc.stdout.strip())
-            result = bool(proc_result["app_keptlive"] == "true")
-            return result
+            proc = subprocess.run(
+                command,
+                shell=True,
+                universal_newlines=True,
+                capture_output=True,
+                check=True  # 新增：如果命令返回非零状态码则抛出异常
+            )
+
+            # 检查输出是否为空
+            if not proc.stdout.strip():
+                raise ValueError("命令返回空输出")
+
+            # 尝试解析JSON
+            try:
+                proc_result = json.loads(proc.stdout.strip())
+                result = bool(proc_result.get("app_keptlive") == "true")  # 使用get避免KeyError
+                return result
+            except json.JSONDecodeError as json_err:
+                log.error(f"JSON解析失败！原始输出: {proc.stdout}")
+                raise  # 重新抛出异常或处理
+
+        except subprocess.CalledProcessError as cmd_err:
+            log.error(f"命令执行失败！返回码: {cmd_err.returncode}, 错误输出: {cmd_err.stderr}")
+            # 可选：根据业务需求返回默认值或重新抛出
+            return False
         except Exception as e:
-            log.error(f"获取应用保活状态失败：{e}")
+            log.error(f"获取应用保活状态失败：{e}", exc_info=True)  # 记录完整堆栈
             self.mumu_control_api_backend()
             return self.get_app_keptlive()
 
