@@ -272,6 +272,22 @@ class MumuControl:
                 return None
             # 修改路径，使其指向MuMuManager.exe
             self.exe_path = os.path.join(self.install_path, "MuMuManager.exe")
+            if not os.path.isfile(self.exe_path):
+                from pathlib import Path
+                exe_path = Path(self.exe_path)
+                # 1. 拆分路径为各个组成部分
+                parts = list(exe_path.parts)
+                # 2. 修改倒数第二个部分为 "shell"（确保路径长度足够，避免越界）
+                if len(parts) >= 2:
+                    parts[-2] = "shell"
+                # 3. 重新拼接成新路径
+                new_exe_path = Path(*parts)  # 用 * 解包列表为Path的参数
+                # 转换为字符串（可选，若需要字符串路径）
+                new_exe_path_str = str(new_exe_path)
+                self.exe_path = new_exe_path_str
+                if not os.path.isfile(self.exe_path):
+                    log.error(f"查找MuMuManager.exe失败，路径不存在，请检查MuMu模拟器是否安装或是否为特供版本")
+                    return None
 
             def detect_major_version():
                 match = re.match(r'^(\d+)\.', mumu_version)
