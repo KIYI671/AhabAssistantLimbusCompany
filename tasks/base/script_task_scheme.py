@@ -103,6 +103,7 @@ def to_get_reward():
 
 
 def init_game():
+    log.debug("初始化游戏")
     simulator = None
     if cfg.simulator:
         if cfg.simulator_type == 0:
@@ -112,6 +113,7 @@ def init_game():
             elif cfg.simulator_port != 0:
                 if cfg.simulator_port == 16384 or (cfg.simulator_port - 16384) % 32 == 0:
                     mumu_instance_number = 0 if cfg.simulator_port == 16384 else (cfg.simulator_port - 16384) // 32
+                    log.debug(f"使用mumu模拟器实例号为 {mumu_instance_number}")
                 else:
                     log.info("设置的模拟器端口非常用默认端口，使用默认mumu模拟器")
             elif cfg.mumu_instance_number != -1:

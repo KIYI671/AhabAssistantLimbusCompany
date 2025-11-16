@@ -295,6 +295,7 @@ class MumuControl:
 
     def start(self):
         try:
+            log.debug(f"开始启动MUMU模拟器实例编号{self.multi_instance_number}")
             keptlive = self.get_app_keptlive()
             if keptlive:
                 log.info(f"检测到启用了应用后台保活功能，即将关闭")
@@ -363,12 +364,14 @@ class MumuControl:
     def get_app_keptlive(self):
         # 获取应用保活状态
         try:
+            log.debug(f"开始获取应用保活状态")
             command = f""" "{self.exe_path}" setting -v {self.multi_instance_number} -k app_keptlive"""
             proc = subprocess.run(command, shell=True, universal_newlines=True, capture_output=True)
             proc_result = json.loads(proc.stdout.strip())
             result = bool(proc_result["app_keptlive"] == "true")
             return result
-        except:
+        except Exception as e:
+            log.error(f"获取应用保活状态失败：{e}")
             self.mumu_control_api_backend()
             return self.get_app_keptlive()
 
