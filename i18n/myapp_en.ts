@@ -2,6 +2,24 @@
 <!DOCTYPE TS>
 <TS version="2.1" language="en_US">
 <context>
+    <name>AnnouncementBoard</name>
+    <message>
+        <location filename="../app/announcement_board.py" line="108"/>
+        <source>公告</source>
+        <translation>Announcement Board</translation>
+    </message>
+    <message>
+        <location filename="../app/announcement_board.py" line="125"/>
+        <source>新公告前不再显示</source>
+        <translation>Don&apos;t Show Until New</translation>
+    </message>
+    <message>
+        <location filename="../app/announcement_board.py" line="126"/>
+        <source>关闭</source>
+        <translation>Close</translation>
+    </message>
+</context>
+<context>
     <name>BaseCheckBox</name>
     <message>
         <location filename="../app/page_card.py" line="177"/>
@@ -208,247 +226,247 @@
 <context>
     <name>BaseComboBox</name>
     <message>
-        <location filename="../app/__init__.py" line="36"/>
+        <location filename="../app/__init__.py" line="38"/>
         <source>无</source>
         <translation>None</translation>
     </message>
     <message>
-        <location filename="../app/__init__.py" line="36"/>
+        <location filename="../app/__init__.py" line="38"/>
         <source>睡眠</source>
         <translation>Sleep</translation>
     </message>
     <message>
-        <location filename="../app/__init__.py" line="37"/>
+        <location filename="../app/__init__.py" line="39"/>
         <source>休眠</source>
         <translation>Hibernate</translation>
     </message>
     <message>
-        <location filename="../app/__init__.py" line="37"/>
+        <location filename="../app/__init__.py" line="39"/>
         <source>关机</source>
         <translation>Shutdown</translation>
     </message>
     <message>
-        <location filename="../app/__init__.py" line="38"/>
+        <location filename="../app/__init__.py" line="40"/>
         <source>退出游戏</source>
         <translation>Exit Game</translation>
     </message>
     <message>
-        <location filename="../app/__init__.py" line="38"/>
+        <location filename="../app/__init__.py" line="40"/>
         <source>退出AALC</source>
         <translation>Exit AALC</translation>
     </message>
     <message>
-        <location filename="../app/__init__.py" line="39"/>
+        <location filename="../app/__init__.py" line="41"/>
         <source>退出AALC和游戏</source>
         <translation>Exit Game and AALC</translation>
     </message>
     <message>
-        <location filename="../app/__init__.py" line="25"/>
+        <location filename="../app/__init__.py" line="27"/>
         <source>左上角（0，0）</source>
         <translation>Top left corner (0,0)</translation>
     </message>
     <message>
-        <location filename="../app/__init__.py" line="26"/>
+        <location filename="../app/__init__.py" line="28"/>
         <source>是</source>
         <translation>Yes</translation>
     </message>
     <message>
-        <location filename="../app/__init__.py" line="28"/>
+        <location filename="../app/__init__.py" line="30"/>
         <source>不换</source>
         <translation>No Buy</translation>
     </message>
     <message>
-        <location filename="../app/__init__.py" line="28"/>
+        <location filename="../app/__init__.py" line="30"/>
         <source>换第一次</source>
         <translation>Once</translation>
     </message>
     <message>
-        <location filename="../app/__init__.py" line="29"/>
+        <location filename="../app/__init__.py" line="31"/>
         <source>换第二次</source>
         <translation>Twice</translation>
     </message>
     <message>
-        <location filename="../app/__init__.py" line="29"/>
+        <location filename="../app/__init__.py" line="31"/>
         <source>换第三次</source>
         <translation>Thrice</translation>
     </message>
     <message>
-        <location filename="../app/__init__.py" line="32"/>
+        <location filename="../app/__init__.py" line="34"/>
         <source>邮件+日/周常</source>
         <translation>Mail + Daily/Weekily</translation>
     </message>
     <message>
-        <location filename="../app/__init__.py" line="33"/>
+        <location filename="../app/__init__.py" line="35"/>
         <source>日/周常</source>
         <translation>Daily/Weekily</translation>
     </message>
     <message>
-        <location filename="../app/__init__.py" line="33"/>
+        <location filename="../app/__init__.py" line="35"/>
         <source>邮件</source>
         <translation>Mail</translation>
     </message>
     <message>
-        <location filename="../app/__init__.py" line="43"/>
+        <location filename="../app/__init__.py" line="45"/>
         <source>烧伤</source>
         <translation>Burn</translation>
     </message>
     <message>
-        <location filename="../app/__init__.py" line="43"/>
+        <location filename="../app/__init__.py" line="45"/>
         <source>流血</source>
         <translation>Bleed</translation>
     </message>
     <message>
-        <location filename="../app/__init__.py" line="44"/>
+        <location filename="../app/__init__.py" line="46"/>
         <source>震颤</source>
         <translation>Tremor</translation>
     </message>
     <message>
-        <location filename="../app/__init__.py" line="44"/>
+        <location filename="../app/__init__.py" line="46"/>
         <source>破裂</source>
         <translation>Rupture</translation>
     </message>
     <message>
-        <location filename="../app/__init__.py" line="45"/>
+        <location filename="../app/__init__.py" line="47"/>
         <source>呼吸</source>
         <translation>Poise</translation>
     </message>
     <message>
-        <location filename="../app/__init__.py" line="45"/>
+        <location filename="../app/__init__.py" line="47"/>
         <source>沉沦</source>
         <translation>Sinking</translation>
     </message>
     <message>
-        <location filename="../app/__init__.py" line="46"/>
+        <location filename="../app/__init__.py" line="48"/>
         <source>充能</source>
         <translation>Charge</translation>
     </message>
     <message>
-        <location filename="../app/__init__.py" line="46"/>
+        <location filename="../app/__init__.py" line="48"/>
         <source>斩击</source>
         <translation>Slash</translation>
     </message>
     <message>
-        <location filename="../app/__init__.py" line="47"/>
+        <location filename="../app/__init__.py" line="49"/>
         <source>突刺</source>
         <translation>Pierce</translation>
     </message>
     <message>
-        <location filename="../app/__init__.py" line="47"/>
+        <location filename="../app/__init__.py" line="49"/>
         <source>打击</source>
         <translation>Blunt</translation>
     </message>
     <message>
-        <location filename="../app/__init__.py" line="50"/>
+        <location filename="../app/__init__.py" line="52"/>
         <source>出售</source>
         <translation>Sell</translation>
     </message>
     <message>
-        <location filename="../app/__init__.py" line="50"/>
+        <location filename="../app/__init__.py" line="52"/>
         <source>合成</source>
         <translation>Fuse</translation>
     </message>
     <message>
-        <location filename="../app/__init__.py" line="51"/>
+        <location filename="../app/__init__.py" line="53"/>
         <source>合成：四级优先</source>
         <translation>Fuse: Level IV First</translation>
     </message>
     <message>
-        <location filename="../app/__init__.py" line="54"/>
+        <location filename="../app/__init__.py" line="56"/>
         <source>商店策略改为出售</source>
         <translation>Shop Tactic Change to Sell</translation>
     </message>
     <message>
-        <location filename="../app/__init__.py" line="55"/>
+        <location filename="../app/__init__.py" line="57"/>
         <source>商店策略改为普通合成</source>
         <translation>Shop Tactic Change to Normal Fuse</translation>
     </message>
     <message>
-        <location filename="../app/__init__.py" line="56"/>
+        <location filename="../app/__init__.py" line="58"/>
         <source>合成第二体系四级饰品</source>
         <translation>Fuse Second System Level IV</translation>
     </message>
     <message>
-        <location filename="../app/__init__.py" line="57"/>
+        <location filename="../app/__init__.py" line="59"/>
         <source>跳过商店</source>
         <translation>Skip Shops</translation>
     </message>
     <message>
-        <location filename="../app/__init__.py" line="60"/>
+        <location filename="../app/__init__.py" line="62"/>
         <source>星光→饰品→钱→饰品/钱→罪孽</source>
         <translation>Starlight→E.G.O.→Cost→E.G.O./Cost→Sin</translation>
     </message>
     <message>
-        <location filename="../app/__init__.py" line="61"/>
+        <location filename="../app/__init__.py" line="63"/>
         <source>星光→钱→饰品→饰品/钱→罪孽</source>
         <translation>Starlight→Cost→E.G.O.→E.G.O./Cost→Sin</translation>
     </message>
     <message>
-        <location filename="../app/__init__.py" line="62"/>
+        <location filename="../app/__init__.py" line="64"/>
         <source>钱→饰品→饰品/钱→罪孽→星光</source>
         <translation>Cost→E.G.O.→E.G.O./Cost→Sin→Starlight</translation>
     </message>
     <message>
-        <location filename="../app/__init__.py" line="63"/>
+        <location filename="../app/__init__.py" line="65"/>
         <source>饰品→钱→饰品/钱→罪孽→星光</source>
         <translation>E.G.O.→Cost→E.G.O./Cost→Sin→Starlight</translation>
     </message>
     <message>
-        <location filename="../app/__init__.py" line="70"/>
+        <location filename="../app/__init__.py" line="72"/>
         <source>仅购买回血饰品</source>
         <translation>Only Buy Heal E.G.O.</translation>
     </message>
     <message>
-        <location filename="../app/__init__.py" line="71"/>
+        <location filename="../app/__init__.py" line="73"/>
         <source>启用四级优先时：仅购买所有3-4级饰品</source>
         <translation>Enable Level IV First: only buy level 3-4</translation>
     </message>
     <message>
-        <location filename="../app/__init__.py" line="72"/>
+        <location filename="../app/__init__.py" line="74"/>
         <source>仅购买体系饰品</source>
         <translation>Only Buy systems E.G.O.</translation>
     </message>
     <message>
-        <location filename="../app/__init__.py" line="73"/>
+        <location filename="../app/__init__.py" line="75"/>
         <source>不购买体系饰品</source>
         <translation>No Buy systems E.G.O.</translation>
     </message>
     <message>
-        <location filename="../app/__init__.py" line="74"/>
+        <location filename="../app/__init__.py" line="76"/>
         <source>不购买回血饰品</source>
         <translation>No Buy Heal E.G.O.</translation>
     </message>
     <message>
-        <location filename="../app/__init__.py" line="75"/>
+        <location filename="../app/__init__.py" line="77"/>
         <source>启用四级优先时：不购买所有3-4级饰品</source>
         <translation>Enable Level IV First: no buy level 3-4</translation>
     </message>
     <message>
-        <location filename="../app/__init__.py" line="79"/>
+        <location filename="../app/__init__.py" line="81"/>
         <source>合成第一体系四级饰品后</source>
         <translation>After Fuse First System Level IV</translation>
     </message>
     <message>
-        <location filename="../app/__init__.py" line="80"/>
+        <location filename="../app/__init__.py" line="82"/>
         <source>一直</source>
         <translation>Always</translation>
     </message>
     <message>
-        <location filename="../app/__init__.py" line="83"/>
+        <location filename="../app/__init__.py" line="85"/>
         <source>配队首位</source>
         <translation>Team First</translation>
     </message>
     <message>
-        <location filename="../app/__init__.py" line="83"/>
+        <location filename="../app/__init__.py" line="85"/>
         <source>配队前3</source>
         <translation>Team Top 3</translation>
     </message>
     <message>
-        <location filename="../app/__init__.py" line="84"/>
+        <location filename="../app/__init__.py" line="86"/>
         <source>配队前7</source>
         <translation>Team Top 7</translation>
     </message>
     <message>
-        <location filename="../app/__init__.py" line="84"/>
+        <location filename="../app/__init__.py" line="86"/>
         <source>所有人</source>
         <translation>All</translation>
     </message>
@@ -458,12 +476,12 @@
         <translation>[Experimental] Auto</translation>
     </message>
     <message>
-        <location filename="../app/__init__.py" line="66"/>
+        <location filename="../app/__init__.py" line="68"/>
         <source>困难镜牢</source>
         <translation>Hard Mirror</translation>
     </message>
     <message>
-        <location filename="../app/__init__.py" line="67"/>
+        <location filename="../app/__init__.py" line="69"/>
         <source>普通镜牢</source>
         <translation>Normal Mirror</translation>
     </message>
@@ -536,7 +554,7 @@
 <context>
     <name>BaseLabel</name>
     <message>
-        <location filename="../app/farming_interface.py" line="149"/>
+        <location filename="../app/farming_interface.py" line="150"/>
         <source>之后</source>
         <translation>After</translation>
     </message>
@@ -702,32 +720,32 @@
 <context>
     <name>CheckBoxWithButton</name>
     <message>
-        <location filename="../app/farming_interface.py" line="99"/>
+        <location filename="../app/farming_interface.py" line="100"/>
         <source>窗口设置</source>
         <translation>Win-Settings</translation>
     </message>
     <message>
-        <location filename="../app/farming_interface.py" line="107"/>
+        <location filename="../app/farming_interface.py" line="108"/>
         <source>日常任务</source>
         <translation>Daily Tasks</translation>
     </message>
     <message>
-        <location filename="../app/farming_interface.py" line="114"/>
+        <location filename="../app/farming_interface.py" line="115"/>
         <source>领取奖励</source>
         <translation>Claim Rewards</translation>
     </message>
     <message>
-        <location filename="../app/farming_interface.py" line="120"/>
+        <location filename="../app/farming_interface.py" line="121"/>
         <source>狂气换体</source>
         <translation>Lunacy2Enk</translation>
     </message>
     <message>
-        <location filename="../app/farming_interface.py" line="126"/>
+        <location filename="../app/farming_interface.py" line="127"/>
         <source>坐牢设置</source>
         <translation>Mir-Settings</translation>
     </message>
     <message>
-        <location filename="../app/farming_interface.py" line="132"/>
+        <location filename="../app/farming_interface.py" line="133"/>
         <source>亚哈共鸣</source>
         <translation>Ahab-Res</translation>
     </message>
@@ -870,22 +888,22 @@
 <context>
     <name>FarmingInterfaceLeft</name>
     <message>
-        <location filename="../app/farming_interface.py" line="245"/>
+        <location filename="../app/farming_interface.py" line="246"/>
         <source>存在未配置角色选择的队伍：TEAM_{0}</source>
         <translation>There is a team with no configured role selection: TEAM_{0}</translation>
     </message>
     <message>
-        <location filename="../app/farming_interface.py" line="236"/>
+        <location filename="../app/farming_interface.py" line="237"/>
         <source>没有启用任何队伍，请选择一个队伍进行镜牢任务</source>
         <translation>No team is enabled. Please select a team to start the Mirror Dungeon quest</translation>
     </message>
     <message>
-        <location filename="../app/farming_interface.py" line="266"/>
+        <location filename="../app/farming_interface.py" line="267"/>
         <source>启用了困牢，但是无可用于困牢的队伍</source>
         <translation>Hardmode Mirror Dungeons are enabled, but there are no groups available for Hardmode Mirror Dungeons</translation>
     </message>
     <message>
-        <location filename="../app/farming_interface.py" line="268"/>
+        <location filename="../app/farming_interface.py" line="269"/>
         <source>启用了普牢，但是无可用于普牢的队伍</source>
         <translation>Normal Mode Mirror Dungeon is enabled, but there are no groups available for Normal Mode Mirror Dungeon</translation>
     </message>
@@ -1028,68 +1046,68 @@
 <context>
     <name>MainWindow</name>
     <message>
-        <location filename="../app/my_app.py" line="138"/>
-        <location filename="../app/my_app.py" line="242"/>
+        <location filename="../app/my_app.py" line="163"/>
+        <location filename="../app/my_app.py" line="267"/>
         <source>队伍设置</source>
         <translation>Team Settings</translation>
     </message>
     <message>
-        <location filename="../app/my_app.py" line="236"/>
+        <location filename="../app/my_app.py" line="261"/>
         <source>一键长草</source>
         <translation>One-Click Grass Mode</translation>
     </message>
     <message>
-        <location filename="../app/my_app.py" line="237"/>
+        <location filename="../app/my_app.py" line="262"/>
         <source>帮助</source>
         <translation>Help</translation>
     </message>
     <message>
-        <location filename="../app/my_app.py" line="239"/>
+        <location filename="../app/my_app.py" line="264"/>
         <source>设置</source>
         <translation>Settings</translation>
     </message>
     <message>
-        <location filename="../app/my_app.py" line="162"/>
+        <location filename="../app/my_app.py" line="187"/>
         <source>设置未保存</source>
         <translation>SETTINGS UNSAVE</translation>
     </message>
     <message>
-        <location filename="../app/my_app.py" line="163"/>
+        <location filename="../app/my_app.py" line="188"/>
         <source>存在未保存的设置，请执行保存或取消操作</source>
         <translation>Didn&apos;t save settings, please do save or cancel</translation>
     </message>
     <message>
-        <location filename="../app/my_app.py" line="238"/>
+        <location filename="../app/my_app.py" line="263"/>
         <source>小工具</source>
         <translation>Gadget</translation>
     </message>
     <message>
-        <location filename="../app/my_app.py" line="226"/>
+        <location filename="../app/my_app.py" line="251"/>
         <source>更新提醒</source>
         <translation>Update Notice</translation>
     </message>
     <message>
-        <location filename="../app/my_app.py" line="227"/>
+        <location filename="../app/my_app.py" line="252"/>
         <source>下载已经完成，是否开始更新</source>
         <translation>Download completed, would you like to start updating</translation>
     </message>
     <message>
-        <location filename="../app/my_app.py" line="176"/>
+        <location filename="../app/my_app.py" line="201"/>
         <source>任务设置出错</source>
         <translation>Task settings are incorrect</translation>
     </message>
     <message>
-        <location filename="../app/my_app.py" line="177"/>
+        <location filename="../app/my_app.py" line="202"/>
         <source>未设置任何任务，请勾选主页面左边的选项框需要执行的任务</source>
         <translation>No task is set, check the task to be performed in the option box on the left side of the main page</translation>
     </message>
     <message>
-        <location filename="../app/my_app.py" line="169"/>
+        <location filename="../app/my_app.py" line="194"/>
         <source>警告！</source>
         <translation>Warning！</translation>
     </message>
     <message>
-        <location filename="../app/my_app.py" line="134"/>
+        <location filename="../app/my_app.py" line="159"/>
         <source>存在未保存的队伍设置</source>
         <translation>There are unsaved team settings</translation>
     </message>
@@ -1193,12 +1211,12 @@
 <context>
     <name>NormalTextButton</name>
     <message>
-        <location filename="../app/farming_interface.py" line="140"/>
+        <location filename="../app/farming_interface.py" line="141"/>
         <source>全选</source>
         <translation>Select All</translation>
     </message>
     <message>
-        <location filename="../app/farming_interface.py" line="145"/>
+        <location filename="../app/farming_interface.py" line="146"/>
         <source>清空</source>
         <translation>Clear All</translation>
     </message>
