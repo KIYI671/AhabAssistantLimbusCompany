@@ -51,12 +51,7 @@ class BattleWorker(QThread):
             from module.game_and_screen import screen
 
             hwnd = screen.handle
-            win32gui.SetWindowPos(
-                hwnd._hWnd,  # 目标窗口句柄
-                win32con.HWND_NOTOPMOST,  # 关键参数：取消置顶
-                0, 0, 0, 0,  # 忽略位置和大小（保持原样）
-                win32con.SWP_NOMOVE | win32con.SWP_NOSIZE,  # 标志位：不移动、不调整大小
-            )
+            screen.set_win()
         except Exception as e:
             self.error_occurred.emit(f"窗口设置错误: {str(e)}")
 
