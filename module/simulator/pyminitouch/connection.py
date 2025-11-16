@@ -34,6 +34,7 @@ class MNTInstaller(object):
         #     [_ADB, "-s", self.device_id, "push", f"{config.MNT_HOME}/{self.abi}/minitouch",
         #      f"{config.MNT_HOME}/{self.abi}/minitouch"]
         # )
+        # 检查设备上是否存在minitouch文件
         file_list = subprocess.check_output(
             [
                 _ADB,
@@ -44,19 +45,21 @@ class MNTInstaller(object):
                 str(PurePosixPath("/data/local/tmp/minitouch").parent),
             ]
         )
-        if not PurePosixPath("/data/local/tmp/minitouch").name in file_list.decode(config.DEFAULT_CHARSET):
-            raise FileNotFoundError("minitouch 不存在于 {} 中".format(self.device_id))
-        mnt_path = Path(".")/ "assets" / "minitouch" / self.abi / "minitouch"
-        if not mnt_path.exists():
-            raise FileNotFoundError("minitouch not found in {}".format(mnt_path))
-        # push and grant
-        subprocess.check_call([_ADB, "-s", self.device_id, "push", mnt_path, "/data/local/tmp/minitouch"])
-        subprocess.check_call(
-            [_ADB, "-s", self.device_id, "shell", "chmod", "777", "/data/local/tmp/minitouch"]
-        )
+        target_filename = PurePosixPath("/data/local/tmp/minitouch").name
+        if target_filename not in file_list.decode(config.DEFAULT_CHARSET).split():
+            # 检查本地文件是否存在
+            mnt_path = Path(".") / "assets" / "minitouch" / self.abi / "minitouch"
+            if not mnt_path.exists():
+                log.error(f"minitouch 不存在于 {mnt_path} 中")
+                raise FileNotFoundError("minitouch not found in {}".format(mnt_path))
 
-
-
+            # 推送并授权
+            subprocess.check_call([_ADB, "-s", self.device_id, "push", mnt_path, "/data/local/tmp/minitouch"])
+            subprocess.check_call(
+                [_ADB, "-s", self.device_id, "shell", "chmod", "777", "/data/local/tmp/minitouch"]
+            )
+        else:
+            log.debug(f"minitouch已存在，无需再次推送")
 
     def get_abi(self):
         abi = subprocess.getoutput(
