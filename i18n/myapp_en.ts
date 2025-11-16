@@ -18,6 +18,16 @@
         <source>关闭</source>
         <translation>Close</translation>
     </message>
+    <message>
+        <location filename="../app/announcement_board.py" line="140"/>
+        <source>滚动至底部可关闭公告</source>
+        <translation>Scroll to the bottom to close the announcement.</translation>
+    </message>
+    <message>
+        <location filename="../app/announcement_board.py" line="167"/>
+        <source>长期公告</source>
+        <translation>Long-term announcement</translation>
+    </message>
 </context>
 <context>
     <name>BaseCheckBox</name>
