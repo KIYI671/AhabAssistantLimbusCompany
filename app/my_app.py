@@ -277,6 +277,7 @@ class MainWindow(FramelessWindow):
                 # 当有新公告时，弹出公告栏
                 messages_box = AnnouncementBoard(
                     self.announcement_thread.announcement,
+                    self.announcement_thread.announcement_time,
                     self.window()
                 )
                 messages_box.show()
