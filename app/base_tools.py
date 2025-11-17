@@ -286,6 +286,10 @@ class BaseLabel(BaseLayout):
     def retranslateUi(self):
         self.label.setText(self.tr(self.text))
 
+    def setText(self, text):
+        self.label.setText(text)
+        self.label.repaint()
+
 
 class BaseComboBox(BaseLayout):
     def __init__(self, config_name, combo_box_width=None, parent=None):
