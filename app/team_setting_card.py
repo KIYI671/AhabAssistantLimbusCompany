@@ -711,18 +711,18 @@ class CustomizeInfoModule(QFrame):
 
     def get_info(self, team_num):
         return_dict = {}
-        if cfg.get_value(f"team{team_num}_setting"):
-            config_team_setting = cfg.get_value(f"team{team_num}_setting")
-            team_total_mirror_time_hard = config_team_setting.get(
+        if cfg.get_value(f"team{team_num}_history"):
+            config_team_history = cfg.get_value(f"team{team_num}_history")
+            team_total_mirror_time_hard = config_team_history.get(
                 "total_mirror_time_hard", []
             )
-            team_total_mirror_hard_count = config_team_setting.get(
+            team_total_mirror_hard_count = config_team_history.get(
                 "mirror_hard_count", 0
             )
-            team_total_mirror_time_normal = config_team_setting.get(
+            team_total_mirror_time_normal = config_team_history.get(
                 "total_mirror_time_normal", []
             )
-            team_total_mirror_normal_count = config_team_setting.get(
+            team_total_mirror_normal_count = config_team_history.get(
                 "mirror_normal_count", 0
             )
             return_dict["total_count"] = (
@@ -763,13 +763,13 @@ class CustomizeInfoModule(QFrame):
         return return_dict
 
     def clear_data(self):
-        if cfg.get_value(f"team{self.team_num}_setting"):
-            config_team_setting = cfg.get_value(f"team{self.team_num}_setting")
-            config_team_setting["total_mirror_time_hard"] = []
-            config_team_setting["mirror_hard_count"] = 0
-            config_team_setting["total_mirror_time_normal"] = []
-            config_team_setting["mirror_normal_count"] = 0
-            cfg.set_value(f"team{self.team_num}_setting", config_team_setting)
+        if cfg.get_value(f"team{self.team_num}_history"):
+            config_team_history = cfg.get_value(f"team{self.team_num}_history")
+            config_team_history["total_mirror_time_hard"] = []
+            config_team_history["mirror_hard_count"] = 0
+            config_team_history["total_mirror_time_normal"] = []
+            config_team_history["mirror_normal_count"] = 0
+            cfg.set_value(f"team{self.team_num}_history", config_team_history)
         self.fresh_data()
 
     def update_data(self):
@@ -782,36 +782,59 @@ class CustomizeInfoModule(QFrame):
         self.normal_count.setText(
             self.tr("普通镜牢次数: ") + str(self.info.get("normal_count", 0))
         )
-        average_time_hard = self.info.get("average_time_hard", 0)
-        if average_time_hard - int(average_time_hard) >= 0.005:
+        average_time_hard = self.info.get("average_time_hard", 0.0)
+        if average_time_hard >= 0.005:
             self.average_time_hard.setText(
-                self.tr(f"困难平均用时: {average_time_hard // 60} 分 {average_time_hard % 60:.2f} 秒")
+                self.tr(f"困难平均用时: {average_time_hard // 60:.0f} 分 {average_time_hard % 60:.2f} 秒")
             )
-        average_time_hard_last5 = self.info.get("average_time_hard_last5", 0)
-        if average_time_hard_last5 - int(average_time_hard_last5) >= 0.005:
+        else:
+            self.average_time_hard.setText(
+                self.tr("困难平均用时: 统计数据不足")
+            )
+        average_time_hard_last5 = self.info.get("average_time_hard_last5", 0.0)
+        if average_time_hard_last5 >= 0.005:
             self.average_time_hard_last5.setText(
-                self.tr(f"困难最近5次平均用时: {average_time_hard_last5 // 60} 分 {average_time_hard_last5 % 60:.2f} 秒")
+                self.tr(f"困难最近5次平均用时: {average_time_hard_last5 // 60:.0f} 分 {average_time_hard_last5 % 60:.2f} 秒")
             )
-        average_time_hard_last10 = self.info.get("average_time_hard_last10", 0)
-        if average_time_hard_last10 - int(average_time_hard_last10) >= 0.005:
+        else:
+            self.average_time_hard_last5.setText(
+                self.tr("困难最近5次平均用时: 统计数据不足")
+            )
+        average_time_hard_last10 = self.info.get("average_time_hard_last10", 0.0)
+        if average_time_hard_last10 >= 0.005:
             self.average_time_hard_last10.setText(
-                self.tr(f"困难最近10次平均用时: {average_time_hard_last10 // 60} 分 {average_time_hard_last10 % 60:.2f} 秒")
+                self.tr(f"困难最近10次平均用时: {average_time_hard_last10 // 60:.0f} 分 {average_time_hard_last10 % 60:.2f} 秒")
             )
-        average_time_normal = self.info.get("average_time_normal", 0)
-        if average_time_normal - int(average_time_normal) >= 0.005:
+        else:
+            self.average_time_hard_last10.setText(
+                self.tr("困难最近10次平均用时: 统计数据不足")
+            )
+        average_time_normal = self.info.get("average_time_normal", 0.0)
+        if average_time_normal >= 0.005:
             self.average_time_normal.setText(
-                self.tr(f"普通平均用时: {average_time_normal // 60} 分 {average_time_normal % 60:.2f} 秒")
+                self.tr(f"普通平均用时: {average_time_normal // 60:.0f} 分 {average_time_normal % 60:.2f} 秒")
             )
-
-        average_time_normal_last5 = self.info.get("average_time_normal_last5", 0)
-        if average_time_normal_last5 - int(average_time_normal_last5) >= 0.005:
+        else:
+            self.average_time_normal.setText(
+                self.tr("普通平均用时: 统计数据不足")
+            )
+        average_time_normal_last5 = self.info.get("average_time_normal_last5", 0.0)
+        if average_time_normal_last5 >= 0.005:
             self.average_time_normal_last5.setText(
-                self.tr(f"普通最近5次平均用时: {average_time_normal_last5 // 60} 分 {average_time_normal_last5 % 60:.2f} 秒")
+                self.tr(f"普通最近5次平均用时: {average_time_normal_last5 // 60:.0f} 分 {average_time_normal_last5 % 60:.2f} 秒")
             )
-        average_time_normal_last10 = self.info.get("average_time_normal_last10", 0)
-        if average_time_normal_last10 - int(average_time_normal_last10) >= 0.005:
+        else:
+            self.average_time_normal_last5.setText(
+                self.tr("普通最近5次平均用时: 统计数据不足")
+            )
+        average_time_normal_last10 = self.info.get("average_time_normal_last10", 0.0)
+        if average_time_normal_last10 >= 0.005:
             self.average_time_normal_last10.setText(
-                self.tr(f"普通最近10次平均用时: {average_time_normal_last10 // 60} 分 {average_time_normal_last10 % 60:.2f} 秒")
+                self.tr(f"普通最近10次平均用时: {average_time_normal_last10 // 60:.0f} 分 {average_time_normal_last10 % 60:.2f} 秒")
+            )
+        else:
+            self.average_time_normal_last10.setText(
+                self.tr("普通最近10次平均用时: 统计数据不足")
             )
 
     def fresh_data(self):

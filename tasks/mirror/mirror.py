@@ -575,23 +575,23 @@ class Mirror:
         elapsed_time = end_time - start_time
 
         if all(self.floor_times[i] > 0 for i in range(5)): # 判断是否完整走了五层
-            team_setting =  cfg.get_value(f"team{self.team_number}_setting")
+            team_history =  cfg.get_value(f"team{self.team_number}_history",default={})
             if self.hard_switch:
-                team_total_battle_time_hard = team_setting.get("total_mirror_time_hard", [])
+                team_total_battle_time_hard = team_history.get("total_mirror_time_hard", [])
                 team_total_battle_time_hard.append(elapsed_time)
-                team_total_battle_count = team_setting.get("mirror_hard_count", 0)
+                team_total_battle_count = team_history.get("mirror_hard_count", 0)
                 team_total_battle_count += 1
-                team_setting["total_mirror_time_hard"] = team_total_battle_time_hard
-                team_setting["mirror_hard_count"] = team_total_battle_count
+                team_history["total_mirror_time_hard"] = team_total_battle_time_hard
+                team_history["mirror_hard_count"] = team_total_battle_count
             else:
-                team_total_battle_time_normal = team_setting.get("total_mirror_time_normal", [])
+                team_total_battle_time_normal = team_history.get("total_mirror_time_normal", [])
                 team_total_battle_time_normal.append(elapsed_time)
-                team_total_battle_count = team_setting.get("mirror_normal_count", 0)
+                team_total_battle_count = team_history.get("mirror_normal_count", 0)
                 team_total_battle_count += 1
-                team_setting["total_mirror_time_normal"] = team_total_battle_time_normal
-                team_setting["mirror_normal_count"] = team_total_battle_count
+                team_history["total_mirror_time_normal"] = team_total_battle_time_normal
+                team_history["mirror_normal_count"] = team_total_battle_count
             
-            cfg.set_value(f"team{self.team_number}_setting", team_setting)
+            cfg.set_value(f"team{self.team_number}_setting", team_history)
 
         try:
             last_floor_time = time.time() - self.floor_times[self.floor - 1]
