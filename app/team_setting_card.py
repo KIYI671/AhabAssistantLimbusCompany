@@ -781,54 +781,31 @@ class CustomizeInfoModule(QFrame):
         average_time_hard = self.info.get("average_time_hard", 0)
         if average_time_hard - int(average_time_hard) >= 0.005:
             self.average_time_hard.setText(
-                self.tr("困难平均用时: ")
-                + str(round(average_time_hard, 2) // 60)
-                + self.tr(" 分")
-                + str(round(average_time_hard, 2) % 60)
-                + self.tr(" 秒")
+                self.tr(f"困难平均用时: {average_time_hard // 60} 分 {average_time_hard % 60:.2f} 秒")
             )
         average_time_hard_last5 = self.info.get("average_time_hard_last5", 0)
         if average_time_hard_last5 - int(average_time_hard_last5) >= 0.005:
             self.average_time_hard_last5.setText(
-                self.tr("困难最近5次平均用时: ")
-                + str(round(average_time_hard_last5, 2) // 60)
-                + self.tr(" 分")
-                + str(round(average_time_hard_last5, 2) % 60)
-                + self.tr(" 秒")
+                self.tr(f"困难最近5次平均用时: {average_time_hard_last5 // 60} 分 {average_time_hard_last5 % 60:.2f} 秒")
             )
         average_time_hard_last10 = self.info.get("average_time_hard_last10", 0)
         if average_time_hard_last10 - int(average_time_hard_last10) >= 0.005:
             self.average_time_hard_last10.setText(
-                self.tr("困难最近10次平均用时: ")
-                + str(round(average_time_hard_last10, 2) // 60)
-                + self.tr(" 分")
-                + str(round(average_time_hard_last10, 2) % 60)
-                + self.tr(" 秒")
+                self.tr(f"困难最近10次平均用时: {average_time_hard_last10 // 60} 分 {average_time_hard_last10 % 60:.2f} 秒")
             )
         average_time_normal = self.info.get("average_time_normal", 0)
         if average_time_normal - int(average_time_normal) >= 0.005:
             self.average_time_normal.setText(
-                self.tr("普通平均用时: ")
-                + str(round(average_time_normal, 2) // 60)
-                + self.tr(" 分")
-                + str(round(average_time_normal, 2) % 60)
-                + self.tr(" 秒")
+                self.tr(f"普通平均用时: {average_time_normal // 60} 分 {average_time_normal % 60:.2f} 秒")
             )
+
         average_time_normal_last5 = self.info.get("average_time_normal_last5", 0)
         if average_time_normal_last5 - int(average_time_normal_last5) >= 0.005:
             self.average_time_normal_last5.setText(
-                self.tr("普通最近5次平均用时: ")
-                + str(round(average_time_normal_last5, 2) // 60)
-                + self.tr(" 分")
-                + str(round(average_time_normal_last5, 2) % 60)
-                + self.tr(" 秒")
+                self.tr(f"普通最近5次平均用时: {average_time_normal_last5 // 60} 分 {average_time_normal_last5 % 60:.2f} 秒")
             )
         average_time_normal_last10 = self.info.get("average_time_normal_last10", 0)
         if average_time_normal_last10 - int(average_time_normal_last10) >= 0.005:
             self.average_time_normal_last10.setText(
-                self.tr("普通最近10次平均用时: ")
-                + str(round(average_time_normal_last10, 2) // 60)
-                + self.tr(" 分")
-                + str(round(average_time_normal_last10, 2) % 60)
-                + self.tr(" 秒")
+                self.tr(f"普通最近10次平均用时: {average_time_normal_last10 // 60} 分 {average_time_normal_last10 % 60:.2f} 秒")
             )
