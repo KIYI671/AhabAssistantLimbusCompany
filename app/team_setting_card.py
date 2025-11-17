@@ -668,6 +668,7 @@ class CustomizeInfoModule(QFrame):
         self.second_line = QHBoxLayout(self.second_line_widget)
         self.third_line_widget = QWidget(self)
         self.third_line = QHBoxLayout(self.third_line_widget)
+        self.clear_data_button_layout = QHBoxLayout()
 
     def __init_card(self):
         self.total_count = BaseLabel("统计数据不足", parent=self)
@@ -680,6 +681,9 @@ class CustomizeInfoModule(QFrame):
         self.average_time_normal_last5 = BaseLabel("统计数据不足", parent=self)
         self.average_time_normal_last10 = BaseLabel("统计数据不足", parent=self)
 
+        self.clear_data_button = PrimaryPushButton(self.tr("清除历史统计数据"), self)
+        self.clear_data_button.clicked.connect(self.clear_data)
+
     def __init_layout(self):
         self.first_line.addWidget(self.total_count)
         self.first_line.addWidget(self.hard_count)
@@ -690,10 +694,12 @@ class CustomizeInfoModule(QFrame):
         self.third_line.addWidget(self.average_time_normal)
         self.third_line.addWidget(self.average_time_normal_last5)
         self.third_line.addWidget(self.average_time_normal_last10)
-
+        self.clear_data_button_layout.addWidget(self.clear_data_button)
+        
         self.main_layout.addWidget(self.first_line_widget)
         self.main_layout.addWidget(self.second_line_widget)
         self.main_layout.addWidget(self.third_line_widget)
+        self.main_layout.addLayout(self.clear_data_button_layout)
 
     def retranslateUi(self):
         pass
@@ -750,6 +756,17 @@ class CustomizeInfoModule(QFrame):
                 else 0
             )
         return return_dict
+
+    def clear_data(self):
+        if cfg.get_value(f"team{self.team_num}_setting"):
+            config_team_setting = cfg.get_value(f"team{self.team_num}_setting")
+            config_team_setting["total_mirror_time_hard"] = []
+            config_team_setting["mirror_hard_count"] = 0
+            config_team_setting["total_mirror_time_normal"] = []
+            config_team_setting["mirror_normal_count"] = 0
+            cfg.set_value(f"team{self.team_num}_setting", config_team_setting)
+        self.info = self.__init_info(self.team_num)
+        self.fresh_data()
 
     def fresh_data(self):
         self.total_count.setText(
