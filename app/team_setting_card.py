@@ -655,8 +655,8 @@ class CustomizeInfoModule(QFrame):
         self.__init_layout()
 
         self.team_num = team_num
-        self.info = self.__init_info(team_num)
-        self.fresh_data()
+        self.info = self.get_info(team_num)
+        self.update_data()
 
         LanguageManager().register_component(self)
         self.retranslateUi()
@@ -668,6 +668,7 @@ class CustomizeInfoModule(QFrame):
         self.second_line = QHBoxLayout(self.second_line_widget)
         self.third_line_widget = QWidget(self)
         self.third_line = QHBoxLayout(self.third_line_widget)
+        self.fresh_data_button_layout = QHBoxLayout()
         self.clear_data_button_layout = QHBoxLayout()
 
     def __init_card(self):
@@ -681,6 +682,8 @@ class CustomizeInfoModule(QFrame):
         self.average_time_normal_last5 = BaseLabel("普通最近5次平均用时: 统计数据不足", parent=self)
         self.average_time_normal_last10 = BaseLabel("普通最近10次平均用时: 统计数据不足", parent=self)
 
+        self.refesh_button = PushButton(self.tr("刷新数据"), self)
+        self.refesh_button.clicked.connect(self.fresh_data)
         self.clear_data_button = PrimaryPushButton(self.tr("清除历史统计数据"), self)
         self.clear_data_button.clicked.connect(self.clear_data)
 
@@ -694,17 +697,19 @@ class CustomizeInfoModule(QFrame):
         self.third_line.addWidget(self.average_time_normal)
         self.third_line.addWidget(self.average_time_normal_last5)
         self.third_line.addWidget(self.average_time_normal_last10)
+        self.fresh_data_button_layout.addWidget(self.refesh_button)
         self.clear_data_button_layout.addWidget(self.clear_data_button)
         
         self.main_layout.addWidget(self.first_line_widget)
         self.main_layout.addWidget(self.second_line_widget)
         self.main_layout.addWidget(self.third_line_widget)
+        self.main_layout.addLayout(self.fresh_data_button_layout)
         self.main_layout.addLayout(self.clear_data_button_layout)
 
     def retranslateUi(self):
         pass
 
-    def __init_info(self, team_num):
+    def get_info(self, team_num):
         return_dict = {}
         if cfg.get_value(f"team{team_num}_setting"):
             config_team_setting = cfg.get_value(f"team{team_num}_setting")
@@ -765,10 +770,9 @@ class CustomizeInfoModule(QFrame):
             config_team_setting["total_mirror_time_normal"] = []
             config_team_setting["mirror_normal_count"] = 0
             cfg.set_value(f"team{self.team_num}_setting", config_team_setting)
-        self.info = self.__init_info(self.team_num)
         self.fresh_data()
 
-    def fresh_data(self):
+    def update_data(self):
         self.total_count.setText(
             self.tr("总镜牢次数: ") + str(self.info.get("total_count", 0))
         )
@@ -809,3 +813,7 @@ class CustomizeInfoModule(QFrame):
             self.average_time_normal_last10.setText(
                 self.tr(f"普通最近10次平均用时: {average_time_normal_last10 // 60} 分 {average_time_normal_last10 % 60:.2f} 秒")
             )
+
+    def fresh_data(self):
+        self.info = self.get_info(self.team_num)
+        self.update_data()

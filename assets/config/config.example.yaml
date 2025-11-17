@@ -153,5 +153,8 @@ team1_setting:
   skill_replacement_select: 0 # 技能替换设置
   skill_replacement_mode: 0 # 技能替换模式
   ignore_shop: [ 0,0,0,0,0 ] # 忽略商店楼层
-
+  total_mirror_time_hard: [] # 困难镜牢总用时
+  mirror_hard_count: 0 # 困难镜牢次数
+  total_mirror_time_normal: [] # 普通镜牢总用时
+  mirror_normal_count: 0 # 普通镜牢次数
 team1_remark_name: # 队伍备注名
