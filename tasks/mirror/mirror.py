@@ -591,7 +591,7 @@ class Mirror:
                 team_history["total_mirror_time_normal"] = team_total_battle_time_normal
                 team_history["mirror_normal_count"] = team_total_battle_count
             
-            cfg.set_value(f"team{self.team_number}_setting", team_history)
+            cfg.set_value(f"team{self.team_number}_history", team_history)
 
         try:
             last_floor_time = time.time() - self.floor_times[self.floor - 1]
