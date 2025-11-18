@@ -23,7 +23,7 @@ class ProductionWork(QThread):
     production_executed = Signal()
     error_occurred = Signal(str)
     initialization_complete = Signal()
-    on_waiting_occurred = Signal(int, int)
+    on_waiting_occurred = Signal(int, int, int)
 
     def __init__(self, kill_game=False, parent=None):
         super().__init__(parent)
@@ -52,7 +52,7 @@ class ProductionWork(QThread):
                 return
             back_init_menu()
             make_enkephalin_module(cancel=False, skip=False)
-            while not auto.find_element("enkephalin/lunacy_assets.png"):
+            while not auto.find_element("enkephalin/lunacy_assets.png", take_screenshot=True):
                 auto.click_element("enkephalin/use_lunacy_assets.png")
             current_enkephalin = get_current_enkephalin()
             timing = None
@@ -64,7 +64,7 @@ class ProductionWork(QThread):
             if current_enkephalin and current_enkephalin >= 20:
                 make_enkephalin_module(skip=False)
             sleep_time = (20 - current_enkephalin % 20 - 1) * 6 * 60 + timing
-            self.on_waiting_occurred.emit(timing, sleep_time)
+            self.on_waiting_occurred.emit(current_enkephalin, timing, sleep_time)
             if self.kill_game:
                 kill_game()
             sleep(sleep_time)
@@ -210,10 +210,11 @@ class ProductionModule(QWidget):
         self.log_text.append(f"错误: {error_msg}")
         log.error(f"生产错误: {error_msg}")
 
-    def on_waiting_occurred(self, next_time, waiting_time):
+    def on_waiting_occurred(self, current_enk, next_time, waiting_time):
         """当发生等待时调用"""
         now_time = datetime.now()
         self.log_text.append(f"当前时间: {now_time.strftime('%Y-%m-%d %H:%M:%S')}")
+        self.log_text.append(f"当前体力: {current_enk}")
         self.log_text.append(f"状态：等待 - 下一次体力回复时间: {next_time} s")
         self.log_text.append(f"等待: 下一次执行模块生产等待时间: {waiting_time} s")
         future_time = now_time + timedelta(seconds=waiting_time)

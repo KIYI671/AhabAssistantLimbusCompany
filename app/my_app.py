@@ -7,11 +7,12 @@ from enum import Enum
 from PySide6.QtCore import Qt, QLocale, QTimer
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QApplication, QHBoxLayout, QStackedWidget, QVBoxLayout, QLabel, QWidget
-from qfluentwidgets import Pivot, setThemeColor, ProgressRing
+from qfluentwidgets import Pivot, setThemeColor, ProgressRing, qconfig
 from qfluentwidgets.components.widgets.frameless_window import FramelessWindow
 from qframelesswindow import StandardTitleBar
 
-from app import mediator
+from app import mediator, AnnouncementStatus
+from app.announcement_board import AnnouncementBoard, Announcement, AnnouncementThread
 from app.card.messagebox_custom import MessageBoxWarning, MessageBoxConfirm
 from app.farming_interface import FarmingInterface
 from app.language_manager import LanguageManager
@@ -38,8 +39,30 @@ class Language(Enum):
 class MainWindow(FramelessWindow):
     def __init__(self):
         super().__init__()
+
+        font_families = [
+            "Segoe UI",  # Windows 现代UI字体
+            "Microsoft YaHei",  # 微软雅黑
+            "微软雅黑",  # 微软雅黑中文名
+            "Noto Sans CJK SC",  # 跨平台中文字体
+            "sans-serif",  # 最后回退到无衬线字体
+            "SansSerif",  # 无衬线字体另一个名称
+        ]
+        qconfig.fontFamilies.value = font_families
+
+        title_bar = StandardTitleBar(self)
+        title_bar.titleLabel.setStyleSheet("""
+            QLabel{
+                background: transparent;
+                font-family: "Segoe UI", "Microsoft YaHei", "微软雅黑", "PingFang SC", "Hiragino Sans GB", sans-serif;
+                font-size: 13px;
+                padding: 0 4px
+            }
+        """)
+
+
         # 设置标准标题栏，如果不设置则无法展示标题
-        self.setTitleBar(StandardTitleBar(self))
+        self.setTitleBar(title_bar)
         self.setWindowIcon(QIcon('./assets/logo/my_icon_256X256.ico'))
         self.setWindowTitle(f"Ahab Assistant Limbus Company -  {cfg.version}")
         self.setObjectName("MainWindow")
@@ -118,6 +141,8 @@ class MainWindow(FramelessWindow):
         check_update(self, flag=True)
 
         self.set_ring()
+        
+        self.show_announcement_board()
 
     def closeEvent(self, e):
         if (
@@ -136,7 +161,7 @@ class MainWindow(FramelessWindow):
                 return
         return super().closeEvent(e)
 
-    def addSubInterface(self, widget: QWidget, objectName, text):
+    def addSubInterface(self, widget: QLabel, objectName, text):
         widget.setObjectName(objectName)
         # widget.setAlignment(Qt.AlignCenter)
         self.stackedWidget.addWidget(widget)
@@ -205,7 +230,7 @@ class MainWindow(FramelessWindow):
         mediator.warning.connect(self.show_warning)
 
     def set_ring(self):
-        self.progress_ring.raise_() # 保持最上层显示
+        self.progress_ring.raise_()  # 保持最上层显示
         self.progress_ring.setValue(0)
         self.progress_ring.setTextVisible(True)
         self.progress_ring.setFixedSize(80, 80)
@@ -256,3 +281,30 @@ class MainWindow(FramelessWindow):
 
         if "team_setting" in list(self.pivot.items.keys()):
             self.pivot.setItemText("team_setting", self.tr("队伍设置"))
+
+    def show_announcement_board(self):
+
+        def handler_update(status):
+            """
+            公告处理函数，根据不同的公告状态执行不同的操作。
+            :param status: 公告状态。
+            """
+            if status == AnnouncementStatus.ANNO_AVAILABLE:
+                # 当有新公告时，弹出公告栏
+                messages_box = AnnouncementBoard(
+                    self.announcement_thread.announcement,
+                    self.announcement_thread.announcement_time,
+                    self.window()
+                )
+                messages_box.show()
+                messages_box.setDefault(0)
+
+        try:
+            # 创建一个公告线程实例
+            self.announcement_thread = AnnouncementThread()
+            # 将公告处理函数连接到更新线程的信号
+            self.announcement_thread.AnnouncementSignal.connect(handler_update)
+            # 启动公告线程
+            self.announcement_thread.start()
+        except Exception as e:
+            log.error(f"show_announcement_board 出错：{e}")

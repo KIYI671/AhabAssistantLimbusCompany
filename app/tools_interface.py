@@ -79,9 +79,7 @@ class ToolsInterface(ScrollArea):
         self.auto_battle_card.clicked.connect(lambda: tools.start("battle"))
         self.auto_production_card.clicked.connect(lambda: tools.start("production"))
         self.get_screenshot_card.clicked.connect(lambda: tools.start("screenshot"))
-        time_str = time.strftime("%Y%m%d_%H%M%S", time.localtime())
-        self.get_screenshot_card.clicked.connect(
-            lambda: self.__onZoomCardValueChanged("截图完成", f"图片保存为 AALC > screenshot_{time_str}.png"))
+        self.get_screenshot_card.clicked.connect(self._onScreenshotToolButtonPressed)
 
     def retranslateUi(self):
         self.tools_group.retranslateUi()
@@ -89,10 +87,14 @@ class ToolsInterface(ScrollArea):
         self.auto_production_card.retranslateUi()
         self.get_screenshot_card.retranslateUi()
 
-    def __onZoomCardValueChanged(self, title: str, msg: str):
+    def _onScreenshotToolButtonPressed(self):
+        time_str = time.strftime("%Y%m%d_%H%M%S", time.localtime())
+        title = QT_TRANSLATE_NOOP("BaseInfoBar", "截图完成")
+        msg = QT_TRANSLATE_NOOP("BaseInfoBar", "图片保存为 AALC > screenshot_{time_str}.png")
         bar = BaseInfoBar.success(
-            title=QT_TRANSLATE_NOOP("BaseInfoBar", title),
-            content=QT_TRANSLATE_NOOP("BaseInfoBar", msg),
+            title=title,
+            content=msg,
+            content_kwargs={"time_str": time_str},
             orient=Qt.Horizontal,
             isClosable=True,
             position=InfoBarPosition.BOTTOM_RIGHT,

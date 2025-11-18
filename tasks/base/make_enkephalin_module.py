@@ -6,7 +6,7 @@ from module.decorator.decorator import begin_and_finish_time_log
 from module.logger import log
 
 
-def get_the_timing(return_time = False):
+def get_the_timing(return_time=False):
     if module_position := auto.find_element("enkephalin/lunacy_assets.png", take_screenshot=True):
         my_scale = cfg.set_win_size / 1440
         bbox = (
@@ -31,6 +31,7 @@ def get_the_timing(return_time = False):
             except:
                 return False
         return False
+
 
 def get_current_enkephalin():
     from utils.image_utils import ImageUtils
@@ -92,7 +93,7 @@ def make_enkephalin_module(cancel=True, skip=True):
             from app import mediator
 
             if first_popup_warning and (
-                last_log_time is None or now_time - last_log_time > 5
+                    last_log_time is None or now_time - last_log_time > 5
             ):
                 # only do it once
                 first_popup_warning = False
@@ -106,8 +107,9 @@ def make_enkephalin_module(cancel=True, skip=True):
         if auto.take_screenshot() is None:
             continue
         auto.mouse_to_blank()
-        if auto.find_element("base/update_close_assets.png", model="clam") and auto.find_element("home/drive_assets.png",
-                                                                                              model="normal"):
+        if auto.find_element("base/update_close_assets.png", model="clam") and auto.find_element(
+                "home/drive_assets.png",
+                model="normal"):
             auto.click_element("base/update_close_assets.png")
             from tasks.base.back_init_menu import back_init_menu
             back_init_menu()
@@ -121,7 +123,7 @@ def make_enkephalin_module(cancel=True, skip=True):
             start_time = time.time()
             continue
         if auto.find_element("enkephalin/use_lunacy_assets.png") is None:
-            if auto.click_element("home/enkephalin_box_assets.png"):
+            if auto.click_element("home/enkephalin_box_assets.png", threshold=0.75):
                 sleep(0.5)
             continue
         auto.click_element("enkephalin/all_in_assets.png")

@@ -1,3 +1,5 @@
+from time import sleep
+
 from module.automation import auto
 from module.config import cfg
 from module.decorator.decorator import begin_and_finish_time_log
@@ -13,6 +15,15 @@ def back_init_menu():
     loop_count = 30
     auto.model = 'clam'
     while True:
+        if cfg.simulator:
+            if cfg.simulator_type ==0 :
+                from module.simulator.mumu_control import MumuControl
+                if MumuControl.connection_device.check_game_alive() is False:
+                    MumuControl.connection_device.start_game()
+            else:
+                from module.simulator.simulator_control import SimulatorControl
+                if SimulatorControl.connection_device.check_game_alive() is False:
+                    SimulatorControl.connection_device.start_game()
         # 自动截图
         if auto.take_screenshot() is None:
             continue

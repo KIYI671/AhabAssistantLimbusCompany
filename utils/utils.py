@@ -1,4 +1,5 @@
 import base64
+import subprocess
 from datetime import datetime, timedelta, time
 from zoneinfo import ZoneInfo  # Python 3.9+ 内置模块
 
@@ -7,6 +8,7 @@ import numpy as np
 import win32crypt
 
 from module.config import cfg
+from module.logger import log
 
 
 def get_day_of_week():
@@ -17,7 +19,9 @@ def get_day_of_week():
     day = now_time.isoweekday()  # isoweekday() 返回 1（周一）~7（周日）
     hour = now_time.hour  # 小时（0-23）
 
-    if hour < 6:
+    if hour < 6 and day == 1:  # 如果是凌晨0点到6点之间，且不是周一，则视为前一天 （修复周一凌晨判断传参为0的bug）
+        day = 7
+    elif hour < 6:
         day -= 1
 
     return day
@@ -199,3 +203,50 @@ def decrypt_string(encrypted_b64: str, entropy: bytes = b'AALC') -> str:
         return encrypted_b64
     # 返回原始字符串
     return decrypted_data[1].decode('utf-8')
+
+
+def run_as_user(command: list[str], **kwargs):
+    """使用任务计划程序以当前用户身份运行命令"""
+
+    def clean_task():
+        try:
+            scheduler_log = subprocess.run('schtasks /delete /tn "TempNonAdminTask" /f', shell=True, capture_output=True, text=True)
+            log.debug(f"任务计划程序输出: {scheduler_log.stdout}")
+            if scheduler_log.returncode != 0:
+                log.debug(f"任务计划程序删除失败: {scheduler_log.stderr}")
+                return False
+        except Exception as e:
+            log.error(f"任务计划程序删除失败: {e}")
+            return False
+
+    # 先清理一次任务计划，防止遗留
+    clean_task()
+
+    import tempfile, os
+    log.debug(f"使用用户权限运行命令: {command}")
+    # 创建临时批处理文件
+    with tempfile.NamedTemporaryFile(delete=False, suffix='.bat',mode = 'w') as bat:
+        bat.write(f'@echo off\n{subprocess.list2cmdline(command)}\n')
+        bat_path = bat.name
+
+    # 使用任务计划程序以当前用户身份运行
+    scheduler = f'schtasks /create /tn "TempNonAdminTask" /sc once /st 23:59 /ru {os.environ["USERNAME"]} /tr "{bat_path}"'
+    scheduler_log = subprocess.run(scheduler, shell=True, capture_output=True, text=True)
+    log.debug(f"任务计划程序输出: {scheduler_log.stdout}")
+    if scheduler_log.returncode != 0:
+        log.error(f"任务计划程序创建失败: {scheduler_log.stderr}")
+        return False
+
+    # 立即执行任务
+    scheduler_log = subprocess.run('schtasks /run /tn "TempNonAdminTask"', shell=True, capture_output=True, text=True)
+    log.debug(f"任务计划程序输出: {scheduler_log.stdout}")
+    if scheduler_log.returncode != 0:
+        log.error(f"任务计划程序运行失败: {scheduler_log.stderr}")
+        return False
+    from time import sleep
+    sleep(2)
+
+    # 再次清理任务和文件
+    clean_task()
+
+    os.unlink(bat_path)

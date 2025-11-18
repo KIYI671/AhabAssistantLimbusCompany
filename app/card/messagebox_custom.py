@@ -152,7 +152,8 @@ class MessageBoxWarning(MessageBox):
 
 class BaseInfoBar(InfoBar):
     def __init__(self, icon: InfoBarIcon | FluentIconBase | QIcon | str, title: str, content: str, orient=Qt.Horizontal,
-                 isClosable=True, duration=1000, position=InfoBarPosition.TOP_RIGHT, parent=None, title_kwargs=None, content_kwargs=None):
+                 isClosable=True, duration=1000, position=InfoBarPosition.TOP_RIGHT, parent=None, title_kwargs=None,
+                 content_kwargs=None):
         if title_kwargs is not None:
             title = title.format(**title_kwargs)
         if content_kwargs is not None:
@@ -162,30 +163,36 @@ class BaseInfoBar(InfoBar):
     @classmethod
     def new(cls, icon, title, content, orient=Qt.Horizontal, isClosable=True, duration=1000,
             position=InfoBarPosition.TOP_RIGHT, parent=None, title_kwargs=None, content_kwargs=None):
-        w = BaseInfoBar(icon, QCoreApplication.translate("BaseInfoBar", title), QCoreApplication.translate("BaseInfoBar", content), orient,
-                        isClosable, duration, position, parent, title_kwargs=title_kwargs, content_kwargs=content_kwargs)
+        w = BaseInfoBar(icon, QCoreApplication.translate("BaseInfoBar", title),
+                        QCoreApplication.translate("BaseInfoBar", content), orient,
+                        isClosable, duration, position, parent, title_kwargs=title_kwargs,
+                        content_kwargs=content_kwargs)
         w.show()
         return w
 
     @classmethod
     def info(cls, title, content, orient=Qt.Horizontal, isClosable=True, duration=1000,
              position=InfoBarPosition.TOP_RIGHT, parent=None, title_kwargs=None, content_kwargs=None):
-        return cls.new(InfoBarIcon.INFORMATION, title, content, orient, isClosable, duration, position, parent, title_kwargs=title_kwargs, content_kwargs=content_kwargs)
+        return cls.new(InfoBarIcon.INFORMATION, title, content, orient, isClosable, duration, position, parent,
+                       title_kwargs=title_kwargs, content_kwargs=content_kwargs)
 
     @classmethod
     def success(cls, title, content, orient=Qt.Horizontal, isClosable=True, duration=1000,
                 position=InfoBarPosition.TOP_RIGHT, parent=None, title_kwargs=None, content_kwargs=None):
-        return cls.new(InfoBarIcon.SUCCESS, title, content, orient, isClosable, duration, position, parent, title_kwargs=title_kwargs, content_kwargs=content_kwargs)
+        return cls.new(InfoBarIcon.SUCCESS, title, content, orient, isClosable, duration, position, parent,
+                       title_kwargs=title_kwargs, content_kwargs=content_kwargs)
 
     @classmethod
     def warning(cls, title, content, orient=Qt.Horizontal, isClosable=True, duration=1000,
                 position=InfoBarPosition.TOP_RIGHT, parent=None, title_kwargs=None, content_kwargs=None):
-        return cls.new(InfoBarIcon.WARNING, title, content, orient, isClosable, duration, position, parent, title_kwargs=title_kwargs, content_kwargs=content_kwargs)
+        return cls.new(InfoBarIcon.WARNING, title, content, orient, isClosable, duration, position, parent,
+                       title_kwargs=title_kwargs, content_kwargs=content_kwargs)
 
     @classmethod
     def error(cls, title, content, orient=Qt.Horizontal, isClosable=True, duration=1000,
               position=InfoBarPosition.TOP_RIGHT, parent=None, title_kwargs=None, content_kwargs=None):
-        return cls.new(InfoBarIcon.ERROR, title, content, orient, isClosable, duration, position, parent, title_kwargs=title_kwargs, content_kwargs=content_kwargs)
+        return cls.new(InfoBarIcon.ERROR, title, content, orient, isClosable, duration, position, parent,
+                       title_kwargs=title_kwargs, content_kwargs=content_kwargs)
 
 
 class BetterDateTimeEdit(DateTimeEdit):
@@ -306,7 +313,7 @@ class MessageBoxDate(MessageBox):
 
 
 class MessageBoxSpinbox(MessageBox):
-    def __init__(self, title: str, parent=None):
+    def __init__(self, title: str, parent=None, max_value=3):
         super().__init__(title, '', parent)
 
         self.text = title
@@ -320,7 +327,7 @@ class MessageBoxSpinbox(MessageBox):
         self.box = SpinBox(self)
         self.box.setValue(int(cfg.hard_mirror_chance))
         self.box.setMinimum(0)
-        self.box.setMaximum(3)
+        self.box.setMaximum(int(max_value))
 
         self.textLayout.addWidget(self.box, 0, Qt.AlignTop)
 

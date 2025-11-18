@@ -1,10 +1,15 @@
 import time
 from time import sleep
+from datetime import datetime
+
+import cv2
+import numpy as np
 
 from module.automation import auto
 from module.config import cfg
 from module.decorator.decorator import begin_and_finish_time_log
 from module.logger import log
+from module.ocr import ocr
 from tasks import sins
 from tasks.base.retry import retry
 from tasks.event.event_handling import EventHandling
@@ -181,8 +186,16 @@ class Battle:
 
             if auto.find_element("battle/dead_all.png"):
                 dead_select = auto.find_element("battle/dead_all.png", find_type="image_with_multiple_targets")
-                dead_select = sorted(dead_select, key=lambda y: y[1])
-                auto.mouse_click(dead_select[1][0], dead_select[1][1])
+                if len(dead_select) == 3:
+                    dead_select = sorted(dead_select, key=lambda y: y[1])
+                    auto.mouse_click(dead_select[1][0], dead_select[1][1])
+                else:
+                    confirm_button = auto.find_element("battle/dead_all_confirm_assets.png")
+                    try:
+                        my_scale = cfg.set_win_size / 1440
+                        auto.mouse_click(confirm_button[0] + 200 * my_scale, confirm_button[1] - 350 * my_scale)
+                    except:
+                        continue
 
                 auto.click_element("battle/dead_all_confirm_assets.png")
                 sleep(1)
@@ -214,9 +227,16 @@ class Battle:
 
             if fail_count >= 5 or self.identify_keyword_turn is False:
                 # 如果多次识别不到战斗界面
-                turn_bbox = ImageUtils.get_bbox(ImageUtils.load_image("battle/turn_assets.png"))
-                turn_ocr_result = auto.find_text_element("turn", turn_bbox)
-                if turn_ocr_result is not False:
+                try:
+                    turn_bbox = ImageUtils.get_bbox(ImageUtils.load_image("battle/turn_assets.png"))
+                    sc = ImageUtils.crop(np.array(auto.screenshot), turn_bbox)
+                    sc = cv2.inRange(sc, 50, 255)
+                    result = ocr.run(sc)
+                    ocr_result = [result.txts[i] for i in range(len(result.txts))]
+                    ocr_result = "".join(ocr_result)
+                except:
+                    ocr_result = ''
+                if "turn" in ocr_result:
                     self._battle_operation(first_turn, defense_first_round, avoid_skill_3)
                     chance = self.INIT_CHANCE
                     waiting = self._update_wait_time(waiting, False, total_count)
@@ -232,9 +252,16 @@ class Battle:
             if chance < 5:
                 if not infinite_battle:
                     auto.mouse_to_blank()
-                turn_bbox = ImageUtils.get_bbox(ImageUtils.load_image("battle/turn_assets.png"))
-                turn_ocr_result = auto.find_text_element("turn", turn_bbox)
-                if turn_ocr_result is not False or auto.click_element("battle/turn_assets.png") or auto.find_element(
+                try:
+                    turn_bbox = ImageUtils.get_bbox(ImageUtils.load_image("battle/turn_assets.png"))
+                    sc = ImageUtils.crop(np.array(auto.screenshot), turn_bbox)
+                    sc = cv2.inRange(sc, 50, 255)
+                    result = ocr.run(sc)
+                    ocr_result = [result.txts[i] for i in range(len(result.txts))]
+                    ocr_result = "".join(ocr_result)
+                except:
+                    ocr_result = ''
+                if "turn" in ocr_result or auto.click_element("battle/turn_assets.png") or auto.find_element(
                         "battle/win_rate_assets.png") or auto.find_element("battle/win_rate_card.png", threshold=0.75):
                     self._battle_operation(first_turn, defense_first_round, avoid_skill_3)
                     chance = self.INIT_CHANCE
@@ -364,7 +391,7 @@ class Battle:
 
             gear_left = auto.find_element("battle/gear_left.png")
 
-            gear_1 = [gear_left[0] + 100 * scale, gear_left[1] - 35 * scale]
+            gear_1 = [gear_left[0] + 94 * scale, gear_left[1] - 37 * scale]
             gear_right = auto.find_element("battle/gear_right.png")
             gear_2 = [gear_right[0] - 100 * scale, gear_right[1]]
 
@@ -423,10 +450,13 @@ class Battle:
 
             for skill in skill_list:
                 auto.mouse_click(skill[0], skill[1])
-                sleep(cfg.mouse_action_interval // 1.5)
+                if cfg.simulator:
+                    sleep(cfg.mouse_action_interval)
+                else:
+                    sleep(cfg.mouse_action_interval // 1.5)
 
             skill_list.insert(0, gear_left)
-            skill_list.append([gear_right[0] + 75 * scale, gear_right[1] + 150 * scale])
+            skill_list.append([gear_right[0] + 100 * scale, gear_right[1] + 150 * scale])
 
             auto.mouse_drag_link(skill_list)
 

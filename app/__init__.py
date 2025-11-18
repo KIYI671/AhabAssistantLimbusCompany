@@ -1,3 +1,5 @@
+from enum import Enum
+
 from PySide6.QtCore import QT_TRANSLATE_NOOP
 
 from app.mediator import Mediator
@@ -150,3 +152,17 @@ all_checkbox_config_name = [
     "skill_replacement",
     "ignore_shop"
 ]
+
+
+class AnnouncementStatus(Enum):
+    """
+    定义更新状态的枚举类
+
+    该枚举类用于表示更新操作的三种可能结果状态：
+    - SUCCESS 表示更新操作成功
+    - UPDATE_AVAILABLE 表示有可用的更新
+    - FAILURE 表示更新操作失败
+    """
+    SUCCESS = 1
+    ANNO_AVAILABLE = 2
+    FAILURE = 0
