@@ -65,13 +65,10 @@ class TeamSettingCard(QFrame):
         self.gift_system_list_2 = QHBoxLayout()
 
         self.custom_layout = ExpandSettingCard(icon=FIF.EDIT,
-                                               title=self.tr("自定义设置（设置存在冲突时，将根据优先级覆盖生效）"),
-                                               parent=self)
+                                               title=self.tr("自定义设置（设置存在冲突时，将根据优先级覆盖生效）"))
         
         self.custom_layout2 = ExpandSettingCard(icon=FIF.INFO,
-                                                  title=self.tr("编队统计数据"),
-                                                  parent=self)
-                                               title=self.tr("自定义设置（设置存在冲突时，将根据优先级覆盖生效）"))
+                                                  title=self.tr("编队统计数据"))
 
         self.setting_layout = QHBoxLayout()
 
@@ -172,7 +169,6 @@ class TeamSettingCard(QFrame):
         self.layout_.addWidget(self.gift_system_layout)
         self.layout_.addWidget(self.custom_layout)
         self.layout_.addWidget(self.custom_layout2)
-        self.layout_.addLayout(self.setting_layout)
 
         self.main_layout.addLayout(self.setting_layout)
         self.main_layout.addSpacing(15)
@@ -656,6 +652,7 @@ class CustomizeSettingsModule(QFrame):
 class CustomizeInfoModule(QFrame):
     def __init__(self, team_num=0, parent=None):
         super().__init__(parent)
+        self.setObjectName("CustomizeInfoModule")
         self.main_layout = QVBoxLayout(self)
         self.__init_widget()
         self.__init_card()
@@ -669,11 +666,11 @@ class CustomizeInfoModule(QFrame):
         self.retranslateUi()
 
     def __init_widget(self):
-        self.first_line_widget = QWidget(self)
+        self.first_line_widget = QWidget()
         self.first_line = QHBoxLayout(self.first_line_widget)
-        self.second_line_widget = QWidget(self)
+        self.second_line_widget = QWidget()
         self.second_line = QHBoxLayout(self.second_line_widget)
-        self.third_line_widget = QWidget(self)
+        self.third_line_widget = QWidget()
         self.third_line = QHBoxLayout(self.third_line_widget)
         self.fresh_data_button_layout = QHBoxLayout()
         self.clear_data_button_layout = QHBoxLayout()
@@ -689,9 +686,9 @@ class CustomizeInfoModule(QFrame):
         self.average_time_normal_last5 = BaseLabel("普通最近5次平均用时: 统计数据不足", parent=self)
         self.average_time_normal_last10 = BaseLabel("普通最近10次平均用时: 统计数据不足", parent=self)
 
-        self.refesh_button = PushButton(self.tr("刷新数据"), self)
+        self.refesh_button = PushButton(self.tr("刷新数据"))
         self.refesh_button.clicked.connect(self.fresh_data)
-        self.clear_data_button = PrimaryPushButton(self.tr("清除历史统计数据"), self)
+        self.clear_data_button = PrimaryPushButton(self.tr("清除历史统计数据"))
         self.clear_data_button.clicked.connect(self.clear_data)
 
     def __init_layout(self):
