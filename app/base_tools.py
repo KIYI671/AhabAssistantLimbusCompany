@@ -5,7 +5,8 @@ from PySide6.QtGui import QIcon, QFont, QAction
 from PySide6.QtWidgets import QFrame, QHBoxLayout, QVBoxLayout, QSizePolicy, QWidget, QGridLayout
 from qfluentwidgets import FluentIcon as FIF
 from qfluentwidgets import FluentIconBase, CheckBox, ToggleToolButton, ToolButton, PushButton, \
-    BodyLabel, ComboBox, DoubleSpinBox, SpinBox, RoundMenu, SplitToolButton
+    BodyLabel, ComboBox, DoubleSpinBox, SpinBox, RoundMenu, SplitToolButton, ToolTipFilter, \
+    ToolTipPosition
 from qfluentwidgets.components.settings.setting_card import SettingIconWidget
 
 from app import *
@@ -73,6 +74,7 @@ class BaseCheckBox(BaseLayout):
         self.check_box_title = title
         self.tips = tips
         self.check_box = CheckBox(title, self)
+        self.check_box.installEventFilter(ToolTipFilter(self.check_box, showDelay=0, position=ToolTipPosition.BOTTOM_LEFT))
         self.hBoxLayout.addWidget(self.check_box, 0, Qt.AlignLeft)
         self.hBoxLayout.addSpacing(16)
         if not center:

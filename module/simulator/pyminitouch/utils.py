@@ -4,6 +4,7 @@ import socket
 import subprocess
 
 import module.simulator.pyminitouch.config as config
+from module.logger import log
 
 
 def str2byte(content):
@@ -52,6 +53,7 @@ def is_device_connected(device_id):
             .replace("\n", "")
             .replace("\r", "")
         )
-    except subprocess.CalledProcessError:
+    except Exception as e:
+        log.debug(f"获取设备链接情况失败: {e}")
         return False
     return True

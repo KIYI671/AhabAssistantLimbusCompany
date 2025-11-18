@@ -331,7 +331,7 @@ class my_script_task(QThread):
     def __init__(self):
         # 初始化，构造函数
         super().__init__()
-        self.running = True
+        self.running = False
         self.exc_traceback = ''
         self.mutex = QMutex()
 
@@ -339,6 +339,7 @@ class my_script_task(QThread):
         self.mutex.lock()
 
         try:
+            self.running = True
             self._run()
         except ConnectionError as e:
             self.exception = e
@@ -370,7 +371,8 @@ class my_script_task(QThread):
                 self.exc_traceback = ''.join(
                     format_exception(*exc_info()))
                 log.error(self.exc_traceback)
-                self.mutex.unlock()
+            self.mutex.unlock()
+            self.running = False
 
         mediator.finished_signal.emit()
 

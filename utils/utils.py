@@ -207,6 +207,21 @@ def decrypt_string(encrypted_b64: str, entropy: bytes = b'AALC') -> str:
 
 def run_as_user(command: list[str], **kwargs):
     """使用任务计划程序以当前用户身份运行命令"""
+
+    def clean_task():
+        try:
+            scheduler_log = subprocess.run('schtasks /delete /tn "TempNonAdminTask" /f', shell=True, capture_output=True, text=True)
+            log.debug(f"任务计划程序输出: {scheduler_log.stdout}")
+            if scheduler_log.returncode != 0:
+                log.debug(f"任务计划程序删除失败: {scheduler_log.stderr}")
+                return False
+        except Exception as e:
+            log.error(f"任务计划程序删除失败: {e}")
+            return False
+
+    # 先清理一次任务计划，防止遗留
+    clean_task()
+
     import tempfile, os
     log.debug(f"使用用户权限运行命令: {command}")
     # 创建临时批处理文件
@@ -231,10 +246,7 @@ def run_as_user(command: list[str], **kwargs):
     from time import sleep
     sleep(2)
 
-    # 清理任务和文件
-    scheduler_log = subprocess.run('schtasks /delete /tn "TempNonAdminTask" /f', shell=True, capture_output=True, text=True)
-    log.debug(f"任务计划程序输出: {scheduler_log.stdout}")
-    if scheduler_log.returncode != 0:
-        log.error(f"任务计划程序删除失败: {scheduler_log.stderr}")
-        return False
+    # 再次清理任务和文件
+    clean_task()
+
     os.unlink(bat_path)

@@ -14,6 +14,7 @@ from tasks import tools
 class ToolsInterface(ScrollArea):
     def __init__(self, parent=None):
         super().__init__(parent=parent)
+        self.setObjectName("ToolsInterface")
         self.__init_widget()
         self.__init_card()
         self.__initLayout()

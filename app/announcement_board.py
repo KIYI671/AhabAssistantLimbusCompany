@@ -49,7 +49,7 @@ class AnnouncementThread(QThread):
             if current_timestamp > target_timestamp:
                 self.AnnouncementSignal.emit(AnnouncementStatus.SUCCESS)
                 return
-
+            self.announcement_time = target_timestamp
             self.announcement = announcements["Announcement"]
             self.AnnouncementSignal.emit(AnnouncementStatus.ANNO_AVAILABLE)
         except Exception as e:
@@ -94,7 +94,7 @@ class Announcement(QWidget):
 
 class AnnouncementBoard(QDialog):
 
-    def __init__(self, anno, parent=None):
+    def __init__(self, anno, time, parent=None):
         super().__init__(parent=parent)
 
         # 主布局
@@ -159,6 +159,8 @@ class AnnouncementBoard(QDialog):
         self.setup_scroll_handlers()
 
         self.set_announcement(anno)
+
+        self.announcement_time = time
 
     def set_announcement(self, announcements):
         """设置公告"""
@@ -301,5 +303,5 @@ class AnnouncementBoard(QDialog):
         super().reject()
 
     def accept(self) -> None:
-        cfg.set_value("announcement", int(time.time()))
+        cfg.set_value("announcement", self.announcement_time + 1)
         super().accept()
