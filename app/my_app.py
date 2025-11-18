@@ -4,7 +4,7 @@ import re
 import subprocess
 from enum import Enum
 
-from PySide6.QtCore import Qt, QLocale
+from PySide6.QtCore import Qt, QLocale, QTimer
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QApplication, QHBoxLayout, QStackedWidget, QVBoxLayout, QLabel, QWidget
 from qfluentwidgets import Pivot, setThemeColor, ProgressRing, qconfig
@@ -65,6 +65,7 @@ class MainWindow(FramelessWindow):
         self.setTitleBar(title_bar)
         self.setWindowIcon(QIcon('./assets/logo/my_icon_256X256.ico'))
         self.setWindowTitle(f"Ahab Assistant Limbus Company -  {cfg.version}")
+        self.setObjectName("MainWindow")
         setThemeColor("#9c080b")
         # self.hBoxLayout =QHBoxLayout(self)
         # self.test_interface = TestInterface(self)
@@ -77,7 +78,6 @@ class MainWindow(FramelessWindow):
         self.titleBar.maxBtn.setDisabled(True)
         self.titleBar.setDoubleClickEnabled(False)
         self.setResizeEnabled(False)
-        self.setWindowFlags(Qt.WindowCloseButtonHint)
 
         self.progress_ring = ProgressRing(self)
         self.progress_ring.hide()
@@ -88,10 +88,10 @@ class MainWindow(FramelessWindow):
         w, h = geometry.width(), geometry.height()
         self.move(w // 2 - self.width() // 2, h // 2 - self.height() // 2)
 
-        self.pivot = Pivot(self)
-        self.stackedWidget = QStackedWidget(self)
+        self.pivot = Pivot()
+        self.stackedWidget = QStackedWidget()
         self.vBoxLayout = QVBoxLayout(self)
-        self.HBoxLayout = QHBoxLayout(self)
+        self.HBoxLayout = QHBoxLayout()
         # self.stackedWidget.setStyleSheet("border: 1px solid black;")
         self.setStyleSheet("""
                             MainWindow {    
@@ -141,8 +141,25 @@ class MainWindow(FramelessWindow):
         check_update(self, flag=True)
 
         self.set_ring()
-
+        
         self.show_announcement_board()
+
+    def closeEvent(self, e):
+        if (
+            self.farming_interface.interface_left.my_script is not None
+            and self.farming_interface.interface_left.my_script.running
+        ):
+            message_box = MessageBoxConfirm(
+                self.tr("有正在进行的任务"),
+                self.tr("脚本正在运行中，确定要退出程序吗？"),
+                self.window()
+            )
+            if message_box.exec():
+                self.farming_interface.interface_left.my_script.terminate()
+            else:
+                e.ignore()
+                return
+        return super().closeEvent(e)
 
     def addSubInterface(self, widget: QLabel, objectName, text):
         widget.setObjectName(objectName)
@@ -160,9 +177,8 @@ class MainWindow(FramelessWindow):
                 self.pivot.setCurrentItem("team_setting")
             else:
                 """切换页面（带越界保护）"""
-                self.addSubInterface(TeamSettingCard(num, self), 'team_setting', self.tr("队伍设置"))
-                list(self.pivot.items.values())[-1].click()
-                self.pivot.setCurrentItem("team_setting")
+                self.addSubInterface(TeamSettingCard(num), 'team_setting', self.tr("队伍设置"))
+                QTimer.singleShot(0, lambda: self.pivot.setCurrentItem("team_setting"))
         except Exception as e:
             log.error(f"【异常】switch_to_page 出错：{type(e).__name__}:{e}")
 

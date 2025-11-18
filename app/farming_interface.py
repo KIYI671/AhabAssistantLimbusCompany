@@ -29,11 +29,12 @@ from utils.utils import check_hard_mirror_time
 class FarmingInterface(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent=parent)
-        self.parent = parent
+
+        self.setObjectName("settingInterface")
         self.hbox_layout = QHBoxLayout(self)
-        self.hbox_layout_left = QVBoxLayout(self)
-        self.hbox_layout_center = QVBoxLayout(self)
-        self.hbox_layout_right = QVBoxLayout(self)
+        self.hbox_layout_left = QVBoxLayout()
+        self.hbox_layout_center = QVBoxLayout()
+        self.hbox_layout_right = QVBoxLayout()
         self.hbox_layout.addLayout(self.hbox_layout_left, stretch=3)
         self.hbox_layout.addLayout(self.hbox_layout_center, stretch=4)
         self.hbox_layout.addLayout(self.hbox_layout_right, stretch=3)
@@ -44,11 +45,12 @@ class FarmingInterface(QWidget):
         self.setViewportMargins(0, 0, 0, 5)
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)"""
 
-        self.setObjectName("settingInterface")
-        self.hbox_layout_left.addWidget(FarmingInterfaceLeft(self))
-        self.hbox_layout_center.addWidget(FarmingInterfaceCenter(self))
-        self.hbox_layout_right.addWidget(FarmingInterfaceRight(self))
-
+        self.interface_left = FarmingInterfaceLeft()
+        self.interface_center = FarmingInterfaceCenter()
+        self.interface_right = FarmingInterfaceRight()
+        self.hbox_layout_left.addWidget(self.interface_left)
+        self.hbox_layout_center.addWidget(self.interface_center)
+        self.hbox_layout_right.addWidget(self.interface_right)
         # self.setStyleSheet("border: 1px solid black;")
         # 启动快捷键监听
         self.listener = keyboard.GlobalHotKeys(
@@ -70,7 +72,7 @@ class FarmingInterface(QWidget):
 class FarmingInterfaceLeft(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent=parent)
-        self.parent = parent
+
         self.setObjectName("FarmingInterfaceLeft")
 
         self.my_script = None
@@ -85,8 +87,8 @@ class FarmingInterfaceLeft(QWidget):
 
     def __init_widget(self):
         self.hbox_layout = QVBoxLayout(self)
-        self.setting_layout = QVBoxLayout(self)
-        self.setting_options = QVBoxLayout(self)
+        self.setting_layout = QVBoxLayout()
+        self.setting_options = QVBoxLayout()
         self.setting_options.setSpacing(10)
 
         self.setting_box = BaseSettingLayout()
@@ -173,7 +175,7 @@ class FarmingInterfaceLeft(QWidget):
         self.setting_options.addWidget(self.resonate_with_Ahab)
         self.setting_layout.addLayout(self.setting_options)
 
-        self.hbox_button = QHBoxLayout(self)
+        self.hbox_button = QHBoxLayout()
         self.hbox_button.addWidget(self.select_all)
         self.hbox_button.addWidget(self.clear_all)
 
@@ -200,8 +202,8 @@ class FarmingInterfaceLeft(QWidget):
 
     def check_setting(self):
         # 检测是否有未保存的镜牢队伍设置
-        if self.parent.parent.findChild(TeamSettingCard):
-            list(self.parent.parent.pivot.items.values())[-1].click()
+        if self.parent().parent().findChild(TeamSettingCard):
+            list(self.parent().parent().parent().pivot.items.values())[-1].click()
             mediator.save_warning.emit()
             return False
 
@@ -286,7 +288,7 @@ class FarmingInterfaceLeft(QWidget):
             if self.check_setting() is False:
                 return
             self.link_start_button.set_text("S t o p !")
-            self._disable_setting(self.parent)
+            self._disable_setting(self.parent())
             self.create_and_start_script()
         else:
             if cfg.simulator is False:
@@ -309,7 +311,7 @@ class FarmingInterfaceLeft(QWidget):
                         except:
                             continue
             self.link_start_button.set_text("Link Start!")
-            self._enable_setting(self.parent)
+            self._enable_setting(self.parent())
             mediator.refresh_teams_order.emit()
             self.stop_script()
             auto.clear_img_cache()
@@ -389,7 +391,7 @@ class FarmingInterfaceLeft(QWidget):
 class FarmingInterfaceCenter(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent=parent)
-        self.parent = parent
+
         self.setObjectName("FarmingInterfaceCenter")
         self.__init_widget()
         self.__init_card()
@@ -452,7 +454,7 @@ class FarmingInterfaceCenter(QWidget):
 class FarmingInterfaceRight(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent=parent)
-        self.parent = parent
+
         self.__init_widget()
         self.__init_card()
         self.__init_layout()
