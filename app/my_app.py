@@ -55,7 +55,6 @@ class MainWindow(FramelessWindow):
         self.titleBar.maxBtn.setDisabled(True)
         self.titleBar.setDoubleClickEnabled(False)
         self.setResizeEnabled(False)
-        self.setWindowFlags(Qt.WindowCloseButtonHint)
 
         self.progress_ring = ProgressRing(self)
         self.progress_ring.hide()
