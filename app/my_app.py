@@ -147,7 +147,7 @@ class MainWindow(FramelessWindow):
     def closeEvent(self, e):
         if (
             self.farming_interface.interface_left.my_script is not None
-            and self.farming_interface.interface_left.my_script.running
+            and self.farming_interface.interface_left.my_script.isRunning()
         ):
             message_box = MessageBoxConfirm(
                 self.tr("有正在进行的任务"),
