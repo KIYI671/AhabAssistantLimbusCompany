@@ -331,7 +331,6 @@ class my_script_task(QThread):
     def __init__(self):
         # 初始化，构造函数
         super().__init__()
-        self.running = False
         self.exc_traceback = ''
         self.mutex = QMutex()
 
@@ -339,29 +338,20 @@ class my_script_task(QThread):
         self.mutex.lock()
 
         try:
-            self.running = True
             self._run()
-        except ConnectionError as e:
-            self.exception = e
-        except userStopError as e:
-            self.exception = e
-        except unableToFindTeamError as e:
-            self.exception = e
-        except unexpectNumError as e:
-            self.exception = e
-        except cannotOperateGameError as e:
-            self.exception = e
-        except netWorkUnstableError as e:
-            self.exception = e
-        except backMainWinError as e:
-            self.exception = e
-        except withOutGameWinError as e:
-            self.exception = e
-        except notWaitError as e:
-            self.exception = e
-        except withOutPicError as e:
-            self.exception = e
-        except withOutAdminError as e:
+        except (
+            ConnectionError,
+            userStopError,
+            unableToFindTeamError,
+            unexpectNumError,
+            cannotOperateGameError,
+            netWorkUnstableError,
+            backMainWinError,
+            withOutGameWinError,
+            notWaitError,
+            withOutPicError,
+            withOutAdminError,
+        ) as e:
             self.exception = e
         except Exception as e:
             self.exception = e
@@ -372,7 +362,6 @@ class my_script_task(QThread):
                     format_exception(*exc_info()))
                 log.error(self.exc_traceback)
             self.mutex.unlock()
-            self.running = False
 
         mediator.finished_signal.emit()
 
