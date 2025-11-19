@@ -23,6 +23,8 @@ def select_theme_pack(hard_switch=False, floor=None):
             theme_pack_list.update(theme_list.get_value("theme_pack_list_hard_cn"))
     refresh_times = 3
     difficulty = None
+    if auto.find_element("mirror/road_in_mir/legend_assets.png", take_screenshot=True):
+        return
     while True:
         # 自动截图
         if auto.take_screenshot() is None:
@@ -42,6 +44,8 @@ def select_theme_pack(hard_switch=False, floor=None):
                                    max(normal_bbox[3], hard_bbox[3])]
                 ocr_result = auto.find_text_element(None, my_crop=difficulty_bbox, only_text=True)
                 if not isinstance(ocr_result, str):
+                    if auto.find_element("mirror/road_in_mir/legend_assets.png", take_screenshot=True):
+                        return
                     continue
                 if "normal" in ocr_result:
                     difficulty = "normal"
