@@ -121,14 +121,9 @@ class MNTDevice(object):
         try:
             self.server = MNTServer(self.device_id)
         except AssertionError:
-            import subprocess
-            result = subprocess.run(
-                ["adb", "kill-server"],  # 命令拆分成语法列表
-                capture_output=True,  # 捕获标准输出和错误输出
-                text=True  # 输出转为字符串（否则是字节）
-            )
-            if result.returncode == 0:
-                self.start()
+            import adbutils
+            adbutils.adb.kill_server()
+            self.start()
         except:
             self.start()
         # real connection

@@ -104,13 +104,9 @@ class SimulatorControl:
         # 通过序列号获取设备对象
         self.simulator_control = MNTDevice(target_serial)
 
-        result = subprocess.run(
-            ["adb", "-s", target_serial, "shell", "wm", "size"],
-            capture_output=True,
-            text=True
-        )
-        # 正则提取分辨率（如 1080x1920）
-        match = re.search(r"(\d+)x(\d+)", result.stdout)
+        # 提取分辨率（如 1080x1920）
+        size_output = self.simulator_device.shell(["wm", "size"])
+        match = re.search(r"(\d+)x(\d+)", size_output)
         if match:
             height = int(match.group(1))  # X: 宽度
             self.simulator_max_x = height

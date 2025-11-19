@@ -42,18 +42,32 @@ def restart_adb():
 
 
 def is_device_connected(device_id):
-    """ return True if device connected, else return False """
-    _ADB = config.ADB_EXECUTOR
+    """
+    使用 adbutils 检查具有给定 serial 的设备是否已连接。
+
+    Args:
+        device_id: 设备的 serial 号。
+
+    Returns:
+        如果设备已连接并可见，则返回 True，否则返回 False。
+    """
     try:
-        device_name = subprocess.check_output(
-            [_ADB, "-s", device_id, "shell", "getprop", "ro.product.model"]
-        )
-        device_name = (
-            device_name.decode(config.DEFAULT_CHARSET)
-            .replace("\n", "")
-            .replace("\r", "")
-        )
-    except Exception as e:
-        log.debug(f"获取设备链接情况失败: {e}")
+        import adbutils
+        # 获取当前所有已连接的设备列表
+        devices = adbutils.adb.device_list()
+
+        # 检查 device_id 是否存在于列表中
+        # 列表中的每个元素都是一个 Device 对象，可以通过 .serial 属性访问其 ID
+        for dev in devices:
+            if dev.serial == device_id:
+                # 还可以检查设备状态，例如是否为 "device" 状态
+                # if dev.serial == device_id and dev.status == "device":
+                return True
+
+        # 如果循环结束仍未找到，则设备未连接
         return False
-    return True
+
+    except Exception as e:
+        # 捕获其他可能的异常
+        log.error(f"发生意外错误: {e}")
+        return False
