@@ -36,9 +36,16 @@ def is_port_using(port_num):
 
 def restart_adb():
     """ restart adb server """
-    _ADB = config.ADB_EXECUTOR
-    subprocess.check_call([_ADB, "kill-server"])
-    subprocess.check_call([_ADB, "start-server"])
+    import adbutils
+    # 1. 停止 ADB 服务 (替代 adb kill-server)
+    # 这会向 ADB Server 发送 host:kill 指令
+    adbutils.adb.server_kill()
+
+    # 2. 启动 ADB 服务 (替代 adb start-server)
+    # adbutils 没有专门的 start_server 方法，
+    # 因为当你尝试获取 server 版本或设备列表时，如果服务没启动，它会自动尝试启动。
+    # 所以，调用一下 server_version() 是最标准的“唤醒/检查”操作。
+    print(f"ADB Server version: {adbutils.adb.server_version()}")
 
 
 def is_device_connected(device_id):

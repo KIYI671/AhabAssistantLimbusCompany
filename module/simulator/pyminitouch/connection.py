@@ -6,11 +6,12 @@ import random
 from contextlib import contextmanager
 from pathlib import PurePosixPath, Path
 
+import adbutils
+from adbutils import AdbError
+
 import module.simulator.pyminitouch.config as config
 from module.logger import log
 from module.simulator.pyminitouch.utils import is_device_connected, is_port_using, str2byte
-
-_ADB = config.ADB_EXECUTOR
 
 
 class MNTInstaller(object):
@@ -35,37 +36,48 @@ class MNTInstaller(object):
         #      f"{config.MNT_HOME}/{self.abi}/minitouch"]
         # )
         # 检查设备上是否存在minitouch文件
-        file_list = subprocess.check_output(
-            [
-                _ADB,
-                "-s",
-                self.device_id,
-                "shell",
-                "ls",
-                str(PurePosixPath("/data/local/tmp/minitouch").parent),
-            ]
-        )
-        target_filename = PurePosixPath("/data/local/tmp/minitouch").name
-        if target_filename not in file_list.decode(config.DEFAULT_CHARSET).split():
-            # 检查本地文件是否存在
-            mnt_path = Path(".") / "assets" / "minitouch" / self.abi / "minitouch"
-            if not mnt_path.exists():
-                log.error(f"minitouch 不存在于 {mnt_path} 中")
-                raise FileNotFoundError("minitouch not found in {}".format(mnt_path))
+        # 1. 获取设备对象
+        device = adbutils.adb.device(serial=self.device_id)
 
-            # 推送并授权
-            subprocess.check_call([_ADB, "-s", self.device_id, "push", mnt_path, "/data/local/tmp/minitouch"])
-            subprocess.check_call(
-                [_ADB, "-s", self.device_id, "shell", "chmod", "777", "/data/local/tmp/minitouch"]
-            )
-        else:
-            log.debug(f"minitouch已存在，无需再次推送")
+        # 定义远程和本地路径
+        remote_path = "/data/local/tmp/minitouch"
+        local_path = Path(".") / "assets" / "minitouch" / self.abi / "minitouch"
+
+        # 2. 检查远程文件是否存在
+        # adbutils 的 sync.stat 会返回文件信息，如果文件不存在通常大小为0或抛出异常
+        needs_push = True
+        try:
+            remote_file_info = device.sync.stat(remote_path)
+            if remote_file_info.size > 0:
+                needs_push = False
+                log.debug(f"minitouch已存在，无需再次推送")
+        except Exception:
+            # 如果发生异常（例如某些版本中文件不存在会报错），则认为需要推送
+            needs_push = True
+
+        # 3. 如果需要，执行推送流程
+        if needs_push:
+            # 检查本地文件是否存在
+            if not local_path.exists():
+                log.error(f"minitouch 不存在于 {local_path} 中")
+                raise FileNotFoundError(f"minitouch not found in {local_path}")
+
+            # 推送文件 (adb push)
+            # adbutils 会自动处理流传输
+            device.sync.push(local_path, remote_path)
+
+            # 授权 (chmod 777)
+            device.shell(["chmod", "777", remote_path])
 
     def get_abi(self):
-        abi = subprocess.getoutput(
-            "{} -s {} shell getprop ro.product.cpu.abi".format(_ADB, self.device_id)
-        )
-        log.debug("device {} is {}".format(self.device_id, abi))
+        # 1. 获取设备对象
+        device = adbutils.adb.device(serial=self.device_id)
+
+        # 2. 直接获取属性 (替代 shell getprop)
+        # adbutils 会自动处理命令执行和结果清理
+        abi = device.getprop("ro.product.cpu.abi")
+
+        log.debug(f"device {self.device_id} is {abi}")
         return abi
 
     # def is_mnt_existed(self):
@@ -77,38 +89,33 @@ class MNTInstaller(object):
 
 class MNTServer(object):
     """
-    manage connection to minitouch.
-    before connection, you should execute minitouch with adb shell.
-
-    command eg::
-
-        adb forward tcp:{some_port} localabstract:minitouch
-        adb shell /data/local/tmp/minitouch
-
-    you would better use it via safe_connection ::
-
-        _DEVICE_ID = '123456F'
-
-        with safe_connection(_DEVICE_ID) as conn:
-            conn.send('d 0 500 500 50\nc\nd 1 500 600 50\nw 5000\nc\nu 0\nu 1\nc\n')
+    manage connection to minitouch using adbutils.
     """
 
     _PORT_SET = config.PORT_SET
 
     def __init__(self, device_id):
-        assert is_device_connected(device_id)
-
         self.device_id = device_id
+
+        # 1. 初始化 adbutils 设备对象
+        # adbutils 在获取 device 时会自动检查连接，如果断连会抛出异常
+        try:
+            self.device = adbutils.adb.device(serial=device_id)
+        except AdbError:
+            raise RuntimeError(f"Device {device_id} not connected")
+
         log.debug("搜索可用端口 ...")
         self.port = self._get_port()
         log.debug("设备 {} 绑定到端口 {}".format(device_id, self.port))
 
-        # check minitouch
+        # check minitouch (假设 MNTInstaller 内部逻辑也已适配好)
         self.installer = MNTInstaller(device_id)
+
+        # 2. 初始化流对象占位符
+        self.mnt_stream = None
 
         # keep minitouch alive
         self._forward_port()
-        self.mnt_process = None
         self._start_mnt()
 
         # make sure it's up
@@ -118,47 +125,66 @@ class MNTServer(object):
         ), "minitouch did not work. see https://github.com/williamfzc/pyminitouch/issues/11"
 
     def stop(self):
-        self.mnt_process and self.mnt_process.kill()
+        """停止服务并清理资源"""
+        # 1. 关闭 Shell 流 (相当于 kill 进程)
+        if self.mnt_stream:
+            try:
+                self.mnt_stream.close()
+            except Exception as e:
+                log.warning(f"关闭 minitouch 流时出错: {e}")
+            self.mnt_stream = None
+
+        # 2. 清理端口转发 (新增功能，防止残留)
+        try:
+            self.device.forward_remove(f"tcp:{self.port}")
+        except Exception:
+            pass  # 忽略清理失败，可能是连接已断开
+
+        # 3. 回收端口
         self._PORT_SET.add(self.port)
         log.debug("device {} 解除绑定到 {}".format(self.device_id, self.port))
 
     @classmethod
     def _get_port(cls):
         """ get a random port from port set """
+        # 保持原有逻辑不变
+        if not cls._PORT_SET:
+            raise RuntimeError("No available ports in PORT_SET")
         new_port = random.choice(list(cls._PORT_SET))
         if is_port_using(new_port):
+            # 注意：这里应当避免无限递归，实际项目中建议加重试上限
             return cls._get_port()
+        cls._PORT_SET.remove(new_port)  # 记得从集合中移除，防止重复分配
         return new_port
 
     def _forward_port(self):
         """ allow pc access minitouch with port """
-        command_list = [
-            _ADB,
-            "-s",
-            self.device_id,
-            "forward",
-            "tcp:{}".format(self.port),
-            "localabstract:minitouch",
-        ]
-        log.debug("forward 命令：{}".format(" ".join(command_list)))
-        output = subprocess.check_output(command_list)
-        log.debug("输出： {}".format(output))
+        local_address = f"tcp:{self.port}"
+        remote_address = "localabstract:minitouch"
+
+        log.debug(f"执行 forward: {local_address} -> {remote_address}")
+        # 使用 adbutils 执行 forward
+        self.device.forward(local_address, remote_address)
+        log.debug("forward 映射设置成功")
 
     def _start_mnt(self):
         """ fork a process to start minitouch on android """
-        command_list = [
-            _ADB,
-            "-s",
-            self.device_id,
-            "shell",
-            "/data/local/tmp/minitouch",
-        ]
-        log.debug("启动 minitouch: {}".format(" ".join(command_list)))
-        self.mnt_process = subprocess.Popen(command_list, stdout=subprocess.DEVNULL)
+        cmd = "/data/local/tmp/minitouch"
+        log.debug(f"启动 minitouch: {cmd}")
+
+        # 使用 stream=True 启动非阻塞 Shell
+        # 这里的 self.mnt_stream 类似于 socket 连接对象
+        self.mnt_stream = self.device.shell(cmd, stream=True)
 
     def heartbeat(self):
-        """ check if minitouch process alive """
-        return self.mnt_process.poll() is None
+        """ check if minitouch process (stream) is alive """
+        # 检查流对象是否存在且未关闭
+        if self.mnt_stream is None:
+            return False
+
+        # adbutils 的 ShellStream 有 closed 属性
+        # 如果 socket 连接断开，closed 会变为 True
+        return not self.mnt_stream.closed
 
 
 class MNTConnection(object):
