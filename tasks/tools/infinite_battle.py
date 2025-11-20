@@ -10,6 +10,7 @@ from module.logger import log
 from tasks.battle.battle import Battle
 from pynput import keyboard
 from module.game_and_screen import screen
+from utils import pic_path
 
 
 class BattleWorker(QThread):
@@ -41,6 +42,12 @@ class BattleWorker(QThread):
 
                 init_game()
                 self._set_win()
+                if cfg.language_in_game == "zh_cn" and pic_path[0] != "zh_cn":
+                    pic_path.insert(0, "zh_cn")
+                elif cfg.language_in_game == "en":
+                    while pic_path[0] != "share":
+                        pic_path.pop(0)
+                    pic_path.insert(0, "en")
                 self.initialized = True
                 self.initialization_complete.emit()
             except Exception as e:
