@@ -200,6 +200,7 @@ class MumuControl:
         self.height = 0
 
         self.game_package_name = 'com.ProjectMoon.LimbusCompany'
+        self.package_list = False
 
         self.is_pause = False
         self.restore_time = None
@@ -244,6 +245,17 @@ class MumuControl:
             self.device.app_start(self.game_package_name)
         except:
             log.error(f'启动游戏失败，请确认是否安装了Limbus Company，五秒后将重新尝试启动')
+            if self.package_list is False:
+                self.package_list = True
+                command = [self.exe_path, "control", "-v", str(self.multi_instance_number), "app", "info", "-i"]
+                result = subprocess.run(
+                    command,
+                    universal_newlines=True,
+                    capture_output=True,
+                    check=True,
+                    encoding="utf-8"
+                )
+                log.debug(f"获取到的应用列表列表：{result.stdout}")
             sleep(5)
             self.start_game()
 
@@ -437,7 +449,8 @@ class MumuControl:
         # 获取启动状态
         cmd = [self.exe_path, "info", "-v", str(self.multi_instance_number)]
         no_window_flag = subprocess.CREATE_NO_WINDOW if hasattr(subprocess, 'CREATE_NO_WINDOW') else 0x08000000
-        proc = subprocess.run(cmd, universal_newlines=True, capture_output=True, encoding="utf-8",creationflags=no_window_flag)
+        proc = subprocess.run(cmd, universal_newlines=True, capture_output=True, encoding="utf-8",
+                              creationflags=no_window_flag)
         info = json.loads(proc.stdout)
         try:
             return info["player_state"]
