@@ -259,14 +259,14 @@ class SimulatorControl:
         pos_x_2, pos_y_2 = self._scale(x + dx, y + dy)
 
         self.simulator_control.ext_smooth_swipe(
-            [(pos_x, pos_y), (pos_x_2, pos_y_2)], duration=drag_time * 1000 / 10, pressure=50, part=50, no_up=True
+            [(pos_x, pos_y), (pos_x_2, pos_y_2)], duration=drag_time * 1000 / 10, part=50, no_up=True
         )
         if drag_time * 0.3 > 0.5:
             sleep(drag_time * 0.3)
         else:
             sleep(0.5)
-        # self.simulator_control.swipe([(pos_x_2, pos_y_2), (pos_x_2, pos_y_2)], duration=drag_time * 1000 / 10,
-        #                              no_down=True)
+        self.simulator_control.swipe([(pos_x_2, pos_y_2), (pos_x_2, pos_y_2)], duration=drag_time * 1000 / 10,
+                                     no_down=True)
 
     def close_current_app(self):
         if self.simulator_device is None:
@@ -296,4 +296,4 @@ class SimulatorControl:
         for pos in position:
             position_conversion.append((self.simulator_max_x - pos[1], pos[0]))
 
-        self.simulator_control.swipe(position_conversion, duration=drag_time * 1000, pressure=50)
+        self.simulator_control.swipe(position_conversion, duration=drag_time * 1000)
