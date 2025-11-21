@@ -436,7 +436,8 @@ class MumuControl:
     def get_launch_status(self):
         # 获取启动状态
         cmd = [self.exe_path, "info", "-v", str(self.multi_instance_number)]
-        proc = subprocess.run(cmd, universal_newlines=True, capture_output=True, encoding="utf-8")
+        no_window_flag = subprocess.CREATE_NO_WINDOW if hasattr(subprocess, 'CREATE_NO_WINDOW') else 0x08000000
+        proc = subprocess.run(cmd, universal_newlines=True, capture_output=True, encoding="utf-8",creationflags=no_window_flag)
         info = json.loads(proc.stdout)
         try:
             return info["player_state"]
