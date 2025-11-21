@@ -250,7 +250,7 @@ class FarmingInterfaceLeft(QWidget):
 
             # 检测配置的队伍能否顺利执行
             useful = False
-            hard = cfg.hard_mirror
+            hard = bool(cfg.hard_mirror)
             teams_be_select = cfg.get_value("teams_be_select")
             for index in (i for i, t in enumerate(teams_be_select) if t is True):
                 team_setting = cfg.get_value(f"team{index + 1}_setting")
