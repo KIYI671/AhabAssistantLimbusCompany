@@ -64,8 +64,10 @@ files = [
     "app/base_tools.py",
     "app/language_manager.py",
     "app/windows_toast.py",
+    "app/announcement_board.py",
     "module/update/check_update.py",
     "module/ALI/autoLangIdentification.py",
     "tasks/base/script_task_scheme.py",
+    "tasks/tools/production_module.py",
     "i18n/myapp_en.ts",
 ]

@@ -57,178 +57,192 @@
         <translation>After checking, do not perform the operation of exchanging enkephalin except for lunacy to enkephalin</translation>
     </message>
     <message>
-        <location filename="../app/page_card.py" line="364"/>
+        <location filename="../app/page_card.py" line="366"/>
         <source>使用困难镜牢*</source>
         <translation>Hard mode*</translation>
     </message>
     <message>
-        <location filename="../app/page_card.py" line="370"/>
+        <location filename="../app/page_card.py" line="368"/>
+        <source>仅本次运行期间有效，重启AALC后失效
+右键可设置为永久生效
+注: 自动困牢会关闭本功能</source>
+        <translation type="finished">Only effective for this run, invalid after restart
+Right-click to set as permanent
+Note: Auto change Hard Mirror will disable this feature</translation>
+    </message>
+    <message>
+        <location filename="../app/page_card.py" line="373"/>
         <source>不使用每周加成*</source>
         <translation>Non-weekly bonus*</translation>
     </message>
     <message>
-        <location filename="../app/page_card.py" line="376"/>
+        <location filename="../app/page_card.py" line="375"/>
+        <source>仅本次运行期间有效，重启AALC后失效
+右键可设置为永久生效</source>
+        <translation type="finished">Only effective for this run, invalid after restart
+Right-click to set as permanent</translation>
+    </message>
+    <message>
+        <location filename="../app/page_card.py" line="380"/>
         <source>只打三层</source>
         <translation>Only floor 3</translation>
     </message>
     <message>
-        <location filename="../app/page_card.py" line="381"/>
+        <location filename="../app/page_card.py" line="385"/>
         <source>无限坐牢</source>
         <translation>Infinite farming</translation>
     </message>
     <message>
-        <location filename="../app/page_card.py" line="386"/>
+        <location filename="../app/page_card.py" line="390"/>
         <source>保存困牢奖励</source>
         <translation>Save hard mirror rewards</translation>
     </message>
     <message>
-        <location filename="../app/page_card.py" line="392"/>
+        <location filename="../app/page_card.py" line="396"/>
         <source>困牢单次加成</source>
         <translation>Hard mirror single bonus</translation>
     </message>
     <message>
-        <location filename="../app/page_card.py" line="402"/>
+        <location filename="../app/page_card.py" line="406"/>
         <source>第五层跳过（最左边）活动卡包</source>
         <translation>No select the leftmost theme pack on the fifth floor</translation>
     </message>
     <message>
-        <location filename="../app/page_card.py" line="412"/>
+        <location filename="../app/page_card.py" line="416"/>
         <source>不跳过白棉花</source>
         <translation>No skip White Gossypium</translation>
     </message>
     <message>
-        <location filename="../app/team_setting_card.py" line="387"/>
+        <location filename="../app/team_setting_card.py" line="391"/>
         <source>不治疗罪人</source>
         <translation>No heal sinners</translation>
     </message>
     <message>
-        <location filename="../app/team_setting_card.py" line="390"/>
+        <location filename="../app/team_setting_card.py" line="394"/>
         <source>不购买饰品</source>
         <translation>No buy E.G.O.</translation>
     </message>
     <message>
-        <location filename="../app/team_setting_card.py" line="393"/>
+        <location filename="../app/team_setting_card.py" line="397"/>
         <source>不合成饰品</source>
         <translation>No fuse</translation>
     </message>
     <message>
-        <location filename="../app/team_setting_card.py" line="396"/>
+        <location filename="../app/team_setting_card.py" line="400"/>
         <source>不出售饰品</source>
         <translation>No sell</translation>
     </message>
     <message>
-        <location filename="../app/team_setting_card.py" line="399"/>
+        <location filename="../app/team_setting_card.py" line="403"/>
         <source>不升级饰品</source>
         <translation>No upgrade</translation>
     </message>
     <message>
-        <location filename="../app/team_setting_card.py" line="403"/>
+        <location filename="../app/team_setting_card.py" line="407"/>
         <source>只激进合成</source>
         <translation>Only aggressive fuse</translation>
     </message>
     <message>
-        <location filename="../app/team_setting_card.py" line="413"/>
+        <location filename="../app/team_setting_card.py" line="417"/>
         <source>链接战避免使用三技能</source>
         <translation>Avoid skill 3 in normal encounters</translation>
     </message>
     <message>
-        <location filename="../app/team_setting_card.py" line="416"/>
+        <location filename="../app/team_setting_card.py" line="420"/>
         <source>每楼层重新编队</source>
         <translation>Reteam each floor</translation>
     </message>
     <message>
-        <location filename="../app/team_setting_card.py" line="419"/>
+        <location filename="../app/team_setting_card.py" line="423"/>
         <source>开局星光换钱</source>
         <translation>Exchange starlights beginning</translation>
     </message>
     <message>
-        <location filename="../app/team_setting_card.py" line="440"/>
+        <location filename="../app/team_setting_card.py" line="444"/>
         <source>自选开局加成</source>
         <translation>Custom beginning bonus</translation>
     </message>
     <message>
-        <location filename="../app/team_setting_card.py" line="487"/>
+        <location filename="../app/team_setting_card.py" line="491"/>
         <source>合成四级</source>
         <translation>Fuse level IV</translation>
     </message>
     <message>
-        <location filename="../app/team_setting_card.py" line="491"/>
+        <location filename="../app/team_setting_card.py" line="495"/>
         <source>购买</source>
         <translation>Purchase</translation>
     </message>
     <message>
-        <location filename="../app/team_setting_card.py" line="495"/>
+        <location filename="../app/team_setting_card.py" line="499"/>
         <source>选取胜利奖励</source>
         <translation>Select success rewards</translation>
     </message>
     <message>
-        <location filename="../app/team_setting_card.py" line="499"/>
+        <location filename="../app/team_setting_card.py" line="503"/>
         <source>升级四级</source>
         <translation>Upgrade level IV</translation>
     </message>
     <message>
-        <location filename="../app/team_setting_card.py" line="515"/>
+        <location filename="../app/team_setting_card.py" line="519"/>
         <source>第一层</source>
         <translation>Floor 1</translation>
     </message>
     <message>
-        <location filename="../app/team_setting_card.py" line="519"/>
+        <location filename="../app/team_setting_card.py" line="523"/>
         <source>第二层</source>
         <translation>Floor 2</translation>
     </message>
     <message>
-        <location filename="../app/team_setting_card.py" line="523"/>
+        <location filename="../app/team_setting_card.py" line="527"/>
         <source>第三层</source>
         <translation>Floor 3</translation>
     </message>
     <message>
-        <location filename="../app/team_setting_card.py" line="527"/>
+        <location filename="../app/team_setting_card.py" line="531"/>
         <source>第四层</source>
         <translation>Floor 4</translation>
     </message>
     <message>
-        <location filename="../app/team_setting_card.py" line="531"/>
+        <location filename="../app/team_setting_card.py" line="535"/>
         <source>第五层</source>
         <translation>Floor 5</translation>
     </message>
     <message>
-        <location filename="../app/team_setting_card.py" line="406"/>
+        <location filename="../app/team_setting_card.py" line="410"/>
         <source>不使用公式合成</source>
         <translation>Do not formula fuse</translation>
     </message>
     <message>
-        <location filename="../app/team_setting_card.py" line="409"/>
+        <location filename="../app/team_setting_card.py" line="413"/>
         <source>只使用公式合成</source>
         <translation>Only formula fuse</translation>
     </message>
     <message>
-        <location filename="../app/page_card.py" line="367"/>
-        <location filename="../app/page_card.py" line="373"/>
         <source>仅本次运行期间有效，重启AALC后失效</source>
-        <translation>Only effective for this run, invalid after restart</translation>
+        <translation type="vanished">Only effective for this run, invalid after restart</translation>
     </message>
     <message>
-        <location filename="../app/page_card.py" line="387"/>
+        <location filename="../app/page_card.py" line="391"/>
         <source>仅在进行困难镜牢时生效，普通难度不生效</source>
         <translation>Only effective for hard mirror, ineffective for normal mirror</translation>
     </message>
     <message>
-        <location filename="../app/page_card.py" line="397"/>
+        <location filename="../app/page_card.py" line="401"/>
         <source>第五层选择（最左边）活动卡包</source>
         <translation>Select the leftmost theme pack on the fifth floor</translation>
     </message>
     <message>
-        <location filename="../app/team_setting_card.py" line="423"/>
+        <location filename="../app/team_setting_card.py" line="427"/>
         <source>激进合成期间也升级饰品</source>
         <translation>Also upgrades gifts during Aggressive Fuse</translation>
     </message>
     <message>
-        <location filename="../app/team_setting_card.py" line="426"/>
+        <location filename="../app/team_setting_card.py" line="430"/>
         <source>链接战第一回合全员防御</source>
         <translation>defense first round in normal encounters</translation>
     </message>
     <message>
-        <location filename="../app/page_card.py" line="407"/>
+        <location filename="../app/page_card.py" line="411"/>
         <source>再次领取奖励</source>
         <translation>Claim rewards again</translation>
     </message>
@@ -551,12 +565,12 @@
         <translation>Screenshot performance test failed</translation>
     </message>
     <message>
-        <location filename="../app/tools_interface.py" line="92"/>
+        <location filename="../app/tools_interface.py" line="93"/>
         <source>截图完成</source>
         <translation>Screenshot completed</translation>
     </message>
     <message>
-        <location filename="../app/tools_interface.py" line="93"/>
+        <location filename="../app/tools_interface.py" line="94"/>
         <source>图片保存为 AALC &gt; screenshot_{time_str}.png</source>
         <translation>Image saved as AALC &gt; screenshot_{time_str}.png</translation>
     </message>
@@ -564,12 +578,12 @@
 <context>
     <name>BaseLabel</name>
     <message>
-        <location filename="../app/farming_interface.py" line="150"/>
+        <location filename="../app/farming_interface.py" line="152"/>
         <source>之后</source>
         <translation>After</translation>
     </message>
     <message>
-        <location filename="../app/team_setting_card.py" line="510"/>
+        <location filename="../app/team_setting_card.py" line="514"/>
         <source>忽略商店</source>
         <translation>Ignore shop</translation>
     </message>
@@ -642,39 +656,39 @@
         <translation>Game path</translation>
     </message>
     <message>
-        <location filename="../app/tools_interface.py" line="38"/>
-        <location filename="../app/tools_interface.py" line="45"/>
-        <location filename="../app/tools_interface.py" line="52"/>
+        <location filename="../app/tools_interface.py" line="39"/>
+        <location filename="../app/tools_interface.py" line="46"/>
+        <location filename="../app/tools_interface.py" line="53"/>
         <source>运行</source>
         <translation>Run</translation>
     </message>
     <message>
-        <location filename="../app/tools_interface.py" line="40"/>
+        <location filename="../app/tools_interface.py" line="41"/>
         <source>自动战斗</source>
         <translation>Auto Battle</translation>
     </message>
     <message>
-        <location filename="../app/tools_interface.py" line="41"/>
+        <location filename="../app/tools_interface.py" line="42"/>
         <source>这只是一个为你自动按下P键和Enter键的小工具，不要怀抱太多期待</source>
         <translation>It&apos;s just a gadget that automatically presses the P and Enter keys for you, so don&apos;t expect too much</translation>
     </message>
     <message>
-        <location filename="../app/tools_interface.py" line="47"/>
+        <location filename="../app/tools_interface.py" line="48"/>
         <source>自动体力换饼</source>
         <translation>Auto Stamina Replacement</translation>
     </message>
     <message>
-        <location filename="../app/tools_interface.py" line="48"/>
+        <location filename="../app/tools_interface.py" line="49"/>
         <source>辅助自动换饼小工具，防止体力溢出</source>
         <translation>It&apos;s just a gadget that automatically replaces the cogito for you, preventing stamina overflow</translation>
     </message>
     <message>
-        <location filename="../app/tools_interface.py" line="54"/>
+        <location filename="../app/tools_interface.py" line="55"/>
         <source>截图小工具</source>
         <translation>Screenshot Tool</translation>
     </message>
     <message>
-        <location filename="../app/tools_interface.py" line="55"/>
+        <location filename="../app/tools_interface.py" line="56"/>
         <source>辅助截图小工具</source>
         <translation>It&apos;s just a gadget that takes screenshots for you</translation>
     </message>
@@ -717,7 +731,7 @@
         <translation>About</translation>
     </message>
     <message>
-        <location filename="../app/tools_interface.py" line="34"/>
+        <location filename="../app/tools_interface.py" line="35"/>
         <source>工具箱</source>
         <translation>Toolbox</translation>
     </message>
@@ -730,32 +744,32 @@
 <context>
     <name>CheckBoxWithButton</name>
     <message>
-        <location filename="../app/farming_interface.py" line="100"/>
+        <location filename="../app/farming_interface.py" line="102"/>
         <source>窗口设置</source>
         <translation>Win-Settings</translation>
     </message>
     <message>
-        <location filename="../app/farming_interface.py" line="108"/>
+        <location filename="../app/farming_interface.py" line="110"/>
         <source>日常任务</source>
         <translation>Daily Tasks</translation>
     </message>
     <message>
-        <location filename="../app/farming_interface.py" line="115"/>
+        <location filename="../app/farming_interface.py" line="117"/>
         <source>领取奖励</source>
         <translation>Claim Rewards</translation>
     </message>
     <message>
-        <location filename="../app/farming_interface.py" line="121"/>
+        <location filename="../app/farming_interface.py" line="123"/>
         <source>狂气换体</source>
         <translation>Lunacy2Enk</translation>
     </message>
     <message>
-        <location filename="../app/farming_interface.py" line="127"/>
+        <location filename="../app/farming_interface.py" line="129"/>
         <source>坐牢设置</source>
         <translation>Mir-Settings</translation>
     </message>
     <message>
-        <location filename="../app/farming_interface.py" line="133"/>
+        <location filename="../app/farming_interface.py" line="135"/>
         <source>亚哈共鸣</source>
         <translation>Ahab-Res</translation>
     </message>
@@ -763,37 +777,37 @@
 <context>
     <name>CheckBoxWithComboBox</name>
     <message>
-        <location filename="../app/team_setting_card.py" line="434"/>
+        <location filename="../app/team_setting_card.py" line="438"/>
         <source>奖励卡优先度</source>
         <translation>Reward priority</translation>
     </message>
     <message>
-        <location filename="../app/team_setting_card.py" line="458"/>
+        <location filename="../app/team_setting_card.py" line="462"/>
         <source>合成四级以后</source>
         <translation>After fused level IV</translation>
     </message>
     <message>
-        <location filename="../app/team_setting_card.py" line="463"/>
+        <location filename="../app/team_setting_card.py" line="467"/>
         <source>购物策略</source>
         <translation>Shop tactic</translation>
     </message>
     <message>
-        <location filename="../app/team_setting_card.py" line="469"/>
+        <location filename="../app/team_setting_card.py" line="473"/>
         <source>自选开局饰品</source>
         <translation>Beginning E.G.O.</translation>
     </message>
     <message>
-        <location filename="../app/team_setting_card.py" line="477"/>
+        <location filename="../app/team_setting_card.py" line="481"/>
         <source>第二体系</source>
         <translation>Secend system</translation>
     </message>
     <message>
-        <location filename="../app/team_setting_card.py" line="502"/>
+        <location filename="../app/team_setting_card.py" line="506"/>
         <source>技能替换</source>
         <translation>Change skills</translation>
     </message>
     <message>
-        <location filename="../app/team_setting_card.py" line="429"/>
+        <location filename="../app/team_setting_card.py" line="433"/>
         <source>固定队伍用途</source>
         <translation>Fixed team usage</translation>
     </message>
@@ -889,8 +903,8 @@
 <context>
     <name>CustomizeSettingsModule</name>
     <message>
-        <location filename="../app/team_setting_card.py" line="445"/>
-        <location filename="../app/team_setting_card.py" line="623"/>
+        <location filename="../app/team_setting_card.py" line="449"/>
+        <location filename="../app/team_setting_card.py" line="627"/>
         <source>星光</source>
         <translation>Star</translation>
     </message>
@@ -898,22 +912,22 @@
 <context>
     <name>FarmingInterfaceLeft</name>
     <message>
-        <location filename="../app/farming_interface.py" line="246"/>
+        <location filename="../app/farming_interface.py" line="248"/>
         <source>存在未配置角色选择的队伍：TEAM_{0}</source>
         <translation>There is a team with no configured role selection: TEAM_{0}</translation>
     </message>
     <message>
-        <location filename="../app/farming_interface.py" line="237"/>
+        <location filename="../app/farming_interface.py" line="239"/>
         <source>没有启用任何队伍，请选择一个队伍进行镜牢任务</source>
         <translation>No team is enabled. Please select a team to start the Mirror Dungeon quest</translation>
     </message>
     <message>
-        <location filename="../app/farming_interface.py" line="267"/>
+        <location filename="../app/farming_interface.py" line="269"/>
         <source>启用了困牢，但是无可用于困牢的队伍</source>
         <translation>Hardmode Mirror Dungeons are enabled, but there are no groups available for Hardmode Mirror Dungeons</translation>
     </message>
     <message>
-        <location filename="../app/farming_interface.py" line="269"/>
+        <location filename="../app/farming_interface.py" line="271"/>
         <source>启用了普牢，但是无可用于普牢的队伍</source>
         <translation>Normal Mode Mirror Dungeon is enabled, but there are no groups available for Normal Mode Mirror Dungeon</translation>
     </message>
@@ -1056,81 +1070,104 @@
 <context>
     <name>MainWindow</name>
     <message>
-        <location filename="../app/my_app.py" line="163"/>
-        <location filename="../app/my_app.py" line="267"/>
+        <location filename="../app/my_app.py" line="180"/>
+        <location filename="../app/my_app.py" line="283"/>
         <source>队伍设置</source>
         <translation>Team Settings</translation>
     </message>
     <message>
-        <location filename="../app/my_app.py" line="261"/>
+        <location filename="../app/my_app.py" line="277"/>
         <source>一键长草</source>
         <translation>One-Click Grass Mode</translation>
     </message>
     <message>
-        <location filename="../app/my_app.py" line="262"/>
+        <location filename="../app/my_app.py" line="278"/>
         <source>帮助</source>
         <translation>Help</translation>
     </message>
     <message>
-        <location filename="../app/my_app.py" line="264"/>
+        <location filename="../app/my_app.py" line="280"/>
         <source>设置</source>
         <translation>Settings</translation>
     </message>
     <message>
-        <location filename="../app/my_app.py" line="187"/>
+        <location filename="../app/my_app.py" line="203"/>
         <source>设置未保存</source>
         <translation>SETTINGS UNSAVE</translation>
     </message>
     <message>
-        <location filename="../app/my_app.py" line="188"/>
+        <location filename="../app/my_app.py" line="153"/>
+        <source>有正在进行的任务</source>
+        <translation type="finished">Task in Progress</translation>
+    </message>
+    <message>
+        <location filename="../app/my_app.py" line="154"/>
+        <source>脚本正在运行中，确定要退出程序吗？</source>
+        <translation type="finished">The script is running, are you sure you want to exit the program?</translation>
+    </message>
+    <message>
+        <location filename="../app/my_app.py" line="204"/>
         <source>存在未保存的设置，请执行保存或取消操作</source>
         <translation>Didn&apos;t save settings, please do save or cancel</translation>
     </message>
     <message>
-        <location filename="../app/my_app.py" line="263"/>
+        <location filename="../app/my_app.py" line="279"/>
         <source>小工具</source>
         <translation>Gadget</translation>
     </message>
     <message>
-        <location filename="../app/my_app.py" line="251"/>
+        <location filename="../app/my_app.py" line="267"/>
         <source>更新提醒</source>
         <translation>Update Notice</translation>
     </message>
     <message>
-        <location filename="../app/my_app.py" line="252"/>
+        <location filename="../app/my_app.py" line="268"/>
         <source>下载已经完成，是否开始更新</source>
         <translation>Download completed, would you like to start updating</translation>
     </message>
     <message>
-        <location filename="../app/my_app.py" line="201"/>
+        <location filename="../app/my_app.py" line="217"/>
         <source>任务设置出错</source>
         <translation>Task settings are incorrect</translation>
     </message>
     <message>
-        <location filename="../app/my_app.py" line="202"/>
+        <location filename="../app/my_app.py" line="218"/>
         <source>未设置任何任务，请勾选主页面左边的选项框需要执行的任务</source>
         <translation>No task is set, check the task to be performed in the option box on the left side of the main page</translation>
     </message>
     <message>
-        <location filename="../app/my_app.py" line="194"/>
+        <location filename="../app/my_app.py" line="210"/>
         <source>警告！</source>
         <translation>Warning！</translation>
     </message>
     <message>
-        <location filename="../app/my_app.py" line="159"/>
+        <location filename="../app/my_app.py" line="176"/>
         <source>存在未保存的队伍设置</source>
         <translation>There are unsaved team settings</translation>
     </message>
 </context>
 <context>
+    <name>MessageBoxConfirm</name>
+    <message>
+        <location filename="../app/card/messagebox_custom.py" line="106"/>
+        <source>确认</source>
+        <translation type="finished">Confirm</translation>
+    </message>
+    <message>
+        <location filename="../app/card/messagebox_custom.py" line="107"/>
+        <source>取消</source>
+        <translation type="finished">Cancel</translation>
+    </message>
+</context>
+<context>
     <name>MessageBoxDate</name>
     <message>
-        <location filename="../app/card/messagebox_custom.py" line="299"/>
+        <location filename="../app/card/messagebox_custom.py" line="301"/>
         <source>确认</source>
         <translation>Confirm</translation>
     </message>
     <message>
-        <location filename="../app/card/messagebox_custom.py" line="300"/>
+        <location filename="../app/card/messagebox_custom.py" line="302"/>
         <source>取消</source>
         <translation>Cancel</translation>
     </message>
@@ -1143,12 +1180,12 @@
         <translation>Set a Custom Name</translation>
     </message>
     <message>
-        <location filename="../app/card/messagebox_custom.py" line="120"/>
+        <location filename="../app/card/messagebox_custom.py" line="122"/>
         <source>确认</source>
         <translation>Confirm</translation>
     </message>
     <message>
-        <location filename="../app/card/messagebox_custom.py" line="121"/>
+        <location filename="../app/card/messagebox_custom.py" line="123"/>
         <source>取消</source>
         <translation>Cancel</translation>
     </message>
@@ -1156,12 +1193,12 @@
 <context>
     <name>MessageBoxSpinbox</name>
     <message>
-        <location filename="../app/card/messagebox_custom.py" line="322"/>
+        <location filename="../app/card/messagebox_custom.py" line="324"/>
         <source>确认</source>
         <translation>Confirm</translation>
     </message>
     <message>
-        <location filename="../app/card/messagebox_custom.py" line="323"/>
+        <location filename="../app/card/messagebox_custom.py" line="325"/>
         <source>取消</source>
         <translation>Cancel</translation>
     </message>
@@ -1187,7 +1224,7 @@
 <context>
     <name>MessageBoxWarning</name>
     <message>
-        <location filename="../app/card/messagebox_custom.py" line="145"/>
+        <location filename="../app/card/messagebox_custom.py" line="147"/>
         <source>我已了解以上信息</source>
         <translation>I have understood the above information</translation>
     </message>
@@ -1195,7 +1232,7 @@
 <context>
     <name>MirrorSpinBox</name>
     <message>
-        <location filename="../app/page_card.py" line="353"/>
+        <location filename="../app/page_card.py" line="355"/>
         <source>坐牢次数</source>
         <translation>Farming times</translation>
     </message>
@@ -1208,12 +1245,12 @@
         <translation>Nickname</translation>
     </message>
     <message>
-        <location filename="../app/page_card.py" line="348"/>
+        <location filename="../app/page_card.py" line="350"/>
         <source>编队1</source>
         <translation>Team1</translation>
     </message>
     <message>
-        <location filename="../app/page_card.py" line="524"/>
+        <location filename="../app/page_card.py" line="530"/>
         <source>编队</source>
         <translation>Team</translation>
     </message>
@@ -1221,12 +1258,12 @@
 <context>
     <name>NormalTextButton</name>
     <message>
-        <location filename="../app/farming_interface.py" line="141"/>
+        <location filename="../app/farming_interface.py" line="143"/>
         <source>全选</source>
         <translation>Select All</translation>
     </message>
     <message>
-        <location filename="../app/farming_interface.py" line="146"/>
+        <location filename="../app/farming_interface.py" line="148"/>
         <source>清空</source>
         <translation>Clear All</translation>
     </message>
@@ -1244,7 +1281,7 @@
         <translation>Advanced</translation>
     </message>
     <message>
-        <location filename="../app/page_card.py" line="445"/>
+        <location filename="../app/page_card.py" line="455"/>
         <source>镜 牢 进 度 </source>
         <translation>Mirror Progress</translation>
     </message>
@@ -1252,14 +1289,14 @@
 <context>
     <name>PageMirror</name>
     <message>
-        <location filename="../app/page_card.py" line="450"/>
-        <location filename="../app/page_card.py" line="476"/>
+        <location filename="../app/page_card.py" line="460"/>
+        <location filename="../app/page_card.py" line="479"/>
         <source>镜 牢 进 度 ( 普 通 ) </source>
         <translation>Mirror Progress (Normal)</translation>
     </message>
     <message>
-        <location filename="../app/page_card.py" line="447"/>
-        <location filename="../app/page_card.py" line="474"/>
+        <location filename="../app/page_card.py" line="457"/>
+        <location filename="../app/page_card.py" line="477"/>
         <source>镜 牢 进 度 ( 困 难 ) </source>
         <translation>Hard Mode Mirror Progress</translation>
     </message>
@@ -1398,176 +1435,199 @@
     <name>TeamSettingCard</name>
     <message>
         <location filename="../app/team_setting_card.py" line="75"/>
-        <location filename="../app/team_setting_card.py" line="308"/>
+        <location filename="../app/team_setting_card.py" line="311"/>
         <source>选择队伍名称</source>
         <translation>Select team name</translation>
     </message>
     <message>
         <location filename="../app/team_setting_card.py" line="76"/>
-        <location filename="../app/team_setting_card.py" line="309"/>
+        <location filename="../app/team_setting_card.py" line="312"/>
         <source>选择队伍体系</source>
         <translation>Select team system</translation>
     </message>
     <message>
         <location filename="../app/team_setting_card.py" line="77"/>
-        <location filename="../app/team_setting_card.py" line="310"/>
+        <location filename="../app/team_setting_card.py" line="313"/>
         <source>选择商店策略</source>
         <translation>Select Shop Tactic</translation>
     </message>
     <message>
         <location filename="../app/team_setting_card.py" line="80"/>
-        <location filename="../app/team_setting_card.py" line="311"/>
+        <location filename="../app/team_setting_card.py" line="314"/>
         <source>李箱</source>
         <translation>Yi Sang</translation>
     </message>
     <message>
         <location filename="../app/team_setting_card.py" line="81"/>
-        <location filename="../app/team_setting_card.py" line="312"/>
+        <location filename="../app/team_setting_card.py" line="315"/>
         <source>浮士德</source>
         <translation>Faust</translation>
     </message>
     <message>
         <location filename="../app/team_setting_card.py" line="82"/>
-        <location filename="../app/team_setting_card.py" line="313"/>
+        <location filename="../app/team_setting_card.py" line="316"/>
         <source>堂吉诃德</source>
         <translation>Don Quixote</translation>
     </message>
     <message>
         <location filename="../app/team_setting_card.py" line="84"/>
-        <location filename="../app/team_setting_card.py" line="314"/>
+        <location filename="../app/team_setting_card.py" line="317"/>
         <source>良秀</source>
         <translation>Ryōshū</translation>
     </message>
     <message>
         <location filename="../app/team_setting_card.py" line="85"/>
-        <location filename="../app/team_setting_card.py" line="315"/>
+        <location filename="../app/team_setting_card.py" line="318"/>
         <source>默尔索</source>
         <translation>Meursault</translation>
     </message>
     <message>
         <location filename="../app/team_setting_card.py" line="88"/>
-        <location filename="../app/team_setting_card.py" line="317"/>
+        <location filename="../app/team_setting_card.py" line="320"/>
         <source>希斯克利夫</source>
         <translation>Heathcliff</translation>
     </message>
     <message>
         <location filename="../app/team_setting_card.py" line="90"/>
-        <location filename="../app/team_setting_card.py" line="318"/>
+        <location filename="../app/team_setting_card.py" line="321"/>
         <source>以实玛利</source>
         <translation>Ishmael</translation>
     </message>
     <message>
         <location filename="../app/team_setting_card.py" line="91"/>
-        <location filename="../app/team_setting_card.py" line="319"/>
+        <location filename="../app/team_setting_card.py" line="322"/>
         <source>罗佳</source>
         <translation>Rodion</translation>
     </message>
     <message>
         <location filename="../app/team_setting_card.py" line="92"/>
-        <location filename="../app/team_setting_card.py" line="320"/>
+        <location filename="../app/team_setting_card.py" line="323"/>
         <source>辛克莱</source>
         <translation>Sinclair</translation>
     </message>
     <message>
         <location filename="../app/team_setting_card.py" line="93"/>
-        <location filename="../app/team_setting_card.py" line="321"/>
+        <location filename="../app/team_setting_card.py" line="324"/>
         <source>奥提斯</source>
         <translation>Outis</translation>
     </message>
     <message>
         <location filename="../app/team_setting_card.py" line="94"/>
-        <location filename="../app/team_setting_card.py" line="322"/>
+        <location filename="../app/team_setting_card.py" line="325"/>
         <source>格里高尔</source>
         <translation>Gregor</translation>
     </message>
     <message>
         <location filename="../app/team_setting_card.py" line="96"/>
-        <location filename="../app/team_setting_card.py" line="323"/>
+        <location filename="../app/team_setting_card.py" line="326"/>
         <source>舍弃的体系</source>
         <translation>Abandoned system</translation>
     </message>
     <message>
         <location filename="../app/team_setting_card.py" line="122"/>
-        <location filename="../app/team_setting_card.py" line="336"/>
+        <location filename="../app/team_setting_card.py" line="339"/>
         <source>取消</source>
         <translation>Cancel</translation>
     </message>
     <message>
         <location filename="../app/team_setting_card.py" line="124"/>
-        <location filename="../app/team_setting_card.py" line="337"/>
+        <location filename="../app/team_setting_card.py" line="340"/>
         <source>保存</source>
         <translation>Save</translation>
     </message>
     <message>
         <location filename="../app/team_setting_card.py" line="99"/>
-        <location filename="../app/team_setting_card.py" line="325"/>
+        <location filename="../app/team_setting_card.py" line="328"/>
         <source>烧伤</source>
         <translation>Burn</translation>
     </message>
     <message>
         <location filename="../app/team_setting_card.py" line="100"/>
-        <location filename="../app/team_setting_card.py" line="326"/>
+        <location filename="../app/team_setting_card.py" line="329"/>
         <source>流血</source>
         <translation>Bleed</translation>
     </message>
     <message>
         <location filename="../app/team_setting_card.py" line="102"/>
-        <location filename="../app/team_setting_card.py" line="327"/>
+        <location filename="../app/team_setting_card.py" line="330"/>
         <source>震颤</source>
         <translation>Tremor</translation>
     </message>
     <message>
         <location filename="../app/team_setting_card.py" line="104"/>
-        <location filename="../app/team_setting_card.py" line="328"/>
+        <location filename="../app/team_setting_card.py" line="331"/>
         <source>破裂</source>
         <translation>Rupture</translation>
     </message>
     <message>
         <location filename="../app/team_setting_card.py" line="106"/>
-        <location filename="../app/team_setting_card.py" line="329"/>
+        <location filename="../app/team_setting_card.py" line="332"/>
         <source>沉沦</source>
         <translation>Sinking</translation>
     </message>
     <message>
         <location filename="../app/team_setting_card.py" line="109"/>
-        <location filename="../app/team_setting_card.py" line="330"/>
+        <location filename="../app/team_setting_card.py" line="333"/>
         <source>呼吸</source>
         <translation>Poise</translation>
     </message>
     <message>
         <location filename="../app/team_setting_card.py" line="111"/>
-        <location filename="../app/team_setting_card.py" line="331"/>
+        <location filename="../app/team_setting_card.py" line="334"/>
         <source>充能</source>
         <translation>Charge</translation>
     </message>
     <message>
         <location filename="../app/team_setting_card.py" line="113"/>
-        <location filename="../app/team_setting_card.py" line="332"/>
+        <location filename="../app/team_setting_card.py" line="335"/>
         <source>斩击</source>
         <translation>Slash</translation>
     </message>
     <message>
         <location filename="../app/team_setting_card.py" line="115"/>
-        <location filename="../app/team_setting_card.py" line="333"/>
+        <location filename="../app/team_setting_card.py" line="336"/>
         <source>突刺</source>
         <translation>Pierce</translation>
     </message>
     <message>
         <location filename="../app/team_setting_card.py" line="117"/>
-        <location filename="../app/team_setting_card.py" line="334"/>
+        <location filename="../app/team_setting_card.py" line="337"/>
         <source>打击</source>
         <translation>Blunt</translation>
     </message>
     <message>
-        <location filename="../app/team_setting_card.py" line="67"/>
+        <location filename="../app/team_setting_card.py" line="68"/>
         <source>自定义设置（设置存在冲突时，将根据优先级覆盖生效）</source>
         <translation>Custom Settings (Settings with conflicts will be overridden according to priority)</translation>
     </message>
     <message>
         <location filename="../app/team_setting_card.py" line="86"/>
-        <location filename="../app/team_setting_card.py" line="316"/>
+        <location filename="../app/team_setting_card.py" line="319"/>
         <source>鸿璐</source>
         <translation>Hong Lu</translation>
+    </message>
+</context>
+<context>
+    <name>ToSettingButton</name>
+    <message>
+        <location filename="../app/base_tools.py" line="245"/>
+        <source>命名</source>
+        <translation type="finished">Rename</translation>
+    </message>
+    <message>
+        <location filename="../app/base_tools.py" line="246"/>
+        <source>删除</source>
+        <translation type="finished">Delete</translation>
+    </message>
+    <message>
+        <location filename="../app/base_tools.py" line="247"/>
+        <source>复制</source>
+        <translation type="finished">Copy</translation>
+    </message>
+    <message>
+        <location filename="../app/base_tools.py" line="248"/>
+        <source>粘贴</source>
+        <translation type="finished">Paste</translation>
     </message>
 </context>
 <context>
@@ -1579,6 +1639,29 @@
 更新日志:</source>
         <translation>Found New Version: {Old_version} ——&gt; {New_version}
 Update Logs:</translation>
+    </message>
+</context>
+<context>
+    <name>WindowsToast</name>
+    <message>
+        <location filename="../app/windows_toast.py" line="156"/>
+        <source>知道了</source>
+        <translation type="finished">I Knew</translation>
+    </message>
+    <message>
+        <location filename="../app/windows_toast.py" line="159"/>
+        <source>关闭 AALC</source>
+        <translation type="finished">Shut Down AALC</translation>
+    </message>
+    <message>
+        <location filename="../tasks/base/script_task_scheme.py" line="290"/>
+        <source>AALC 运行结束</source>
+        <translation type="finished">AALC Missions Completed</translation>
+    </message>
+    <message>
+        <location filename="../tasks/base/script_task_scheme.py" line="291"/>
+        <source>所有任务已完成</source>
+        <translation type="finished">All Tasks Done</translation>
     </message>
 </context>
 </TS>
