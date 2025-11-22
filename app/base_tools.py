@@ -57,13 +57,31 @@ class BaseSettingLayout(QFrame):
         elif isinstance(tool, QGridLayout):
             self.BoxLayout.addLayout(tool)
 
+class RightClickCheckBox(CheckBox):
+
+    right_clicked = False
+
+    def mousePressEvent(self, e):
+        if e.button() == Qt.RightButton:
+            self.right_clicked = True
+
+        return super().mousePressEvent(e)
+    
+    def mouseReleaseEvent(self, e):
+        if e.button() == Qt.RightButton:
+            self.setChecked(not self.isChecked())
+        self.right_clicked = False
+        return super().mouseReleaseEvent(e)
+
+
 
 class BaseCheckBox(BaseLayout):
     def __init__(self, config_name, icon: Union[str, QIcon, FluentIconBase, None], title, parent=None, center=True,
-                 icon_size=16, tips=None):
+                 icon_size=16, tips=None, temporary=False):
         super().__init__(parent=parent)
         self.config_name = config_name
         self.setObjectName(config_name)
+        self.temporary = temporary
 
         if icon:
             self.iconLabel = SettingIconWidget(icon, self)
@@ -73,15 +91,20 @@ class BaseCheckBox(BaseLayout):
 
         self.check_box_title = title
         self.tips = tips
-        self.check_box = CheckBox(title, self)
+        self.check_box = RightClickCheckBox(title, self)
         self.check_box.installEventFilter(ToolTipFilter(self.check_box, showDelay=0, position=ToolTipPosition.BOTTOM_LEFT))
+
         self.hBoxLayout.addWidget(self.check_box, 0, Qt.AlignLeft)
         self.hBoxLayout.addSpacing(16)
         if not center:
             self.hBoxLayout.setAlignment(Qt.AlignLeft)
 
         if cfg.get_value(self.config_name) is not None:
-            self.check_box.setChecked(cfg.get_value(self.config_name))
+            if temporary and cfg.get_value(self.config_name) < 2:
+                self.check_box.setChecked(False)
+                self.on_toggle(False)
+            else:
+                self.check_box.setChecked(cfg.get_value(self.config_name))
         elif "the_team_" in self.config_name:
             number = int(self.config_name.split("_")[-1])
             teams_be_select = cfg.get_value("teams_be_select")
@@ -91,9 +114,6 @@ class BaseCheckBox(BaseLayout):
             mediator.sinner_be_selected.emit()
 
         self.check_box.toggled.connect(self.on_toggle)
-
-        if self.config_name in ["hard_mirror", "no_weekly_bonuses"]:
-            self.check_box.setChecked(False)
 
     def set_checked(self, checked):
         self.check_box.toggled.disconnect(self.on_toggle)
@@ -110,7 +130,10 @@ class BaseCheckBox(BaseLayout):
         self.check_box.setChecked(True)
 
     def on_toggle(self, checked):
+        right_clicked = self.check_box.right_clicked
         if cfg.get_value(self.config_name) is not None:
+            if self.temporary and right_clicked is True:
+                checked = 2 * checked
             cfg.set_value(self.config_name, checked)
         elif self.config_name.startswith('the_team_'):
             index = int(self.config_name.split("_")[-1]) - 1

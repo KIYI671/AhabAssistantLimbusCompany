@@ -365,13 +365,15 @@ class PageMirror(PageCard):
             "hard_mirror", None,
             QT_TRANSLATE_NOOP("BaseCheckBox", "使用困难镜牢*"),
             center=False,
-            tips=QT_TRANSLATE_NOOP("BaseCheckBox", "仅本次运行期间有效，重启AALC后失效")
+            tips=QT_TRANSLATE_NOOP("BaseCheckBox", "仅本次运行期间有效，重启AALC后失效\n右键可设置为永久生效\n注: 自动困牢会关闭本功能"),
+            temporary=True
         )
         self.no_weekly_bonuses = BaseCheckBox(
             "no_weekly_bonuses", None,
             QT_TRANSLATE_NOOP("BaseCheckBox", "不使用每周加成*"),
             center=False,
-            tips=QT_TRANSLATE_NOOP("BaseCheckBox", "仅本次运行期间有效，重启AALC后失效")
+            tips=QT_TRANSLATE_NOOP("BaseCheckBox", "仅本次运行期间有效，重启AALC后失效\n右键可设置为永久生效"),
+            temporary=True
         )
         self.floor_3_exit = BaseCheckBox(
             "floor_3_exit", None,

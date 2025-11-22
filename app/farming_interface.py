@@ -53,21 +53,31 @@ class FarmingInterface(QWidget):
         self.hbox_layout_right.addWidget(self.interface_right)
         # self.setStyleSheet("border: 1px solid black;")
         # 启动快捷键监听
-        self.listener = keyboard.GlobalHotKeys(
-            {
-                "<ctrl>+q": self.my_stop_shortcut,
-                "<alt>+p": self.my_pause_and_resume,
-                "<alt>+r": self.my_pause_and_resume,
-            }
-        )
-        self.listener.start()
+
+        self._listener_start()
+        mediator.hotkey_listener_stop_signal.connect(self._listener_stop)
+        mediator.hotkey_listener_start_signal.connect(self._listener_start)
+
+    def _listener_stop(self):
+        self.listener.stop()
+    def _listener_start(self):
+        try:
+            self.listener = keyboard.GlobalHotKeys(
+                {
+                    cfg.shutdown_hotkey: self.my_stop_shortcut,
+                    cfg.pause_hotkey: self.my_pause_and_resume,
+                    cfg.resume_hotkey: self.my_pause_and_resume,
+                }
+            )
+            self.listener.start()
+        except ValueError:
+            log.error("快捷键监听启动失败，请确认设置的快捷键格式有效")
 
     def my_stop_shortcut(self):
         mediator.link_start.emit()
 
     def my_pause_and_resume(self):
         auto.set_pause()
-
 
 class FarmingInterfaceLeft(QWidget):
     def __init__(self, parent=None):
@@ -250,7 +260,7 @@ class FarmingInterfaceLeft(QWidget):
 
             # 检测配置的队伍能否顺利执行
             useful = False
-            hard = cfg.hard_mirror
+            hard = bool(cfg.hard_mirror)
             teams_be_select = cfg.get_value("teams_be_select")
             for index in (i for i, t in enumerate(teams_be_select) if t is True):
                 team_setting = cfg.get_value(f"team{index + 1}_setting")

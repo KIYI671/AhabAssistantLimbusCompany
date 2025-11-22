@@ -20,6 +20,8 @@ class Mediator(QObject):
     kill_signal = Signal()
     mirror_signal = Signal(int, int) # 运行的当前次数和总次数
     mirror_bar_kill_signal = Signal()
+    hotkey_listener_stop_signal = Signal()
+    hotkey_listener_start_signal = Signal()
     
     # 单例实例（类变量）
     _instance = None

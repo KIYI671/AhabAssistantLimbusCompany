@@ -217,7 +217,7 @@ def script_task() -> None | int:
         while mir_times > 0:
             # 检测配置的队伍能否顺利执行
             useful = False
-            hard = cfg.hard_mirror
+            hard = bool(cfg.hard_mirror)
             teams_be_select = cfg.get_value("teams_be_select")
             for index in (i for i, t in enumerate(teams_be_select) if t is True):
                 team_setting = cfg.get_value(f"team{index + 1}_setting")
@@ -238,8 +238,8 @@ def script_task() -> None | int:
             team_setting = cfg.get_value(f"team{team_num + 1}_setting")  # 获取序号1的队伍的配置
             # 如果该队伍固定了用途，且不用途符合当前情况，将序号1的队伍移动到队伍顺序的最后
             if "fixed_team_use" in team_setting and team_setting["fixed_team_use"]:
-                if (team_setting["fixed_team_use_select"] == 0 and cfg.hard_mirror is False) or (
-                        team_setting["fixed_team_use_select"] == 1 and cfg.hard_mirror is True):
+                if (team_setting["fixed_team_use_select"] == 0 and not cfg.hard_mirror) or (
+                        team_setting["fixed_team_use_select"] == 1 and cfg.hard_mirror):
                     for index, value in enumerate(teams_order):
                         if value == 0:
                             continue

@@ -3,20 +3,23 @@ import datetime
 
 import pyperclip
 from PySide6.QtCore import QUrl, Signal, QObject
-from PySide6.QtGui import QPixmap, QDesktopServices, QPainter, QColor
-from PySide6.QtWidgets import QPushButton
+from PySide6.QtGui import QKeyEvent, QPixmap, QDesktopServices, QPainter, QColor, QKeySequence
+from PySide6.QtWidgets import QPushButton, QFrame
 from qfluentwidgets import LineEdit, SettingCard, \
     IndicatorPosition, SwitchButton, SettingCardGroup, \
     PushSettingCard, PrimaryPushSettingCard, InfoBarPosition, \
-    ProgressBar
+    ProgressBar, MessageBox, PrimaryPushButton, setCustomStyleSheet
 
 from app.base_tools import *
+from app.base_tools import FluentIconBase, QIcon
 from app.card.messagebox_custom import MessageBoxEdit, MessageBoxDate, \
     MessageBoxSpinbox, BaseInfoBar
 from app.language_manager import LanguageManager
 from module.my_error.my_error import settingsTypeError
 from module.update.check_update import check_update
 from utils.utils import encrypt_string, decrypt_string, get_timezone
+
+from module.logger import log
 
 
 class CheckBoxWithButton(QFrame):
@@ -584,6 +587,259 @@ class PushSettingCardChance(BasePushSettingCard):
         if message_box.exec():
             cfg.set_value(f"{self.config_name}", int(message_box.getValue()))
             self.line_text.setText(str(message_box.getValue()))
+
+class HotkeySettingCard(BasePushSettingCard):
+    def __init__(self, text, icon: str | QIcon | FluentIconBase, title, hotkeys:dict[str, str], parent=None):
+        super().__init__(text, icon, title, "", parent)
+        self.button.clicked.connect(self.__on_clicked)
+        self.hotkeys = hotkeys
+
+    def __on_clicked(self):
+        message_box = HotkeyEditCard(
+            self.tr(self.title),
+            self.hotkeys,
+            self.window()
+        )
+        message_box.exec()
+    
+    def retranslateUi(self):
+        super().retranslateUi()
+        new_keys = {}
+        for key in self.hotkeys:
+            tr_key = self.tr(key)
+            new_keys[tr_key] = self.hotkeys[key]
+        self.hotkeys = new_keys
+
+class KeyButton(PrimaryPushButton):
+    def __init__(self, key_name: str, parent=None):
+        super().__init__(parent=parent)
+        self.key_name = key_name
+        self.setText(key_name)
+        self.setFocusPolicy(Qt.NoFocus)
+
+    def mousePressEvent(self, e):
+        e.ignore()
+        self.parent().mousePressEvent(e)
+
+    def mouseReleaseEvent(self, e):
+        e.ignore()
+        self.parent().mouseReleaseEvent(e)
+
+class KeyEditButton(PushButton):
+
+    kill_key_input = Signal()
+
+    def __init__(self, key_config: str, parent=None):
+        super().__init__(parent)
+        self.key_config = key_config
+        self.key_name:str = cfg.get_value(key_config)
+        self.hBoxLayout = QHBoxLayout(self)
+        self.hBoxLayout.setAlignment(Qt.AlignCenter)
+        self._create_key_button()
+
+        self.hBoxLayout.addStretch(1)
+        self.editIcon = BodyLabel()
+        self.editIcon.setPixmap(FIF.EDIT.icon().pixmap(16, 16))
+
+        self.hBoxLayout.addWidget(self.editIcon)
+
+        self.setFixedHeight(50)
+        self.setMinimumWidth(self.calculate_minimum_width())
+
+        self.clicked.connect(self.__on_clicked)
+
+    def calculate_minimum_width(self):
+        # 计算所有子控件的大致宽度
+        icon_width = self.editIcon.pixmap().size().width()  # 编辑图标宽度
+        margins = self.hBoxLayout.contentsMargins()
+        margins_width = margins.left() + margins.right()
+
+        # 估算每个按键按钮的宽度（根据文本长度）
+        key_widths = 0
+        for key in self.key_name.replace('<', '').replace('>', '').split('+'):
+            key_widths += len(key) * 8 + 20  # 粗略估算
+
+        return icon_width + key_widths + margins_width + 20  # 额外留些边距
+    def _create_key_button(self):
+        key_name = self.key_name
+        keys = key_name.replace('<', '').replace('>', '').split('+')
+        index = 0
+        for key in keys:
+            key = key.capitalize()
+            key_button = KeyButton(key, self)
+            self.kill_key_input.connect(key_button.deleteLater)
+            self.hBoxLayout.insertWidget(index, key_button)
+            index += 1
+
+    def __on_clicked(self):
+        input_card = HotketInputCard(self.tr("设置快捷键"), self.key_config, self.window())
+        mediator.hotkey_listener_stop_signal.emit()
+        if input_card.exec():
+            self.key_name = cfg.get_value(self.key_config)
+            self.kill_key_input.emit()
+            self._create_key_button()
+            self.setMinimumWidth(self.calculate_minimum_width())
+            mediator.hotkey_listener_start_signal.emit()
+        else:
+            mediator.hotkey_listener_start_signal.emit()
+
+
+class KeyItem(QFrame):
+
+    kill_key_item = Signal(object)
+
+    def __init__(self, key_config: str, content: str, parent=None):
+        super().__init__(parent)
+        self.key_name = key_config
+        self.content = content
+        self.hBoxLayout = QHBoxLayout(self)
+        self.hBoxLayout.setAlignment(Qt.AlignCenter)
+        self.hBoxLayout.setContentsMargins(0,0,0,0)
+
+        self.label = BodyLabel(content)
+        self.hBoxLayout.addWidget(self.label)
+        self.hBoxLayout.addStretch(1)
+        self.button = KeyEditButton(key_config, self)
+        self.hBoxLayout.addWidget(self.button)
+
+
+class HotkeyEditCard(MessageBox):
+
+    def __init__(self, title: str, hotkeys:dict[str, str], parent=None):
+        super().__init__(title, "", parent)
+        self.yesButton.setText(self.tr("返回"))
+        self.textLayout.removeWidget(self.contentLabel)
+        self.contentLabel.deleteLater()
+        self.cancelButton.setParent(None)
+        self.cancelButton.deleteLater()
+
+        for key in hotkeys:
+            item = KeyItem(hotkeys[key], key, self)
+            item.setFixedWidth(420)
+            self.textLayout.addWidget(item)
+
+class HotketInputCard(MessageBox):
+
+    kill_key_input = Signal()
+
+    SHIFT_KEYS ={
+        "!": "1",
+        "@": "2",
+        "#": "3",
+        "$": "4",
+        "%": "5",
+        "^": "6",
+        "&": "7",
+        "*": "8",
+        "(": "9",
+        ")": "0",
+        "_": "-",
+        "+": "=",
+        "{": "[",
+        "}": "]",
+        "|": "\\",
+        ":": ";",
+        "\"": "'",
+        "<": ",",
+        ">": ".",
+        "?": "/",
+        "~": "`",
+    }
+
+    def __init__(self, title: str, key_config:str, parent=None):
+        super().__init__(title, "", parent)
+        self.key_config = key_config
+        self.key_name:str = cfg.get_value(key_config)
+        self.yesButton.setText(self.tr("保存"))
+        self.resetButton = PushButton(self.tr("重置"))
+        self.buttonLayout.insertWidget(1, self.resetButton, 1, Qt.AlignVCenter)
+        self.cancelButton.setText(self.tr("取消"))
+        self.contentLabel.setText(self.tr("按下键盘以设置快捷键, 部分特殊按键可能无法使用"))
+
+        self.key_widget = QWidget()
+        self.key_widget.setFixedSize(400, 200)
+        self.key_layout = QHBoxLayout(self.key_widget)
+        self.key_layout.setAlignment(Qt.AlignCenter)
+
+        self.textLayout.addWidget(self.key_widget)
+
+        self._create_key_display(self.key_name)
+        self.yesButton.clicked.connect(self._save_config)
+        self.resetButton.clicked.connect(self._reset_config)
+
+    def _reset_config(self):
+        default_config = cfg._load_default_config().get(self.key_config, "")
+        self.key_name = default_config
+        self.fresh_key_display(default_config)
+
+    def _save_config(self):
+        cfg.set_value(self.key_config, self.key_name)
+
+    def _create_key_display(self, key_name: str):
+        keys = self._parse_key_name(key_name)
+        for key in keys:
+            try:
+                key = key.capitalize()
+                key_button = KeyButton(key, self)
+                qss = """
+                KeyButton {font-size: 24px;}
+                """
+                setCustomStyleSheet(key_button, qss, qss)
+                self.kill_key_input.connect(key_button.deleteLater)
+                self.key_layout.addWidget(key_button)
+            except Exception as e:
+                log.error(f"Error creating key button for '{key}': {e}")
+
+    def _parse_key_name(self, key_name: str) -> list[str]:
+        self.key_name = key_name
+        keys = key_name.split('+')
+        for index, key in enumerate(keys):
+            if len(key) > 2:
+                keys[index] = key.replace('<', '').replace('>', '')
+        return keys
+
+    def fresh_key_display(self, key_name: str):
+        if key_name:
+            self.kill_key_input.emit()
+            self._create_key_display(key_name)
+
+    def _parse_input_key(self, arg__1: QKeyEvent) -> str:
+        key = arg__1.key()
+        modifiers = arg__1.modifiers()
+        key_parts = []
+
+        if modifiers & Qt.ControlModifier:
+            key_parts.append("<ctrl>")
+        if modifiers & Qt.AltModifier:
+            key_parts.append("<alt>")
+        if modifiers & Qt.ShiftModifier:
+            key_parts.append("<shift>")
+
+        key_name = QKeySequence(key).toString().lower()
+        if key_name in self.SHIFT_KEYS:
+            key_name = self.SHIFT_KEYS[key_name]
+        if key_name and key_name not in [
+            "control",
+            "alt",
+            "shift",
+            "meta",
+            "del",
+            "ins",
+            "pgup",
+            "pgdown",
+            "capslock",
+        ]:
+            if len(key_name) > 1:
+                key_parts.append(f"<{key_name.lower()}>")
+            else:
+                key_parts.append(key_name.lower())
+
+        key_name = '+'.join(key_parts)
+        return key_name
+
+    def keyPressEvent(self, arg__1: QKeyEvent) -> None:
+        self.fresh_key_display(self._parse_input_key(arg__1))
+        arg__1.ignore()
 
 
 class TextProgressBar(ProgressBar):
