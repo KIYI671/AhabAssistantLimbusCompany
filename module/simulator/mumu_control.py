@@ -271,6 +271,8 @@ class MumuControl:
                     try:
                         key = winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE,
                                              rf"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\{name}")
+                        if key:
+                            break
                     except:
                         continue
                 if not key:
@@ -298,7 +300,7 @@ class MumuControl:
                 new_exe_path_str = str(new_exe_path)
                 self.exe_path = new_exe_path_str
                 if not os.path.isfile(self.exe_path):
-                    log.error(f"查找MuMuManager.exe失败，路径不存在，请检查MuMu模拟器是否安装或是否为特供版本")
+                    log.error(f"查找MuMuManager.exe失败，路径{self.exe_path}不存在，请检查MuMu模拟器是否安装或是否为特供版本")
                     return None
 
             def detect_major_version():
