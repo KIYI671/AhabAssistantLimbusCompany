@@ -101,7 +101,7 @@ class Mirror:
             if auto.find_element("mirror/claim_reward/clear_assets.png"):
                 self.bequest_from_the_previous_game = True
                 return True
-            if auto.find_element('mirror/shop/shop_coins_assets.png'):
+            if auto.find_element('mirror/shop/shop_coins_assets.png'):  # 防止卡死在商店
                 break
             if auto.find_element("mirror/road_in_mir/legend_assets.png"):
                 break
@@ -926,7 +926,7 @@ class Mirror:
                 finishes_bbox = ImageUtils.get_bbox(
                     ImageUtils.load_image("event/continue_assets.png"))
                 if auto.find_text_element(
-                        ["continue", "proceed", "commence", "choices", "confirm", "进行判定", "开始战斗", "继续"],
+                        ["continue", "proceed", "commence", "choices", "confirm", "行判", "始战", "继续"],
                         finishes_bbox):
                     auto.mouse_click((finishes_bbox[0] + finishes_bbox[2]) // 2,
                                      (finishes_bbox[1] + finishes_bbox[3]) // 2)
