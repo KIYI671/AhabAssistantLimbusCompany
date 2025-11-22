@@ -49,7 +49,9 @@ class SimulatorControl:
         self.simulator_device = None
         # self.simulator_control = None
         self.simulator_max_x = None
+        self.simulator_max_y = None
         self.simulator_port = None
+        self.simulator_bluestacks = False
 
         self.game_package_name = 'com.ProjectMoon.LimbusCompany'
 
@@ -108,8 +110,15 @@ class SimulatorControl:
         size_output = self.simulator_device.shell(["wm", "size"])
         match = re.search(r"(\d+)x(\d+)", size_output)
         if match:
-            height = int(match.group(1))  # X: 宽度
-            self.simulator_max_x = height
+            height = int(match.group(2))  # Y: 高度
+            self.simulator_max_y = height
+            width = int(match.group(1))  # X: 宽度
+            self.simulator_max_x = width
+
+            self.simulator_control.real_width = width
+            self.simulator_control.real_height = height
+            if self.simulator_control.connection.max_x > 1440:
+                self.simulator_bluestacks = True
 
         SimulatorControl.connection_device = self
 
@@ -255,8 +264,16 @@ class SimulatorControl:
         if self.simulator_device is None:
             self.get_simulator()
 
-        pos_x, pos_y = self._scale(x, y)
-        pos_x_2, pos_y_2 = self._scale(x + dx, y + dy)
+        if self.simulator_bluestacks:
+            if x + dx > self.simulator_max_x:
+                dx = self.simulator_max_x - x - 1
+            if y + dy > self.simulator_max_y:
+                dy = self.simulator_max_y - y - 1
+            pos_x, pos_y = x, y
+            pos_x_2, pos_y_2 = x + dx, y + dy
+        else:
+            pos_x, pos_y = self._scale(x, y)
+            pos_x_2, pos_y_2 = self._scale(x + dx, y + dy)
 
         self.simulator_control.ext_smooth_swipe(
             [(pos_x, pos_y), (pos_x_2, pos_y_2)], duration=drag_time * 1000 / 10, part=50, no_up=True

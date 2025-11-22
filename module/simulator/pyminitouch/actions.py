@@ -111,6 +111,8 @@ class MNTDevice(object):
         self.server = None
         self.connection = None
         self.start()
+        self.real_width = 0
+        self.real_height = 0
 
     def reset(self):
         self.stop()
@@ -174,6 +176,17 @@ class MNTDevice(object):
         :param no_up: will not 'up' at the end
         :return:
         """
+        def transform_xy(x, y):
+            """
+            将屏幕像素坐标转换为 Minitouch 逻辑坐标
+            """
+            if self.real_width == 0 or self.real_height == 0:
+                # Fallback if resolution fetching failed
+                return x, y
+            target_x = int((x / self.real_width) * int(self.connection.max_x))
+            target_y = int((y / self.real_height) * int(self.connection.max_y))
+
+            return target_x, target_y
         points = [list(map(int, each_point)) for each_point in points]
 
         _builder = CommandBuilder()
@@ -182,12 +195,16 @@ class MNTDevice(object):
         # tap the first point
         if not no_down:
             x, y = points.pop(0)
+            if int(self.connection.max_x) > 1440:
+                x, y = transform_xy(x, y)
             _builder.down(point_id, x, y, pressure)
             _builder.publish(self.connection)
 
         # start swiping
         for each_point in points:
             x, y = each_point
+            if int(self.connection.max_x) > 1440:
+                x, y = transform_xy(x, y)
             _builder.move(point_id, x, y, pressure)
 
             # add delay between points
