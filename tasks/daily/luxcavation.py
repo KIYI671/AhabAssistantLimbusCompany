@@ -24,7 +24,8 @@ def EXP_luxcavation():
                     auto.mouse_click(lv[0], lv[1])
                     sleep(1)
                     auto.mouse_to_blank()
-                    if auto.find_element("battle/teams_assets.png", take_screenshot=True):
+                    if auto.find_element("battle/teams_assets.png", take_screenshot=True) or auto.find_element(
+                            "home/first_prompt_assets.png", model="clam", take_screenshot=True):
                         break
         if auto.click_element("home/luxcavation_assets.png"):
             continue
