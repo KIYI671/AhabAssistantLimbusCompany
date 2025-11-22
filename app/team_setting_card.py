@@ -13,13 +13,13 @@ from module.config import cfg
 class TeamSettingCard(QFrame):
     def __init__(self, team_num=0, parent=None):
         super().__init__(parent)
+        self.team_num = team_num
         self.setObjectName("TeamSettingCard")
         self.__init_widget()
         self.__init_card()
         self.__init_layout()
         # self.setStyleSheet("border: 1px solid black;")
 
-        self.team_num = team_num
         if cfg.get_value(f"team{team_num}_setting"):
             config_team_setting = cfg.get_value(f"team{team_num}_setting")
             import copy
@@ -66,6 +66,9 @@ class TeamSettingCard(QFrame):
 
         self.custom_layout = ExpandSettingCard(icon=FIF.EDIT,
                                                title=self.tr("自定义设置（设置存在冲突时，将根据优先级覆盖生效）"))
+        
+        self.custom_layout2 = ExpandSettingCard(icon=FIF.INFO,
+                                                  title=self.tr("编队统计数据"))
 
         self.setting_layout = QHBoxLayout()
 
@@ -118,6 +121,7 @@ class TeamSettingCard(QFrame):
                                   icon_size=30)
 
         self.customize_settings_module = CustomizeSettingsModule()
+        self.customize_info_module = CustomizeInfoModule(self.team_num)
 
         self.cancel_button = PushButton(self.tr("取消"))
         self.cancel_button.clicked.connect(self.cancel_team_setting)
@@ -164,12 +168,14 @@ class TeamSettingCard(QFrame):
         self.layout_.addLayout(self.select_sinner_layout_2)
         self.layout_.addWidget(self.gift_system_layout)
         self.layout_.addWidget(self.custom_layout)
+        self.layout_.addWidget(self.custom_layout2)
 
         self.main_layout.addLayout(self.setting_layout)
         self.main_layout.addSpacing(15)
         self.setting_layout.setContentsMargins(10, 0, 10, 0)  # 手动对齐其他组件
 
         self.custom_layout.viewLayout.addWidget(self.customize_settings_module)
+        self.custom_layout2.viewLayout.addWidget(self.customize_info_module)
 
     def connect_mediator(self):
         # 连接所有可能信号
@@ -641,3 +647,200 @@ class CustomizeSettingsModule(QFrame):
         self.second_system_power_up.retranslateUi()
         self.skill_replacement.retranslateUi()
         self.ignore_shop.retranslateUi()
+
+
+class CustomizeInfoModule(QFrame):
+    def __init__(self, team_num=0, parent=None):
+        super().__init__(parent)
+        self.setObjectName("CustomizeInfoModule")
+        self.main_layout = QVBoxLayout(self)
+        self.__init_widget()
+        self.__init_card()
+        self.__init_layout()
+
+        self.team_num = team_num
+        self.info = self.get_info(team_num)
+        self.update_data()
+
+        LanguageManager().register_component(self)
+        self.retranslateUi()
+
+    def __init_widget(self):
+        self.first_line_widget = QWidget()
+        self.first_line = QHBoxLayout(self.first_line_widget)
+        self.second_line_widget = QWidget()
+        self.second_line = QHBoxLayout(self.second_line_widget)
+        self.third_line_widget = QWidget()
+        self.third_line = QHBoxLayout(self.third_line_widget)
+        self.fresh_data_button_layout = QHBoxLayout()
+        self.clear_data_button_layout = QHBoxLayout()
+
+    def __init_card(self):
+        self.total_count = BaseLabel("总镜牢次数: 统计数据不足", parent=self)
+        self.hard_count = BaseLabel("困难镜牢次数: 统计数据不足", parent=self)
+        self.normal_count = BaseLabel("普通镜牢次数: 统计数据不足", parent=self)
+        self.average_time_hard = BaseLabel("困难平均用时: 统计数据不足", parent=self)
+        self.average_time_hard_last5 = BaseLabel("困难最近5次平均用时: 统计数据不足", parent=self)
+        self.average_time_hard_last10 = BaseLabel("困难最近10次平均用时: 统计数据不足", parent=self)
+        self.average_time_normal = BaseLabel("普通平均用时: 统计数据不足", parent=self)
+        self.average_time_normal_last5 = BaseLabel("普通最近5次平均用时: 统计数据不足", parent=self)
+        self.average_time_normal_last10 = BaseLabel("普通最近10次平均用时: 统计数据不足", parent=self)
+
+        self.refesh_button = PushButton(self.tr("刷新数据"))
+        self.refesh_button.clicked.connect(self.fresh_data)
+        self.clear_data_button = PrimaryPushButton(self.tr("清除历史统计数据"))
+        self.clear_data_button.clicked.connect(self.clear_data)
+
+    def __init_layout(self):
+        self.first_line.addWidget(self.total_count)
+        self.first_line.addWidget(self.hard_count)
+        self.first_line.addWidget(self.normal_count)
+        self.second_line.addWidget(self.average_time_hard)
+        self.second_line.addWidget(self.average_time_hard_last5)
+        self.second_line.addWidget(self.average_time_hard_last10)
+        self.third_line.addWidget(self.average_time_normal)
+        self.third_line.addWidget(self.average_time_normal_last5)
+        self.third_line.addWidget(self.average_time_normal_last10)
+        self.fresh_data_button_layout.addWidget(self.refesh_button)
+        self.clear_data_button_layout.addWidget(self.clear_data_button)
+        
+        self.main_layout.addWidget(self.first_line_widget)
+        self.main_layout.addWidget(self.second_line_widget)
+        self.main_layout.addWidget(self.third_line_widget)
+        self.main_layout.addLayout(self.fresh_data_button_layout)
+        self.main_layout.addLayout(self.clear_data_button_layout)
+
+    def retranslateUi(self):
+        pass
+
+    def get_info(self, team_num):
+        return_dict = {}
+        if cfg.get_value(f"team{team_num}_history"):
+            config_team_history = cfg.get_value(f"team{team_num}_history")
+            team_total_mirror_time_hard = config_team_history.get(
+                "total_mirror_time_hard", []
+            )
+            team_total_mirror_hard_count = config_team_history.get(
+                "mirror_hard_count", 0
+            )
+            team_total_mirror_time_normal = config_team_history.get(
+                "total_mirror_time_normal", []
+            )
+            team_total_mirror_normal_count = config_team_history.get(
+                "mirror_normal_count", 0
+            )
+            return_dict["total_count"] = (
+                team_total_mirror_hard_count + team_total_mirror_normal_count
+            )
+            return_dict["hard_count"] = team_total_mirror_hard_count
+            return_dict["normal_count"] = team_total_mirror_normal_count
+            return_dict["average_time_hard"] = (
+                sum(team_total_mirror_time_hard) / team_total_mirror_hard_count
+                if team_total_mirror_hard_count > 0
+                else 0
+            )
+            return_dict["average_time_hard_last5"] = (
+                (sum(team_total_mirror_time_hard[-5:]) / 5)
+                if len(team_total_mirror_time_hard) >= 5
+                else 0
+            )
+            return_dict["average_time_hard_last10"] = (
+                (sum(team_total_mirror_time_hard[-10:]) / 10)
+                if len(team_total_mirror_time_hard) >= 10
+                else 0
+            )
+            return_dict["average_time_normal"] = (
+                sum(team_total_mirror_time_normal) / team_total_mirror_normal_count
+                if team_total_mirror_normal_count > 0
+                else 0
+            )
+            return_dict["average_time_normal_last5"] = (
+                (sum(team_total_mirror_time_normal[-5:]) / 5)
+                if len(team_total_mirror_time_normal) >= 5
+                else 0
+            )
+            return_dict["average_time_normal_last10"] = (
+                (sum(team_total_mirror_time_normal[-10:]) / 10)
+                if len(team_total_mirror_time_normal) >= 10
+                else 0
+            )
+        return return_dict
+
+    def clear_data(self):
+        if cfg.get_value(f"team{self.team_num}_history"):
+            config_team_history = cfg.get_value(f"team{self.team_num}_history")
+            config_team_history["total_mirror_time_hard"] = []
+            config_team_history["mirror_hard_count"] = 0
+            config_team_history["total_mirror_time_normal"] = []
+            config_team_history["mirror_normal_count"] = 0
+            cfg.set_value(f"team{self.team_num}_history", config_team_history)
+        self.fresh_data()
+
+    def update_data(self):
+        self.total_count.setText(
+            self.tr("总镜牢次数: ") + str(self.info.get("total_count", 0))
+        )
+        self.hard_count.setText(
+            self.tr("困难镜牢次数: ") + str(self.info.get("hard_count", 0))
+        )
+        self.normal_count.setText(
+            self.tr("普通镜牢次数: ") + str(self.info.get("normal_count", 0))
+        )
+        average_time_hard = self.info.get("average_time_hard", 0.0)
+        if average_time_hard >= 0.005:
+            self.average_time_hard.setText(
+                self.tr(f"困难平均用时: {average_time_hard // 60:.0f} 分 {average_time_hard % 60:.2f} 秒")
+            )
+        else:
+            self.average_time_hard.setText(
+                self.tr("困难平均用时: 统计数据不足")
+            )
+        average_time_hard_last5 = self.info.get("average_time_hard_last5", 0.0)
+        if average_time_hard_last5 >= 0.005:
+            self.average_time_hard_last5.setText(
+                self.tr(f"困难最近5次平均用时: {average_time_hard_last5 // 60:.0f} 分 {average_time_hard_last5 % 60:.2f} 秒")
+            )
+        else:
+            self.average_time_hard_last5.setText(
+                self.tr("困难最近5次平均用时: 统计数据不足")
+            )
+        average_time_hard_last10 = self.info.get("average_time_hard_last10", 0.0)
+        if average_time_hard_last10 >= 0.005:
+            self.average_time_hard_last10.setText(
+                self.tr(f"困难最近10次平均用时: {average_time_hard_last10 // 60:.0f} 分 {average_time_hard_last10 % 60:.2f} 秒")
+            )
+        else:
+            self.average_time_hard_last10.setText(
+                self.tr("困难最近10次平均用时: 统计数据不足")
+            )
+        average_time_normal = self.info.get("average_time_normal", 0.0)
+        if average_time_normal >= 0.005:
+            self.average_time_normal.setText(
+                self.tr(f"普通平均用时: {average_time_normal // 60:.0f} 分 {average_time_normal % 60:.2f} 秒")
+            )
+        else:
+            self.average_time_normal.setText(
+                self.tr("普通平均用时: 统计数据不足")
+            )
+        average_time_normal_last5 = self.info.get("average_time_normal_last5", 0.0)
+        if average_time_normal_last5 >= 0.005:
+            self.average_time_normal_last5.setText(
+                self.tr(f"普通最近5次平均用时: {average_time_normal_last5 // 60:.0f} 分 {average_time_normal_last5 % 60:.2f} 秒")
+            )
+        else:
+            self.average_time_normal_last5.setText(
+                self.tr("普通最近5次平均用时: 统计数据不足")
+            )
+        average_time_normal_last10 = self.info.get("average_time_normal_last10", 0.0)
+        if average_time_normal_last10 >= 0.005:
+            self.average_time_normal_last10.setText(
+                self.tr(f"普通最近10次平均用时: {average_time_normal_last10 // 60:.0f} 分 {average_time_normal_last10 % 60:.2f} 秒")
+            )
+        else:
+            self.average_time_normal_last10.setText(
+                self.tr("普通最近10次平均用时: 统计数据不足")
+            )
+
+    def fresh_data(self):
+        self.info = self.get_info(self.team_num)
+        self.update_data()

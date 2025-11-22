@@ -74,7 +74,7 @@ class Mirror:
 
         self.floor = 0
         self.get_floor_num = True
-        self.floor_times = [time.time() for i in range(5)]
+        self.floor_times = [-9999.0 for i in range(5)]  # 负值代表缺失值
         self.LOOP_COUNT = 250
 
         self.mirror_map = MirrorMap(hard_mode=self.hard_switch)
@@ -199,8 +199,12 @@ class Mirror:
                 try:
                     floor_num = self.floor  # 0,1,2,3,4
                     if floor_num != 0:
-                        floor_time = time.time() - self.floor_times[floor_num - 1]
-                        msg = f"启动后第{self.floor}层卡包"
+                        if self.floor_times[floor_num - 1] > 0:
+                            floor_time = time.time() - self.floor_times[floor_num - 1]
+                            msg = f"启动后第{self.floor}层卡包"
+                        else:
+                            floor_time = time.time() - self.floor_times[0]
+                            msg = f"启动后第{self.floor}层卡包，该楼层时间不完整"
                         to_log_with_time(msg, floor_time)
                     self.floor_times[floor_num] = time.time()
                 except:
@@ -569,6 +573,25 @@ class Mirror:
         # 计时结束
         end_time = time.time()
         elapsed_time = end_time - start_time
+
+        if all(self.floor_times[i] > 0 for i in range(5)): # 判断是否完整走了五层
+            team_history =  cfg.get_value(f"team{self.team_number}_history",default={})
+            if self.hard_switch:
+                team_total_battle_time_hard = team_history.get("total_mirror_time_hard", [])
+                team_total_battle_time_hard.append(elapsed_time)
+                team_total_battle_count = team_history.get("mirror_hard_count", 0)
+                team_total_battle_count += 1
+                team_history["total_mirror_time_hard"] = team_total_battle_time_hard
+                team_history["mirror_hard_count"] = team_total_battle_count
+            else:
+                team_total_battle_time_normal = team_history.get("total_mirror_time_normal", [])
+                team_total_battle_time_normal.append(elapsed_time)
+                team_total_battle_count = team_history.get("mirror_normal_count", 0)
+                team_total_battle_count += 1
+                team_history["total_mirror_time_normal"] = team_total_battle_time_normal
+                team_history["mirror_normal_count"] = team_total_battle_count
+            
+            cfg.set_value(f"team{self.team_number}_history", team_history)
 
         try:
             last_floor_time = time.time() - self.floor_times[self.floor - 1]
