@@ -5,7 +5,8 @@ from qfluentwidgets import FluentIcon as FIF, InfoBarPosition
 from qfluentwidgets import ScrollArea, ExpandLayout
 
 from app.base_combination import ComboBoxSettingCard, SwitchSettingCard, PushSettingCardMirrorchyan, \
-    BaseSettingCardGroup, BasePushSettingCard, BasePrimaryPushSettingCard, PushSettingCardDate, PushSettingCardChance
+    BaseSettingCardGroup, BasePushSettingCard, BasePrimaryPushSettingCard, PushSettingCardDate, PushSettingCardChance, \
+    HotkeySettingCard
 from app.card.messagebox_custom import BaseInfoBar
 from app.language_manager import SUPPORTED_LANG_NAME, LanguageManager
 from module.config import cfg
@@ -175,6 +176,17 @@ class SettingInterface(ScrollArea):
             },
             parent=self.personal_group
         )
+        self.hotkey_card = HotkeySettingCard(
+            QT_TRANSLATE_NOOP("BasePushSettingCard", '修改'),
+            FIF.EDIT,
+            QT_TRANSLATE_NOOP("BasePushSettingCard", "快捷键设置"),
+            {
+                QT_TRANSLATE_NOOP("BasePushSettingCard", "结束运行的脚本"): "shutdown_hotkey",
+                QT_TRANSLATE_NOOP("BasePushSettingCard", "暂停脚本运行"): "pause_hotkey",
+                QT_TRANSLATE_NOOP("BasePushSettingCard", "恢复脚本运行"): "resume_hotkey",
+            },
+            parent=self.personal_group
+        )
 
         self.update_group = BaseSettingCardGroup(
             QT_TRANSLATE_NOOP("BaseSettingCardGroup", "更新设置"),
@@ -271,6 +283,7 @@ class SettingInterface(ScrollArea):
 
         self.personal_group.addSettingCard(self.language_card)
         self.personal_group.addSettingCard(self.zoom_card)
+        self.personal_group.addSettingCard(self.hotkey_card)
 
         self.update_group.addSettingCard(self.check_update_card)
         self.update_group.addSettingCard(self.update_source_card)
@@ -404,6 +417,7 @@ class SettingInterface(ScrollArea):
         self.personal_group.retranslateUi()
         self.language_card.retranslateUi()
         self.zoom_card.retranslateUi()
+        self.hotkey_card.retranslateUi()
         self.update_group.retranslateUi()
         self.update_source_card.retranslateUi()
         self.check_update_card.retranslateUi()

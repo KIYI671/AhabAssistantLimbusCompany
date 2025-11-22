@@ -79,11 +79,15 @@ class InfiniteBattles(QWidget):
         self.setup_ui()
 
         # 启动快捷键监听
-        self.listener = keyboard.GlobalHotKeys(
-            {
-                "<ctrl>+q": self._on_stop_shortcut,
-            }
-        )
+        try:
+            self.listener = keyboard.GlobalHotKeys(
+                {
+                    cfg.shutdown_hotkey: self._on_stop_shortcut,
+                }
+            )
+        except ValueError:
+            log.error("快捷键监听启动失败，请确认设置的快捷键格式有效")
+
         self.listener.start()
 
     def setup_ui(self):
