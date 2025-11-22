@@ -47,6 +47,7 @@ class MainWindow(FramelessWindow):
             "Noto Sans CJK SC",  # 跨平台中文字体
             "sans-serif",  # 最后回退到无衬线字体
             "SansSerif",  # 无衬线字体另一个名称
+            "SimSun",  # 宋体
         ]
         qconfig.fontFamilies.value = font_families
 
@@ -54,12 +55,11 @@ class MainWindow(FramelessWindow):
         title_bar.titleLabel.setStyleSheet("""
             QLabel{
                 background: transparent;
-                font-family: "Segoe UI", "Microsoft YaHei", "微软雅黑", "PingFang SC", "Hiragino Sans GB", sans-serif;
+                font-family: "Segoe UI", "Microsoft YaHei", "微软雅黑", "PingFang SC", "Hiragino Sans GB", sans-serif, "SimSun";
                 font-size: 13px;
                 padding: 0 4px
             }
         """)
-
 
         # 设置标准标题栏，如果不设置则无法展示标题
         self.setTitleBar(title_bar)
@@ -141,13 +141,13 @@ class MainWindow(FramelessWindow):
         check_update(self, flag=True)
 
         self.set_ring()
-        
+
         self.show_announcement_board()
 
     def closeEvent(self, e):
         if (
-            self.farming_interface.interface_left.my_script is not None
-            and self.farming_interface.interface_left.my_script.isRunning()
+                self.farming_interface.interface_left.my_script is not None
+                and self.farming_interface.interface_left.my_script.isRunning()
         ):
             message_box = MessageBoxConfirm(
                 self.tr("有正在进行的任务"),
