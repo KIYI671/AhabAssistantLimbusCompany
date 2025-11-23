@@ -65,6 +65,13 @@ body:
       placeholder: "v0.1.8"
     validations:
       required: true
+  - type: input
+    id: simulator-enable-action
+    attributes:
+      label: "模拟器是否开启 | Simulator Enabled Action"
+      placeholder: "是/否 | True/False"
+    validations:
+      required: true
   - type: textarea
     id: additional-context
     attributes:
