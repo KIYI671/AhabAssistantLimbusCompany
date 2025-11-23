@@ -771,12 +771,6 @@ class Mirror:
         while auto.find_element("mirror/road_to_mir/dreaming_star/coins_assets.png") is None:
             if auto.take_screenshot() is None:
                 continue
-            if retry() is False:
-                return False
-            if auto.click_element("mirror/road_to_mir/level_confirm_assets.png"):
-                continue
-            if auto.click_element("mirror/road_to_mir/select_team_confirm_assets.png"):
-                continue
             loop_count -= 1
             if loop_count % 5 == 0:
                 log.debug(f"选择队伍识别次数剩余{loop_count}次")
@@ -787,10 +781,23 @@ class Mirror:
             if loop_count < 10:
                 auto.model = 'aggressive'
                 log.debug("识别模式切换到激进模式")
+            if loop_count < 5:
+                key_word = "current" if cfg.language_in_game == "en" else "平均"
+                if auto.find_element(key_word, find_type="text"):
+                    auto.click_element("mirror/road_to_mir/enter_mirror_confirm.png")
             if loop_count < 0:
                 log.error("无法进入镜牢,尝试回到初始界面")
                 back_init_menu()
                 break
+            if retry() is False:
+                return False
+            if auto.click_element("mirror/road_to_mir/level_confirm_assets.png"):
+                continue
+            if auto.click_element("mirror/road_to_mir/select_team_confirm_assets.png"):
+                sleep(0.5)
+                loop_count -= 1
+                continue
+
         time.sleep(3)
 
     @begin_and_finish_time_log(task_name="镜牢寻路")
