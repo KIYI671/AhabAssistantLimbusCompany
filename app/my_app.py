@@ -159,7 +159,7 @@ class MainWindow(FramelessWindow):
             if index == 0:
                 # 跳过第一个参数（程序路径）
                 continue
-            while skip_arg_times > 0:
+            if skip_arg_times > 0:
                 # 读取参数后可以跳过的次数
                 # 运行一个控制语句读取多个参数
                 skip_arg_times -= 1
