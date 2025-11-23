@@ -46,7 +46,7 @@ if __name__ == "__main__":
     app = QApplication(sys.argv)
     app.setAttribute(Qt.AA_DontCreateNativeWidgetSiblings)
 
-    ui = MainWindow()
+    ui = MainWindow(sys.argv)
 
     QTimer.singleShot(50, lambda: lang_manager.set_language(lang))
 
