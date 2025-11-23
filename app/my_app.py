@@ -37,7 +37,7 @@ class Language(Enum):
 
 # 使用无框窗口
 class MainWindow(FramelessWindow):
-    def __init__(self):
+    def __init__(self, argv: list[str]):
         super().__init__()
 
         font_families = [
@@ -143,6 +143,53 @@ class MainWindow(FramelessWindow):
         self.set_ring()
         
         self.show_announcement_board()
+
+        self.command_start(argv)
+
+    def command_start(self, argv: list[str]):
+        """通过命令行参数控制程序启动行为"""
+        # 初始化控制符
+        skip_arg_times = 0
+        start_flag = False
+        exit_flag = False
+        exit_type = 0
+        last_cmd = ""
+        # 读取输入参数
+        for index, arg in enumerate(argv):
+            if index == 0:
+                # 跳过第一个参数（程序路径）
+                continue
+            while skip_arg_times > 0:
+                # 读取参数后可以跳过的次数
+                # 运行一个控制语句读取多个参数
+                skip_arg_times -= 1
+                continue
+            if arg == "start":
+                start_flag = True
+                last_cmd = "start"
+                continue
+            if arg == "--exit" and last_cmd == "start":
+                exit_flag = True
+                skip_arg_times = 1
+                exit_type = 5
+                try:
+                    exit_type = int(argv[index + 1])
+                    if exit_type < 0 or exit_type > 6:
+                        exit_type = 0
+                        log.error(f'命令行参数 --exit 后输入值"{argv[index + 1]}"越界')
+                except ValueError:
+                    exit_type = 0
+                    log.error(f'命令行参数 --exit 后输入值"{argv[index + 1]}"非数字')
+                except IndexError:
+                    log.info('命令行参数 --exit 后缺少退出类型，默认为5, 即退出AALC')
+                continue
+
+        # 最终执行操作
+        if exit_flag:
+            self.farming_interface.interface_left.then_combobox.combo_box.setCurrentIndex(exit_type)
+
+        if start_flag:
+            QTimer.singleShot(3000, mediator.finished_signal.emit)
 
     def closeEvent(self, e):
         if (
