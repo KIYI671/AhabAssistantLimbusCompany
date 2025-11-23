@@ -225,7 +225,7 @@ class Battle:
                             if auto.click_element("battle/setting_assets.png"):
                                 continue
 
-            if fail_count >= 5 or self.identify_keyword_turn is False:
+            if fail_count >= 10 or self.identify_keyword_turn is False:
                 # 如果多次识别不到战斗界面
                 try:
                     turn_bbox = ImageUtils.get_bbox(ImageUtils.load_image("battle/turn_assets.png"))
@@ -242,9 +242,16 @@ class Battle:
                     waiting = self._update_wait_time(waiting, False, total_count)
                     self.identify_keyword_turn = False
                     continue
+            elif fail_count >= 5:
+                if auto.click_element("battle/turn_assets.png") or auto.find_element("battle/win_rate_assets.png"):
+                    self._battle_operation(first_turn, defense_first_round, avoid_skill_3)
+                    chance = self.INIT_CHANCE
+                    waiting = self._update_wait_time(waiting, False, total_count)
+                    continue
             else:
                 # 如果正在战斗待机界面
-                if auto.click_element("battle/turn_assets.png") or auto.find_element("battle/win_rate_assets.png"):
+                if auto.click_element("battle/more_information_assets.png") or auto.find_element(
+                        "battle/win_rate_assets.png"):
                     self._battle_operation(first_turn, defense_first_round, avoid_skill_3)
                     chance = self.INIT_CHANCE
                     waiting = self._update_wait_time(waiting, False, total_count)

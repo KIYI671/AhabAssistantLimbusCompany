@@ -322,7 +322,10 @@ class Mirror:
                 continue
 
             # 在战斗中
-            if battle.identify_keyword_turn and self.LOOP_COUNT - main_loop_count < 5:
+            if auto.click_element("battle/turn_assets.png") or auto.find_element("battle/in_mirror_assets.png"):
+                self.battle_total_time += battle.fight(self.avoid_skill_3, self.defense_first_round)
+                continue
+            elif battle.identify_keyword_turn and self.LOOP_COUNT - main_loop_count < 5:
                 if auto.find_element("battle/turn_assets.png") or auto.find_element("battle/in_mirror_assets.png"):
                     self.battle_total_time += battle.fight(self.avoid_skill_3, self.defense_first_round)
                     continue
