@@ -199,6 +199,7 @@ class ImageUtils:
             # 计算每个匹配点的中心坐标
             center_points = [(int(pt[0] + w / 2), int(pt[1] + h / 2)) for pt in center_points]
             return center_points
+        log.debug(f"未找到匹配项，最高匹配度为：{np.max(res)}")
         return []
 
     @staticmethod

@@ -574,8 +574,8 @@ class Mirror:
         end_time = time.time()
         elapsed_time = end_time - start_time
 
-        if all(self.floor_times[i] > 0 for i in range(5)): # 判断是否完整走了五层
-            team_history =  cfg.get_value(f"team{self.team_number}_history",default={})
+        if all(self.floor_times[i] > 0 for i in range(5)):  # 判断是否完整走了五层
+            team_history = cfg.get_value(f"team{self.team_number}_history", default={})
             if self.hard_switch:
                 team_total_battle_time_hard = team_history.get("total_mirror_time_hard", [])
                 team_total_battle_time_hard.append(elapsed_time)
@@ -590,7 +590,7 @@ class Mirror:
                 team_total_battle_count += 1
                 team_history["total_mirror_time_normal"] = team_total_battle_time_normal
                 team_history["mirror_normal_count"] = team_total_battle_count
-            
+
             cfg.set_value(f"team{self.team_number}_history", team_history)
 
         try:
@@ -908,7 +908,7 @@ class Mirror:
             if auto.click_element("event/unknown_event.png"):
                 continue
             if positions_list := auto.find_element("event/select_to_gain_ego.png",
-                                                   find_type="image_with_multiple_targets"):
+                                                   find_type="image_with_multiple_targets", threshold=0.75):
                 positions_list = sorted(positions_list, key=lambda x: (x[1], x[0]))
                 auto.mouse_click(positions_list[0][0], positions_list[0][1])
                 continue
@@ -916,11 +916,16 @@ class Mirror:
                 continue
             if auto.click_element("event/gain_a_ego_depending_on_result.png"):
                 continue
+            if event_chance == 0:
+                key_word = "check" if cfg.language_in_game == "en" else "判定"
+                if auto.click_element(key_word, find_type="text", offset=False):
+                    event_chance += 5
             if event_chance > 5:
                 auto.click_element("event/select_first_option_assets.png")
                 event_chance -= 1
             elif event_chance > 0:
-                auto.click_element("event/select_first_option_assets.png", find_type="image_with_multiple_targets")
+                auto.click_element("event/select_first_option_assets.png", find_type="image_with_multiple_targets",
+                                   threshold=0.75)
                 event_chance -= 1
             else:
                 finishes_bbox = ImageUtils.get_bbox(

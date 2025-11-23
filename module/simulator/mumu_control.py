@@ -300,7 +300,8 @@ class MumuControl:
                 new_exe_path_str = str(new_exe_path)
                 self.exe_path = new_exe_path_str
                 if not os.path.isfile(self.exe_path):
-                    log.error(f"查找MuMuManager.exe失败，路径{self.exe_path}不存在，请检查MuMu模拟器是否安装或是否为特供版本")
+                    log.error(
+                        f"查找MuMuManager.exe失败，路径{self.exe_path}不存在，请检查MuMu模拟器是否安装或是否为特供版本")
                     return None
 
             def detect_major_version():
@@ -689,6 +690,8 @@ class MumuControl:
         self.key_up(usual_key_code[key])
 
     def click(self, x, y):
+        msg = f"点击位置:({x},{y})"
+        log.debug(msg, stacklevel=2)
         self.down(x, y)
         time.sleep(0.015)
         self.up()
