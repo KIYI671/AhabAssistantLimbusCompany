@@ -55,7 +55,7 @@ class Config(metaclass=SingletonMeta):
         except FileNotFoundError:
             sys.exit("默认配置文件未找到")
 
-    def _load_config(self, path = None) -> None:
+    def _load_config(self, path=None) -> None:
         """加载用户配置文件，如未找到则保存默认配置"""
         path = path or self.config_path
         try:
@@ -77,7 +77,7 @@ class Config(metaclass=SingletonMeta):
                     self._update_config(config[key], value)
                 else:
                     config[key] = value
-            elif any(sub in key for sub in ("_setting", "_remark_name")):
+            elif any(sub in key for sub in ("_setting", "_remark_name", "_history")):
                 config[key] = value
 
     def _save_config(self) -> None:

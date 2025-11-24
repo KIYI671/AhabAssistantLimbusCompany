@@ -65,10 +65,10 @@ def onetime_thread_process():
 
 @begin_and_finish_time_log(task_name="一次镜牢")
 # 一次镜牢的过程
-def onetime_mir_process(team_setting):
+def onetime_mir_process(team_setting, team_num: int):
     # 进行一次镜牢
     try:
-        mirror_adventure = Mirror(team_setting)
+        mirror_adventure = Mirror(team_setting, team_num)
         if mirror_adventure.run():
             del mirror_adventure
             mirror_adventure = None
@@ -250,7 +250,7 @@ def script_task() -> None | int:
                     cfg.set_value("teams_order", teams_order)
                     continue
             # 执行一次镜牢任务，根据执行结果进行处理
-            mirror_result = onetime_mir_process(team_setting)
+            mirror_result = onetime_mir_process(team_setting, int(team_num))
             if mirror_result:
                 for index, value in enumerate(teams_order):
                     if value == 0:
@@ -283,7 +283,6 @@ def script_task() -> None | int:
         if cfg.simulator_type == 0:
             from module.simulator.mumu_control import MumuControl
             MumuControl.clean_connect()
-
 
     log.info("脚本任务已经完成")
     QT_TRANSLATE_NOOP("WindowsToast", "AALC 运行结束")
@@ -340,17 +339,17 @@ class my_script_task(QThread):
         try:
             self._run()
         except (
-            ConnectionError,
-            userStopError,
-            unableToFindTeamError,
-            unexpectNumError,
-            cannotOperateGameError,
-            netWorkUnstableError,
-            backMainWinError,
-            withOutGameWinError,
-            notWaitError,
-            withOutPicError,
-            withOutAdminError,
+                ConnectionError,
+                userStopError,
+                unableToFindTeamError,
+                unexpectNumError,
+                cannotOperateGameError,
+                netWorkUnstableError,
+                backMainWinError,
+                withOutGameWinError,
+                notWaitError,
+                withOutPicError,
+                withOutAdminError,
         ) as e:
             self.exception = e
         except Exception as e:

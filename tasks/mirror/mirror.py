@@ -36,8 +36,9 @@ def to_log_with_time(msg, elapsed_time):
 
 class Mirror:
 
-    def __init__(self, team_setting: dict):
+    def __init__(self, team_setting: dict, team_num: int):
         self.logger = log
+        self.team_order = team_num
         self.sinner_team = team_setting["sinner_order"]  # 选择的罪人序列
         self.team_number = team_setting["team_number"]  # 选择的编队名
         self.shop = Shop(team_setting)
@@ -594,7 +595,9 @@ class Mirror:
                 team_history["total_mirror_time_normal"] = team_total_battle_time_normal
                 team_history["mirror_normal_count"] = team_total_battle_count
 
-            cfg.set_value(f"team{self.team_number}_history", team_history)
+            cfg.set_value(f"team{self.team_order}_history", team_history)
+            log.debug(team_history)
+
 
         try:
             last_floor_time = time.time() - self.floor_times[self.floor - 1]
