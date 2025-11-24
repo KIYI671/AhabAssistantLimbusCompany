@@ -184,6 +184,7 @@ class Battle:
                 first_turn = False
                 continue
 
+            # 战斗失败重启
             if auto.find_element("battle/dead_all.png"):
                 dead_select = auto.find_element("battle/dead_all.png", find_type="image_with_multiple_targets")
                 if len(dead_select) == 3:
@@ -199,6 +200,7 @@ class Battle:
 
                 auto.click_element("battle/dead_all_confirm_assets.png")
                 sleep(1)
+                start_time = time.time()
                 continue
 
             if in_mirror:
