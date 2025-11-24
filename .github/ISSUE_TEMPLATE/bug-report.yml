@@ -16,7 +16,7 @@ body:
     id: bug-description
     attributes:
       label: "描述你遇到的问题 | Describe the bug"
-      description: 简单描述你遇到的问题，如果你打算为此问题提交PR，请在描述中告诉我们。谢谢！ A clear and concise description of what the bug is. If you intend to submit a PR for this issue, tell us in the description. Thanks!
+      description: 简单描述你遇到的问题，如果你打算为此问题提交PR，请在描述中告诉我们。谢谢！ <br>A clear and concise description of what the bug is. If you intend to submit a PR for this issue, tell us in the description. Thanks!
       placeholder: "简单描述你遇到的问题，如果你打算为此问题提交PR，请在描述中告诉我们。谢谢！"
     validations:
       required: true
@@ -24,7 +24,7 @@ body:
     id: reproduction
     attributes:
       label: "如何复现bug | Reproduction"
-      description: 复现问题的步骤 Steps to reproduce the behavior.
+      description: 复现问题的步骤 <br>Steps to reproduce the behavior.
       placeholder: "在程序运行到时候（时间），点击了（行为），发生了**（结果）"
     validations:
       required: true
@@ -32,7 +32,7 @@ body:
     id: expected
     attributes:
       label: "期待的修复效果 | Expected behavior"
-      description: 简单描述你期待修复后的效果 A clear and concise description of what you expected to happen.
+      description: 简单描述你期待修复后的效果 <br>A clear and concise description of what you expected to happen.
       placeholder: "简单描述你期待修复后的效果"
     validations:
       required: true
@@ -40,7 +40,7 @@ body:
     id: log
     attributes:
       label: "运行日志 | Log Files"
-      description: 请将`logs`文件夹下最新的日志文件粘贴到这里。 Please paste the latest log file from the `logs` folder here.
+      description: 请将`logs`文件夹下最新的日志文件粘贴到这里。<br>Please paste the latest log file from the `logs` folder here.
       placeholder: "通常位于`AALC安装目录/logs/`下, 名称包含`debuglog`的文件\n不上传日志可能会被无视或直接关闭此issue\n\nUsually located in the ` AALC installation directory/logs/`, the file name includes ` debuglog `\nIf you don't provide the log file, your issue may be ignored or closed directly."
     validations:
       required: true
@@ -51,10 +51,20 @@ body:
       placeholder: "1920x1080"
     validations:
       required: true
-  - type: input
+  - type: checkboxes
+    id: simulator-enable-action
+    attributes:
+      label: "是否使用模拟器 | Using Emulator"
+      options:
+        - label: 是/Yes
+        - label: 否/No
+    validations:
+      required: true
+  - type: textarea
     id: windows-version
     attributes:
       label: "Windows版本 | Windows Version"
+      description: "如果你使用了模拟器，请注明模拟器名称与版本 <br>If you are using an emulator, please specify the name and version of the emulator"
       placeholder: "在命令行输入`cmd /c ver`，把结果粘贴到这里"
     validations:
       required: true
@@ -62,18 +72,12 @@ body:
     id: aalc-version
     attributes:
       label: "AALC版本 | AALC Version"
-      placeholder: "v0.1.8"
-    validations:
-      required: true
-  - type: input
-    id: simulator-enable-action
-    attributes:
-      label: "模拟器是否开启 | Simulator Enabled Action"
-      placeholder: "是/否 | True/False"
+      description: "不要输入诸如: `最新版本`之类的内容 <br>Do not enter content such as: `latest version`"
+      placeholder: "v1.3.1"
     validations:
       required: true
   - type: textarea
     id: additional-context
     attributes:
       label: "其他相关信息 | Additional context"
-      description: 错误发生时的视频，图片与所有日志文件（越详细，越能迅速解决问题）Add any other context or screenshots about the bug report here.
+      description: 错误发生时的视频，图片与所有日志文件（越详细，越能迅速解决问题）<br>Add any other context, videos or screenshots about the bug report here (the more detailed, the faster we can resolve the issue).
