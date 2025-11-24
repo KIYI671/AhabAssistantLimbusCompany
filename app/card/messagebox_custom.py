@@ -2,7 +2,7 @@ import datetime
 
 from PySide6.QtCore import Qt, QUrl, QDate, QCoreApplication
 from PySide6.QtGui import QDesktopServices, QIcon, QWheelEvent, QKeyEvent
-from PySide6.QtWidgets import QSizePolicy
+from PySide6.QtWidgets import QSizePolicy, QDateTimeEdit
 from qfluentwidgets import MessageBox, BodyLabel, FluentStyleSheet, \
     PrimaryPushButton, LineEdit, ScrollArea, InfoBar, DateTimeEdit, SpinBox
 from qfluentwidgets.common.icon import FluentIconBase
@@ -220,14 +220,14 @@ class BetterDateTimeEdit(DateTimeEdit):
         date = self.date()
 
         # 处理分钟溢出和下溢
-        if self.currentSection() == self.MinuteSection and time.minute() == self.last_min:
+        if self.currentSection() == QDateTimeEdit.Section.MinuteSection and time.minute() == self.last_min:
             if plus and time.minute() >= 59:
                 time.setHMS(time.hour() + 1, 0, time.second())
             if not plus and time.minute() <= 0:
                 time.setHMS(time.hour() - 1, 59, time.second())
 
         # 处理小时溢出和下溢
-        if self.currentSection() == self.HourSection and time.hour() == self.last_hour:
+        if self.currentSection() == QDateTimeEdit.Section.HourSection and time.hour() == self.last_hour:
             if plus and time.hour() >= 23:
                 time.setHMS(0, time.minute(), time.second())
                 date = date.addDays(1)
@@ -236,7 +236,7 @@ class BetterDateTimeEdit(DateTimeEdit):
                 date = date.addDays(-1)
 
         # 处理天数溢出和下溢
-        if self.currentSection() == self.DaySection and date.day() == self.last_day:
+        if self.currentSection() == QDateTimeEdit.Section.DaySection and date.day() == self.last_day:
             days_in_month = date.daysInMonth()
             if plus and date.day() >= days_in_month:
                 date = date.addMonths(1)
@@ -247,7 +247,7 @@ class BetterDateTimeEdit(DateTimeEdit):
                 date = date.addDays(days_in_prev_month - 1)
 
         # 处理月份溢出和下溢
-        if self.currentSection() == self.MonthSection and date.month() == self.last_month:
+        if self.currentSection() == QDateTimeEdit.Section.MonthSection and date.month() == self.last_month:
             if plus and date.month() >= 12:
                 date = date.addYears(1)
                 date = date.addMonths(-date.month() + 1)
@@ -309,7 +309,7 @@ class MessageBoxDate(MessageBox):
         self.buttonGroup.setMinimumWidth(480)
 
     def getDateTime(self):
-        return self.datePicker.dateTime().toPyDateTime()
+        return self.datePicker.dateTime().toPython()
 
 
 class MessageBoxSpinbox(MessageBox):
