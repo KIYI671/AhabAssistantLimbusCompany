@@ -248,12 +248,14 @@ class MumuControl:
             if self.package_list is False:
                 self.package_list = True
                 command = [self.exe_path, "control", "-v", str(self.multi_instance_number), "app", "info", "-i"]
+                no_window_flag = subprocess.CREATE_NO_WINDOW if hasattr(subprocess, 'CREATE_NO_WINDOW') else 0x08000000
                 result = subprocess.run(
                     command,
                     universal_newlines=True,
                     capture_output=True,
                     check=True,
-                    encoding="utf-8"
+                    encoding="utf-8",
+                    creationflags=no_window_flag
                 )
                 log.debug(f"获取到的应用列表列表：{result.stdout}")
             sleep(5)
@@ -317,7 +319,9 @@ class MumuControl:
                 self.multi_instance_number = 0
             if int(self.multi_instance_number) <= 1536:
                 cmd = f'{self.exe_path} adb -v {self.multi_instance_number}'
-                proc = subprocess.run(cmd, universal_newlines=True, capture_output=True, encoding="utf-8")
+                no_window_flag = subprocess.CREATE_NO_WINDOW if hasattr(subprocess, 'CREATE_NO_WINDOW') else 0x08000000
+                proc = subprocess.run(cmd, universal_newlines=True, capture_output=True, encoding="utf-8",
+                                      creationflags=no_window_flag)
                 adb_info = json.loads(proc.stdout)
                 try:
                     return f"{adb_info['adb_host']}:{adb_info['adb_port']}"
@@ -400,12 +404,14 @@ class MumuControl:
         try:
             log.debug(f"开始获取应用保活状态")
             command = f""" "{self.exe_path}" setting -v {self.multi_instance_number} -k app_keptlive"""
+            no_window_flag = subprocess.CREATE_NO_WINDOW if hasattr(subprocess, 'CREATE_NO_WINDOW') else 0x08000000
             proc = subprocess.run(
                 command,
                 shell=True,
                 universal_newlines=True,
                 capture_output=True,
-                check=True  # 新增：如果命令返回非零状态码则抛出异常
+                check=True,  # 新增：如果命令返回非零状态码则抛出异常
+                creationflags=no_window_flag
             )
 
             # 检查输出是否为空
@@ -434,7 +440,10 @@ class MumuControl:
         # 关闭后台保活
         try:
             command = f""" "{self.exe_path}" setting -v {self.multi_instance_number} -k app_keptlive -val false"""
-            subprocess.run(command, shell=True, universal_newlines=True, capture_output=True)
+            # 新增：使用shell=True执行命令
+            no_window_flag = subprocess.CREATE_NO_WINDOW if hasattr(subprocess, 'CREATE_NO_WINDOW') else 0x08000000
+            subprocess.run(command, shell=True, universal_newlines=True, capture_output=True,
+                           creationflags=no_window_flag)
         except:
             self.mumu_control_api_backend()
             self.disable_app_keptlive()
@@ -443,7 +452,9 @@ class MumuControl:
         # 开启保活
         try:
             command = f""" "{self.exe_path}" setting -v {self.multi_instance_number} -k app_keptlive -val true"""
-            subprocess.run(command, universal_newlines=True, capture_output=True)
+            no_window_flag = subprocess.CREATE_NO_WINDOW if hasattr(subprocess, 'CREATE_NO_WINDOW') else 0x08000000
+            subprocess.run(command, universal_newlines=True, capture_output=True,
+                           creationflags=no_window_flag)
         except:
             self.mumu_control_api_backend()
             self.enable_app_keptlive()
