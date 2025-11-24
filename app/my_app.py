@@ -177,11 +177,14 @@ class MainWindow(FramelessWindow):
                     if exit_type < 0 or exit_type > 6:
                         exit_type = 0
                         log.error(f'命令行参数 --exit 后输入值"{argv[index + 1]}"越界')
-                except ValueError:
-                    exit_type = 0
-                    log.error(f'命令行参数 --exit 后输入值"{argv[index + 1]}"非数字')
-                except IndexError:
+                except (IndexError, ValueError):
+                    # 由于输入值为可选, 所以在强制int失败或缺少时将跳过参数数值重置为0
+                    skip_arg_times = 0
                     log.info('命令行参数 --exit 后缺少退出类型，默认为5, 即退出AALC')
+                except Exception as e:
+                    exit_type = 0
+                    skip_arg_times = 0
+                    log.error(f'命令行参数 --exit 未知错误: {e}')
                 continue
 
         # 最终执行操作
