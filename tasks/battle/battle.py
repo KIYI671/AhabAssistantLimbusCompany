@@ -252,7 +252,7 @@ class Battle:
                     continue
             else:
                 # 如果正在战斗待机界面
-                if auto.click_element("battle/more_information_assets.png") or auto.find_element(
+                if auto.find_element("battle/more_information_assets.png") or auto.find_element(
                         "battle/win_rate_assets.png"):
                     self._battle_operation(first_turn, defense_first_round, avoid_skill_3)
                     chance = self.INIT_CHANCE
