@@ -250,7 +250,7 @@ def script_task() -> None | int:
                     cfg.set_value("teams_order", teams_order)
                     continue
             # 执行一次镜牢任务，根据执行结果进行处理
-            mirror_result = onetime_mir_process(team_setting, int(team_num))
+            mirror_result = onetime_mir_process(team_setting, int(team_num + 1))
             if mirror_result:
                 for index, value in enumerate(teams_order):
                     if value == 0:
