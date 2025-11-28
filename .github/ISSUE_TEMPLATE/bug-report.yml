@@ -51,13 +51,13 @@ body:
       placeholder: "1920x1080"
     validations:
       required: true
-  - type: checkboxes
+  - type: dropdown
     id: simulator-enable-action
     attributes:
       label: "是否使用模拟器 | Using Emulator"
       options:
-        - label: 是/Yes
-        - label: 否/No
+        - "是/Yes"
+        - "否/No"
     validations:
       required: true
   - type: textarea
