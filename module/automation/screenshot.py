@@ -1,5 +1,6 @@
 import time
 from ctypes import windll
+import pywintypes
 from PIL import Image
 from module.logger import log
 from module.config import cfg
@@ -11,7 +12,7 @@ import numpy as np
 
 
 class ScreenShot:
-    
+
     @staticmethod
     def take_screenshot(gray: bool = True) -> Image.Image | None:
         """
@@ -22,13 +23,13 @@ class ScreenShot:
             PIL.Image: 截图图像
         """
         if cfg.simulator:
-            if cfg.simulator_type ==0:
+            if cfg.simulator_type == 0:
                 try:
                     return ScreenShot.mumu_screenshot(gray)
                 except Exception as e:
                     log.debug(f"MUMU截图报错 {type(e).__name__}: {e}")
                     return None
-            elif cfg.simulator_type ==10:
+            elif cfg.simulator_type == 10:
                 try:
                     return ScreenShot.adb_screenshot(gray)
                 except Exception as e:
@@ -114,7 +115,7 @@ class ScreenShot:
         image = image.crop((0, 0, size_width, size_height))
 
         return image
-    
+
     @staticmethod
     def take_screenshot_pyautogui(gray: bool = True) -> Image.Image:
         """
@@ -154,51 +155,50 @@ class ScreenShot:
 
     @staticmethod
     def background_screenshot(gray: bool = True) -> Image.Image:
+        # 定义所有需要清理的句柄/对象，以便在任何地方发生异常时可以清理
+        hwnd_dc = None
+        mfc_dc = None
+        save_dc = None
+        save_bit_map = None
+
         try:
-            # 查找游戏窗口句柄（Unity引擎创建的游戏窗口通常使用"UnityWndClass"类名）
+            # 查找游戏窗口句柄
             hwnd = win32gui.FindWindow("UnityWndClass", "LimbusCompany")
 
-            # 获取窗口的坐标和尺寸（返回(left, top, right, bottom)）
+            # 获取窗口的坐标和尺寸
             rect = win32gui.GetWindowRect(hwnd)
             width, height = rect[2] - rect[0], rect[3] - rect[1]
 
-            # 获取窗口设备上下文(DC)，用于后续绘图操作
+            # 1. 获取窗口设备上下文(DC) - 需要 ReleaseDC
             hwnd_dc = win32gui.GetWindowDC(hwnd)
-            # 创建兼容的设备上下文
+            # 2. 创建兼容的设备上下文的MFC包装对象 - 不需 DeleteDC
             mfc_dc = win32ui.CreateDCFromHandle(hwnd_dc)
-            # 创建内存设备上下文，用于临时存储位图
+            # 3. 创建内存设备上下文 - 需要 DeleteDC
             save_dc = mfc_dc.CreateCompatibleDC()
 
-            # 创建与窗口兼容的位图对象
+            # 4. 创建位图对象 - 需要 DeleteObject
             save_bit_map = win32ui.CreateBitmap()
             save_bit_map.CreateCompatibleBitmap(mfc_dc, width, height)
 
-            # 将位图选入内存设备上下文
-            save_dc.SelectObject(save_bit_map)
+            # 将位图选入内存设备上下文，并保存旧对象
+            old_obj = save_dc.SelectObject(save_bit_map)
 
-            # 将窗口内容绘制到内存设备上下文中（PW_RENDERFULLCONTENT=3表示渲染全部内容）
+            # 将窗口内容绘制到内存设备上下文中
             windll.user32.PrintWindow(hwnd, save_dc.GetSafeHdc(), 3)
 
-            # 获取位图信息（高度、宽度等）和像素数据
+            # 获取位图信息和像素数据
             bmpinfo = save_bit_map.GetInfo()
             bmpstr = save_bit_map.GetBitmapBits(True)
 
-            # 将原始字节数据转换为numpy数组，并重塑为4通道(BGRA)图像格式
+            # 将原始字节数据转换为numpy数组 (BGRA)
             capture = np.frombuffer(bmpstr, dtype=np.uint8).reshape(
                 (bmpinfo["bmHeight"], bmpinfo["bmWidth"], 4)
             )
-            # 确保内存连续排列，并移除Alpha通道（保留BGR）
-            capture = np.ascontiguousarray(capture)[..., :-1]
-
-            # 清理资源（按创建顺序逆序释放）
-            win32gui.DeleteObject(save_bit_map.GetHandle())  # 删除位图对象
-            save_dc.DeleteDC()  # 删除内存设备上下文
-            mfc_dc.DeleteDC()  # 删除兼容设备上下文
-            win32gui.ReleaseDC(hwnd, hwnd_dc)  # 释放窗口设备上下文
+            capture = np.ascontiguousarray(capture)[..., :-1]  # 移除Alpha通道 (BGR)
 
             # 将BGR格式转换为RGB格式
-            capture_rgb = cv2.cvtColor(capture, cv2.COLOR_BGRA2RGB)
-            
+            capture_rgb = cv2.cvtColor(capture, cv2.COLOR_BGR2RGB)
+
             # 将numpy数组转换为PIL图像对象
             pil_image = Image.fromarray(capture_rgb)
 
@@ -206,10 +206,45 @@ class ScreenShot:
             if gray:
                 pil_image = pil_image.convert("L")
 
-
             return pil_image
+
+        except pywintypes.error as e:
+            log.error(f"后台截图报错: {e}，尝试重启游戏")
+            import os
+            import win32process
+            try:
+                from module.game_and_screen import screen
+                _, pid = win32process.GetWindowThreadProcessId(screen.handle._hWnd)
+                os.system(f'taskkill /F /PID {pid}')
+            except:
+                pass
+            from tasks.base.script_task_scheme import init_game
+            init_game()
+
         except Exception as e:
+            # 统一错误处理，如果发生异常，资源清理流程将很重要
             log.error(f"后台截图报错: {e}")
+            raise  # 重新抛出异常，以便调用者知道操作失败
+
+        finally:
+            # === 资源清理 (无论是否发生异常，都必须执行) ===
+            if save_dc and save_bit_map:
+                # 关键：将旧对象选回DC，才能安全删除位图和DC
+                save_dc.SelectObject(old_obj)
+
+            # 4. 删除位图对象
+            if save_bit_map:
+                win32gui.DeleteObject(save_bit_map.GetHandle())
+
+            # 3. 删除内存设备上下文 (CreateCompatibleDC 创建)
+            if save_dc:
+                save_dc.DeleteDC()
+
+            # 2. mfc_dc 是 CreateDCFromHandle 包装器，不需显式 DeleteDC()
+
+            # 1. 释放窗口设备上下文 (GetWindowDC 获取)
+            if hwnd_dc and hwnd:
+                win32gui.ReleaseDC(hwnd, hwnd_dc)
 
     @staticmethod
     def screenshot_benchmark(test_time: int = 10) -> tuple[bool, float]:
