@@ -277,6 +277,9 @@ class Mirror:
                     else:
                         self.mirror_map.refresh_floor(self.floor)
 
+                if cfg.floor_3_exit and self.floor >= 4:
+                    continue
+
                 while auto.take_screenshot() is None:
                     continue
                 if auto.find_element("mirror/road_in_mir/legend_assets.png"):
