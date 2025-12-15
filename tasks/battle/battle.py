@@ -25,6 +25,7 @@ class Battle:
         self.INIT_CHANCE = 16
         self.running = True  # 用于外部打断战斗逻辑执行
         self.defense_all_time = False
+        self.fail_times = 0
 
     @staticmethod
     def to_battle():
@@ -146,6 +147,8 @@ class Battle:
 
         first_turn = True
         start_time = time.time()
+
+        self.fail_times = 0
         while self.running:
             from tasks.base.retry import check_times
             # 自动截图
@@ -201,6 +204,9 @@ class Battle:
                 auto.click_element("battle/dead_all_confirm_assets.png")
                 sleep(1)
                 start_time = time.time()
+                self.fail_times += 1
+                if self.fail_times >= 5:
+                    return False
                 continue
 
             if in_mirror:

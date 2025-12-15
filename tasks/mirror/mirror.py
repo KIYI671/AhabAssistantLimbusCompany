@@ -295,6 +295,11 @@ class Mirror:
                 self.select_mirror_team()
                 continue
 
+            if battle.fail_times >= 5:
+                battle.fail_times = 0
+                self.re_start()
+                continue
+
             # 战斗配队的情况
             if auto.find_element("teams/announcer_assets.png"):
                 # 如果第一次启动脚本，还没进行编队，就先编队
@@ -326,7 +331,8 @@ class Mirror:
                 continue
 
             # 在战斗中
-            if auto.find_element("battle/more_information_assets.png") or auto.find_element("battle/in_mirror_assets.png"):
+            if auto.find_element("battle/more_information_assets.png") or auto.find_element(
+                    "battle/in_mirror_assets.png"):
                 self.battle_total_time += battle.fight(self.avoid_skill_3, self.defense_first_round)
                 continue
             elif battle.identify_keyword_turn and self.LOOP_COUNT - main_loop_count < 5:
@@ -600,7 +606,6 @@ class Mirror:
 
             cfg.set_value(f"team{self.team_order}_history", team_history)
             log.debug(team_history)
-
 
         try:
             last_floor_time = time.time() - self.floor_times[self.floor - 1]
