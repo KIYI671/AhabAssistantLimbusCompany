@@ -1106,6 +1106,7 @@ class Mirror:
                 if auto.find_text_element(["0/1", "01", "1/1", "11", "1/2", "12"], my_crop=select_bbox):
                     for gift in my_list[:1]:
                         auto.mouse_click(gift[0], gift[1])
+                        sleep(int(cfg.mouse_action_interval))
                     auto.click_element("mirror/road_in_mir/acquire_ego_gift_select_assets.png", model="normal")
                     time.sleep(2)
                     if retry() is False:
@@ -1114,6 +1115,7 @@ class Mirror:
                 elif auto.find_text_element(["0/2", "02", "2/2", "22"], my_crop=select_bbox):
                     for gift in my_list[:2]:
                         auto.mouse_click(gift[0], gift[1])
+                        sleep(int(cfg.mouse_action_interval))
                     auto.click_element("mirror/road_in_mir/acquire_ego_gift_select_assets.png", model="normal")
                     time.sleep(2)
                     if retry() is False:
@@ -1122,6 +1124,7 @@ class Mirror:
                 else:
                     for gift in my_list:
                         auto.mouse_click(gift[0], gift[1])
+                        sleep(int(cfg.mouse_action_interval))
                     auto.click_element("mirror/road_in_mir/acquire_ego_gift_select_assets.png", model="normal")
                     time.sleep(2)
                     if retry() is False:
