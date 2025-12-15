@@ -70,8 +70,8 @@ def thread_luxcavation():
             auto.click_element("home/back_assets.png")
             continue
         if auto.click_element("luxcavation/thread_enter_assets.png", threshold=0.78):
-            if auto.find_element("luxcavation/thread_lv.png", threshold=0.85, take_screenshot=True):
-                if level := auto.find_element("luxcavation/thread_lv.png", find_type="image_with_multiple_targets"):
+            if auto.find_element("luxcavation/thread_consume.png", threshold=0.85, take_screenshot=True):
+                if level := auto.find_element("luxcavation/thread_consume.png", find_type="image_with_multiple_targets"):
                     level = sorted(level, key=lambda y: y[1], reverse=True)
                     for lv in level:
                         auto.mouse_click(lv[0], lv[1])
