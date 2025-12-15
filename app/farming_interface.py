@@ -495,12 +495,15 @@ class FarmingInterfaceRight(QWidget):
 
     def load_log_text(self):
         log_path = "./logs/user.log"
+        MAX_SIZE_BYTES = 500 * 1024
+
         if not os.path.exists(log_path):
             return
         else:
-            file_size_mb = os.path.getsize(log_path) / (1024 * 1024)
-            if file_size_mb > 50:
+            file_size_bytes = os.path.getsize(log_path)
+            if file_size_bytes > MAX_SIZE_BYTES:
                 os.remove(log_path)
+                log.info("日志文件大小超过500KB，为防止加载过久或卡死，已删除")
         file = QFile(log_path)
         if not file.exists():
             return
