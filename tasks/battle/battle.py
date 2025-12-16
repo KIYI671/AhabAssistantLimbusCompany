@@ -309,10 +309,11 @@ class Battle:
                     auto.click_element("event/select_first_option_assets.png", find_type="image_with_multiple_targets")
                     event_chance -= 1
                 else:
+                    auto.click_element("event/select_first_option_assets.png", find_type="image_with_multiple_targets")
                     finishes_bbox = ImageUtils.get_bbox(
                         ImageUtils.load_image("event/continue_assets.png"))
                     if auto.find_text_element(
-                            ["continue", "proceed", "commence", "choices", "confirm", "行判", "始战", "继续"],
+                            ["conti", "proc", "comme", "choices", "confirm", "行判", "始战", "继续"],
                             finishes_bbox):
                         auto.mouse_click((finishes_bbox[0] + finishes_bbox[2]) // 2,
                                          (finishes_bbox[1] + finishes_bbox[3]) // 2)
