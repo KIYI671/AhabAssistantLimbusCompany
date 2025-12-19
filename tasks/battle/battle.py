@@ -209,7 +209,7 @@ class Battle:
                     return False
                 continue
 
-            if in_mirror:
+            if in_mirror and not cfg.fight_to_last_man:
                 if dead_position := auto.find_element("battle/dead.png"):
                     my_scale = cfg.set_win_size / 1440
                     dead_bbox = (

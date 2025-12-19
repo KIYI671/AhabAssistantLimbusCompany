@@ -416,6 +416,11 @@ class PageMirror(PageCard):
             QT_TRANSLATE_NOOP("BaseCheckBox", "不跳过白棉花"),
             center=False
         )
+        self.fight_to_last_man = BaseCheckBox(
+            "fight_to_last_man", None,
+            QT_TRANSLATE_NOOP("BaseCheckBox", "战斗直到全灭"),
+            center=False
+        )
 
     def __init_layout(self):
         self.vbox_general.addWidget(self.team)
@@ -433,6 +438,7 @@ class PageMirror(PageCard):
         self.vbox_advanced.addWidget(self.skip_event_pack)
         self.vbox_advanced.addWidget(self.re_claim_rewards)
         self.vbox_advanced.addWidget(self.not_skip_whitegossypium)
+        self.vbox_advanced.addWidget(self.fight_to_last_man)
 
         self.card_layout.insertWidget(self.card_layout.count() - 1, self.mirror_count)
 
@@ -634,6 +640,7 @@ class PageMirror(PageCard):
         self.skip_event_pack.retranslateUi()
         self.re_claim_rewards.retranslateUi()
         self.not_skip_whitegossypium.retranslateUi()
+        self.fight_to_last_man.retranslateUi()
         for child in self.findChildren(MirrorTeamCombination):
             child.retranslateUi()
 
