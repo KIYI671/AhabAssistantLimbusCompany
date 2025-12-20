@@ -49,8 +49,6 @@ class Battle:
                 click = True
                 sleep(2)
                 continue
-            if click:
-                break
             loop_count -= 1
             if loop_count < 10:
                 auto.model = "normal"
@@ -62,6 +60,8 @@ class Battle:
                 msg = "超出最大尝试次数,未能进入战斗"
                 log.error(msg)
                 return False
+            if click:
+                break
 
     @staticmethod
     def _update_wait_time(time: float = None, fail_flag: bool = False, total_count: int = 1):
