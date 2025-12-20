@@ -31,13 +31,25 @@ class Battle:
     def to_battle():
         loop_count = 15
         auto.model = 'clam'
+        click = False
         while True:
             # 自动截图
             if auto.take_screenshot() is None:
                 continue
+            if click and (auto.find_element("battle/normal_to_battle_assets.png") or auto.find_element(
+                    "battle/chaim_to_battle_assets.png")):
+                click = False
+                from tasks.teams.team_formation import deal_with_spills
+                deal_with_spills()
             if auto.click_element("battle/normal_to_battle_assets.png"):
-                break
+                click = True
+                sleep(2)
+                continue
             if auto.click_element("battle/chaim_to_battle_assets.png"):
+                click = True
+                sleep(2)
+                continue
+            if click:
                 break
             loop_count -= 1
             if loop_count < 10:

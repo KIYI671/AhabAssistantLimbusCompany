@@ -106,6 +106,74 @@ def select_battle_team(num):
                 return False
 
 
+def deal_with_spills():
+    import cv2
+    import numpy as np
+    from module.ocr import ocr
+    from utils.image_utils import ImageUtils
+    scale = cfg.set_win_size / 1440
+    sinner_nums_bbox = ImageUtils.get_bbox(ImageUtils.load_image("battle/normal_to_battle_assets.png"))
+    sinner_nums_bbox = (sinner_nums_bbox[0],
+                        sinner_nums_bbox[1] - 115 * scale,
+                        sinner_nums_bbox[2],
+                        sinner_nums_bbox[3] - 115 * scale)
+    sc = ImageUtils.crop(np.array(auto.screenshot), sinner_nums_bbox)
+    sc = cv2.bitwise_not(sc)
+    mask = cv2.inRange(sc, 220, 255)
+    mask = cv2.bitwise_not(mask)
+    background = np.zeros((300, 300), dtype=np.uint8)
+    h, w = mask.shape[:2]
+    y_off = (300 - h) // 2
+    x_off = (300 - w) // 2
+    background[y_off:y_off + h, x_off:x_off + w] = mask
+    try:
+        result = ocr.run(background)
+        ocr_result = [result.txts[i] for i in range(len(result.txts))]
+        ocr_result = "".join(ocr_result)
+        log.debug(f"对于配队人数OCR得到：{ocr_result}")
+        if "/" in ocr_result:
+            result = ocr_result.split("/")
+            result = [i.strip() for i in result]
+            import re
+            now = int(re.sub(r"\D", "", result[-2]))
+            max = int(re.sub(r"\D", "", result[-1]))
+            if now > max:
+                all_selected = auto.find_element("teams/selected.png",
+                                                 find_type='image_with_multiple_targets')
+                kernel = np.ones((3, 3), np.uint8)
+                for selected in all_selected:
+                    try:
+                        order_bbox = (selected[0] - 40 * scale,
+                                      selected[1] - 120 * scale,
+                                      selected[0] + 40 * scale,
+                                      selected[1] - 30 * scale)
+                        sc2 = ImageUtils.crop(np.array(auto.screenshot), order_bbox)
+                        background2 = np.zeros((300, 300), dtype=np.uint8)
+                        h, w = sc2.shape[:2]
+                        y_off = (300 - h) // 2
+                        x_off = (300 - w) // 2
+                        background2[y_off:y_off + h, x_off:x_off + w] = sc2
+                        result = ocr.run(background2)
+                        ocr_result = [result.txts[i] for i in range(len(result.txts))]
+                        ocr_result = "".join(ocr_result)
+                        if ocr_result == "G":
+                            ocr_result = '6'
+                        if int(ocr_result) == 1:
+                            # 再腐蚀 3 次
+                            background2 = cv2.erode(background2, kernel, iterations=3)
+                            # 再膨胀 2 次
+                            background2 = cv2.dilate(background2, kernel, iterations=2)
+                            result = ocr.run(background2)
+                            ocr_result = [result.txts[i] for i in range(len(result.txts))]
+                            ocr_result = "".join(ocr_result)
+                        if int(ocr_result) > max:
+                            auto.mouse_click(selected[0], selected[1])
+                    except:
+                        continue
+    except:
+        pass
+
+
 @begin_and_finish_time_log(task_name="检查队伍剩余战斗力")
 def check_team():
     # 至少还有5人可以战斗
