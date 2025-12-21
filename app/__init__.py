@@ -141,6 +141,7 @@ all_checkbox_config_name = [
     "re_formation_each_floor",
     "use_starlight",
     "aggressive_also_enhance",
+    "aggressive_save_systems",
     "defense_first_round",
     "fixed_team_use",
     "reward_cards",

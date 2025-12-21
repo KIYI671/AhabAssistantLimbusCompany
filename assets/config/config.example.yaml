@@ -133,6 +133,7 @@ team1_setting:
   re_formation_each_floor: False # 每个楼层重新编队
   use_starlight: False # 开局星光换钱
   aggressive_also_enhance: False # 激进合成期间也升级饰品
+  aggressive_save_systems: False # 激进合成保留体系饰品
   defense_first_round: False # 第一回合全员防御
   fixed_team_use: False # 固定队伍用途
   fixed_team_use_select: 0 # 固定队伍用途的选择项

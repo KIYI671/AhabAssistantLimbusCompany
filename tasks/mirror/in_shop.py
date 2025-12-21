@@ -28,6 +28,7 @@ class Shop:
         self.do_not_fuse = team_setting["do_not_fuse"]  # 是否不合成
         self.do_not_sell = team_setting["do_not_sell"]  # 是否不出售
         self.do_not_enhance = team_setting["do_not_enhance"]  # 是否不升级
+        self.aggressive_save_systems = team_setting["aggressive_save_systems"]  # 激进合成期间保护本体系饰品
         self.only_aggressive_fuse = team_setting["only_aggressive_fuse"]  # 是否只进行激进合成，不进行其他合成
         self.do_not_system_fuse = team_setting["do_not_system_fuse"]  # 是否不进行体系饰品合成
         self.only_system_fuse = team_setting["only_system_fuse"]  # 是否只进行体系饰品合成
@@ -306,6 +307,15 @@ class Shop:
             for protect_gift in protect_list:
                 if protect_coordinates := auto.find_element(protect_gift, threshold=0.7):
                     gift_list = processing_coordinates(gift_list, protect_coordinates)
+
+            if self.aggressive_save_systems:
+                protect_coord = []
+                for coord in gift_list:
+                    system_bbox = [coord[0], coord[1], coord[0] + 100 * scale, coord[1] + 100 * scale]
+                    if auto.find_element("mirror/shop/enhance_gifts/burn.png", my_crop=system_bbox):
+                        protect_coord.append(coord)
+                for coord in protect_coord:
+                    gift_list = processing_coordinates(gift_list, coord)
 
             # 直到合成概率90%
             for coord in gift_list:
