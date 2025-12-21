@@ -113,6 +113,11 @@ Right-click to set as permanent</translation>
         <translation>No skip White Gossypium</translation>
     </message>
     <message>
+        <location filename="../app/page_card.py" line="421"/>
+        <source>战斗直到全灭</source>
+        <translation>Fight to last man</translation>
+    </message>
+    <message>
         <location filename="../app/team_setting_card.py" line="397"/>
         <source>不治疗罪人</source>
         <translation>No heal sinners</translation>
@@ -158,52 +163,57 @@ Right-click to set as permanent</translation>
         <translation>Exchange starlights beginning</translation>
     </message>
     <message>
-        <location filename="../app/team_setting_card.py" line="450"/>
+        <location filename="../app/team_setting_card.py" line="436"/>
+        <source>激进合成保留体系饰品</source>
+        <translation>Aggressive save systems gift</translation>
+    </message>
+    <message>
+        <location filename="../app/team_setting_card.py" line="453"/>
         <source>自选开局加成</source>
         <translation>Custom beginning bonus</translation>
     </message>
     <message>
-        <location filename="../app/team_setting_card.py" line="497"/>
+        <location filename="../app/team_setting_card.py" line="500"/>
         <source>合成四级</source>
         <translation>Fuse level IV</translation>
     </message>
     <message>
-        <location filename="../app/team_setting_card.py" line="501"/>
+        <location filename="../app/team_setting_card.py" line="504"/>
         <source>购买</source>
         <translation>Purchase</translation>
     </message>
     <message>
-        <location filename="../app/team_setting_card.py" line="505"/>
+        <location filename="../app/team_setting_card.py" line="508"/>
         <source>选取胜利奖励</source>
         <translation>Select success rewards</translation>
     </message>
     <message>
-        <location filename="../app/team_setting_card.py" line="509"/>
+        <location filename="../app/team_setting_card.py" line="512"/>
         <source>升级四级</source>
         <translation>Upgrade level IV</translation>
     </message>
     <message>
-        <location filename="../app/team_setting_card.py" line="525"/>
+        <location filename="../app/team_setting_card.py" line="528"/>
         <source>第一层</source>
         <translation>Floor 1</translation>
     </message>
     <message>
-        <location filename="../app/team_setting_card.py" line="529"/>
+        <location filename="../app/team_setting_card.py" line="532"/>
         <source>第二层</source>
         <translation>Floor 2</translation>
     </message>
     <message>
-        <location filename="../app/team_setting_card.py" line="533"/>
+        <location filename="../app/team_setting_card.py" line="536"/>
         <source>第三层</source>
         <translation>Floor 3</translation>
     </message>
     <message>
-        <location filename="../app/team_setting_card.py" line="537"/>
+        <location filename="../app/team_setting_card.py" line="540"/>
         <source>第四层</source>
         <translation>Floor 4</translation>
     </message>
     <message>
-        <location filename="../app/team_setting_card.py" line="541"/>
+        <location filename="../app/team_setting_card.py" line="544"/>
         <source>第五层</source>
         <translation>Floor 5</translation>
     </message>
@@ -233,7 +243,7 @@ Right-click to set as permanent</translation>
         <translation>Also upgrades gifts during Aggressive Fuse</translation>
     </message>
     <message>
-        <location filename="../app/team_setting_card.py" line="436"/>
+        <location filename="../app/team_setting_card.py" line="439"/>
         <source>链接战第一回合全员防御</source>
         <translation>defense first round in normal encounters</translation>
     </message>
@@ -579,7 +589,7 @@ Right-click to set as permanent</translation>
         <translation>After</translation>
     </message>
     <message>
-        <location filename="../app/team_setting_card.py" line="520"/>
+        <location filename="../app/team_setting_card.py" line="523"/>
         <source>忽略商店</source>
         <translation>Ignore shop</translation>
     </message>
@@ -794,37 +804,37 @@ Right-click to set as permanent</translation>
 <context>
     <name>CheckBoxWithComboBox</name>
     <message>
-        <location filename="../app/team_setting_card.py" line="444"/>
+        <location filename="../app/team_setting_card.py" line="447"/>
         <source>奖励卡优先度</source>
         <translation>Reward priority</translation>
     </message>
     <message>
-        <location filename="../app/team_setting_card.py" line="468"/>
+        <location filename="../app/team_setting_card.py" line="471"/>
         <source>合成四级以后</source>
         <translation>After fused level IV</translation>
     </message>
     <message>
-        <location filename="../app/team_setting_card.py" line="473"/>
+        <location filename="../app/team_setting_card.py" line="476"/>
         <source>购物策略</source>
         <translation>Shop tactic</translation>
     </message>
     <message>
-        <location filename="../app/team_setting_card.py" line="479"/>
+        <location filename="../app/team_setting_card.py" line="482"/>
         <source>自选开局饰品</source>
         <translation>Beginning E.G.O.</translation>
     </message>
     <message>
-        <location filename="../app/team_setting_card.py" line="487"/>
+        <location filename="../app/team_setting_card.py" line="490"/>
         <source>第二体系</source>
         <translation>Secend system</translation>
     </message>
     <message>
-        <location filename="../app/team_setting_card.py" line="512"/>
+        <location filename="../app/team_setting_card.py" line="515"/>
         <source>技能替换</source>
         <translation>Change skills</translation>
     </message>
     <message>
-        <location filename="../app/team_setting_card.py" line="439"/>
+        <location filename="../app/team_setting_card.py" line="442"/>
         <source>固定队伍用途</source>
         <translation>Fixed team usage</translation>
     </message>
@@ -920,108 +930,108 @@ Right-click to set as permanent</translation>
 <context>
     <name>CustomizeInfoModule</name>
     <message>
-        <location filename="../app/team_setting_card.py" line="679"/>
+        <location filename="../app/team_setting_card.py" line="684"/>
         <source>总镜牢次数: 统计数据不足</source>
         <translation>ALL TIMES：Insuf. Data</translation>
     </message>
     <message>
-        <location filename="../app/team_setting_card.py" line="680"/>
+        <location filename="../app/team_setting_card.py" line="685"/>
         <source>困难镜牢次数: 统计数据不足</source>
         <translation>HARD TIMES：Insuf. Data</translation>
     </message>
     <message>
-        <location filename="../app/team_setting_card.py" line="681"/>
+        <location filename="../app/team_setting_card.py" line="686"/>
         <source>普通镜牢次数: 统计数据不足</source>
         <translation>NOR TIMES：Insuf. Data</translation>
     </message>
     <message>
-        <location filename="../app/team_setting_card.py" line="682"/>
-        <location filename="../app/team_setting_card.py" line="800"/>
+        <location filename="../app/team_setting_card.py" line="687"/>
+        <location filename="../app/team_setting_card.py" line="805"/>
         <source>困难平均用时: 统计数据不足</source>
         <translation>HARD AVG：Insuf. Data</translation>
     </message>
     <message>
-        <location filename="../app/team_setting_card.py" line="683"/>
-        <location filename="../app/team_setting_card.py" line="812"/>
+        <location filename="../app/team_setting_card.py" line="688"/>
+        <location filename="../app/team_setting_card.py" line="817"/>
         <source>困难最近5次平均用时: 统计数据不足</source>
         <translation>HARD NEAR 5 AVG：Insuf. Data</translation>
     </message>
     <message>
-        <location filename="../app/team_setting_card.py" line="684"/>
-        <location filename="../app/team_setting_card.py" line="824"/>
+        <location filename="../app/team_setting_card.py" line="689"/>
+        <location filename="../app/team_setting_card.py" line="829"/>
         <source>困难最近10次平均用时: 统计数据不足</source>
         <translation>HARD NEAR 10 AVG：Insuf. Data</translation>
     </message>
     <message>
-        <location filename="../app/team_setting_card.py" line="685"/>
-        <location filename="../app/team_setting_card.py" line="836"/>
+        <location filename="../app/team_setting_card.py" line="690"/>
+        <location filename="../app/team_setting_card.py" line="841"/>
         <source>普通平均用时: 统计数据不足</source>
         <translation>NOR AVG：Insuf. Data</translation>
     </message>
     <message>
-        <location filename="../app/team_setting_card.py" line="686"/>
-        <location filename="../app/team_setting_card.py" line="848"/>
+        <location filename="../app/team_setting_card.py" line="691"/>
+        <location filename="../app/team_setting_card.py" line="853"/>
         <source>普通最近5次平均用时: 统计数据不足</source>
         <translation>NOR NEAR 5 AVG：Insuf. Data</translation>
     </message>
     <message>
-        <location filename="../app/team_setting_card.py" line="687"/>
-        <location filename="../app/team_setting_card.py" line="860"/>
+        <location filename="../app/team_setting_card.py" line="692"/>
+        <location filename="../app/team_setting_card.py" line="865"/>
         <source>普通最近10次平均用时: 统计数据不足</source>
         <translation>NOR NEAR 10 AVG：Insuf. Data</translation>
     </message>
     <message>
-        <location filename="../app/team_setting_card.py" line="689"/>
+        <location filename="../app/team_setting_card.py" line="694"/>
         <source>刷新数据</source>
         <translation>Fresh</translation>
     </message>
     <message>
-        <location filename="../app/team_setting_card.py" line="691"/>
+        <location filename="../app/team_setting_card.py" line="696"/>
         <source>清除历史统计数据</source>
         <translation>CLEAR</translation>
     </message>
     <message>
-        <location filename="../app/team_setting_card.py" line="781"/>
+        <location filename="../app/team_setting_card.py" line="786"/>
         <source>总镜牢次数: </source>
         <translation>ALL TIMES：</translation>
     </message>
     <message>
-        <location filename="../app/team_setting_card.py" line="784"/>
+        <location filename="../app/team_setting_card.py" line="789"/>
         <source>困难镜牢次数: </source>
         <translation>HARD TIMES：</translation>
     </message>
     <message>
-        <location filename="../app/team_setting_card.py" line="787"/>
+        <location filename="../app/team_setting_card.py" line="792"/>
         <source>普通镜牢次数: </source>
         <translation>NOR TIMES：</translation>
     </message>
     <message>
-        <location filename="../app/team_setting_card.py" line="792"/>
+        <location filename="../app/team_setting_card.py" line="797"/>
         <source>困难平均用时: {min:.0f} : {sec:.2f} </source>
         <translation>HARD AVG：{min:.0f} : {sec:.2f}</translation>
     </message>
     <message>
-        <location filename="../app/team_setting_card.py" line="804"/>
+        <location filename="../app/team_setting_card.py" line="809"/>
         <source>困难最近5次平均用时: {min:.0f} : {sec:.2f} </source>
         <translation>HARD NEAR 5 AVG：{min:.0f} : {sec:.2f}</translation>
     </message>
     <message>
-        <location filename="../app/team_setting_card.py" line="816"/>
+        <location filename="../app/team_setting_card.py" line="821"/>
         <source>困难最近10次平均用时: {min:.0f} : {sec:.2f} </source>
         <translation>NOR NEAR 10 AVG：{min:.0f} : {sec:.2f}</translation>
     </message>
     <message>
-        <location filename="../app/team_setting_card.py" line="828"/>
+        <location filename="../app/team_setting_card.py" line="833"/>
         <source>普通平均用时: {min:.0f} : {sec:.2f} </source>
         <translation>NOR AVG：{min:.0f} : {sec:.2f}</translation>
     </message>
     <message>
-        <location filename="../app/team_setting_card.py" line="840"/>
+        <location filename="../app/team_setting_card.py" line="845"/>
         <source>普通最近5次平均用时: {min:.0f} : {sec:.2f} </source>
         <translation>NOR NEAR 5 AVG：{min:.0f} : {sec:.2f}</translation>
     </message>
     <message>
-        <location filename="../app/team_setting_card.py" line="852"/>
+        <location filename="../app/team_setting_card.py" line="857"/>
         <source>普通最近10次平均用时: {min:.0f} : {sec:.2f} </source>
         <translation>NOR NEAR 10 AVG：{min:.0f} : {sec:.2f}</translation>
     </message>
@@ -1029,8 +1039,8 @@ Right-click to set as permanent</translation>
 <context>
     <name>CustomizeSettingsModule</name>
     <message>
-        <location filename="../app/team_setting_card.py" line="455"/>
-        <location filename="../app/team_setting_card.py" line="633"/>
+        <location filename="../app/team_setting_card.py" line="458"/>
+        <location filename="../app/team_setting_card.py" line="638"/>
         <source>星光</source>
         <translation>Star</translation>
     </message>
@@ -1415,7 +1425,7 @@ Right-click to set as permanent</translation>
         <translation>Team1</translation>
     </message>
     <message>
-        <location filename="../app/page_card.py" line="530"/>
+        <location filename="../app/page_card.py" line="536"/>
         <source>编队</source>
         <translation>Team</translation>
     </message>
@@ -1446,7 +1456,7 @@ Right-click to set as permanent</translation>
         <translation>Advanced</translation>
     </message>
     <message>
-        <location filename="../app/page_card.py" line="455"/>
+        <location filename="../app/page_card.py" line="461"/>
         <source>镜 牢 进 度 </source>
         <translation>Mirror Progress</translation>
     </message>
@@ -1454,14 +1464,14 @@ Right-click to set as permanent</translation>
 <context>
     <name>PageMirror</name>
     <message>
-        <location filename="../app/page_card.py" line="460"/>
-        <location filename="../app/page_card.py" line="479"/>
+        <location filename="../app/page_card.py" line="466"/>
+        <location filename="../app/page_card.py" line="485"/>
         <source>镜 牢 进 度 ( 普 通 ) </source>
         <translation>Mirror Progress (Normal)</translation>
     </message>
     <message>
-        <location filename="../app/page_card.py" line="457"/>
-        <location filename="../app/page_card.py" line="477"/>
+        <location filename="../app/page_card.py" line="463"/>
+        <location filename="../app/page_card.py" line="483"/>
         <source>镜 牢 进 度 ( 困 难 ) </source>
         <translation>Hard Mode Mirror Progress</translation>
     </message>
