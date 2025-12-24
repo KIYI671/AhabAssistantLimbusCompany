@@ -117,7 +117,7 @@ class SimulatorControl:
 
             self.simulator_control.real_width = width
             self.simulator_control.real_height = height
-            if self.simulator_control.connection.max_x > 1440:
+            if int(self.simulator_control.connection.max_x) > 1440:
                 self.simulator_bluestacks = True
 
         SimulatorControl.connection_device = self
