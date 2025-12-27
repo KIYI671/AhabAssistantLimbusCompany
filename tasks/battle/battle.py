@@ -173,6 +173,8 @@ class Battle:
                 back_init_menu()
                 return False
 
+            total_count += 1
+
             if auto.find_element("mirror/road_in_mir/legend_assets.png"):
                 if infinite_battle:
                     continue
@@ -347,7 +349,8 @@ class Battle:
                 continue
 
             # 战斗结束，进入结算页面
-            if auto.click_element("battle/battle_finish_confirm_assets.png", click=False):
+            if auto.click_element("battle/battle_finish_confirm_assets.png", click=False) or auto.find_element(
+                    "mirror/claim_reward/battle_statistics_assets.png"):
                 sleep(1)
                 if auto.click_element("base/leave_up_assets.png"):
                     auto.click_element("base/leave_up_confirm_assets.png")
