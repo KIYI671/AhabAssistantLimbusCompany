@@ -12,6 +12,7 @@ from module.logger import log
 from module.ocr import ocr
 from tasks import sins
 from tasks.base.retry import retry
+from tasks.event import event_handling
 from tasks.event.event_handling import EventHandling
 from utils.image_utils import ImageUtils
 from utils.utils import find_skill3
@@ -338,7 +339,7 @@ class Battle:
                         event_chance = -1
 
             if auto.find_element("event/perform_the_check_feature_assets.png"):
-                EventHandling.decision_event_handling()
+                event_handling.decision_event_handling()
             if auto.click_element("event/continue_assets.png"):
                 continue
             if auto.click_element("event/proceed_assets.png"):

@@ -16,6 +16,7 @@ from tasks.base.back_init_menu import back_init_menu
 from tasks.base.make_enkephalin_module import make_enkephalin_module
 from tasks.base.retry import retry
 from tasks.battle import battle
+from tasks.event import event_handling
 from tasks.event.event_handling import EventHandling
 from tasks.mirror.in_shop import Shop
 from tasks.mirror.reward_card import get_reward_card
@@ -965,7 +966,7 @@ class Mirror:
                     "event/select_first_option_assets.png"):
                 auto.click_element("event/select_first_option_assets.png")
             if auto.find_element("event/perform_the_check_feature_assets.png"):
-                EventHandling.decision_event_handling()
+                event_handling.decision_event_handling()
             if auto.click_element("event/continue_assets.png"):
                 continue
             if auto.click_element("event/proceed_assets.png"):
