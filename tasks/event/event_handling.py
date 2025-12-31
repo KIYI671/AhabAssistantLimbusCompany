@@ -2,6 +2,7 @@ import time
 
 from module.automation import auto
 from module.config import cfg
+from module.logger import log
 
 
 class EventHandling:
@@ -41,25 +42,29 @@ class EventHandling:
             self.times += 1
         else:
             self.times = 0
-        ocr_data = auto.find_text_element("", only_text=True)
-        ocr_result = extract_levels(ocr_data)
         try:
-            order = ocr_result.index("very high")
-        except:
+            ocr_data = auto.find_text_element("", only_text=True)
+            ocr_result = extract_levels(ocr_data)
             try:
-                order = ocr_result.index("high")
+                order = ocr_result.index("very high")
             except:
                 try:
-                    order = ocr_result.index("normal")
+                    order = ocr_result.index("high")
                 except:
                     try:
-                        order = ocr_result.index("low")
+                        order = ocr_result.index("normal")
                     except:
-                        order = ocr_result.index("very low")
-        scale = cfg.set_win_size / 1440
-        first_sinner = [150 * scale, 1300 * scale]
-        target_sinner = [first_sinner[0] + 140 * (order + self.times) * scale, first_sinner[1]]
-        auto.mouse_click(target_sinner[0], target_sinner[1])
+                        try:
+                            order = ocr_result.index("low")
+                        except:
+                            order = ocr_result.index("very low")
+            scale = cfg.set_win_size / 1440
+            first_sinner = [150 * scale, 1300 * scale]
+            target_sinner = [first_sinner[0] + 140 * (order + self.times) * scale, first_sinner[1]]
+            auto.mouse_click(target_sinner[0], target_sinner[1])
+        except Exception as e:
+            msg = f"OCR识别事件成功率失败，错误信息：{e}"
+            log.debug(msg)
 
 
 def is_edit_distance_one(s1, s2):
