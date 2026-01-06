@@ -470,12 +470,6 @@ class SinnerSelect(QFrame):
                         lw, lh
                     )
 
-    def resizeEvent(self, event):
-        """重写缩放事件"""
-        super().resizeEvent(event)
-        self.update_overlay_geometry()  # 窗口大小变动时自动校正位置
-
-
     def mousePressEvent(self, event: QMouseEvent):
         """处理鼠标点击事件"""
         if event.button() == Qt.LeftButton:
@@ -485,7 +479,7 @@ class SinnerSelect(QFrame):
     def _toggle_selected(self):
         """切换选中状态"""
         self._is_selected = not self._is_selected
-        self._update_visual_state()
+        # self._update_visual_state()
         # 发送信号到mediator（保持兼容性）
         # 信号会被 setting_team 处理，然后调用 refresh_sinner_order 来更新编号
         from app import mediator
@@ -516,17 +510,14 @@ class SinnerSelect(QFrame):
     def set_text(self, text):
         """设置编号文本"""
         self._order_text = text if text else ""
-        self._update_visual_state()
 
     def set_checkbox(self, checked):
-        """设置选中状态（保持方法名兼容）"""
-        # 不发送信号，只更新状态（避免循环触发）
+        """设置选中状态"""
         if self._is_selected != checked:
             self._is_selected = checked
-            # 如果取消选中，清除编号
+            # 如果取消选中,清除编号
             if not checked:
                 self._order_text = ""
-            self._update_visual_state()
 
 
 class ComboBoxSettingCard(SettingCard):
