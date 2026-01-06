@@ -12,9 +12,6 @@ Features:
 - Disables mutex lock (allows multiple instances)
 - Press Ctrl+R to manually reload
 - Press Ctrl+C to exit
-
-Requirements:
-    pip install watchdog
 """
 
 import os
@@ -24,32 +21,22 @@ import subprocess
 import threading
 from pathlib import Path
 
+from module.logger import log
+
 try:
     from watchdog.observers import Observer
     from watchdog.events import FileSystemEventHandler
 except ImportError:
-    print("❌ watchdog not installed. Installing...")
-    subprocess.check_call([sys.executable, "-m", "pip", "install", "watchdog"])
-    from watchdog.observers import Observer
-    from watchdog.events import FileSystemEventHandler
+    log.critical("watchdog not installed. Please run `uv sync` to install dependencies.")
+    sys.exit(1)
 
 try:
     from pynput import keyboard
 except ImportError:
-    print("⚠️  pynput not available, keyboard shortcuts disabled")
+    log.warning("pynput not available, keyboard shortcuts disabled")
     keyboard = None
 
 
-class Colors:
-    """ANSI color codes for terminal output"""
-    HEADER = '\033[95m'
-    BLUE = '\033[94m'
-    CYAN = '\033[96m'
-    GREEN = '\033[92m'
-    WARNING = '\033[93m'
-    FAIL = '\033[91m'
-    END = '\033[0m'
-    BOLD = '\033[1m'
 
 
 class AALCReloader:
@@ -65,15 +52,8 @@ class AALCReloader:
         
     def start(self):
         """Start the development mode"""
-        print(f"{Colors.HEADER}{Colors.BOLD}")
-        print("=" * 60)
-        print("  AALC Development Mode - Hot Reload Enabled")
-        print("=" * 60)
-        print(f"{Colors.END}")
-        print(f"{Colors.CYAN}📁 Watching directory: {Path.cwd()}{Colors.END}")
-        print(f"{Colors.CYAN}🔥 Hot reload: ENABLED{Colors.END}")
-        print(f"{Colors.WARNING}⌨️  Ctrl+R: Manual reload | Ctrl+C: Exit{Colors.END}")
-        print(f"{Colors.BLUE}{'─' * 60}{Colors.END}\n")
+        log.info("AALC Development Mode - Hot Reload Enabled")
+        log.info(f"Watching directory: {Path.cwd()}")
         
         # Set development environment variables
         os.environ['AALC_DEV_MODE'] = '1'
@@ -100,8 +80,8 @@ class AALCReloader:
                     exit_code = self.process.returncode
                     if not self.should_restart:
                         # User closed the window, exit dev mode
-                        print(f"\n{Colors.WARNING}🛑 Application exited with code {exit_code}{Colors.END}")
-                        print(f"{Colors.CYAN}💡 Exiting development mode...{Colors.END}")
+                        log.warning(f"Application exited with code {exit_code}")
+                        log.info("Exiting development mode...")
                         self.cleanup()
                         return
                 
@@ -144,7 +124,7 @@ class AALCReloader:
                 if hasattr(key, 'char'):
                     # Ctrl+R for manual reload
                     if key.char == '\x12':  # Ctrl+R
-                        print(f"\n{Colors.WARNING}⌨️  Manual reload triggered{Colors.END}")
+                        log.info("Manual reload triggered")
                         self.should_restart = True
             except AttributeError:
                 pass
@@ -157,18 +137,17 @@ class AALCReloader:
         """Restart the main application"""
         # Kill existing process
         if self.process:
-            print(f"{Colors.WARNING}🔄 Stopping previous instance...{Colors.END}")
+            log.info("Stopping previous instance...")
             try:
                 self.process.terminate()
                 self.process.wait(timeout=5)
             except subprocess.TimeoutExpired:
-                print(f"{Colors.FAIL}⚠️  Force killing process...{Colors.END}")
+                log.warning("Force killing process...")
                 self.process.kill()
                 self.process.wait()
         
         # Start new process
-        print(f"{Colors.GREEN}🚀 Starting AALC...{Colors.END}")
-        print(f"{Colors.BLUE}{'─' * 60}{Colors.END}")
+        log.info("Starting AALC...")
         
         # Create modified main.py startup
         startup_script = self.create_dev_main()
@@ -179,9 +158,9 @@ class AALCReloader:
                 cwd=Path.cwd(),
                 env=os.environ.copy()
             )
-            print(f"{Colors.GREEN}✅ Application started (PID: {self.process.pid}){Colors.END}\n")
+            log.info(f"Application started (PID: {self.process.pid})")
         except Exception as e:
-            print(f"{Colors.FAIL}❌ Failed to start: {e}{Colors.END}")
+            log.error(f"Failed to start: {e}")
     
     def create_dev_main(self):
         """Create a temporary development version of main.py"""
@@ -216,7 +195,7 @@ os.environ['AALC_DEV_MODE'] = '1'
     
     def cleanup(self):
         """Cleanup resources"""
-        print(f"\n{Colors.WARNING}🛑 Shutting down...{Colors.END}")
+        log.info("Shutting down...")
         
         if self.process:
             self.process.terminate()
@@ -234,7 +213,10 @@ os.environ['AALC_DEV_MODE'] = '1'
         if temp_file.exists():
             temp_file.unlink()
         
-        print(f"{Colors.GREEN}✅ Cleanup complete{Colors.END}")
+        if temp_file.exists():
+            temp_file.unlink()
+        
+        log.info("Cleanup complete")
         sys.exit(0)
 
 
@@ -260,14 +242,14 @@ class FileChangeHandler(FileSystemEventHandler):
         
         if event.src_path.endswith('.py'):
             rel_path = Path(event.src_path).relative_to(Path.cwd())
-            print(f"{Colors.CYAN}📝 File changed: {rel_path}{Colors.END}")
+            log.info(f"File changed: {rel_path}")
             self.reloader.should_restart = True
     
     def on_created(self, event):
         """Handle file creation"""
         if not event.is_directory and event.src_path.endswith('.py'):
             rel_path = Path(event.src_path).relative_to(Path.cwd())
-            print(f"{Colors.GREEN}➕ File created: {rel_path}{Colors.END}")
+            log.info(f"File created: {rel_path}")
             self.reloader.should_restart = True
 
 
@@ -275,11 +257,11 @@ def main():
     """Entry point"""
     # Check Python version
     if sys.version_info < (3, 12):
-        print(f"{Colors.WARNING}⚠️  Python 3.12+ recommended (current: {sys.version}){Colors.END}")
+        log.warning(f"Python 3.12+ recommended (current: {sys.version})")
     
     # Check if main.py exists
     if not Path("main.py").exists():
-        print(f"{Colors.FAIL}❌ main.py not found in current directory{Colors.END}")
+        log.error("main.py not found in current directory")
         sys.exit(1)
     
     reloader = AALCReloader()
