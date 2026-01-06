@@ -1,4 +1,4 @@
-from PySide6.QtCore import Qt, QTimer
+from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QFrame, QVBoxLayout, QWidget, QHBoxLayout, QSizePolicy, QGridLayout
 from qfluentwidgets import FluentIcon as FIF, ExpandSettingCard
 from qfluentwidgets import ScrollArea, PrimaryPushButton, PushButton
@@ -204,8 +204,6 @@ class TeamSettingCard(QFrame):
                         self.team_setting["sinner_order"][i] -= 1
                 self.team_setting["sinner_order"][sinner_index] = 0
             self.refresh_sinner_order()
-            self.update_sinner_positions()
-
         elif "starlight_" in keys:
             starlight_index = int(keys.split("_")[-1]) - 1
             if values:
@@ -312,42 +310,6 @@ class TeamSettingCard(QFrame):
 
     def cancel_team_setting(self):
         mediator.close_setting.emit()
-
-    def update_sinner_positions(self):
-        """遍历所有角色选择器，更新位置"""
-        sinners = [
-            self.sinner_YiSang, self.sinner_Faust, self.sinner_DonQuixote,
-            self.sinner_Ryoshu, self.sinner_Meursault, self.sinner_HongLu,
-            self.sinner_Heathcliff, self.sinner_Ishmael, self.sinner_Rodion,
-            self.sinner_Sinclair, self.sinner_Outis, self.sinner_Gregor
-        ]
-        for sinner in sinners:
-            if sinner and sinner._is_selected:
-                # 确保遮罩显示
-                if not sinner.overlay.isVisible() and sinner.width() > 0 and sinner.height() > 0:
-                    sinner.overlay.show()
-                
-                # 无论遮罩之前是否显示，都更新编号文本
-                if sinner._order_text:
-                    sinner.order_label.setText(sinner._order_text)
-                    sinner.order_label.show()
-                else:
-                    sinner.order_label.hide()
-                
-                # 更新位置
-                if sinner.overlay.isVisible():
-                    sinner.update_overlay_geometry()
-            else:
-                # 如果未选中，隐藏遮罩和编号
-                if sinner:
-                    sinner.overlay.hide()
-                    sinner.order_label.hide()
-
-    def showEvent(self, e):
-        """页面显示时，延迟更新编号位置以确保布局和尺寸已稳定"""
-        super().showEvent(e)
-        # 让布局/尺寸先稳定下来，只更新位置（不重新设置状态，避免闪烁）
-        QTimer.singleShot(0, self.update_sinner_positions)
 
     def retranslateUi(self):
         self.select_system.retranslateUi()
