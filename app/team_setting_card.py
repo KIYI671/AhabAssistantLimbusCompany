@@ -1,4 +1,4 @@
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, QTimer
 from PySide6.QtWidgets import QFrame, QVBoxLayout, QWidget, QHBoxLayout, QSizePolicy, QGridLayout
 from qfluentwidgets import FluentIcon as FIF, ExpandSettingCard
 from qfluentwidgets import ScrollArea, PrimaryPushButton, PushButton
@@ -80,21 +80,21 @@ class TeamSettingCard(QFrame):
         self.select_shop_strategy = LabelWithComboBox(self.tr("选择商店策略"), "shop_strategy", shop_strategy,
                                                       vbox=False)
 
-        self.sinner_YiSang = SinnerSelect("YiSang", self.tr("李箱"), None, "./assets/app/sinner/YiSang.png")
-        self.sinner_Faust = SinnerSelect("Faust", self.tr("浮士德"), None, "./assets/app/sinner/Faust.png")
+        self.sinner_YiSang = SinnerSelect("YiSang", self.tr("李箱"), None, "./assets/app/sinner/Yi_Sang_ID_Photo_3.png")
+        self.sinner_Faust = SinnerSelect("Faust", self.tr("浮士德"), None, "./assets/app/sinner/Faust_ID_Photo_3.png")
         self.sinner_DonQuixote = SinnerSelect("DonQuixote", self.tr("堂吉诃德"), None,
-                                              "./assets/app/sinner/DonQuixote.png")
-        self.sinner_Ryoshu = SinnerSelect("Ryoshu", self.tr("良秀"), None, "./assets/app/sinner/Ryoshu.png")
-        self.sinner_Meursault = SinnerSelect("Meursault", self.tr("默尔索"), None, "./assets/app/sinner/Meursault.png")
-        self.sinner_HongLu = SinnerSelect("HongLu", self.tr("鸿璐"), None, "./assets/app/sinner/HongLu.png")
+                                              "./assets/app/sinner/Don_Quixote_ID_Photo_3.png")
+        self.sinner_Ryoshu = SinnerSelect("Ryoshu", self.tr("良秀"), None, "./assets/app/sinner/Ryōshū_ID_Photo_3.png")
+        self.sinner_Meursault = SinnerSelect("Meursault", self.tr("默尔索"), None, "./assets/app/sinner/Meursault_ID_Photo_3.png")
+        self.sinner_HongLu = SinnerSelect("HongLu", self.tr("鸿璐"), None, "./assets/app/sinner/Hong_Lu_ID_Photo_3.png")
 
         self.sinner_Heathcliff = SinnerSelect("Heathcliff", self.tr("希斯克利夫"), None,
-                                              "./assets/app/sinner/Heathcliff.png")
-        self.sinner_Ishmael = SinnerSelect("Ishmael", self.tr("以实玛利"), None, "./assets/app/sinner/Ishmael.png")
-        self.sinner_Rodion = SinnerSelect("Rodion", self.tr("罗佳"), None, "./assets/app/sinner/Rodion.png")
-        self.sinner_Sinclair = SinnerSelect("Sinclair", self.tr("辛克莱"), None, "./assets/app/sinner/Sinclair.png")
-        self.sinner_Outis = SinnerSelect("Outis", self.tr("奥提斯"), None, "./assets/app/sinner/Outis.png")
-        self.sinner_Gregor = SinnerSelect("Gregor", self.tr("格里高尔"), None, "./assets/app/sinner/Gregor.png")
+                                              "./assets/app/sinner/Heathcliff_ID_Photo_3.png")
+        self.sinner_Ishmael = SinnerSelect("Ishmael", self.tr("以实玛利"), None, "./assets/app/sinner/Ishmael_ID_Photo_3.png")
+        self.sinner_Rodion = SinnerSelect("Rodion", self.tr("罗佳"), None, "./assets/app/sinner/Rodion_ID_Photo_3.png")
+        self.sinner_Sinclair = SinnerSelect("Sinclair", self.tr("辛克莱"), None, "./assets/app/sinner/Sinclair_ID_Photo_3.png")
+        self.sinner_Outis = SinnerSelect("Outis", self.tr("奥提斯"), None, "./assets/app/sinner/Outis_ID_Photo_3.png")
+        self.sinner_Gregor = SinnerSelect("Gregor", self.tr("格里高尔"), None, "./assets/app/sinner/Gregor_ID_Photo_3.png")
 
         self.shop_setting = BaseLabel(self.tr("舍弃的体系"))
         self.shop_setting.add_icon(FIF.DELETE)
@@ -310,6 +310,33 @@ class TeamSettingCard(QFrame):
 
     def cancel_team_setting(self):
         mediator.close_setting.emit()
+
+    def update_sinner_positions(self):
+        """更新编号位置，如果之前因为尺寸无效而隐藏，现在显示出来"""
+        # 遍历所有角色选择器，更新位置
+        sinners = [
+            self.sinner_YiSang, self.sinner_Faust, self.sinner_DonQuixote,
+            self.sinner_Ryoshu, self.sinner_Meursault, self.sinner_HongLu,
+            self.sinner_Heathcliff, self.sinner_Ishmael, self.sinner_Rodion,
+            self.sinner_Sinclair, self.sinner_Outis, self.sinner_Gregor
+        ]
+        for sinner in sinners:
+            if sinner and sinner._is_selected:
+                # 如果选中但遮罩未显示（可能是因为初始化时尺寸无效），现在显示
+                if not sinner.overlay.isVisible() and sinner.width() > 0 and sinner.height() > 0:
+                    sinner.overlay.show()
+                    if sinner._order_text:
+                        sinner.order_label.setText(sinner._order_text)
+                        sinner.order_label.show()
+                # 更新位置
+                if sinner.overlay.isVisible():
+                    sinner.update_overlay_geometry()
+
+    def showEvent(self, e):
+        """页面显示时，延迟更新编号位置以确保布局和尺寸已稳定"""
+        super().showEvent(e)
+        # 让布局/尺寸先稳定下来，只更新位置（不重新设置状态，避免闪烁）
+        QTimer.singleShot(0, self.update_sinner_positions)
 
     def retranslateUi(self):
         self.select_system.retranslateUi()

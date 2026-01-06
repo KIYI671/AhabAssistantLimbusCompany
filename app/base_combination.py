@@ -2,9 +2,9 @@ import base64
 import datetime
 
 import pyperclip
-from PySide6.QtCore import QUrl, Signal, QObject
-from PySide6.QtGui import QKeyEvent, QPixmap, QDesktopServices, QPainter, QColor, QKeySequence
-from PySide6.QtWidgets import QPushButton, QFrame
+from PySide6.QtCore import QUrl, Signal, QObject, Qt
+from PySide6.QtGui import QKeyEvent, QPixmap, QDesktopServices, QPainter, QColor, QKeySequence, QMouseEvent, QFont
+from PySide6.QtWidgets import QPushButton, QFrame, QWidget, QGraphicsDropShadowEffect
 from qfluentwidgets import LineEdit, SettingCard, \
     IndicatorPosition, SwitchButton, SettingCardGroup, \
     PushSettingCard, PrimaryPushSettingCard, InfoBarPosition, \
@@ -331,16 +331,14 @@ class SinnerSelect(QFrame):
                  parent=None):
         super().__init__(parent)
         self.setObjectName(config_name)
-        # self.setFixedHeight(300)
+        self.config_name = config_name
+        self._is_selected = False
+        self._order_text = ""
+        
         self.vBoxLayout = QVBoxLayout(self)
-        self.hBoxLayout_up = QHBoxLayout()
-        self.hBoxLayout_down = QHBoxLayout()
-        self.box = BaseCheckBox(config_name, check_box_icon, '', parent=self)
-        self.line_edit = LineEdit()
-        self.line_edit.setAlignment(Qt.AlignCenter)
-        self.line_edit.setReadOnly(True)
         self.setMaximumHeight(140)
-        self.vBoxLayout.setContentsMargins(5, 0, 0, 0)
+        self.vBoxLayout.setContentsMargins(5, 5, 5, 5)
+        self.vBoxLayout.setSpacing(5)
 
         self.setStyleSheet("""
                     SinnerSelect {
@@ -349,45 +347,186 @@ class SinnerSelect(QFrame):
                         padding: 10px;              /* 内边距 */
                     }
                     SinnerSelect:hover {
-                        border-color: #778899;  /* 悬停时边框突出显示 */
+                        border: 4px solid rgb(0, 200, 255);  /* 悬停时边框加粗突出显示，青色蓝 */
                     }
                 """)
-
-        # 图片标签配置
+        
+        # 图片标签配置 - 位于中上
         self.label_pic = BodyLabel()
-        self.label_pic.setFixedHeight(50)
-        self.label_pic.setScaledContents(True)  # 关键修改：允许缩放
-        self.label_str = BodyLabel(label_title)
-
-        # 加载并缩放图片
+        self.label_pic.setFixedSize(80, 80)  # 设置固定尺寸用于显示
+        self.label_pic.setScaledContents(True)  # 允许缩放
+        self.label_pic.setAlignment(Qt.AlignCenter)
+        
+        # 第一步：按精确坐标裁剪人像核心区域
+        # 图片尺寸：333 x 503
+        # 裁剪区域：x = 65 ~ 285, y = 135 ~ 410
         pixmap = QPixmap(sinner_img)
-        scaled_pixmap = pixmap.scaled(
-            50, 50,
-            Qt.KeepAspectRatio,
+        x = 65
+        y = 135
+        width = 220  # 285 - 65
+        height = 275  # 410 - 135
+        
+        # 裁剪人像核心区域
+        cropped_pixmap = pixmap.copy(x, y, width, height)
+        
+        # 第二步：将裁剪后的区域缩放到80x80显示，保持宽高比
+        scaled_pixmap = cropped_pixmap.scaled(
+            80, 80,
+            Qt.KeepAspectRatio,  # 保持宽高比
             Qt.SmoothTransformation
         )
         self.label_pic.setPixmap(scaled_pixmap)
         self.label_pic.setSizePolicy(
-            QSizePolicy.Fixed,  # 水平固定为 50px
-            QSizePolicy.Expanding  # 垂直填充剩余空间
+            QSizePolicy.Fixed,  # 固定尺寸
+            QSizePolicy.Fixed   # 固定尺寸
         )
 
-        # 调整布局分配比例
+        # 角色名标签配置 - 位于中下
+        self.label_str = BodyLabel(label_title)
+        self.label_str.setAlignment(Qt.AlignCenter)
+        
+        # 设置字体为宋体加粗
+        font = QFont("SimSun", 12)  # 宋体，12号字体
+        font.setBold(True)  # 加粗
+        self.label_str.setFont(font)
+        
+        # 设置样式：颜色、背景
+        self.label_str.setStyleSheet("""
+            color: rgb(251, 197, 0);
+            font-family: SimSun;
+            font-weight: bold;
+            background-color: rgba(0, 0, 0, 0.3);
+            border-radius: 3px;
+            padding: 2px 5px;
+        """)
+        
+        # 使用 QGraphicsDropShadowEffect 添加阴影效果（Qt不支持box-shadow）
+        shadow = QGraphicsDropShadowEffect()
+        shadow.setBlurRadius(4)  # 模糊半径
+        shadow.setXOffset(2)  # X偏移
+        shadow.setYOffset(2)  # Y偏移
+        shadow.setColor(QColor(0, 0, 0, 128))  # 阴影颜色（半透明黑色）
+        self.label_str.setGraphicsEffect(shadow)
+        
+        self.label_str.setSizePolicy(
+            QSizePolicy.Expanding,  # 水平扩展
+            QSizePolicy.Fixed      # 垂直固定
+        )
 
-        self.hBoxLayout_up.addWidget(self.label_str)
-        self.hBoxLayout_up.addWidget(self.label_pic)
+        # 布局：图片在上方居中，角色名在下方居中
+        self.vBoxLayout.addStretch()  # 上方弹性空间
+        self.vBoxLayout.addWidget(self.label_pic, alignment=Qt.AlignCenter)  # 图片居中
+        self.vBoxLayout.addSpacing(5)  # 图片和角色名之间的间距
+        self.vBoxLayout.addWidget(self.label_str, alignment=Qt.AlignCenter)  # 角色名居中
+        self.vBoxLayout.addStretch()  # 下方弹性空间
 
-        self.hBoxLayout_down.addWidget(self.box, alignment=Qt.AlignCenter)
-        self.hBoxLayout_down.addWidget(self.line_edit)
+        # 创建遮罩层
+        self.overlay = QWidget(self)
+        self.overlay.setStyleSheet("""
+            background-color: rgba(0, 0, 0, 0.4);
+            border-radius: 5px;
+        """)
+        # 遮罩层也需要可点击
+        self.overlay.setCursor(Qt.PointingHandCursor)
+        self.overlay.hide()
+        
+        # 创建编号标签
+        self.order_label = BodyLabel("")
+        self.order_label.setAlignment(Qt.AlignCenter)
+        self.order_label.setStyleSheet("""
+            font-size: 48px;
+            font-weight: bold;
+            color: rgb(254, 254, 62);
+            background-color: transparent;
+        """)
+        self.order_label.setParent(self.overlay)
+        self.order_label.hide()
 
-        self.vBoxLayout.addLayout(self.hBoxLayout_up)
-        self.vBoxLayout.addLayout(self.hBoxLayout_down)
+        # 设置可点击
+        self.setCursor(Qt.PointingHandCursor)
+
+    def update_overlay_geometry(self):
+        """专门负责计算遮罩和编号位置的函数"""
+        if self.overlay.isVisible():
+            # 遮罩铺满全场（使用完整的 widget 尺寸）
+            overlay_width = self.width()
+            overlay_height = self.height()
+            # 只有在尺寸有效时才更新位置
+            if overlay_width > 0 and overlay_height > 0:
+                # 确保遮罩层完全覆盖整个卡片（从 0,0 开始，覆盖整个区域）
+                self.overlay.setGeometry(0, 0, overlay_width, overlay_height)
+                # 确保 overlay 的尺寸已经更新
+                self.overlay.update()
+                if self.order_label.isVisible():
+                    # 编号居中（order_label 的父组件是 overlay，所以相对于 overlay 计算）
+                    # 使用 overlay 的实际尺寸（在 setGeometry 之后）
+                    actual_width = self.overlay.width()
+                    actual_height = self.overlay.height()
+                    # 增加标签尺寸以容纳 48px 字体，特别是两位数时
+                    lw, lh = 100, 100  # 增加尺寸以确保数字完整显示
+                    self.order_label.setGeometry(
+                        (actual_width - lw) // 2,
+                        (actual_height - lh) // 2,
+                        lw, lh
+                    )
+
+    def resizeEvent(self, event):
+        """重写缩放事件"""
+        super().resizeEvent(event)
+        self.update_overlay_geometry()  # 窗口大小变动时自动校正位置
+
+
+    def mousePressEvent(self, event: QMouseEvent):
+        """处理鼠标点击事件"""
+        if event.button() == Qt.LeftButton:
+            self._toggle_selected()
+        super().mousePressEvent(event)
+
+    def _toggle_selected(self):
+        """切换选中状态"""
+        self._is_selected = not self._is_selected
+        self._update_visual_state()
+        # 发送信号到mediator（保持兼容性）
+        # 信号会被 setting_team 处理，然后调用 refresh_sinner_order 来更新编号
+        from app import mediator
+        data_dict = {self.config_name: self._is_selected}
+        mediator.team_setting.emit(data_dict)
+
+    def _update_visual_state(self):
+        """更新视觉状态：只负责显示隐藏，不负责计算坐标"""
+        if self._is_selected:
+            # 尺寸无效时直接隐藏，不做条件判断
+            if self.width() <= 0 or self.height() <= 0:
+                self.overlay.hide()
+                self.order_label.hide()
+                return
+            
+            self.overlay.show()
+            if self._order_text:
+                self.order_label.setText(self._order_text)
+                self.order_label.show()
+            else:
+                self.order_label.hide()
+            # 关键：手动触发一次位置刷新
+            self.update_overlay_geometry()
+        else:
+            self.overlay.hide()
+            self.order_label.hide()
 
     def set_text(self, text):
-        self.line_edit.setText(text)
+        """设置编号文本"""
+        self._order_text = text if text else ""
+        self._update_visual_state()
 
     def set_checkbox(self, checked):
-        self.box.set_checked(checked)
+        """设置选中状态（保持方法名兼容）"""
+        # 不发送信号，只更新状态（避免循环触发）
+        if self._is_selected != checked:
+            self._is_selected = checked
+            # 如果取消选中，清除编号
+            if not checked:
+                self._order_text = ""
+            self._update_visual_state()
 
 
 class ComboBoxSettingCard(SettingCard):
