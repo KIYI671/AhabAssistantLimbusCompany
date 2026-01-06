@@ -2,9 +2,9 @@ import base64
 import datetime
 
 import pyperclip
-from PySide6.QtCore import QUrl, Signal, QObject
+from PySide6.QtCore import QUrl, Signal, QObject, QRect
 from PySide6.QtGui import QKeyEvent, QPixmap, QDesktopServices, QPainter, QColor, QKeySequence
-from PySide6.QtWidgets import QPushButton, QFrame
+from PySide6.QtWidgets import QPushButton, QFrame, QGraphicsOpacityEffect
 from qfluentwidgets import LineEdit, SettingCard, \
     IndicatorPosition, SwitchButton, SettingCardGroup, \
     PushSettingCard, PrimaryPushSettingCard, InfoBarPosition, \
@@ -328,66 +328,153 @@ class MirrorTeamCombination(QFrame):
 
 class SinnerSelect(QFrame):
     def __init__(self, config_name, label_title, check_box_icon: Union[str, QIcon, FluentIconBase, None], sinner_img,
-                 parent=None):
+                 crop_left=13, crop_right=13, crop_top=93, crop_bottom=90, parent=None):
         super().__init__(parent)
         self.setObjectName(config_name)
-        # self.setFixedHeight(300)
         self.vBoxLayout = QVBoxLayout(self)
-        self.hBoxLayout_up = QHBoxLayout()
-        self.hBoxLayout_down = QHBoxLayout()
-        self.box = BaseCheckBox(config_name, check_box_icon, '', parent=self)
-        self.line_edit = LineEdit()
-        self.line_edit.setAlignment(Qt.AlignCenter)
-        self.line_edit.setReadOnly(True)
-        self.setMaximumHeight(140)
-        self.vBoxLayout.setContentsMargins(5, 0, 0, 0)
+        self.vBoxLayout.setContentsMargins(5, 5, 5, 5)
+        self.vBoxLayout.setSpacing(5)
 
-        self.setStyleSheet("""
-                    SinnerSelect {
-                        border: 2px solid #DCDCDC;  /* 边框颜色 */
-                        border-radius: 5px;         /* 圆角 */
-                        padding: 10px;              /* 内边距 */
-                    }
-                    SinnerSelect:hover {
-                        border-color: #778899;  /* 悬停时边框突出显示 */
-                    }
-                """)
-
-        # 图片标签配置
+        # Image Label
         self.label_pic = BodyLabel()
-        self.label_pic.setFixedHeight(50)
-        self.label_pic.setScaledContents(True)  # 关键修改：允许缩放
+        self.label_pic.setAlignment(Qt.AlignCenter)
+        # self.label_pic.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+
+        # Name Label
         self.label_str = BodyLabel(label_title)
-
-        # 加载并缩放图片
+        self.label_str.setAlignment(Qt.AlignCenter)
+        
+        # Load and set image
         pixmap = QPixmap(sinner_img)
-        scaled_pixmap = pixmap.scaled(
-            50, 50,
-            Qt.KeepAspectRatio,
-            Qt.SmoothTransformation
-        )
-        self.label_pic.setPixmap(scaled_pixmap)
-        self.label_pic.setSizePolicy(
-            QSizePolicy.Fixed,  # 水平固定为 50px
-            QSizePolicy.Expanding  # 垂直填充剩余空间
-        )
+        if crop_left or crop_right or crop_top or crop_bottom:
+            rect = QRect(crop_left, crop_top, pixmap.width() - crop_left - crop_right, pixmap.height() - crop_top - crop_bottom)
+            pixmap = pixmap.copy(rect)
+        
+        # Manual scaling to fit the label area (approx 100x120) while keeping aspect ratio
+        pixmap = pixmap.scaled(92, 96, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+        self.label_pic.setPixmap(pixmap)
 
-        # 调整布局分配比例
+        # Opacity Effect for Image
+        self.opacity_effect = QGraphicsOpacityEffect(self.label_pic)
+        self.opacity_effect.setOpacity(1.0)
+        self.label_pic.setGraphicsEffect(self.opacity_effect)
 
-        self.hBoxLayout_up.addWidget(self.label_str)
-        self.hBoxLayout_up.addWidget(self.label_pic)
+        self.vBoxLayout.addWidget(self.label_pic, stretch=5)
+        self.vBoxLayout.addWidget(self.label_str, stretch=1)
 
-        self.hBoxLayout_down.addWidget(self.box, alignment=Qt.AlignCenter)
-        self.hBoxLayout_down.addWidget(self.line_edit)
+        # Internal CheckBox (Hidden, for logic reuse)
+        self.box = BaseCheckBox(config_name, check_box_icon, '', parent=self)
+        self.box.setVisible(False)
+        self.box.check_box.toggled.connect(self._on_internal_toggle)
 
-        self.vBoxLayout.addLayout(self.hBoxLayout_up)
-        self.vBoxLayout.addLayout(self.hBoxLayout_down)
+        # Overlay Widget (Container for number and SELECTED label)
+        self.overlay_widget = QWidget(self)
+        self.overlay_widget.setAttribute(Qt.WA_TransparentForMouseEvents)
+        self.overlay_layout = QVBoxLayout(self.overlay_widget)
+        self.overlay_layout.setAlignment(Qt.AlignCenter)
+        self.overlay_layout.setSpacing(5) # Space between number and SELECTED text
+
+        # Number Label
+        self.number_label = BodyLabel() # Parent handled by layout
+        self.number_label.setAlignment(Qt.AlignCenter)
+        
+        font = self.number_label.font()
+        font.setPointSize(30)
+        font.setBold(True)
+        self.number_label.setFont(font)
+        self.number_label.setStyleSheet("color: rgba(255, 255, 0, 1);") # Number color: Yellow
+        
+        # SELECTED Label
+        self.selected_label = BodyLabel() # Initialization, content/style set in set_text
+        self.selected_label.setAlignment(Qt.AlignCenter)
+        
+        self.overlay_layout.addWidget(self.number_label)
+        self.overlay_layout.addWidget(self.selected_label)
+        
+        self.overlay_widget.hide()
+
+        # Fixed Size
+        self.setFixedSize(110, 145) # Fixed size: 110x145
+
+        # Initial Style
+        self._update_style(self.box.check_box.isChecked())
+
+    def mousePressEvent(self, event):
+        if event.button() == Qt.LeftButton:
+            self.box.check_box.toggle()
+
+    def _on_internal_toggle(self, checked):
+        self._update_style(checked)
+
+    def _update_style(self, checked):
+        if checked:
+            self.opacity_effect.setOpacity(0.5) # 选中时不透明度设为0.5（变暗50%）
+            self.setStyleSheet("""
+                SinnerSelect {
+                    background-color: rgba(126.5, 126.5, 126.5, 1); /* 背景色黑，叠加50%透明度图片 -> 图片亮度减半 */
+                    border: 3px solid #FFD700; /* 选中态边框：3px实线，金色 */
+                    border-radius: 8px; /* 圆角半径：8px */
+                }
+            """)
+        else:
+            self.opacity_effect.setOpacity(1.0) # 未选中时恢复图片不透明度
+            self.setStyleSheet("""
+                SinnerSelect {
+                    border: 2px solid rgba(128, 128, 128, 0.4);  /* 未选中态边框：2px实线，淡灰色 */
+                    border-radius: 8px;                          /* 圆角半径：8px */
+                    background-color: transparent;               /* 未选中态背景：透明 */
+                }
+                SinnerSelect:hover {
+                    border: 4px solid #778899;                   /* 悬停态边框：4px实线，蓝灰色 */
+                    background-color: rgba(255, 255, 255, 0.1);  /* 悬停态背景：白色微透明 */
+                }
+            """)
 
     def set_text(self, text):
-        self.line_edit.setText(text)
+        self.number_label.setText(text)
+        if text and text != "0":
+            # Determine label style based on number
+            try:
+                number = int(text)
+                if number >= 8:
+                    self.selected_label.setText("BACK UP")
+                    self.selected_label.setStyleSheet("""
+                        background-color: rgba(179, 229, 252, 1); /* Light Blue background */
+                        color: rgba(1, 87, 155, 1);               /* Dark Blue text */
+                        font-weight: bold;
+                        padding: 2px 4px;
+                        border-radius: 4px;
+                    """)
+                else:
+                    self.selected_label.setText("SELECTED")
+                    self.selected_label.setStyleSheet("""
+                        background-color: rgba(211, 47, 47, 1); /* Red background */
+                        color: rgba(255, 255, 0, 1);            /* Yellow text */
+                        font-weight: bold;
+                        padding: 2px 4px;
+                        border-radius: 4px;
+                    """)
+            except ValueError:
+                # Fallback if text is not a number
+                self.selected_label.setText("SELECTED")
+                self.selected_label.setStyleSheet("""
+                    background-color: rgba(211, 47, 47, 1); 
+                    color: rgba(255, 255, 0, 1);            
+                    font-weight: bold;
+                    padding: 2px 4px;
+                    border-radius: 4px;
+                """)
+            
+            self.overlay_widget.show()
+        else:
+            self.overlay_widget.hide()
 
     def set_checkbox(self, checked):
         self.box.set_checked(checked)
+        
+    def resizeEvent(self, event):
+        self.overlay_widget.setGeometry(self.rect())
+        super().resizeEvent(event)
 
 
 class ComboBoxSettingCard(SettingCard):

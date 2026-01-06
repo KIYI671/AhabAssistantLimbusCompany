@@ -229,7 +229,7 @@ git pull
 
 ## 参与开发
 
-- 参与程序开发（施工中）
+- 参与程序[开发](assets/doc/zh/develop_guide.md)（施工中）
 - 多语言 (i18n)：参考 [多语言支持](assets/doc/zh/translateGuide.md)
 
 ---
