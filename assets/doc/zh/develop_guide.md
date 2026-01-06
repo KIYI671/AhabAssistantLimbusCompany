@@ -5,7 +5,13 @@
 1. **Python 版本**：项目要求 Python 3.12
 2. **windows 环境**：目前仅支持在windows环境下开发
 
-### 使用 Conda（推荐）
+### 使用 uv（推荐）
+
+```bash
+# 等待补充...
+```
+
+### 使用 Conda
 
 ```bash
 # 创建 Python 3.12 虚拟环境
