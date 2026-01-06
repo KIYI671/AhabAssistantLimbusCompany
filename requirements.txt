@@ -69,4 +69,3 @@ winrt-windows-data-xml-dom==3.2.1
 winrt-windows-foundation==3.2.1
 winrt-windows-foundation-collections==3.2.1
 winrt-windows-ui-notifications==3.2.1
-watchdog==6.0.0
