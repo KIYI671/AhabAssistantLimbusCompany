@@ -138,7 +138,9 @@ class MainWindow(FramelessWindow):
 
         self.check_mirror_setting()
 
-        check_update(self, flag=True)
+        # 开发模式下不检查更新
+        if os.environ.get('AALC_DEV_MODE') != '1':
+            check_update(self, flag=True)
 
         self.set_ring()
 

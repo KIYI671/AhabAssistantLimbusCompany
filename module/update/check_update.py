@@ -65,9 +65,6 @@ class UpdateThread(QThread):
         更新线程的主逻辑。
         检查是否有新版本，如果有，则发送更新可用信号；否则发送成功信号。
         """
-        # 开发模式下跳过更新检查
-        if os.environ.get('AALC_DEV_MODE') == '1':
-            return
         try:
             # 如果标志位为 False 且配置中的检查更新标志也为 False，则直接返回
             if self.flag and not cfg.get_value("check_update"):
