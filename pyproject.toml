@@ -37,7 +37,11 @@ dependencies = [
 ]
 
 [dependency-groups]
-dev = ["pyinstaller>=6.16.0", "ruff>=0.13.1"]
+dev = [
+    "pyinstaller>=6.16.0",
+    "ruff>=0.13.1",
+    "watchdog",
+]
 
 [project.urls]
 Homepage = "https://github.com/KIYI671/AhabAssistantLimbusCompany"
