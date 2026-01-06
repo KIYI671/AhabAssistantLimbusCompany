@@ -2,7 +2,7 @@ import base64
 import datetime
 
 import pyperclip
-from PySide6.QtCore import QUrl, Signal, QObject
+from PySide6.QtCore import QUrl, Signal, QObject, QRect
 from PySide6.QtGui import QKeyEvent, QPixmap, QDesktopServices, QPainter, QColor, QKeySequence
 from PySide6.QtWidgets import QPushButton, QFrame, QGraphicsOpacityEffect
 from qfluentwidgets import LineEdit, SettingCard, \
@@ -328,7 +328,7 @@ class MirrorTeamCombination(QFrame):
 
 class SinnerSelect(QFrame):
     def __init__(self, config_name, label_title, check_box_icon: Union[str, QIcon, FluentIconBase, None], sinner_img,
-                 parent=None):
+                 crop_left=13, crop_right=13, crop_top=93, crop_bottom=90, parent=None):
         super().__init__(parent)
         self.setObjectName(config_name)
         self.vBoxLayout = QVBoxLayout(self)
@@ -337,7 +337,6 @@ class SinnerSelect(QFrame):
 
         # Image Label
         self.label_pic = BodyLabel()
-        self.label_pic.setScaledContents(True)
         self.label_pic.setAlignment(Qt.AlignCenter)
         # self.label_pic.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
 
@@ -347,6 +346,12 @@ class SinnerSelect(QFrame):
         
         # Load and set image
         pixmap = QPixmap(sinner_img)
+        if crop_left or crop_right or crop_top or crop_bottom:
+            rect = QRect(crop_left, crop_top, pixmap.width() - crop_left - crop_right, pixmap.height() - crop_top - crop_bottom)
+            pixmap = pixmap.copy(rect)
+        
+        # Manual scaling to fit the label area (approx 100x120) while keeping aspect ratio
+        pixmap = pixmap.scaled(92, 96, Qt.KeepAspectRatio, Qt.SmoothTransformation)
         self.label_pic.setPixmap(pixmap)
 
         # Opacity Effect for Image
