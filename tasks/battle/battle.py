@@ -179,7 +179,7 @@ class Battle:
         event_chance = 15
         if defense_all_time:
             self.defense_all_time = defense_all_time
-        if defense_on_turn1 == True:
+        if defense_on_turn1 is True:
             defense_first_round = True
 
         first_turn = True
@@ -326,23 +326,25 @@ class Battle:
                     continue
             else:
                 # 如果正在战斗待机界面
+                # 更新回合数
                 try:
                     turn_bbox = ImageUtils.get_bbox(
                         ImageUtils.load_image("battle/turn_assets.png")
                     )
                     sc = ImageUtils.crop(np.array(auto.screenshot), turn_bbox)
-                    sc = cv2.inRange(sc, 50, 255)
+                    # sc = cv2.inRange(sc, 50, 255)
                     result = ocr.run(sc)
                     ocr_result = [result.txts[i] for i in range(len(result.txts))]
                     ocr_result = "".join(ocr_result)
+                    # 用正则匹配字符串里的数字
                     self.cur_turn = int(re.search(r"\d+", ocr_result).group())
                 except:
-                    ocr_result = ""
+                    self.cur_turn = -1  # 表示识别失败
                 if auto.find_element(
                     "battle/more_information_assets.png"
                 ) or auto.find_element("battle/win_rate_assets.png"):
                     self._battle_operation(
-                        (first_turn or self.cur_turn == 1),
+                        (first_turn or self.cur_turn == 1),  # 这里用 or 是防止 ocr 抽风
                         defense_first_round,
                         avoid_skill_3,
                     )
