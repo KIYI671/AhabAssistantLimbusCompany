@@ -338,13 +338,15 @@ class Battle:
                     ocr_result = "".join(ocr_result)
                     # 用正则匹配字符串里的数字
                     self.cur_turn = int(re.search(r"\d+", ocr_result).group())
+                    if self.cur_turn == 1:
+                        first_turn = True
                 except:
                     self.cur_turn = -1  # 表示识别失败
                 if auto.find_element(
                     "battle/more_information_assets.png"
                 ) or auto.find_element("battle/win_rate_assets.png"):
                     self._battle_operation(
-                        (first_turn or self.cur_turn == 1),  # 这里用 or 是防止 ocr 抽风
+                        first_turn,
                         defense_first_round,
                         avoid_skill_3,
                     )
