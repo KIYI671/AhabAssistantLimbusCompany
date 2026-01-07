@@ -327,21 +327,22 @@ class Battle:
             else:
                 # 如果正在战斗待机界面
                 # 更新回合数
-                try:
-                    turn_bbox = ImageUtils.get_bbox(
-                        ImageUtils.load_image("battle/turn_assets.png")
-                    )
-                    sc = ImageUtils.crop(np.array(auto.screenshot), turn_bbox)
-                    # sc = cv2.inRange(sc, 50, 255)
-                    result = ocr.run(sc)
-                    ocr_result = [result.txts[i] for i in range(len(result.txts))]
-                    ocr_result = "".join(ocr_result)
-                    # 用正则匹配字符串里的数字
-                    self.cur_turn = int(re.search(r"\d+", ocr_result).group())
-                    if self.cur_turn == 1:
-                        first_turn = True
-                except:
-                    self.cur_turn = -1  # 表示识别失败
+                if infinite_battle is True:
+                    try:
+                        turn_bbox = ImageUtils.get_bbox(
+                            ImageUtils.load_image("battle/turn_assets.png")
+                        )
+                        sc = ImageUtils.crop(np.array(auto.screenshot), turn_bbox)
+                        # sc = cv2.inRange(sc, 50, 255)
+                        result = ocr.run(sc)
+                        ocr_result = [result.txts[i] for i in range(len(result.txts))]
+                        ocr_result = "".join(ocr_result)
+                        # 用正则匹配字符串里的数字
+                        self.cur_turn = int(re.search(r"\d+", ocr_result).group())
+                        if self.cur_turn == 1:
+                            first_turn = True
+                    except:
+                        self.cur_turn = -1  # 表示识别失败
                 if auto.find_element(
                     "battle/more_information_assets.png"
                 ) or auto.find_element("battle/win_rate_assets.png"):
