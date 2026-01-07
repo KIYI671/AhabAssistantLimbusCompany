@@ -179,7 +179,7 @@ class Battle:
         event_chance = 15
         if defense_all_time:
             self.defense_all_time = defense_all_time
-        if defense_on_turn1 is True:
+        if defense_on_turn1:
             defense_first_round = True
 
         first_turn = True
@@ -327,10 +327,10 @@ class Battle:
             else:
                 # 如果正在战斗待机界面
                 # 更新回合数
-                if infinite_battle is True:
+                if infinite_battle:
                     try:
                         turn_bbox = ImageUtils.get_bbox(
-                            ImageUtils.load_image("battle/turn_assets.png")
+                            ImageUtils.load_image("battle/turn_ocr_assets.png")
                         )
                         sc = ImageUtils.crop(np.array(auto.screenshot), turn_bbox)
                         # sc = cv2.inRange(sc, 50, 255)
@@ -343,6 +343,7 @@ class Battle:
                             first_turn = True
                     except:
                         self.cur_turn = -1  # 表示识别失败
+
                 if auto.find_element(
                     "battle/more_information_assets.png"
                 ) or auto.find_element("battle/win_rate_assets.png"):
