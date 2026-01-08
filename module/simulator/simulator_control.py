@@ -183,19 +183,20 @@ class SimulatorControl:
 
         return True
 
-    def mouse_drag_down(self, x, y) -> None:
+    def mouse_drag_down(self, x, y, reverse=1) -> None:
         """鼠标从指定位置向下拖动
 
         Args:
             x (int): x坐标
             y (int): y坐标
+            reverse (int): 拖动方向，1表示向下，-1表示向上
             move_back (bool): 是否在拖动后将鼠标移动回原位置
         """
         if self.simulator_device is None:
             self.get_simulator()
 
         scale = cfg.set_win_size / 1080
-        self.mouse_drag(x, y, 0.4, 0, int(300) * scale)
+        self.mouse_drag(x, y, 0.4, 0, int(300 * scale * reverse))
 
         msg = f"选择卡包:({x},{y})"
         log.debug(msg)
