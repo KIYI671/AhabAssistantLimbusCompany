@@ -198,9 +198,6 @@ class SimulatorControl:
         scale = cfg.set_win_size / 1080
         self.mouse_drag(x, y, 0.4, 0, int(300 * scale * reverse))
 
-        msg = f"选择卡包:({x},{y})"
-        log.debug(msg)
-
     def mouse_scroll(self, direction: int = -3) -> bool:
         """占位"""
         return True

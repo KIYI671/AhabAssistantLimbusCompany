@@ -780,9 +780,6 @@ class MumuControl:
         y2 = y + int(300 * scale * reverse)
         self.swipe(x1=x, y1=y, x2=x2, y2=y2, duration=0.4)
 
-        msg = f"选择卡包:({x},{y})"
-        log.debug(msg, stacklevel=2)
-
     def mouse_drag(self, x, y, drag_time=0.1, dx=0, dy=0, move_back=True) -> None:
         """鼠标从指定位置拖动到另一个位置
         Args:
