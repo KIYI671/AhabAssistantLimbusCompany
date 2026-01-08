@@ -1,12 +1,13 @@
 import datetime
 import os
+import sys
 import re
 import subprocess
 from enum import Enum
 
-from PySide6.QtCore import Qt, QLocale, QTimer
-from PySide6.QtGui import QIcon
-from PySide6.QtWidgets import QApplication, QHBoxLayout, QStackedWidget, QVBoxLayout, QLabel, QWidget
+from PySide6.QtCore import Qt, QLocale, QTimer, QRect, QPoint
+from PySide6.QtGui import QIcon, QPainter, QColor, QFont, QCursor
+from PySide6.QtWidgets import QApplication, QHBoxLayout, QStackedWidget, QVBoxLayout, QLabel, QWidget, QGraphicsOpacityEffect
 from qfluentwidgets import Pivot, setThemeColor, ProgressRing, qconfig
 from qfluentwidgets.components.widgets.frameless_window import FramelessWindow
 from qframelesswindow import StandardTitleBar
@@ -33,6 +34,66 @@ class Language(Enum):
     CHINESE_TRADITIONAL = QLocale(QLocale.Language.Chinese, QLocale.Country.HongKong)
     ENGLISH = QLocale(QLocale.Language.English)
     AUTO = QLocale()
+
+
+class DevWatermark(QWidget):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setAttribute(Qt.WA_TransparentForMouseEvents)
+        self.setAttribute(Qt.WA_TranslucentBackground)
+        self.setFixedSize(200, 200)
+
+        # Opacity effect for fading
+        self.opacity_effect = QGraphicsOpacityEffect(self)
+        self.setGraphicsEffect(self.opacity_effect)
+        
+        # Timer to check for hover (since we are transparent to mouse events)
+        self.hover_timer = QTimer(self)
+        self.hover_timer.timeout.connect(self.check_hover)
+        self.hover_timer.start(50)  # Check every 50ms
+
+    def check_hover(self):
+        # Get global cursor position
+        cursor_pos = QCursor.pos()
+        # Map to local coordinates
+        local_pos = self.mapFromGlobal(cursor_pos)
+        
+        # Check if cursor is inside the widget rect
+        if self.rect().contains(local_pos):
+            self.opacity_effect.setOpacity(0.0)  # Hide
+        else:
+            self.opacity_effect.setOpacity(1.0)  # Show
+
+    def paintEvent(self, event):
+        painter = QPainter(self)
+        painter.setRenderHint(QPainter.Antialiasing)
+        
+        # Calculate ribbon path
+        # We want a ribbon in the top-left corner
+        # Let's rotate -45 degrees around (0,0)
+        painter.rotate(-45)
+        
+        # Position the ribbon
+        # Since we rotated -45 deg, the X-axis points diagonally up-right
+        # The Y-axis points diagonally down-right.
+        # We want the ribbon to cross the corner.
+        # Distance from origin to ribbon center: let's say 40px
+        
+        ribbon_center_dist = 40
+        ribbon_width = 24
+        
+        # Draw ribbon background
+        rect = QRect(-100, ribbon_center_dist - ribbon_width // 2, 200, ribbon_width)
+        
+        painter.setPen(Qt.NoPen)
+        painter.setBrush(QColor("#d32f2f"))  # Red
+        painter.drawRect(rect)
+        
+        # Draw text
+        painter.setFont(QFont("Microsoft YaHei", 9, QFont.Bold))
+        painter.setPen(QColor("white"))
+        painter.drawText(rect, Qt.AlignCenter, "DEV")
+
 
 
 # 使用无框窗口
@@ -131,6 +192,12 @@ class MainWindow(FramelessWindow):
 
         # 将标题栏置顶
         self.titleBar.raise_()
+
+        # Dev Watermark
+        if os.environ.get('AALC_DEV_MODE') == '1' or not getattr(sys, 'frozen', False):
+            self.dev_watermark = DevWatermark(self)
+            self.dev_watermark.move(0, 0)
+            self.dev_watermark.raise_()
 
         self.connect_mediator()
 
