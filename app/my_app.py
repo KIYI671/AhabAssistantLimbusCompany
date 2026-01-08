@@ -280,8 +280,26 @@ class MainWindow(FramelessWindow):
     def updateBackground(self):
         if isDarkTheme():
             self.setStyleSheet("MainWindow { background-color: #272727; }")
+            self.titleBar.titleLabel.setStyleSheet("""
+                QLabel{
+                    background: transparent;
+                    font-family: "Segoe UI", "Microsoft YaHei", "微软雅黑", "PingFang SC", "Hiragino Sans GB", sans-serif, "SimSun";
+                    font-size: 13px;
+                    padding: 0 4px;
+                    color: white;
+                }
+            """)
         else:
             self.setStyleSheet("MainWindow { background-color: #fdfdfd; }")
+            self.titleBar.titleLabel.setStyleSheet("""
+                QLabel{
+                    background: transparent;
+                    font-family: "Segoe UI", "Microsoft YaHei", "微软雅黑", "PingFang SC", "Hiragino Sans GB", sans-serif, "SimSun";
+                    font-size: 13px;
+                    padding: 0 4px;
+                    color: black;
+                }
+            """)
 
     def closeEvent(self, e):
         if (

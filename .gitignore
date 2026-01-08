@@ -11,7 +11,9 @@ theme_pack_list.yaml
 logs
 pythonlogs
 i18n/*.qm
+
 .cursor
 .venv
 
 /*.png
+__main_dev_temp__.py
