@@ -2,6 +2,7 @@ from time import sleep
 
 from module.automation import auto
 from module.logger import log
+from module.config import cfg
 
 
 def EXP_luxcavation():
@@ -75,9 +76,9 @@ def thread_luxcavation():
                     auto.mouse_drag_down(scroll_bar[0], scroll_bar[1], reverse=2)
                 else:
                     log.debug("未找到滚动条，通过滑动下滑")
-                    auto.mouse_drag_down(pos[0], pos[1], reverse=-1)
+                    auto.mouse_drag_down(pos[0], pos[1], reverse=-2)
 
-                if level := auto.find_element("luxcavation/thread_consume.png", find_type="image_with_multiple_targets", take_screenshot=True):
+                if level := not auto.find_element("luxcavation/thread_consume.png", find_type="image_with_multiple_targets", take_screenshot=True):
                     level = sorted(level, key=lambda y: y[1], reverse=True)
                     for lv in level:
                         auto.mouse_click(lv[0], lv[1])
@@ -85,6 +86,34 @@ def thread_luxcavation():
                         auto.mouse_to_blank()
                         if auto.find_element("battle/teams_assets.png", take_screenshot=True):
                             break
+                else:
+                    # 处理下方所有关卡未解锁的情况
+                    level = None
+                    slide_times = 0
+                    scale = cfg.set_win_size / 1440
+                    x = int(1300 * scale)
+                    y = int(960 * scale)
+                    dy = int(200 * scale)
+
+                    while level is None:
+                        auto.mouse_drag(x, y, drag_time=0.5, dy=dy)
+                        level = auto.find_element("luxcavation/thread_consume.png", find_type="image_with_multiple_targets", take_screenshot=True)
+                        if level:
+                            break
+                        slide_times += 1
+                        if slide_times > 10:
+                            break
+                    if level is None:
+                        continue
+
+                    level = sorted(level, key=lambda y: y[1], reverse=True)
+                    for lv in level:
+                        auto.mouse_click(lv[0], lv[1])
+                        sleep(1)
+                        auto.mouse_to_blank()
+                        if auto.find_element("battle/teams_assets.png", take_screenshot=True):
+                            break
+
             continue
         if auto.click_element("luxcavation/thread_assets.png"):
             continue
