@@ -330,7 +330,7 @@ class Battle:
             else:
                 # 如果正在战斗待机界面
                 # 更新回合数
-                if infinite_battle:
+                if infinite_battle and defense_on_turn1:
                     try:
                         sc = ImageUtils.crop(np.array(auto.screenshot), turn_ocr_bbox)
                         result = ocr.run(sc)
