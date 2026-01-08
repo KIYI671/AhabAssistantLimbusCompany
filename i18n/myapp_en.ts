@@ -1071,22 +1071,22 @@ Right-click to set as permanent</translation>
 <context>
     <name>HotketInputCard</name>
     <message>
-        <location filename="../app/base_combination.py" line="753"/>
+        <location filename="../app/base_combination.py" line="840"/>
         <source>保存</source>
         <translation>Save</translation>
     </message>
     <message>
-        <location filename="../app/base_combination.py" line="754"/>
+        <location filename="../app/base_combination.py" line="841"/>
         <source>重置</source>
         <translation>Reset</translation>
     </message>
     <message>
-        <location filename="../app/base_combination.py" line="756"/>
+        <location filename="../app/base_combination.py" line="843"/>
         <source>取消</source>
         <translation>Cancel</translation>
     </message>
     <message>
-        <location filename="../app/base_combination.py" line="757"/>
+        <location filename="../app/base_combination.py" line="844"/>
         <source>按下键盘以设置快捷键, 部分特殊按键可能无法使用</source>
         <translation>Press a key to set the shortcut, some special keys may not be usable</translation>
     </message>
@@ -1094,15 +1094,53 @@ Right-click to set as permanent</translation>
 <context>
     <name>HotkeyEditCard</name>
     <message>
-        <location filename="../app/base_combination.py" line="710"/>
+        <location filename="../app/base_combination.py" line="797"/>
         <source>返回</source>
         <translation>Back</translation>
     </message>
 </context>
 <context>
+    <name>InfiniteBattles</name>
+    <message>
+        <location filename="../tasks/tools/infinite_battle.py" line="134"/>
+        <source>开始战斗</source>
+        <translation>Battle Start</translation>
+    </message>
+    <message>
+        <location filename="../tasks/tools/infinite_battle.py" line="136"/>
+        <source>无限守备</source>
+        <translation>Defense All Time</translation>
+    </message>
+    <message>
+        <location filename="../tasks/tools/infinite_battle.py" line="137"/>
+        <source>第一回合开启守备</source>
+        <translation type="unfinished">Defense First Turn</translation>
+    </message>
+    <message>
+        <location filename="../tasks/tools/infinite_battle.py" line="167"/>
+        <source>停止战斗</source>
+        <translation>Stop Battle</translation>
+    </message>
+    <message>
+        <location filename="../tasks/tools/infinite_battle.py" line="176"/>
+        <source>状态：战斗中...</source>
+        <translation>Status: In combat...</translation>
+    </message>
+    <message>
+        <location filename="../tasks/tools/infinite_battle.py" line="208"/>
+        <source>状态：正在战斗...</source>
+        <translation>Status: Currently in battle...</translation>
+    </message>
+    <message>
+        <location filename="../tasks/tools/infinite_battle.py" line="217"/>
+        <source>战斗操作执行</source>
+        <translation>Combat operations execution</translation>
+    </message>
+</context>
+<context>
     <name>KeyEditButton</name>
     <message>
-        <location filename="../app/base_combination.py" line="675"/>
+        <location filename="../app/base_combination.py" line="762"/>
         <source>设置快捷键</source>
         <translation>Set Shortcut</translation>
     </message>
@@ -1245,78 +1283,78 @@ Right-click to set as permanent</translation>
 <context>
     <name>MainWindow</name>
     <message>
-        <location filename="../app/my_app.py" line="230"/>
-        <location filename="../app/my_app.py" line="333"/>
+        <location filename="../app/my_app.py" line="232"/>
+        <location filename="../app/my_app.py" line="335"/>
         <source>队伍设置</source>
         <translation>Team Settings</translation>
     </message>
     <message>
-        <location filename="../app/my_app.py" line="327"/>
+        <location filename="../app/my_app.py" line="329"/>
         <source>一键长草</source>
         <translation>One-Click Grass Mode</translation>
     </message>
     <message>
-        <location filename="../app/my_app.py" line="328"/>
+        <location filename="../app/my_app.py" line="330"/>
         <source>帮助</source>
         <translation>Help</translation>
     </message>
     <message>
-        <location filename="../app/my_app.py" line="330"/>
+        <location filename="../app/my_app.py" line="332"/>
         <source>设置</source>
         <translation>Settings</translation>
     </message>
     <message>
-        <location filename="../app/my_app.py" line="253"/>
+        <location filename="../app/my_app.py" line="255"/>
         <source>设置未保存</source>
         <translation>SETTINGS UNSAVE</translation>
     </message>
     <message>
-        <location filename="../app/my_app.py" line="203"/>
+        <location filename="../app/my_app.py" line="205"/>
         <source>有正在进行的任务</source>
         <translation>Task in Progress</translation>
     </message>
     <message>
-        <location filename="../app/my_app.py" line="204"/>
+        <location filename="../app/my_app.py" line="206"/>
         <source>脚本正在运行中，确定要退出程序吗？</source>
         <translation>The script is running, are you sure you want to exit the program?</translation>
     </message>
     <message>
-        <location filename="../app/my_app.py" line="254"/>
+        <location filename="../app/my_app.py" line="256"/>
         <source>存在未保存的设置，请执行保存或取消操作</source>
         <translation>Didn&apos;t save settings, please do save or cancel</translation>
     </message>
     <message>
-        <location filename="../app/my_app.py" line="329"/>
+        <location filename="../app/my_app.py" line="331"/>
         <source>小工具</source>
         <translation>Gadget</translation>
     </message>
     <message>
-        <location filename="../app/my_app.py" line="317"/>
+        <location filename="../app/my_app.py" line="319"/>
         <source>更新提醒</source>
         <translation>Update Notice</translation>
     </message>
     <message>
-        <location filename="../app/my_app.py" line="318"/>
+        <location filename="../app/my_app.py" line="320"/>
         <source>下载已经完成，是否开始更新</source>
         <translation>Download completed, would you like to start updating</translation>
     </message>
     <message>
-        <location filename="../app/my_app.py" line="267"/>
+        <location filename="../app/my_app.py" line="269"/>
         <source>任务设置出错</source>
         <translation>Task settings are incorrect</translation>
     </message>
     <message>
-        <location filename="../app/my_app.py" line="268"/>
+        <location filename="../app/my_app.py" line="270"/>
         <source>未设置任何任务，请勾选主页面左边的选项框需要执行的任务</source>
         <translation>No task is set, check the task to be performed in the option box on the left side of the main page</translation>
     </message>
     <message>
-        <location filename="../app/my_app.py" line="260"/>
+        <location filename="../app/my_app.py" line="262"/>
         <source>警告！</source>
         <translation>Warning！</translation>
     </message>
     <message>
-        <location filename="../app/my_app.py" line="226"/>
+        <location filename="../app/my_app.py" line="228"/>
         <source>存在未保存的队伍设置</source>
         <translation>There are unsaved team settings</translation>
     </message>
@@ -1550,7 +1588,7 @@ Right-click to set as permanent</translation>
         <translation>Mirror Chyan CDK</translation>
     </message>
     <message>
-        <location filename="../app/base_combination.py" line="507"/>
+        <location filename="../app/base_combination.py" line="594"/>
         <source>获取 CDK</source>
         <translation>Get CDK</translation>
     </message>
@@ -1558,15 +1596,15 @@ Right-click to set as permanent</translation>
 <context>
     <name>SwitchSettingCard</name>
     <message>
-        <location filename="../app/base_combination.py" line="522"/>
-        <location filename="../app/base_combination.py" line="543"/>
-        <location filename="../app/base_combination.py" line="546"/>
+        <location filename="../app/base_combination.py" line="609"/>
+        <location filename="../app/base_combination.py" line="630"/>
+        <location filename="../app/base_combination.py" line="633"/>
         <source>关</source>
         <translation>OFF</translation>
     </message>
     <message>
-        <location filename="../app/base_combination.py" line="543"/>
-        <location filename="../app/base_combination.py" line="546"/>
+        <location filename="../app/base_combination.py" line="630"/>
+        <location filename="../app/base_combination.py" line="633"/>
         <source>开</source>
         <translation>ON</translation>
     </message>
@@ -1785,29 +1823,6 @@ Right-click to set as permanent</translation>
         <location filename="../app/team_setting_card.py" line="325"/>
         <source>鸿璐</source>
         <translation>Hong Lu</translation>
-    </message>
-</context>
-<context>
-    <name>ToSettingButton</name>
-    <message>
-        <location filename="../app/base_tools.py" line="245"/>
-        <source>命名</source>
-        <translation>Rename</translation>
-    </message>
-    <message>
-        <location filename="../app/base_tools.py" line="246"/>
-        <source>删除</source>
-        <translation>Delete</translation>
-    </message>
-    <message>
-        <location filename="../app/base_tools.py" line="247"/>
-        <source>复制</source>
-        <translation>Copy</translation>
-    </message>
-    <message>
-        <location filename="../app/base_tools.py" line="248"/>
-        <source>粘贴</source>
-        <translation>Paste</translation>
     </message>
 </context>
 <context>

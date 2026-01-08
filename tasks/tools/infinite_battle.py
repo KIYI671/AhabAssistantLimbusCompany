@@ -131,10 +131,10 @@ class InfiniteBattles(QWidget):
         # 添加控制按钮
         button_layout = QVBoxLayout()
 
-        self.start_stop_button = QPushButton("开始战斗")
+        self.start_stop_button = QPushButton(self.tr("开始战斗"))
         self.start_stop_button.clicked.connect(self.toggle_battle)
-        self.defense_box = QCheckBox("无限守备")
-        self.defense_on_turn1_box = QCheckBox("第一回合开启守备")
+        self.defense_box = QCheckBox(self.tr("无限守备"))
+        self.defense_on_turn1_box = QCheckBox(self.tr("第一回合开启守备"))
         button_layout.addWidget(self.start_stop_button)
         button_layout.addWidget(self.defense_box)
         button_layout.addWidget(self.defense_on_turn1_box)
@@ -164,7 +164,7 @@ class InfiniteBattles(QWidget):
             self.worker.error_occurred.connect(self.on_error_occurred)
             self.worker.initialization_complete.connect(self.on_initialization_complete)
             self.worker.start()
-            self.start_stop_button.setText("停止战斗")
+            self.start_stop_button.setText(self.tr("停止战斗"))
             self.log_text.append("正在初始化游戏...")
             self.status_label.setText("状态：初始化中...")
             self.defense_box.setDisabled(True)
@@ -173,7 +173,7 @@ class InfiniteBattles(QWidget):
     def on_initialization_complete(self):
         """当初始化完成时调用"""
         self.log_text.append("游戏初始化完成，开始战斗")
-        self.status_label.setText("状态：战斗中...")
+        self.status_label.setText(self.tr("状态：战斗中..."))
 
     def on_battle_finished(self):
         self.log_text.append("战斗线程已停止")
@@ -205,7 +205,7 @@ class InfiniteBattles(QWidget):
 
     def on_battle_executed(self):
         """当执行战斗时调用"""
-        self.status_label.setText("状态：正在战斗...")
+        self.status_label.setText(self.tr("状态：正在战斗..."))
         # 避免日志过多，只偶尔记录
         import time
 
@@ -214,7 +214,7 @@ class InfiniteBattles(QWidget):
             not hasattr(self, "_last_log_time")
             or current_time - self._last_log_time > 10
         ):
-            self.log_text.append("战斗操作执行")
+            self.log_text.append(self.tr("战斗操作执行"))
             self._last_log_time = current_time
 
     def on_error_occurred(self, error_msg):
