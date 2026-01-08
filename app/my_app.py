@@ -307,6 +307,15 @@ class MainWindow(FramelessWindow):
                     color: white;
                 }
             """)
+            self.titleBar.minBtn.setNormalColor(Qt.white)
+            self.titleBar.minBtn.setHoverColor(Qt.white)
+            self.titleBar.minBtn.setPressedColor(Qt.white)
+            self.titleBar.maxBtn.setNormalColor(Qt.white)
+            self.titleBar.maxBtn.setHoverColor(Qt.white)
+            self.titleBar.maxBtn.setPressedColor(Qt.white)
+            self.titleBar.closeBtn.setNormalColor(Qt.white)
+            self.titleBar.closeBtn.setHoverColor(Qt.white)
+            self.titleBar.closeBtn.setPressedColor(Qt.white)
         else:
             self.setStyleSheet("MainWindow { background-color: #fdfdfd; }")
             self.titleBar.titleLabel.setStyleSheet("""
@@ -318,6 +327,15 @@ class MainWindow(FramelessWindow):
                     color: black;
                 }
             """)
+            self.titleBar.minBtn.setNormalColor(Qt.black)
+            self.titleBar.minBtn.setHoverColor(Qt.black)
+            self.titleBar.minBtn.setPressedColor(Qt.black)
+            self.titleBar.maxBtn.setNormalColor(Qt.black)
+            self.titleBar.maxBtn.setHoverColor(Qt.black)
+            self.titleBar.maxBtn.setPressedColor(Qt.black)
+            self.titleBar.closeBtn.setNormalColor(Qt.black)
+            self.titleBar.closeBtn.setHoverColor(Qt.white)
+            self.titleBar.closeBtn.setPressedColor(Qt.black)
 
     def closeEvent(self, e):
         if (
