@@ -181,6 +181,9 @@ class Battle:
             self.defense_all_time = defense_all_time
         if defense_on_turn1:
             defense_first_round = True
+            turn_ocr_bbox = ImageUtils.get_bbox(
+                ImageUtils.load_image("battle/turn_ocr_assets.png")
+            )
 
         first_turn = True
         start_time = time.time()
@@ -329,11 +332,7 @@ class Battle:
                 # 更新回合数
                 if infinite_battle:
                     try:
-                        turn_bbox = ImageUtils.get_bbox(
-                            ImageUtils.load_image("battle/turn_ocr_assets.png")
-                        )
-                        sc = ImageUtils.crop(np.array(auto.screenshot), turn_bbox)
-                        # sc = cv2.inRange(sc, 50, 255)
+                        sc = ImageUtils.crop(np.array(auto.screenshot), turn_ocr_bbox)
                         result = ocr.run(sc)
                         ocr_result = [result.txts[i] for i in range(len(result.txts))]
                         ocr_result = "".join(ocr_result)
