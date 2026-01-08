@@ -75,6 +75,7 @@ def select_theme_pack(hard_switch=False, floor=None):
                                                        find_type='image_with_multiple_targets'):
                     all_theme_pack.sort(key=lambda pos: (pos[0], pos[1]))
                     auto.mouse_drag_down(all_theme_pack[0][0], all_theme_pack[0][1])
+                    log.debug(f"选择卡包: {all_theme_pack[0]}")
                     sleep(3)
                     msg = "此次主题包选择了最左边的（活动）卡包"
                     log.info(msg)
@@ -113,6 +114,7 @@ def select_theme_pack(hard_switch=False, floor=None):
                     max_index = weight_list.index(max_weight)
                     pack = all_theme_pack[max_index]
                     auto.mouse_drag_down(pack[0], pack[1])
+                    log.debug(f"选择卡包: {pack}")
                     sleep(3)
                     msg = f"此次选择卡包关键词：{pack_name[max_index]}"
                     log.info(msg)
@@ -137,6 +139,7 @@ def select_theme_pack(hard_switch=False, floor=None):
                 max_index = weight_list.index(max_weight)
                 pack = all_theme_pack[max_index]
                 auto.mouse_drag_down(pack[0], pack[1])
+                log.debug(f"选择卡包: {pack}")
                 sleep(3)
                 log.debug("无匹配最低阈值的主题包，选择最高权重主题包")
                 msg = f"无匹配最低阈值的主题包，选择最高权重主题包\n此次选择卡包关键词：{pack_name[max_index]}"

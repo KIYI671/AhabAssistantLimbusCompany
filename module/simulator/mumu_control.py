@@ -766,21 +766,19 @@ class MumuControl:
 
         return True
 
-    def mouse_drag_down(self, x, y, move_back=True) -> None:
+    def mouse_drag_down(self, x, y, reverse=1, move_back=True) -> None:
         """鼠标从指定位置向下拖动
 
         Args:
             x (int): x坐标
             y (int): y坐标
+            reverse (int): 拖动方向，1表示向下，-1表示向上
             move_back (bool): 是否在拖动后将鼠标移动回原位置
         """
         scale = cfg.set_win_size / 1080
         x2 = x
-        y2 = y + int(300 * scale)
+        y2 = y + int(300 * scale * reverse)
         self.swipe(x1=x, y1=y, x2=x2, y2=y2, duration=0.4)
-
-        msg = f"选择卡包:({x},{y})"
-        log.debug(msg, stacklevel=2)
 
     def mouse_drag(self, x, y, drag_time=0.1, dx=0, dy=0, move_back=True) -> None:
         """鼠标从指定位置拖动到另一个位置
