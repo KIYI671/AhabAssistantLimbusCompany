@@ -411,7 +411,7 @@ class SinnerSelect(QFrame):
             self.opacity_effect.setOpacity(0.5) # 选中时不透明度设为0.5（变暗50%）
             self.setStyleSheet("""
                 SinnerSelect {
-                    background-color: rgba(126.5, 126.5, 126.5, 1); /* 背景色黑，叠加50%透明度图片 -> 图片亮度减半 */
+                    background-color: rgba(0, 0, 0, 0.5); /* 黑色半透明背景 */
                     border: 3px solid #FFD700; /* 选中态边框：3px实线，金色 */
                     border-radius: 8px; /* 圆角半径：8px */
                 }

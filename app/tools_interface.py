@@ -67,7 +67,7 @@ class ToolsInterface(ScrollArea):
     def set_style_sheet(self):
         self.setStyleSheet("""
                 SettingInterface, #scrollWidget {
-                    background-color: #fdfdfd;
+                    background-color: transparent;
                 }
                 QScrollArea {
                     background-color: transparent;

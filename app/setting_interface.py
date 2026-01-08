@@ -1,7 +1,7 @@
 from PySide6.QtCore import QUrl, QT_TRANSLATE_NOOP, Qt
 from PySide6.QtGui import QDesktopServices
 from PySide6.QtWidgets import QWidget, QFileDialog
-from qfluentwidgets import FluentIcon as FIF, InfoBarPosition
+from qfluentwidgets import FluentIcon as FIF, InfoBarPosition, setTheme, Theme
 from qfluentwidgets import ScrollArea, ExpandLayout
 
 from app.base_combination import ComboBoxSettingCard, SwitchSettingCard, PushSettingCardMirrorchyan, \
@@ -158,6 +158,18 @@ class SettingInterface(ScrollArea):
             texts=SUPPORTED_LANG_NAME,
             parent=self.personal_group
         )
+        self.theme_card = ComboBoxSettingCard(
+            "theme_mode",
+            FIF.BRUSH,
+            QT_TRANSLATE_NOOP("ComboBoxSettingCard", '应用主题'),
+            QT_TRANSLATE_NOOP("ComboBoxSettingCard", '调整应用的主题外观'),
+            texts={
+                QT_TRANSLATE_NOOP("ComboBoxSettingCard", '跟随系统'): "Auto",
+                QT_TRANSLATE_NOOP("ComboBoxSettingCard", '亮色模式'): "Light",
+                QT_TRANSLATE_NOOP("ComboBoxSettingCard", '深色模式'): "Dark",
+            },
+            parent=self.personal_group
+        )
         self.zoom_card = ComboBoxSettingCard(
             "zoom_scale",
             FIF.ZOOM,
@@ -282,6 +294,7 @@ class SettingInterface(ScrollArea):
         self.game_path_group.addSettingCard(self.game_path_card)
 
         self.personal_group.addSettingCard(self.language_card)
+        self.personal_group.addSettingCard(self.theme_card)
         self.personal_group.addSettingCard(self.zoom_card)
         self.personal_group.addSettingCard(self.hotkey_card)
 
@@ -307,9 +320,9 @@ class SettingInterface(ScrollArea):
         self.expand_layout.addWidget(self.experimental_group)
 
     def set_style_sheet(self):
-        self.setStyleSheet("""
+            self.setStyleSheet("""
                 SettingInterface, #scrollWidget {
-                    background-color: #fdfdfd;
+                    background-color: transparent;
                 }
                 QScrollArea {
                     background-color: transparent;
@@ -323,6 +336,7 @@ class SettingInterface(ScrollArea):
         self.screenshot_benchmark_card.clicked.connect(self.__onScreenshotBenchmarkCardClicked)
 
         self.zoom_card.valueChanged.connect(self.__onZoomCardValueChanged)
+        self.theme_card.valueChanged.connect(self.__onThemeCardChanged)
         self.auto_lang_card.switchButton.checkedChanged.connect(self.__onAutoLangCardChecked)
         self.background_mode_card.switchButton.checkedChanged.connect(self.__onZoomCardValueChanged)
 
@@ -430,3 +444,12 @@ class SettingInterface(ScrollArea):
         self.feedback_card.retranslateUi()
         self.experimental_group.retranslateUi()
         self.auto_lang_card.retranslateUi()
+
+    def __onThemeCardChanged(self):
+        theme_mode = cfg.get_value("theme_mode")
+        if theme_mode == "Auto":
+            setTheme(Theme.AUTO)
+        elif theme_mode == "Light":
+            setTheme(Theme.LIGHT)
+        elif theme_mode == "Dark":
+            setTheme(Theme.DARK)

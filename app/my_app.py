@@ -8,7 +8,7 @@ from enum import Enum
 from PySide6.QtCore import Qt, QLocale, QTimer, QRect, QPropertyAnimation, QEasingCurve
 from PySide6.QtGui import QIcon, QPainter, QColor, QFont
 from PySide6.QtWidgets import QApplication, QHBoxLayout, QStackedWidget, QVBoxLayout, QLabel, QWidget, QGraphicsOpacityEffect
-from qfluentwidgets import Pivot, setThemeColor, ProgressRing, qconfig
+from qfluentwidgets import Pivot, setThemeColor, ProgressRing, qconfig, setTheme, Theme, isDarkTheme
 from qfluentwidgets.components.widgets.frameless_window import FramelessWindow
 from qframelesswindow import StandardTitleBar
 
@@ -21,10 +21,10 @@ from app.page_card import MarkdownViewer
 from app.setting_interface import SettingInterface
 from app.team_setting_card import TeamSettingCard
 from app.tools_interface import ToolsInterface
-from module.config import cfg
 from module.game_and_screen import screen
 from module.logger import log
 from module.update.check_update import check_update
+from module.config import cfg
 
 
 class Language(Enum):
@@ -132,12 +132,25 @@ class MainWindow(FramelessWindow):
         self.setWindowIcon(QIcon('./assets/logo/my_icon_256X256.ico'))
         self.setWindowTitle(f"Ahab Assistant Limbus Company -  {cfg.version}")
         self.setObjectName("MainWindow")
-        setThemeColor("#9c080b")
+        setThemeColor("#0078D4")
         # self.hBoxLayout =QHBoxLayout(self)
         # self.test_interface = TestInterface(self)
         # self.hBoxLayout.setContentsMargins(0,0,0,0)
         # self.hBoxLayout.addWidget(self.test_interface)
         LanguageManager().register_component(self)
+        
+        # Apply theme
+        theme_mode = cfg.get_value("theme_mode", "Auto")
+        if theme_mode == "Auto":
+            setTheme(Theme.AUTO)
+        elif theme_mode == "Light":
+            setTheme(Theme.LIGHT)
+        elif theme_mode == "Dark":
+            setTheme(Theme.DARK)
+        
+        # Connect theme change signal
+        qconfig.themeChanged.connect(self.updateBackground)
+        self.updateBackground()
 
         # 禁用最大化
         self.titleBar.maxBtn.setHidden(True)
@@ -159,11 +172,7 @@ class MainWindow(FramelessWindow):
         self.vBoxLayout = QVBoxLayout(self)
         self.HBoxLayout = QHBoxLayout()
         # self.stackedWidget.setStyleSheet("border: 1px solid black;")
-        self.setStyleSheet("""
-                            MainWindow {    
-                                background: #fdfdfd;        /* 背景色（可选） */
-                            }
-                        """)
+
 
         self.farming_interface = FarmingInterface(self)
         if cfg.language_in_program == "zh_cn":
@@ -267,6 +276,12 @@ class MainWindow(FramelessWindow):
 
         if start_flag:
             QTimer.singleShot(3000, mediator.finished_signal.emit)
+            
+    def updateBackground(self):
+        if isDarkTheme():
+            self.setStyleSheet("MainWindow { background-color: #272727; }")
+        else:
+            self.setStyleSheet("MainWindow { background-color: #fdfdfd; }")
 
     def closeEvent(self, e):
         if (

@@ -38,12 +38,13 @@ class BaseSettingLayout(QFrame):
 
         self.setStyleSheet("""
                     BaseSettingLayout {
-                        border: 2px solid #E0E0E0;  /* 边框颜色 */
-                        border-radius: 5px;         /* 圆角 */
-                        padding: 10px;              /* 内边距 */
+                        border: 1px solid rgba(0, 0, 0, 0.1);
+                        border-radius: 5px;
+                        padding: 10px; 
+                        background-color: transparent;
                     }
                     BaseSettingLayout:hover {
-                        border-color: #D2D2D2;  /* 悬停时边框突出显示 */
+                        border: 1px solid rgba(0, 0, 0, 0.2);
                     }
                 """)
 
