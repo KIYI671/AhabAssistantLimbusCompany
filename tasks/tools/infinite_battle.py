@@ -1,6 +1,13 @@
 import win32con
 import win32gui
-from PySide6.QtWidgets import QWidget, QLabel, QVBoxLayout, QPushButton, QTextEdit, QCheckBox
+from PySide6.QtWidgets import (
+    QWidget,
+    QLabel,
+    QVBoxLayout,
+    QPushButton,
+    QTextEdit,
+    QCheckBox,
+)
 from PySide6.QtCore import QThread, Signal, Qt
 from PySide6.QtGui import QIcon
 
@@ -20,9 +27,10 @@ class BattleWorker(QThread):
     error_occurred = Signal(str)
     initialization_complete = Signal()
 
-    def __init__(self, defense=False, parent=None):
+    def __init__(self, defense=False, defense_on_turn1=False, parent=None):
         super().__init__(parent)
         self.defense = defense
+        self.defense_on_turn1 = defense_on_turn1
         self.initialized = False
         self.battle = Battle()  # 复用镜牢战斗逻辑
         self.background_click = cfg.background_click
@@ -54,11 +62,16 @@ class BattleWorker(QThread):
                 self.error_occurred.emit(f"游戏初始化错误: {str(e)}")
                 self.msleep(2000)
                 return
-        self.battle.fight(infinite_battle=True, defense_all_time=self.defense)
+        self.battle.fight(
+            infinite_battle=True,
+            defense_on_turn1=self.defense_on_turn1,
+            defense_all_time=self.defense,
+        )
 
     def _set_win(self):
         try:
             from module.game_and_screen import screen
+
             if not self.background_click:
                 cfg.set_value("background_click", True)
             hwnd = screen.handle
@@ -121,8 +134,10 @@ class InfiniteBattles(QWidget):
         self.start_stop_button = QPushButton("开始战斗")
         self.start_stop_button.clicked.connect(self.toggle_battle)
         self.defense_box = QCheckBox("无限守备")
+        self.defense_on_turn1_box = QCheckBox("第一回合开启守备")
         button_layout.addWidget(self.start_stop_button)
         button_layout.addWidget(self.defense_box)
+        button_layout.addWidget(self.defense_on_turn1_box)
 
         button_layout.setAlignment(Qt.AlignCenter)
 
@@ -140,7 +155,10 @@ class InfiniteBattles(QWidget):
     def start_battle(self):
         """启动战斗工作线程"""
         if self.worker is None or not self.worker.isRunning():
-            self.worker = BattleWorker(self.defense_box.isChecked())
+            self.worker = BattleWorker(
+                defense=self.defense_box.isChecked(),
+                defense_on_turn1=self.defense_on_turn1_box.isChecked(),
+            )
             self.worker.finished.connect(self.on_battle_finished)
             self.worker.battle_executed.connect(self.on_battle_executed)
             self.worker.error_occurred.connect(self.on_error_occurred)
@@ -150,6 +168,7 @@ class InfiniteBattles(QWidget):
             self.log_text.append("正在初始化游戏...")
             self.status_label.setText("状态：初始化中...")
             self.defense_box.setDisabled(True)
+            self.defense_on_turn1_box.setDisabled(True)
 
     def on_initialization_complete(self):
         """当初始化完成时调用"""
@@ -173,6 +192,7 @@ class InfiniteBattles(QWidget):
                 self.worker.terminate()
                 self.worker.wait(1000)
             self.defense_box.setDisabled(False)
+            self.defense_on_turn1_box.setDisabled(False)
             screen.reset_win()
             auto.clear_img_cache()
 
@@ -191,8 +211,8 @@ class InfiniteBattles(QWidget):
 
         current_time = int(time.time())
         if (
-                not hasattr(self, "_last_log_time")
-                or current_time - self._last_log_time > 10
+            not hasattr(self, "_last_log_time")
+            or current_time - self._last_log_time > 10
         ):
             self.log_text.append("战斗操作执行")
             self._last_log_time = current_time

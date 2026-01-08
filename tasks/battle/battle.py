@@ -2,6 +2,7 @@ import time
 from time import sleep
 from datetime import datetime
 
+import re
 import cv2
 import numpy as np
 
@@ -28,20 +29,24 @@ class Battle:
         self.running = True  # 用于外部打断战斗逻辑执行
         self.defense_all_time = False
         self.fail_times = 0
+        self.cur_turn = 1
 
     @staticmethod
     def to_battle():
         loop_count = 15
-        auto.model = 'clam'
+        auto.model = "clam"
         click = False
         while True:
             # 自动截图
             if auto.take_screenshot() is None:
                 continue
-            if click and (auto.find_element("battle/normal_to_battle_assets.png") or auto.find_element(
-                    "battle/chaim_to_battle_assets.png")):
+            if click and (
+                auto.find_element("battle/normal_to_battle_assets.png")
+                or auto.find_element("battle/chaim_to_battle_assets.png")
+            ):
                 click = False
                 from tasks.teams.team_formation import deal_with_spills
+
                 deal_with_spills()
             if auto.click_element("battle/normal_to_battle_assets.png"):
                 click = True
@@ -56,7 +61,7 @@ class Battle:
                 auto.model = "normal"
                 log.debug("识别模式切换到正常模式")
             if loop_count < 5:
-                auto.model = 'aggressive'
+                auto.model = "aggressive"
                 log.debug("识别模式切换到激进模式")
             if loop_count < 0:
                 msg = "超出最大尝试次数,未能进入战斗"
@@ -66,7 +71,9 @@ class Battle:
                 break
 
     @staticmethod
-    def _update_wait_time(time: float = None, fail_flag: bool = False, total_count: int = 1):
+    def _update_wait_time(
+        time: float = None, fail_flag: bool = False, total_count: int = 1
+    ):
         MAX_WAITING = 3.0  # 最大等待时间
         MIN_WAITING = 0.5  # 最小等待时间
         INIT_WAITING = 1.5  # 初始等待时间
@@ -77,7 +84,7 @@ class Battle:
 
         total_count = total_count if total_count > 0 else 1  # 防止除0
         adjust = fail_adjust if fail_flag else success_adjust
-        new_time = time + adjust / (total_count ** 0.5)  # 平方根调整
+        new_time = time + adjust / (total_count**0.5)  # 平方根调整
 
         new_time = min(new_time, MAX_WAITING)  # 防止超过最大等待时间
         new_time = max(new_time, MIN_WAITING)  # 防止低于最小等待时间
@@ -87,51 +94,59 @@ class Battle:
 
         return new_time
 
-    def _battle_operation(self, first_turn: bool, defense_first_round: bool, avoid_skill_3: bool):
+    def _battle_operation(
+        self, first_turn: bool, defense_first_round: bool, avoid_skill_3: bool
+    ):
         auto.mouse_click_blank()
-        if first_turn and defense_first_round and auto.find_element("battle/gear_left.png", threshold=0.9):
+        if (
+            first_turn
+            and defense_first_round
+            and auto.find_element("battle/gear_left.png", threshold=0.9)
+        ):
             msg = f"第一回合全员防御，开始战斗"
             if self._defense_this_round() is False:
                 defense_first_round = False
                 msg = "第一回合全员防御失败，本场战斗改为P+Enter"
-                auto.key_press('p')
+                auto.key_press("p")
                 sleep(0.5)
-                auto.key_press('enter')
+                auto.key_press("enter")
             sleep(2)
             if not auto.find_element("battle/pause_assets.png", take_screenshot=True):
-                auto.key_press('p')
+                auto.key_press("p")
                 sleep(0.5)
-                auto.key_press('enter')
-        elif self.defense_all_time and auto.find_element("battle/gear_left.png", threshold=0.9):
+                auto.key_press("enter")
+        elif self.defense_all_time and auto.find_element(
+            "battle/gear_left.png", threshold=0.9
+        ):
             msg = f"使用全员防御模式开始战斗"
             if self._defense_this_round() is False:
                 defense_all_time = False
                 msg = "全员防御失败，本场战斗改为P+Enter"
-                auto.key_press('p')
+                auto.key_press("p")
                 sleep(0.5)
-                auto.key_press('enter')
+                auto.key_press("enter")
             sleep(2)
             if not auto.find_element("battle/pause_assets.png", take_screenshot=True):
-                auto.key_press('p')
+                auto.key_press("p")
                 sleep(0.5)
-                auto.key_press('enter')
+                auto.key_press("enter")
         elif avoid_skill_3 and auto.find_element("battle/gear_left.png", threshold=0.9):
             msg = f"使用避免3技能模式开始战斗"
             if self._chain_battle() is False:
                 avoid_skill_3 = False
                 msg = "使用避免三技能的链接战失败，本场战斗改为P+Enter"
-                auto.key_press('p')
+                auto.key_press("p")
                 sleep(0.5)
-                auto.key_press('enter')
+                auto.key_press("enter")
             sleep(2)
             if not auto.find_element("battle/pause_assets.png", take_screenshot=True):
-                auto.key_press('p')
+                auto.key_press("p")
                 sleep(0.5)
-                auto.key_press('enter')
+                auto.key_press("enter")
         else:
-            auto.key_press('p')
+            auto.key_press("p")
             sleep(0.5)
-            auto.key_press('enter')
+            auto.key_press("enter")
             msg = f"使用P+Enter开始战斗"
             if self.mouse_click_rate:
                 my_scale = cfg.set_win_size / 1440
@@ -148,7 +163,14 @@ class Battle:
         log.debug(msg)
 
     @begin_and_finish_time_log(task_name="一次战斗")
-    def fight(self, avoid_skill_3=False, defense_first_round=False, infinite_battle=False, defense_all_time=False):
+    def fight(
+        self,
+        avoid_skill_3=False,
+        defense_first_round=False,
+        infinite_battle=False,
+        defense_all_time=False,
+        defense_on_turn1=False,
+    ):
         chance = self.INIT_CHANCE
         waiting = self._update_wait_time()
         total_count = 0
@@ -158,6 +180,11 @@ class Battle:
         event_chance = 15
         if defense_all_time:
             self.defense_all_time = defense_all_time
+        if defense_on_turn1:
+            defense_first_round = True
+            turn_ocr_bbox = ImageUtils.get_bbox(
+                ImageUtils.load_image("battle/turn_ocr_assets.png")
+            )
 
         first_turn = True
         start_time = time.time()
@@ -165,13 +192,17 @@ class Battle:
         self.fail_times = 0
         while self.running:
             from tasks.base.retry import check_times
+
             # 自动截图
             if auto.take_screenshot() is None:
                 continue
             if auto.get_restore_time() is not None:
                 start_time = max(start_time, auto.get_restore_time())
-            if infinite_battle is False and check_times(start_time, timeout=900, logs=False):
+            if infinite_battle is False and check_times(
+                start_time, timeout=900, logs=False
+            ):
                 from tasks.base.back_init_menu import back_init_menu
+
                 back_init_menu()
                 return False
 
@@ -188,12 +219,18 @@ class Battle:
                 continue
 
             # 判断是否为镜牢战斗
-            if in_mirror is False and auto.find_element("battle/in_mirror_assets.png", model="aggressive"):
+            if in_mirror is False and auto.find_element(
+                "battle/in_mirror_assets.png", model="aggressive"
+            ):
                 in_mirror = True
 
-            if view_status := auto.find_element("battle/view_status_assets.png", model="clam"):
+            if view_status := auto.find_element(
+                "battle/view_status_assets.png", model="clam"
+            ):
                 my_scale = cfg.set_win_size / 1440
-                auto.click_element(view_status[0] + 100 * my_scale, view_status[1] - 500 * my_scale)
+                auto.click_element(
+                    view_status[0] + 100 * my_scale, view_status[1] - 500 * my_scale
+                )
                 continue
 
             # 如果正在交战过程
@@ -205,15 +242,22 @@ class Battle:
 
             # 战斗失败重启
             if auto.find_element("battle/dead_all.png"):
-                dead_select = auto.find_element("battle/dead_all.png", find_type="image_with_multiple_targets")
+                dead_select = auto.find_element(
+                    "battle/dead_all.png", find_type="image_with_multiple_targets"
+                )
                 if len(dead_select) == 3:
                     dead_select = sorted(dead_select, key=lambda y: y[1])
                     auto.mouse_click(dead_select[1][0], dead_select[1][1])
                 else:
-                    confirm_button = auto.find_element("battle/dead_all_confirm_assets.png")
+                    confirm_button = auto.find_element(
+                        "battle/dead_all_confirm_assets.png"
+                    )
                     try:
                         my_scale = cfg.set_win_size / 1440
-                        auto.mouse_click(confirm_button[0] + 200 * my_scale, confirm_button[1] - 350 * my_scale)
+                        auto.mouse_click(
+                            confirm_button[0] + 200 * my_scale,
+                            confirm_button[1] - 350 * my_scale,
+                        )
                     except:
                         continue
 
@@ -229,9 +273,11 @@ class Battle:
                 if dead_position := auto.find_element("battle/dead.png"):
                     my_scale = cfg.set_win_size / 1440
                     dead_bbox = (
-                        dead_position[0] - 100 * my_scale, dead_position[1] - 30 * my_scale,
+                        dead_position[0] - 100 * my_scale,
+                        dead_position[1] - 30 * my_scale,
                         dead_position[0] + 100 * my_scale,
-                        dead_position[1] + 30 * my_scale)
+                        dead_position[1] + 30 * my_scale,
+                    )
                     if cfg.language_in_game == "zh_cn":
                         ocr_result = auto.find_text_element("阵亡", dead_bbox)
                     else:
@@ -241,7 +287,9 @@ class Battle:
                             auto.mouse_to_blank()
                             if auto.take_screenshot() is None:
                                 continue
-                            if auto.find_element("mirror/road_in_mir/legend_assets.png"):
+                            if auto.find_element(
+                                "mirror/road_in_mir/legend_assets.png"
+                            ):
                                 return False
                             if auto.click_element("battle/give_up_assets.png"):
                                 sleep(2)
@@ -252,31 +300,62 @@ class Battle:
             if fail_count >= 10 or self.identify_keyword_turn is False:
                 # 如果多次识别不到战斗界面
                 try:
-                    turn_bbox = ImageUtils.get_bbox(ImageUtils.load_image("battle/turn_assets.png"))
+                    turn_bbox = ImageUtils.get_bbox(
+                        ImageUtils.load_image("battle/turn_assets.png")
+                    )
                     sc = ImageUtils.crop(np.array(auto.screenshot), turn_bbox)
                     sc = cv2.inRange(sc, 50, 255)
                     result = ocr.run(sc)
                     ocr_result = [result.txts[i] for i in range(len(result.txts))]
                     ocr_result = "".join(ocr_result)
                 except:
-                    ocr_result = ''
+                    ocr_result = ""
                 if "turn" in ocr_result:
-                    self._battle_operation(first_turn, defense_first_round, avoid_skill_3)
+                    self._battle_operation(
+                        first_turn, defense_first_round, avoid_skill_3
+                    )
                     chance = self.INIT_CHANCE
                     waiting = self._update_wait_time(waiting, False, total_count)
                     self.identify_keyword_turn = False
                     continue
             elif fail_count >= 5:
-                if auto.click_element("battle/turn_assets.png") or auto.find_element("battle/win_rate_assets.png"):
-                    self._battle_operation(first_turn, defense_first_round, avoid_skill_3)
+                if auto.click_element("battle/turn_assets.png") or auto.find_element(
+                    "battle/win_rate_assets.png"
+                ):
+                    self._battle_operation(
+                        first_turn, defense_first_round, avoid_skill_3
+                    )
                     chance = self.INIT_CHANCE
                     waiting = self._update_wait_time(waiting, False, total_count)
                     continue
             else:
                 # 如果正在战斗待机界面
-                if auto.find_element("battle/more_information_assets.png") or auto.find_element(
-                        "battle/win_rate_assets.png"):
-                    self._battle_operation(first_turn, defense_first_round, avoid_skill_3)
+                # 更新回合数
+                if infinite_battle and defense_on_turn1:
+                    try:
+                        sc = ImageUtils.crop(np.array(auto.screenshot), turn_ocr_bbox)
+                        result = ocr.run(sc)
+                        ocr_result = [result.txts[i] for i in range(len(result.txts))]
+                        ocr_result = "".join(ocr_result)
+                        # 用正则匹配字符串里的数字
+                        m = re.search(r"\d+", ocr_result)
+                        if m:
+                            self.cur_turn = int(m.group())
+                        else:
+                            self.cur_turn = -1
+                        if self.cur_turn == 1:
+                            first_turn = True
+                    except:
+                        self.cur_turn = -1  # 表示识别失败
+
+                if auto.find_element(
+                    "battle/more_information_assets.png"
+                ) or auto.find_element("battle/win_rate_assets.png"):
+                    self._battle_operation(
+                        first_turn,
+                        defense_first_round,
+                        avoid_skill_3,
+                    )
                     chance = self.INIT_CHANCE
                     waiting = self._update_wait_time(waiting, False, total_count)
                     continue
@@ -284,17 +363,25 @@ class Battle:
                 if not infinite_battle:
                     auto.mouse_to_blank()
                 try:
-                    turn_bbox = ImageUtils.get_bbox(ImageUtils.load_image("battle/turn_assets.png"))
+                    turn_bbox = ImageUtils.get_bbox(
+                        ImageUtils.load_image("battle/turn_assets.png")
+                    )
                     sc = ImageUtils.crop(np.array(auto.screenshot), turn_bbox)
                     sc = cv2.inRange(sc, 50, 255)
                     result = ocr.run(sc)
                     ocr_result = [result.txts[i] for i in range(len(result.txts))]
                     ocr_result = "".join(ocr_result)
                 except:
-                    ocr_result = ''
-                if "turn" in ocr_result or auto.click_element("battle/turn_assets.png") or auto.find_element(
-                        "battle/win_rate_assets.png") or auto.find_element("battle/win_rate_card.png", threshold=0.75):
-                    self._battle_operation(first_turn, defense_first_round, avoid_skill_3)
+                    ocr_result = ""
+                if (
+                    "turn" in ocr_result
+                    or auto.click_element("battle/turn_assets.png")
+                    or auto.find_element("battle/win_rate_assets.png")
+                    or auto.find_element("battle/win_rate_card.png", threshold=0.75)
+                ):
+                    self._battle_operation(
+                        first_turn, defense_first_round, avoid_skill_3
+                    )
                     chance = self.INIT_CHANCE
                     waiting = self._update_wait_time(waiting, False, total_count)
                     continue
@@ -302,7 +389,9 @@ class Battle:
                 if not infinite_battle:
                     auto.mouse_to_blank()
                 if auto.find_text_element(["rate", "胜率"]):
-                    self._battle_operation(first_turn, defense_first_round, avoid_skill_3)
+                    self._battle_operation(
+                        first_turn, defense_first_round, avoid_skill_3
+                    )
                     chance = self.INIT_CHANCE
                     waiting = self._update_wait_time(waiting, False, total_count)
                     sleep(1)
@@ -311,28 +400,50 @@ class Battle:
                     continue
             if self.mouse_click_rate:
                 if auto.find_element("battle/win_rate_card.png", threshold=0.75):
-                    self._battle_operation(first_turn, defense_first_round, avoid_skill_3)
+                    self._battle_operation(
+                        first_turn, defense_first_round, avoid_skill_3
+                    )
                     chance = self.INIT_CHANCE
                     waiting = self._update_wait_time(waiting, False, total_count)
 
             # 如果战斗中途出现事件
             if auto.find_element("event/choices_assets.png") and auto.find_element(
-                    "event/select_first_option_assets.png"):
+                "event/select_first_option_assets.png"
+            ):
                 if event_chance > 5:
                     auto.click_element("event/select_first_option_assets.png")
                     event_chance -= 1
                 elif event_chance > 0:
-                    auto.click_element("event/select_first_option_assets.png", find_type="image_with_multiple_targets")
+                    auto.click_element(
+                        "event/select_first_option_assets.png",
+                        find_type="image_with_multiple_targets",
+                    )
                     event_chance -= 1
                 else:
-                    auto.click_element("event/select_first_option_assets.png", find_type="image_with_multiple_targets")
+                    auto.click_element(
+                        "event/select_first_option_assets.png",
+                        find_type="image_with_multiple_targets",
+                    )
                     finishes_bbox = ImageUtils.get_bbox(
-                        ImageUtils.load_image("event/continue_assets.png"))
+                        ImageUtils.load_image("event/continue_assets.png")
+                    )
                     if auto.find_text_element(
-                            ["conti", "proc", "comme", "choices", "confirm", "行判", "始战", "继续"],
-                            finishes_bbox):
-                        auto.mouse_click((finishes_bbox[0] + finishes_bbox[2]) // 2,
-                                         (finishes_bbox[1] + finishes_bbox[3]) // 2)
+                        [
+                            "conti",
+                            "proc",
+                            "comme",
+                            "choices",
+                            "confirm",
+                            "行判",
+                            "始战",
+                            "继续",
+                        ],
+                        finishes_bbox,
+                    ):
+                        auto.mouse_click(
+                            (finishes_bbox[0] + finishes_bbox[2]) // 2,
+                            (finishes_bbox[1] + finishes_bbox[3]) // 2,
+                        )
                         if infinite_battle:
                             continue
                         break
@@ -351,16 +462,20 @@ class Battle:
                 continue
 
             # 战斗结束，进入结算页面
-            if auto.click_element("battle/battle_finish_confirm_assets.png", click=False) or auto.find_element(
-                    "mirror/claim_reward/battle_statistics_assets.png"):
+            if auto.click_element(
+                "battle/battle_finish_confirm_assets.png", click=False
+            ) or auto.find_element("mirror/claim_reward/battle_statistics_assets.png"):
                 sleep(1)
                 if auto.click_element("base/leave_up_assets.png"):
                     auto.click_element("base/leave_up_confirm_assets.png")
                     continue
                 # 为某些人在副本战斗过程中启动脚本任务进行收尾
                 if self.first_battle:
-                    if auto.find_element("battle/clear_rewards_EXP_1.png") or auto.find_element(
-                            "battle/clear_rewards_EXP_2.png") or auto.find_element("battle/clear_rewards_EXP_3.png"):
+                    if (
+                        auto.find_element("battle/clear_rewards_EXP_1.png")
+                        or auto.find_element("battle/clear_rewards_EXP_2.png")
+                        or auto.find_element("battle/clear_rewards_EXP_3.png")
+                    ):
                         first_battle_reward = "EXP"
                     if auto.find_element("battle/clear_rewards_thread.png"):
                         first_battle_reward = "thread"
@@ -377,11 +492,15 @@ class Battle:
                 if infinite_battle:
                     continue
                 break
-            if auto.find_element("mirror/road_in_mir/select_encounter_reward_card_assets.png"):
+            if auto.find_element(
+                "mirror/road_in_mir/select_encounter_reward_card_assets.png"
+            ):
                 if infinite_battle:
                     continue
                 break
-            if chance <= (self.INIT_CHANCE // 2 + 1) and auto.find_element("teams/announcer_assets.png"):
+            if chance <= (self.INIT_CHANCE // 2 + 1) and auto.find_element(
+                "teams/announcer_assets.png"
+            ):
                 if infinite_battle:
                     continue
                 break
