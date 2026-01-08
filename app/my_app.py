@@ -5,9 +5,9 @@ import re
 import subprocess
 from enum import Enum
 
-from PySide6.QtCore import Qt, QLocale, QTimer, QRect, QPoint
-from PySide6.QtGui import QIcon, QPainter, QColor, QFont, QCursor
-from PySide6.QtWidgets import QApplication, QHBoxLayout, QStackedWidget, QVBoxLayout, QLabel, QWidget, QGraphicsOpacityEffect
+from PySide6.QtCore import Qt, QLocale, QTimer, QRect
+from PySide6.QtGui import QIcon, QPainter, QColor, QFont
+from PySide6.QtWidgets import QApplication, QHBoxLayout, QStackedWidget, QVBoxLayout, QLabel, QWidget
 from qfluentwidgets import Pivot, setThemeColor, ProgressRing, qconfig
 from qfluentwidgets.components.widgets.frameless_window import FramelessWindow
 from qframelesswindow import StandardTitleBar
@@ -42,27 +42,6 @@ class DevWatermark(QWidget):
         self.setAttribute(Qt.WA_TransparentForMouseEvents)
         self.setAttribute(Qt.WA_TranslucentBackground)
         self.setFixedSize(200, 200)
-
-        # Opacity effect for fading
-        self.opacity_effect = QGraphicsOpacityEffect(self)
-        self.setGraphicsEffect(self.opacity_effect)
-        
-        # Timer to check for hover (since we are transparent to mouse events)
-        self.hover_timer = QTimer(self)
-        self.hover_timer.timeout.connect(self.check_hover)
-        self.hover_timer.start(50)  # Check every 50ms
-
-    def check_hover(self):
-        # Get global cursor position
-        cursor_pos = QCursor.pos()
-        # Map to local coordinates
-        local_pos = self.mapFromGlobal(cursor_pos)
-        
-        # Check if cursor is inside the widget rect
-        if self.rect().contains(local_pos):
-            self.opacity_effect.setOpacity(0.0)  # Hide
-        else:
-            self.opacity_effect.setOpacity(1.0)  # Show
 
     def paintEvent(self, event):
         painter = QPainter(self)
