@@ -78,7 +78,7 @@ def thread_luxcavation():
                     log.debug("未找到滚动条，通过滑动下滑")
                     auto.mouse_drag_down(pos[0], pos[1], reverse=-2)
 
-                if level := not auto.find_element("luxcavation/thread_consume.png", find_type="image_with_multiple_targets", take_screenshot=True):
+                if level := auto.find_element("luxcavation/thread_consume.png", find_type="image_with_multiple_targets", take_screenshot=True):
                     level = sorted(level, key=lambda y: y[1], reverse=True)
                     for lv in level:
                         auto.mouse_click(lv[0], lv[1])
