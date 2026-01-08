@@ -323,9 +323,6 @@ class BackgroundInput(Input, metaclass=SingletonMeta):
         if move_back and current_mouse_position:
             self.mouse_move(current_mouse_position)
 
-        msg = f"选择卡包:({x},{y})"
-        log.debug(msg, stacklevel=2)
-
     def mouse_drag(self, x, y, drag_time=0.1, dx=0, dy=0, move_back=True) -> None:
         """鼠标从指定位置拖动到另一个位置
         Args:
