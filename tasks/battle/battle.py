@@ -338,7 +338,11 @@ class Battle:
                         ocr_result = [result.txts[i] for i in range(len(result.txts))]
                         ocr_result = "".join(ocr_result)
                         # 用正则匹配字符串里的数字
-                        self.cur_turn = int(re.search(r"\d+", ocr_result).group())
+                        m = re.search(r"\d+", ocr_result)
+                        if m:
+                            self.cur_turn = int(m.group())
+                        else:
+                            self.cur_turn = -1
                         if self.cur_turn == 1:
                             first_turn = True
                     except:
