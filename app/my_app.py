@@ -5,8 +5,8 @@ import re
 import subprocess
 from enum import Enum
 
-from PySide6.QtCore import Qt, QLocale, QTimer, QRect, QPropertyAnimation, QEasingCurve
-from PySide6.QtGui import QIcon, QPainter, QColor, QFont
+from PySide6.QtCore import Qt, QLocale, QTimer, QRect, QPropertyAnimation, QEasingCurve, QPoint
+from PySide6.QtGui import QIcon, QPainter, QColor, QFont, QRegion, QPolygon, QTransform
 from PySide6.QtWidgets import QApplication, QHBoxLayout, QStackedWidget, QVBoxLayout, QLabel, QWidget, QGraphicsOpacityEffect
 from qfluentwidgets import Pivot, setThemeColor, ProgressRing, qconfig, setTheme, Theme, isDarkTheme
 from qfluentwidgets.components.widgets.frameless_window import FramelessWindow
@@ -54,6 +54,24 @@ class DevWatermark(QWidget):
         self.anim_opacity = QPropertyAnimation(self._op, b"opacity")
         self.anim_opacity.setDuration(300)
         self.anim_opacity.setEasingCurve(QEasingCurve.OutCubic)
+
+        # Set mask to limit hover area to the ribbon only
+        self.updateMask()
+
+    def updateMask(self):
+        # Replicate the logic from paintEvent to get the ribbon shape
+        ribbon_center_dist = 40
+        ribbon_width = 24
+        rect = QRect(-100, ribbon_center_dist - ribbon_width // 2, 200, ribbon_width)
+        
+        transform = QTransform()
+        transform.rotate(-45)
+        
+        # Map the rect to a polygon using the transform
+        region_poly = transform.mapToPolygon(rect)
+        
+        # Set the mask
+        self.setMask(QRegion(region_poly))
 
     def enterEvent(self, event):
         self.anim_opacity.stop()
