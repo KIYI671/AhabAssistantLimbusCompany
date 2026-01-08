@@ -8,16 +8,18 @@ from enum import Enum
 from PySide6.QtCore import Qt, QLocale, QTimer, QRect, QPropertyAnimation, QEasingCurve, QPoint
 from PySide6.QtGui import QIcon, QPainter, QColor, QFont, QRegion, QPolygon, QTransform
 from PySide6.QtWidgets import QApplication, QHBoxLayout, QStackedWidget, QVBoxLayout, QLabel, QWidget, QGraphicsOpacityEffect
-from qfluentwidgets import Pivot, setThemeColor, ProgressRing, qconfig, setTheme, Theme, isDarkTheme
+from qfluentwidgets import setThemeColor, ProgressRing, qconfig, setTheme, Theme, isDarkTheme
 from qfluentwidgets.components.widgets.frameless_window import FramelessWindow
 from qframelesswindow import StandardTitleBar
 
 from app import mediator, AnnouncementStatus
+
 from app.announcement_board import AnnouncementBoard, Announcement, AnnouncementThread
 from app.card.messagebox_custom import MessageBoxWarning, MessageBoxConfirm
 from app.farming_interface import FarmingInterface
 from app.language_manager import LanguageManager
 from app.page_card import MarkdownViewer
+from app.custom_pivot import FullWidthPivot
 from app.setting_interface import SettingInterface
 from app.team_setting_card import TeamSettingCard
 from app.tools_interface import ToolsInterface
@@ -185,7 +187,7 @@ class MainWindow(FramelessWindow):
         w, h = geometry.width(), geometry.height()
         self.move(w // 2 - self.width() // 2, h // 2 - self.height() // 2)
 
-        self.pivot = Pivot()
+        self.pivot = FullWidthPivot()
         self.stackedWidget = QStackedWidget()
         self.vBoxLayout = QVBoxLayout(self)
         self.HBoxLayout = QHBoxLayout()
