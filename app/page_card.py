@@ -1,12 +1,11 @@
 import os
 
 from PySide6.QtCore import Qt, QUrl, QCoreApplication, QRect
-from PySide6.QtGui import QDesktopServices
 from PySide6.QtWidgets import QWidget, QFrame, QHBoxLayout, QTextBrowser, QVBoxLayout
 from markdown_it import MarkdownIt
 from mdit_py_plugins.anchors import anchors_plugin
 from qfluentwidgets import FluentIcon as FIF
-from qfluentwidgets import SegmentedWidget, ScrollArea, TransparentToolButton
+from qfluentwidgets import SegmentedWidget, ScrollArea, TransparentToolButton, isDarkTheme, qconfig
 from qfluentwidgets.window.stacked_widget import StackedWidget
 
 from app import *
@@ -647,16 +646,77 @@ class PageMirror(PageCard):
         super().retranslateUi()
 
 
+from PySide6.QtGui import QDesktopServices, QTextDocument, QImage, QPixmap, QPainter, QColor
+
 def transform_image_url(self, tokens, idx, options, env):
+    """
+    Transform image URLs to support local files and custom processing.
+    
+    This function intercepts image tokens during Markdown rendering. It modifies 
+    local file paths to use a custom 'dimmed:' scheme when necessary. This custom 
+    scheme is used to trigger the `loadResource` method in `ThemeAwareTextBrowser`, 
+    allowing us to intercept image loading and apply effects (like dimming in Dark Mode).
+    """
     token = tokens[idx]
     src = token.attrs["src"]
     if isinstance(src, str):
         url = QUrl(src)
         if url.path().startswith("/"):
             new_src = "." + url.path()
-            tokens[idx].attrSet("src", new_src)
+            # Force custom scheme to trigger loadResource
+            tokens[idx].attrSet("src", "dimmed:" + new_src)
+        elif not src.startswith("http") and not src.startswith("https") and not src.startswith("dimmed:"):
+            # For relative paths, also force custom scheme
+            tokens[idx].attrSet("src", "dimmed:" + src)
 
     return self.image(tokens, idx, options, env)
+
+
+class ThemeAwareTextBrowser(QTextBrowser):
+    """
+    A custom QTextBrowser that supports theme-aware image rendering.
+    
+    This class overrides `loadResource` to handle the 'dimmed:' URI scheme.
+    When this scheme is detected, it loads the local image and, if Dark Mode 
+    is active, applies a semi-transparent black overlay to reduce brightness.
+    This bypasses the limitation of QTextBrowser not supporting CSS filters on images.
+    """
+    def loadResource(self, type, name):
+        """
+        Load resources with support for programmatic image dimming.
+        
+        Args:
+            type: The type of resource to load (e.g., QTextDocument.ImageResource).
+            name: The QUrl of the resource.
+        
+        Returns:
+            The loaded resource (QImage/QPixmap) or the result of the superclass method.
+        """
+        if type == QTextDocument.ImageResource and name.scheme() == "dimmed":
+            # Extract the actual path (remove scheme)
+            path = name.path()
+            if name.scheme() == "dimmed" and not path:
+                # If path is empty, it might be "dimmed:./foo.png" -> path might be parsed differently depending on qt version/platform
+                # Let's manually strip prefix to be safe
+                path = name.toString().split(":", 1)[1]
+            
+            image = QImage(path)
+            if not image.isNull():
+                if isDarkTheme():
+                    # Create a new image for processing to avoid modifying the original cache if shared
+                    dimmed = QImage(image.size(), QImage.Format_ARGB32_Premultiplied)
+                    dimmed.fill(Qt.transparent)
+                    
+                    painter = QPainter(dimmed)
+                    painter.drawImage(0, 0, image)
+                    painter.setCompositionMode(QPainter.CompositionMode_SourceOver)
+                    # Apply 50% black overlay
+                    painter.fillRect(dimmed.rect(), QColor(0, 0, 0, 128)) 
+                    painter.end()
+                    return dimmed
+                return image
+                
+        return super().loadResource(type, name)
 
 
 class MarkdownViewer(QWidget):
@@ -667,15 +727,15 @@ class MarkdownViewer(QWidget):
 
         LanguageManager().register_component(self)
 
-        self.text_browser = QTextBrowser()
+        self.text_browser = ThemeAwareTextBrowser()
         self.text_browser.setOpenExternalLinks(False)
         self.text_browser.anchorClicked.connect(self.handle_link_clicked)
         self.text_browser.setContextMenuPolicy(Qt.ContextMenuPolicy.NoContextMenu)  # 禁用右键菜单
 
-        css_path = "assets/styles/github-markdown-light.css"
-        with open(css_path, "r", encoding="utf-8") as css_file:
-            css_content = css_file.read()
-            self.text_browser.setStyleSheet(css_content)
+        # Connect theme change signal
+        qconfig.themeChanged.connect(self.updateStyle)
+        self.updateStyle()
+
 
         self.md = (
             MarkdownIt("commonmark", {"html": True})
@@ -769,3 +829,14 @@ class MarkdownViewer(QWidget):
         else:
             self.help_path = "./assets/doc/en/How_to_use_EN.md"
         self.reset_viewer()
+
+    def updateStyle(self):
+        if isDarkTheme():
+            css_path = "assets/styles/github-markdown-dark.css"
+        else:
+            css_path = "assets/styles/github-markdown-light.css"
+            
+        if os.path.exists(css_path):
+            with open(css_path, "r", encoding="utf-8") as css_file:
+                css_content = css_file.read()
+                self.text_browser.setStyleSheet(css_content)
