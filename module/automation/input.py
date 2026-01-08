@@ -93,12 +93,13 @@ class Input(metaclass=SingletonMeta):
 
         return True
 
-    def mouse_drag_down(self, x, y, move_back=True) -> None:
+    def mouse_drag_down(self, x, y, reverse=1, move_back=True) -> None:
         """鼠标从指定位置向下拖动
 
         Args:
             x (int): x坐标
             y (int): y坐标
+            reverse (int): 拖动方向，1表示向下，-1表示向上
             move_back (bool): 是否在拖动后将鼠标移动回原位置
         """
         if move_back:
@@ -107,14 +108,11 @@ class Input(metaclass=SingletonMeta):
         scale = cfg.set_win_size / 1080
         pyautogui.moveTo(x, y)
         pyautogui.mouseDown()
-        pyautogui.dragTo(x, y + int(300 * scale), duration=0.4)
+        pyautogui.dragTo(x, y + int(300 * scale * reverse), duration=0.4)
         pyautogui.mouseUp()
 
         if move_back and current_mouse_position:
             self.mouse_move(current_mouse_position)
-
-        msg = f"选择卡包:({x},{y})"
-        log.debug(msg, stacklevel=2)
 
     def mouse_drag(self, x, y, drag_time=0.1, dx=0, dy=0, move_back=True) -> None:
         """鼠标从指定位置拖动到另一个位置
@@ -300,12 +298,13 @@ class BackgroundInput(Input, metaclass=SingletonMeta):
 
         return True
 
-    def mouse_drag_down(self, x, y, move_back=True) -> None:
+    def mouse_drag_down(self, x, y, reverse=1, move_back=True) -> None:
         """鼠标从指定位置向下拖动
 
         Args:
             x (int): x坐标
             y (int): y坐标
+            reverse (int): 拖动方向，1表示向下，-1表示向上
             move_back (bool): 是否在拖动后将鼠标移动回原位置
         """
         if move_back:
@@ -315,14 +314,11 @@ class BackgroundInput(Input, metaclass=SingletonMeta):
         self.set_focus()
         self._mouse_move_to(x, y)
         self.mouse_down(x, y)
-        self._mouse_move_to(x, y + int(300 * scale), duration=0.4)
+        self._mouse_move_to(x, y + int(300 * scale * reverse), duration=0.4)
         self.mouse_up(x, y)
 
         if move_back and current_mouse_position:
             self.mouse_move(current_mouse_position)
-
-        msg = f"选择卡包:({x},{y})"
-        log.debug(msg, stacklevel=2)
 
     def mouse_drag(self, x, y, drag_time=0.1, dx=0, dy=0, move_back=True) -> None:
         """鼠标从指定位置拖动到另一个位置
