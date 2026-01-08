@@ -5,9 +5,9 @@ import re
 import subprocess
 from enum import Enum
 
-from PySide6.QtCore import Qt, QLocale, QTimer, QRect
+from PySide6.QtCore import Qt, QLocale, QTimer, QRect, QPropertyAnimation, QEasingCurve
 from PySide6.QtGui import QIcon, QPainter, QColor, QFont
-from PySide6.QtWidgets import QApplication, QHBoxLayout, QStackedWidget, QVBoxLayout, QLabel, QWidget
+from PySide6.QtWidgets import QApplication, QHBoxLayout, QStackedWidget, QVBoxLayout, QLabel, QWidget, QGraphicsOpacityEffect
 from qfluentwidgets import Pivot, setThemeColor, ProgressRing, qconfig
 from qfluentwidgets.components.widgets.frameless_window import FramelessWindow
 from qframelesswindow import StandardTitleBar
@@ -35,13 +35,39 @@ class Language(Enum):
     ENGLISH = QLocale(QLocale.Language.English)
     AUTO = QLocale()
 
-
+#  DEV 标识
 class DevWatermark(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.setAttribute(Qt.WA_TransparentForMouseEvents)
-        self.setAttribute(Qt.WA_TranslucentBackground)
         self.setFixedSize(200, 200)
+        
+        # Enable mouse events for hover detection
+        self.setAttribute(Qt.WA_TransparentForMouseEvents, False)
+        self.setAttribute(Qt.WA_TranslucentBackground)
+        
+        # Opacity effect
+        self._op = QGraphicsOpacityEffect(self)
+        self._op.setOpacity(1.0)
+        self.setGraphicsEffect(self._op)
+        
+        # Opacity animation
+        self.anim_opacity = QPropertyAnimation(self._op, b"opacity")
+        self.anim_opacity.setDuration(300)
+        self.anim_opacity.setEasingCurve(QEasingCurve.OutCubic)
+
+    def enterEvent(self, event):
+        self.anim_opacity.stop()
+        self.anim_opacity.setStartValue(self._op.opacity())
+        self.anim_opacity.setEndValue(0.05) # Fade to nearly transparent
+        self.anim_opacity.start()
+        super().enterEvent(event)
+
+    def leaveEvent(self, event):
+        self.anim_opacity.stop()
+        self.anim_opacity.setStartValue(self._op.opacity())
+        self.anim_opacity.setEndValue(1.0) # Fade back to full
+        self.anim_opacity.start()
+        super().leaveEvent(event)
 
     def paintEvent(self, event):
         painter = QPainter(self)
