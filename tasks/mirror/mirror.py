@@ -589,7 +589,7 @@ class Mirror:
         elapsed_time = end_time - start_time
 
         if all(self.floor_times[i] > 0 for i in range(5)):  # 判断是否完整走了五层
-            team_history = cfg.get_value(f"team{self.team_number}_history", default={})
+            team_history = cfg.get_value(f"team{self.team_order}_history", default={})
             if self.hard_switch:
                 team_total_battle_time_hard = team_history.get("total_mirror_time_hard", [])
                 team_total_battle_time_hard.append(elapsed_time)
