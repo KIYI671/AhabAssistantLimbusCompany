@@ -19,7 +19,7 @@ hard_mirror_chance : 0 # 困难镜牢剩余次数
 timezone: None # 当前时区相对于东九区的偏移量，如东八区为1，东九区为0，东十区为-1
 
 zoom_scale: 0 # 缩放比例
-
+theme_mode: Auto # 应用主题：Auto, Light, Dark
 # 脚本运行速度设置
 screenshot_interval: 0.85    # 截图间隔时间
 mouse_action_interval: 0.5  # 鼠标操作间隔时间
