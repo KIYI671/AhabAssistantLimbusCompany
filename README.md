@@ -65,7 +65,9 @@
     - 根据队伍序号选择队伍
 - 镜牢根据权重自动选择主题包
 - 支持使用英语（EN），简体中文（zh_cn）作为游戏语言时运行
-- 自动远离镜牢饰品：白棉花
+- 客制化的镜牢刷取体验
+
+关于镜牢配队的自定义设置和流程加速，请见[AALC进阶使用指南](/assets/doc/zh/Custom_setting.md)
 
 ---
 
@@ -212,6 +214,7 @@ AALC的项目离不开以下开源项目的帮助
 # Installation (using venv is recommended)
 git clone https://github.com/KIYI671/AhabAssistantLimbusCompany
 cd AhabAssistantLimbusCompany
+# Please use python >= 3.12
 pip install -r requirements.txt
 python main.py
 

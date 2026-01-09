@@ -75,7 +75,9 @@ the exciting story, performances, and mechanics inside
     - Select a team based on their serial number
 - The Mirror Dungeon automatically selects theme packs based on weights
 - Supports running with English (EN) and Chinese Simplified (zh_cn) as the game language
-- Automatically stay away from the mirror prison ornament: white cotton
+- Customized Mirror Dungeon experience
+
+For custom settings and process acceleration for Mirror Dungeon team composition, please see [AALC Advance Team Setting](/assets/doc/en/Custom_setting_EN.md)
 
 ---
 
@@ -239,6 +241,7 @@ down.
 # Installation (using venv is recommended)
 git clone https://github.com/KIYI671/AhabAssistantLimbusCompany
 cd AhabAssistantLimbusCompany
+# Please use python >= 3.12
 pip install -r requirements.txt
 python main.py
 
