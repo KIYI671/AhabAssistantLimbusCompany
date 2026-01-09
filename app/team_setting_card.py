@@ -84,7 +84,7 @@ class TeamSettingCard(QFrame):
         self.sinner_Faust = SinnerSelect("Faust", self.tr("浮士德"), None, "./assets/app/sinner/Faust_ID_Photo_3.png")
         self.sinner_DonQuixote = SinnerSelect("DonQuixote", self.tr("堂吉诃德"), None,
                                               "./assets/app/sinner/Don_Quixote_ID_Photo_3.png")
-        self.sinner_Ryoshu = SinnerSelect("Ryoshu", self.tr("良秀"), None, "./assets/app/sinner/Ryōshū_ID_Photo_3.png")
+        self.sinner_Ryoshu = SinnerSelect("Ryoshu", self.tr("良秀"), None, "./assets/app/sinner/Ryoshu_ID_Photo_3.png")
         self.sinner_Meursault = SinnerSelect("Meursault", self.tr("默尔索"), None, "./assets/app/sinner/Meursault_ID_Photo_3.png")
         self.sinner_HongLu = SinnerSelect("HongLu", self.tr("鸿璐"), None, "./assets/app/sinner/Hong_Lu_ID_Photo_3.png")
 

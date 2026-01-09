@@ -8,7 +8,9 @@
 ### 使用 uv（推荐）
 
 ```bash
-# 等待补充...
+uv venv --python=3.12
+# After activate the env
+uv sync
 ```
 
 ### 使用 Conda
