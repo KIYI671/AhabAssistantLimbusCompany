@@ -39,85 +39,69 @@ class Language(Enum):
 
 #  DEV 标识
 class DevWatermark(QWidget):
+    # 丝带常量
+    RIBBON_CENTER_DIST = 40
+    RIBBON_WIDTH = 24
+    
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setFixedSize(200, 200)
-        
-        # Enable mouse events for hover detection
         self.setAttribute(Qt.WA_TransparentForMouseEvents, False)
         self.setAttribute(Qt.WA_TranslucentBackground)
         
-        # Opacity effect
+        # 透明度效果和动画
         self._op = QGraphicsOpacityEffect(self)
         self._op.setOpacity(1.0)
         self.setGraphicsEffect(self._op)
         
-        # Opacity animation
         self.anim_opacity = QPropertyAnimation(self._op, b"opacity")
         self.anim_opacity.setDuration(300)
         self.anim_opacity.setEasingCurve(QEasingCurve.OutCubic)
-
-        # Set mask to limit hover area to the ribbon only
-        self.updateMask()
-
-    def updateMask(self):
-        # Replicate the logic from paintEvent to get the ribbon shape
-        ribbon_center_dist = 40
-        ribbon_width = 24
-        rect = QRect(-100, ribbon_center_dist - ribbon_width // 2, 200, ribbon_width)
         
+        self._updateMask()
+
+    def _getRibbonRect(self) -> QRect:
+        """获取丝带矩形"""
+        return QRect(-100, self.RIBBON_CENTER_DIST - self.RIBBON_WIDTH // 2, 200, self.RIBBON_WIDTH)
+    
+    def _updateMask(self):
+        """设置鼠标检测区域为丝带形状"""
         transform = QTransform()
         transform.rotate(-45)
-        
-        # Map the rect to a polygon using the transform
-        region_poly = transform.mapToPolygon(rect)
-        
-        # Set the mask
-        self.setMask(QRegion(region_poly))
+        self.setMask(QRegion(transform.mapToPolygon(self._getRibbonRect())))
 
-    def enterEvent(self, event):
+    def _animateOpacity(self, target: float):
+        """动画过渡透明度"""
         self.anim_opacity.stop()
         self.anim_opacity.setStartValue(self._op.opacity())
-        self.anim_opacity.setEndValue(0.05) # Fade to nearly transparent
+        self.anim_opacity.setEndValue(target)
         self.anim_opacity.start()
+
+    def enterEvent(self, event):
+        self._animateOpacity(0.05)
         super().enterEvent(event)
 
     def leaveEvent(self, event):
-        self.anim_opacity.stop()
-        self.anim_opacity.setStartValue(self._op.opacity())
-        self.anim_opacity.setEndValue(1.0) # Fade back to full
-        self.anim_opacity.start()
+        self._animateOpacity(1.0)
         super().leaveEvent(event)
 
     def paintEvent(self, event):
         painter = QPainter(self)
         painter.setRenderHint(QPainter.Antialiasing)
-        
-        # Calculate ribbon path
-        # We want a ribbon in the top-left corner
-        # Let's rotate -45 degrees around (0,0)
         painter.rotate(-45)
         
-        # Position the ribbon
-        # Since we rotated -45 deg, the X-axis points diagonally up-right
-        # The Y-axis points diagonally down-right.
-        # We want the ribbon to cross the corner.
-        # Distance from origin to ribbon center: let's say 40px
+        rect = self._getRibbonRect()
         
-        ribbon_center_dist = 40
-        ribbon_width = 24
-        
-        # Draw ribbon background
-        rect = QRect(-100, ribbon_center_dist - ribbon_width // 2, 200, ribbon_width)
-        
+        # 绘制丝带背景
         painter.setPen(Qt.NoPen)
-        painter.setBrush(QColor("#d32f2f"))  # Red
+        painter.setBrush(QColor("#135b7d"))
         painter.drawRect(rect)
         
-        # Draw text
+        # 绘制文字
         painter.setFont(QFont("Microsoft YaHei", 9, QFont.Bold))
         painter.setPen(QColor("white"))
         painter.drawText(rect, Qt.AlignCenter, "DEV")
+
 
 
 
@@ -297,47 +281,33 @@ class MainWindow(FramelessWindow):
         if start_flag:
             QTimer.singleShot(3000, mediator.finished_signal.emit)
             
-    def updateBackground(self):
+    def updateBackground(self): # 不支持setCustomStyleSheet
         if isDarkTheme():
-            self.setStyleSheet("MainWindow { background-color: #272727; }")
-            self.titleBar.titleLabel.setStyleSheet("""
-                QLabel{
-                    background: transparent;
-                    font-family: "Segoe UI", "Microsoft YaHei", "微软雅黑", "PingFang SC", "Hiragino Sans GB", sans-serif, "SimSun";
-                    font-size: 13px;
-                    padding: 0 4px;
-                    color: white;
-                }
-            """)
-            self.titleBar.minBtn.setNormalColor(Qt.white)
-            self.titleBar.minBtn.setHoverColor(Qt.white)
-            self.titleBar.minBtn.setPressedColor(Qt.white)
-            self.titleBar.maxBtn.setNormalColor(Qt.white)
-            self.titleBar.maxBtn.setHoverColor(Qt.white)
-            self.titleBar.maxBtn.setPressedColor(Qt.white)
-            self.titleBar.closeBtn.setNormalColor(Qt.white)
-            self.titleBar.closeBtn.setHoverColor(Qt.white)
-            self.titleBar.closeBtn.setPressedColor(Qt.white)
+            bg_color, text_color, btn_color = "#272727", "white", Qt.white
         else:
-            self.setStyleSheet("MainWindow { background-color: #fdfdfd; }")
-            self.titleBar.titleLabel.setStyleSheet("""
-                QLabel{
-                    background: transparent;
-                    font-family: "Segoe UI", "Microsoft YaHei", "微软雅黑", "PingFang SC", "Hiragino Sans GB", sans-serif, "SimSun";
-                    font-size: 13px;
-                    padding: 0 4px;
-                    color: black;
-                }
-            """)
-            self.titleBar.minBtn.setNormalColor(Qt.black)
-            self.titleBar.minBtn.setHoverColor(Qt.black)
-            self.titleBar.minBtn.setPressedColor(Qt.black)
-            self.titleBar.maxBtn.setNormalColor(Qt.black)
-            self.titleBar.maxBtn.setHoverColor(Qt.black)
-            self.titleBar.maxBtn.setPressedColor(Qt.black)
-            self.titleBar.closeBtn.setNormalColor(Qt.black)
+            bg_color, text_color, btn_color = "#fdfdfd", "black", Qt.black
+        
+        self.setStyleSheet(f"MainWindow {{ background-color: {bg_color}; }}")
+        self.titleBar.titleLabel.setStyleSheet(f"""
+            QLabel{{
+                background: transparent;
+                font-family: "Segoe UI", "Microsoft YaHei", "微软雅黑", "PingFang SC", "Hiragino Sans GB", sans-serif, "SimSun";
+                font-size: 13px;
+                padding: 0 4px;
+                color: {text_color};
+            }}
+        """)
+        
+        # 设置标题栏按钮颜色
+        for btn in [self.titleBar.minBtn, self.titleBar.maxBtn, self.titleBar.closeBtn]:
+            btn.setNormalColor(btn_color)
+            btn.setHoverColor(btn_color)
+            btn.setPressedColor(btn_color)
+        
+        # closeBtn 悬停时在浅色模式下使用白色（保持原有行为）
+        if not isDarkTheme():
             self.titleBar.closeBtn.setHoverColor(Qt.white)
-            self.titleBar.closeBtn.setPressedColor(Qt.black)
+
 
     def closeEvent(self, e):
         if (

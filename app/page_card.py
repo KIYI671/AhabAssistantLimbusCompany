@@ -1,6 +1,7 @@
 import os
 
 from PySide6.QtCore import Qt, QUrl, QCoreApplication, QRect
+from PySide6.QtGui import QDesktopServices, QTextDocument, QImage, QPixmap, QPainter, QColor
 from PySide6.QtWidgets import QWidget, QFrame, QHBoxLayout, QTextBrowser, QVBoxLayout
 from markdown_it import MarkdownIt
 from mdit_py_plugins.anchors import anchors_plugin
@@ -645,41 +646,26 @@ class PageMirror(PageCard):
 
         super().retranslateUi()
 
-
-from PySide6.QtGui import QDesktopServices, QTextDocument, QImage, QPixmap, QPainter, QColor
-
 def transform_image_url(self, tokens, idx, options, env):
-    """
-    Transform image URLs to support local files and custom processing.
-    
-    This function intercepts image tokens during Markdown rendering. It modifies 
-    local file paths to use a custom 'dimmed:' scheme when necessary. This custom 
-    scheme is used to trigger the `loadResource` method in `ThemeAwareTextBrowser`, 
-    allowing us to intercept image loading and apply effects (like dimming in Dark Mode).
-    """
+    """将本地图片路径转换为 'dimmed:' scheme 以触发 loadResource 处理"""
     token = tokens[idx]
-    src = token.attrs["src"]
-    if isinstance(src, str):
+    src = token.attrs.get("src", "")
+    
+    if isinstance(src, str) and not src.startswith(("http://", "https://", "dimmed:")):
         url = QUrl(src)
-        if url.path().startswith("/"):
-            new_src = "." + url.path()
-            # Force custom scheme to trigger loadResource
-            tokens[idx].attrSet("src", "dimmed:" + new_src)
-        elif not src.startswith("http") and not src.startswith("https") and not src.startswith("dimmed:"):
-            # For relative paths, also force custom scheme
-            tokens[idx].attrSet("src", "dimmed:" + src)
+        new_src = ("." + url.path()) if url.path().startswith("/") else src
+        tokens[idx].attrSet("src", "dimmed:" + new_src)
 
     return self.image(tokens, idx, options, env)
 
 
+
 class ThemeAwareTextBrowser(TextBrowser):
     """
-    A custom TextBrowser (from qfluentwidgets) that supports theme-aware image rendering.
+    支持主题感知图片渲染的自定义 TextBrowser。
     
-    This class overrides `loadResource` to handle the 'dimmed:' URI scheme.
-    When this scheme is detected, it loads the local image and, if Dark Mode 
-    is active, applies a semi-transparent black overlay to reduce brightness.
-    This bypasses the limitation of QTextBrowser not supporting CSS filters on images.
+    重写 loadResource 处理 'dimmed:' URI scheme，
+    在深色模式下对图片应用半透明黑色叠加层以降低亮度。
     """
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -688,11 +674,7 @@ class ThemeAwareTextBrowser(TextBrowser):
     
     def _applyBackgroundStyle(self):
         """应用与 HTML body 一致的背景色"""
-        if isDarkTheme():
-            bg_color = "rgb(38, 38, 38)"
-        else:
-            bg_color = "#ffffff"
-        
+        bg_color = "rgb(38, 38, 38)" if isDarkTheme() else "#ffffff"
         self.setStyleSheet(f"""
             ThemeAwareTextBrowser {{
                 background-color: {bg_color};
@@ -700,42 +682,30 @@ class ThemeAwareTextBrowser(TextBrowser):
             }}
         """)
 
+    def _dimImage(self, image: QImage, opacity: int = 128) -> QImage:
+        """对图片应用暗化效果"""
+        dimmed = QImage(image.size(), QImage.Format_ARGB32_Premultiplied)
+        dimmed.fill(Qt.transparent)
+        
+        painter = QPainter(dimmed)
+        painter.drawImage(0, 0, image)
+        painter.setCompositionMode(QPainter.CompositionMode_SourceOver)
+        painter.fillRect(dimmed.rect(), QColor(0, 0, 0, opacity))
+        painter.end()
+        return dimmed
+
     def loadResource(self, type, name):
-        """
-        Load resources with support for programmatic image dimming.
-        
-        Args:
-            type: The type of resource to load (e.g., QTextDocument.ImageResource).
-            name: The QUrl of the resource.
-        
-        Returns:
-            The loaded resource (QImage/QPixmap) or the result of the superclass method.
-        """
+        """加载资源，支持 dimmed: scheme 的图片暗化处理"""
         if type == QTextDocument.ImageResource and name.scheme() == "dimmed":
-            # Extract the actual path (remove scheme)
-            path = name.path()
-            if name.scheme() == "dimmed" and not path:
-                # If path is empty, it might be "dimmed:./foo.png" -> path might be parsed differently depending on qt version/platform
-                # Let's manually strip prefix to be safe
-                path = name.toString().split(":", 1)[1]
+            # 提取实际路径
+            path = name.path() or name.toString().split(":", 1)[1]
             
             image = QImage(path)
             if not image.isNull():
-                if isDarkTheme():
-                    # Create a new image for processing to avoid modifying the original cache if shared
-                    dimmed = QImage(image.size(), QImage.Format_ARGB32_Premultiplied)
-                    dimmed.fill(Qt.transparent)
-                    
-                    painter = QPainter(dimmed)
-                    painter.drawImage(0, 0, image)
-                    painter.setCompositionMode(QPainter.CompositionMode_SourceOver)
-                    # Apply 50% black overlay
-                    painter.fillRect(dimmed.rect(), QColor(0, 0, 0, 128)) 
-                    painter.end()
-                    return dimmed
-                return image
+                return self._dimImage(image) if isDarkTheme() else image
                 
         return super().loadResource(type, name)
+
 
 
 class MarkdownViewer(QWidget):
