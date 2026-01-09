@@ -1,7 +1,7 @@
 /* dark - Qt-compatible styles only */
 QTextBrowser {
     color: #c9d1d9;
-    background-color: #0d1117;
+    background-color: rgb(38, 38, 38);
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, "Microsoft YaHei", sans-serif;
     font-size: 16px;
     line-height: 1.5;
@@ -9,7 +9,7 @@ QTextBrowser {
 
 body {
     color: #c9d1d9;
-    background-color: #0d1117;
+    background-color: rgb(38, 38, 38);
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, "Microsoft YaHei", sans-serif;
     font-size: 16px;
     line-height: 1.5;
@@ -161,7 +161,7 @@ kbd {
     line-height: 10px;
     color: #c9d1d9;
     vertical-align: middle;
-    background-color: #161b22;
+    background-color: rgb(52, 52, 52);
     border: 1px solid #30363d;
     border-bottom-color: #30363d;
 }
@@ -178,7 +178,7 @@ th {
 }
 
 table tr {
-    background-color: #0d1117;
+    background-color: rgb(38, 38, 38);
     border-top: 1px solid #30363d;
 }
 
@@ -209,7 +209,7 @@ tt {
     margin: 0px;
     font-size: 14px;
     white-space: pre;
-    background-color: #161b22;
+    background-color: rgb(52, 52, 52);
 }
 
 pre code {
@@ -226,7 +226,7 @@ pre {
     font-size: 14px;
     line-height: 1.45;
     color: #c9d1d9;
-    background-color: #161b22;
+    background-color: rgb(52, 52, 52);
 }
 
 /* Markdown alerts */

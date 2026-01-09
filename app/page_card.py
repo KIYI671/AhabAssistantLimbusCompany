@@ -5,7 +5,7 @@ from PySide6.QtWidgets import QWidget, QFrame, QHBoxLayout, QTextBrowser, QVBoxL
 from markdown_it import MarkdownIt
 from mdit_py_plugins.anchors import anchors_plugin
 from qfluentwidgets import FluentIcon as FIF
-from qfluentwidgets import SegmentedWidget, ScrollArea, TransparentToolButton, isDarkTheme, qconfig
+from qfluentwidgets import SegmentedWidget, ScrollArea, TransparentToolButton, isDarkTheme, qconfig, TextBrowser
 from qfluentwidgets.window.stacked_widget import StackedWidget
 
 from app import *
@@ -672,7 +672,7 @@ def transform_image_url(self, tokens, idx, options, env):
     return self.image(tokens, idx, options, env)
 
 
-class ThemeAwareTextBrowser(QTextBrowser):
+class ThemeAwareTextBrowser(TextBrowser):
     """
     A custom QTextBrowser that supports theme-aware image rendering.
     
