@@ -681,6 +681,25 @@ class ThemeAwareTextBrowser(TextBrowser):
     is active, applies a semi-transparent black overlay to reduce brightness.
     This bypasses the limitation of QTextBrowser not supporting CSS filters on images.
     """
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self._applyBackgroundStyle()
+        qconfig.themeChanged.connect(self._applyBackgroundStyle)
+    
+    def _applyBackgroundStyle(self):
+        """应用与 HTML body 一致的背景色"""
+        if isDarkTheme():
+            bg_color = "rgb(38, 38, 38)"
+        else:
+            bg_color = "#ffffff"
+        
+        self.setStyleSheet(f"""
+            ThemeAwareTextBrowser {{
+                background-color: {bg_color};
+                border: none;
+            }}
+        """)
+
     def loadResource(self, type, name):
         """
         Load resources with support for programmatic image dimming.
@@ -723,6 +742,8 @@ class MarkdownViewer(QWidget):
     def __init__(self, file_path: str, parent = None):
         super().__init__(parent = parent)
         layout = QVBoxLayout(self)
+        layout.setContentsMargins(0, 0, 0, 0)  # 移除布局边距
+        layout.setSpacing(0)  # 移除布局间距
         self.setLayout(layout)
 
         LanguageManager().register_component(self)
@@ -730,12 +751,8 @@ class MarkdownViewer(QWidget):
         self.text_browser = ThemeAwareTextBrowser()
         self.text_browser.setOpenExternalLinks(False)
         self.text_browser.anchorClicked.connect(self.handle_link_clicked)
-        self.text_browser.setContextMenuPolicy(Qt.ContextMenuPolicy.NoContextMenu)  # 禁用右键菜单
-
-        # Connect theme change signal
-        qconfig.themeChanged.connect(self.updateStyle)
-        self.updateStyle()
-
+        self.text_browser.setContextMenuPolicy(Qt.ContextMenuPolicy.NoContextMenu)
+        self.text_browser.setViewportMargins(0, 0, 0, 0)  # 移除 viewport 边距
 
         self.md = (
             MarkdownIt("commonmark", {"html": True})
@@ -764,6 +781,9 @@ class MarkdownViewer(QWidget):
 
         layout.addWidget(self.text_browser)
         self.help_path = file_path
+        
+        # Connect theme change signal after help_path is set
+        qconfig.themeChanged.connect(self.updateStyle)
         self.reset_viewer()
 
     def reset_viewer(self):
@@ -810,17 +830,35 @@ class MarkdownViewer(QWidget):
                 markdown_text = f.read()
 
                 html_body = self.md.render(markdown_text)
+                css_content = self._get_css_content()
 
-                # 添加 HTML 头部
+                # 添加 HTML 头部，将 CSS 嵌入到 head 中
                 self.html = f"""
                 <html>
-                <body>
+                <head>
+                    <style>
+                    {css_content}
+                    </style>
+                </head>
+                <body class="markdown-body">
                     {html_body}
                 </body>
                 </html>
                 """
         except Exception as e:
             self.text_browser.setPlainText(f"错误: 无法加载文件\n{str(e)}")
+
+    def _get_css_content(self) -> str:
+        """获取当前主题的 CSS 内容"""
+        if isDarkTheme():
+            css_path = "assets/styles/github-markdown-dark.css"
+        else:
+            css_path = "assets/styles/github-markdown-light.css"
+        
+        if os.path.exists(css_path):
+            with open(css_path, "r", encoding="utf-8") as css_file:
+                return css_file.read()
+        return ""
 
     def retranslateUi(self, lang_code):
 
@@ -831,12 +869,5 @@ class MarkdownViewer(QWidget):
         self.reset_viewer()
 
     def updateStyle(self):
-        if isDarkTheme():
-            css_path = "assets/styles/github-markdown-dark.css"
-        else:
-            css_path = "assets/styles/github-markdown-light.css"
-            
-        if os.path.exists(css_path):
-            with open(css_path, "r", encoding="utf-8") as css_file:
-                css_content = css_file.read()
-                self.text_browser.setStyleSheet(css_content)
+        """主题变化时重新加载 HTML 以应用新的 CSS"""
+        self.reset_viewer()
