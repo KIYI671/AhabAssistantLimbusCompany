@@ -111,11 +111,12 @@ class InfiniteBattles(QWidget):
 
         # 创建布局
         layout = QVBoxLayout()
+        hotkey = cfg.shutdown_hotkey
 
         if cfg.language_in_program == "zh_cn":
-            instruction_text = '你来到了"都市"，这里是不战斗就无法生存的修罗场\n\n幸好你得到了亚哈神力的相助\n\n"亚哈降神附身代打"获得了\n\n使用<ctrl>+q 停止战斗'
+            instruction_text = f'你来到了"都市"，这里是不战斗就无法生存的修罗场\n\n幸好你得到了亚哈神力的相助\n\n"亚哈降神附身代打"获得了\n\n使用 {hotkey} 停止战斗'
         else:
-            instruction_text = "You have arrived at the 'The City', a crucible where survival is impossible without combat.\n\nFortunately, you have gained the aid of Ahab's divine power.\n\nEmpowered by Ahab's possession, she will fight for you.\n\nUse <ctrl>+q to stop the battle."
+            instruction_text = f"You have arrived at the 'The City', a crucible where survival is impossible without combat.\n\nFortunately, you have gained the aid of Ahab's divine power.\n\nEmpowered by Ahab's possession, she will fight for you.\n\nUse {hotkey} to stop the battle."
 
         self.instruction_label = QLabel(instruction_text)
         self.instruction_label.setWordWrap(True)
