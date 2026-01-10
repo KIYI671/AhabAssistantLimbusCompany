@@ -504,9 +504,7 @@ class PageMirror(PageCard):
     def destroy_mirror_bar(self):
         """ 销毁进度条 """
         if self.bar is not None:
-            log.info(f'已完成{"困难镜牢" if cfg.hard_mirror else "普通镜牢"}进度 {self.bar.value()} / {self.bar.maximum()}')
-            self.bar.hide()
-            self.bar.destroy()
+            log.info(f'已完成{"困难镜牢" if cfg.hard_mirror else "普通镜牢"}进度 {self.bar.value() if self.bar.maximum() < 9000 else self.bar.specialValue} / {self.bar.maximum()}')
             self.bar.deleteLater()
             self.bar = None
         if self.bar_layout is not None:
