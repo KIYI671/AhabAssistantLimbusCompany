@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from PySide6.QtCore import QT_TRANSLATE_NOOP, Qt, QUrl
 from PySide6.QtGui import QDesktopServices
 from PySide6.QtWidgets import QFileDialog, QWidget
@@ -13,12 +15,14 @@ from app.base_combination import (
     HotkeySettingCard,
     PushSettingCardChance,
     PushSettingCardDate,
+    PushSettingCardInput,
     PushSettingCardMirrorchyan,
     SwitchSettingCard,
 )
 from app.card.messagebox_custom import BaseInfoBar
 from app.language_manager import SUPPORTED_LANG_NAME, LanguageManager
 from module.config import cfg
+from utils.schedule_helper import ScheduleHelper
 
 
 class SettingInterface(ScrollArea):
@@ -203,10 +207,25 @@ class SettingInterface(ScrollArea):
         )
         self.autostart_card = SwitchSettingCard(
             FIF.PLAY,  # TODO: 把这个换了
-            QT_TRANSLATE_NOOP("AutostartSettingCard", "自启动"),
+            QT_TRANSLATE_NOOP("SwitchSettingCard", "自启动"),
             "",
             "autostart",
             parent=self.personal_group,
+        )
+        self.autodaily_cbox_card = SwitchSettingCard(
+            FIF.PLAY,  # TODO: 把这个换了
+            QT_TRANSLATE_NOOP("SwitchSettingCard", "启用自动日常任务"),
+            "",
+            "autodaily",
+            parent=self.personal_group,
+        )
+        self.autodaily_tpicker_card = PushSettingCardInput(
+            QT_TRANSLATE_NOOP("PushSettingCardChance", "修改"),
+            FIF.DATE_TIME,
+            QT_TRANSLATE_NOOP("PushSettingCardChance", "启动时间"),
+            "",
+            "autodaily_time",
+            parent=self.simulator_setting_group,
         )
 
         self.update_group = BaseSettingCardGroup(
@@ -306,6 +325,8 @@ class SettingInterface(ScrollArea):
         self.personal_group.addSettingCard(self.zoom_card)
         self.personal_group.addSettingCard(self.hotkey_card)
         self.personal_group.addSettingCard(self.autostart_card)
+        self.personal_group.addSettingCard(self.autodaily_cbox_card)
+        self.personal_group.addSettingCard(self.autodaily_tpicker_card)
 
         self.update_group.addSettingCard(self.check_update_card)
         self.update_group.addSettingCard(self.update_source_card)
@@ -357,6 +378,12 @@ class SettingInterface(ScrollArea):
         )
         self.autostart_card.switchButton.checkedChanged.connect(
             self.__onAutostartCardChanged
+        )
+        self.autodaily_cbox_card.switchButton.checkedChanged.connect(
+            self.__onAutodailyCboxCardChanged
+        )
+        self.autodaily_tpicker_card.button.clicked.connect(
+            self.__onAutodailyTpickerCardClicked
         )
 
         self.github_card.clicked.connect(
@@ -425,14 +452,38 @@ class SettingInterface(ScrollArea):
         )
 
     def __onAutostartCardChanged(self, checked: bool):
-        from utils.schedule_helper import ScheduleHelper
-
         TASK_NAME = "AALC Autostart"
         helper = ScheduleHelper()
         if checked:
             helper.register_onstart_task(TASK_NAME, "")
         else:
             helper.unregister_task(TASK_NAME)
+
+    def __onAutodailyCboxCardChanged(self, checked: bool):
+        TASK_NAME = "AALC Daily Task"
+        helper = ScheduleHelper()
+        if checked:
+            try:
+                time = datetime.strptime(
+                    self.autodaily_tpicker_card.line_text.text(), "%H-%M"
+                ).time()
+                helper.register_daily_task(TASK_NAME, "start 1", time.hour, time.minute)
+            except Exception as e:
+                raise e
+        else:
+            helper.unregister_task(TASK_NAME)
+
+    def __onAutodailyTpickerCardClicked(self):
+        TASK_NAME = "AALC Daily Task"
+        helper = ScheduleHelper()
+        if self.autodaily_cbox_card.switchButton.checked:
+            try:
+                time = datetime.strptime(
+                    self.autodaily_tpicker_card.line_text.text(), "%H-%M"
+                ).time()
+                helper.register_daily_task(TASK_NAME, "start 1", time.hour, time.minute)
+            except Exception as e:
+                raise e
 
     def __onAutoLangCardChecked(self, Checked):
         bar = BaseInfoBar.success(
@@ -472,6 +523,8 @@ class SettingInterface(ScrollArea):
         self.zoom_card.retranslateUi()
         self.hotkey_card.retranslateUi()
         self.autostart_card.retranslateUi()
+        self.autodaily_cbox_card.retranslateUi()
+        self.autodaily_tpicker_card.retranslateUi()
         self.update_group.retranslateUi()
         self.update_source_card.retranslateUi()
         self.check_update_card.retranslateUi()

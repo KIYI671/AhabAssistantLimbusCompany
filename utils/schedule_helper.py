@@ -7,6 +7,7 @@ import getpass
 import os
 import sys
 
+import win32api
 import win32com.client
 from pywintypes import com_error
 
@@ -136,4 +137,8 @@ class ScheduleHelper_Win32:
             raise e
 
     def unregister_task(self, task_name: str):
-        self.root.DeleteTask(task_name, 0)
+        try:
+            self.root.DeleteTask(task_name, 0)
+        except com_error as e:
+            log.warning(f"尝试删除不存在的任务 {task_name}")
+            raise e
