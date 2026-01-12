@@ -809,31 +809,6 @@ class PushSettingCardChance(BasePushSettingCard):
             self.line_text.setText(str(message_box.getValue()))
 
 
-class PushSettingCardInput(BasePushSettingCard):
-
-    def __init__(
-        self,
-        text,
-        icon: Union[str, QIcon, FluentIconBase],
-        title,
-        content=None,
-        config_name: str = None,
-        parent=None,
-    ):
-        super().__init__(text, icon, title, content, parent)
-        self.config_name = config_name
-        self.line_text = LineEdit()
-        self.line_text.setAlignment(Qt.AlignCenter)
-        self.line_text.setMaximumWidth(100)
-        self.line_text.setText(cfg.get_value(self.config_name))
-        current_count = self.hBoxLayout.count()
-        self.hBoxLayout.insertWidget(current_count - 2, self.line_text)
-        self.button.clicked.connect(self.__onclicked)
-
-    def __onclicked(self):
-        cfg.set_value(f"{self.config_name}", self.line_text.text())
-
-
 class HotkeySettingCard(BasePushSettingCard):
     def __init__(
         self,

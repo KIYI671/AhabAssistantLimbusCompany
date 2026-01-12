@@ -1,28 +1,41 @@
 import os
 
-from PySide6.QtCore import Qt, QUrl, QCoreApplication, QRect
-from PySide6.QtGui import QDesktopServices
-from PySide6.QtWidgets import QWidget, QFrame, QHBoxLayout, QTextBrowser, QVBoxLayout
 from markdown_it import MarkdownIt
 from mdit_py_plugins.anchors import anchors_plugin
+from PySide6.QtCore import QCoreApplication, QRect, Qt, QTime, QUrl
+from PySide6.QtGui import QDesktopServices
+from PySide6.QtWidgets import QFrame, QHBoxLayout, QTextBrowser, QVBoxLayout, QWidget
+from qfluentwidgets import CheckBox
 from qfluentwidgets import FluentIcon as FIF
-from qfluentwidgets import SegmentedWidget, ScrollArea, TransparentToolButton
+from qfluentwidgets import (
+    ScrollArea,
+    SegmentedWidget,
+    TimePicker,
+    TransparentToolButton,
+)
 from qfluentwidgets.window.stacked_widget import StackedWidget
 
 from app import *
-from app.base_combination import LabelWithComboBox, LabelWithSpinBox, MirrorTeamCombination, \
-    MirrorSpinBox, TextProgressBar
+from app.base_combination import (
+    LabelWithComboBox,
+    LabelWithSpinBox,
+    MirrorSpinBox,
+    MirrorTeamCombination,
+    TextProgressBar,
+)
 from app.base_tools import BaseCheckBox
-from app.language_manager import LanguageManager, SUPPORTED_GAME_LANG_NAME
+from app.language_manager import SUPPORTED_GAME_LANG_NAME, LanguageManager
 from module.config import cfg
-from .markdown_it_imgdiv import imgdiv_plugin, render_div_open, render_div_close
 from module.logger import log
+from utils.schedule_helper import ScheduleHelper
+
+from .markdown_it_imgdiv import imgdiv_plugin, render_div_close, render_div_open
+
 
 class PageCard(QFrame):
 
     def __init__(self, parent=None):
         super().__init__(parent=parent)
-
 
         self.card_layout = QVBoxLayout(self)
         self.all_page = StackedWidget(self)
@@ -62,7 +75,8 @@ class PageCard(QFrame):
         self.pivot.addItem("advanced", "高级设置")
         self.pivot.setCurrentItem("general")
         self.pivot.currentItemChanged.connect(
-            lambda k: self.all_page.setCurrentWidget(self.findChild(QWidget, k)))
+            lambda k: self.all_page.setCurrentWidget(self.findChild(QWidget, k))
+        )
 
     def __init_widget(self):
         self.card_layout.setAlignment(Qt.AlignTop)
@@ -90,23 +104,23 @@ class PageSetWindows(PageCard):
         self.win_size = LabelWithComboBox(
             QT_TRANSLATE_NOOP("LabelWithComboBox", "窗口分辨率"),
             "set_win_size",
-            set_win_size_options
+            set_win_size_options,
         )
         self.win_position = LabelWithComboBox(
             QT_TRANSLATE_NOOP("LabelWithComboBox", "窗口位置"),
             "set_win_position",
-            set_win_position_options
+            set_win_position_options,
         )
         self.recovery_window = LabelWithComboBox(
             QT_TRANSLATE_NOOP("LabelWithComboBox", "结束后恢复窗口"),
             "set_recovery_window",
-            set_reduce_miscontact_options
+            set_reduce_miscontact_options,
         )
         if cfg.experimental_auto_lang:
             self.language_in_game = LabelWithComboBox(
                 QT_TRANSLATE_NOOP("LabelWithComboBox", "游戏使用语言"),
                 "language_in_game",
-                SUPPORTED_GAME_LANG_NAME
+                SUPPORTED_GAME_LANG_NAME,
             )
 
         else:
@@ -115,18 +129,18 @@ class PageSetWindows(PageCard):
             self.language_in_game = LabelWithComboBox(
                 QT_TRANSLATE_NOOP("LabelWithComboBox", "游戏使用语言"),
                 "language_in_game",
-                temp_dict
+                temp_dict,
             )
 
         self.screenshot_interval = LabelWithSpinBox(
             QT_TRANSLATE_NOOP("LabelWithSpinBox", "截图间隔"),
             "screenshot_interval",
-            double=True
+            double=True,
         )
         self.mouse_action_interval = LabelWithSpinBox(
             QT_TRANSLATE_NOOP("LabelWithSpinBox", "鼠标活动间隔"),
             "mouse_action_interval",
-            double=True
+            double=True,
         )
 
     def __init_layout(self):
@@ -155,82 +169,105 @@ class PageDailyTask(PageCard):
 
         self.__init_card()
         self.__init_layout()
+        self.__connect_signal()
         self.setObjectName("page_daily_task")
 
     def __init_card(self):
         self.EXP_count = LabelWithSpinBox(
             QT_TRANSLATE_NOOP("LabelWithSpinBox", "经验本次数"),
-            "set_EXP_count", min_value=0, min_step=1
+            "set_EXP_count",
+            min_value=0,
+            min_step=1,
         )
         self.thread_count = LabelWithSpinBox(
             QT_TRANSLATE_NOOP("LabelWithSpinBox", "纽本次数"),
-            "set_thread_count", min_value=0, min_step=1
+            "set_thread_count",
+            min_value=0,
+            min_step=1,
         )
         self.team_select = LabelWithComboBox(
-            QT_TRANSLATE_NOOP("LabelWithComboBox", "使用编队"),
-            "daily_teams", all_teams
+            QT_TRANSLATE_NOOP("LabelWithComboBox", "使用编队"), "daily_teams", all_teams
         )
+        self.autodaily_checkbox = CheckBox("启用每日日常")
+        self.autodaily_checkbox.setChecked(cfg.get_value("autodaily"))
+        self.autodaily_timepicker = TimePicker()
+        self.autodaily_timepicker.setTime(
+            QTime.fromString(cfg.get_value("autodaily_time"))
+        )
+        self.autodaily_timepicker.setDisabled(not self.autodaily_checkbox.isChecked())
 
         self.targeted_teaming_EXP = BaseCheckBox(
             "targeted_teaming_EXP",
             None,
             QT_TRANSLATE_NOOP("BaseCheckBox", "经验本针对性配队"),
-            center=False
+            center=False,
         )
         self.EXP_day_1_2 = LabelWithComboBox(
             QT_TRANSLATE_NOOP("LabelWithComboBox", "周一、周二（斩击）"),
-            "EXP_day_1_2", all_teams
+            "EXP_day_1_2",
+            all_teams,
         )
         self.EXP_day_3_4 = LabelWithComboBox(
             QT_TRANSLATE_NOOP("LabelWithComboBox", "周三、周四（突刺）"),
-            "EXP_day_3_4", all_teams
+            "EXP_day_3_4",
+            all_teams,
         )
         self.EXP_day_5_6 = LabelWithComboBox(
             QT_TRANSLATE_NOOP("LabelWithComboBox", "周五、周六（打击）"),
-            "EXP_day_5_6", all_teams)
+            "EXP_day_5_6",
+            all_teams,
+        )
         self.EXP_day_7 = LabelWithComboBox(
-            QT_TRANSLATE_NOOP("LabelWithComboBox", "周日"),
-            "EXP_day_7", all_teams
+            QT_TRANSLATE_NOOP("LabelWithComboBox", "周日"), "EXP_day_7", all_teams
         )
         self.targeted_teaming_thread = BaseCheckBox(
             "targeted_teaming_thread",
             None,
             QT_TRANSLATE_NOOP("BaseCheckBox", "纽本针对性配队"),
-            center=False
+            center=False,
         )
         self.thread_day_1 = LabelWithComboBox(
             QT_TRANSLATE_NOOP("LabelWithComboBox", "纽本周一（色欲）"),
-            "thread_day_1", all_teams
+            "thread_day_1",
+            all_teams,
         )
         self.thread_day_2 = LabelWithComboBox(
             QT_TRANSLATE_NOOP("LabelWithComboBox", "纽本周二（怠惰）"),
-            "thread_day_2", all_teams
+            "thread_day_2",
+            all_teams,
         )
         self.thread_day_3 = LabelWithComboBox(
             QT_TRANSLATE_NOOP("LabelWithComboBox", "纽本周三（暴食）"),
-            "thread_day_3", all_teams
+            "thread_day_3",
+            all_teams,
         )
         self.thread_day_4 = LabelWithComboBox(
             QT_TRANSLATE_NOOP("LabelWithComboBox", "纽本周四（忧郁）"),
-            "thread_day_4", all_teams
+            "thread_day_4",
+            all_teams,
         )
         self.thread_day_5 = LabelWithComboBox(
             QT_TRANSLATE_NOOP("LabelWithComboBox", "纽本周五（傲慢）"),
-            "thread_day_5", all_teams
+            "thread_day_5",
+            all_teams,
         )
         self.thread_day_6 = LabelWithComboBox(
             QT_TRANSLATE_NOOP("LabelWithComboBox", "纽本周六（嫉妒）"),
-            "thread_day_6", all_teams
+            "thread_day_6",
+            all_teams,
         )
         self.thread_day_7 = LabelWithComboBox(
             QT_TRANSLATE_NOOP("LabelWithComboBox", "纽本周日（暴怒）"),
-            "thread_day_7", all_teams
+            "thread_day_7",
+            all_teams,
         )
 
     def __init_layout(self):
         self.vbox_general.addWidget(self.EXP_count)
         self.vbox_general.addWidget(self.thread_count)
         self.vbox_general.addWidget(self.team_select)
+        self.vbox_general.addWidget(self.autodaily_checkbox)
+        self.vbox_general.addWidget(self.autodaily_timepicker)
 
         self.vbox_advanced.addWidget(self.targeted_teaming_EXP)
         self.vbox_advanced.addWidget(self.EXP_day_1_2)
@@ -266,6 +303,40 @@ class PageDailyTask(PageCard):
 
         super().retranslateUi()
 
+    def __connect_signal(self):
+        self.autodaily_checkbox.checkStateChanged.connect(
+            self.__onAutoDailyCheckboxChanged
+        )
+        self.autodaily_timepicker.timeChanged.connect(
+            self.__onAutoDailyTimepickerChanged
+        )
+
+    @staticmethod
+    def __autodaily_taskname() -> str:
+        return "AALC Daily Task"
+
+    def __onAutoDailyCheckboxChanged(self, checked: Qt.CheckState):
+        checked = checked == Qt.CheckState.Checked
+        helper = ScheduleHelper()
+        task_name = self.__autodaily_taskname()
+
+        cfg.set_value("autodaily", checked)
+        if checked:
+            self.autodaily_timepicker.setDisabled(False)
+            time = self.autodaily_timepicker.getTime()
+            helper.register_daily_task(task_name, "start 1", time.hour(), time.minute())
+        else:
+            self.autodaily_timepicker.setDisabled(True)
+            helper.unregister_task(task_name)
+
+    def __onAutoDailyTimepickerChanged(self, time: QTime):
+        helper = ScheduleHelper()
+        task_name = self.__autodaily_taskname()
+
+        cfg.set_value("autodaily_time", time.toString("HH:mm"))
+        helper.unregister_task(task_name)
+        helper.register_daily_task(task_name, "start 1", time.hour(), time.minute())
+
 
 class PageGetPrize(PageCard):
     def __init__(self, parent=None):
@@ -278,7 +349,8 @@ class PageGetPrize(PageCard):
     def __init_card(self):
         self.set_get_prize = LabelWithComboBox(
             QT_TRANSLATE_NOOP("LabelWithComboBox", "领取奖励"),
-            "set_get_prize", set_get_prize_options
+            "set_get_prize",
+            set_get_prize_options,
         )
 
     def __init_layout(self):
@@ -300,20 +372,25 @@ class PageLunacyToEnkephalin(PageCard):
     def __init_card(self):
         self.set_lunacy_to_enkephalin = LabelWithComboBox(
             QT_TRANSLATE_NOOP("LabelWithComboBox", "狂气换体"),
-            "set_lunacy_to_enkephalin", set_lunacy_to_enkephalin_options
+            "set_lunacy_to_enkephalin",
+            set_lunacy_to_enkephalin_options,
         )
 
         self.Dr_Grandet_mode = BaseCheckBox(
-            "Dr_Grandet_mode", None,
+            "Dr_Grandet_mode",
+            None,
             QT_TRANSLATE_NOOP("BaseCheckBox", "葛朗台模式"),
-            center=False
+            center=False,
         )
 
         self.skip_enkephalin = BaseCheckBox(
-            "skip_enkephalin", None,
+            "skip_enkephalin",
+            None,
             QT_TRANSLATE_NOOP("BaseCheckBox", "不自动兑换脑啡肽 (?)"),
-            tips=QT_TRANSLATE_NOOP("BaseCheckBox", "勾选后除狂气换体以外不执行兑换脑啡肽的操作"),
-            center=False
+            tips=QT_TRANSLATE_NOOP(
+                "BaseCheckBox", "勾选后除狂气换体以外不执行兑换脑啡肽的操作"
+            ),
+            center=False,
         )
 
     def __init_layout(self):
@@ -336,7 +413,6 @@ class PageMirror(PageCard):
         self.setObjectName("page_mirror")
         self.__init_card()
         self.__init_layout()
-        
 
         self.get_setting()
         self.refresh()
@@ -346,14 +422,15 @@ class PageMirror(PageCard):
 
     def __init_card(self):
         self.team = MirrorTeamCombination(
-            1, "the_team_1",
+            1,
+            "the_team_1",
             QT_TRANSLATE_NOOP("MirrorTeamCombination", "编队1"),
-            None, "team1_setting"
+            None,
+            "team1_setting",
         )
 
         self.mirror_count = MirrorSpinBox(
-            QT_TRANSLATE_NOOP("MirrorSpinBox", "坐牢次数"),
-            "set_mirror_count"
+            QT_TRANSLATE_NOOP("MirrorSpinBox", "坐牢次数"), "set_mirror_count"
         )
 
         self.add_team = QHBoxLayout()
@@ -362,64 +439,83 @@ class PageMirror(PageCard):
         self.add_team_button.clicked.connect(self.new_team)
 
         self.hard_mirror = BaseCheckBox(
-            "hard_mirror", None,
+            "hard_mirror",
+            None,
             QT_TRANSLATE_NOOP("BaseCheckBox", "使用困难镜牢*"),
             center=False,
-            tips=QT_TRANSLATE_NOOP("BaseCheckBox", "仅本次运行期间有效，重启AALC后失效\n右键可设置为永久生效\n注: 自动困牢会关闭本功能"),
-            temporary=True
+            tips=QT_TRANSLATE_NOOP(
+                "BaseCheckBox",
+                "仅本次运行期间有效，重启AALC后失效\n右键可设置为永久生效\n注: 自动困牢会关闭本功能",
+            ),
+            temporary=True,
         )
         self.no_weekly_bonuses = BaseCheckBox(
-            "no_weekly_bonuses", None,
+            "no_weekly_bonuses",
+            None,
             QT_TRANSLATE_NOOP("BaseCheckBox", "不使用每周加成*"),
             center=False,
-            tips=QT_TRANSLATE_NOOP("BaseCheckBox", "仅本次运行期间有效，重启AALC后失效\n右键可设置为永久生效"),
-            temporary=True
+            tips=QT_TRANSLATE_NOOP(
+                "BaseCheckBox",
+                "仅本次运行期间有效，重启AALC后失效\n右键可设置为永久生效",
+            ),
+            temporary=True,
         )
         self.floor_3_exit = BaseCheckBox(
-            "floor_3_exit", None,
+            "floor_3_exit",
+            None,
             QT_TRANSLATE_NOOP("BaseCheckBox", "只打三层"),
-            center=False
+            center=False,
         )
         self.infinite_dungeons = BaseCheckBox(
-            "infinite_dungeons", None,
+            "infinite_dungeons",
+            None,
             QT_TRANSLATE_NOOP("BaseCheckBox", "无限坐牢"),
-            center=False
+            center=False,
         )
         self.save_rewards = BaseCheckBox(
-            "save_rewards", None,
+            "save_rewards",
+            None,
             QT_TRANSLATE_NOOP("BaseCheckBox", "保存困牢奖励"),
-            tips=QT_TRANSLATE_NOOP("BaseCheckBox", "仅在进行困难镜牢时生效，普通难度不生效"),
-            center=False
+            tips=QT_TRANSLATE_NOOP(
+                "BaseCheckBox", "仅在进行困难镜牢时生效，普通难度不生效"
+            ),
+            center=False,
         )
         self.hard_mirror_single_bonuses = BaseCheckBox(
-            "hard_mirror_single_bonuses", None,
+            "hard_mirror_single_bonuses",
+            None,
             QT_TRANSLATE_NOOP("BaseCheckBox", "困牢单次加成"),
-            center=False
+            center=False,
         )
         self.select_event_pack = BaseCheckBox(
-            "select_event_pack", None,
+            "select_event_pack",
+            None,
             QT_TRANSLATE_NOOP("BaseCheckBox", "第五层选择（最左边）活动卡包"),
-            center=False
+            center=False,
         )
         self.skip_event_pack = BaseCheckBox(
-            "skip_event_pack", None,
+            "skip_event_pack",
+            None,
             QT_TRANSLATE_NOOP("BaseCheckBox", "第五层跳过（最左边）活动卡包"),
-            center=False
+            center=False,
         )
         self.re_claim_rewards = BaseCheckBox(
-            "re_claim_rewards", None,
+            "re_claim_rewards",
+            None,
             QT_TRANSLATE_NOOP("BaseCheckBox", "再次领取奖励"),
-            center=False
+            center=False,
         )
         self.not_skip_whitegossypium = BaseCheckBox(
-            "not_skip_whitegossypium", None,
+            "not_skip_whitegossypium",
+            None,
             QT_TRANSLATE_NOOP("BaseCheckBox", "不跳过白棉花"),
-            center=False
+            center=False,
         )
         self.fight_to_last_man = BaseCheckBox(
-            "fight_to_last_man", None,
+            "fight_to_last_man",
+            None,
             QT_TRANSLATE_NOOP("BaseCheckBox", "战斗直到全灭"),
-            center=False
+            center=False,
         )
 
     def __init_layout(self):
@@ -442,9 +538,8 @@ class PageMirror(PageCard):
 
         self.card_layout.insertWidget(self.card_layout.count() - 1, self.mirror_count)
 
-
     def _create_mirror_bar(self, current: int, total: int) -> TextProgressBar:
-        """ 创建进度条 """
+        """创建进度条"""
         bar = TextProgressBar(self)
         self.bar_layout = QVBoxLayout()
         self.bar_layout.addWidget(bar)
@@ -474,9 +569,8 @@ class PageMirror(PageCard):
 
         return bar
 
-    
     def update_mirror_bar(self, current: int, total: int):
-        """ 更新进度条 若不存在则新建"""
+        """更新进度条 若不存在则新建"""
         if self.bar is not None:
             if cfg.hard_mirror:
                 text = self.tr("镜 牢 进 度 ( 困 难 ) ")
@@ -502,9 +596,11 @@ class PageMirror(PageCard):
             self.bar = self._create_mirror_bar(current, total)
 
     def destroy_mirror_bar(self):
-        """ 销毁进度条 """
+        """销毁进度条"""
         if self.bar is not None:
-            log.info(f'已完成{"困难镜牢" if cfg.hard_mirror else "普通镜牢"}进度 {self.bar.value() if self.bar.maximum() < 9000 else self.bar.specialValue} / {self.bar.maximum()}')
+            log.info(
+                f'已完成{"困难镜牢" if cfg.hard_mirror else "普通镜牢"}进度 {self.bar.value() if self.bar.maximum() < 9000 else self.bar.specialValue} / {self.bar.maximum()}'
+            )
             self.bar.deleteLater()
             self.bar = None
         if self.bar_layout is not None:
@@ -523,10 +619,8 @@ class PageMirror(PageCard):
                     self.vbox_general.insertWidget(
                         self.vbox_general.count() - 1,
                         MirrorTeamCombination(
-                            i, f"the_team_{i}",
-                            f"编队{i}",
-                            None, f"team{i}_setting"
-                        )
+                            i, f"the_team_{i}", f"编队{i}", None, f"team{i}_setting"
+                        ),
                     )
         finally:
             self.page_general.setUpdatesEnabled(True)
@@ -538,19 +632,25 @@ class PageMirror(PageCard):
         if number < 20:
             self.page_general.setUpdatesEnabled(False)
             try:
-                newTeamComb = MirrorTeamCombination(number, f"the_team_{number}", f"编队{number}", None,
-                                                    f"team{number}_setting")
+                newTeamComb = MirrorTeamCombination(
+                    number,
+                    f"the_team_{number}",
+                    f"编队{number}",
+                    None,
+                    f"team{number}_setting",
+                )
 
                 newTeamComb.retranslateUi()
                 self.vbox_general.insertWidget(
-                    self.vbox_general.count() - 1,
-                    newTeamComb
+                    self.vbox_general.count() - 1, newTeamComb
                 )
             finally:
                 self.page_general.setUpdatesEnabled(True)
 
             if cfg.get_value(f"team{number}_setting") is None:
-                cfg.unsaved_set_value(f"team{number}_setting", dict(team_setting_template))
+                cfg.unsaved_set_value(
+                    f"team{number}_setting", dict(team_setting_template)
+                )
                 cfg.unsaved_set_value(f"team{number}_remark_name", None)
                 teams_be_select = cfg.get_value("teams_be_select")
                 teams_be_select.append(False)
@@ -576,7 +676,9 @@ class PageMirror(PageCard):
         try:
             team = self.findChild(MirrorTeamCombination, target)
             if team is not None:
-                team_order_box = team.findChild(BaseCheckBox, f"the_team_{team.team_number}")
+                team_order_box = team.findChild(
+                    BaseCheckBox, f"the_team_{team.team_number}"
+                )
                 if team_order_box is not None:
                     team_order_box.set_check_false()
             self.remove_team_card(target)
@@ -601,10 +703,17 @@ class PageMirror(PageCard):
 
     def refresh_team_setting_card(self):
         for i in range(1, 21):
-            if cfg.get_value(f"team{i}_setting") is None and cfg.get_value(f"team{i + 1}_setting") is not None:
-                cfg.unsaved_set_value(f"team{i}_setting", cfg.get_value(f"team{i + 1}_setting"))
+            if (
+                cfg.get_value(f"team{i}_setting") is None
+                and cfg.get_value(f"team{i + 1}_setting") is not None
+            ):
+                cfg.unsaved_set_value(
+                    f"team{i}_setting", cfg.get_value(f"team{i + 1}_setting")
+                )
                 cfg.unsaved_del_key(f"team{i + 1}_setting")
-                cfg.unsaved_set_value(f"team{i}_remark_name", cfg.get_value(f"team{i + 1}_remark_name"))
+                cfg.unsaved_set_value(
+                    f"team{i}_remark_name", cfg.get_value(f"team{i + 1}_remark_name")
+                )
                 cfg.unsaved_del_key(f"team{i + 1}_remark_name")
         cfg.request_save()
         self.get_setting()
@@ -658,8 +767,8 @@ def transform_image_url(self, tokens, idx, options, env):
 
 
 class MarkdownViewer(QWidget):
-    def __init__(self, file_path: str, parent = None):
-        super().__init__(parent = parent)
+    def __init__(self, file_path: str, parent=None):
+        super().__init__(parent=parent)
         layout = QVBoxLayout(self)
         self.setLayout(layout)
 
@@ -668,7 +777,9 @@ class MarkdownViewer(QWidget):
         self.text_browser = QTextBrowser()
         self.text_browser.setOpenExternalLinks(False)
         self.text_browser.anchorClicked.connect(self.handle_link_clicked)
-        self.text_browser.setContextMenuPolicy(Qt.ContextMenuPolicy.NoContextMenu)  # 禁用右键菜单
+        self.text_browser.setContextMenuPolicy(
+            Qt.ContextMenuPolicy.NoContextMenu
+        )  # 禁用右键菜单
 
         css_path = "assets/styles/github-markdown-light.css"
         with open(css_path, "r", encoding="utf-8") as css_file:
