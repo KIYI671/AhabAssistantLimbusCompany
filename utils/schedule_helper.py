@@ -94,7 +94,7 @@ class ScheduleHelper_Win32:
         action.WorkingDirectory = os.path.dirname(sys.executable)
 
         task_def.Principal.RunLevel = 1  # 管理员权限运行
-        task_def.Principal.LogonType = 5
+        task_def.Principal.LogonType = 3
         task_def.Principal.Id = task_name
         task_def.Settings.Enabled = True
         task_def.Settings.Hidden = False
@@ -103,7 +103,7 @@ class ScheduleHelper_Win32:
         task_def.Settings.StopIfGoingOnBatteries = False
 
         try:
-            self.root.RegisterTaskDefinition(task_name, task_def, 6, None, None, 5)
+            self.root.RegisterTaskDefinition(task_name, task_def, 6, None, None, 3)
         except com_error as e:
             log.error(f"创建任务 {task_name} 失败")
             raise e

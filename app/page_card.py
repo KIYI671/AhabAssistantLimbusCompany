@@ -192,7 +192,7 @@ class PageDailyTask(PageCard):
         self.autodaily_checkbox.setChecked(cfg.get_value("autodaily"))
         self.autodaily_timepicker = TimePicker()
         self.autodaily_timepicker.setTime(
-            QTime.fromString(cfg.get_value("autodaily_time"))
+            QTime.fromString(cfg.get_value("autodaily_time", "HH:mm"))
         )
         self.autodaily_timepicker.setDisabled(not self.autodaily_checkbox.isChecked())
 

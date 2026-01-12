@@ -206,7 +206,7 @@ class SettingInterface(ScrollArea):
         )
         self.autostart_card = SwitchSettingCard(
             FIF.PLAY,  # TODO: 把这个换了
-            QT_TRANSLATE_NOOP("SwitchSettingCard", "自启动"),
+            QT_TRANSLATE_NOOP("SwitchSettingCard", "开机时启动 AALC"),
             "",
             "autostart",
             parent=self.personal_group,
