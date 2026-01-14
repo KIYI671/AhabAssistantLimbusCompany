@@ -15,3 +15,4 @@ i18n/*.qm
 .venv
 
 /*.png
+/test*.py
