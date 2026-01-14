@@ -32,9 +32,65 @@ class Config(metaclass=SingletonMeta):
         self.config_path = config_path
         # 加载实际配置，此方法会根据实际配置覆盖默认配置
         self._load_config()
-        log.debug(f"配置文件已加载，版本号：{self.version}")
+        log.debug(
+            f"配置文件已加载，版本号：{self.version}, 配置版本: {self.get_value('config_version', '未知')}"
+        )
         # 进程退出前确保落盘
         atexit.register(self.flush)
+
+    def _old_version_cfg_upgrade(self):
+        """旧版本配置升级处理
+
+        本身不进行保存文件操作
+        """
+        log.info("检测到旧版本配置文件，正在进行升级...")
+        team_num = len(self.get_value("teams_be_select", []))
+
+        def _calculate_time_history(time_list: list[float], count: int) -> list[float]:
+            """从每局都记录转换为只记录三种平均值"""
+            if count == 0:
+                return [0.0, 0.0, 0.0]
+            if len(time_list) == 3 and count != 3:
+                return time_list  # 已经是新格式，直接返回
+            elif len(time_list) == 3 and count == 3:
+                # 判断是否是巧合
+                if time_list[0] == time_list[1] == time_list[2]:
+                    return time_list
+            total_avr = 0
+            five_avr = 0
+            ten_avr = 0
+            for index in range(-1, -len(time_list), -1):
+                total_avr += time_list[index]
+                if index >= -5:
+                    five_avr += time_list[index]
+                if index >= -10:
+                    ten_avr += time_list[index]
+            total_avr /= count
+            five_avr /= min(5, count)
+            ten_avr /= min(10, count)
+            new_time_list = [total_avr, five_avr, ten_avr]
+
+            return new_time_list
+
+        if team_num > 0:
+            for i in range(1, team_num + 1):
+                history_key = f"team{i}_history"
+                history = self.get_value(history_key, {})
+                if not history:
+                    continue
+                hard_time = history.get("total_mirror_time_hard", [])
+                hard_count = history.get("mirror_hard_count", 0)
+                normal_time = history.get("total_mirror_time_normal", [])
+                normal_count = history.get("mirror_normal_count", 0)
+
+                hard_time = _calculate_time_history(hard_time, hard_count)
+                normal_time = _calculate_time_history(normal_time, normal_count)
+                history["total_mirror_time_hard"] = hard_time
+                history["mirror_hard_count"] = hard_count
+                history["total_mirror_time_normal"] = normal_time
+                history["mirror_normal_count"] = normal_count
+                self.unsaved_set_value(history_key, history)
+        pass
 
     def _load_version(self, version_path: str) -> str:
         """加载版本信息"""
@@ -62,8 +118,21 @@ class Config(metaclass=SingletonMeta):
         try:
             with open(path, "r", encoding="utf-8") as file:
                 loaded_config = self.yaml.load(file)
+
                 if loaded_config:
+                    if loaded_config.get("config_version", 0) < self.get_value(
+                        "config_version", 0
+                    ):
+                        old_flag = True
+                    else:
+                        old_flag = False
                     self._update_config(self.config, loaded_config)
+                    if old_flag:
+                        self.unsaved_set_value(
+                            "config_version",
+                            self._load_default_config().get("config_version", 0),
+                        )
+                        self._old_version_cfg_upgrade()
                     self._save_config()
         except FileNotFoundError:
             self._save_config()
