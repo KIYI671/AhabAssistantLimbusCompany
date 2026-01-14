@@ -13,7 +13,6 @@ from qfluentwidgets.components.widgets.frameless_window import FramelessWindow
 from qframelesswindow import StandardTitleBar
 
 from app import mediator, AnnouncementStatus
-
 from app.announcement_board import AnnouncementBoard, Announcement, AnnouncementThread
 from app.card.messagebox_custom import MessageBoxWarning, MessageBoxConfirm
 from app.farming_interface import FarmingInterface
@@ -109,31 +108,10 @@ class MainWindow(FramelessWindow):
         self.addSubInterface(self.setting_interface, 'setting_interface', '设置')
         # self.addSubInterface(self.team_setting, 'team_setting', '队伍设置')
 
-
-#       ┌──────────────────────────────────────────────────┐
-#       │ vBoxLayout                                       │
-#       │ ┌──────────────────────────────────────────────┐ │
-#       │ │ spacing(10) - 顶部间距                       │ │
-#       │ ├──────────────────────────────────────────────┤ │
-#       │ │ HBoxLayout                                   │ │
-#       │ │ ┌──────────────────────────────────────────┐ │ │
-#       │ │ │ pivot (最高50px)                           │ │ │
-#       │ │ │ [一键长草] [帮助] [小工具] [设置]          │ │ │
-#       │ │ └──────────────────────────────────────────┘ │ │
-#       │ ├──────────────────────────────────────────────┤ │
-#       │ │ stackedWidget                                │ │    
-#       │ │                                              │ │
-#       │ │              (页面内容区)                     │ │
-#       │ │                                              │ │
-#       │ └──────────────────────────────────────────────┘ │
-#       │   ↑                                          ↑   │
-#       │  30px                                      30px  │
-#       │  边距                                       边距  │
-#       └──────────────────────────────────────────────────┘
-        self.HBoxLayout.addWidget(self.pivot)            
-        self.vBoxLayout.addSpacing(10)                   
-        self.vBoxLayout.addLayout(self.HBoxLayout, 0)    
-        self.vBoxLayout.addWidget(self.stackedWidget)    
+        self.HBoxLayout.addWidget(self.pivot)
+        self.vBoxLayout.addSpacing(10)
+        self.vBoxLayout.addLayout(self.HBoxLayout, 0)
+        self.vBoxLayout.addWidget(self.stackedWidget)
         self.vBoxLayout.setContentsMargins(30, 20, 30, 0)
         self.pivot.setMaximumHeight(50)                  
 
