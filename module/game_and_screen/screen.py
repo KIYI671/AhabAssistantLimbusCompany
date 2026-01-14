@@ -42,9 +42,12 @@ class Screen(metaclass=SingletonMeta):
 
     def set_win(self) -> None:
         """设置窗口大小与位置"""
+
         def _set_win():
             # 如果窗口最小化或不可见，先将其恢复
-            if self.handle.isMinimized or (not self.handle.isActive and not cfg.background_click):
+            if self.handle.isMinimized or (
+                not self.handle.isActive and not cfg.background_click
+            ):
                 self.handle.restore()
             # 将窗口设为活动窗口
             if not cfg.background_click:
@@ -63,7 +66,10 @@ class Screen(metaclass=SingletonMeta):
                 rect = win32gui.GetWindowRect(self.handle._hWnd)
                 width = rect[2] - rect[0]
                 height = rect[3] - rect[1]
-                if width != int(cfg.set_win_size * 16 / 9) or height != cfg.set_win_size:
+                if (
+                    width != int(cfg.set_win_size * 16 / 9)
+                    or height != cfg.set_win_size
+                ):
                     _set_win()
                     sleep(1)
                 else:
@@ -81,7 +87,15 @@ class Screen(metaclass=SingletonMeta):
 
         # 设置窗口始终置顶
         if not cfg.background_click:
-            win32gui.SetWindowPos(hwnd, win32con.HWND_TOPMOST, 0, 0, 0, 0, win32con.SWP_NOMOVE | win32con.SWP_NOSIZE)
+            win32gui.SetWindowPos(
+                hwnd,
+                win32con.HWND_TOPMOST,
+                0,
+                0,
+                0,
+                0,
+                win32con.SWP_NOMOVE | win32con.SWP_NOSIZE,
+            )
         # 获取窗口的当前样式属性值
         style = win32gui.GetWindowLong(hwnd, win32con.GWL_STYLE)
         # 移除窗口的标题栏
@@ -99,7 +113,15 @@ class Screen(metaclass=SingletonMeta):
     def adjust_win_size(self, set_win_size: int) -> None:
         """调整窗口大小"""
         hwnd = self.handle._hWnd
-        win32gui.SetWindowPos(hwnd, None, 0, 0, int(set_win_size * 16 / 9), set_win_size, win32con.SWP_NOMOVE)
+        win32gui.SetWindowPos(
+            hwnd,
+            None,
+            0,
+            0,
+            int(set_win_size * 16 / 9),
+            set_win_size,
+            win32con.SWP_NOMOVE,
+        )
 
     def adjust_win_position(self, set_win_position: tuple) -> None:
         """调整窗口位置"""
@@ -112,9 +134,9 @@ class Screen(metaclass=SingletonMeta):
             screen_width = pyautogui.size().width
             screen_height = pyautogui.size().height
             if screen_width < set_win_size * 16 / 9 or screen_height < set_win_size:
-                self.logger.error(f"屏幕分辨率过低，请重新设定分辨率")
-                pyautogui.hotkey('ctrl', 'q')
-            pyautogui.hotkey('alt', 'enter')
+                self.logger.error("屏幕分辨率过低，请重新设定分辨率")
+                pyautogui.hotkey("ctrl", "q")
+            pyautogui.hotkey("alt", "enter")
             sleep(0.5)
             # 进行判断如果全屏，再执行一次操作
             # 获取窗口位置和大小
@@ -124,7 +146,7 @@ class Screen(metaclass=SingletonMeta):
             screen_width, screen_height = pyautogui.size()
             # 判断窗口是否全屏
             if width == screen_width and height == screen_height:
-                pyautogui.hotkey('alt', 'enter')
+                pyautogui.hotkey("alt", "enter")
         except Exception as e:
             self.logger.error(f"检查屏幕分辨率失败: {e}")
 
@@ -138,7 +160,9 @@ class Screen(metaclass=SingletonMeta):
             ex_style = win32gui.GetWindowLong(hwnd, win32con.GWL_EXSTYLE)
 
             # 恢复窗口样式：标题栏、大小调整框、最大化按钮
-            style |= win32con.WS_CAPTION | win32con.WS_THICKFRAME | win32con.WS_MAXIMIZEBOX
+            style |= (
+                win32con.WS_CAPTION | win32con.WS_THICKFRAME | win32con.WS_MAXIMIZEBOX
+            )
             # 应用修改后的样式
             win32gui.SetWindowLong(hwnd, win32con.GWL_STYLE, style)
 
@@ -148,12 +172,30 @@ class Screen(metaclass=SingletonMeta):
             win32gui.SetWindowLong(hwnd, win32con.GWL_EXSTYLE, ex_style)
 
             # 更新窗口，使样式改变生效
-            win32gui.SetWindowPos(hwnd, None, 0, 0, 0, 0,
-                                  win32con.SWP_FRAMECHANGED | win32con.SWP_NOMOVE | win32con.SWP_NOSIZE | win32con.SWP_NOZORDER)
+            win32gui.SetWindowPos(
+                hwnd,
+                None,
+                0,
+                0,
+                0,
+                0,
+                win32con.SWP_FRAMECHANGED
+                | win32con.SWP_NOMOVE
+                | win32con.SWP_NOSIZE
+                | win32con.SWP_NOZORDER,
+            )
 
             # 恢复窗口状态
             win32gui.ShowWindow(hwnd, win32con.SW_RESTORE)
-            win32gui.SetWindowPos(hwnd, win32con.HWND_NOTOPMOST, 0, 0, 0, 0, win32con.SWP_NOMOVE | win32con.SWP_NOSIZE)
+            win32gui.SetWindowPos(
+                hwnd,
+                win32con.HWND_NOTOPMOST,
+                0,
+                0,
+                0,
+                0,
+                win32con.SWP_NOMOVE | win32con.SWP_NOSIZE,
+            )
 
             # 获取窗口客户区的大小
             client_rect = win32gui.GetClientRect(hwnd)
@@ -165,8 +207,15 @@ class Screen(metaclass=SingletonMeta):
             window_width = window_rect[2] - window_rect[0]
             window_height = window_rect[3] - window_rect[1]
 
-            win32gui.SetWindowPos(hwnd, win32con.HWND_NOTOPMOST, 0, 0, window_width * 2 - client_width,
-                                  window_height * 2 - client_height, win32con.SWP_NOMOVE)
+            win32gui.SetWindowPos(
+                hwnd,
+                win32con.HWND_NOTOPMOST,
+                0,
+                0,
+                window_width * 2 - client_width,
+                window_height * 2 - client_height,
+                win32con.SWP_NOMOVE,
+            )
         except Exception as e:
             self.logger.error(f"重置窗口失败: {e}")
             return False

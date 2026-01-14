@@ -14,17 +14,16 @@ try:
         ToastActivatedEventArgs,
         ToastAudio,
     )
+
     IMPORT_SUCCESS = True
 except ImportError:
     IMPORT_SUCCESS = False
     from typing import TYPE_CHECKING
+
     if TYPE_CHECKING:
         from windows_toasts import (
             InteractableWindowsToaster,
             Toast,
-            ToastInputTextBox,
-            ToastInputSelectionBox,
-            ToastSelection,
             ToastButton,
             ToastDuration,
             ToastDisplayImage,
@@ -52,7 +51,6 @@ from enum import Enum
 from app import mediator
 from typing import Callable
 from PySide6.QtWidgets import QApplication
-from PySide6.QtCore import QT_TRANSLATE_NOOP
 import winreg
 import sys
 
@@ -66,6 +64,7 @@ ICONPATH = r"assets\logo\my_icon.png"
 
 class TemplateToast(Enum):
     """通知模板"""
+
     NoneTemplate = 0
     TestTemplate = 1
     NormalTemplate = 2
@@ -152,6 +151,7 @@ def _normal_template_toast(title, msg, app_id, on_activated, **kwargs):
         log.debug(f"用户点击了通知，参数: {args.arguments}, 输入: {args.inputs}")
         if args.arguments == "close":
             mediator.kill_signal.emit()
+
     confirm_botton = ToastButton(
         content=QApplication.translate("WindowsToast", "知道了"), arguments="confirm"
     )
@@ -249,7 +249,7 @@ def _test_template_toast(title, msg, app_id, on_activated):
         toast.text_fields.append(msg)
     else:
         toast.text_fields += msg
-        
+
     # 发送通知
     toaster.show_toast(toast)
 
@@ -307,7 +307,6 @@ if __name__ == "__main__":
         ["第一行", "第二行", "第三行"],
         template=TemplateToast.TestTemplate,
     )
-    from time import sleep
 
     # sleep(5)
     # unregister_toast(APPID)

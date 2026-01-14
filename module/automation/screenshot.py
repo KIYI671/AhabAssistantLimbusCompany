@@ -12,7 +12,6 @@ import numpy as np
 
 
 class ScreenShot:
-
     @staticmethod
     def take_screenshot(gray: bool = True) -> Image.Image | None:
         """
@@ -73,23 +72,32 @@ class ScreenShot:
 
         # 创建设备上下文
         hdc_mem = windll.gdi32.CreateCompatibleDC(hdc_screen)
-        hbitmap = windll.gdi32.CreateCompatibleBitmap(hdc_screen, screen_width, screen_height)
+        hbitmap = windll.gdi32.CreateCompatibleBitmap(
+            hdc_screen, screen_width, screen_height
+        )
         windll.gdi32.SelectObject(hdc_mem, hbitmap)
 
         # 使用BitBlt复制屏幕内容到内存DC
         SRCCOPY = 0x00CC0020
-        windll.gdi32.BitBlt(hdc_mem, 0, 0, screen_width, screen_height, hdc_screen, 0, 0, SRCCOPY)
+        windll.gdi32.BitBlt(
+            hdc_mem, 0, 0, screen_width, screen_height, hdc_screen, 0, 0, SRCCOPY
+        )
 
         # 转换成PIL图像（需要 pywin32）
         import win32ui
+
         bmp = win32ui.CreateBitmapFromHandle(hbitmap)
         bmpinfo = bmp.GetInfo()
         bmpstr = bmp.GetBitmapBits(True)
 
         image = Image.frombuffer(
-            'RGB',
-            (bmpinfo['bmWidth'], bmpinfo['bmHeight']),
-            bmpstr, 'raw', 'BGRX', 0, 1
+            "RGB",
+            (bmpinfo["bmWidth"], bmpinfo["bmHeight"]),
+            bmpstr,
+            "raw",
+            "BGRX",
+            0,
+            1,
         )
 
         # 清理
@@ -143,7 +151,7 @@ class ScreenShot:
         screenshot_temp = pyautogui.screenshot()
         if gray:
             # 将截图转换为灰度图像
-            screenshot = screenshot_temp.convert('L')
+            screenshot = screenshot_temp.convert("L")
         else:
             screenshot = screenshot_temp
 
@@ -212,13 +220,16 @@ class ScreenShot:
             log.error(f"后台截图报错: {e}，尝试重启游戏")
             import os
             import win32process
+
             try:
                 from module.game_and_screen import screen
+
                 _, pid = win32process.GetWindowThreadProcessId(screen.handle._hWnd)
-                os.system(f'taskkill /F /PID {pid}')
+                os.system(f"taskkill /F /PID {pid}")
             except:
                 pass
             from tasks.base.script_task_scheme import init_game
+
             init_game()
 
         except Exception as e:
@@ -259,7 +270,6 @@ class ScreenShot:
             - bool: 测试是否成功
             - float: 平均每次截图耗时（毫秒）
         """
-        import time
 
         try:
             start_time = time.time()
@@ -286,6 +296,7 @@ class ScreenShot:
             Image.Image: 截图图像
         """
         from module.simulator.mumu_control import MumuControl
+
         if MumuControl.connection_device is not None:
             image = MumuControl.connection_device.screenshot()
             mumu_image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
@@ -309,6 +320,7 @@ class ScreenShot:
             Image.Image: 截图图像
         """
         from module.simulator.simulator_control import SimulatorControl
+
         if SimulatorControl.connection_device is not None:
             image = SimulatorControl.connection_device.screenshot()
             image = Image.fromarray(image)

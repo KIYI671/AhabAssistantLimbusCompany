@@ -24,7 +24,9 @@ class Updater:
         self.changes_file_path = os.path.abspath("./update_temp/changes.json")
 
         self.download_file_path = os.path.join(self.temp_path, self.file_name)
-        self.extract_folder_path = os.path.join(self.temp_path, self.file_name.rsplit(".", 1)[0])
+        self.extract_folder_path = os.path.join(
+            self.temp_path, self.file_name.rsplit(".", 1)[0]
+        )
 
     def extract_file(self):
         """解压下载的文件。"""
@@ -32,13 +34,21 @@ class Updater:
         while True:
             try:
                 if os.path.exists(self.exe_path):
-                    subprocess.run([self.exe_path, "x", self.download_file_path, f"-o{self.temp_path}", "-aoa"],
-                                   check=True)
+                    subprocess.run(
+                        [
+                            self.exe_path,
+                            "x",
+                            self.download_file_path,
+                            f"-o{self.temp_path}",
+                            "-aoa",
+                        ],
+                        check=True,
+                    )
                 else:
                     shutil.unpack_archive(self.download_file_path, self.temp_path)
                 print("解压完成")
                 return True
-            except Exception as e:
+            except Exception:
                 input("解压失败，按回车键重新解压. . .多次失败请手动下载更新")
                 return False
 
@@ -53,7 +63,9 @@ class Updater:
         print("开始覆盖安装...")
         while True:
             try:
-                shutil.copytree(self.extract_folder_path, self.cover_folder_path, dirs_exist_ok=True)
+                shutil.copytree(
+                    self.extract_folder_path, self.cover_folder_path, dirs_exist_ok=True
+                )
                 print("覆盖安装完成")
                 break
             except Exception as e:
@@ -63,8 +75,10 @@ class Updater:
     def terminate_processes(self):
         """终止相关进程以准备更新。"""
         print("开始终止进程...")
-        for proc in psutil.process_iter(attrs=['pid', 'name']):
-            if proc.info['name'] in self.process_names or any(name in proc.info['name'] for name in self.process_names):
+        for proc in psutil.process_iter(attrs=["pid", "name"]):
+            if proc.info["name"] in self.process_names or any(
+                name in proc.info["name"] for name in self.process_names
+            ):
                 try:
                     proc.terminate()
                     try:
@@ -98,14 +112,16 @@ class Updater:
         self.terminate_processes()
         self.cover_folder()
         self.cleanup()
-        input("已完成更新，按回车键退出并打开软件\nThe update is complete, press enter to exit and open the software")
+        input(
+            "已完成更新，按回车键退出并打开软件\nThe update is complete, press enter to exit and open the software"
+        )
         if os.system(f'cmd /c start "" "{os.path.abspath("./AALC.exe")}"'):
             subprocess.Popen(os.path.abspath("./AALC.exe"))
 
 
 def check_temp_dir_and_run():
     """检查临时目录并运行更新程序。"""
-    if not getattr(sys, 'frozen', False):
+    if not getattr(sys, "frozen", False):
         print("更新程序只支持打包成exe后运行")
         sys.exit(1)
 
@@ -128,5 +144,5 @@ def check_temp_dir_and_run():
     updater.run()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     check_temp_dir_and_run()

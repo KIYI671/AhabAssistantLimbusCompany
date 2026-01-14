@@ -75,3 +75,9 @@ files = [
     "tasks/tools/production_module.py",
     "i18n/myapp_en.ts",
 ]
+
+[tool.ruff.lint]
+# 启用规则集 (E: pycodestyle, F: Pyflakes, I: isort)
+select = ["E", "F", "I"]
+# 忽略特定的规则
+ignore = ["E501"]

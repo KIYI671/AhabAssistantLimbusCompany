@@ -19,7 +19,9 @@ def get_day_of_week():
     day = now_time.isoweekday()  # isoweekday() 返回 1（周一）~7（周日）
     hour = now_time.hour  # 小时（0-23）
 
-    if hour < 6 and day == 1:  # 如果是凌晨0点到6点之间，且不是周一，则视为前一天 （修复周一凌晨判断传参为0的bug）
+    if (
+        hour < 6 and day == 1
+    ):  # 如果是凌晨0点到6点之间，且不是周一，则视为前一天 （修复周一凌晨判断传参为0的bug）
         day = 7
     elif hour < 6:
         day -= 1
@@ -121,7 +123,10 @@ def find_skill3(background, known_rgb, threshold=40, min_pixels=10):
 
         if min_pixels * comp <= area:
             x = int(center[0])
-            x1, x2 = round(max(0, x - 33 * comp)), round(min(background.shape[1], x + 33 * comp))
+            x1, x2 = (
+                round(max(0, x - 33 * comp)),
+                round(min(background.shape[1], x + 33 * comp)),
+            )
             y1, y2 = 0, round(13 * comp)
 
             region_mask = mask[y1:y2, x1:x2]
@@ -135,7 +140,9 @@ def find_skill3(background, known_rgb, threshold=40, min_pixels=10):
     while cluster_centers:
         current = cluster_centers.pop()
         group = [c for c in cluster_centers if np.linalg.norm(current - c) <= 67 * comp]
-        cluster_centers = [c for c in cluster_centers if np.linalg.norm(current - c) > 66 * comp]
+        cluster_centers = [
+            c for c in cluster_centers if np.linalg.norm(current - c) > 66 * comp
+        ]
         merged.append(np.mean([current] + group, axis=0))
 
     return merged
@@ -158,14 +165,14 @@ def check_teams_order(lst):
     return result
 
 
-def encrypt_string(text: str, entropy: bytes = b'AALC') -> str:
+def encrypt_string(text: str, entropy: bytes = b"AALC") -> str:
     """使用当前Windows用户凭据加密字符串"""
 
     if not text:
         return ""
 
     # 转换为字节
-    data = text.encode('utf-8')
+    data = text.encode("utf-8")
 
     # 加密数据（只能由同一用户在同一机器上解密）
     encrypted_data = win32crypt.CryptProtectData(
@@ -174,13 +181,13 @@ def encrypt_string(text: str, entropy: bytes = b'AALC') -> str:
         entropy,  # 额外熵值（增强安全性）
         None,  # 保留
         None,  # 提示信息
-        0  # 默认标志：CRYPTPROTECT_UI_FORBIDDEN
+        0,  # 默认标志：CRYPTPROTECT_UI_FORBIDDEN
     )
     # 返回Base64编码的加密结果
-    return base64.b64encode(encrypted_data).decode('utf-8')
+    return base64.b64encode(encrypted_data).decode("utf-8")
 
 
-def decrypt_string(encrypted_b64: str, entropy: bytes = b'AALC') -> str:
+def decrypt_string(encrypted_b64: str, entropy: bytes = b"AALC") -> str:
     """使用当前Windows用户凭据解密字符串"""
     if not encrypted_b64:
         return ""
@@ -197,12 +204,12 @@ def decrypt_string(encrypted_b64: str, entropy: bytes = b'AALC') -> str:
             entropy,  # 必须与加密时相同的熵值
             None,  # 保留
             None,  # 提示信息
-            0  # 默认标志
+            0,  # 默认标志
         )
     except Exception:
         return encrypted_b64
     # 返回原始字符串
-    return decrypted_data[1].decode('utf-8')
+    return decrypted_data[1].decode("utf-8")
 
 
 def run_as_user(command: list[str], **kwargs):
@@ -210,7 +217,12 @@ def run_as_user(command: list[str], **kwargs):
 
     def clean_task():
         try:
-            scheduler_log = subprocess.run('schtasks /delete /tn "TempNonAdminTask" /f', shell=True, capture_output=True, text=True)
+            scheduler_log = subprocess.run(
+                'schtasks /delete /tn "TempNonAdminTask" /f',
+                shell=True,
+                capture_output=True,
+                text=True,
+            )
             log.debug(f"任务计划程序输出: {scheduler_log.stdout}")
             if scheduler_log.returncode != 0:
                 log.debug(f"任务计划程序删除失败: {scheduler_log.stderr}")
@@ -222,28 +234,38 @@ def run_as_user(command: list[str], **kwargs):
     # 先清理一次任务计划，防止遗留
     clean_task()
 
-    import tempfile, os
+    import tempfile
+    import os
+
     log.debug(f"使用用户权限运行命令: {command}")
     # 创建临时批处理文件
-    with tempfile.NamedTemporaryFile(delete=False, suffix='.bat',mode = 'w') as bat:
-        bat.write(f'@echo off\n{subprocess.list2cmdline(command)}\n')
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".bat", mode="w") as bat:
+        bat.write(f"@echo off\n{subprocess.list2cmdline(command)}\n")
         bat_path = bat.name
 
     # 使用任务计划程序以当前用户身份运行
     scheduler = f'schtasks /create /tn "TempNonAdminTask" /sc once /st 23:59 /ru {os.environ["USERNAME"]} /tr "{bat_path}"'
-    scheduler_log = subprocess.run(scheduler, shell=True, capture_output=True, text=True)
+    scheduler_log = subprocess.run(
+        scheduler, shell=True, capture_output=True, text=True
+    )
     log.debug(f"任务计划程序输出: {scheduler_log.stdout}")
     if scheduler_log.returncode != 0:
         log.error(f"任务计划程序创建失败: {scheduler_log.stderr}")
         return False
 
     # 立即执行任务
-    scheduler_log = subprocess.run('schtasks /run /tn "TempNonAdminTask"', shell=True, capture_output=True, text=True)
+    scheduler_log = subprocess.run(
+        'schtasks /run /tn "TempNonAdminTask"',
+        shell=True,
+        capture_output=True,
+        text=True,
+    )
     log.debug(f"任务计划程序输出: {scheduler_log.stdout}")
     if scheduler_log.returncode != 0:
         log.error(f"任务计划程序运行失败: {scheduler_log.stderr}")
         return False
     from time import sleep
+
     sleep(2)
 
     # 再次清理任务和文件

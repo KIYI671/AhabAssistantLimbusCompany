@@ -1,1 +1,5 @@
-from .autoLangIdentification import auto_switch_language_in_game, AutoSwitchCon, get_game_config_from_registry
+from .autoLangIdentification import (
+    auto_switch_language_in_game,
+    AutoSwitchCon,
+    get_game_config_from_registry,
+)

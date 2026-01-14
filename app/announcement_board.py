@@ -1,14 +1,21 @@
-import json
 import time
-from enum import Enum
 
 import requests
 from PySide6.QtCore import Signal, Qt, Slot, QThread
 from PySide6.QtGui import QFont, QIcon
-from PySide6.QtWidgets import QHBoxLayout, QListWidgetItem, QGridLayout, QFrame, QSpacerItem, QSizePolicy, \
-    QDialogButtonBox, QWidget, QVBoxLayout, QTextBrowser, QDialog, QPushButton
-from qfluentwidgets import MaskDialogBase, ListWidget, PrimaryPushButton
-from qfluentwidgets.components.dialog_box.dialog import Ui_MessageBox, MessageBox
+from PySide6.QtWidgets import (
+    QHBoxLayout,
+    QListWidgetItem,
+    QGridLayout,
+    QFrame,
+    QSpacerItem,
+    QSizePolicy,
+    QWidget,
+    QVBoxLayout,
+    QTextBrowser,
+    QDialog,
+)
+from qfluentwidgets import ListWidget, PrimaryPushButton
 from qfluentwidgets.window.stacked_widget import StackedWidget
 
 from app import AnnouncementStatus
@@ -21,6 +28,7 @@ class AnnouncementThread(QThread):
     公告线程类，用于在后台检查和处理公告更新。
     该类继承自 QThread，使用 Qt 的信号机制来通知 GUI 线程更新状态。
     """
+
     AnnouncementSignal = Signal(AnnouncementStatus)
 
     def __init__(self):
@@ -93,7 +101,6 @@ class Announcement(QWidget):
 
 
 class AnnouncementBoard(QDialog):
-
     def __init__(self, anno, time, parent=None):
         super().__init__(parent=parent)
 
@@ -103,7 +110,7 @@ class AnnouncementBoard(QDialog):
         self.setLayout(self.main_layout)
         self.resize(750, 550)
         self.setFont(QFont("MicroSoft YaHei", 13))
-        self.setWindowIcon(QIcon('./assets/logo/my_icon_256X256.ico'))
+        self.setWindowIcon(QIcon("./assets/logo/my_icon_256X256.ico"))
         self.setWindowFlag(Qt.WindowType.WindowCloseButtonHint, False)
         self.setWindowTitle(self.tr("公告"))
 
@@ -118,12 +125,16 @@ class AnnouncementBoard(QDialog):
         self.right_content_bar = QGridLayout()
         self.content_stack = StackedWidget()
         self.right_content_bar.addWidget(self.content_stack, 0, 0, 1, 3)
-        horizontal_spacer = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
+        horizontal_spacer = QSpacerItem(
+            40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum
+        )
         self.right_content_bar.addItem(horizontal_spacer, 1, 0, 1, 1)
 
         self.buttonGroup = QFrame(parent)
-        self.yesButton = PrimaryPushButton(self.tr('新公告前不再显示'), self.buttonGroup)
-        self.cancelButton = PrimaryPushButton(self.tr('关闭'), self.buttonGroup)
+        self.yesButton = PrimaryPushButton(
+            self.tr("新公告前不再显示"), self.buttonGroup
+        )
+        self.cancelButton = PrimaryPushButton(self.tr("关闭"), self.buttonGroup)
         self.yesButton.setAttribute(Qt.WA_LayoutUsesWidgetRect)
         self.cancelButton.setAttribute(Qt.WA_LayoutUsesWidgetRect)
         self.yesButton.clicked.connect(self.accept)
@@ -137,10 +148,14 @@ class AnnouncementBoard(QDialog):
 
         # 创建ALL公告页面
         msg = self.tr("滚动至底部可关闭公告")
-        self.all = Announcement(None, "ALL", f"<h4>{msg}</h4>"
-                                             "<h3>Ahab Assistant Limbus Company</h3>"
-                                             f"<h3>{cfg.version}</h3>",
-                                content_type="markdown")
+        self.all = Announcement(
+            None,
+            "ALL",
+            f"<h4>{msg}</h4>"
+            "<h3>Ahab Assistant Limbus Company</h3>"
+            f"<h3>{cfg.version}</h3>",
+            content_type="markdown",
+        )
         self.content_stack.addWidget(self.all)
 
         # 存储标题和内容的映射
@@ -166,37 +181,45 @@ class AnnouncementBoard(QDialog):
         """设置公告"""
         for anno in announcements:
             self.add(
-                Announcement(None, anno['title'], anno['content'], anno.get('contentType', 'markdown')))
+                Announcement(
+                    None,
+                    anno["title"],
+                    anno["content"],
+                    anno.get("contentType", "markdown"),
+                )
+            )
 
         title_name = self.tr("长期公告")
         if cfg.language_in_program == "zh_cn":
-            msg = (f"<h4>{title_name}</h4>"
-                   "<h2>Ahab Assistant Limbus Company</h2>"
-                   f"<h2>{cfg.version}</h2>"
-                   "<h3>声明：</h3>"
-                   "<p>本程序<font color='green'>开源、免费</font>，仅供学习交流使用。本程序依靠计算机图像识别和模拟操作运行，"
-                   "不会做出任何修改游戏文件、读写游戏内存等任何危害游戏本体的行为。"
-                   "您在使用此程序中产生的任何问题（除程序错误导致外）与此程序无关，<b>相应的后果由您自行承担</b>。</p>"
-                   "请不要在边狱巴士及月亮计划在各平台的官方动态下讨论任何关于 AALC 的内容。<br>"
-                   "人话：不要跳脸官方～(∠・ω&lt; )⌒☆</html>")
+            msg = (
+                f"<h4>{title_name}</h4>"
+                "<h2>Ahab Assistant Limbus Company</h2>"
+                f"<h2>{cfg.version}</h2>"
+                "<h3>声明：</h3>"
+                "<p>本程序<font color='green'>开源、免费</font>，仅供学习交流使用。本程序依靠计算机图像识别和模拟操作运行，"
+                "不会做出任何修改游戏文件、读写游戏内存等任何危害游戏本体的行为。"
+                "您在使用此程序中产生的任何问题（除程序错误导致外）与此程序无关，<b>相应的后果由您自行承担</b>。</p>"
+                "请不要在边狱巴士及月亮计划在各平台的官方动态下讨论任何关于 AALC 的内容。<br>"
+                "人话：不要跳脸官方～(∠・ω&lt; )⌒☆</html>"
+            )
         else:
-            msg = (f"<h4>{title_name}</h4>"
-                   "<h2>Ahab Assistant Limbus Company</h2>"
-                   f"<h2>{cfg.version}</h2>"
-                   "<h3>Disclaimer:</h3>"
-                   "<p>This program is <font color='green'>open-source and free</font>, intended solely for learning and exchange purposes. It operates using computer image recognition and simulated operations,"
-                   "Will not engage in any actions that harm the game itself—such as modifying game files, reading/writing game memory, or other similar activities"
-                   "Any issues arising from your use of this program (excluding those caused by program errors) are unrelated to it, and <b>you bear full responsibility for the corresponding consequences</b>.</p>"
-                   "Please do not discuss anything related to AALC under the official posts of Limbus Company or the Project Moon across various platforms.<br>"
-                   "In plain terms: Let’s not poke the official bear with AALC talk～(∠・ω&lt; )⌒☆</html>")
-        self.add(
-            Announcement(None, title_name, msg)
-        )
+            msg = (
+                f"<h4>{title_name}</h4>"
+                "<h2>Ahab Assistant Limbus Company</h2>"
+                f"<h2>{cfg.version}</h2>"
+                "<h3>Disclaimer:</h3>"
+                "<p>This program is <font color='green'>open-source and free</font>, intended solely for learning and exchange purposes. It operates using computer image recognition and simulated operations,"
+                "Will not engage in any actions that harm the game itself—such as modifying game files, reading/writing game memory, or other similar activities"
+                "Any issues arising from your use of this program (excluding those caused by program errors) are unrelated to it, and <b>you bear full responsibility for the corresponding consequences</b>.</p>"
+                "Please do not discuss anything related to AALC under the official posts of Limbus Company or the Project Moon across various platforms.<br>"
+                "In plain terms: Let’s not poke the official bear with AALC talk～(∠・ω&lt; )⌒☆</html>"
+            )
+        self.add(Announcement(None, title_name, msg))
 
     def setup_scroll_handlers(self):
         """设置滚动事件处理"""
         # 为ALL页面设置滚动监听
-        if hasattr(self.all.content, 'verticalScrollBar'):
+        if hasattr(self.all.content, "verticalScrollBar"):
             scroll_bar = self.all.content.verticalScrollBar()
             scroll_bar.valueChanged.connect(lambda: self.check_scroll_position("ALL"))
 
@@ -206,7 +229,9 @@ class AnnouncementBoard(QDialog):
     def on_stack_changed(self, index):
         """当切换到新的内容页面时，设置滚动监听"""
         # 移除之前页面的滚动监听
-        if self.current_scroll_area and hasattr(self.current_scroll_area, 'verticalScrollBar'):
+        if self.current_scroll_area and hasattr(
+            self.current_scroll_area, "verticalScrollBar"
+        ):
             scroll_bar = self.current_scroll_area.verticalScrollBar()
             try:
                 scroll_bar.valueChanged.disconnect(self.check_current_scroll_position)
@@ -215,8 +240,11 @@ class AnnouncementBoard(QDialog):
 
         # 获取当前页面并设置新的滚动监听
         current_widget = self.content_stack.widget(index)
-        if current_widget and hasattr(current_widget, 'content') and hasattr(current_widget.content,
-                                                                             'verticalScrollBar'):
+        if (
+            current_widget
+            and hasattr(current_widget, "content")
+            and hasattr(current_widget.content, "verticalScrollBar")
+        ):
             self.current_scroll_area = current_widget.content
             scroll_bar = self.current_scroll_area.verticalScrollBar()
             scroll_bar.valueChanged.connect(self.check_current_scroll_position)
@@ -239,10 +267,10 @@ class AnnouncementBoard(QDialog):
         # 获取对应页面的内容部件
         if title in self.title_content_map:
             widget = self.title_content_map[title]
-            if hasattr(widget.content, 'verticalScrollBar'):
+            if hasattr(widget.content, "verticalScrollBar"):
                 scroll_bar = widget.content.verticalScrollBar()
                 # 检查是否滚动到底部（考虑一定的容差，例如10像素）
-                is_at_bottom = (scroll_bar.value() + 10 >= scroll_bar.maximum())
+                is_at_bottom = scroll_bar.value() + 10 >= scroll_bar.maximum()
                 # 更新按钮状态
                 self.yesButton.setEnabled(is_at_bottom)
                 self.cancelButton.setEnabled(is_at_bottom)
@@ -265,7 +293,7 @@ class AnnouncementBoard(QDialog):
         if new_md:
             # 用分隔符分隔不同公告，保留原始 markdown
             if self.all_markdown:
-                self.all_markdown += '\n\n---\n\n' + new_md
+                self.all_markdown += "\n\n---\n\n" + new_md
             else:
                 self.all_markdown = new_md
             try:
@@ -276,7 +304,7 @@ class AnnouncementBoard(QDialog):
                 self.all.content.setText(self.all_markdown)
 
         # 为新添加的公告设置滚动监听
-        if hasattr(dialog.content, 'verticalScrollBar'):
+        if hasattr(dialog.content, "verticalScrollBar"):
             scroll_bar = dialog.content.verticalScrollBar()
 
             def _on_value_changed(val, t=title):

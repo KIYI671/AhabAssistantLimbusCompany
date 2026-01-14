@@ -1,7 +1,7 @@
 import os
 import sys
 
-from PySide6.QtCore import Qt, QFile, QTimer
+from PySide6.QtCore import QFile, QTimer
 from PySide6.QtWidgets import QApplication, QTextEdit
 from pynput import keyboard
 from qfluentwidgets import TextEdit, TransparentToolButton
@@ -21,7 +21,6 @@ from app.team_setting_card import TeamSettingCard
 from module.automation import auto
 from module.game_and_screen import screen
 from module.logger import log
-from module.ocr import ocr
 from tasks.base.script_task_scheme import my_script_task
 from utils.utils import check_hard_mirror_time
 
@@ -60,6 +59,7 @@ class FarmingInterface(QWidget):
 
     def _listener_stop(self):
         self.listener.stop()
+
     def _listener_start(self):
         try:
             self.listener = keyboard.GlobalHotKeys(
@@ -78,6 +78,7 @@ class FarmingInterface(QWidget):
 
     def my_pause_and_resume(self):
         auto.set_pause()
+
 
 class FarmingInterfaceLeft(QWidget):
     def __init__(self, parent=None):
@@ -306,6 +307,7 @@ class FarmingInterfaceLeft(QWidget):
             else:
                 if cfg.simulator_type == 0:
                     from module.simulator.mumu_control import MumuControl
+
                     while True:
                         try:
                             MumuControl.clean_connect()
@@ -314,6 +316,7 @@ class FarmingInterfaceLeft(QWidget):
                             continue
                 else:
                     from module.simulator.simulator_control import SimulatorControl
+
                     while True:
                         try:
                             SimulatorControl.clean_connect()
@@ -335,7 +338,17 @@ class FarmingInterfaceLeft(QWidget):
             if child.objectName() == "link_start":
                 continue
             # 检查是否为目标控件类型
-            if isinstance(child, (ToSettingButton, CheckBox, PushButton, ComboBox, SpinBox, TransparentToolButton)):
+            if isinstance(
+                child,
+                (
+                    ToSettingButton,
+                    CheckBox,
+                    PushButton,
+                    ComboBox,
+                    SpinBox,
+                    TransparentToolButton,
+                ),
+            ):
                 child.setEnabled(False)
             else:
                 # 递归处理子部件的子部件（如布局中的嵌套控件）
@@ -349,7 +362,17 @@ class FarmingInterfaceLeft(QWidget):
             if child.objectName() == "set_windows":
                 continue
             # 检查是否为目标控件类型
-            if isinstance(child, (ToSettingButton, CheckBox, PushButton, ComboBox, SpinBox, TransparentToolButton)):
+            if isinstance(
+                child,
+                (
+                    ToSettingButton,
+                    CheckBox,
+                    PushButton,
+                    ComboBox,
+                    SpinBox,
+                    TransparentToolButton,
+                ),
+            ):
                 child.setEnabled(True)
             else:
                 # 递归处理子部件的子部件（如布局中的嵌套控件）
@@ -357,7 +380,7 @@ class FarmingInterfaceLeft(QWidget):
 
     def create_and_start_script(self):
         try:
-            msg = f"开始进行所有任务"
+            msg = "开始进行所有任务"
             log.info(msg)
             mediator.scroll_log_show.emit("clear")
             # 启动脚本线程

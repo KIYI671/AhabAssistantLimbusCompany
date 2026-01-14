@@ -18,11 +18,11 @@ class Mediator(QObject):
     warning = Signal(str)
     finished_signal = Signal()
     kill_signal = Signal()
-    mirror_signal = Signal(int, int) # 运行的当前次数和总次数
+    mirror_signal = Signal(int, int)  # 运行的当前次数和总次数
     mirror_bar_kill_signal = Signal()
     hotkey_listener_stop_signal = Signal()
     hotkey_listener_start_signal = Signal()
-    
+
     # 单例实例（类变量）
     _instance = None
 
@@ -37,6 +37,6 @@ class Mediator(QObject):
         return cls._instance
 
     def __init__(self):
-        if not hasattr(self, '_initialized') or not self._initialized:
+        if not hasattr(self, "_initialized") or not self._initialized:
             # 这里不需要再调用 super().__init__()，因为已经在 __new__ 中调用过了
             self._initialized = True

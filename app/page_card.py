@@ -2,15 +2,13 @@ import os
 
 from markdown_it import MarkdownIt
 from mdit_py_plugins.anchors import anchors_plugin
-from PySide6.QtCore import QCoreApplication, QRect, Qt, QTime, QUrl
+from PySide6.QtCore import QCoreApplication, Qt, QUrl
 from PySide6.QtGui import QDesktopServices
 from PySide6.QtWidgets import QFrame, QHBoxLayout, QTextBrowser, QVBoxLayout, QWidget
-from qfluentwidgets import CheckBox
 from qfluentwidgets import FluentIcon as FIF
 from qfluentwidgets import (
     ScrollArea,
     SegmentedWidget,
-    TimePicker,
     TransparentToolButton,
 )
 from qfluentwidgets.window.stacked_widget import StackedWidget
@@ -27,13 +25,11 @@ from app.base_tools import BaseCheckBox
 from app.language_manager import SUPPORTED_GAME_LANG_NAME, LanguageManager
 from module.config import cfg
 from module.logger import log
-from utils.schedule_helper import ScheduleHelper
 
 from .markdown_it_imgdiv import imgdiv_plugin, render_div_close, render_div_open
 
 
 class PageCard(QFrame):
-
     def __init__(self, parent=None):
         super().__init__(parent=parent)
 
@@ -169,7 +165,6 @@ class PageDailyTask(PageCard):
 
         self.__init_card()
         self.__init_layout()
-        self.__connect_signal()
         self.setObjectName("page_daily_task")
 
     def __init_card(self):
@@ -188,18 +183,6 @@ class PageDailyTask(PageCard):
         self.team_select = LabelWithComboBox(
             QT_TRANSLATE_NOOP("LabelWithComboBox", "使用编队"), "daily_teams", all_teams
         )
-        self.autodaily_checkbox = CheckBox("启用每日日常")
-        autodaily_enabled = cfg.get_value("autodaily")
-        self.autodaily_checkbox.setChecked(
-            bool(autodaily_enabled) if autodaily_enabled is not None else False
-        )
-        self.autodaily_timepicker = TimePicker()
-        autodaily_time = cfg.get_value("autodaily_time") or "00:00"
-        autodaily_qtime = QTime.fromString(autodaily_time, "HH:mm")
-        if not autodaily_qtime.isValid():
-            autodaily_qtime = QTime(0, 0)
-        self.autodaily_timepicker.setTime(autodaily_qtime)
-        self.autodaily_timepicker.setDisabled(not self.autodaily_checkbox.isChecked())
 
         self.targeted_teaming_EXP = BaseCheckBox(
             "targeted_teaming_EXP",
@@ -271,8 +254,6 @@ class PageDailyTask(PageCard):
         self.vbox_general.addWidget(self.EXP_count)
         self.vbox_general.addWidget(self.thread_count)
         self.vbox_general.addWidget(self.team_select)
-        self.vbox_general.addWidget(self.autodaily_checkbox)
-        self.vbox_general.addWidget(self.autodaily_timepicker)
 
         self.vbox_advanced.addWidget(self.targeted_teaming_EXP)
         self.vbox_advanced.addWidget(self.EXP_day_1_2)
@@ -290,7 +271,6 @@ class PageDailyTask(PageCard):
         self.vbox_advanced.addWidget(self.thread_day_7)
 
     def retranslateUi(self):
-
         self.EXP_count.retranslateUi()
         self.thread_count.retranslateUi()
         self.team_select.retranslateUi()
@@ -307,40 +287,6 @@ class PageDailyTask(PageCard):
         self.EXP_day_7.retranslateUi()
 
         super().retranslateUi()
-
-    def __connect_signal(self):
-        self.autodaily_checkbox.checkStateChanged.connect(
-            self.__onAutoDailyCheckboxChanged
-        )
-        self.autodaily_timepicker.timeChanged.connect(
-            self.__onAutoDailyTimepickerChanged
-        )
-
-    @staticmethod
-    def __autodaily_taskname() -> str:
-        return "AALC Daily Task"
-
-    def __onAutoDailyCheckboxChanged(self, checked: Qt.CheckState):
-        checked = checked == Qt.CheckState.Checked
-        helper = ScheduleHelper()
-        task_name = self.__autodaily_taskname()
-
-        cfg.set_value("autodaily", checked)
-        if checked:
-            self.autodaily_timepicker.setDisabled(False)
-            time = self.autodaily_timepicker.getTime()
-            helper.register_daily_task(task_name, "start 1", time.hour(), time.minute())
-        else:
-            self.autodaily_timepicker.setDisabled(True)
-            helper.unregister_task(task_name)
-
-    def __onAutoDailyTimepickerChanged(self, time: QTime):
-        helper = ScheduleHelper()
-        task_name = self.__autodaily_taskname()
-
-        cfg.set_value("autodaily_time", time.toString("HH:mm"))
-        helper.unregister_task(task_name)
-        helper.register_daily_task(task_name, "start 1", time.hour(), time.minute())
 
 
 class PageGetPrize(PageCard):
@@ -604,7 +550,7 @@ class PageMirror(PageCard):
         """销毁进度条"""
         if self.bar is not None:
             log.info(
-                f'已完成{"困难镜牢" if cfg.hard_mirror else "普通镜牢"}进度 {self.bar.value() if self.bar.maximum() < 9000 else self.bar.specialValue} / {self.bar.maximum()}'
+                f"已完成{'困难镜牢' if cfg.hard_mirror else '普通镜牢'}进度 {self.bar.value() if self.bar.maximum() < 9000 else self.bar.specialValue} / {self.bar.maximum()}"
             )
             self.bar.deleteLater()
             self.bar = None
@@ -877,7 +823,6 @@ class MarkdownViewer(QWidget):
             self.text_browser.setPlainText(f"错误: 无法加载文件\n{str(e)}")
 
     def retranslateUi(self, lang_code):
-
         if lang_code == "zh_CN":
             self.help_path = "./assets/doc/zh/How_to_use.md"
         else:

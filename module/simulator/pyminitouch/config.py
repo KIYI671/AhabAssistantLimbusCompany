@@ -1,6 +1,4 @@
 import platform
-import subprocess
-from pathlib import Path
 
 # connection
 DEFAULT_HOST = "127.0.0.1"

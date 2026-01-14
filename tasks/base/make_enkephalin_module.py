@@ -7,26 +7,32 @@ from module.logger import log
 
 
 def get_the_timing(return_time=False):
-    if module_position := auto.find_element("enkephalin/lunacy_assets.png", take_screenshot=True):
+    if module_position := auto.find_element(
+        "enkephalin/lunacy_assets.png", take_screenshot=True
+    ):
         my_scale = cfg.set_win_size / 1440
         bbox = (
-            module_position[0] - 200 * my_scale, module_position[1] + 150 * my_scale,
+            module_position[0] - 200 * my_scale,
+            module_position[1] + 150 * my_scale,
             module_position[0] + 600 * my_scale,
-            module_position[1] + 220 * my_scale)
+            module_position[1] + 220 * my_scale,
+        )
         ocr_result = auto.find_text_element(None, my_crop=bbox, only_text=True)
-        s = ''
+        s = ""
         if ocr_result is not None:
             try:
                 for ocr in ocr_result:
                     s += str(ocr)
-                if ':' in s:
+                if ":" in s:
                     l = s.split(":")
                     minute = int(l[0][-2:])
                     seconds = int(l[1][:2])
                     if return_time:
                         return minute * 60 + seconds
                     if minute >= 5 and seconds >= 20:
-                        log.debug(f"生成下一点体力的时间为{minute}分{seconds}秒，符合葛朗台模式操作")
+                        log.debug(
+                            f"生成下一点体力的时间为{minute}分{seconds}秒，符合葛朗台模式操作"
+                        )
                         return True
             except:
                 return False
@@ -38,7 +44,10 @@ def get_current_enkephalin():
     import numpy as np
     from module.ocr import ocr
     import cv2
-    enkephalin_bbox = ImageUtils.get_bbox(ImageUtils.load_image("enkephalin/enkephalin_now_bbox.png"))
+
+    enkephalin_bbox = ImageUtils.get_bbox(
+        ImageUtils.load_image("enkephalin/enkephalin_now_bbox.png")
+    )
     for _ in range(5):
         try:
             while auto.take_screenshot() is None:
@@ -78,6 +87,7 @@ def make_enkephalin_module(cancel=True, skip=True):
     if skip and cfg.skip_enkephalin:
         return
     import time
+
     start_time = time.time()
     last_log_time = None
     first_popup_warning = True
@@ -93,7 +103,7 @@ def make_enkephalin_module(cancel=True, skip=True):
             from app import mediator
 
             if first_popup_warning and (
-                    last_log_time is None or now_time - last_log_time > 5
+                last_log_time is None or now_time - last_log_time > 5
             ):
                 # only do it once
                 first_popup_warning = False
@@ -107,18 +117,21 @@ def make_enkephalin_module(cancel=True, skip=True):
         if auto.take_screenshot() is None:
             continue
         auto.mouse_to_blank()
-        if auto.find_element("base/update_close_assets.png", model="clam") and auto.find_element(
-                "home/drive_assets.png",
-                model="normal"):
+        if auto.find_element(
+            "base/update_close_assets.png", model="clam"
+        ) and auto.find_element("home/drive_assets.png", model="normal"):
             auto.click_element("base/update_close_assets.png")
             from tasks.base.back_init_menu import back_init_menu
+
             back_init_menu()
             start_time = time.time()
             continue
-        if auto.find_element("base/renew_confirm_assets.png", model="clam") and auto.find_element(
-                "home/drive_assets.png", model="normal"):
+        if auto.find_element(
+            "base/renew_confirm_assets.png", model="clam"
+        ) and auto.find_element("home/drive_assets.png", model="normal"):
             auto.click_element("base/renew_confirm_assets.png")
             from tasks.base.back_init_menu import back_init_menu
+
             back_init_menu()
             start_time = time.time()
             continue

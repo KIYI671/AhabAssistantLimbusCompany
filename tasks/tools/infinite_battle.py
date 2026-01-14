@@ -1,5 +1,3 @@
-import win32con
-import win32gui
 from PySide6.QtWidgets import (
     QWidget,
     QLabel,

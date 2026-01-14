@@ -1,23 +1,67 @@
-all_systems = {0: "burn", 1: "bleed", 2: "tremor", 3: "rupture", 4: "poise",
-               5: "sinking", 6: "charge", 7: "slash", 8: "pierce", 9: "blunt"}
-all_sinners_name = ["YiSang", "Faust", "DonQuixote", "Ryoshu", "Meursault", "HongLu",
-                    "Heathcliff", "Ishmael", "Rodion", "Sinclair", "Outis", "Gregor"]
-all_sinners_name_zh = ["李箱", "浮士", "堂吉", "良秀", "默尔", "鸿璐",
-                       "希斯", "以实", "罗佳", "辛克", "提斯", "格里"]
+all_systems = {
+    0: "burn",
+    1: "bleed",
+    2: "tremor",
+    3: "rupture",
+    4: "poise",
+    5: "sinking",
+    6: "charge",
+    7: "slash",
+    8: "pierce",
+    9: "blunt",
+}
+all_sinners_name = [
+    "YiSang",
+    "Faust",
+    "DonQuixote",
+    "Ryoshu",
+    "Meursault",
+    "HongLu",
+    "Heathcliff",
+    "Ishmael",
+    "Rodion",
+    "Sinclair",
+    "Outis",
+    "Gregor",
+]
+all_sinners_name_zh = [
+    "李箱",
+    "浮士",
+    "堂吉",
+    "良秀",
+    "默尔",
+    "鸿璐",
+    "希斯",
+    "以实",
+    "罗佳",
+    "辛克",
+    "提斯",
+    "格里",
+]
 all_sinner = {
-    "YiSang": 1, "Faust": 2, "DonQuixote": 3,
-    "Ryoshu": 4, "Meursault": 5, "HongLu": 6,
-    "Heathcliff": 7, "Ishmael": 8, "Rodion": 9,
+    "YiSang": 1,
+    "Faust": 2,
+    "DonQuixote": 3,
+    "Ryoshu": 4,
+    "Meursault": 5,
+    "HongLu": 6,
+    "Heathcliff": 7,
+    "Ishmael": 8,
+    "Rodion": 9,
     "Dante": 10,
-    "Sinclair": 11, "Outis": 12, "Gregor": 13
+    "Sinclair": 11,
+    "Outis": 12,
+    "Gregor": 13,
 }
 
-start_gift = {0: [1, 2, 3],
-              1: [1, 3, 2],
-              2: [2, 1, 3],
-              3: [2, 3, 1],
-              4: [3, 1, 2],
-              5: [3, 2, 1]}
+start_gift = {
+    0: [1, 2, 3],
+    1: [1, 3, 2],
+    2: [2, 1, 3],
+    3: [2, 3, 1],
+    4: [3, 1, 2],
+    5: [3, 2, 1],
+}
 system_cn_zh = {
     "burn": "烧伤",
     "bleed": "流血",
@@ -28,7 +72,7 @@ system_cn_zh = {
     "charge": "充能",
     "slash": "斩击",
     "pierce": "突刺",
-    "blunt": "打击"
+    "blunt": "打击",
 }
 
 sins = {  # bgr values
