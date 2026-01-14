@@ -189,11 +189,16 @@ class PageDailyTask(PageCard):
             QT_TRANSLATE_NOOP("LabelWithComboBox", "使用编队"), "daily_teams", all_teams
         )
         self.autodaily_checkbox = CheckBox("启用每日日常")
-        self.autodaily_checkbox.setChecked(cfg.get_value("autodaily"))
-        self.autodaily_timepicker = TimePicker()
-        self.autodaily_timepicker.setTime(
-            QTime.fromString(cfg.get_value("autodaily_time"), "HH:mm")
+        autodaily_enabled = cfg.get_value("autodaily")
+        self.autodaily_checkbox.setChecked(
+            bool(autodaily_enabled) if autodaily_enabled is not None else False
         )
+        self.autodaily_timepicker = TimePicker()
+        autodaily_time = cfg.get_value("autodaily_time") or "00:00"
+        autodaily_qtime = QTime.fromString(autodaily_time, "HH:mm")
+        if not autodaily_qtime.isValid():
+            autodaily_qtime = QTime(0, 0)
+        self.autodaily_timepicker.setTime(autodaily_qtime)
         self.autodaily_timepicker.setDisabled(not self.autodaily_checkbox.isChecked())
 
         self.targeted_teaming_EXP = BaseCheckBox(

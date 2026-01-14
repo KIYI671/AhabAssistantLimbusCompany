@@ -58,6 +58,8 @@ select_team_by_order: False # 是否按顺序(而非名称)选择队伍
 
 # 是否进行日常本
 daily_task: False # 是否进行日常本
+autodaily: False # enable auto daily tasks
+autodaily_time: "00:00" # auto daily run time (HH:mm)
 set_EXP_count: 1 # 设置经验本的次数
 set_thread_count: 3 # 设置纽本的次数
 daily_teams: 1 # 设置日常本使用的队伍
