@@ -214,7 +214,7 @@ class Input(metaclass=SingletonMeta):
         """
         return pyautogui.position()
 
-    def mouse_drag_link(self, position: list, drag_time=0.1) -> None:
+    def mouse_drag_link(self, position: list, drag_time=0.1, move_back=False) -> None:
         """鼠标从指定位置拖动到指定位置
         Args:
             x (int): 起始x坐标
@@ -222,11 +222,17 @@ class Input(metaclass=SingletonMeta):
             position (list): 目标位置列表
             drag_time (float): 拖动时间
         """
+        if move_back:
+            current_mouse_position = self.get_mouse_position()
+
         pyautogui.moveTo(position[0][0], position[0][1])
         pyautogui.mouseDown()
         for pos in position:
             pyautogui.moveTo(pos[0], pos[1], duration=drag_time)
         pyautogui.mouseUp()
+
+        if move_back and current_mouse_position:
+            self.mouse_move(current_mouse_position)
 
     def key_press(self, key):
         return pyautogui.press(key)
@@ -385,7 +391,7 @@ class BackgroundInput(Input, metaclass=SingletonMeta):
         self.wait_pause()
         return True
 
-    def mouse_drag_link(self, position: list, drag_time=0.1) -> None:
+    def mouse_drag_link(self, position: list, drag_time=0.1, move_back=True) -> None:
         """鼠标从指定位置拖动到指定位置
         Args:
             x (int): 起始x坐标
@@ -393,12 +399,18 @@ class BackgroundInput(Input, metaclass=SingletonMeta):
             position (list): 目标位置列表
             drag_time (float): 拖动时间
         """
+        if move_back:
+            current_mouse_position = self.get_mouse_position()
+
         self._mouse_move_to(position[0][0], position[0][1])
         self.set_focus()
         self.mouse_down(position[0][0], position[0][1])
         for pos in position:
             self._mouse_move_to(pos[0], pos[1], duration=drag_time)
         self.mouse_up(position[-1][-1], position[-1][-1])
+
+        if move_back and current_mouse_position:
+            self.mouse_move(current_mouse_position)
 
     def set_focus(self):
         """将游戏窗口设置为输入焦点以让 Unity 接受输入事件
