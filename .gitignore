@@ -1,8 +1,16 @@
+# 环境
+.cursor
+.venv
+.vscode
+
+# 构建文件
 build
 dist
 dist_release
 *.pyc
 *.pyd
+
+# 运行时生成的文件
 *.dll
 !3rdparty/PaddleOCR-json_v1.4.1/*.dll
 build.bat
@@ -11,8 +19,7 @@ theme_pack_list.yaml
 logs
 pythonlogs
 i18n/*.qm
-.cursor
-.venv
-
 /*.png
+
+# 测试文件
 /test*.py
