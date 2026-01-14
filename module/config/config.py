@@ -59,7 +59,7 @@ class Config(metaclass=SingletonMeta):
             total_avr = 0
             five_avr = 0
             ten_avr = 0
-            for index in range(-1, -len(time_list), -1):
+            for index in range(-1, -len(time_list) - 1, -1):
                 total_avr += time_list[index]
                 if index >= -5:
                     five_avr += time_list[index]
