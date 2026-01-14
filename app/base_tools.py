@@ -6,10 +6,11 @@ from PySide6.QtWidgets import QFrame, QHBoxLayout, QVBoxLayout, QSizePolicy, QWi
 from qfluentwidgets import FluentIcon as FIF
 from qfluentwidgets import FluentIconBase, CheckBox, ToggleToolButton, ToolButton, PushButton, \
     BodyLabel, ComboBox, DoubleSpinBox, SpinBox, RoundMenu, SplitToolButton, ToolTipFilter, \
-    ToolTipPosition
+    ToolTipPosition, qconfig, isDarkTheme
 from qfluentwidgets.components.settings.setting_card import SettingIconWidget
 
 from app import *
+from app.common.ui_config import get_setting_layout_style
 from module.config import cfg
 
 
@@ -36,16 +37,20 @@ class BaseSettingLayout(QFrame):
             self.BoxLayout = QVBoxLayout(self)
             self.BoxLayout.setContentsMargins(0, 0, 0, 0)
 
-        self.setStyleSheet("""
-                    BaseSettingLayout {
-                        border: 2px solid #E0E0E0;  /* 边框颜色 */
-                        border-radius: 5px;         /* 圆角 */
-                        padding: 10px;              /* 内边距 */
-                    }
-                    BaseSettingLayout:hover {
-                        border-color: #D2D2D2;  /* 悬停时边框突出显示 */
-                    }
-                """)
+        # 监听主题变化
+        self._apply_theme_style()
+        qconfig.themeChanged.connect(self._apply_theme_style)
+
+    def _apply_theme_style(self):
+        style = get_setting_layout_style(isDarkTheme())
+        self.setStyleSheet(f"""
+            BaseSettingLayout {{
+                border: {style['border']}; /* 边框 */
+                border-radius: 5px; /* 圆角 */
+                padding: 10px;   /* 内边距 */
+                background-color: transparent; /* 背景透明 */
+            }}
+        """)
 
     def add(self, tool):
         if isinstance(tool, QWidget):

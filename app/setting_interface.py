@@ -3,7 +3,7 @@ from datetime import datetime
 from PySide6.QtCore import QT_TRANSLATE_NOOP, Qt, QUrl
 from PySide6.QtGui import QDesktopServices
 from PySide6.QtWidgets import QFileDialog, QWidget
-from qfluentwidgets import ExpandLayout
+from qfluentwidgets import ExpandLayout, setTheme, Theme
 from qfluentwidgets import FluentIcon as FIF
 from qfluentwidgets import InfoBarPosition, ScrollArea
 
@@ -167,7 +167,19 @@ class SettingInterface(ScrollArea):
             QT_TRANSLATE_NOOP("ComboBoxSettingCard", "语言"),
             QT_TRANSLATE_NOOP("ComboBoxSettingCard", "设置程序 UI 使用的语言"),
             texts=SUPPORTED_LANG_NAME,
-            parent=self.personal_group,
+            parent=self.personal_group
+        )
+        self.theme_card = ComboBoxSettingCard(
+            "theme_mode",
+            FIF.BRUSH,
+            QT_TRANSLATE_NOOP("ComboBoxSettingCard", '应用主题'),
+            QT_TRANSLATE_NOOP("ComboBoxSettingCard", '调整应用的主题外观'),
+            texts={
+                QT_TRANSLATE_NOOP("ComboBoxSettingCard", '跟随系统'): "AUTO",
+                QT_TRANSLATE_NOOP("ComboBoxSettingCard", '亮色模式'): "LIGHT",
+                QT_TRANSLATE_NOOP("ComboBoxSettingCard", '深色模式'): "DARK",
+            },
+            parent=self.personal_group
         )
         self.zoom_card = ComboBoxSettingCard(
             "zoom_scale",
@@ -306,6 +318,7 @@ class SettingInterface(ScrollArea):
         self.game_path_group.addSettingCard(self.game_path_card)
 
         self.personal_group.addSettingCard(self.language_card)
+        self.personal_group.addSettingCard(self.theme_card)
         self.personal_group.addSettingCard(self.zoom_card)
         self.personal_group.addSettingCard(self.hotkey_card)
         self.personal_group.addSettingCard(self.autostart_card)
@@ -335,7 +348,7 @@ class SettingInterface(ScrollArea):
         self.setStyleSheet(
             """
                 SettingInterface, #scrollWidget {
-                    background-color: #fdfdfd;
+                    background-color: transparent;
                 }
                 QScrollArea {
                     background-color: transparent;
@@ -361,6 +374,7 @@ class SettingInterface(ScrollArea):
         self.autostart_card.switchButton.checkedChanged.connect(
             self.__onAutostartCardChanged
         )
+        self.theme_card.valueChanged.connect(self.__onThemeCardChanged)
 
         self.github_card.clicked.connect(
             self.__openUrl("https://github.com/KIYI671/AhabAssistantLimbusCompany")
@@ -485,3 +499,12 @@ class SettingInterface(ScrollArea):
         self.feedback_card.retranslateUi()
         self.experimental_group.retranslateUi()
         self.auto_lang_card.retranslateUi()
+
+    def __onThemeCardChanged(self):
+        theme_mode = cfg.get_value("theme_mode")
+        if theme_mode == "AUTO":
+            setTheme(Theme.AUTO)
+        elif theme_mode == "LIGHT":
+            setTheme(Theme.LIGHT)
+        elif theme_mode == "DARK":
+            setTheme(Theme.DARK)
