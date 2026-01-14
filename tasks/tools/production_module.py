@@ -3,7 +3,14 @@ from time import sleep
 
 import win32con
 import win32gui
-from PySide6.QtWidgets import QWidget, QLabel, QVBoxLayout, QPushButton, QTextEdit, QCheckBox
+from PySide6.QtWidgets import (
+    QWidget,
+    QLabel,
+    QVBoxLayout,
+    QPushButton,
+    QTextEdit,
+    QCheckBox,
+)
 from PySide6.QtCore import QThread, Signal, Qt
 from PySide6.QtGui import QIcon
 
@@ -12,7 +19,11 @@ from module.config import cfg
 from module.logger import log
 from module.game_and_screen import screen
 from tasks.base.back_init_menu import back_init_menu
-from tasks.base.make_enkephalin_module import make_enkephalin_module, get_current_enkephalin, get_the_timing
+from tasks.base.make_enkephalin_module import (
+    make_enkephalin_module,
+    get_current_enkephalin,
+    get_the_timing,
+)
 from tasks.base.retry import kill_game
 from utils import pic_path
 
@@ -52,7 +63,9 @@ class ProductionWork(QThread):
                 return
             back_init_menu()
             make_enkephalin_module(cancel=False, skip=False)
-            while not auto.find_element("enkephalin/lunacy_assets.png", take_screenshot=True):
+            while not auto.find_element(
+                "enkephalin/lunacy_assets.png", take_screenshot=True
+            ):
                 auto.click_element("enkephalin/use_lunacy_assets.png")
             current_enkephalin = get_current_enkephalin()
             timing = None
@@ -77,7 +90,10 @@ class ProductionWork(QThread):
             win32gui.SetWindowPos(
                 hwnd._hWnd,  # 目标窗口句柄
                 win32con.HWND_NOTOPMOST,  # 关键参数：取消置顶
-                0, 0, 0, 0,  # 忽略位置和大小（保持原样）
+                0,
+                0,
+                0,
+                0,  # 忽略位置和大小（保持原样）
                 win32con.SWP_NOMOVE | win32con.SWP_NOSIZE,  # 标志位：不移动、不调整大小
             )
         except Exception as e:
@@ -105,7 +121,7 @@ class ProductionModule(QWidget):
         layout = QVBoxLayout()
 
         if cfg.language_in_program == "zh_cn":
-            instruction_text = '在T巢，大家都知道有更多的时间才能够挣到更多的时间\n\n榨取每一分利润、防止任何浪费是每一个资本家的拿手好戏\n\n来试试这款全新的自动节约小助手吧，为你攫取每一分属于你的利益\n\n（本广告五毛一条，记得删括号内的内容）'
+            instruction_text = "在T巢，大家都知道有更多的时间才能够挣到更多的时间\n\n榨取每一分利润、防止任何浪费是每一个资本家的拿手好戏\n\n来试试这款全新的自动节约小助手吧，为你攫取每一分属于你的利益\n\n（本广告五毛一条，记得删括号内的内容）"
         else:
             instruction_text = "At T-Nest, everyone knows that more time is the only way to earn more time\n\nSqueezing every penny of profit and preventing any waste is the specialty of every capitalist\n\nTry this new automatic savings assistant to grab every penny of your own interests\n\n(This ad is five cents. Remember to delete the content in brackets)"
 
@@ -198,8 +214,8 @@ class ProductionModule(QWidget):
 
         current_time = int(time.time())
         if (
-                not hasattr(self, "_last_log_time")
-                or current_time - self._last_log_time > 10
+            not hasattr(self, "_last_log_time")
+            or current_time - self._last_log_time > 10
         ):
             self.log_text.append("生产操作执行")
             self._last_log_time = current_time
@@ -218,8 +234,12 @@ class ProductionModule(QWidget):
         self.log_text.append(f"状态：等待 - 下一次体力回复时间: {next_time} s")
         self.log_text.append(f"等待: 下一次执行模块生产等待时间: {waiting_time} s")
         future_time = now_time + timedelta(seconds=waiting_time)
-        self.log_text.append(f"预计下一次操作时间: {future_time.strftime('%Y-%m-%d %H:%M:%S')}")
-        log.info(f"生产等待: 下一次体力回复时间: {next_time} s，下一次执行模块生产等待时间: {waiting_time} s")
+        self.log_text.append(
+            f"预计下一次操作时间: {future_time.strftime('%Y-%m-%d %H:%M:%S')}"
+        )
+        log.info(
+            f"生产等待: 下一次体力回复时间: {next_time} s，下一次执行模块生产等待时间: {waiting_time} s"
+        )
 
     def closeEvent(self, event):
         """窗口关闭时停止所有定时器和工作线程"""

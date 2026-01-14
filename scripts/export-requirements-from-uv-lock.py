@@ -9,9 +9,9 @@ def main():
     cmd = [
         "uv",
         "export",
-        "--no-hashes",   # 不包含package哈希
-        "--no-annotate", # 不包含这个包是由谁引入的注释
-        "--no-dev",      # 不包含开发依赖
+        "--no-hashes",  # 不包含package哈希
+        "--no-annotate",  # 不包含这个包是由谁引入的注释
+        "--no-dev",  # 不包含开发依赖
         "--format",
         "requirements-txt",
     ]

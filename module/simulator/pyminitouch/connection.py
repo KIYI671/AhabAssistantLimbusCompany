@@ -1,21 +1,19 @@
-import subprocess
 import socket
 import time
-import os
 import random
 from contextlib import contextmanager
-from pathlib import PurePosixPath, Path
+from pathlib import Path
 
 import adbutils
 from adbutils import AdbError
 
 import module.simulator.pyminitouch.config as config
 from module.logger import log
-from module.simulator.pyminitouch.utils import is_device_connected, is_port_using, str2byte
+from module.simulator.pyminitouch.utils import is_port_using, str2byte
 
 
 class MNTInstaller(object):
-    """ install minitouch for android devices """
+    """install minitouch for android devices"""
 
     def __init__(self, device_id):
         self.device_id = device_id
@@ -50,7 +48,7 @@ class MNTInstaller(object):
             remote_file_info = device.sync.stat(remote_path)
             if remote_file_info.size > 0:
                 needs_push = False
-                log.debug(f"minitouch已存在，无需再次推送")
+                log.debug("minitouch已存在，无需再次推送")
         except Exception:
             # 如果发生异常（例如某些版本中文件不存在会报错），则认为需要推送
             needs_push = True
@@ -120,9 +118,9 @@ class MNTServer(object):
 
         # make sure it's up
         time.sleep(1)
-        assert (
-            self.heartbeat()
-        ), "minitouch did not work. see https://github.com/williamfzc/pyminitouch/issues/11"
+        assert self.heartbeat(), (
+            "minitouch did not work. see https://github.com/williamfzc/pyminitouch/issues/11"
+        )
 
     def stop(self):
         """停止服务并清理资源"""
@@ -146,7 +144,7 @@ class MNTServer(object):
 
     @classmethod
     def _get_port(cls):
-        """ get a random port from port set """
+        """get a random port from port set"""
         # 保持原有逻辑不变
         if not cls._PORT_SET:
             raise RuntimeError("No available ports in PORT_SET")
@@ -158,7 +156,7 @@ class MNTServer(object):
         return new_port
 
     def _forward_port(self):
-        """ allow pc access minitouch with port """
+        """allow pc access minitouch with port"""
         local_address = f"tcp:{self.port}"
         remote_address = "localabstract:minitouch"
 
@@ -168,7 +166,7 @@ class MNTServer(object):
         log.debug("forward 映射设置成功")
 
     def _start_mnt(self):
-        """ fork a process to start minitouch on android """
+        """fork a process to start minitouch on android"""
         cmd = "/data/local/tmp/minitouch"
         log.debug(f"启动 minitouch: {cmd}")
 
@@ -177,7 +175,7 @@ class MNTServer(object):
         self.mnt_stream = self.device.shell(cmd, stream=True)
 
     def heartbeat(self):
-        """ check if minitouch process (stream) is alive """
+        """check if minitouch process (stream) is alive"""
         # 检查流对象是否存在且未关闭
         if self.mnt_stream is None:
             return False
@@ -188,7 +186,7 @@ class MNTServer(object):
 
 
 class MNTConnection(object):
-    """ manage socket connection between pc and android """
+    """manage socket connection between pc and android"""
 
     _DEFAULT_HOST = config.DEFAULT_HOST
     _DEFAULT_BUFFER_SIZE = config.DEFAULT_BUFFER_SIZE
@@ -221,9 +219,7 @@ class MNTConnection(object):
         _, pid = socket_out.readline().replace("\n", "").replace("\r", "").split(" ")
         self.pid = pid
 
-        log.debug(
-            "在端口上运行的 Minitouch：{}，PID：{}".format(self.port, self.pid)
-        )
+        log.debug("在端口上运行的 Minitouch：{}，PID：{}".format(self.port, self.pid))
         log.debug(
             "max_contact: {}; max_x: {}; max_y: {}; max_pressure: {}".format(
                 max_contacts, max_x, max_y, max_pressure
@@ -236,7 +232,7 @@ class MNTConnection(object):
         log.debug("minitouch disconnected")
 
     def send(self, content):
-        """ send message and get its response """
+        """send message and get its response"""
         byte_content = str2byte(content)
         self.client.sendall(byte_content)
         return self.client.recv(self._DEFAULT_BUFFER_SIZE)
@@ -244,7 +240,7 @@ class MNTConnection(object):
 
 @contextmanager
 def safe_connection(device_id):
-    """ safe connection runtime to use """
+    """safe connection runtime to use"""
 
     # prepare for connection
     server = MNTServer(device_id)

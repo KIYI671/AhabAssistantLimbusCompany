@@ -178,8 +178,8 @@ class LanguageManager(metaclass=SingletonMeta):
 
         for param in parameters.values():
             if param.default == inspect.Parameter.empty and param.kind not in (
-                    inspect.Parameter.VAR_POSITIONAL,
-                    inspect.Parameter.VAR_KEYWORD,
+                inspect.Parameter.VAR_POSITIONAL,
+                inspect.Parameter.VAR_KEYWORD,
             ):
                 # 排除可变参数
                 required_params.append(param)

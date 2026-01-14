@@ -1,6 +1,4 @@
-import asyncio
 import random
-from functools import partial
 from time import sleep, time
 from pywintypes import error as PyWinTypesError
 
@@ -15,26 +13,55 @@ from ..game_and_screen import screen
 from ..logger import log
 
 key_list = {
-    'a': 0x41, 'b': 0x42, 'c': 0x43, 'd': 0x44, 'e': 0x45,
-    'f': 0x46, 'g': 0x47, 'h': 0x48, 'i': 0x49, 'j': 0x4A,
-    'k': 0x4B, 'l': 0x4C, 'm': 0x4D, 'n': 0x4E, 'o': 0x4F,
-    'p': 0x50, 'q': 0x51, 'r': 0x52, 's': 0x53, 't': 0x54,
-    'u': 0x55, 'v': 0x56, 'w': 0x57, 'x': 0x58, 'y': 0x59,
-    'z': 0x5A,
-    '0': 0x30, '1': 0x31, '2': 0x32, '3': 0x33, '4': 0x34,
-    '5': 0x35, '6': 0x36, '7': 0x37, '8': 0x38, '9': 0x39,
-    'enter': win32con.VK_RETURN,
-    'esc': win32con.VK_ESCAPE,
-    'space': win32con.VK_SPACE,
-    'tab': win32con.VK_TAB,
-    'shift': win32con.VK_SHIFT,
-    'ctrl': win32con.VK_CONTROL,
-    'alt': win32con.VK_MENU,
+    "a": 0x41,
+    "b": 0x42,
+    "c": 0x43,
+    "d": 0x44,
+    "e": 0x45,
+    "f": 0x46,
+    "g": 0x47,
+    "h": 0x48,
+    "i": 0x49,
+    "j": 0x4A,
+    "k": 0x4B,
+    "l": 0x4C,
+    "m": 0x4D,
+    "n": 0x4E,
+    "o": 0x4F,
+    "p": 0x50,
+    "q": 0x51,
+    "r": 0x52,
+    "s": 0x53,
+    "t": 0x54,
+    "u": 0x55,
+    "v": 0x56,
+    "w": 0x57,
+    "x": 0x58,
+    "y": 0x59,
+    "z": 0x5A,
+    "0": 0x30,
+    "1": 0x31,
+    "2": 0x32,
+    "3": 0x33,
+    "4": 0x34,
+    "5": 0x35,
+    "6": 0x36,
+    "7": 0x37,
+    "8": 0x38,
+    "9": 0x39,
+    "enter": win32con.VK_RETURN,
+    "esc": win32con.VK_ESCAPE,
+    "space": win32con.VK_SPACE,
+    "tab": win32con.VK_TAB,
+    "shift": win32con.VK_SHIFT,
+    "ctrl": win32con.VK_CONTROL,
+    "alt": win32con.VK_MENU,
 }
 
 
 class Input(metaclass=SingletonMeta):
     """基于 `pyautogui` 的输入类, 仅支持前台操作"""
+
     # 禁用pyautogui的失败安全特性，防止意外中断
     pyautogui.FAILSAFE = False
 
@@ -60,7 +87,7 @@ class Input(metaclass=SingletonMeta):
         """
         pause_identity = False
         while self.is_pause:
-            if not pause_identity is False:
+            if pause_identity is not False:
                 log.info("AALC 已暂停")
                 pause_identity = True
             sleep(1)
@@ -401,8 +428,7 @@ class BackgroundInput(Input, metaclass=SingletonMeta):
         self.mouse_up(position[-1][-1], position[-1][-1])
 
     def set_focus(self):
-        """将游戏窗口设置为输入焦点以让 Unity 接受输入事件
-        """
+        """将游戏窗口设置为输入焦点以让 Unity 接受输入事件"""
         hwnd = screen.handle._hWnd
         if hwnd:
             # 如果最小化则显示

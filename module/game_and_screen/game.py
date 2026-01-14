@@ -17,10 +17,10 @@ class Game(metaclass=SingletonMeta):
 
     def start_game(self) -> bool:
         """启动游戏"""
-        for proc in psutil.process_iter(['name']):
+        for proc in psutil.process_iter(["name"]):
             try:
                 # 获取进程的可执行文件名（如 "notepad.exe"）
-                proc_name = proc.info['name']
+                proc_name = proc.info["name"]
                 # 精确匹配进程名（区分大小写，取决于系统）
                 if self.process_name in proc_name:
                     return True
@@ -40,7 +40,7 @@ class Game(metaclass=SingletonMeta):
             else:
                 # 调用系统打开该 URL（会触发 Steam 启动游戏）
                 webbrowser.open(self.game_url)
-                self.log.info(f"游戏使用steam命令启动")
+                self.log.info("游戏使用steam命令启动")
                 return True
         except Exception as e:
             self.log.error(f"启动游戏时发生错误：{e}")

@@ -2,15 +2,13 @@ import os
 
 from markdown_it import MarkdownIt
 from mdit_py_plugins.anchors import anchors_plugin
-from PySide6.QtCore import QCoreApplication, QRect, Qt, QTime, QUrl
+from PySide6.QtCore import QCoreApplication, Qt, QUrl
 from PySide6.QtGui import QDesktopServices
 from PySide6.QtWidgets import QFrame, QHBoxLayout, QTextBrowser, QVBoxLayout, QWidget
-from qfluentwidgets import CheckBox
 from qfluentwidgets import FluentIcon as FIF
 from qfluentwidgets import (
     ScrollArea,
     SegmentedWidget,
-    TimePicker,
     TransparentToolButton,
 )
 from qfluentwidgets.window.stacked_widget import StackedWidget
@@ -27,13 +25,11 @@ from app.base_tools import BaseCheckBox
 from app.language_manager import SUPPORTED_GAME_LANG_NAME, LanguageManager
 from module.config import cfg
 from module.logger import log
-from utils.schedule_helper import ScheduleHelper
 
 from .markdown_it_imgdiv import imgdiv_plugin, render_div_close, render_div_open
 
 
 class PageCard(QFrame):
-
     def __init__(self, parent=None):
         super().__init__(parent=parent)
 
@@ -275,7 +271,6 @@ class PageDailyTask(PageCard):
         self.vbox_advanced.addWidget(self.thread_day_7)
 
     def retranslateUi(self):
-
         self.EXP_count.retranslateUi()
         self.thread_count.retranslateUi()
         self.team_select.retranslateUi()
@@ -292,6 +287,7 @@ class PageDailyTask(PageCard):
         self.EXP_day_7.retranslateUi()
 
         super().retranslateUi()
+
 
 class PageGetPrize(PageCard):
     def __init__(self, parent=None):
@@ -554,7 +550,7 @@ class PageMirror(PageCard):
         """销毁进度条"""
         if self.bar is not None:
             log.info(
-                f'已完成{"困难镜牢" if cfg.hard_mirror else "普通镜牢"}进度 {self.bar.value() if self.bar.maximum() < 9000 else self.bar.specialValue} / {self.bar.maximum()}'
+                f"已完成{'困难镜牢' if cfg.hard_mirror else '普通镜牢'}进度 {self.bar.value() if self.bar.maximum() < 9000 else self.bar.specialValue} / {self.bar.maximum()}"
             )
             self.bar.deleteLater()
             self.bar = None
@@ -827,7 +823,6 @@ class MarkdownViewer(QWidget):
             self.text_browser.setPlainText(f"错误: 无法加载文件\n{str(e)}")
 
     def retranslateUi(self, lang_code):
-
         if lang_code == "zh_CN":
             self.help_path = "./assets/doc/zh/How_to_use.md"
         else:

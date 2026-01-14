@@ -30,6 +30,7 @@ class UpdateStatus(Enum):
     - UPDATE_AVAILABLE 表示有可用的更新
     - FAILURE 表示更新操作失败
     """
+
     SUCCESS = 1
     UPDATE_AVAILABLE = 2
     FAILURE = 0
@@ -40,6 +41,7 @@ class UpdateThread(QThread):
     更新线程类，用于在后台检查和处理软件更新。
     该类继承自 QThread，使用 Qt 的信号机制来通知 GUI 线程更新状态。
     """
+
     # 定义更新信号，用于通知主线程更新状态
     updateSignal = Signal(UpdateStatus)
 
@@ -54,11 +56,11 @@ class UpdateThread(QThread):
         super().__init__()
         self.timeout = timeout  # 超时时间
         self.flag = flag  # 标志位，用于控制是否执行检查更新
-        self.error_msg = ''  # 错误信息
+        self.error_msg = ""  # 错误信息
 
         self.user = "KIYI671"
         self.repo = "AhabAssistantLimbusCompany"
-        self.new_version = ''
+        self.new_version = ""
 
     def run(self) -> None:
         """
@@ -72,18 +74,29 @@ class UpdateThread(QThread):
 
             # 获取最新发布版本的信息
             data = self.check_update_info_mirrorchyan()
-            version = data['version_name']
-            content = self.remove_images_from_markdown(data['release_note'])
-            content = re.sub(r"\r\n\r\n\[.*?Mirror酱.*?CDK.*?下载\]\(https?://.*?mirrorchyan\.com[^\)]*\)", "",
-                             content, flags=re.IGNORECASE)
+            version = data["version_name"]
+            content = self.remove_images_from_markdown(data["release_note"])
+            content = re.sub(
+                r"\r\n\r\n\[.*?Mirror酱.*?CDK.*?下载\]\(https?://.*?mirrorchyan\.com[^\)]*\)",
+                "",
+                content,
+                flags=re.IGNORECASE,
+            )
             if cfg.update_source == "GitHub":
-                content = content + "\n\n若下载速度较慢，可尝试使用 Mirror酱（设置 → 关于 → 更新源） 高速下载"
+                content = (
+                    content
+                    + "\n\n若下载速度较慢，可尝试使用 Mirror酱（设置 → 关于 → 更新源） 高速下载"
+                )
 
             # 比较当前版本和最新版本，如果最新版本更高，则准备更新
-            if parse(version.lstrip('Vv')) > parse(cfg.version.lstrip('Vv')):
-                self.title = self.tr("发现新版本：{Old_version} ——> {New_version}\n更新日志:").format(
-                    Old_version=cfg.version, New_version=version)
-                self.content = "<style>a {color: #586f50; font-weight: bold;}</style>" + md_renderer.render(content)
+            if parse(version.lstrip("Vv")) > parse(cfg.version.lstrip("Vv")):
+                self.title = self.tr(
+                    "发现新版本：{Old_version} ——> {New_version}\n更新日志:"
+                ).format(Old_version=cfg.version, New_version=version)
+                self.content = (
+                    "<style>a {color: #586f50; font-weight: bold;}</style>"
+                    + md_renderer.render(content)
+                )
                 self.updateSignal.emit(UpdateStatus.UPDATE_AVAILABLE)
             else:
                 # 如果没有新版本，则发送成功信号
@@ -93,14 +106,21 @@ class UpdateThread(QThread):
             log.error(f"从Mirror酱源检查更新失败:{e},尝试使用GitHub源检查更新")
             try:
                 data = self.check_update_info_github()
-                version = data['tag_name']
-                content = self.remove_images_from_markdown(data['body'])
-                content = re.sub(r"\r\n\r\n\[.*?Mirror酱.*?CDK.*?下载\]\(https?://.*?mirrorchyan\.com[^\)]*\)", "",
-                                 content, flags=re.IGNORECASE)
-                assets_url = self.get_download_url_from_assets(data['assets'])
+                version = data["tag_name"]
+                content = self.remove_images_from_markdown(data["body"])
+                content = re.sub(
+                    r"\r\n\r\n\[.*?Mirror酱.*?CDK.*?下载\]\(https?://.*?mirrorchyan\.com[^\)]*\)",
+                    "",
+                    content,
+                    flags=re.IGNORECASE,
+                )
+                assets_url = self.get_download_url_from_assets(data["assets"])
 
                 if cfg.update_source == "GitHub":
-                    content = content + "\n\n若下载速度较慢，可尝试使用 Mirror酱（设置 → 关于 → 更新源） 高速下载"
+                    content = (
+                        content
+                        + "\n\n若下载速度较慢，可尝试使用 Mirror酱（设置 → 关于 → 更新源） 高速下载"
+                    )
 
                 # 如果没有可用的下载 URL，则发送成功信号并返回
                 if assets_url is None:
@@ -108,10 +128,14 @@ class UpdateThread(QThread):
                     return
 
                 # 比较当前版本和最新版本，如果最新版本更高，则准备更新
-                if parse(version.lstrip('Vv')) > parse(cfg.version.lstrip('Vv')):
-                    self.title = self.tr("发现新版本：{Old_version} ——> {New_version}\n更新日志:").format(
-                        Old_version=cfg.version, New_version=version)
-                    self.content = "<style>a {color: #586f50; font-weight: bold;}</style>" + md_renderer.render(content)
+                if parse(version.lstrip("Vv")) > parse(cfg.version.lstrip("Vv")):
+                    self.title = self.tr(
+                        "发现新版本：{Old_version} ——> {New_version}\n更新日志:"
+                    ).format(Old_version=cfg.version, New_version=version)
+                    self.content = (
+                        "<style>a {color: #586f50; font-weight: bold;}</style>"
+                        + md_renderer.render(content)
+                    )
                     self.updateSignal.emit(UpdateStatus.UPDATE_AVAILABLE)
                 else:
                     # 如果没有新版本，则发送成功信号
@@ -132,19 +156,19 @@ class UpdateThread(QThread):
             response = requests.get(
                 f"https://api.github.com/repos/{self.user}/{self.repo}/releases/latest",
                 timeout=10,
-                headers=cfg.useragent
+                headers=cfg.useragent,
             )
         else:
             response = requests.get(
                 f"https://api.github.com/repos/{self.user}/{self.repo}/releases",
                 timeout=10,
-                headers=cfg.useragent
+                headers=cfg.useragent,
             )
         response.raise_for_status()
         # 根据配置决定是否包含预发布版本
         return response.json()[0] if cfg.update_prerelease_enable else response.json()
 
-    def check_update_info_mirrorchyan(self, cdk=''):
+    def check_update_info_mirrorchyan(self, cdk=""):
         """
         从 mirror酱 获取最新发布版本的信息。
 
@@ -158,15 +182,15 @@ class UpdateThread(QThread):
             response = requests.get(
                 f"https://mirrorchyan.com/api/resources/AALC/latest?current_version={cfg.version}&user_agent={self.repo}&cdk={cdk}",
                 timeout=10,
-                headers=cfg.useragent
+                headers=cfg.useragent,
             )
         else:
             response = requests.get(
                 f"https://mirrorchyan.com/api/resources/AALC/latest?current_version={cfg.version}&user_agent={self.repo}&channel=beta&cdk={cdk}",
                 timeout=10,
-                headers=cfg.useragent
+                headers=cfg.useragent,
             )
-        if cdk == '':
+        if cdk == "":
             # 返回获取的最新发布版本信息
             return response.json()["data"]
         else:
@@ -182,8 +206,8 @@ class UpdateThread(QThread):
         返回:
         移除图片后的 Markdown 文本
         """
-        img_pattern = re.compile(r'!\[.*?\]\(.*?\)')
-        return img_pattern.sub('', markdown_content)
+        img_pattern = re.compile(r"!\[.*?\]\(.*?\)")
+        return img_pattern.sub("", markdown_content)
 
     def get_download_url_from_assets(self, assets):
         """
@@ -196,8 +220,8 @@ class UpdateThread(QThread):
         .7z 文件的下载 URL，如果没有找到则返回 None
         """
         for asset in assets:
-            if asset['name'].endswith('.7z'):
-                return asset['browser_download_url']
+            if asset["name"].endswith(".7z"):
+                return asset["browser_download_url"]
         return None
 
     def get_assets_url(self):
@@ -212,7 +236,10 @@ class UpdateThread(QThread):
                 response = self.check_update_info_mirrorchyan(cdk)
                 if response.status_code == 200:
                     mirrorchyan_data = response.json()
-                    if mirrorchyan_data["code"] == 0 and mirrorchyan_data["msg"] == "success":
+                    if (
+                        mirrorchyan_data["code"] == 0
+                        and mirrorchyan_data["msg"] == "success"
+                    ):
                         url = mirrorchyan_data["data"]["url"]
                         return url
                 else:
@@ -226,7 +253,7 @@ class UpdateThread(QThread):
                             7002: "Mirror酱 CDK 错误",
                             7003: "Mirror酱 CDK 今日下载次数已达上限",
                             7004: "Mirror酱 CDK 类型和待下载的资源不匹配",
-                            7005: "Mirror酱 CDK 已被封禁"
+                            7005: "Mirror酱 CDK 已被封禁",
                         }
                         if self.code in cdk_error_messages:
                             self.error_msg = cdk_error_messages[self.code]
@@ -239,18 +266,22 @@ class UpdateThread(QThread):
                     response = requests.get(
                         f"https://api.github.com/repos/{self.user}/{self.repo}/releases/latest",
                         timeout=10,
-                        headers=cfg.useragent
+                        headers=cfg.useragent,
                     )
                 else:
                     response = requests.get(
                         f"https://api.github.com/repos/{self.user}/{self.repo}/releases",
                         timeout=10,
-                        headers=cfg.useragent
+                        headers=cfg.useragent,
                     )
                 response.raise_for_status()
-                data = response.json()[0] if cfg.update_prerelease_enable else response.json()
+                data = (
+                    response.json()[0]
+                    if cfg.update_prerelease_enable
+                    else response.json()
+                )
 
-                assets_url = self.get_download_url_from_assets(data['assets'])
+                assets_url = self.get_download_url_from_assets(data["assets"])
 
                 # 如果没有可用的下载 URL，则发送成功信号并返回
                 if assets_url is None:
@@ -279,9 +310,7 @@ def check_update(self, timeout=5, flag=False):
         if status == UpdateStatus.UPDATE_AVAILABLE:
             # 当有可用更新时，创建一个消息框对象并显示详细信息
             messages_box = MessageBoxUpdate(
-                self.update_thread.title,
-                self.update_thread.content,
-                self.window()
+                self.update_thread.title, self.update_thread.content, self.window()
             )
             if messages_box.exec():
                 # 如果用户确认更新，则从指定的URL下载更新资源
@@ -291,24 +320,24 @@ def check_update(self, timeout=5, flag=False):
         elif status == UpdateStatus.SUCCESS:
             # 显示当前为最新版本的信息
             bar = BaseInfoBar.success(
-                title=QT_TRANSLATE_NOOP("BaseInfoBar", '当前是最新版本(＾∀＾●)'),
+                title=QT_TRANSLATE_NOOP("BaseInfoBar", "当前是最新版本(＾∀＾●)"),
                 content="",
                 orient=Qt.Horizontal,
                 isClosable=True,
                 position=InfoBarPosition.TOP,
                 duration=1000,
-                parent=self
+                parent=self,
             )
         else:
             # 显示检查更新失败的信息
             bar = BaseInfoBar.warning(
-                title=QT_TRANSLATE_NOOP("BaseInfoBar", '检测更新失败(╥╯﹏╰╥)'),
+                title=QT_TRANSLATE_NOOP("BaseInfoBar", "检测更新失败(╥╯﹏╰╥)"),
                 content=self.update_thread.error_msg,
                 orient=Qt.Horizontal,
                 isClosable=True,
                 position=InfoBarPosition.TOP,
                 duration=5000,
-                parent=self
+                parent=self,
             )
 
     # 创建一个更新线程实例
@@ -329,6 +358,7 @@ def is_valid_url(url):
     bool: 如果URL有效则返回True，否则返回False。
     """
     from urllib.parse import urlparse
+
     try:
         # 解析URL
         result = urlparse(url)
@@ -350,7 +380,7 @@ def update(assets_url):
         return
 
     # 提取文件名
-    file_name = assets_url.split('/')[-1]
+    file_name = assets_url.split("/")[-1]
     if "7z" not in file_name:
         file_name = "AALC.zip"
     elif "AALC" in file_name:
@@ -363,16 +393,16 @@ def update(assets_url):
         response.raise_for_status()  # 检查 HTTP 请求是否成功
 
         # 获取文件总大小
-        total_size = int(response.headers.get('content-length', 0))
+        total_size = int(response.headers.get("content-length", 0))
         downloaded = 0
 
         # 创建保存临时文件的目录
-        os.makedirs('update_temp', exist_ok=True)
+        os.makedirs("update_temp", exist_ok=True)
         # 构建保存文件的完整路径
-        file_path = os.path.join('update_temp', file_name)
+        file_path = os.path.join("update_temp", file_name)
 
         with requests.get(assets_url, stream=True) as r:
-            with open(file_path, 'wb') as f:
+            with open(file_path, "wb") as f:
                 for chunk in r.iter_content(chunk_size=1024):
                     if chunk:
                         f.write(chunk)
@@ -380,7 +410,7 @@ def update(assets_url):
                         progress = int(downloaded / total_size * 100)
                         mediator.update_progress.emit(progress)
 
-        log.info(f"下载进度100%")
+        log.info("下载进度100%")
 
         if "OCR" in file_name:
             exe_path = os.path.abspath("./assets/binary/7za.exe")
@@ -388,12 +418,15 @@ def update(assets_url):
             destination = os.path.abspath("./3rdparty")
             try:
                 if os.path.exists(exe_path):
-                    subprocess.run([exe_path, "x", download_file_path, f"-o{destination}", "-aoa"], check=True)
+                    subprocess.run(
+                        [exe_path, "x", download_file_path, f"-o{destination}", "-aoa"],
+                        check=True,
+                    )
                 else:
                     shutil.unpack_archive(download_file_path, destination)
                 log.info("OCR解压完成，请重启AALC")
                 return True
-            except Exception as e:
+            except Exception:
                 input("解压失败，按回车键重新解压. . .多次失败请手动下载更新")
                 return False
         else:
@@ -419,4 +452,6 @@ def start_update_thread(assets_url):
 
 def start_update(assert_name):
     source_file = os.path.abspath("./AALC Updater.exe")
-    subprocess.Popen([source_file, assert_name], creationflags=subprocess.DETACHED_PROCESS)
+    subprocess.Popen(
+        [source_file, assert_name], creationflags=subprocess.DETACHED_PROCESS
+    )

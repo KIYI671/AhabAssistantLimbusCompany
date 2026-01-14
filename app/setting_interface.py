@@ -1,5 +1,3 @@
-from datetime import datetime
-
 from PySide6.QtCore import QT_TRANSLATE_NOOP, Qt, QUrl, QTime
 from PySide6.QtGui import QDesktopServices
 from PySide6.QtWidgets import QFileDialog, QWidget
@@ -16,7 +14,8 @@ from app.base_combination import (
     PushSettingCardChance,
     PushSettingCardDate,
     PushSettingCardMirrorchyan,
-    SwitchSettingCard, DailySettingCard,
+    SwitchSettingCard,
+    DailySettingCard,
 )
 from app.card.messagebox_custom import BaseInfoBar
 from app.language_manager import SUPPORTED_LANG_NAME, LanguageManager
@@ -167,7 +166,9 @@ class SettingInterface(ScrollArea):
         self.autodaily_card = DailySettingCard(
             FIF.HISTORY,
             QT_TRANSLATE_NOOP("DailySettingCard", "定时执行 AALC"),
-            QT_TRANSLATE_NOOP("DailySettingCard", "如果计算机处于启动状态，将在指定时间执行 AALC 任务"),
+            QT_TRANSLATE_NOOP(
+                "DailySettingCard", "如果计算机处于启动状态，将在指定时间执行 AALC 任务"
+            ),
             "autodaily",
             parent=self.game_path_group,
         )
@@ -455,6 +456,7 @@ class SettingInterface(ScrollArea):
 
     def __onAutoDailyCheckboxChanged(self, isChecked):
         from utils.schedule_helper import ScheduleHelper
+
         helper = ScheduleHelper()
         task_name = self.__autodaily_taskname()
 
@@ -462,19 +464,24 @@ class SettingInterface(ScrollArea):
         if isChecked:
             self.autodaily_card.autodaily_timepicker.setDisabled(False)
             time = self.autodaily_card.autodaily_timepicker.getTime()
-            helper.register_daily_task(task_name, "start --exit", time.hour(), time.minute())
+            helper.register_daily_task(
+                task_name, "start --exit", time.hour(), time.minute()
+            )
         else:
             self.autodaily_card.autodaily_timepicker.setDisabled(True)
             helper.unregister_task(task_name)
 
     def __onAutoDailyTimepickerChanged(self, time: QTime):
         from utils.schedule_helper import ScheduleHelper
+
         helper = ScheduleHelper()
         task_name = self.__autodaily_taskname()
 
         cfg.set_value("autodaily_time", time.toString("HH:mm"))
         helper.unregister_task(task_name)
-        helper.register_daily_task(task_name, "start --exit", time.hour(), time.minute())
+        helper.register_daily_task(
+            task_name, "start --exit", time.hour(), time.minute()
+        )
 
     def __onAutoLangCardChecked(self, Checked):
         bar = BaseInfoBar.success(

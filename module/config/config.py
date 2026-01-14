@@ -10,7 +10,6 @@ from utils.singletonmeta import SingletonMeta
 
 
 class Config(metaclass=SingletonMeta):
-
     def __init__(self, version_path, example_path, config_path):
         self.yaml = YAML()
         # 并发与延迟写控制
@@ -20,7 +19,9 @@ class Config(metaclass=SingletonMeta):
         self._pending_save = False
         # 后台写盘线程
         self._writer_event = threading.Event()
-        self._writer_thread = threading.Thread(target=self._writer_loop, name="ConfigWriter", daemon=True)
+        self._writer_thread = threading.Thread(
+            target=self._writer_loop, name="ConfigWriter", daemon=True
+        )
         self._writer_thread.start()
 
         # 加载版本信息
@@ -38,7 +39,7 @@ class Config(metaclass=SingletonMeta):
     def _load_version(self, version_path: str) -> str:
         """加载版本信息"""
         try:
-            with open(version_path, 'r', encoding='utf-8') as file:
+            with open(version_path, "r", encoding="utf-8") as file:
                 return file.read().strip()
         except FileNotFoundError:
             sys.exit("版本文件未找到")
@@ -50,7 +51,7 @@ class Config(metaclass=SingletonMeta):
         else:
             self.example_path = example_path
         try:
-            with open(example_path, 'r', encoding='utf-8') as file:
+            with open(example_path, "r", encoding="utf-8") as file:
                 return self.yaml.load(file) or {}
         except FileNotFoundError:
             sys.exit("默认配置文件未找到")
@@ -59,7 +60,7 @@ class Config(metaclass=SingletonMeta):
         """加载用户配置文件，如未找到则保存默认配置"""
         path = path or self.config_path
         try:
-            with open(path, 'r', encoding='utf-8') as file:
+            with open(path, "r", encoding="utf-8") as file:
                 loaded_config = self.yaml.load(file)
                 if loaded_config:
                     self._update_config(self.config, loaded_config)
@@ -87,7 +88,7 @@ class Config(metaclass=SingletonMeta):
             snapshot = copy.deepcopy(self.config)
             path = self.config_path
         y = YAML()
-        with open(path, 'w', encoding='utf-8') as file:
+        with open(path, "w", encoding="utf-8") as file:
             y.dump(snapshot, file)
 
     def get_value(self, key, default=None):
@@ -108,7 +109,9 @@ class Config(metaclass=SingletonMeta):
 
             # 防止 cdk 泄露
             masked_value = "已加密" if key == "mirrorchyan_cdk" else value
-            log.debug(f"{key} change to: {masked_value}", stacklevel=2)  # 增加设置修改的信息
+            log.debug(
+                f"{key} change to: {masked_value}", stacklevel=2
+            )  # 增加设置修改的信息
 
             # 安排一次延迟保存
             self._schedule_save()
@@ -170,7 +173,7 @@ class Config(metaclass=SingletonMeta):
         """仅加载配置文件，不保存"""
         path = path or self.config_path
         try:
-            with open(path, 'r', encoding='utf-8') as file:
+            with open(path, "r", encoding="utf-8") as file:
                 loaded_config = self.yaml.load(file)
             if loaded_config:
                 self._update_config(self.config, loaded_config)
@@ -217,7 +220,6 @@ class Config(metaclass=SingletonMeta):
 
 
 class Theme_pack_list(metaclass=SingletonMeta):
-
     def __init__(self, example_path, theme_pack_list_path):
         self.yaml = YAML()
         # 加载默认配置
@@ -230,7 +232,7 @@ class Theme_pack_list(metaclass=SingletonMeta):
     def _load_version(self, version_path: str) -> str:
         """加载版本信息"""
         try:
-            with open(version_path, 'r', encoding='utf-8') as file:
+            with open(version_path, "r", encoding="utf-8") as file:
                 return file.read().strip()
         except FileNotFoundError:
             sys.exit("主题包名单文件未找到")
@@ -238,7 +240,7 @@ class Theme_pack_list(metaclass=SingletonMeta):
     def _load_default_config(self, example_path: str) -> dict:
         """加载默认配置信息"""
         try:
-            with open(example_path, 'r', encoding='utf-8') as file:
+            with open(example_path, "r", encoding="utf-8") as file:
                 return self.yaml.load(file) or {}
         except FileNotFoundError:
             sys.exit("默认主题包配置文件未找到")
@@ -247,7 +249,7 @@ class Theme_pack_list(metaclass=SingletonMeta):
         """加载用户配置文件，如未找到则保存默认配置"""
         path = path or self.theme_pack_list_path
         try:
-            with open(path, 'r', encoding='utf-8') as file:
+            with open(path, "r", encoding="utf-8") as file:
                 loaded_config = self.yaml.load(file)
                 if loaded_config:
                     self._update_config(self.config, loaded_config)
@@ -267,11 +269,11 @@ class Theme_pack_list(metaclass=SingletonMeta):
                     config[key][k] = v
             else:
                 config[key] = value
-        log.debug(f"主题包名单已更新")
+        log.debug("主题包名单已更新")
 
     def save_config(self):
         """保存到配置文件"""
-        with open(self.theme_pack_list_path, 'w', encoding='utf-8') as file:
+        with open(self.theme_pack_list_path, "w", encoding="utf-8") as file:
             self.yaml.dump(self.config, file)
 
     def get_value(self, key, default=None):

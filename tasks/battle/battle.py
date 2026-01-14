@@ -1,6 +1,5 @@
 import time
 from time import sleep
-from datetime import datetime
 
 import re
 import cv2
@@ -14,11 +13,11 @@ from module.ocr import ocr
 from tasks import sins
 from tasks.base.retry import retry
 from tasks.event import event_handling
-from tasks.event.event_handling import EventHandling
 from utils.image_utils import ImageUtils
 from utils.utils import find_skill3
 
 from typing import Callable, Optional
+
 
 class Battle:
     def __init__(self):
@@ -103,7 +102,7 @@ class Battle:
             and defense_first_round
             and auto.find_element("battle/gear_left.png", threshold=0.9)
         ):
-            msg = f"第一回合全员防御，开始战斗"
+            msg = "第一回合全员防御，开始战斗"
             if self._defense_this_round() is False:
                 defense_first_round = False
                 msg = "第一回合全员防御失败，本场战斗改为P+Enter"
@@ -118,7 +117,7 @@ class Battle:
         elif self.defense_all_time and auto.find_element(
             "battle/gear_left.png", threshold=0.9
         ):
-            msg = f"使用全员防御模式开始战斗"
+            msg = "使用全员防御模式开始战斗"
             if self._defense_this_round() is False:
                 defense_all_time = False
                 msg = "全员防御失败，本场战斗改为P+Enter"
@@ -131,7 +130,7 @@ class Battle:
                 sleep(0.5)
                 auto.key_press("enter")
         elif avoid_skill_3 and auto.find_element("battle/gear_left.png", threshold=0.9):
-            msg = f"使用避免3技能模式开始战斗"
+            msg = "使用避免3技能模式开始战斗"
             if self._chain_battle() is False:
                 avoid_skill_3 = False
                 msg = "使用避免三技能的链接战失败，本场战斗改为P+Enter"
@@ -147,7 +146,7 @@ class Battle:
             auto.key_press("p")
             sleep(0.5)
             auto.key_press("enter")
-            msg = f"使用P+Enter开始战斗"
+            msg = "使用P+Enter开始战斗"
             if self.mouse_click_rate:
                 my_scale = cfg.set_win_size / 1440
                 if pos := auto.find_element("battle/win_rate_card.png", threshold=0.75):
@@ -536,22 +535,30 @@ class Battle:
             return first_battle_reward
         else:
             return None
-        
+
     @staticmethod
-    def _calculate_skills_position(skill_positions: list[list], gear_left:tuple, skill_nums:int, custom_tune: Optional[Callable[[list, int, int, float], list]] = None ) -> None:
+    def _calculate_skills_position(
+        skill_positions: list[list],
+        gear_left: tuple,
+        skill_nums: int,
+        custom_tune: Optional[Callable[[list, int, int, float], list]] = None,
+    ) -> None:
         """计算划线的技能位置(也是守备的位置)
         专门写一个方便修改
         直接修改传入的`skill_positions`, 故不返回值
         """
-        scale:float = cfg.set_win_size / 1440
-        skill_size:float = 161 * scale
-        x_offset:float = 220 - 4.5 * skill_nums
-        y_offset:float = 250
+        scale: float = cfg.set_win_size / 1440
+        skill_size: float = 161 * scale
+        x_offset: float = 220 - 4.5 * skill_nums
+        y_offset: float = 250
 
         for index in range(skill_nums):
-            pos = [gear_left[0] + x_offset * scale + skill_size * index, gear_left[1] + y_offset * scale]
+            pos = [
+                gear_left[0] + x_offset * scale + skill_size * index,
+                gear_left[1] + y_offset * scale,
+            ]
             if custom_tune is not None:
-                pos:list = custom_tune(pos, index, skill_nums, scale)
+                pos: list = custom_tune(pos, index, skill_nums, scale)
             skill_positions.append(pos)
 
     def _chain_battle(self) -> bool:
@@ -580,7 +587,14 @@ class Battle:
 
             skill_list = [gear_left]
 
-            def custom_tune(pos: list, index: int, skill_nums: int, scale: float, *, reverse:int = 1) -> list:
+            def custom_tune(
+                pos: list,
+                index: int,
+                skill_nums: int,
+                scale: float,
+                *,
+                reverse: int = 1,
+            ) -> list:
                 """针对上方的技能位置调整, 呈三角形偏移"""
                 center = skill_nums // 2
 
@@ -590,12 +604,21 @@ class Battle:
                     pos[0] -= (index - center) * 8 * scale * reverse
                 return pos
 
-            Battle._calculate_skills_position(skill_list, (gear_left[0], gear_left[1] - 125 * scale), skill_nums, custom_tune=custom_tune)
+            Battle._calculate_skills_position(
+                skill_list,
+                (gear_left[0], gear_left[1] - 125 * scale),
+                skill_nums,
+                custom_tune=custom_tune,
+            )
             for index in skill3:
                 skill_list[index][1] += 125 * scale
-                skill_list[index] = custom_tune(skill_list[index], index, skill_nums, scale, reverse=-1)
+                skill_list[index] = custom_tune(
+                    skill_list[index], index, skill_nums, scale, reverse=-1
+                )
 
-            skill_list.append([gear_right[0] + 5 * skill_nums * scale, gear_right[1] + 150 * scale])
+            skill_list.append(
+                [gear_right[0] + 5 * skill_nums * scale, gear_right[1] + 150 * scale]
+            )
 
             auto.mouse_drag_link(skill_list)
 
@@ -603,7 +626,7 @@ class Battle:
 
             sleep(1)
             return True
-        except Exception as e:
+        except Exception:
             return False
 
     @staticmethod
@@ -632,7 +655,9 @@ class Battle:
                     sleep(cfg.mouse_action_interval // 1.5)
 
             skill_list.insert(0, gear_left)
-            skill_list.append([gear_right[0] + 5 * skill_nums * scale, gear_right[1] + 150 * scale])
+            skill_list.append(
+                [gear_right[0] + 5 * skill_nums * scale, gear_right[1] + 150 * scale]
+            )
 
             auto.mouse_drag_link(skill_list)
 
@@ -640,5 +665,5 @@ class Battle:
 
             sleep(1)
             return True
-        except Exception as e:
+        except Exception:
             return False

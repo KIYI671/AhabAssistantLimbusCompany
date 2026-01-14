@@ -8,20 +8,21 @@ from module.my_error.my_error import backMainWinError
 from tasks.base.retry import retry
 from tasks.mirror.reward_card import get_reward_card
 
-from time import sleep
 
 @begin_and_finish_time_log(task_name="返回主界面")
 def back_init_menu():
     loop_count = 30
-    auto.model = 'clam'
+    auto.model = "clam"
     while True:
         if cfg.simulator:
-            if cfg.simulator_type ==0 :
+            if cfg.simulator_type == 0:
                 from module.simulator.mumu_control import MumuControl
+
                 if MumuControl.connection_device.check_game_alive() is False:
                     MumuControl.connection_device.start_game()
             else:
                 from module.simulator.simulator_control import SimulatorControl
+
                 if SimulatorControl.connection_device.check_game_alive() is False:
                     SimulatorControl.connection_device.start_game()
         # 自动截图
@@ -31,20 +32,23 @@ def back_init_menu():
         if retry() is False:
             return False
 
-        if cfg.language_in_game == 'zh_cn':
+        if cfg.language_in_game == "zh_cn":
             if auto.click_element("home/window_assets.png") and (
-                    auto.find_element("home/mail_assets.png", model='normal') or auto.find_element(
-                "home/mail_cn_assets.png", model='normal')):
+                auto.find_element("home/mail_assets.png", model="normal")
+                or auto.find_element("home/mail_cn_assets.png", model="normal")
+            ):
                 break
         else:
-            if auto.click_element("home/window_assets.png") and auto.find_element("home/mail_assets.png",
-                                                                                  model='normal'):
+            if auto.click_element("home/window_assets.png") and auto.find_element(
+                "home/mail_assets.png", model="normal"
+            ):
                 break
 
         if auto.find_element("base/notification_close_assets.png"):
-            from tasks.base.retry import kill_game,restart_game
-            from utils.utils import get_timezone,get_day_of_week
-            from datetime import datetime, timedelta, time
+            from tasks.base.retry import kill_game, restart_game
+            from utils.utils import get_timezone, get_day_of_week
+            from datetime import datetime, timedelta
+
             kill_game()
             if get_day_of_week() == 4:
                 get_timezone()
@@ -52,8 +56,12 @@ def back_init_menu():
                 offset = timedelta(hours=cfg.timezone)
                 now_time_offset = now_time + offset
                 # 创建当天10:00和12:00的时间对象（与now_time_offset同日期）
-                today_10am = now_time_offset.replace(hour=10, minute=0, second=0, microsecond=0)
-                today_12pm = now_time_offset.replace(hour=12, minute=0, second=0, microsecond=0)
+                today_10am = now_time_offset.replace(
+                    hour=10, minute=0, second=0, microsecond=0
+                )
+                today_12pm = now_time_offset.replace(
+                    hour=12, minute=0, second=0, microsecond=0
+                )
 
                 # 判断是否在10:00-12:00之间
                 if today_10am <= now_time_offset <= today_12pm:
@@ -76,7 +84,9 @@ def back_init_menu():
             auto.click_element("mirror/road_in_mir/setting_assets.png")
             continue
 
-        if auto.find_element("mirror/road_in_mir/select_encounter_reward_card_assets.png"):
+        if auto.find_element(
+            "mirror/road_in_mir/select_encounter_reward_card_assets.png"
+        ):
             get_reward_card()
 
         # 在剧情中
@@ -117,13 +127,13 @@ def back_init_menu():
             continue
 
         auto.mouse_click_blank()
-        auto.key_press('esc')
+        auto.key_press("esc")
 
         loop_count -= 1
         if loop_count < 20:
             auto.model = "normal"
         if loop_count < 10:
-            auto.model = 'aggressive'
+            auto.model = "aggressive"
         if loop_count < 0:
             log.error("无法返回主界面，不能进行下一步,请手动操作重试")
             raise backMainWinError("无法返回主界面")

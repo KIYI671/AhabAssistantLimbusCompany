@@ -1,8 +1,9 @@
 import time
 from contextlib import contextmanager
 
-from module.simulator.pyminitouch.connection import MNTConnection, MNTServer, safe_connection
+from module.simulator.pyminitouch.connection import MNTConnection, MNTServer
 import module.simulator.pyminitouch.config as config
+
 
 class CommandBuilder(object):
     """Build command str for minitouch.
@@ -33,28 +34,28 @@ class CommandBuilder(object):
         self._content += new_content + "\n"
 
     def commit(self):
-        """ add minitouch command: 'c\n' """
+        """add minitouch command: 'c\n'"""
         self.append("c")
 
     def wait(self, ms):
-        """ add minitouch command: 'w <ms>\n' """
+        """add minitouch command: 'w <ms>\n'"""
         self.append("w {}".format(ms))
         self._delay += ms
 
     def up(self, contact_id):
-        """ add minitouch command: 'u <contact_id>\n' """
+        """add minitouch command: 'u <contact_id>\n'"""
         self.append("u {}".format(contact_id))
 
     def down(self, contact_id, x, y, pressure):
-        """ add minitouch command: 'd <contact_id> <x> <y> <pressure>\n' """
+        """add minitouch command: 'd <contact_id> <x> <y> <pressure>\n'"""
         self.append("d {} {} {} {}".format(contact_id, x, y, pressure))
 
     def move(self, contact_id, x, y, pressure):
-        """ add minitouch command: 'm <contact_id> <x> <y> <pressure>\n' """
+        """add minitouch command: 'm <contact_id> <x> <y> <pressure>\n'"""
         self.append("m {} {} {} {}".format(contact_id, x, y, pressure))
 
     def publish(self, connection):
-        """ apply current commands (_content), to your device """
+        """apply current commands (_content), to your device"""
         self.commit()
         final_content = self._content
         connection.send(final_content)
@@ -62,13 +63,13 @@ class CommandBuilder(object):
         self.reset()
 
     def reset(self):
-        """ clear current commands (_content) """
+        """clear current commands (_content)"""
         self._content = ""
         self._delay = 0
 
 
 class MNTDevice(object):
-    """ minitouch device object
+    """minitouch device object
 
     Sample::
 
@@ -124,6 +125,7 @@ class MNTDevice(object):
             self.server = MNTServer(self.device_id)
         except AssertionError:
             import adbutils
+
             adbutils.adb.kill_server()
             self.start()
         except:
@@ -176,6 +178,7 @@ class MNTDevice(object):
         :param no_up: will not 'up' at the end
         :return:
         """
+
         def transform_xy(x, y):
             """
             将屏幕像素坐标转换为 Minitouch 逻辑坐标
@@ -187,6 +190,7 @@ class MNTDevice(object):
             target_y = int((y / self.real_height) * int(self.connection.max_y))
 
             return target_x, target_y
+
         points = [list(map(int, each_point)) for each_point in points]
 
         _builder = CommandBuilder()
@@ -272,7 +276,7 @@ class MNTDevice(object):
 
 @contextmanager
 def safe_device(device_id):
-    """ use MNTDevice safely """
+    """use MNTDevice safely"""
     _device = MNTDevice(device_id)
     try:
         yield _device

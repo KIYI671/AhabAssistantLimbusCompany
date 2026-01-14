@@ -7,7 +7,6 @@ import getpass
 import os
 import sys
 
-import win32api
 import win32com.client
 from pywintypes import com_error
 
@@ -62,7 +61,7 @@ class ScheduleHelper:
         :type task_name: str
         """
         self._impl.unregister_task(task_name)
-        log.info(f"移除每日任务成功")
+        log.info("移除每日任务成功")
 
 
 class ScheduleHelper_Win32:
@@ -105,7 +104,9 @@ class ScheduleHelper_Win32:
 
         try:
             self.root.RegisterTaskDefinition(task_name, task_def, 6, None, None, 3)
-            log.info(f"创建每日任务成功，执行时间为每日{h if len(str(h))>1 else "0"+str(h)}:{m if len(str(m))>1 else "0"+str(m)}")
+            log.info(
+                f"创建每日任务成功，执行时间为每日{h if len(str(h)) > 1 else '0' + str(h)}:{m if len(str(m)) > 1 else '0' + str(m)}"
+            )
         except com_error as e:
             log.error(f"创建任务 {task_name} 失败")
             raise e
