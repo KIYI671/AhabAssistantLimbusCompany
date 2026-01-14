@@ -166,7 +166,6 @@ class UpdateThread(QThread):
                 timeout=10,
                 headers=cfg.useragent
             )
-        response.raise_for_status()
         if cdk == '':
             # 返回获取的最新发布版本信息
             return response.json()["data"]
