@@ -1,6 +1,6 @@
 /* dark - Qt-compatible styles only */
 QTextBrowser {
-    color: #c9d1d9;
+    color: rgb(201, 209, 217);
     background-color: rgb(28, 28, 28);
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, "Microsoft YaHei", sans-serif;
     font-size: 16px;

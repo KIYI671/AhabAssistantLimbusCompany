@@ -4,13 +4,13 @@ from qfluentwidgets import qconfig
 
 # 全局字体配置
 FONT_FAMILIES = [
-    "Segoe UI",          # Windows 现代UI字体
-    "Microsoft YaHei",   # 微软雅黑
-    "微软雅黑",          # 微软雅黑中文名
+    "Segoe UI",  # Windows 现代UI字体
+    "Microsoft YaHei",  # 微软雅黑
+    "微软雅黑",  # 微软雅黑中文名
     "Noto Sans CJK SC",  # 跨平台中文字体
-    "sans-serif",        # 最后回退到无衬线字体
-    "SansSerif",         # 无衬线字体另一个名称
-    "SimSun",            # 宋体
+    "sans-serif",  # 最后回退到无衬线字体
+    "SansSerif",  # 无衬线字体另一个名称
+    "SimSun",  # 宋体
 ]
 
 # 主窗口样式配置
@@ -50,7 +50,7 @@ SETTING_LAYOUT_STYLES = {
     "light": {
         "border": "1px solid rgba(0, 0, 0, 0.25)",
         "border_hover": "1px solid rgba(0, 0, 0, 0.25)",
-    }
+    },
 }
 
 
@@ -60,7 +60,7 @@ def get_setting_layout_style(is_dark: bool) -> dict:
 
 
 LOG_TEXT_EDIT_STYLES = {
-    "dark": '''
+    "dark": """
         TextEdit {
             color: rgba(255, 255, 255, 0.75);
             background-color: rgba(255, 255, 255, 0.01);
@@ -76,8 +76,8 @@ LOG_TEXT_EDIT_STYLES = {
             background-color: rgba(255, 255, 255, 0.01);
             border: 1px solid rgba(255, 255, 255, 0.25);
         }
-    ''',
-    "light": '''
+    """,
+    "light": """
         TextEdit {
             color: rgba(0, 0, 0, 0.75);
             background-color: rgba(0, 0, 0, 0.01);
@@ -93,17 +93,17 @@ LOG_TEXT_EDIT_STYLES = {
             background-color: rgba(0, 0, 0, 0.01);
             border: 1px solid rgba(0, 0, 0, 0.25);
         }
-    ''',
+    """,
 }
 
 
 def get_log_text_edit_qss() -> tuple[str, str]:
-    '''Return (light_qss, dark_qss) for the log TextEdit.'''
+    """Return (light_qss, dark_qss) for the log TextEdit."""
     return LOG_TEXT_EDIT_STYLES["light"], LOG_TEXT_EDIT_STYLES["dark"]
 
 
 THEME_AWARE_TEXT_BROWSER_STYLES = {
-    "dark": '''
+    "dark": """
         ThemeAwareTextBrowser,
         ThemeAwareTextBrowser:hover,
         ThemeAwareTextBrowser:focus,
@@ -111,8 +111,8 @@ THEME_AWARE_TEXT_BROWSER_STYLES = {
             background-color: rgba(28, 28, 28, 1);
             border: none;
         }
-    ''',
-    "light": '''
+    """,
+    "light": """
         ThemeAwareTextBrowser,
         ThemeAwareTextBrowser:hover,
         ThemeAwareTextBrowser:focus,
@@ -120,10 +120,12 @@ THEME_AWARE_TEXT_BROWSER_STYLES = {
             background-color: rgba(255, 255, 255, 1);
             border: none;
         }
-    ''',
+    """,
 }
 
 
 def get_theme_aware_text_browser_qss() -> tuple[str, str]:
-    '''Return (light_qss, dark_qss) for ThemeAwareTextBrowser.'''
-    return THEME_AWARE_TEXT_BROWSER_STYLES["light"], THEME_AWARE_TEXT_BROWSER_STYLES["dark"]
+    """Return (light_qss, dark_qss) for ThemeAwareTextBrowser."""
+    return THEME_AWARE_TEXT_BROWSER_STYLES["light"], THEME_AWARE_TEXT_BROWSER_STYLES[
+        "dark"
+    ]

@@ -182,19 +182,19 @@ class SettingInterface(ScrollArea):
             QT_TRANSLATE_NOOP("ComboBoxSettingCard", "语言"),
             QT_TRANSLATE_NOOP("ComboBoxSettingCard", "设置程序 UI 使用的语言"),
             texts=SUPPORTED_LANG_NAME,
-            parent=self.personal_group
+            parent=self.personal_group,
         )
         self.theme_card = ComboBoxSettingCard(
             "theme_mode",
             FIF.BRUSH,
-            QT_TRANSLATE_NOOP("ComboBoxSettingCard", '应用主题'),
-            QT_TRANSLATE_NOOP("ComboBoxSettingCard", '调整应用的主题外观'),
+            QT_TRANSLATE_NOOP("ComboBoxSettingCard", "应用主题"),
+            QT_TRANSLATE_NOOP("ComboBoxSettingCard", "调整应用的主题外观"),
             texts={
-                QT_TRANSLATE_NOOP("ComboBoxSettingCard", '跟随系统'): "AUTO",
-                QT_TRANSLATE_NOOP("ComboBoxSettingCard", '亮色模式'): "LIGHT",
-                QT_TRANSLATE_NOOP("ComboBoxSettingCard", '深色模式'): "DARK",
+                QT_TRANSLATE_NOOP("ComboBoxSettingCard", "跟随系统"): "AUTO",
+                QT_TRANSLATE_NOOP("ComboBoxSettingCard", "亮色模式"): "LIGHT",
+                QT_TRANSLATE_NOOP("ComboBoxSettingCard", "深色模式"): "DARK",
             },
-            parent=self.personal_group
+            parent=self.personal_group,
         )
         self.zoom_card = ComboBoxSettingCard(
             "zoom_scale",

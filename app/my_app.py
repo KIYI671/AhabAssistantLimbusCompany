@@ -4,10 +4,33 @@ import re
 import subprocess
 from enum import Enum
 
-from PySide6.QtCore import Qt, QLocale, QTimer, QRect, QPropertyAnimation, QEasingCurve, QPoint
+from PySide6.QtCore import (
+    Qt,
+    QLocale,
+    QTimer,
+    QRect,
+    QPropertyAnimation,
+    QEasingCurve,
+    QPoint,
+)
 from PySide6.QtGui import QIcon, QPainter, QColor, QFont, QRegion, QPolygon, QTransform
-from PySide6.QtWidgets import QApplication, QHBoxLayout, QStackedWidget, QVBoxLayout, QLabel, QWidget, QGraphicsOpacityEffect
-from qfluentwidgets import setThemeColor, ProgressRing, qconfig, setTheme, Theme, isDarkTheme
+from PySide6.QtWidgets import (
+    QApplication,
+    QHBoxLayout,
+    QStackedWidget,
+    QVBoxLayout,
+    QLabel,
+    QWidget,
+    QGraphicsOpacityEffect,
+)
+from qfluentwidgets import (
+    setThemeColor,
+    ProgressRing,
+    qconfig,
+    setTheme,
+    Theme,
+    isDarkTheme,
+)
 from qfluentwidgets.components.widgets.frameless_window import FramelessWindow
 from qframelesswindow import StandardTitleBar
 
@@ -35,8 +58,14 @@ class Language(Enum):
     ENGLISH = QLocale(QLocale.Language.English)
     AUTO = QLocale()
 
+
 from app.widget.dev_watermark import DevWatermark
-from app.common.ui_config import apply_font_config, get_main_window_style, get_title_bar_style
+from app.common.ui_config import (
+    apply_font_config,
+    get_main_window_style,
+    get_title_bar_style,
+)
+
 
 # 使用无框窗口
 class MainWindow(FramelessWindow):
@@ -47,12 +76,12 @@ class MainWindow(FramelessWindow):
         apply_font_config()
 
         self.setTitleBar(StandardTitleBar(self))
-        self.setWindowIcon(QIcon('./assets/logo/my_icon_256X256.ico'))
+        self.setWindowIcon(QIcon("./assets/logo/my_icon_256X256.ico"))
         self.setWindowTitle(f"Ahab Assistant Limbus Company - {cfg.version}")
         self.setObjectName("MainWindow")
         setThemeColor("#0078D4")
         LanguageManager().register_component(self)
-        
+
         # Apply theme
         setTheme(getattr(Theme, cfg.get_value("theme_mode", "AUTO"), Theme.AUTO))
 
@@ -84,11 +113,10 @@ class MainWindow(FramelessWindow):
             self.move(w // 2 - self.width() // 2, h // 2 - self.height() // 2)
 
         self.pivot = FullWidthPivot()  # 顶部 Tab 导航栏
-        self.stackedWidget = QStackedWidget() # 页面容器（一次只显示一个页面）
-        self.vBoxLayout = QVBoxLayout(self) # 主布局（垂直）
-        self.HBoxLayout = QHBoxLayout() # 水平布局
+        self.stackedWidget = QStackedWidget()  # 页面容器（一次只显示一个页面）
+        self.vBoxLayout = QVBoxLayout(self)  # 主布局（垂直）
+        self.HBoxLayout = QHBoxLayout()  # 水平布局
         # self.stackedWidget.setStyleSheet("border: 1px solid black;")
-
 
         # 创建子界面
         self.farming_interface = FarmingInterface(self)
@@ -97,14 +125,14 @@ class MainWindow(FramelessWindow):
         # self.team_setting = TeamSettingCard(self)
 
         # 向 pivot 添加子界面
-        self.addSubInterface(self.farming_interface, 'farming_interface', '一键长草')
+        self.addSubInterface(self.farming_interface, "farming_interface", "一键长草")
         if cfg.language_in_program == "zh_cn":
             self.help_interface = MarkdownViewer("./assets/doc/zh/How_to_use.md")
         else:
             self.help_interface = MarkdownViewer("./assets/doc/en/How_to_use_EN.md")
-        self.addSubInterface(self.help_interface, 'help_interface', '帮助')
-        self.addSubInterface(self.tools_interface, 'tools_interface', '小工具')
-        self.addSubInterface(self.setting_interface, 'setting_interface', '设置')
+        self.addSubInterface(self.help_interface, "help_interface", "帮助")
+        self.addSubInterface(self.tools_interface, "tools_interface", "小工具")
+        self.addSubInterface(self.setting_interface, "setting_interface", "设置")
         # self.addSubInterface(self.team_setting, 'team_setting', '队伍设置')
 
         self.HBoxLayout.addWidget(self.pivot)
@@ -112,18 +140,18 @@ class MainWindow(FramelessWindow):
         self.vBoxLayout.addLayout(self.HBoxLayout, 0)
         self.vBoxLayout.addWidget(self.stackedWidget)
         self.vBoxLayout.setContentsMargins(30, 20, 30, 0)
-        self.pivot.setMaximumHeight(50)                  
-
+        self.pivot.setMaximumHeight(50)
 
         # Tab 切换逻辑：点击 Tab 时切换对应页面
         self.pivot.currentItemChanged.connect(
-            lambda k: self.stackedWidget.setCurrentWidget(self.findChild(QWidget, k)))
+            lambda k: self.stackedWidget.setCurrentWidget(self.findChild(QWidget, k))
+        )
         self.pivot.setCurrentItem(self.farming_interface.objectName())  # 设置默认Tab
-        
+
         # 標題置頂
         self.titleBar.raise_()
         # Dev Watermark
-        if os.environ.get('AALC_DEV_MODE') == '1' or not getattr(sys, 'frozen', False):
+        if os.environ.get("AALC_DEV_MODE") == "1" or not getattr(sys, "frozen", False):
             self.dev_watermark = DevWatermark(self)
             self.dev_watermark.move(0, 0)
             self.dev_watermark.raise_()
@@ -193,29 +221,30 @@ class MainWindow(FramelessWindow):
 
         if start_flag:
             QTimer.singleShot(3000, mediator.finished_signal.emit)
-            
+
     def _apply_theme_styles(self):
         is_dark = isDarkTheme()
         mainWindow_style = get_main_window_style(is_dark)
         titleBar_style = get_title_bar_style(is_dark)
-        
-        self.setStyleSheet(f"MainWindow {{ background-color: {mainWindow_style['bg_color']}; }}")
+
+        self.setStyleSheet(
+            f"MainWindow {{ background-color: {mainWindow_style['bg_color']}; }}"
+        )
         self.titleBar.titleLabel.setStyleSheet(
             f"QLabel {{ background: transparent; font-size: 13px; padding: 0 4px; color: {titleBar_style['text_color']}; }}"
         )
         for btn in [self.titleBar.minBtn, self.titleBar.maxBtn, self.titleBar.closeBtn]:
-            btn.setNormalColor(titleBar_style['btn_color'])
-            btn.setHoverColor(titleBar_style['btn_color'])
-            btn.setPressedColor(titleBar_style['btn_color'])
+            btn.setNormalColor(titleBar_style["btn_color"])
+            btn.setHoverColor(titleBar_style["btn_color"])
+            btn.setPressedColor(titleBar_style["btn_color"])
         if not is_dark:
             self.titleBar.closeBtn.setHoverColor(Qt.white)
-
 
     def closeEvent(self, e):
         # 保存窗口位置
         cfg.set_value("window_position_x", self.x())
         cfg.set_value("window_position_y", self.y())
-        
+
         if (
             self.farming_interface.interface_left.my_script is not None
             and self.farming_interface.interface_left.my_script.isRunning()

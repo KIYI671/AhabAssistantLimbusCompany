@@ -464,7 +464,9 @@ class FarmingInterfaceCenter(QWidget):
         try:
             """切换页面（带越界保护）"""
             page_index = page_name_and_index[target]
-            self.setting_page.setCurrentIndex(page_index) # 当调用 setCurrentIndex 时，StackedWidget 会自动播放过渡动画
+            self.setting_page.setCurrentIndex(
+                page_index
+            )  # 当调用 setCurrentIndex 时，StackedWidget 会自动播放过渡动画
             cfg.set_value("default_page", page_index)
         except Exception as e:
             log.error(f"【异常】switch_to_page 出错：{type(e).__name__}:{e}")
@@ -491,17 +493,16 @@ class FarmingInterfaceRight(QWidget):
         self.last_position = 0
 
         self._apply_theme_style()
-        
+
         self.timer = QTimer()
         self.timer.timeout.connect(lambda option=0: self.set_log(option))
         self.timer.start(1000)  # 每秒更新一次
 
         self.connect_mediator()
 
-
     def __init_widget(self):
         self.main_layout = QVBoxLayout(self)
-        
+
     def __init_card(self):
         self.scroll_log_edit = TextEdit()
         self.scroll_log_edit.setAutoFormatting(QTextEdit.AutoFormattingFlag.AutoAll)
@@ -510,7 +511,7 @@ class FarmingInterfaceRight(QWidget):
     def _apply_theme_style(self):
         light, dark = get_log_text_edit_qss()
         setCustomStyleSheet(self.scroll_log_edit, light, dark)
-        self.scroll_log_edit.layer.hide() # 隐藏指示线
+        self.scroll_log_edit.layer.hide()  # 隐藏指示线
 
     def __init_layout(self):
         self.main_layout.addWidget(self.scroll_log_edit)

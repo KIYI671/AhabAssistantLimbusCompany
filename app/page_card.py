@@ -1,19 +1,39 @@
 import os
 
 from PySide6.QtCore import Qt, QUrl, QCoreApplication, QRect, QTime
-from PySide6.QtGui import QDesktopServices, QTextDocument, QImage, QPixmap, QPainter, QColor
+from PySide6.QtGui import (
+    QDesktopServices,
+    QTextDocument,
+    QImage,
+    QPixmap,
+    QPainter,
+    QColor,
+)
 from PySide6.QtWidgets import QWidget, QFrame, QHBoxLayout, QTextBrowser, QVBoxLayout
 from markdown_it import MarkdownIt
 from qfluentwidgets import CheckBox, TimePicker
 from mdit_py_plugins.anchors import anchors_plugin
 from qfluentwidgets import FluentIcon as FIF
-from qfluentwidgets import SegmentedWidget, ScrollArea, TransparentToolButton, isDarkTheme, qconfig, TextBrowser, setCustomStyleSheet
+from qfluentwidgets import (
+    SegmentedWidget,
+    ScrollArea,
+    TransparentToolButton,
+    isDarkTheme,
+    qconfig,
+    TextBrowser,
+    setCustomStyleSheet,
+)
 from app.common.ui_config import get_theme_aware_text_browser_qss
 from qfluentwidgets.window.stacked_widget import StackedWidget
 
 from app import *
-from app.base_combination import LabelWithComboBox, LabelWithSpinBox, MirrorTeamCombination, \
-    MirrorSpinBox, TextProgressBar
+from app.base_combination import (
+    LabelWithComboBox,
+    LabelWithSpinBox,
+    MirrorTeamCombination,
+    MirrorSpinBox,
+    TextProgressBar,
+)
 from app.base_tools import BaseCheckBox
 from app.language_manager import LanguageManager, SUPPORTED_GAME_LANG_NAME
 from module.config import cfg
@@ -358,7 +378,6 @@ class PageMirror(PageCard):
         self.setObjectName("page_mirror")
         self.__init_card()
         self.__init_layout()
-        
 
         self.get_setting()
         self.refresh()
@@ -699,11 +718,12 @@ class PageMirror(PageCard):
 
         super().retranslateUi()
 
+
 def transform_image_url(self, tokens, idx, options, env):
     """将本地图片路径转换为 'dimmed:' scheme 以触发 loadResource 处理"""
     token = tokens[idx]
     src = token.attrs.get("src", "")
-    
+
     if isinstance(src, str) and not src.startswith(("http://", "https://", "dimmed:")):
         url = QUrl(src)
         new_src = ("." + url.path()) if url.path().startswith("/") else src
@@ -712,18 +732,18 @@ def transform_image_url(self, tokens, idx, options, env):
     return self.image(tokens, idx, options, env)
 
 
-
 class ThemeAwareTextBrowser(TextBrowser):
     """
     支持主题感知图片渲染的自定义 TextBrowser。
-    
+
     重写 loadResource 处理 'dimmed:' URI scheme，
     在深色模式下对图片应用半透明黑色叠加层以降低亮度。
     """
+
     def __init__(self, parent=None):
         super().__init__(parent)
         self._apply_theme_style()
-    
+
     def _apply_theme_style(self):
         """设置 HTML body 一致的背景色"""
         self.layer.hide()  # 隐藏指示线
@@ -734,7 +754,7 @@ class ThemeAwareTextBrowser(TextBrowser):
         """对图片应用暗化效果"""
         dimmed = QImage(image.size(), QImage.Format_ARGB32_Premultiplied)
         dimmed.fill(Qt.transparent)
-        
+
         painter = QPainter(dimmed)
         painter.drawImage(0, 0, image)
         painter.setCompositionMode(QPainter.CompositionMode_SourceOver)
@@ -747,18 +767,17 @@ class ThemeAwareTextBrowser(TextBrowser):
         if type == QTextDocument.ImageResource and name.scheme() == "dimmed":
             # 提取实际路径
             path = name.path() or name.toString().split(":", 1)[1]
-            
+
             image = QImage(path)
             if not image.isNull():
                 return self._dimImage(image) if isDarkTheme() else image
-                
+
         return super().loadResource(type, name)
 
 
-
 class MarkdownViewer(QWidget):
-    def __init__(self, file_path: str, parent = None):
-        super().__init__(parent = parent)
+    def __init__(self, file_path: str, parent=None):
+        super().__init__(parent=parent)
         layout = QVBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)  # 移除布局边距
         layout.setSpacing(0)  # 移除布局间距
@@ -772,11 +791,6 @@ class MarkdownViewer(QWidget):
         self.text_browser.setContextMenuPolicy(
             Qt.ContextMenuPolicy.NoContextMenu
         )  # 禁用右键菜单
-
-        css_path = "assets/styles/github-markdown-light.css"
-        with open(css_path, "r", encoding="utf-8") as css_file:
-            css_content = css_file.read()
-            self.text_browser.setStyleSheet(css_content)
 
         self.md = (
             MarkdownIt("commonmark", {"html": True})
@@ -805,7 +819,7 @@ class MarkdownViewer(QWidget):
 
         layout.addWidget(self.text_browser)
         self.help_path = file_path
-        
+
         # Connect theme change signal after help_path is set
         qconfig.themeChanged.connect(self.updateStyle)
         self.reset_viewer()
@@ -878,7 +892,7 @@ class MarkdownViewer(QWidget):
             css_path = "assets/styles/github-markdown-dark.css"
         else:
             css_path = "assets/styles/github-markdown-light.css"
-        
+
         if os.path.exists(css_path):
             with open(css_path, "r", encoding="utf-8") as css_file:
                 return css_file.read()

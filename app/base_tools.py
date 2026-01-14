@@ -10,6 +10,7 @@ from PySide6.QtWidgets import (
     QWidget,
     QGridLayout,
 )
+from qfluentwidgets import isDarkTheme, qconfig
 from qfluentwidgets import FluentIcon as FIF
 from qfluentwidgets import (
     FluentIconBase,
@@ -64,7 +65,7 @@ class BaseSettingLayout(QFrame):
         style = get_setting_layout_style(isDarkTheme())
         self.setStyleSheet(f"""
             BaseSettingLayout {{
-                border: {style['border']}; /* 边框 */
+                border: {style["border"]}; /* 边框 */
                 border-radius: 5px; /* 圆角 */
                 padding: 10px;   /* 内边距 */
                 background-color: transparent; /* 背景透明 */
