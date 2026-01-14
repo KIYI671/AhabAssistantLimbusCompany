@@ -2,7 +2,7 @@ import base64
 import datetime
 
 import pyperclip
-from PySide6.QtCore import QObject, QRect, QUrl, Signal
+from PySide6.QtCore import QObject, QRect, QUrl, Signal, QTime
 from PySide6.QtGui import (
     QColor,
     QDesktopServices,
@@ -24,7 +24,7 @@ from qfluentwidgets import (
     SettingCard,
     SettingCardGroup,
     SwitchButton,
-    setCustomStyleSheet,
+    setCustomStyleSheet, TimePicker,
 )
 
 from app.base_tools import *
@@ -44,12 +44,12 @@ from utils.utils import decrypt_string, encrypt_string, get_timezone
 
 class CheckBoxWithButton(QFrame):
     def __init__(
-        self,
-        check_box_name,
-        check_box_title,
-        check_box_icon: Union[str, QIcon, FluentIconBase, None],
-        button_name,
-        parent=None,
+            self,
+            check_box_name,
+            check_box_title,
+            check_box_icon: Union[str, QIcon, FluentIconBase, None],
+            button_name,
+            parent=None,
     ):
         super().__init__(parent)
         # self.setFixedHeight(80)
@@ -107,13 +107,13 @@ class CheckBoxWithLineEdit(QFrame):
 
 class CheckBoxWithComboBox(QFrame):
     def __init__(
-        self,
-        check_box_name,
-        check_box_title,
-        check_box_icon: Union[str, QIcon, FluentIconBase, None],
-        combo_box_name,
-        combo_box_width=None,
-        parent=None,
+            self,
+            check_box_name,
+            check_box_title,
+            check_box_icon: Union[str, QIcon, FluentIconBase, None],
+            combo_box_name,
+            combo_box_width=None,
+            parent=None,
     ):
         super().__init__(parent)
         # self.setFixedHeight(80)
@@ -185,13 +185,13 @@ class LabelWithComboBox(QFrame):
 
 class LabelWithSpinBox(QFrame):
     def __init__(
-        self,
-        label_text,
-        box_name,
-        parent=None,
-        double=False,
-        min_value=0.1,
-        min_step=0.01,
+            self,
+            label_text,
+            box_name,
+            parent=None,
+            double=False,
+            min_value=0.1,
+            min_step=0.01,
     ):
         super().__init__(parent)
         self.vbox_layout = QVBoxLayout(self)
@@ -212,7 +212,7 @@ class LabelWithSpinBox(QFrame):
 
 class MirrorSpinBox(QFrame):
     def __init__(
-        self, label_text, box_name, parent=None, double=False, min_value=0, min_step=1
+            self, label_text, box_name, parent=None, double=False, min_value=0, min_step=1
     ):
         super().__init__(parent)
         self.box_layout = QHBoxLayout(self)
@@ -231,13 +231,13 @@ class MirrorSpinBox(QFrame):
 
 class MirrorTeamCombination(QFrame):
     def __init__(
-        self,
-        team_number,
-        check_box_name,
-        check_box_title,
-        check_box_icon: Union[str, QIcon, FluentIconBase, None],
-        button_name,
-        parent=None,
+            self,
+            team_number,
+            check_box_name,
+            check_box_title,
+            check_box_icon: Union[str, QIcon, FluentIconBase, None],
+            button_name,
+            parent=None,
     ):
         super().__init__(parent)
         self.setObjectName(f"team_{team_number}")
@@ -387,16 +387,16 @@ class MirrorTeamCombination(QFrame):
 
 class SinnerSelect(QFrame):
     def __init__(
-        self,
-        config_name,
-        label_title,
-        check_box_icon: Union[str, QIcon, FluentIconBase, None],
-        sinner_img,
-        crop_left=13,
-        crop_right=13,
-        crop_top=93,
-        crop_bottom=90,
-        parent=None,
+            self,
+            config_name,
+            label_title,
+            check_box_icon: Union[str, QIcon, FluentIconBase, None],
+            sinner_img,
+            crop_left=13,
+            crop_right=13,
+            crop_top=93,
+            crop_bottom=90,
+            parent=None,
     ):
         super().__init__(parent)
         self.setObjectName(config_name)
@@ -569,13 +569,13 @@ class ComboBoxSettingCard(SettingCard):
     valueChanged = Signal()
 
     def __init__(
-        self,
-        config_name: str,
-        icon: Union[str, QIcon, FluentIconBase],
-        title,
-        content=None,
-        texts=None,
-        parent=None,
+            self,
+            config_name: str,
+            icon: Union[str, QIcon, FluentIconBase],
+            title,
+            content=None,
+            texts=None,
+            parent=None,
     ):
         super().__init__(icon, title, content, parent)
         self.config_name = config_name
@@ -622,7 +622,7 @@ class BaseSettingCardGroup(SettingCardGroup):
 
 class BasePushSettingCard(PushSettingCard):
     def __init__(
-        self, text, icon: str | QIcon | FluentIconBase, title, content=None, parent=None
+            self, text, icon: str | QIcon | FluentIconBase, title, content=None, parent=None
     ):
         super().__init__(text, icon, title, content, parent)
         self.text = text
@@ -650,13 +650,13 @@ class BasePrimaryPushSettingCard(PrimaryPushSettingCard):
 
 class PushSettingCardMirrorchyan(SettingCard):
     def __init__(
-        self,
-        text,
-        icon: Union[str, QIcon, FluentIconBase],
-        title,
-        update_callback,
-        config_name,
-        parent: QObject | None = None,
+            self,
+            text,
+            icon: Union[str, QIcon, FluentIconBase],
+            title,
+            update_callback,
+            config_name,
+            parent: QObject | None = None,
     ):
         self.config_value = decrypt_string(str(cfg.get_value(config_name)))
         self.update_callback = update_callback
@@ -709,12 +709,12 @@ class SwitchSettingCard(SettingCard):
     checkedChanged = Signal(bool)
 
     def __init__(
-        self,
-        icon: Union[str, QIcon, FluentIconBase],
-        title,
-        content=None,
-        config_name: str = None,
-        parent=None,
+            self,
+            icon: Union[str, QIcon, FluentIconBase],
+            title,
+            content=None,
+            config_name: str = None,
+            parent=None,
     ):
         super().__init__(icon, title, content, parent)
         self.config_name = config_name
@@ -751,12 +751,12 @@ class SwitchSettingCard(SettingCard):
 class PushSettingCardDate(BasePushSettingCard):
     # clicked = pyqtSignal()
     def __init__(
-        self,
-        text,
-        icon: Union[str, QIcon, FluentIconBase],
-        title,
-        config_name,
-        parent=None,
+            self,
+            text,
+            icon: Union[str, QIcon, FluentIconBase],
+            title,
+            config_name,
+            parent=None,
     ):
         self.config_name = config_name
         self.config_value = datetime.datetime.fromtimestamp(cfg.get_value(config_name))
@@ -779,14 +779,14 @@ class PushSettingCardDate(BasePushSettingCard):
 class PushSettingCardChance(BasePushSettingCard):
 
     def __init__(
-        self,
-        text,
-        icon: Union[str, QIcon, FluentIconBase],
-        title,
-        max_value=3,
-        content=None,
-        config_name: str = None,
-        parent=None,
+            self,
+            text,
+            icon: Union[str, QIcon, FluentIconBase],
+            title,
+            max_value=3,
+            content=None,
+            config_name: str = None,
+            parent=None,
     ):
         super().__init__(text, icon, title, content, parent)
         self.config_name = config_name
@@ -809,14 +809,74 @@ class PushSettingCardChance(BasePushSettingCard):
             self.line_text.setText(str(message_box.getValue()))
 
 
+class DailySettingCard(SwitchSettingCard):
+
+    def __init__(
+            self,
+            icon: Union[str, QIcon, FluentIconBase],
+            title,
+            content=None,
+            config_name: str = None,
+            parent=None,
+    ):
+        super().__init__(icon, title, content, config_name, parent)
+        self.config_name = config_name
+        self.autodaily_timepicker = TimePicker()
+        autodaily_time = cfg.get_value("autodaily_time") or "00:00"
+        autodaily_qtime = QTime.fromString(autodaily_time, "HH:mm")
+        if not autodaily_qtime.isValid():
+            autodaily_qtime = QTime(0, 0)
+        self.autodaily_timepicker.setTime(autodaily_qtime)
+        current_count = self.hBoxLayout.count()
+        self.hBoxLayout.insertWidget(current_count - 2, self.autodaily_timepicker)
+        self.hBoxLayout.insertSpacing(current_count - 1, 20)
+        self.autodaily_timepicker.setDisabled(not self.switchButton.isChecked())
+        self.autodaily_timepicker.timeChanged.connect(self.__onAutoDailyTimepickerChanged)
+
+    def __connect_signal(self):
+        self.switchButton.checkedChanged.connect(
+            self.__onAutoDailyCheckboxChanged
+        )
+        self.autodaily_timepicker.timeChanged.connect(
+            self.__onAutoDailyTimepickerChanged
+        )
+
+    @staticmethod
+    def __autodaily_taskname() -> str:
+        return "AALC Daily Task"
+
+    def __onAutoDailyCheckboxChanged(self, isChecked):
+        from utils.schedule_helper import ScheduleHelper
+        helper = ScheduleHelper()
+        task_name = self.__autodaily_taskname()
+
+        cfg.set_value(self.config_name, isChecked)
+        if isChecked:
+            self.autodaily_timepicker.setDisabled(False)
+            time = self.autodaily_timepicker.getTime()
+            helper.register_daily_task(task_name, "start --exit", time.hour(), time.minute())
+        else:
+            self.autodaily_timepicker.setDisabled(True)
+            helper.unregister_task(task_name)
+
+    def __onAutoDailyTimepickerChanged(self, time: QTime):
+        from utils.schedule_helper import ScheduleHelper
+        helper = ScheduleHelper()
+        task_name = self.__autodaily_taskname()
+
+        cfg.set_value("autodaily_time", time.toString("HH:mm"))
+        helper.unregister_task(task_name)
+        helper.register_daily_task(task_name, "start --exit", time.hour(), time.minute())
+
+
 class HotkeySettingCard(BasePushSettingCard):
     def __init__(
-        self,
-        text,
-        icon: str | QIcon | FluentIconBase,
-        title,
-        hotkeys: dict[str, str],
-        parent=None,
+            self,
+            text,
+            icon: str | QIcon | FluentIconBase,
+            title,
+            hotkeys: dict[str, str],
+            parent=None,
     ):
         super().__init__(text, icon, title, "", parent)
         self.button.clicked.connect(self.__on_clicked)
@@ -852,7 +912,6 @@ class KeyButton(PrimaryPushButton):
 
 
 class KeyEditButton(PushButton):
-
     kill_key_input = Signal()
 
     def __init__(self, key_config: str, parent=None):
@@ -914,7 +973,6 @@ class KeyEditButton(PushButton):
 
 
 class KeyItem(QFrame):
-
     kill_key_item = Signal(object)
 
     def __init__(self, key_config: str, content: str, parent=None):
@@ -949,7 +1007,6 @@ class HotkeyEditCard(MessageBox):
 
 
 class HotketInputCard(MessageBox):
-
     kill_key_input = Signal()
 
     SHIFT_KEYS = {

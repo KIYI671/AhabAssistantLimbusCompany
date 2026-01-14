@@ -20,6 +20,8 @@ timezone: None # 当前时区相对于东九区的偏移量，如东八区为1�
 
 zoom_scale: 0 # 缩放比例
 autostart: False # 自启动
+autodaily: False # enable auto daily tasks
+autodaily_time: "00:00" # auto daily run time (HH:mm)
 
 # 脚本运行速度设置
 screenshot_interval: 0.85    # 截图间隔时间
@@ -58,8 +60,6 @@ select_team_by_order: False # 是否按顺序(而非名称)选择队伍
 
 # 是否进行日常本
 daily_task: False # 是否进行日常本
-autodaily: False # enable auto daily tasks
-autodaily_time: "00:00" # auto daily run time (HH:mm)
 set_EXP_count: 1 # 设置经验本的次数
 set_thread_count: 3 # 设置纽本的次数
 daily_teams: 1 # 设置日常本使用的队伍

@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from PySide6.QtCore import QT_TRANSLATE_NOOP, Qt, QUrl
+from PySide6.QtCore import QT_TRANSLATE_NOOP, Qt, QUrl, QTime
 from PySide6.QtGui import QDesktopServices
 from PySide6.QtWidgets import QFileDialog, QWidget
 from qfluentwidgets import ExpandLayout
@@ -16,7 +16,7 @@ from app.base_combination import (
     PushSettingCardChance,
     PushSettingCardDate,
     PushSettingCardMirrorchyan,
-    SwitchSettingCard,
+    SwitchSettingCard, DailySettingCard,
 )
 from app.card.messagebox_custom import BaseInfoBar
 from app.language_manager import SUPPORTED_LANG_NAME, LanguageManager
@@ -157,6 +157,20 @@ class SettingInterface(ScrollArea):
             cfg.game_path,
             parent=self.game_path_group,
         )
+        self.autostart_card = SwitchSettingCard(
+            FIF.POWER_BUTTON,
+            QT_TRANSLATE_NOOP("SwitchSettingCard", "开机时启动 AALC"),
+            "",
+            "autostart",
+            parent=self.game_path_group,
+        )
+        self.autodaily_card = DailySettingCard(
+            FIF.HISTORY,
+            QT_TRANSLATE_NOOP("DailySettingCard", "定时执行 AALC"),
+            QT_TRANSLATE_NOOP("DailySettingCard", "如果计算机处于启动状态，将在指定时间执行 AALC 任务"),
+            "autodaily",
+            parent=self.game_path_group,
+        )
 
         self.personal_group = BaseSettingCardGroup(
             QT_TRANSLATE_NOOP("BaseSettingCardGroup", "个性化"), self.scroll_widget
@@ -202,13 +216,6 @@ class SettingInterface(ScrollArea):
                     "BasePushSettingCard", "恢复脚本运行"
                 ): "resume_hotkey",
             },
-            parent=self.personal_group,
-        )
-        self.autostart_card = SwitchSettingCard(
-            FIF.PLAY,  # TODO: 把这个换了
-            QT_TRANSLATE_NOOP("SwitchSettingCard", "开机时启动 AALC"),
-            "",
-            "autostart",
             parent=self.personal_group,
         )
 
@@ -304,11 +311,12 @@ class SettingInterface(ScrollArea):
         )
 
         self.game_path_group.addSettingCard(self.game_path_card)
+        self.game_path_group.addSettingCard(self.autostart_card)
+        self.game_path_group.addSettingCard(self.autodaily_card)
 
         self.personal_group.addSettingCard(self.language_card)
         self.personal_group.addSettingCard(self.zoom_card)
         self.personal_group.addSettingCard(self.hotkey_card)
-        self.personal_group.addSettingCard(self.autostart_card)
 
         self.update_group.addSettingCard(self.check_update_card)
         self.update_group.addSettingCard(self.update_source_card)
@@ -360,6 +368,12 @@ class SettingInterface(ScrollArea):
         )
         self.autostart_card.switchButton.checkedChanged.connect(
             self.__onAutostartCardChanged
+        )
+        self.autodaily_card.switchButton.checkedChanged.connect(
+            self.__onAutoDailyCheckboxChanged
+        )
+        self.autodaily_card.autodaily_timepicker.timeChanged.connect(
+            self.__onAutoDailyTimepickerChanged
         )
 
         self.github_card.clicked.connect(
@@ -435,6 +449,33 @@ class SettingInterface(ScrollArea):
         else:
             helper.unregister_task(TASK_NAME)
 
+    @staticmethod
+    def __autodaily_taskname() -> str:
+        return "AALC Daily Task"
+
+    def __onAutoDailyCheckboxChanged(self, isChecked):
+        from utils.schedule_helper import ScheduleHelper
+        helper = ScheduleHelper()
+        task_name = self.__autodaily_taskname()
+
+        cfg.set_value("autodaily", isChecked)
+        if isChecked:
+            self.autodaily_card.autodaily_timepicker.setDisabled(False)
+            time = self.autodaily_card.autodaily_timepicker.getTime()
+            helper.register_daily_task(task_name, "start --exit", time.hour(), time.minute())
+        else:
+            self.autodaily_card.autodaily_timepicker.setDisabled(True)
+            helper.unregister_task(task_name)
+
+    def __onAutoDailyTimepickerChanged(self, time: QTime):
+        from utils.schedule_helper import ScheduleHelper
+        helper = ScheduleHelper()
+        task_name = self.__autodaily_taskname()
+
+        cfg.set_value("autodaily_time", time.toString("HH:mm"))
+        helper.unregister_task(task_name)
+        helper.register_daily_task(task_name, "start --exit", time.hour(), time.minute())
+
     def __onAutoLangCardChecked(self, Checked):
         bar = BaseInfoBar.success(
             title=QT_TRANSLATE_NOOP("BaseInfoBar", "更改将在重新启动后生效"),
@@ -473,6 +514,7 @@ class SettingInterface(ScrollArea):
         self.zoom_card.retranslateUi()
         self.hotkey_card.retranslateUi()
         self.autostart_card.retranslateUi()
+        self.autodaily_card.retranslateUi()
         self.update_group.retranslateUi()
         self.update_source_card.retranslateUi()
         self.check_update_card.retranslateUi()
