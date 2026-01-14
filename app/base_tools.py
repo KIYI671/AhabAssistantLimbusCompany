@@ -2,11 +2,30 @@ from typing import Union
 
 from PySide6.QtCore import Qt, Signal
 from PySide6.QtGui import QIcon, QFont, QAction
-from PySide6.QtWidgets import QFrame, QHBoxLayout, QVBoxLayout, QSizePolicy, QWidget, QGridLayout
+from PySide6.QtWidgets import (
+    QFrame,
+    QHBoxLayout,
+    QVBoxLayout,
+    QSizePolicy,
+    QWidget,
+    QGridLayout,
+)
 from qfluentwidgets import FluentIcon as FIF
-from qfluentwidgets import FluentIconBase, CheckBox, ToggleToolButton, ToolButton, PushButton, \
-    BodyLabel, ComboBox, DoubleSpinBox, SpinBox, RoundMenu, SplitToolButton, ToolTipFilter, \
-    ToolTipPosition, qconfig, isDarkTheme
+from qfluentwidgets import (
+    FluentIconBase,
+    CheckBox,
+    ToggleToolButton,
+    ToolButton,
+    PushButton,
+    BodyLabel,
+    ComboBox,
+    DoubleSpinBox,
+    SpinBox,
+    RoundMenu,
+    SplitToolButton,
+    ToolTipFilter,
+    ToolTipPosition,
+)
 from qfluentwidgets.components.settings.setting_card import SettingIconWidget
 
 from app import *
@@ -62,8 +81,8 @@ class BaseSettingLayout(QFrame):
         elif isinstance(tool, QGridLayout):
             self.BoxLayout.addLayout(tool)
 
-class RightClickCheckBox(CheckBox):
 
+class RightClickCheckBox(CheckBox):
     right_clicked = False
 
     def mousePressEvent(self, e):
@@ -71,7 +90,7 @@ class RightClickCheckBox(CheckBox):
             self.right_clicked = True
 
         return super().mousePressEvent(e)
-    
+
     def mouseReleaseEvent(self, e):
         if e.button() == Qt.RightButton:
             self.setChecked(not self.isChecked())
@@ -79,10 +98,18 @@ class RightClickCheckBox(CheckBox):
         return super().mouseReleaseEvent(e)
 
 
-
 class BaseCheckBox(BaseLayout):
-    def __init__(self, config_name, icon: Union[str, QIcon, FluentIconBase, None], title, parent=None, center=True,
-                 icon_size=16, tips=None, temporary=False):
+    def __init__(
+        self,
+        config_name,
+        icon: Union[str, QIcon, FluentIconBase, None],
+        title,
+        parent=None,
+        center=True,
+        icon_size=16,
+        tips=None,
+        temporary=False,
+    ):
         super().__init__(parent=parent)
         self.config_name = config_name
         self.setObjectName(config_name)
@@ -97,7 +124,11 @@ class BaseCheckBox(BaseLayout):
         self.check_box_title = title
         self.tips = tips
         self.check_box = RightClickCheckBox(title, self)
-        self.check_box.installEventFilter(ToolTipFilter(self.check_box, showDelay=0, position=ToolTipPosition.BOTTOM_LEFT))
+        self.check_box.installEventFilter(
+            ToolTipFilter(
+                self.check_box, showDelay=0, position=ToolTipPosition.BOTTOM_LEFT
+            )
+        )
 
         self.hBoxLayout.addWidget(self.check_box, 0, Qt.AlignLeft)
         self.hBoxLayout.addSpacing(16)
@@ -140,10 +171,12 @@ class BaseCheckBox(BaseLayout):
             if self.temporary and right_clicked is True:
                 checked = 2 * checked
             cfg.set_value(self.config_name, checked)
-        elif self.config_name.startswith('the_team_'):
+        elif self.config_name.startswith("the_team_"):
             index = int(self.config_name.split("_")[-1]) - 1
             if checked:
-                cfg.set_value("teams_be_select_num", cfg.get_value("teams_be_select_num") + 1)
+                cfg.set_value(
+                    "teams_be_select_num", cfg.get_value("teams_be_select_num") + 1
+                )
                 teams_be_select = cfg.get_value("teams_be_select")
                 teams_be_select[index] = True
                 teams_order = cfg.get_value("teams_order")
@@ -151,7 +184,9 @@ class BaseCheckBox(BaseLayout):
                 cfg.set_value("teams_be_select", teams_be_select)
                 cfg.set_value("teams_order", teams_order)
             else:
-                cfg.set_value("teams_be_select_num", cfg.get_value("teams_be_select_num") - 1)
+                cfg.set_value(
+                    "teams_be_select_num", cfg.get_value("teams_be_select_num") - 1
+                )
                 teams_be_select = cfg.get_value("teams_be_select")
                 teams_be_select[index] = False
                 teams_order = cfg.get_value("teams_order")
@@ -194,7 +229,7 @@ class NormalTextButton(BaseButton):
         if tactics == 1:
             self.button.setSizePolicy(
                 QSizePolicy.Expanding,  # 水平方向自动扩展
-                QSizePolicy.Fixed  # 垂直方向固定
+                QSizePolicy.Fixed,  # 垂直方向固定
             )
         self.hBoxLayout.addWidget(self.button)
         self.button.clicked.connect(self.clicked)
@@ -213,7 +248,12 @@ class NormalTextButton(BaseButton):
 
 
 class ToSettingButton(BaseButton):
-    def __init__(self, config_name, icon: Union[str, QIcon, FluentIconBase, None] = FIF.SETTING, parent=None):
+    def __init__(
+        self,
+        config_name,
+        icon: Union[str, QIcon, FluentIconBase, None] = FIF.SETTING,
+        parent=None,
+    ):
         super().__init__(config_name, parent=parent)
 
         self.setFixedHeight(30)
@@ -222,10 +262,10 @@ class ToSettingButton(BaseButton):
         self.button = SplitToolButton(icon, self)
 
         self.menu = RoundMenu(parent=self)
-        self.edit_name = QAction(FIF.EDIT.icon(), '命名')
-        self.del_action = QAction(FIF.DELETE.icon(), '删除')
-        self.copy_settings = QAction(FIF.COPY.icon(), '复制')
-        self.paste_settings = QAction(FIF.PASTE.icon(), '粘贴')
+        self.edit_name = QAction(FIF.EDIT.icon(), "命名")
+        self.del_action = QAction(FIF.DELETE.icon(), "删除")
+        self.copy_settings = QAction(FIF.COPY.icon(), "复制")
+        self.paste_settings = QAction(FIF.PASTE.icon(), "粘贴")
         self.menu.addAction(self.edit_name)
         self.menu.addAction(self.del_action)
         self.menu.addAction(self.copy_settings)
@@ -254,7 +294,12 @@ class ToSettingButton(BaseButton):
 
 
 class ChangePageButton(BaseButton):
-    def __init__(self, config_name, icon: Union[str, QIcon, FluentIconBase, None] = FIF.SETTING, parent=None):
+    def __init__(
+        self,
+        config_name,
+        icon: Union[str, QIcon, FluentIconBase, None] = FIF.SETTING,
+        parent=None,
+    ):
         super().__init__(config_name, parent=parent)
 
         self.setFixedHeight(30)
@@ -279,7 +324,12 @@ class ChangePageButton(BaseButton):
 
 
 class SettingTeamsButton(BaseButton):
-    def __init__(self, config_name, icon: Union[str, QIcon, FluentIconBase, None] = FIF.SETTING, parent=None):
+    def __init__(
+        self,
+        config_name,
+        icon: Union[str, QIcon, FluentIconBase, None] = FIF.SETTING,
+        parent=None,
+    ):
         super().__init__(config_name, parent=parent)
 
         self.setFixedHeight(30)
@@ -300,7 +350,7 @@ class BaseLabel(BaseLayout):
         self.config_name = config_name
         self.label = BodyLabel(config_name)
         self.text = config_name
-        self.label.setFont(QFont('Microsoft YaHei UI', 12))
+        self.label.setFont(QFont("Microsoft YaHei UI", 12))
         if cfg.zoom_scale != 0:
             self.label.setStyleSheet("font-size: 16px;")
         self.hBoxLayout.addWidget(self.label, Qt.AlignLeft)

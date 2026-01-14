@@ -15,7 +15,6 @@ def random_rho(dis):
     return random_normal_distribution(-dis, dis)
 
 
-
 def insert_swipe(p0, p3, speed=15, min_distance=10):
     """
     从起点到终点插入路径点。
@@ -47,7 +46,7 @@ def insert_swipe(p0, p3, speed=15, min_distance=10):
     segments = max(int(distance / speed) + 1, 5)
     lower = random_normal_distribution(-85, -60)
     upper = random_normal_distribution(80, 90)
-    theta = np.arange(lower + 0., upper + 0.0001, (upper - lower) / segments)
+    theta = np.arange(lower + 0.0, upper + 0.0001, (upper - lower) / segments)
     ts = np.sin(theta / 180 * np.pi)
     ts = np.sign(ts) * abs(ts) ** 0.9
     ts = (ts - min(ts)) / (max(ts) - min(ts))
@@ -56,7 +55,12 @@ def insert_swipe(p0, p3, speed=15, min_distance=10):
     points = []
     prev = (-100, -100)
     for t in ts:
-        point = p0 * (1 - t) ** 3 + 3 * p1 * t * (1 - t) ** 2 + 3 * p2 * t ** 2 * (1 - t) + p3 * t ** 3
+        point = (
+            p0 * (1 - t) ** 3
+            + 3 * p1 * t * (1 - t) ** 2
+            + 3 * p2 * t**2 * (1 - t)
+            + p3 * t**3
+        )
         point = point.astype(int).tolist()
         if np.linalg.norm(np.subtract(point, prev)) < min_distance:
             continue

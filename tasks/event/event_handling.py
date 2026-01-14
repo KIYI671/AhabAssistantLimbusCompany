@@ -60,7 +60,10 @@ class EventHandling:
                             order = ocr_result.index("very low")
             scale = cfg.set_win_size / 1440
             first_sinner = [150 * scale, 1300 * scale]
-            target_sinner = [first_sinner[0] + 140 * (order + self.times) * scale, first_sinner[1]]
+            target_sinner = [
+                first_sinner[0] + 140 * (order + self.times) * scale,
+                first_sinner[1],
+            ]
             auto.mouse_click(target_sinner[0], target_sinner[1])
         except Exception as e:
             msg = f"OCR识别事件成功率失败，错误信息：{e}"
@@ -108,12 +111,12 @@ def is_edit_distance_one(s1, s2):
 def extract_levels(data):
     """从OCR数据中提取级别信息，对"low"只进行精确匹配"""
     # 定义级别映射（区分精确匹配和模糊匹配）
-    exact_match = {'low': 'low'}
+    exact_match = {"low": "low"}
     fuzzy_match = {
-        'veryhigh': 'very high',
-        'high': 'high',
-        'normal': 'normal',
-        'verylow': 'very low'
+        "veryhigh": "very high",
+        "high": "high",
+        "normal": "normal",
+        "verylow": "very low",
     }
 
     levels = []
@@ -143,7 +146,7 @@ def extract_levels(data):
                     if sub_len <= 0 or i + sub_len > len(s):
                         continue
 
-                    substr = s[i:i + sub_len]
+                    substr = s[i : i + sub_len]
                     if is_edit_distance_one(substr, level_str):
                         levels.append(level_name)
                         i += sub_len

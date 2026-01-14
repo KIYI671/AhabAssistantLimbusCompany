@@ -3,8 +3,17 @@ import datetime
 from PySide6.QtCore import Qt, QUrl, QDate, QCoreApplication
 from PySide6.QtGui import QDesktopServices, QIcon, QWheelEvent, QKeyEvent
 from PySide6.QtWidgets import QSizePolicy, QDateTimeEdit
-from qfluentwidgets import MessageBox, BodyLabel, FluentStyleSheet, \
-    PrimaryPushButton, LineEdit, ScrollArea, InfoBar, DateTimeEdit, SpinBox
+from qfluentwidgets import (
+    MessageBox,
+    BodyLabel,
+    FluentStyleSheet,
+    PrimaryPushButton,
+    LineEdit,
+    ScrollArea,
+    InfoBar,
+    DateTimeEdit,
+    SpinBox,
+)
 from qfluentwidgets.common.icon import FluentIconBase
 from qfluentwidgets.components.widgets.info_bar import InfoBarIcon, InfoBarPosition
 
@@ -21,7 +30,7 @@ class MessageBoxHtml(MessageBox):
         self.contentLabel.clear()
 
         self.contentLabel = BodyLabel(content, parent)
-        self.contentLabel.setObjectName('contentLabel')
+        self.contentLabel.setObjectName("contentLabel")
         self.contentLabel.setOpenExternalLinks(True)
         self.contentLabel.linkActivated.connect(self.open_url)
         self.contentLabel.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
@@ -32,20 +41,25 @@ class MessageBoxHtml(MessageBox):
         self.scrollArea = ScrollArea(self.widget)
         self.scrollArea.setWidgetResizable(True)  # 允许内容扩展
         self.scrollArea.enableTransparentBackground()
-        self.scrollArea.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)  # 隐藏水平滚动条
+        self.scrollArea.setHorizontalScrollBarPolicy(
+            Qt.ScrollBarAlwaysOff
+        )  # 隐藏水平滚动条
         self.scrollArea.setWidget(self.contentLabel)  # 将内容标签放入滚动区域
         # 设置 ScrollArea 的最小高度
         self.scrollArea.setMinimumHeight(300)
 
         # 添加新的跳转按钮
 
-        self.jumpButton = PrimaryPushButton('跳转', self.buttonGroup)
+        self.jumpButton = PrimaryPushButton("跳转", self.buttonGroup)
         self.jumpButton.adjustSize()
         self.jumpButton.setAttribute(Qt.WA_LayoutUsesWidgetRect)
         self.jumpButton.setFocus()
         # self.jumpButton = QPushButton('跳转', parent)
         self.jumpButton.clicked.connect(
-            lambda: self.open_url('https://github.com/KIYI671/AhabAssistantLimbusCompany/releases'))
+            lambda: self.open_url(
+                "https://github.com/KIYI671/AhabAssistantLimbusCompany/releases"
+            )
+        )
 
         # 调整按钮组的大小策略（关键！）
         button_policy = QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
@@ -79,9 +93,9 @@ class MessageBoxUpdate(MessageBoxHtml):
     def __init__(self, title: str, content: str, parent=None):
         super().__init__(title, content, parent)
 
-        self.yesButton.setText(self.tr('下载'))
-        self.cancelButton.setText(self.tr('好的'))
-        self.jumpButton.setText(self.tr('跳转'))
+        self.yesButton.setText(self.tr("下载"))
+        self.cancelButton.setText(self.tr("好的"))
+        self.jumpButton.setText(self.tr("跳转"))
 
 
 class MessageBoxConfirm(MessageBox):
@@ -103,8 +117,8 @@ class MessageBoxConfirm(MessageBox):
         self.buttonLayout.addWidget(self.cancelButton, 1, Qt.AlignVCenter)
         self.buttonLayout.addWidget(self.yesButton, 1, Qt.AlignVCenter)
         self.textLayout.addWidget(self.contentLabel, 0, Qt.AlignTop)
-        self.yesButton.setText(self.tr('确认'))
-        self.cancelButton.setText(self.tr('取消'))
+        self.yesButton.setText(self.tr("确认"))
+        self.cancelButton.setText(self.tr("取消"))
 
     def open_url(self, url):
         QDesktopServices.openUrl(QUrl(url))
@@ -144,55 +158,166 @@ class MessageBoxWarning(MessageBox):
     def __init__(self, title: str, content: str, parent=None):
         super().__init__(title, content, parent)
 
-        self.yesButton.setText(self.tr('我已了解以上信息'))
-        if cfg.language_in_program == 'en':
+        self.yesButton.setText(self.tr("我已了解以上信息"))
+        if cfg.language_in_program == "en":
             self.buttonGroup.setMinimumWidth(350)
         self.cancelButton.setHidden(True)
 
 
 class BaseInfoBar(InfoBar):
-    def __init__(self, icon: InfoBarIcon | FluentIconBase | QIcon | str, title: str, content: str, orient=Qt.Horizontal,
-                 isClosable=True, duration=1000, position=InfoBarPosition.TOP_RIGHT, parent=None, title_kwargs=None,
-                 content_kwargs=None):
+    def __init__(
+        self,
+        icon: InfoBarIcon | FluentIconBase | QIcon | str,
+        title: str,
+        content: str,
+        orient=Qt.Horizontal,
+        isClosable=True,
+        duration=1000,
+        position=InfoBarPosition.TOP_RIGHT,
+        parent=None,
+        title_kwargs=None,
+        content_kwargs=None,
+    ):
         if title_kwargs is not None:
             title = title.format(**title_kwargs)
         if content_kwargs is not None:
             content = content.format(**content_kwargs)
-        super().__init__(icon, title, content, orient, isClosable, duration, position, parent)
+        super().__init__(
+            icon, title, content, orient, isClosable, duration, position, parent
+        )
 
     @classmethod
-    def new(cls, icon, title, content, orient=Qt.Horizontal, isClosable=True, duration=1000,
-            position=InfoBarPosition.TOP_RIGHT, parent=None, title_kwargs=None, content_kwargs=None):
-        w = BaseInfoBar(icon, QCoreApplication.translate("BaseInfoBar", title),
-                        QCoreApplication.translate("BaseInfoBar", content), orient,
-                        isClosable, duration, position, parent, title_kwargs=title_kwargs,
-                        content_kwargs=content_kwargs)
+    def new(
+        cls,
+        icon,
+        title,
+        content,
+        orient=Qt.Horizontal,
+        isClosable=True,
+        duration=1000,
+        position=InfoBarPosition.TOP_RIGHT,
+        parent=None,
+        title_kwargs=None,
+        content_kwargs=None,
+    ):
+        w = BaseInfoBar(
+            icon,
+            QCoreApplication.translate("BaseInfoBar", title),
+            QCoreApplication.translate("BaseInfoBar", content),
+            orient,
+            isClosable,
+            duration,
+            position,
+            parent,
+            title_kwargs=title_kwargs,
+            content_kwargs=content_kwargs,
+        )
         w.show()
         return w
 
     @classmethod
-    def info(cls, title, content, orient=Qt.Horizontal, isClosable=True, duration=1000,
-             position=InfoBarPosition.TOP_RIGHT, parent=None, title_kwargs=None, content_kwargs=None):
-        return cls.new(InfoBarIcon.INFORMATION, title, content, orient, isClosable, duration, position, parent,
-                       title_kwargs=title_kwargs, content_kwargs=content_kwargs)
+    def info(
+        cls,
+        title,
+        content,
+        orient=Qt.Horizontal,
+        isClosable=True,
+        duration=1000,
+        position=InfoBarPosition.TOP_RIGHT,
+        parent=None,
+        title_kwargs=None,
+        content_kwargs=None,
+    ):
+        return cls.new(
+            InfoBarIcon.INFORMATION,
+            title,
+            content,
+            orient,
+            isClosable,
+            duration,
+            position,
+            parent,
+            title_kwargs=title_kwargs,
+            content_kwargs=content_kwargs,
+        )
 
     @classmethod
-    def success(cls, title, content, orient=Qt.Horizontal, isClosable=True, duration=1000,
-                position=InfoBarPosition.TOP_RIGHT, parent=None, title_kwargs=None, content_kwargs=None):
-        return cls.new(InfoBarIcon.SUCCESS, title, content, orient, isClosable, duration, position, parent,
-                       title_kwargs=title_kwargs, content_kwargs=content_kwargs)
+    def success(
+        cls,
+        title,
+        content,
+        orient=Qt.Horizontal,
+        isClosable=True,
+        duration=1000,
+        position=InfoBarPosition.TOP_RIGHT,
+        parent=None,
+        title_kwargs=None,
+        content_kwargs=None,
+    ):
+        return cls.new(
+            InfoBarIcon.SUCCESS,
+            title,
+            content,
+            orient,
+            isClosable,
+            duration,
+            position,
+            parent,
+            title_kwargs=title_kwargs,
+            content_kwargs=content_kwargs,
+        )
 
     @classmethod
-    def warning(cls, title, content, orient=Qt.Horizontal, isClosable=True, duration=1000,
-                position=InfoBarPosition.TOP_RIGHT, parent=None, title_kwargs=None, content_kwargs=None):
-        return cls.new(InfoBarIcon.WARNING, title, content, orient, isClosable, duration, position, parent,
-                       title_kwargs=title_kwargs, content_kwargs=content_kwargs)
+    def warning(
+        cls,
+        title,
+        content,
+        orient=Qt.Horizontal,
+        isClosable=True,
+        duration=1000,
+        position=InfoBarPosition.TOP_RIGHT,
+        parent=None,
+        title_kwargs=None,
+        content_kwargs=None,
+    ):
+        return cls.new(
+            InfoBarIcon.WARNING,
+            title,
+            content,
+            orient,
+            isClosable,
+            duration,
+            position,
+            parent,
+            title_kwargs=title_kwargs,
+            content_kwargs=content_kwargs,
+        )
 
     @classmethod
-    def error(cls, title, content, orient=Qt.Horizontal, isClosable=True, duration=1000,
-              position=InfoBarPosition.TOP_RIGHT, parent=None, title_kwargs=None, content_kwargs=None):
-        return cls.new(InfoBarIcon.ERROR, title, content, orient, isClosable, duration, position, parent,
-                       title_kwargs=title_kwargs, content_kwargs=content_kwargs)
+    def error(
+        cls,
+        title,
+        content,
+        orient=Qt.Horizontal,
+        isClosable=True,
+        duration=1000,
+        position=InfoBarPosition.TOP_RIGHT,
+        parent=None,
+        title_kwargs=None,
+        content_kwargs=None,
+    ):
+        return cls.new(
+            InfoBarIcon.ERROR,
+            title,
+            content,
+            orient,
+            isClosable,
+            duration,
+            position,
+            parent,
+            title_kwargs=title_kwargs,
+            content_kwargs=content_kwargs,
+        )
 
 
 class BetterDateTimeEdit(DateTimeEdit):
@@ -220,14 +345,20 @@ class BetterDateTimeEdit(DateTimeEdit):
         date = self.date()
 
         # 处理分钟溢出和下溢
-        if self.currentSection() == QDateTimeEdit.Section.MinuteSection and time.minute() == self.last_min:
+        if (
+            self.currentSection() == QDateTimeEdit.Section.MinuteSection
+            and time.minute() == self.last_min
+        ):
             if plus and time.minute() >= 59:
                 time.setHMS(time.hour() + 1, 0, time.second())
             if not plus and time.minute() <= 0:
                 time.setHMS(time.hour() - 1, 59, time.second())
 
         # 处理小时溢出和下溢
-        if self.currentSection() == QDateTimeEdit.Section.HourSection and time.hour() == self.last_hour:
+        if (
+            self.currentSection() == QDateTimeEdit.Section.HourSection
+            and time.hour() == self.last_hour
+        ):
             if plus and time.hour() >= 23:
                 time.setHMS(0, time.minute(), time.second())
                 date = date.addDays(1)
@@ -236,7 +367,10 @@ class BetterDateTimeEdit(DateTimeEdit):
                 date = date.addDays(-1)
 
         # 处理天数溢出和下溢
-        if self.currentSection() == QDateTimeEdit.Section.DaySection and date.day() == self.last_day:
+        if (
+            self.currentSection() == QDateTimeEdit.Section.DaySection
+            and date.day() == self.last_day
+        ):
             days_in_month = date.daysInMonth()
             if plus and date.day() >= days_in_month:
                 date = date.addMonths(1)
@@ -247,7 +381,10 @@ class BetterDateTimeEdit(DateTimeEdit):
                 date = date.addDays(days_in_prev_month - 1)
 
         # 处理月份溢出和下溢
-        if self.currentSection() == QDateTimeEdit.Section.MonthSection and date.month() == self.last_month:
+        if (
+            self.currentSection() == QDateTimeEdit.Section.MonthSection
+            and date.month() == self.last_month
+        ):
             if plus and date.month() >= 12:
                 date = date.addYears(1)
                 date = date.addMonths(-date.month() + 1)
@@ -298,8 +435,8 @@ class MessageBoxDate(MessageBox):
         self.textLayout.removeWidget(self.contentLabel)
         self.contentLabel.clear()
 
-        self.yesButton.setText(self.tr('确认'))
-        self.cancelButton.setText(self.tr('取消'))
+        self.yesButton.setText(self.tr("确认"))
+        self.cancelButton.setText(self.tr("取消"))
 
         self.datePicker = BetterDateTimeEdit(self)
         self.datePicker.setDateTime(content)
@@ -314,7 +451,7 @@ class MessageBoxDate(MessageBox):
 
 class MessageBoxSpinbox(MessageBox):
     def __init__(self, title: str, parent=None, max_value=3):
-        super().__init__(title, '', parent)
+        super().__init__(title, "", parent)
 
         self.text = title
 

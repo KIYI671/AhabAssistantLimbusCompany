@@ -1,7 +1,6 @@
 import PyInstaller.__main__
 import os
 import shutil
-import sys
 import subprocess
 import argparse
 
@@ -74,10 +73,9 @@ redundant_files = [
     "PySide6/Qt6OpenGL.dll",
     "PySide6/opengl32sw.dll",  # 软件渲染库，没GPU的机器才需要
     # 其他不需要的Qt模块
-    "PySide6/Qt6Pdf.dll",     # pdf文件
-    "PySide6/Qt6Network.dll", # 网络相关
+    "PySide6/Qt6Pdf.dll",  # pdf文件
+    "PySide6/Qt6Network.dll",  # 网络相关
     "PySide6/QtNetwork.pyd",
-    
     # rapidocr自带的模型文件，我们只用PPV4模型，可以删掉V5的
     "rapidocr/models/ch_PP-OCRv5_rec_mobile_infer.onnx",
     "rapidocr/models/ch_PP-OCRv5_mobile_det.onnx",

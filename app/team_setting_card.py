@@ -1,10 +1,22 @@
 from PySide6.QtCore import Qt
-from PySide6.QtWidgets import QFrame, QVBoxLayout, QWidget, QHBoxLayout, QSizePolicy, QGridLayout
+from PySide6.QtWidgets import (
+    QFrame,
+    QVBoxLayout,
+    QWidget,
+    QHBoxLayout,
+    QSizePolicy,
+    QGridLayout,
+)
 from qfluentwidgets import FluentIcon as FIF, ExpandSettingCard
 from qfluentwidgets import ScrollArea, PrimaryPushButton, PushButton
 
 from app import *
-from app.base_combination import LabelWithComboBox, SinnerSelect, CheckBoxWithComboBox, CheckBoxWithLineEdit
+from app.base_combination import (
+    LabelWithComboBox,
+    SinnerSelect,
+    CheckBoxWithComboBox,
+    CheckBoxWithLineEdit,
+)
 from app.base_tools import BaseCheckBox, BaseSettingLayout, BaseLabel, BaseComboBox
 from app.language_manager import LanguageManager
 from module.config import cfg
@@ -23,6 +35,7 @@ class TeamSettingCard(QFrame):
         if cfg.get_value(f"team{team_num}_setting"):
             config_team_setting = cfg.get_value(f"team{team_num}_setting")
             import copy
+
             self.team_setting = copy.deepcopy(team_setting_template)
             # 用配置中的值覆盖模板的同名key（仅处理模板中存在的key）
             for key, value in config_team_setting.items():
@@ -44,7 +57,9 @@ class TeamSettingCard(QFrame):
         self.main_layout = QVBoxLayout(self)
         self.scroll_general = ScrollArea()
         self.scroll_general.setWidgetResizable(True)
-        self.scroll_general.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        self.scroll_general.setHorizontalScrollBarPolicy(
+            Qt.ScrollBarPolicy.ScrollBarAlwaysOff
+        )
 
         self.page_widget = QWidget()
         self.scroll_general.setWidget(self.page_widget)
@@ -64,61 +79,156 @@ class TeamSettingCard(QFrame):
         self.gift_system_list_1 = QHBoxLayout()
         self.gift_system_list_2 = QHBoxLayout()
 
-        self.custom_layout = ExpandSettingCard(icon=FIF.EDIT,
-                                               title=self.tr("自定义设置（设置存在冲突时，将根据优先级覆盖生效）"))
-        
-        self.custom_layout2 = ExpandSettingCard(icon=FIF.INFO,
-                                                  title=self.tr("编队统计数据"))
+        self.custom_layout = ExpandSettingCard(
+            icon=FIF.EDIT,
+            title=self.tr("自定义设置（设置存在冲突时，将根据优先级覆盖生效）"),
+        )
+
+        self.custom_layout2 = ExpandSettingCard(
+            icon=FIF.INFO, title=self.tr("编队统计数据")
+        )
 
         self.setting_layout = QHBoxLayout()
 
         self.scroll_general.enableTransparentBackground()
 
     def __init_card(self):
-        self.select_team = LabelWithComboBox(self.tr("选择队伍名称"), "team_number", all_teams, vbox=False)
-        self.select_system = LabelWithComboBox(self.tr("选择队伍体系"), "team_system", all_systems, vbox=False)
-        self.select_shop_strategy = LabelWithComboBox(self.tr("选择商店策略"), "shop_strategy", shop_strategy,
-                                                      vbox=False)
+        self.select_team = LabelWithComboBox(
+            self.tr("选择队伍名称"), "team_number", all_teams, vbox=False
+        )
+        self.select_system = LabelWithComboBox(
+            self.tr("选择队伍体系"), "team_system", all_systems, vbox=False
+        )
+        self.select_shop_strategy = LabelWithComboBox(
+            self.tr("选择商店策略"), "shop_strategy", shop_strategy, vbox=False
+        )
 
-        self.sinner_YiSang = SinnerSelect("YiSang", self.tr("李箱"), None, "./assets/app/sinner/Yi_Sang_ID_Photo_3.png")
-        self.sinner_Faust = SinnerSelect("Faust", self.tr("浮士德"), None, "./assets/app/sinner/Faust_ID_Photo_3.png")
-        self.sinner_DonQuixote = SinnerSelect("DonQuixote", self.tr("堂吉诃德"), None,
-                                              "./assets/app/sinner/Don_Quixote_ID_Photo_3.png")
-        self.sinner_Ryoshu = SinnerSelect("Ryoshu", self.tr("良秀"), None, "./assets/app/sinner/Ryoshu_ID_Photo_3.png")
-        self.sinner_Meursault = SinnerSelect("Meursault", self.tr("默尔索"), None, "./assets/app/sinner/Meursault_ID_Photo_3.png")
-        self.sinner_HongLu = SinnerSelect("HongLu", self.tr("鸿璐"), None, "./assets/app/sinner/Hong_Lu_ID_Photo_3.png")
+        self.sinner_YiSang = SinnerSelect(
+            "YiSang",
+            self.tr("李箱"),
+            None,
+            "./assets/app/sinner/Yi_Sang_ID_Photo_3.png",
+        )
+        self.sinner_Faust = SinnerSelect(
+            "Faust", self.tr("浮士德"), None, "./assets/app/sinner/Faust_ID_Photo_3.png"
+        )
+        self.sinner_DonQuixote = SinnerSelect(
+            "DonQuixote",
+            self.tr("堂吉诃德"),
+            None,
+            "./assets/app/sinner/Don_Quixote_ID_Photo_3.png",
+        )
+        self.sinner_Ryoshu = SinnerSelect(
+            "Ryoshu", self.tr("良秀"), None, "./assets/app/sinner/Ryoshu_ID_Photo_3.png"
+        )
+        self.sinner_Meursault = SinnerSelect(
+            "Meursault",
+            self.tr("默尔索"),
+            None,
+            "./assets/app/sinner/Meursault_ID_Photo_3.png",
+        )
+        self.sinner_HongLu = SinnerSelect(
+            "HongLu",
+            self.tr("鸿璐"),
+            None,
+            "./assets/app/sinner/Hong_Lu_ID_Photo_3.png",
+        )
 
-        self.sinner_Heathcliff = SinnerSelect("Heathcliff", self.tr("希斯克利夫"), None,
-                                              "./assets/app/sinner/Heathcliff_ID_Photo_3.png")
-        self.sinner_Ishmael = SinnerSelect("Ishmael", self.tr("以实玛利"), None, "./assets/app/sinner/Ishmael_ID_Photo_3.png")
-        self.sinner_Rodion = SinnerSelect("Rodion", self.tr("罗佳"), None, "./assets/app/sinner/Rodion_ID_Photo_3.png")
-        self.sinner_Sinclair = SinnerSelect("Sinclair", self.tr("辛克莱"), None, "./assets/app/sinner/Sinclair_ID_Photo_3.png")
-        self.sinner_Outis = SinnerSelect("Outis", self.tr("奥提斯"), None, "./assets/app/sinner/Outis_ID_Photo_3.png")
-        self.sinner_Gregor = SinnerSelect("Gregor", self.tr("格里高尔"), None, "./assets/app/sinner/Gregor_ID_Photo_3.png")
+        self.sinner_Heathcliff = SinnerSelect(
+            "Heathcliff",
+            self.tr("希斯克利夫"),
+            None,
+            "./assets/app/sinner/Heathcliff_ID_Photo_3.png",
+        )
+        self.sinner_Ishmael = SinnerSelect(
+            "Ishmael",
+            self.tr("以实玛利"),
+            None,
+            "./assets/app/sinner/Ishmael_ID_Photo_3.png",
+        )
+        self.sinner_Rodion = SinnerSelect(
+            "Rodion", self.tr("罗佳"), None, "./assets/app/sinner/Rodion_ID_Photo_3.png"
+        )
+        self.sinner_Sinclair = SinnerSelect(
+            "Sinclair",
+            self.tr("辛克莱"),
+            None,
+            "./assets/app/sinner/Sinclair_ID_Photo_3.png",
+        )
+        self.sinner_Outis = SinnerSelect(
+            "Outis", self.tr("奥提斯"), None, "./assets/app/sinner/Outis_ID_Photo_3.png"
+        )
+        self.sinner_Gregor = SinnerSelect(
+            "Gregor",
+            self.tr("格里高尔"),
+            None,
+            "./assets/app/sinner/Gregor_ID_Photo_3.png",
+        )
 
         self.shop_setting = BaseLabel(self.tr("舍弃的体系"))
         self.shop_setting.add_icon(FIF.DELETE)
 
-        self.burn = BaseCheckBox("system_burn", "./assets/app/status_effects/burn.png", self.tr("烧伤"), icon_size=30)
-        self.bleed = BaseCheckBox("system_bleed", "./assets/app/status_effects/bleed.png", self.tr("流血"),
-                                  icon_size=30)
-        self.tremor = BaseCheckBox("system_tremor", "./assets/app/status_effects/tremor.png", self.tr("震颤"),
-                                   icon_size=30)
-        self.rupture = BaseCheckBox("system_rupture", "./assets/app/status_effects/rupture.png", self.tr("破裂"),
-                                    icon_size=30)
-        self.sinking = BaseCheckBox("system_sinking", "./assets/app/status_effects/sinking.png", self.tr("沉沦"),
-                                    icon_size=30)
+        self.burn = BaseCheckBox(
+            "system_burn",
+            "./assets/app/status_effects/burn.png",
+            self.tr("烧伤"),
+            icon_size=30,
+        )
+        self.bleed = BaseCheckBox(
+            "system_bleed",
+            "./assets/app/status_effects/bleed.png",
+            self.tr("流血"),
+            icon_size=30,
+        )
+        self.tremor = BaseCheckBox(
+            "system_tremor",
+            "./assets/app/status_effects/tremor.png",
+            self.tr("震颤"),
+            icon_size=30,
+        )
+        self.rupture = BaseCheckBox(
+            "system_rupture",
+            "./assets/app/status_effects/rupture.png",
+            self.tr("破裂"),
+            icon_size=30,
+        )
+        self.sinking = BaseCheckBox(
+            "system_sinking",
+            "./assets/app/status_effects/sinking.png",
+            self.tr("沉沦"),
+            icon_size=30,
+        )
 
-        self.poise = BaseCheckBox("system_poise", "./assets/app/status_effects/poise.png", self.tr("呼吸"),
-                                  icon_size=30)
-        self.charge = BaseCheckBox("system_charge", "./assets/app/status_effects/charge.png", self.tr("充能"),
-                                   icon_size=30)
-        self.slash = BaseCheckBox("system_slash", "./assets/app/status_effects/slash.png", self.tr("斩击"),
-                                  icon_size=30)
-        self.pierce = BaseCheckBox("system_pierce", "./assets/app/status_effects/pierce.png", self.tr("突刺"),
-                                   icon_size=30)
-        self.blunt = BaseCheckBox("system_blunt", "./assets/app/status_effects/blunt.png", self.tr("打击"),
-                                  icon_size=30)
+        self.poise = BaseCheckBox(
+            "system_poise",
+            "./assets/app/status_effects/poise.png",
+            self.tr("呼吸"),
+            icon_size=30,
+        )
+        self.charge = BaseCheckBox(
+            "system_charge",
+            "./assets/app/status_effects/charge.png",
+            self.tr("充能"),
+            icon_size=30,
+        )
+        self.slash = BaseCheckBox(
+            "system_slash",
+            "./assets/app/status_effects/slash.png",
+            self.tr("斩击"),
+            icon_size=30,
+        )
+        self.pierce = BaseCheckBox(
+            "system_pierce",
+            "./assets/app/status_effects/pierce.png",
+            self.tr("突刺"),
+            icon_size=30,
+        )
+        self.blunt = BaseCheckBox(
+            "system_blunt",
+            "./assets/app/status_effects/blunt.png",
+            self.tr("打击"),
+            icon_size=30,
+        )
 
         self.customize_settings_module = CustomizeSettingsModule()
         self.customize_info_module = CustomizeInfoModule(self.team_num)
@@ -194,7 +304,9 @@ class TeamSettingCard(QFrame):
             if values:
                 self.team_setting["sinners_be_select"] += 1
                 self.team_setting["chosen_sinners"][sinner_index] = 1
-                self.team_setting["sinner_order"][sinner_index] = self.team_setting["sinners_be_select"]
+                self.team_setting["sinner_order"][sinner_index] = self.team_setting[
+                    "sinners_be_select"
+                ]
             else:
                 order = self.team_setting["sinner_order"][sinner_index]
                 self.team_setting["sinners_be_select"] -= 1
@@ -209,7 +321,9 @@ class TeamSettingCard(QFrame):
             if values:
                 self.team_setting["opening_bonus_select"] += 1
                 self.team_setting["opening_bonus"][starlight_index] = 1
-                self.team_setting["opening_bonus_order"][starlight_index] = self.team_setting["opening_bonus_select"]
+                self.team_setting["opening_bonus_order"][starlight_index] = (
+                    self.team_setting["opening_bonus_select"]
+                )
             else:
                 order = self.team_setting["opening_bonus_order"][starlight_index]
                 self.team_setting["opening_bonus_select"] -= 1
@@ -233,7 +347,7 @@ class TeamSettingCard(QFrame):
     def refresh_starlight_order(self):
         opening_bonus_order = self.team_setting["opening_bonus_order"]
         for i in range(1, 11):
-            starlight = self.findChild(CheckBoxWithLineEdit, f'starlight_{i}')
+            starlight = self.findChild(CheckBoxWithLineEdit, f"starlight_{i}")
             if starlight is not None:
                 if opening_bonus_order[i - 1] != 0:
                     starlight.set_text(str(opening_bonus_order[i - 1]))
@@ -243,7 +357,7 @@ class TeamSettingCard(QFrame):
     def refresh_starlight_select(self):
         opening_bonus = self.team_setting["opening_bonus"]
         for i in range(1, 11):
-            starlight = self.findChild(CheckBoxWithLineEdit, f'starlight_{i}')
+            starlight = self.findChild(CheckBoxWithLineEdit, f"starlight_{i}")
             if starlight is not None:
                 if opening_bonus[i - 1]:
                     starlight.set_checked(True)
@@ -286,14 +400,20 @@ class TeamSettingCard(QFrame):
 
         for checkbox in all_checkbox_config_name:
             if self.findChild(BaseCheckBox, checkbox):
-                self.findChild(BaseCheckBox, checkbox).set_checked(self.team_setting[checkbox])
+                self.findChild(BaseCheckBox, checkbox).set_checked(
+                    self.team_setting[checkbox]
+                )
 
         for combobox in all_combobox_config_name:
             if self.findChild(BaseComboBox, combobox):
                 if combobox == "team_number":
-                    self.findChild(BaseComboBox, combobox).set_options(self.team_setting[combobox] - 1)
+                    self.findChild(BaseComboBox, combobox).set_options(
+                        self.team_setting[combobox] - 1
+                    )
                 else:
-                    self.findChild(BaseComboBox, combobox).set_options(self.team_setting[combobox])
+                    self.findChild(BaseComboBox, combobox).set_options(
+                        self.team_setting[combobox]
+                    )
                     if combobox == "team_system":
                         self.foolproof(self.team_setting[combobox])
 
@@ -302,7 +422,9 @@ class TeamSettingCard(QFrame):
             if check_box := self.findChild(BaseCheckBox, checkbox):
                 if checkbox.startswith("system_"):
                     check_box.set_box_enabled(True)
-        check_box = self.findChild(BaseCheckBox, f"system_{all_systems_name[team_system]}")
+        check_box = self.findChild(
+            BaseCheckBox, f"system_{all_systems_name[team_system]}"
+        )
         if check_box:
             check_box.set_checked(False)
             check_box.set_box_enabled(False)
@@ -409,49 +531,71 @@ class CustomizeSettingsModule(QFrame):
         )
 
         self.only_aggressive_fuse = BaseCheckBox(
-            "only_aggressive_fuse", None, QT_TRANSLATE_NOOP("BaseCheckBox", "只激进合成")
+            "only_aggressive_fuse",
+            None,
+            QT_TRANSLATE_NOOP("BaseCheckBox", "只激进合成"),
         )
         self.do_not_system_fuse = BaseCheckBox(
-            "do_not_system_fuse", None, QT_TRANSLATE_NOOP("BaseCheckBox", "不使用公式合成")
+            "do_not_system_fuse",
+            None,
+            QT_TRANSLATE_NOOP("BaseCheckBox", "不使用公式合成"),
         )
         self.only_system_fuse = BaseCheckBox(
-            "only_system_fuse", None, QT_TRANSLATE_NOOP("BaseCheckBox", "只使用公式合成")
+            "only_system_fuse",
+            None,
+            QT_TRANSLATE_NOOP("BaseCheckBox", "只使用公式合成"),
         )
 
         self.avoid_skill_3 = BaseCheckBox(
-            "avoid_skill_3", None, QT_TRANSLATE_NOOP("BaseCheckBox", "链接战避免使用三技能")
+            "avoid_skill_3",
+            None,
+            QT_TRANSLATE_NOOP("BaseCheckBox", "链接战避免使用三技能"),
         )
         self.re_formation_each_floor = BaseCheckBox(
-            "re_formation_each_floor", None, QT_TRANSLATE_NOOP("BaseCheckBox", "每楼层重新编队")
+            "re_formation_each_floor",
+            None,
+            QT_TRANSLATE_NOOP("BaseCheckBox", "每楼层重新编队"),
         )
         self.use_starlight = BaseCheckBox(
             "use_starlight", None, QT_TRANSLATE_NOOP("BaseCheckBox", "开局星光换钱")
         )
 
         self.aggressive_also_enhance = BaseCheckBox(
-            "aggressive_also_enhance", None, QT_TRANSLATE_NOOP("BaseCheckBox", "激进合成期间也升级饰品")
+            "aggressive_also_enhance",
+            None,
+            QT_TRANSLATE_NOOP("BaseCheckBox", "激进合成期间也升级饰品"),
         )
         self.aggressive_save_systems = BaseCheckBox(
-            "aggressive_save_systems", None, QT_TRANSLATE_NOOP("BaseCheckBox", "激进合成保留体系饰品")
+            "aggressive_save_systems",
+            None,
+            QT_TRANSLATE_NOOP("BaseCheckBox", "激进合成保留体系饰品"),
         )
         self.defense_first_round = BaseCheckBox(
-            "defense_first_round", None, QT_TRANSLATE_NOOP("BaseCheckBox", "链接战第一回合全员防御")
+            "defense_first_round",
+            None,
+            QT_TRANSLATE_NOOP("BaseCheckBox", "链接战第一回合全员防御"),
         )
 
         self.fixed_team_use = CheckBoxWithComboBox(
-            "fixed_team_use", QT_TRANSLATE_NOOP("CheckBoxWithComboBox", "固定队伍用途"),
-            None, "fixed_team_use_select"
+            "fixed_team_use",
+            QT_TRANSLATE_NOOP("CheckBoxWithComboBox", "固定队伍用途"),
+            None,
+            "fixed_team_use_select",
         )
         self.fixed_team_use.add_items(fixed_team_use)
         self.reward_cards = CheckBoxWithComboBox(
-            "reward_cards", QT_TRANSLATE_NOOP("CheckBoxWithComboBox", "奖励卡优先度"),
-            None, "reward_cards_select"
+            "reward_cards",
+            QT_TRANSLATE_NOOP("CheckBoxWithComboBox", "奖励卡优先度"),
+            None,
+            "reward_cards_select",
         )
         self.reward_cards.add_items(reward_cards)
 
         self.choose_opening_bonus = BaseCheckBox(
-            "choose_opening_bonus", FIF.BUS, QT_TRANSLATE_NOOP("BaseCheckBox", "自选开局加成"),
-            center=False
+            "choose_opening_bonus",
+            FIF.BUS,
+            QT_TRANSLATE_NOOP("BaseCheckBox", "自选开局加成"),
+            center=False,
         )
 
         QT_TRANSLATE_NOOP("CustomizeSettingsModule", "星光")
@@ -468,52 +612,62 @@ class CustomizeSettingsModule(QFrame):
         self.starlight_10 = CheckBoxWithLineEdit("starlight_10", "星光10")
 
         self.after_level_IV = CheckBoxWithComboBox(
-            "after_level_IV", QT_TRANSLATE_NOOP("CheckBoxWithComboBox", "合成四级以后"),
-            None, "after_level_IV_select"
+            "after_level_IV",
+            QT_TRANSLATE_NOOP("CheckBoxWithComboBox", "合成四级以后"),
+            None,
+            "after_level_IV_select",
         )
         self.after_level_IV.add_items(after_fuse_level_IV)
         self.shopping_strategy = CheckBoxWithComboBox(
-            "shopping_strategy", QT_TRANSLATE_NOOP("CheckBoxWithComboBox", "购物策略"),
-            None, "shopping_strategy_select"
+            "shopping_strategy",
+            QT_TRANSLATE_NOOP("CheckBoxWithComboBox", "购物策略"),
+            None,
+            "shopping_strategy_select",
         )
         self.shopping_strategy.add_items(shopping_strategy)
 
         self.opening_items = CheckBoxWithComboBox(
-            "opening_items", QT_TRANSLATE_NOOP("CheckBoxWithComboBox", "自选开局饰品"),
-            None, "opening_items_system"
+            "opening_items",
+            QT_TRANSLATE_NOOP("CheckBoxWithComboBox", "自选开局饰品"),
+            None,
+            "opening_items_system",
         )
         self.opening_items.add_items(all_systems)
         self.opening_items.add_combobox("opening_items_select")
         self.opening_items.add_times_for_additional(start_gift)
 
         self.second_system = CheckBoxWithComboBox(
-            "second_system", QT_TRANSLATE_NOOP("CheckBoxWithComboBox", "第二体系"),
-            None, "second_system_select"
+            "second_system",
+            QT_TRANSLATE_NOOP("CheckBoxWithComboBox", "第二体系"),
+            None,
+            "second_system_select",
         )
         self.second_system.add_items(all_systems)
         self.second_system.add_combobox("second_system_setting")
         self.second_system.add_times_for_additional(second_systems)
 
         self.second_system_fuse_IV = BaseCheckBox(
-            "second_system_fuse_IV", None,
-            QT_TRANSLATE_NOOP("BaseCheckBox", "合成四级")
+            "second_system_fuse_IV", None, QT_TRANSLATE_NOOP("BaseCheckBox", "合成四级")
         )
         self.second_system_buy = BaseCheckBox(
-            "second_system_buy", None,
-            QT_TRANSLATE_NOOP("BaseCheckBox", "购买")
+            "second_system_buy", None, QT_TRANSLATE_NOOP("BaseCheckBox", "购买")
         )
         self.second_system_select = BaseCheckBox(
-            "second_system_choose", None,
-            QT_TRANSLATE_NOOP("BaseCheckBox", "选取胜利奖励")
+            "second_system_choose",
+            None,
+            QT_TRANSLATE_NOOP("BaseCheckBox", "选取胜利奖励"),
         )
         self.second_system_power_up = BaseCheckBox(
-            "second_system_power_up", None,
-            QT_TRANSLATE_NOOP("BaseCheckBox", "升级四级")
+            "second_system_power_up",
+            None,
+            QT_TRANSLATE_NOOP("BaseCheckBox", "升级四级"),
         )
 
         self.skill_replacement = CheckBoxWithComboBox(
-            "skill_replacement", QT_TRANSLATE_NOOP("CheckBoxWithComboBox", "技能替换"),
-            None, "skill_replacement_select"
+            "skill_replacement",
+            QT_TRANSLATE_NOOP("CheckBoxWithComboBox", "技能替换"),
+            None,
+            "skill_replacement_select",
         )
         self.skill_replacement.add_items(skill_replacement_sinner)
         self.skill_replacement.add_combobox("skill_replacement_mode")
@@ -523,24 +677,19 @@ class CustomizeSettingsModule(QFrame):
         self.ignore_shop = BaseLabel("忽略商店")
         self.ignore_shop.add_icon(FIF.CUT)
         self.floor_shop_1 = BaseCheckBox(
-            "ignore_shop_1", None,
-            QT_TRANSLATE_NOOP("BaseCheckBox", "第一层")
+            "ignore_shop_1", None, QT_TRANSLATE_NOOP("BaseCheckBox", "第一层")
         )
         self.floor_shop_2 = BaseCheckBox(
-            "ignore_shop_2", None,
-            QT_TRANSLATE_NOOP("BaseCheckBox", "第二层")
+            "ignore_shop_2", None, QT_TRANSLATE_NOOP("BaseCheckBox", "第二层")
         )
         self.floor_shop_3 = BaseCheckBox(
-            "ignore_shop_3", None,
-            QT_TRANSLATE_NOOP("BaseCheckBox", "第三层")
+            "ignore_shop_3", None, QT_TRANSLATE_NOOP("BaseCheckBox", "第三层")
         )
         self.floor_shop_4 = BaseCheckBox(
-            "ignore_shop_4", None,
-            QT_TRANSLATE_NOOP("BaseCheckBox", "第四层")
+            "ignore_shop_4", None, QT_TRANSLATE_NOOP("BaseCheckBox", "第四层")
         )
         self.floor_shop_5 = BaseCheckBox(
-            "ignore_shop_5", None,
-            QT_TRANSLATE_NOOP("BaseCheckBox", "第五层")
+            "ignore_shop_5", None, QT_TRANSLATE_NOOP("BaseCheckBox", "第五层")
         )
 
     def __init_layout(self):
@@ -683,13 +832,27 @@ class CustomizeInfoModule(QFrame):
     def __init_card(self):
         self.total_count = BaseLabel(self.tr("总镜牢次数: 统计数据不足"), parent=self)
         self.hard_count = BaseLabel(self.tr("困难镜牢次数: 统计数据不足"), parent=self)
-        self.normal_count = BaseLabel(self.tr("普通镜牢次数: 统计数据不足"), parent=self)
-        self.average_time_hard = BaseLabel(self.tr("困难平均用时: 统计数据不足"), parent=self)
-        self.average_time_hard_last5 = BaseLabel(self.tr("困难最近5次平均用时: 统计数据不足"), parent=self)
-        self.average_time_hard_last10 = BaseLabel(self.tr("困难最近10次平均用时: 统计数据不足"), parent=self)
-        self.average_time_normal = BaseLabel(self.tr("普通平均用时: 统计数据不足"), parent=self)
-        self.average_time_normal_last5 = BaseLabel(self.tr("普通最近5次平均用时: 统计数据不足"), parent=self)
-        self.average_time_normal_last10 = BaseLabel(self.tr("普通最近10次平均用时: 统计数据不足"), parent=self)
+        self.normal_count = BaseLabel(
+            self.tr("普通镜牢次数: 统计数据不足"), parent=self
+        )
+        self.average_time_hard = BaseLabel(
+            self.tr("困难平均用时: 统计数据不足"), parent=self
+        )
+        self.average_time_hard_last5 = BaseLabel(
+            self.tr("困难最近5次平均用时: 统计数据不足"), parent=self
+        )
+        self.average_time_hard_last10 = BaseLabel(
+            self.tr("困难最近10次平均用时: 统计数据不足"), parent=self
+        )
+        self.average_time_normal = BaseLabel(
+            self.tr("普通平均用时: 统计数据不足"), parent=self
+        )
+        self.average_time_normal_last5 = BaseLabel(
+            self.tr("普通最近5次平均用时: 统计数据不足"), parent=self
+        )
+        self.average_time_normal_last10 = BaseLabel(
+            self.tr("普通最近10次平均用时: 统计数据不足"), parent=self
+        )
 
         self.refesh_button = PushButton(self.tr("刷新数据"))
         self.refesh_button.clicked.connect(self.fresh_data)
@@ -708,7 +871,7 @@ class CustomizeInfoModule(QFrame):
         self.third_line.addWidget(self.average_time_normal_last10)
         self.fresh_data_button_layout.addWidget(self.refesh_button)
         self.clear_data_button_layout.addWidget(self.clear_data_button)
-        
+
         self.main_layout.addWidget(self.first_line_widget)
         self.main_layout.addWidget(self.second_line_widget)
         self.main_layout.addWidget(self.third_line_widget)
@@ -795,20 +958,16 @@ class CustomizeInfoModule(QFrame):
         if average_time_hard >= 0.005:
             self.average_time_hard.setText(
                 self.tr("困难平均用时: {min:.0f} : {sec:.2f} ").format(
-                    min=average_time_hard // 60,
-                    sec=average_time_hard % 60
+                    min=average_time_hard // 60, sec=average_time_hard % 60
                 )
             )
         else:
-            self.average_time_hard.setText(
-                self.tr("困难平均用时: 统计数据不足")
-            )
+            self.average_time_hard.setText(self.tr("困难平均用时: 统计数据不足"))
         average_time_hard_last5 = self.info.get("average_time_hard_last5", 0.0)
         if average_time_hard_last5 >= 0.005:
             self.average_time_hard_last5.setText(
                 self.tr("困难最近5次平均用时: {min:.0f} : {sec:.2f} ").format(
-                    min=average_time_hard_last5 // 60,
-                    sec=average_time_hard_last5 % 60
+                    min=average_time_hard_last5 // 60, sec=average_time_hard_last5 % 60
                 )
             )
         else:
@@ -820,7 +979,7 @@ class CustomizeInfoModule(QFrame):
             self.average_time_hard_last10.setText(
                 self.tr("困难最近10次平均用时: {min:.0f} : {sec:.2f} ").format(
                     min=average_time_hard_last10 // 60,
-                    sec=average_time_hard_last10 % 60
+                    sec=average_time_hard_last10 % 60,
                 )
             )
         else:
@@ -831,20 +990,17 @@ class CustomizeInfoModule(QFrame):
         if average_time_normal >= 0.005:
             self.average_time_normal.setText(
                 self.tr("普通平均用时: {min:.0f} : {sec:.2f} ").format(
-                    min=average_time_normal // 60,
-                    sec=average_time_normal % 60
+                    min=average_time_normal // 60, sec=average_time_normal % 60
                 )
             )
         else:
-            self.average_time_normal.setText(
-                self.tr("普通平均用时: 统计数据不足")
-            )
+            self.average_time_normal.setText(self.tr("普通平均用时: 统计数据不足"))
         average_time_normal_last5 = self.info.get("average_time_normal_last5", 0.0)
         if average_time_normal_last5 >= 0.005:
             self.average_time_normal_last5.setText(
                 self.tr("普通最近5次平均用时: {min:.0f} : {sec:.2f} ").format(
                     min=average_time_normal_last5 // 60,
-                    sec=average_time_normal_last5 % 60
+                    sec=average_time_normal_last5 % 60,
                 )
             )
         else:
@@ -856,7 +1012,7 @@ class CustomizeInfoModule(QFrame):
             self.average_time_normal_last10.setText(
                 self.tr("普通最近10次平均用时: {min:.0f} : {sec:.2f} ").format(
                     min=average_time_normal_last10 // 60,
-                    sec=average_time_normal_last10 % 60
+                    sec=average_time_normal_last10 % 60,
                 )
             )
         else:

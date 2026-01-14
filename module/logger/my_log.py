@@ -1,10 +1,8 @@
 from copy import deepcopy
-import inspect
 import logging
 import colorlog
 from concurrent_log_handler import ConcurrentRotatingFileHandler
 import os
-import re
 import sys
 from pathlib import Path
 
@@ -60,7 +58,7 @@ class Logger(metaclass=SingletonMeta):
             debug_file_handler = ConcurrentRotatingFileHandler(
                 "./logs/debugLog.log",
                 maxBytes=5 * 1024 * 1024,  # 每份 5 MB
-                backupCount=10,            # 最多保留 10 份
+                backupCount=10,  # 最多保留 10 份
                 encoding="utf-8",
             )
             file_formatter = deepcopy(console_formatter)

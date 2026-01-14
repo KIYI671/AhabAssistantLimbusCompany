@@ -10,16 +10,33 @@ import win32process
 from PySide6.QtCore import QThread, QMutex, QT_TRANSLATE_NOOP
 from playsound3 import playsound
 
-from module.ALI import auto_switch_language_in_game, AutoSwitchCon, get_game_config_from_registry
+from module.ALI import (
+    auto_switch_language_in_game,
+    AutoSwitchCon,
+    get_game_config_from_registry,
+)
 from module.automation import auto
 from module.config import cfg
 from module.decorator.decorator import begin_and_finish_time_log
 from module.game_and_screen import screen, game_process
 from module.logger import log
-from module.my_error.my_error import userStopError, unableToFindTeamError, unexpectNumError, cannotOperateGameError, \
-    netWorkUnstableError, backMainWinError, withOutGameWinError, notWaitError, withOutPicError, withOutAdminError
+from module.my_error.my_error import (
+    userStopError,
+    unableToFindTeamError,
+    unexpectNumError,
+    cannotOperateGameError,
+    netWorkUnstableError,
+    backMainWinError,
+    withOutGameWinError,
+    notWaitError,
+    withOutPicError,
+    withOutAdminError,
+)
 from tasks.base.back_init_menu import back_init_menu
-from tasks.base.make_enkephalin_module import lunacy_to_enkephalin, make_enkephalin_module
+from tasks.base.make_enkephalin_module import (
+    lunacy_to_enkephalin,
+    make_enkephalin_module,
+)
 from tasks.battle import battle
 from tasks.daily.get_prize import get_pass_prize, get_mail_prize
 from tasks.daily.luxcavation import EXP_luxcavation, thread_luxcavation
@@ -79,7 +96,7 @@ def onetime_mir_process(team_setting, team_num: int):
             return False
     except Exception as e:
         msg = f"镜牢行动出错: {e}"
-        exc_traceback = ''.join(format_exception(*exc_info()))
+        exc_traceback = "".join(format_exception(*exc_info()))
         msg += f"\n调用栈信息:\n{exc_traceback}"
         log.error(msg)
         return False
@@ -111,25 +128,36 @@ def init_game():
             if cfg.simulator_port == 0 and cfg.mumu_instance_number == -1:
                 log.info("未设置模拟器端口或实例编号，使用默认mumu模拟器")
             elif cfg.simulator_port != 0:
-                if cfg.simulator_port == 16384 or (cfg.simulator_port - 16384) % 32 == 0:
-                    mumu_instance_number = 0 if cfg.simulator_port == 16384 else (cfg.simulator_port - 16384) // 32
+                if (
+                    cfg.simulator_port == 16384
+                    or (cfg.simulator_port - 16384) % 32 == 0
+                ):
+                    mumu_instance_number = (
+                        0
+                        if cfg.simulator_port == 16384
+                        else (cfg.simulator_port - 16384) // 32
+                    )
                     log.debug(f"使用mumu模拟器实例号为 {mumu_instance_number}")
                 else:
                     log.info("设置的模拟器端口非常用默认端口，使用默认mumu模拟器")
             elif cfg.mumu_instance_number != -1:
                 mumu_instance_number = cfg.mumu_instance_number
             from module.simulator.mumu_control import MumuControl
+
             simulator = MumuControl(instance_number=mumu_instance_number)
         else:
             from module.simulator.simulator_control import SimulatorControl
+
             simulator = SimulatorControl()
     auto.init_input()
     if cfg.simulator:
         if cfg.simulator_type == 0:
             from module.simulator.mumu_control import MumuControl
+
             MumuControl.connection_device.start_game()
         else:
             from module.simulator.simulator_control import SimulatorControl
+
             SimulatorControl.connection_device.start_game()
     else:
         game_process.start_game()
@@ -149,7 +177,7 @@ def script_task() -> None | int:
         if cfg.experimental_auto_lang:
             ret = auto_switch_language_in_game(screen.handle._hWnd)
             if ret == AutoSwitchCon.FAILED:
-                log.info(f"自动切换语言失败，使用英语尝试")
+                log.info("自动切换语言失败，使用英语尝试")
                 cfg.set_value("language_in_game", "en")
         else:
             if cfg.language_in_game == "-":
@@ -163,7 +191,9 @@ def script_task() -> None | int:
     if get_game_config_from_registry().get("_renderingScale", -1) == 2:
         log.warning("当前游戏渲染比例为低, 可能会导致识别错误, 建议设置为中或更高")
     if cfg.set_win_size == 720:
-        log.warning("当前游戏分辨率为1280*720, 可能会导致识别错误或卡死, 建议设置为更高分辨率")
+        log.warning(
+            "当前游戏分辨率为1280*720, 可能会导致识别错误或卡死, 建议设置为更高分辨率"
+        )
 
     if cfg.language_in_game == "zh_cn" and pic_path[0] != "zh_cn":
         pic_path.insert(0, "zh_cn")
@@ -174,7 +204,9 @@ def script_task() -> None | int:
 
     if cfg.resonate_with_Ahab:
         random_number = random.randint(1, 4)
-        playsound(f"assets/audio/This_is_all_your_fault_{random_number}.mp3", block=False)
+        playsound(
+            f"assets/audio/This_is_all_your_fault_{random_number}.mp3", block=False
+        )
     # 如果是战斗中，先处理战斗
     get_reward = None
     if auto.click_element("battle/turn_assets.png", take_screenshot=True):
@@ -235,11 +267,14 @@ def script_task() -> None | int:
 
             teams_order = cfg.teams_order  # 复制一份队伍顺序
             team_num = teams_order.index(1)  # 获取序号1的队伍在队伍顺序中的位置
-            team_setting = cfg.get_value(f"team{team_num + 1}_setting")  # 获取序号1的队伍的配置
+            team_setting = cfg.get_value(
+                f"team{team_num + 1}_setting"
+            )  # 获取序号1的队伍的配置
             # 如果该队伍固定了用途，且不用途符合当前情况，将序号1的队伍移动到队伍顺序的最后
             if "fixed_team_use" in team_setting and team_setting["fixed_team_use"]:
-                if (team_setting["fixed_team_use_select"] == 0 and not cfg.hard_mirror) or (
-                        team_setting["fixed_team_use_select"] == 1 and cfg.hard_mirror):
+                if (
+                    team_setting["fixed_team_use_select"] == 0 and not cfg.hard_mirror
+                ) or (team_setting["fixed_team_use_select"] == 1 and cfg.hard_mirror):
                     for index, value in enumerate(teams_order):
                         if value == 0:
                             continue
@@ -282,6 +317,7 @@ def script_task() -> None | int:
     if cfg.simulator:
         if cfg.simulator_type == 0:
             from module.simulator.mumu_control import MumuControl
+
             MumuControl.clean_connect()
 
     log.info("脚本任务已经完成")
@@ -294,10 +330,16 @@ def script_task() -> None | int:
     minutes, seconds = divmod(secends, 60)
     hours, minutes = divmod(minutes, 60)
     run_time = f"{int(hours):02}:{int(minutes):02}:{int(seconds):02}"
-    send_toast("AALC 运行结束", ["所有任务已完成", run_time], template=TemplateToast.NormalTemplate)
+    send_toast(
+        "AALC 运行结束",
+        ["所有任务已完成", run_time],
+        template=TemplateToast.NormalTemplate,
+    )
     if cfg.resonate_with_Ahab:
         random_number = random.randint(1, 4)
-        playsound(f"assets/audio/This_is_all_your_fault_{random_number}.mp3", block=False)
+        playsound(
+            f"assets/audio/This_is_all_your_fault_{random_number}.mp3", block=False
+        )
 
     if platform.system() == "Windows":
         after_completion = cfg.after_completion
@@ -310,7 +352,7 @@ def script_task() -> None | int:
                 os.system("shutdown /s /t 30")
             elif after_completion == 4 or after_completion == 6:
                 _, pid = win32process.GetWindowThreadProcessId(screen.handle._hWnd)
-                ret = os.system(f'taskkill /F /PID {pid}')
+                ret = os.system(f"taskkill /F /PID {pid}")
                 if ret == 0:
                     log.info("成功关闭 Limbus Company")
                 elif ret == 128:
@@ -326,11 +368,10 @@ def script_task() -> None | int:
 
 
 class my_script_task(QThread):
-
     def __init__(self):
         # 初始化，构造函数
         super().__init__()
-        self.exc_traceback = ''
+        self.exc_traceback = ""
         self.mutex = QMutex()
 
     def run(self):
@@ -339,26 +380,25 @@ class my_script_task(QThread):
         try:
             self._run()
         except (
-                ConnectionError,
-                userStopError,
-                unableToFindTeamError,
-                unexpectNumError,
-                cannotOperateGameError,
-                netWorkUnstableError,
-                backMainWinError,
-                withOutGameWinError,
-                notWaitError,
-                withOutPicError,
-                withOutAdminError,
+            ConnectionError,
+            userStopError,
+            unableToFindTeamError,
+            unexpectNumError,
+            cannotOperateGameError,
+            netWorkUnstableError,
+            backMainWinError,
+            withOutGameWinError,
+            notWaitError,
+            withOutPicError,
+            withOutAdminError,
         ) as e:
             self.exception = e
         except Exception as e:
             self.exception = e
             log.error(f"出现错误: {e}")
         finally:
-            if self.exc_traceback != '':
-                self.exc_traceback = ''.join(
-                    format_exception(*exc_info()))
+            if self.exc_traceback != "":
+                self.exc_traceback = "".join(format_exception(*exc_info()))
                 log.error(self.exc_traceback)
             self.mutex.unlock()
 
@@ -376,7 +416,6 @@ class my_script_task(QThread):
             auto.clear_img_cache()
         except Exception as e:
             log.error(f"出现错误: {e}")
-            self.exc_traceback = ''.join(
-                format_exception(*exc_info()))
+            self.exc_traceback = "".join(format_exception(*exc_info()))
             log.error(self.exc_traceback)
             self.mutex.unlock()

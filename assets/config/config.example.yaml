@@ -23,6 +23,9 @@ window_position_x: 0 # 窗口位置x
 window_position_y: 0 # 窗口位置y
 theme_mode: AUTO # 应用主题：AUTO, LIGHT, DARK
 autostart: False # 自启动
+autodaily: False # enable auto daily tasks
+autodaily_time: "00:00" # auto daily run time (HH:mm)
+
 # 脚本运行速度设置
 screenshot_interval: 0.85 # 截图间隔时间
 mouse_action_interval: 0.5 # 鼠标操作间隔时间

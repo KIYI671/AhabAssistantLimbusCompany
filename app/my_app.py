@@ -1,4 +1,3 @@
-import datetime
 import os
 import sys
 import re
@@ -13,7 +12,7 @@ from qfluentwidgets.components.widgets.frameless_window import FramelessWindow
 from qframelesswindow import StandardTitleBar
 
 from app import mediator, AnnouncementStatus
-from app.announcement_board import AnnouncementBoard, Announcement, AnnouncementThread
+from app.announcement_board import AnnouncementBoard, AnnouncementThread
 from app.card.messagebox_custom import MessageBoxWarning, MessageBoxConfirm
 from app.farming_interface import FarmingInterface
 from app.language_manager import LanguageManager
@@ -29,7 +28,7 @@ from module.config import cfg
 
 
 class Language(Enum):
-    """ Language enumeration """
+    """Language enumeration"""
 
     CHINESE_SIMPLIFIED = QLocale(QLocale.Language.Chinese, QLocale.Country.China)
     CHINESE_TRADITIONAL = QLocale(QLocale.Language.Chinese, QLocale.Country.HongKong)
@@ -136,7 +135,7 @@ class MainWindow(FramelessWindow):
         self.check_mirror_setting()
 
         # 开发模式下不检查更新
-        if os.environ.get('AALC_DEV_MODE') != '1':
+        if os.environ.get("AALC_DEV_MODE") != "1":
             check_update(self, flag=True)
 
         self.set_ring()
@@ -179,16 +178,18 @@ class MainWindow(FramelessWindow):
                 except (IndexError, ValueError):
                     # 由于输入值为可选, 所以在强制int失败或缺少时将跳过参数数值重置为0
                     skip_arg_times = 0
-                    log.info('命令行参数 --exit 后缺少退出类型，默认为5, 即退出AALC')
+                    log.info("命令行参数 --exit 后缺少退出类型，默认为5, 即退出AALC")
                 except Exception as e:
                     exit_type = 0
                     skip_arg_times = 0
-                    log.error(f'命令行参数 --exit 未知错误: {e}')
+                    log.error(f"命令行参数 --exit 未知错误: {e}")
                 continue
 
         # 最终执行操作
         if exit_flag:
-            self.farming_interface.interface_left.then_combobox.combo_box.setCurrentIndex(exit_type)
+            self.farming_interface.interface_left.then_combobox.combo_box.setCurrentIndex(
+                exit_type
+            )
 
         if start_flag:
             QTimer.singleShot(3000, mediator.finished_signal.emit)
@@ -216,13 +217,13 @@ class MainWindow(FramelessWindow):
         cfg.set_value("window_position_y", self.y())
         
         if (
-                self.farming_interface.interface_left.my_script is not None
-                and self.farming_interface.interface_left.my_script.isRunning()
+            self.farming_interface.interface_left.my_script is not None
+            and self.farming_interface.interface_left.my_script.isRunning()
         ):
             message_box = MessageBoxConfirm(
                 self.tr("有正在进行的任务"),
                 self.tr("脚本正在运行中，确定要退出程序吗？"),
-                self.window()
+                self.window(),
             )
             if message_box.exec():
                 self.farming_interface.interface_left.my_script.terminate()
@@ -239,7 +240,7 @@ class MainWindow(FramelessWindow):
 
     def add_and_switch_to_page(self, target: str):
         try:
-            num = int(re.search(r'team(\d+)_setting', target).group(1))
+            num = int(re.search(r"team(\d+)_setting", target).group(1))
             if "team_setting" in list(self.pivot.items.keys()):
                 list(self.pivot.items.values())[-1].click()
                 message = self.tr("存在未保存的队伍设置")
@@ -247,7 +248,9 @@ class MainWindow(FramelessWindow):
                 self.pivot.setCurrentItem("team_setting")
             else:
                 """切换页面（带越界保护）"""
-                self.addSubInterface(TeamSettingCard(num), 'team_setting', self.tr("队伍设置"))
+                self.addSubInterface(
+                    TeamSettingCard(num), "team_setting", self.tr("队伍设置")
+                )
                 QTimer.singleShot(0, lambda: self.pivot.setCurrentItem("team_setting"))
         except Exception as e:
             log.error(f"【异常】switch_to_page 出错：{type(e).__name__}:{e}")
@@ -270,23 +273,19 @@ class MainWindow(FramelessWindow):
 
     def show_save_warning(self):
         MessageBoxWarning(
-            self.tr('设置未保存'),
-            self.tr('存在未保存的设置，请执行保存或取消操作'),
-            self
+            self.tr("设置未保存"),
+            self.tr("存在未保存的设置，请执行保存或取消操作"),
+            self,
         ).exec()
 
     def show_warning(self, warning: str):
-        MessageBoxWarning(
-            self.tr('警告！'),
-            warning,
-            self
-        ).exec()
+        MessageBoxWarning(self.tr("警告！"), warning, self).exec()
 
     def show_tasks_warning(self):
         MessageBoxWarning(
-            self.tr('任务设置出错'),
-            self.tr('未设置任何任务，请勾选主页面左边的选项框需要执行的任务'),
-            self
+            self.tr("任务设置出错"),
+            self.tr("未设置任何任务，请勾选主页面左边的选项框需要执行的任务"),
+            self,
         ).exec()
 
     def connect_mediator(self):
@@ -315,6 +314,7 @@ class MainWindow(FramelessWindow):
             config_team_setting = cfg.get_value(f"team{team_num}_setting")
             import copy
             from app import team_setting_template
+
             team_setting = copy.deepcopy(team_setting_template)
             # 用配置中的值覆盖模板的同名key（仅处理模板中存在的key）
             for key, value in config_team_setting.items():
@@ -334,14 +334,14 @@ class MainWindow(FramelessWindow):
 
     def download_and_install(self, file_name):
         messages_box = MessageBoxConfirm(
-            self.tr("更新提醒"),
-            self.tr("下载已经完成，是否开始更新"),
-            self.window()
+            self.tr("更新提醒"), self.tr("下载已经完成，是否开始更新"), self.window()
         )
         if messages_box.exec():
             source_file = os.path.abspath("./AALC Updater.exe")
             assert_name = file_name
-            subprocess.Popen([source_file, assert_name], creationflags=subprocess.DETACHED_PROCESS)
+            subprocess.Popen(
+                [source_file, assert_name], creationflags=subprocess.DETACHED_PROCESS
+            )
 
     def retranslateUi(self):
         self.pivot.setItemText("farming_interface", self.tr("一键长草"))
@@ -353,7 +353,6 @@ class MainWindow(FramelessWindow):
             self.pivot.setItemText("team_setting", self.tr("队伍设置"))
 
     def show_announcement_board(self):
-
         def handler_update(status):
             """
             公告处理函数，根据不同的公告状态执行不同的操作。
@@ -364,7 +363,7 @@ class MainWindow(FramelessWindow):
                 messages_box = AnnouncementBoard(
                     self.announcement_thread.announcement,
                     self.announcement_thread.announcement_time,
-                    self.window()
+                    self.window(),
                 )
                 messages_box.show()
                 messages_box.setDefault(0)

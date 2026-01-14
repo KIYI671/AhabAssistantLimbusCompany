@@ -1,6 +1,3 @@
-import atexit
-import io
-import os.path
 import logging
 
 

@@ -8,12 +8,14 @@ from tasks.base.retry import retry
 @begin_and_finish_time_log(task_name="收取日常/周常", calculate_time=False)
 def get_pass_prize():
     loop_count = 15
-    auto.model = 'clam'
+    auto.model = "clam"
     while True:
         # 自动截图
         if auto.take_screenshot() is None:
             continue
-        if coordinates := auto.find_element("pass/pass_coin.png", find_type='image_with_multiple_targets'):
+        if coordinates := auto.find_element(
+            "pass/pass_coin.png", find_type="image_with_multiple_targets"
+        ):
             for coordinate in coordinates:
                 auto.mouse_click(coordinate[0], coordinate[1])
                 retry()
@@ -24,9 +26,14 @@ def get_pass_prize():
             if auto.click_element("home/season_assets.png"):
                 continue
         else:
-            season_bbox = ImageUtils.get_bbox(ImageUtils.load_image("home/season_assets.png"))
+            season_bbox = ImageUtils.get_bbox(
+                ImageUtils.load_image("home/season_assets.png")
+            )
             if auto.find_text_element("season", season_bbox):
-                auto.mouse_click((season_bbox[0] + season_bbox[2]) / 2, (season_bbox[1] + season_bbox[3]) / 2)
+                auto.mouse_click(
+                    (season_bbox[0] + season_bbox[2]) / 2,
+                    (season_bbox[1] + season_bbox[3]) / 2,
+                )
                 continue
         # else:
 
@@ -36,15 +43,19 @@ def get_pass_prize():
         if loop_count < 10:
             auto.model = "normal"
         if loop_count < 5:
-            auto.model = 'aggressive'
+            auto.model = "aggressive"
         if loop_count < 0:
             log.error("无法收取日常/周常")
             return
     auto.click_element("pass/weekly_assets.png")
     loop_count = 15
-    auto.model = 'clam'
+    auto.model = "clam"
     while True:
-        if coordinates := auto.find_element("pass/pass_coin.png", find_type='image_with_multiple_targets', take_screenshot=True):
+        if coordinates := auto.find_element(
+            "pass/pass_coin.png",
+            find_type="image_with_multiple_targets",
+            take_screenshot=True,
+        ):
             for coordinate in coordinates:
                 auto.mouse_click(coordinate[0], coordinate[1])
                 retry()
@@ -53,7 +64,7 @@ def get_pass_prize():
         if loop_count < 10:
             auto.model = "normal"
         if loop_count < 5:
-            auto.model = 'aggressive'
+            auto.model = "aggressive"
         if loop_count < 0:
             log.error("无法收取日常/周常")
             break
@@ -62,7 +73,7 @@ def get_pass_prize():
 @begin_and_finish_time_log(task_name="收取邮箱", calculate_time=False)
 def get_mail_prize():
     loop_count = 15
-    auto.model = 'clam'
+    auto.model = "clam"
     while True:
         # 自动截图
         if auto.take_screenshot() is None:
@@ -73,14 +84,16 @@ def get_mail_prize():
         if auto.click_element("mail/claim_all_assets.png"):
             auto.click_element("mail/close_assets.png")
             break
-        if auto.click_element("home/mail_assets.png") or auto.click_element("home/mail_cn_assets.png", model='normal'):
+        if auto.click_element("home/mail_assets.png") or auto.click_element(
+            "home/mail_cn_assets.png", model="normal"
+        ):
             continue
         auto.mouse_to_blank()
         loop_count -= 1
         if loop_count < 20:
             auto.model = "normal"
         if loop_count < 10:
-            auto.model = 'aggressive'
+            auto.model = "aggressive"
         if loop_count < 0:
             log.error("无法收取邮箱")
             break

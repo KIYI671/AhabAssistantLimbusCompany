@@ -24,7 +24,9 @@ class ToolManager:
         app = QApplication.instance()
         if app is None:
             # 无运行中的 Qt 应用，无法安全创建窗口
-            log.error("未检测到正在运行的 Qt 应用，无法展示小工具窗口。请从主程序内启动该工具。")
+            log.error(
+                "未检测到正在运行的 Qt 应用，无法展示小工具窗口。请从主程序内启动该工具。"
+            )
             return
 
         def create_and_show():
@@ -48,7 +50,10 @@ class ToolManager:
                 self._windows.append(w)
                 # 窗口销毁时移除引用
                 w.destroyed.connect(
-                    lambda *_: hasattr(self, "_windows") and self._windows.remove(w) if w in self._windows else None)
+                    lambda *_: hasattr(self, "_windows") and self._windows.remove(w)
+                    if w in self._windows
+                    else None
+                )
             except Exception as e:
                 log.error(e)
 
@@ -62,5 +67,7 @@ def start(tool: Literal["battle", "production", "screenshot"]):
     :param tool: 启动工具，可以是"battle"。
     """
     tool_manager = ToolManager()
-    tool_gui_thread = threading.Thread(target=tool_manager.run, args=(tool,), daemon=True)
+    tool_gui_thread = threading.Thread(
+        target=tool_manager.run, args=(tool,), daemon=True
+    )
     tool_gui_thread.start()

@@ -1,6 +1,5 @@
 import random
 import re
-import subprocess
 from time import sleep, time
 
 import cv2
@@ -9,26 +8,52 @@ from adbutils import adb
 
 from module.config import cfg
 from module.logger import log
-from module.simulator import insert_swipe
 from module.simulator.pyminitouch import MNTDevice
-from utils.singletonmeta import SingletonMeta
 
 key_list = {
-    'a': 29, 'b': 30, 'c': 31, 'd': 32, 'e': 33,
-    'f': 34, 'g': 35, 'h': 36, 'i': 37, 'j': 38,
-    'k': 39, 'l': 40, 'm': 41, 'n': 42, 'o': 43,
-    'p': 44, 'q': 45, 'r': 46, 's': 47, 't': 48,
-    'u': 49, 'v': 50, 'w': 51, 'x': 52, 'y': 53,
-    'z': 54,
-    '0': 7, '1': 8, '2': 9, '3': 10, '4': 11,
-    '5': 12, '6': 13, '7': 14, '8': 15, '9': 16,
-    'enter': 66,
-    'esc': 111,
-    'space': 62,
-    'tab': 61,
-    'shift': 59,
-    'ctrl': 113,
-    'alt': 57,
+    "a": 29,
+    "b": 30,
+    "c": 31,
+    "d": 32,
+    "e": 33,
+    "f": 34,
+    "g": 35,
+    "h": 36,
+    "i": 37,
+    "j": 38,
+    "k": 39,
+    "l": 40,
+    "m": 41,
+    "n": 42,
+    "o": 43,
+    "p": 44,
+    "q": 45,
+    "r": 46,
+    "s": 47,
+    "t": 48,
+    "u": 49,
+    "v": 50,
+    "w": 51,
+    "x": 52,
+    "y": 53,
+    "z": 54,
+    "0": 7,
+    "1": 8,
+    "2": 9,
+    "3": 10,
+    "4": 11,
+    "5": 12,
+    "6": 13,
+    "7": 14,
+    "8": 15,
+    "9": 16,
+    "enter": 66,
+    "esc": 111,
+    "space": 62,
+    "tab": 61,
+    "shift": 59,
+    "ctrl": 113,
+    "alt": 57,
 }
 
 
@@ -53,7 +78,7 @@ class SimulatorControl:
         self.simulator_port = None
         self.simulator_bluestacks = False
 
-        self.game_package_name = 'com.ProjectMoon.LimbusCompany'
+        self.game_package_name = "com.ProjectMoon.LimbusCompany"
 
         self.get_simulator()
 
@@ -69,12 +94,14 @@ class SimulatorControl:
             msg = adb.connect(self.simulator_port)
             # Connected to 127.0.0.1:59865
             # Already connected to 127.0.0.1:59865
-            if 'connected' in msg:
+            if "connected" in msg:
                 log.debug(f"成功连接至:{self.simulator_port},连接信息: {msg}")
                 break
             # bad port number '598265' in '127.0.0.1:598265'
-            elif 'bad port' in msg:
-                log.error(f'连接失败，端口号{self.simulator_port}不正确，可能是拼写错误或不规范')
+            elif "bad port" in msg:
+                log.error(
+                    f"连接失败，端口号{self.simulator_port}不正确，可能是拼写错误或不规范"
+                )
 
     def adb_disconnect(self):
         try:
@@ -82,12 +109,14 @@ class SimulatorControl:
                 msg = adb.disconnect(self.simulator_port)
                 # Connected to 127.0.0.1:59865
                 # Already connected to 127.0.0.1:59865
-                if 'disconnected' in msg:
+                if "disconnected" in msg:
                     log.debug(f"成功断开连接于:{self.simulator_port},连接信息: {msg}")
                     break
                 # bad port number '598265' in '127.0.0.1:598265'
-                elif 'bad port' in msg:
-                    log.error(f'断开连接失败，端口号{self.simulator_port}不正确，可能是拼写错误或不规范')
+                elif "bad port" in msg:
+                    log.error(
+                        f"断开连接失败，端口号{self.simulator_port}不正确，可能是拼写错误或不规范"
+                    )
         except:
             pass
 
@@ -122,14 +151,16 @@ class SimulatorControl:
 
         SimulatorControl.connection_device = self
 
-        log.debug(f"连接成功，已将模拟器实例记录至SimulatorControl.connection_device")
+        log.debug("连接成功，已将模拟器实例记录至SimulatorControl.connection_device")
 
         return self.simulator_device
 
     def screenshot(self):
-        data = self.simulator_device.shell(['screencap', '-p'], stream=False, encoding=None)
+        data = self.simulator_device.shell(
+            ["screencap", "-p"], stream=False, encoding=None
+        )
         if len(data) < 500:
-            log.warning(f'意外截图: {data}')
+            log.warning(f"意外截图: {data}")
         image = np.frombuffer(data, np.uint8)
         image = cv2.imdecode(image, cv2.IMREAD_COLOR)
         return image
@@ -151,7 +182,7 @@ class SimulatorControl:
         """
         pause_identity = False
         while self.is_pause:
-            if not pause_identity is False:
+            if pause_identity is not False:
                 log.info("AALC 已暂停")
                 pause_identity = True
             sleep(1)
@@ -176,7 +207,7 @@ class SimulatorControl:
         msg = f"点击位置:({x},{y})"
         log.debug(msg)
         for i in range(times):
-            self.simulator_device.shell(f'input tap {x} {y}')
+            self.simulator_device.shell(f"input tap {x} {y}")
             # 多次点击执行很快所以暂停放到循环外
 
         self.wait_pause()
@@ -274,14 +305,20 @@ class SimulatorControl:
             pos_x_2, pos_y_2 = self._scale(x + dx, y + dy)
 
         self.simulator_control.ext_smooth_swipe(
-            [(pos_x, pos_y), (pos_x_2, pos_y_2)], duration=drag_time * 1000 / 10, part=50, no_up=True
+            [(pos_x, pos_y), (pos_x_2, pos_y_2)],
+            duration=drag_time * 1000 / 10,
+            part=50,
+            no_up=True,
         )
         if drag_time * 0.3 > 0.5:
             sleep(drag_time * 0.3)
         else:
             sleep(0.5)
-        self.simulator_control.swipe([(pos_x_2, pos_y_2), (pos_x_2, pos_y_2)], duration=drag_time * 1000 / 10,
-                                     no_down=True)
+        self.simulator_control.swipe(
+            [(pos_x_2, pos_y_2), (pos_x_2, pos_y_2)],
+            duration=drag_time * 1000 / 10,
+            no_down=True,
+        )
 
     def close_current_app(self):
         if self.simulator_device is None:

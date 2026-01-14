@@ -2,7 +2,7 @@ import base64
 import datetime
 
 import pyperclip
-from PySide6.QtCore import QObject, QRect, QUrl, Signal
+from PySide6.QtCore import QObject, QRect, QUrl, Signal, QTime
 from PySide6.QtGui import (
     QColor,
     QDesktopServices,
@@ -25,6 +25,7 @@ from qfluentwidgets import (
     SettingCardGroup,
     SwitchButton,
     setCustomStyleSheet,
+    TimePicker,
 )
 
 from app.base_tools import *
@@ -777,7 +778,6 @@ class PushSettingCardDate(BasePushSettingCard):
 
 
 class PushSettingCardChance(BasePushSettingCard):
-
     def __init__(
         self,
         text,
@@ -807,6 +807,71 @@ class PushSettingCardChance(BasePushSettingCard):
         if message_box.exec():
             cfg.set_value(f"{self.config_name}", int(message_box.getValue()))
             self.line_text.setText(str(message_box.getValue()))
+
+
+class DailySettingCard(SwitchSettingCard):
+    def __init__(
+        self,
+        icon: Union[str, QIcon, FluentIconBase],
+        title,
+        content=None,
+        config_name: str = None,
+        parent=None,
+    ):
+        super().__init__(icon, title, content, config_name, parent)
+        self.config_name = config_name
+        self.autodaily_timepicker = TimePicker()
+        autodaily_time = cfg.get_value("autodaily_time") or "00:00"
+        autodaily_qtime = QTime.fromString(autodaily_time, "HH:mm")
+        if not autodaily_qtime.isValid():
+            autodaily_qtime = QTime(0, 0)
+        self.autodaily_timepicker.setTime(autodaily_qtime)
+        current_count = self.hBoxLayout.count()
+        self.hBoxLayout.insertWidget(current_count - 2, self.autodaily_timepicker)
+        self.hBoxLayout.insertSpacing(current_count - 1, 20)
+        self.autodaily_timepicker.setDisabled(not self.switchButton.isChecked())
+        self.autodaily_timepicker.timeChanged.connect(
+            self.__onAutoDailyTimepickerChanged
+        )
+
+    def __connect_signal(self):
+        self.switchButton.checkedChanged.connect(self.__onAutoDailyCheckboxChanged)
+        self.autodaily_timepicker.timeChanged.connect(
+            self.__onAutoDailyTimepickerChanged
+        )
+
+    @staticmethod
+    def __autodaily_taskname() -> str:
+        return "AALC Daily Task"
+
+    def __onAutoDailyCheckboxChanged(self, isChecked):
+        from utils.schedule_helper import ScheduleHelper
+
+        helper = ScheduleHelper()
+        task_name = self.__autodaily_taskname()
+
+        cfg.set_value(self.config_name, isChecked)
+        if isChecked:
+            self.autodaily_timepicker.setDisabled(False)
+            time = self.autodaily_timepicker.getTime()
+            helper.register_daily_task(
+                task_name, "start --exit", time.hour(), time.minute()
+            )
+        else:
+            self.autodaily_timepicker.setDisabled(True)
+            helper.unregister_task(task_name)
+
+    def __onAutoDailyTimepickerChanged(self, time: QTime):
+        from utils.schedule_helper import ScheduleHelper
+
+        helper = ScheduleHelper()
+        task_name = self.__autodaily_taskname()
+
+        cfg.set_value("autodaily_time", time.toString("HH:mm"))
+        helper.unregister_task(task_name)
+        helper.register_daily_task(
+            task_name, "start --exit", time.hour(), time.minute()
+        )
 
 
 class HotkeySettingCard(BasePushSettingCard):
@@ -852,7 +917,6 @@ class KeyButton(PrimaryPushButton):
 
 
 class KeyEditButton(PushButton):
-
     kill_key_input = Signal()
 
     def __init__(self, key_config: str, parent=None):
@@ -914,7 +978,6 @@ class KeyEditButton(PushButton):
 
 
 class KeyItem(QFrame):
-
     kill_key_item = Signal(object)
 
     def __init__(self, key_config: str, content: str, parent=None):
@@ -933,7 +996,6 @@ class KeyItem(QFrame):
 
 
 class HotkeyEditCard(MessageBox):
-
     def __init__(self, title: str, hotkeys: dict[str, str], parent=None):
         super().__init__(title, "", parent)
         self.yesButton.setText(self.tr("返回"))
@@ -949,7 +1011,6 @@ class HotkeyEditCard(MessageBox):
 
 
 class HotketInputCard(MessageBox):
-
     kill_key_input = Signal()
 
     SHIFT_KEYS = {

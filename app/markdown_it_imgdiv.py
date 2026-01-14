@@ -37,10 +37,10 @@ if TYPE_CHECKING:
 
 
 def imgdiv_plugin(
-        md: MarkdownIt,
-        class_name: str = "image-container",
-        focusable: bool = True,
-        align: Optional[str] = None,
+    md: MarkdownIt,
+    class_name: str = "image-container",
+    focusable: bool = True,
+    align: Optional[str] = None,
 ) -> None:
     """
     Plugin to wrap images in div containers.
@@ -66,9 +66,9 @@ def imgdiv_plugin(
 
             # Check if we have the pattern: paragraph_open -> inline -> paragraph_close
             if (
-                    i + 2 >= len(state.tokens)
-                    or state.tokens[i + 1].type != "inline"
-                    or state.tokens[i + 2].type != "paragraph_close"
+                i + 2 >= len(state.tokens)
+                or state.tokens[i + 1].type != "inline"
+                or state.tokens[i + 2].type != "paragraph_close"
             ):
                 i += 1
                 continue
@@ -116,10 +116,10 @@ def imgdiv_plugin(
 
         # Image wrapped in link: link_open -> image -> link_close
         if (
-                len(children) == 3
-                and children[0].type == "link_open"
-                and children[1].type == "image"
-                and children[2].type == "link_close"
+            len(children) == 3
+            and children[0].type == "link_open"
+            and children[1].type == "image"
+            and children[2].type == "link_close"
         ):
             return True
 
@@ -132,10 +132,10 @@ def imgdiv_plugin(
                 # Standalone image
                 i += 1
             elif (
-                    child.type == "link_open"
-                    and i + 2 < len(children)
-                    and children[i + 1].type == "image"
-                    and children[i + 2].type == "link_close"
+                child.type == "link_open"
+                and i + 2 < len(children)
+                and children[i + 1].type == "image"
+                and children[i + 2].type == "link_close"
             ):
                 # Image wrapped in link
                 i += 3
@@ -163,22 +163,22 @@ def imgdiv_plugin(
 
 # Use default renderers for div tokens
 def render_div_open(
-        self: "RendererProtocol",
-        tokens: Sequence["Token"],
-        idx: int,
-        options: "OptionsDict",
-        env: "EnvType",
+    self: "RendererProtocol",
+    tokens: Sequence["Token"],
+    idx: int,
+    options: "OptionsDict",
+    env: "EnvType",
 ) -> str:
     """Render opening div tag using default renderer."""
     return self.renderToken(tokens, idx, options, env)  # type: ignore[attr-defined,no-any-return]
 
 
 def render_div_close(
-        self: "RendererProtocol",
-        tokens: Sequence["Token"],
-        idx: int,
-        options: "OptionsDict",
-        env: "EnvType",
+    self: "RendererProtocol",
+    tokens: Sequence["Token"],
+    idx: int,
+    options: "OptionsDict",
+    env: "EnvType",
 ) -> str:
     """Render closing div tag using default renderer."""
     return self.renderToken(tokens, idx, options, env)  # type: ignore[attr-defined,no-any-return]

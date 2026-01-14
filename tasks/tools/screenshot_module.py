@@ -4,6 +4,7 @@ from module.game_and_screen import screen
 from PySide6.QtCore import QThread
 import time
 
+
 class ScreenshotGet(QThread):
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -11,6 +12,7 @@ class ScreenshotGet(QThread):
     def run(self):
         try:
             from tasks.base.script_task_scheme import init_game
+
             init_game()
         except Exception as e:
             log.error(f"初始化游戏失败: {str(e)}")
@@ -27,4 +29,3 @@ class ScreenshotGet(QThread):
             log.error(f"截图错误: {str(e)}")
             return
         screen.reset_win()
-

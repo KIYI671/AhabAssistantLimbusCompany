@@ -1,19 +1,18 @@
 import requests
 import tempfile
 import socket
-import subprocess
 
 import module.simulator.pyminitouch.config as config
 from module.logger import log
 
 
 def str2byte(content):
-    """ compile str to byte """
+    """compile str to byte"""
     return content.encode(config.DEFAULT_CHARSET)
 
 
 def download_file(target_url):
-    """ download file to temp path, and return its file path for further usage """
+    """download file to temp path, and return its file path for further usage"""
     resp = requests.get(target_url)
     with tempfile.NamedTemporaryFile("wb+", delete=False) as f:
         file_name = f.name
@@ -22,7 +21,7 @@ def download_file(target_url):
 
 
 def is_port_using(port_num):
-    """ if port is using by others, return True. else return False """
+    """if port is using by others, return True. else return False"""
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.settimeout(2)
 
@@ -35,8 +34,9 @@ def is_port_using(port_num):
 
 
 def restart_adb():
-    """ restart adb server """
+    """restart adb server"""
     import adbutils
+
     # 1. 停止 ADB 服务 (替代 adb kill-server)
     # 这会向 ADB Server 发送 host:kill 指令
     adbutils.adb.server_kill()
@@ -60,6 +60,7 @@ def is_device_connected(device_id):
     """
     try:
         import adbutils
+
         # 获取当前所有已连接的设备列表
         devices = adbutils.adb.device_list()
 

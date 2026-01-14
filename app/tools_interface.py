@@ -32,29 +32,33 @@ class ToolsInterface(ScrollArea):
 
     def __init_card(self):
         self.tools_group = BaseSettingCardGroup(
-            QT_TRANSLATE_NOOP("BaseSettingCardGroup", '工具箱'),
-            self.scroll_widget
+            QT_TRANSLATE_NOOP("BaseSettingCardGroup", "工具箱"), self.scroll_widget
         )
         self.auto_battle_card = BasePushSettingCard(
-            QT_TRANSLATE_NOOP("BasePushSettingCard", '运行'),
+            QT_TRANSLATE_NOOP("BasePushSettingCard", "运行"),
             FIF.CAFE,
             QT_TRANSLATE_NOOP("BasePushSettingCard", "自动战斗"),
-            QT_TRANSLATE_NOOP("BasePushSettingCard", "这只是一个为你自动按下P键和Enter键的小工具，不要怀抱太多期待"),
-            parent=self.tools_group
+            QT_TRANSLATE_NOOP(
+                "BasePushSettingCard",
+                "这只是一个为你自动按下P键和Enter键的小工具，不要怀抱太多期待",
+            ),
+            parent=self.tools_group,
         )
         self.auto_production_card = BasePushSettingCard(
-            QT_TRANSLATE_NOOP("BasePushSettingCard", '运行'),
+            QT_TRANSLATE_NOOP("BasePushSettingCard", "运行"),
             FIF.CAFE,
             QT_TRANSLATE_NOOP("BasePushSettingCard", "自动体力换饼"),
-            QT_TRANSLATE_NOOP("BasePushSettingCard", "辅助自动换饼小工具，防止体力溢出"),
-            parent=self.tools_group
+            QT_TRANSLATE_NOOP(
+                "BasePushSettingCard", "辅助自动换饼小工具，防止体力溢出"
+            ),
+            parent=self.tools_group,
         )
         self.get_screenshot_card = BasePushSettingCard(
-            QT_TRANSLATE_NOOP("BasePushSettingCard", '运行'),
+            QT_TRANSLATE_NOOP("BasePushSettingCard", "运行"),
             FIF.CAFE,
             QT_TRANSLATE_NOOP("BasePushSettingCard", "截图小工具"),
             QT_TRANSLATE_NOOP("BasePushSettingCard", "辅助截图小工具"),
-            parent=self.tools_group
+            parent=self.tools_group,
         )
 
     def __initLayout(self):
@@ -90,7 +94,9 @@ class ToolsInterface(ScrollArea):
     def _onScreenshotToolButtonPressed(self):
         time_str = time.strftime("%Y%m%d_%H%M%S", time.localtime())
         title = QT_TRANSLATE_NOOP("BaseInfoBar", "截图完成")
-        msg = QT_TRANSLATE_NOOP("BaseInfoBar", "图片保存为 AALC > screenshot_{time_str}.png")
+        msg = QT_TRANSLATE_NOOP(
+            "BaseInfoBar", "图片保存为 AALC > screenshot_{time_str}.png"
+        )
         bar = BaseInfoBar.success(
             title=title,
             content=msg,
@@ -99,5 +105,5 @@ class ToolsInterface(ScrollArea):
             isClosable=True,
             position=InfoBarPosition.BOTTOM_RIGHT,
             duration=-1,
-            parent=self
+            parent=self,
         )
