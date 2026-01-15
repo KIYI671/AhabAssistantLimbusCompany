@@ -1,15 +1,15 @@
 import os
 import sys
-
-from PySide6.QtCore import QFile, QTimer
+from PySide6.QtCore import Qt, QFile, QTimer
 from PySide6.QtWidgets import QApplication, QTextEdit
 from pynput import keyboard
-from qfluentwidgets import TextEdit, TransparentToolButton
+from qfluentwidgets import TextEdit, TransparentToolButton, setCustomStyleSheet
 from qfluentwidgets.window.stacked_widget import StackedWidget
 
 from app.base_combination import *
 from app.base_tools import *
 from app.language_manager import LanguageManager
+from app.common.ui_config import get_log_text_edit_qss
 from app.page_card import (
     PageSetWindows,
     PageDailyTask,
@@ -28,8 +28,7 @@ from utils.utils import check_hard_mirror_time
 class FarmingInterface(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent=parent)
-
-        self.setObjectName("settingInterface")
+        # objectName 由 addSubInterface 设置，这里不需要设置
         self.hbox_layout = QHBoxLayout(self)
         self.hbox_layout_left = QVBoxLayout()
         self.hbox_layout_center = QVBoxLayout()
@@ -103,8 +102,6 @@ class FarmingInterfaceLeft(QWidget):
         self.setting_options.setSpacing(10)
 
         self.setting_box = BaseSettingLayout()
-        # self.setting_box.setFrameShape(QFrame.StyledPanel)  # 带阴影的边框
-        # self.setting_box.setLineWidth(1)
         self.setting_box.setLayout(self.setting_layout)
 
     def __init_card(self):
@@ -467,7 +464,9 @@ class FarmingInterfaceCenter(QWidget):
         try:
             """切换页面（带越界保护）"""
             page_index = page_name_and_index[target]
-            self.setting_page.setCurrentIndex(page_index)
+            self.setting_page.setCurrentIndex(
+                page_index
+            )  # 当调用 setCurrentIndex 时，StackedWidget 会自动播放过渡动画
             cfg.set_value("default_page", page_index)
         except Exception as e:
             log.error(f"【异常】switch_to_page 出错：{type(e).__name__}:{e}")
@@ -493,6 +492,8 @@ class FarmingInterfaceRight(QWidget):
         self.__init_layout()
         self.last_position = 0
 
+        self._apply_theme_style()
+
         self.timer = QTimer()
         self.timer.timeout.connect(lambda option=0: self.set_log(option))
         self.timer.start(1000)  # 每秒更新一次
@@ -506,6 +507,11 @@ class FarmingInterfaceRight(QWidget):
         self.scroll_log_edit = TextEdit()
         self.scroll_log_edit.setAutoFormatting(QTextEdit.AutoFormattingFlag.AutoAll)
         self.scroll_log_edit.setReadOnly(True)
+
+    def _apply_theme_style(self):
+        light, dark = get_log_text_edit_qss()
+        setCustomStyleSheet(self.scroll_log_edit, light, dark)
+        self.scroll_log_edit.layer.hide()  # 隐藏指示线
 
     def __init_layout(self):
         self.main_layout.addWidget(self.scroll_log_edit)

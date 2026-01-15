@@ -1,15 +1,15 @@
 /* light - Qt-compatible styles only */
 QTextBrowser {
-  color: #1f2328;
-  background-color: #ffffff;
+  color: rgba(0, 0, 0, 0.75);
+  background-color: rgb(255, 255, 255);
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, "Microsoft YaHei", sans-serif;
   font-size: 16px;
   line-height: 1.5;
 }
 
 body {
-  color: #1f2328;
-  background-color: #ffffff;
+  color: rgba(0, 0, 0, 0.75);
+  background-color: rgb(255, 255, 255);
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, "Microsoft YaHei", sans-serif;
   font-size: 16px;
   line-height: 1.5;
