@@ -1404,7 +1404,7 @@ class Mirror:
                 ):
                     for gift in my_list[:1]:
                         auto.mouse_click(gift[0], gift[1])
-                        sleep(int(cfg.mouse_action_interval))
+                        sleep(cfg.mouse_action_interval)
                     auto.click_element(
                         "mirror/road_in_mir/acquire_ego_gift_select_assets.png",
                         model="normal",
@@ -1418,7 +1418,7 @@ class Mirror:
                 ):
                     for gift in my_list[:2]:
                         auto.mouse_click(gift[0], gift[1])
-                        sleep(int(cfg.mouse_action_interval))
+                        sleep(cfg.mouse_action_interval)
                     auto.click_element(
                         "mirror/road_in_mir/acquire_ego_gift_select_assets.png",
                         model="normal",
@@ -1430,7 +1430,7 @@ class Mirror:
                 else:
                     for gift in my_list:
                         auto.mouse_click(gift[0], gift[1])
-                        sleep(int(cfg.mouse_action_interval))
+                        sleep(cfg.mouse_action_interval)
                     auto.click_element(
                         "mirror/road_in_mir/acquire_ego_gift_select_assets.png",
                         model="normal",
