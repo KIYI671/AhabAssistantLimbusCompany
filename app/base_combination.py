@@ -11,7 +11,7 @@ from PySide6.QtGui import (
     QPainter,
     QPixmap,
 )
-from PySide6.QtWidgets import QFrame, QGraphicsOpacityEffect, QPushButton
+from PySide6.QtWidgets import QFrame, QGraphicsOpacityEffect, QPushButton, QLabel
 from qfluentwidgets import (
     IndicatorPosition,
     InfoBarPosition,
@@ -450,7 +450,7 @@ class SinnerSelect(QFrame):
         self.overlay_layout.setSpacing(5)  # Space between number and SELECTED text
 
         # Number Label
-        self.number_label = BodyLabel()  # Parent handled by layout
+        self.number_label = QLabel()  # Parent handled by layout
         self.number_label.setAlignment(Qt.AlignCenter)
 
         font = self.number_label.font()
@@ -462,9 +462,7 @@ class SinnerSelect(QFrame):
         )  # Number color: Yellow
 
         # SELECTED Label
-        self.selected_label = (
-            BodyLabel()
-        )  # Initialization, content/style set in set_text
+        self.selected_label = QLabel()  # Initialization, content/style set in set_text
         self.selected_label.setAlignment(Qt.AlignCenter)
 
         self.overlay_layout.addWidget(self.number_label)
