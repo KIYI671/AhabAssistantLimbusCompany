@@ -359,6 +359,9 @@ class BaseLabel(BaseLayout):
         self.hBoxLayout.setContentsMargins(5, 0, 0, 0)
         self.setFixedHeight(25)
 
+        self.__on_theme_changed()
+        qconfig.themeChanged.connect(self.__on_theme_changed)
+
     def add_icon(self, icon):
         self.iconLabel = SettingIconWidget(icon, self)
         self.iconLabel.setFixedSize(20, 20)
@@ -371,6 +374,12 @@ class BaseLabel(BaseLayout):
     def setText(self, text):
         self.label.setText(text)
         self.label.repaint()
+
+    def __on_theme_changed(self, theme: str = "AUTO"):
+        if isDarkTheme():
+            self.label.setStyleSheet("color: white;")
+        else:
+            self.label.setStyleSheet("color: black;")
 
 
 class BaseComboBox(BaseLayout):
