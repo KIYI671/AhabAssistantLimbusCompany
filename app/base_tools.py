@@ -1,7 +1,7 @@
 from typing import Union
 
 from PySide6.QtCore import Qt, Signal
-from PySide6.QtGui import QIcon, QFont, QAction
+from PySide6.QtGui import QIcon, QFont
 from PySide6.QtWidgets import (
     QFrame,
     QHBoxLayout,
@@ -26,6 +26,7 @@ from qfluentwidgets import (
     SplitToolButton,
     ToolTipFilter,
     ToolTipPosition,
+    Action,
 )
 from qfluentwidgets.components.settings.setting_card import SettingIconWidget
 
@@ -263,10 +264,10 @@ class ToSettingButton(BaseButton):
         self.button = SplitToolButton(icon, self)
 
         self.menu = RoundMenu(parent=self)
-        self.edit_name = QAction(FIF.EDIT.icon(), "命名")
-        self.del_action = QAction(FIF.DELETE.icon(), "删除")
-        self.copy_settings = QAction(FIF.COPY.icon(), "复制")
-        self.paste_settings = QAction(FIF.PASTE.icon(), "粘贴")
+        self.edit_name = Action(FIF.EDIT, "命名")
+        self.del_action = Action(FIF.DELETE, "删除")
+        self.copy_settings = Action(FIF.COPY, "复制")
+        self.paste_settings = Action(FIF.PASTE, "粘贴")
         self.menu.addAction(self.edit_name)
         self.menu.addAction(self.del_action)
         self.menu.addAction(self.copy_settings)
