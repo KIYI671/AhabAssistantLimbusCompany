@@ -79,7 +79,7 @@ class MainWindow(FramelessWindow):
         self.setWindowIcon(QIcon("./assets/logo/my_icon_256X256.ico"))
         self.setWindowTitle(f"Ahab Assistant Limbus Company - {cfg.version}")
         self.setObjectName("MainWindow")
-        setThemeColor("#0078D4")
+        setThemeColor("#9c080b")
         LanguageManager().register_component(self)
 
         # Apply theme
