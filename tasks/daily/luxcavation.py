@@ -115,7 +115,7 @@ def thread_luxcavation():
                     y = int(960 * scale)
                     dy = int(200 * scale)
 
-                    while level is None:
+                    while not level:
                         auto.mouse_drag(x, y, drag_time=0.5, dy=dy)
                         level = auto.find_element(
                             "luxcavation/thread_consume.png",
@@ -127,7 +127,7 @@ def thread_luxcavation():
                         slide_times += 1
                         if slide_times > 10:
                             break
-                    if level is None:
+                    if not level:
                         continue
 
                     level = sorted(level, key=lambda y: y[1], reverse=True)

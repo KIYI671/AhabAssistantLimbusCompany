@@ -883,53 +883,53 @@ class CustomizeInfoModule(QFrame):
 
     def get_info(self, team_num):
         return_dict = {}
-        if cfg.get_value(f"team{team_num}_history"):
-            config_team_history = cfg.get_value(f"team{team_num}_history")
+        if config_team_history := cfg.get_value(f"team{team_num}_history"):
             team_total_mirror_time_hard = config_team_history.get(
-                "total_mirror_time_hard", []
+                "total_mirror_time_hard", [0.0, 0.0, 0.0]
             )
             team_total_mirror_hard_count = config_team_history.get(
                 "mirror_hard_count", 0
             )
             team_total_mirror_time_normal = config_team_history.get(
-                "total_mirror_time_normal", []
+                "total_mirror_time_normal", [0.0, 0.0, 0.0]
             )
             team_total_mirror_normal_count = config_team_history.get(
                 "mirror_normal_count", 0
             )
+
             return_dict["total_count"] = (
                 team_total_mirror_hard_count + team_total_mirror_normal_count
             )
             return_dict["hard_count"] = team_total_mirror_hard_count
             return_dict["normal_count"] = team_total_mirror_normal_count
             return_dict["average_time_hard"] = (
-                sum(team_total_mirror_time_hard) / team_total_mirror_hard_count
-                if team_total_mirror_hard_count > 0
+                team_total_mirror_time_hard[0]
+                if len(team_total_mirror_time_hard) > 0
                 else 0
             )
             return_dict["average_time_hard_last5"] = (
-                (sum(team_total_mirror_time_hard[-5:]) / 5)
-                if len(team_total_mirror_time_hard) >= 5
+                team_total_mirror_time_hard[1]
+                if len(team_total_mirror_time_hard) > 1
                 else 0
             )
             return_dict["average_time_hard_last10"] = (
-                (sum(team_total_mirror_time_hard[-10:]) / 10)
-                if len(team_total_mirror_time_hard) >= 10
+                team_total_mirror_time_hard[2]
+                if len(team_total_mirror_time_hard) > 2
                 else 0
             )
             return_dict["average_time_normal"] = (
-                sum(team_total_mirror_time_normal) / team_total_mirror_normal_count
-                if team_total_mirror_normal_count > 0
+                team_total_mirror_time_normal[0]
+                if len(team_total_mirror_time_normal) > 0
                 else 0
             )
             return_dict["average_time_normal_last5"] = (
-                (sum(team_total_mirror_time_normal[-5:]) / 5)
-                if len(team_total_mirror_time_normal) >= 5
+                team_total_mirror_time_normal[1]
+                if len(team_total_mirror_time_normal) > 1
                 else 0
             )
             return_dict["average_time_normal_last10"] = (
-                (sum(team_total_mirror_time_normal[-10:]) / 10)
-                if len(team_total_mirror_time_normal) >= 10
+                team_total_mirror_time_normal[2]
+                if len(team_total_mirror_time_normal) > 2
                 else 0
             )
         return return_dict
@@ -937,9 +937,9 @@ class CustomizeInfoModule(QFrame):
     def clear_data(self):
         if cfg.get_value(f"team{self.team_num}_history"):
             config_team_history = cfg.get_value(f"team{self.team_num}_history")
-            config_team_history["total_mirror_time_hard"] = []
+            config_team_history["total_mirror_time_hard"] = [0.0, 0.0, 0.0]
             config_team_history["mirror_hard_count"] = 0
-            config_team_history["total_mirror_time_normal"] = []
+            config_team_history["total_mirror_time_normal"] = [0.0, 0.0, 0.0]
             config_team_history["mirror_normal_count"] = 0
             cfg.set_value(f"team{self.team_num}_history", config_team_history)
         self.fresh_data()

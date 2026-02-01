@@ -1,3 +1,5 @@
+config_version: 1768403022 # 配置文件版本号 (时间戳)
+
 # 游戏设置
 game_title_name: LimbusCompany # 游戏窗口标题。
 game_process_name: LimbusCompany.exe # 游戏进程名。

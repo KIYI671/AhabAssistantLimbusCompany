@@ -726,23 +726,41 @@ class Mirror:
 
         if all(self.floor_times[i] > 0 for i in range(5)):  # 判断是否完整走了五层
             team_history = cfg.get_value(f"team{self.team_order}_history", default={})
+
+            def calculate_time(time_list, elapsed_time, count):
+                """计算新的平均时间"""
+                total_avr = time_list[0] if len(time_list) > 0 else 0
+                last_five = time_list[1] if len(time_list) > 1 else 0
+                last_ten = time_list[2] if len(time_list) > 2 else 0
+
+                total_time = total_avr * count + elapsed_time
+                total_five = last_five * min(count, 4) + elapsed_time
+                total_ten = last_ten * min(count, 9) + elapsed_time
+
+                total_avr = total_time / (count + 1)
+                last_five = total_five / min(count + 1, 5)
+                last_ten = total_ten / min(count + 1, 10)
+                return [total_avr, last_five, last_ten]
+
             if self.hard_switch:
                 team_total_battle_time_hard = team_history.get(
-                    "total_mirror_time_hard", []
+                    "total_mirror_time_hard", [0.0, 0.0, 0.0]
                 )
-                team_total_battle_time_hard.append(elapsed_time)
                 team_total_battle_count = team_history.get("mirror_hard_count", 0)
+                team_history["total_mirror_time_hard"] = calculate_time(
+                    team_total_battle_time_hard, elapsed_time, team_total_battle_count
+                )
                 team_total_battle_count += 1
-                team_history["total_mirror_time_hard"] = team_total_battle_time_hard
                 team_history["mirror_hard_count"] = team_total_battle_count
             else:
                 team_total_battle_time_normal = team_history.get(
-                    "total_mirror_time_normal", []
+                    "total_mirror_time_normal", [0.0, 0.0, 0.0]
                 )
-                team_total_battle_time_normal.append(elapsed_time)
                 team_total_battle_count = team_history.get("mirror_normal_count", 0)
+                team_history["total_mirror_time_normal"] = calculate_time(
+                    team_total_battle_time_normal, elapsed_time, team_total_battle_count
+                )
                 team_total_battle_count += 1
-                team_history["total_mirror_time_normal"] = team_total_battle_time_normal
                 team_history["mirror_normal_count"] = team_total_battle_count
 
             cfg.set_value(f"team{self.team_order}_history", team_history)
@@ -1386,7 +1404,7 @@ class Mirror:
                 ):
                     for gift in my_list[:1]:
                         auto.mouse_click(gift[0], gift[1])
-                        sleep(int(cfg.mouse_action_interval))
+                        sleep(cfg.mouse_action_interval)
                     auto.click_element(
                         "mirror/road_in_mir/acquire_ego_gift_select_assets.png",
                         model="normal",
@@ -1400,7 +1418,7 @@ class Mirror:
                 ):
                     for gift in my_list[:2]:
                         auto.mouse_click(gift[0], gift[1])
-                        sleep(int(cfg.mouse_action_interval))
+                        sleep(cfg.mouse_action_interval)
                     auto.click_element(
                         "mirror/road_in_mir/acquire_ego_gift_select_assets.png",
                         model="normal",
@@ -1412,7 +1430,7 @@ class Mirror:
                 else:
                     for gift in my_list:
                         auto.mouse_click(gift[0], gift[1])
-                        sleep(int(cfg.mouse_action_interval))
+                        sleep(cfg.mouse_action_interval)
                     auto.click_element(
                         "mirror/road_in_mir/acquire_ego_gift_select_assets.png",
                         model="normal",

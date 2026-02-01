@@ -78,6 +78,7 @@ files = [
 
 [tool.ruff.lint]
 # 启用规则集 (E: pycodestyle, F: Pyflakes, I: isort)
-select = ["E", "F", "I"]
+# T201: 禁止使用print进行调试
+select = ["E", "F", "I", "T201"]
 # 忽略特定的规则
 ignore = ["E501"]
