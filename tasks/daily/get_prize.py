@@ -1,8 +1,8 @@
 from module.automation import auto
 from module.decorator.decorator import begin_and_finish_time_log
 from module.logger import log
-from utils.image_utils import ImageUtils
 from tasks.base.retry import retry
+from utils.image_utils import ImageUtils
 
 
 @begin_and_finish_time_log(task_name="收取日常/周常", calculate_time=False)

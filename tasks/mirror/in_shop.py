@@ -3,10 +3,10 @@ from time import sleep
 from module.automation import auto
 from module.config import cfg
 from module.logger import log
-from tasks import system_cn_zh, all_systems, all_sinners_name, all_sinners_name_zh
+from tasks import all_sinners_name, all_sinners_name_zh, all_systems, system_cn_zh
 from tasks.base.back_init_menu import back_init_menu
 from tasks.base.retry import retry
-from tasks.mirror import must_be_abandoned, must_purchase, fusion_material
+from tasks.mirror import fusion_material, must_be_abandoned, must_purchase
 from utils.image_utils import ImageUtils
 
 

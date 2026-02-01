@@ -1,21 +1,20 @@
-from PySide6.QtCore import QT_TRANSLATE_NOOP, Qt, QUrl, QTime
+from PySide6.QtCore import QT_TRANSLATE_NOOP, Qt, QTime, QUrl
 from PySide6.QtGui import QDesktopServices
 from PySide6.QtWidgets import QFileDialog, QWidget
-from qfluentwidgets import ExpandLayout, setTheme, Theme
+from qfluentwidgets import ExpandLayout, InfoBarPosition, ScrollArea, Theme, setTheme
 from qfluentwidgets import FluentIcon as FIF
-from qfluentwidgets import InfoBarPosition, ScrollArea
 
 from app.base_combination import (
     BasePrimaryPushSettingCard,
     BasePushSettingCard,
     BaseSettingCardGroup,
     ComboBoxSettingCard,
+    DailySettingCard,
     HotkeySettingCard,
     PushSettingCardChance,
     PushSettingCardDate,
     PushSettingCardMirrorchyan,
     SwitchSettingCard,
-    DailySettingCard,
 )
 from app.card.messagebox_custom import BaseInfoBar
 from app.language_manager import SUPPORTED_LANG_NAME, LanguageManager

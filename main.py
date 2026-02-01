@@ -22,11 +22,10 @@ if not pyuac.isUserAdmin():
     except Exception:
         sys.exit(1)
 
-from win32api import GetLastError
-from win32event import CreateMutex
-
 from PySide6.QtCore import Qt, QTimer
 from PySide6.QtWidgets import QApplication
+from win32api import GetLastError
+from win32event import CreateMutex
 
 QApplication.setHighDpiScaleFactorRoundingPolicy(
     Qt.HighDpiScaleFactorRoundingPolicy.PassThrough

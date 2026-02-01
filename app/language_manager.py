@@ -1,6 +1,6 @@
 import inspect
 
-from PySide6.QtCore import QTranslator, QLocale, QLibraryInfo, QT_TRANSLATE_NOOP
+from PySide6.QtCore import QT_TRANSLATE_NOOP, QLibraryInfo, QLocale, QTranslator
 from PySide6.QtWidgets import QApplication
 
 from module.config import cfg

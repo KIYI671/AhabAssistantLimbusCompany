@@ -1,9 +1,9 @@
+import sys
 import threading
 from typing import Literal
 
-from PySide6.QtWidgets import QApplication
 from PySide6.QtCore import QTimer
-import sys
+from PySide6.QtWidgets import QApplication
 
 from module.logger import log
 from tasks.base.script_task_scheme import init_game

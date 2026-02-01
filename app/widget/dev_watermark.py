@@ -1,7 +1,7 @@
 # DEV 标识水印组件
-from PySide6.QtCore import Qt, QRect, QPropertyAnimation, QEasingCurve
-from PySide6.QtGui import QPainter, QColor, QFont, QRegion, QTransform
-from PySide6.QtWidgets import QWidget, QGraphicsOpacityEffect
+from PySide6.QtCore import QEasingCurve, QPropertyAnimation, QRect, Qt
+from PySide6.QtGui import QColor, QFont, QPainter, QRegion, QTransform
+from PySide6.QtWidgets import QGraphicsOpacityEffect, QWidget
 
 
 class DevWatermark(QWidget):

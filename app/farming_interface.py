@@ -1,21 +1,22 @@
 import os
 import sys
-from PySide6.QtCore import Qt, QFile, QTimer
-from PySide6.QtWidgets import QApplication, QTextEdit
+
 from pynput import keyboard
+from PySide6.QtCore import QFile, QTimer
+from PySide6.QtWidgets import QApplication, QTextEdit
 from qfluentwidgets import TextEdit, TransparentToolButton, setCustomStyleSheet
 from qfluentwidgets.window.stacked_widget import StackedWidget
 
 from app.base_combination import *
 from app.base_tools import *
-from app.language_manager import LanguageManager
 from app.common.ui_config import get_log_text_edit_qss
+from app.language_manager import LanguageManager
 from app.page_card import (
-    PageSetWindows,
     PageDailyTask,
-    PageLunacyToEnkephalin,
     PageGetPrize,
+    PageLunacyToEnkephalin,
     PageMirror,
+    PageSetWindows,
 )
 from app.team_setting_card import TeamSettingCard
 from module.automation import auto

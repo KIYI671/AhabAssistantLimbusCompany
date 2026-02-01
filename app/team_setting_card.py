@@ -1,23 +1,23 @@
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import (
     QFrame,
-    QVBoxLayout,
-    QWidget,
+    QGridLayout,
     QHBoxLayout,
     QSizePolicy,
-    QGridLayout,
+    QVBoxLayout,
+    QWidget,
 )
-from qfluentwidgets import FluentIcon as FIF, ExpandSettingCard
-from qfluentwidgets import ScrollArea, PrimaryPushButton, PushButton
+from qfluentwidgets import ExpandSettingCard, PrimaryPushButton, PushButton, ScrollArea
+from qfluentwidgets import FluentIcon as FIF
 
 from app import *
 from app.base_combination import (
-    LabelWithComboBox,
-    SinnerSelect,
     CheckBoxWithComboBox,
     CheckBoxWithLineEdit,
+    LabelWithComboBox,
+    SinnerSelect,
 )
-from app.base_tools import BaseCheckBox, BaseSettingLayout, BaseLabel, BaseComboBox
+from app.base_tools import BaseCheckBox, BaseComboBox, BaseLabel, BaseSettingLayout
 from app.language_manager import LanguageManager
 from module.config import cfg
 

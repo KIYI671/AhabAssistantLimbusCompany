@@ -6,13 +6,13 @@ from enum import Enum
 from threading import Thread
 
 import requests  # 导入requests模块，用于发送HTTP请求
-from PySide6.QtCore import QThread, Signal, Qt, QT_TRANSLATE_NOOP
 from markdown_it import MarkdownIt
 from packaging.version import parse
+from PySide6.QtCore import QT_TRANSLATE_NOOP, Qt, QThread, Signal
 from qfluentwidgets import InfoBarPosition
 
 from app import mediator
-from app.card.messagebox_custom import MessageBoxUpdate, BaseInfoBar
+from app.card.messagebox_custom import BaseInfoBar, MessageBoxUpdate
 from module.config import cfg
 from module.decorator.decorator import begin_and_finish_time_log
 from module.logger import log

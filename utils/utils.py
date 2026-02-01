@@ -1,6 +1,6 @@
 import base64
 import subprocess
-from datetime import datetime, timedelta, time
+from datetime import datetime, time, timedelta
 from zoneinfo import ZoneInfo  # Python 3.9+ 内置模块
 
 import cv2
@@ -234,8 +234,8 @@ def run_as_user(command: list[str], **kwargs):
     # 先清理一次任务计划，防止遗留
     clean_task()
 
-    import tempfile
     import os
+    import tempfile
 
     log.debug(f"使用用户权限运行命令: {command}")
     # 创建临时批处理文件

@@ -1,8 +1,8 @@
 from time import sleep
 
 from module.automation import auto
-from module.logger import log
 from module.config import cfg
+from module.logger import log
 
 
 def EXP_luxcavation():

@@ -1,20 +1,20 @@
+from pynput import keyboard
+from PySide6.QtCore import Qt, QThread, Signal
+from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import (
-    QWidget,
+    QCheckBox,
     QLabel,
-    QVBoxLayout,
     QPushButton,
     QTextEdit,
-    QCheckBox,
+    QVBoxLayout,
+    QWidget,
 )
-from PySide6.QtCore import QThread, Signal, Qt
-from PySide6.QtGui import QIcon
 
 from module.automation import auto
 from module.config import cfg
+from module.game_and_screen import screen
 from module.logger import log
 from tasks.battle.battle import Battle
-from pynput import keyboard
-from module.game_and_screen import screen
 from utils import pic_path
 
 

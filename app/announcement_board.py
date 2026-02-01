@@ -1,19 +1,19 @@
 import time
 
 import requests
-from PySide6.QtCore import Signal, Qt, Slot, QThread
+from PySide6.QtCore import Qt, QThread, Signal, Slot
 from PySide6.QtGui import QFont, QIcon
 from PySide6.QtWidgets import (
+    QDialog,
+    QFrame,
+    QGridLayout,
     QHBoxLayout,
     QListWidgetItem,
-    QGridLayout,
-    QFrame,
-    QSpacerItem,
     QSizePolicy,
-    QWidget,
-    QVBoxLayout,
+    QSpacerItem,
     QTextBrowser,
-    QDialog,
+    QVBoxLayout,
+    QWidget,
 )
 from qfluentwidgets import ListWidget, PrimaryPushButton
 from qfluentwidgets.window.stacked_widget import StackedWidget

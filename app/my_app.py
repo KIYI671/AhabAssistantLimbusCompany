@@ -1,53 +1,47 @@
 import os
-import sys
 import re
 import subprocess
+import sys
 from enum import Enum
 
 from PySide6.QtCore import (
-    Qt,
     QLocale,
+    Qt,
     QTimer,
-    QRect,
-    QPropertyAnimation,
-    QEasingCurve,
-    QPoint,
 )
-from PySide6.QtGui import QIcon, QPainter, QColor, QFont, QRegion, QPolygon, QTransform
+from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import (
     QApplication,
     QHBoxLayout,
+    QLabel,
     QStackedWidget,
     QVBoxLayout,
-    QLabel,
     QWidget,
-    QGraphicsOpacityEffect,
 )
 from qfluentwidgets import (
-    setThemeColor,
     ProgressRing,
-    qconfig,
-    setTheme,
     Theme,
     isDarkTheme,
+    qconfig,
+    setTheme,
+    setThemeColor,
 )
 from qfluentwidgets.components.widgets.frameless_window import FramelessWindow
 from qframelesswindow import StandardTitleBar
 
-from app import mediator, AnnouncementStatus
+from app import AnnouncementStatus, mediator
 from app.announcement_board import AnnouncementBoard, AnnouncementThread
-from app.card.messagebox_custom import MessageBoxWarning, MessageBoxConfirm
+from app.card.messagebox_custom import MessageBoxConfirm, MessageBoxWarning
+from app.custom_pivot import FullWidthPivot
 from app.farming_interface import FarmingInterface
 from app.language_manager import LanguageManager
 from app.page_card import MarkdownViewer
-from app.custom_pivot import FullWidthPivot
 from app.setting_interface import SettingInterface
 from app.team_setting_card import TeamSettingCard
 from app.tools_interface import ToolsInterface
-from module.game_and_screen import screen
+from module.config import cfg
 from module.logger import log
 from module.update.check_update import check_update
-from module.config import cfg
 
 
 class Language(Enum):
@@ -59,12 +53,12 @@ class Language(Enum):
     AUTO = QLocale()
 
 
-from app.widget.dev_watermark import DevWatermark
 from app.common.ui_config import (
     apply_font_config,
     get_main_window_style,
     get_title_bar_style,
 )
+from app.widget.dev_watermark import DevWatermark
 
 
 # 使用无框窗口
@@ -342,6 +336,7 @@ class MainWindow(FramelessWindow):
                 return
             config_team_setting = cfg.get_value(f"team{team_num}_setting")
             import copy
+
             from app import team_setting_template
 
             team_setting = copy.deepcopy(team_setting_template)

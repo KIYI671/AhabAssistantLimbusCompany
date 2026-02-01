@@ -1,14 +1,15 @@
 import random
 from time import sleep, time
-from pywintypes import error as PyWinTypesError
 
 import pyautogui
 import win32api
 import win32con
 import win32gui
+from pywintypes import error as PyWinTypesError
 
 from module.config import cfg
 from utils.singletonmeta import SingletonMeta
+
 from ..game_and_screen import screen
 from ..logger import log
 

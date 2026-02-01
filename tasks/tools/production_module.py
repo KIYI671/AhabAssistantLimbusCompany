@@ -3,26 +3,26 @@ from time import sleep
 
 import win32con
 import win32gui
+from PySide6.QtCore import Qt, QThread, Signal
+from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import (
-    QWidget,
+    QCheckBox,
     QLabel,
-    QVBoxLayout,
     QPushButton,
     QTextEdit,
-    QCheckBox,
+    QVBoxLayout,
+    QWidget,
 )
-from PySide6.QtCore import QThread, Signal, Qt
-from PySide6.QtGui import QIcon
 
 from module.automation import auto
 from module.config import cfg
-from module.logger import log
 from module.game_and_screen import screen
+from module.logger import log
 from tasks.base.back_init_menu import back_init_menu
 from tasks.base.make_enkephalin_module import (
-    make_enkephalin_module,
     get_current_enkephalin,
     get_the_timing,
+    make_enkephalin_module,
 )
 from tasks.base.retry import kill_game
 from utils import pic_path

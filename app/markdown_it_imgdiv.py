@@ -27,6 +27,7 @@ Usage:
 """
 
 from typing import TYPE_CHECKING, Optional, Sequence
+
 from markdown_it import MarkdownIt
 from markdown_it.rules_core import StateCore
 

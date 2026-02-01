@@ -2,7 +2,7 @@ import base64
 import datetime
 
 import pyperclip
-from PySide6.QtCore import QObject, QRect, QUrl, Signal, QTime
+from PySide6.QtCore import QObject, QRect, QTime, QUrl, Signal
 from PySide6.QtGui import (
     QColor,
     QDesktopServices,
@@ -24,8 +24,8 @@ from qfluentwidgets import (
     SettingCard,
     SettingCardGroup,
     SwitchButton,
-    setCustomStyleSheet,
     TimePicker,
+    setCustomStyleSheet,
 )
 
 from app.base_tools import *
