@@ -376,10 +376,14 @@ class BaseLabel(BaseLayout):
         self.label.repaint()
 
     def __on_theme_changed(self, theme: str = "AUTO"):
+        # Preserve zoom-based font size when updating theme-dependent color
+        base_style = ""
+        if cfg.zoom_scale != 0:
+            base_style += "font-size: 16px; "
         if isDarkTheme():
-            self.label.setStyleSheet("color: white;")
+            self.label.setStyleSheet(f"{base_style}color: white;")
         else:
-            self.label.setStyleSheet("color: black;")
+            self.label.setStyleSheet(f"{base_style}color: black;")
 
 
 class BaseComboBox(BaseLayout):
