@@ -8,26 +8,29 @@ game_path: C:\Program Files (x86)\Steam\steamapps\common\Limbus Company\LimbusCo
 
 language_in_game: en # 游戏语言
 after_completion: 0 # 脚本结束后的操作
-language_in_program: '' # 程序语言
-shutdown_hotkey : '<ctrl>+q' # 关闭快捷键
-pause_hotkey : '<alt>+p' # 暂停快捷键
-resume_hotkey : '<alt>+r' # 继续快捷键
+language_in_program: "" # 程序语言
+shutdown_hotkey: "<ctrl>+q" # 关闭快捷键
+pause_hotkey: "<alt>+p" # 暂停快捷键
+resume_hotkey: "<alt>+r" # 继续快捷键
 
 announcement: 1715990400 # 公告板时间戳
 
 auto_hard_mirror: False # 周四自动切换困难镜牢
-last_auto_change : 1715990400 # 上次自动切换困难镜牢的时间戳
-hard_mirror_chance : 0 # 困难镜牢剩余次数
+last_auto_change: 1715990400 # 上次自动切换困难镜牢的时间戳
+hard_mirror_chance: 0 # 困难镜牢剩余次数
 timezone: None # 当前时区相对于东九区的偏移量，如东八区为1，东九区为0，东十区为-1
 
 zoom_scale: 0 # 缩放比例
+window_position_x: 0 # 窗口位置x
+window_position_y: 0 # 窗口位置y
+theme_mode: AUTO # 应用主题：AUTO, LIGHT, DARK
 autostart: False # 自启动
 autodaily: False # enable auto daily tasks
 autodaily_time: "00:00" # auto daily run time (HH:mm)
 
 # 脚本运行速度设置
-screenshot_interval: 0.85    # 截图间隔时间
-mouse_action_interval: 0.5  # 鼠标操作间隔时间
+screenshot_interval: 0.85 # 截图间隔时间
+mouse_action_interval: 0.5 # 鼠标操作间隔时间
 
 resonate_with_Ahab: False # 是否播放亚哈语录
 
@@ -104,9 +107,8 @@ re_claim_rewards: False # 再次执行领取奖励任务
 not_skip_whitegossypium: False # 不跳过白棉花
 fight_to_last_man: False # 战斗直到全灭
 teams_be_select_num: 0 # 被选中的队伍数量
-teams_be_select: [ False ] # 被选中的队伍
-teams_order: [ 0 ] # 队伍的顺序
-
+teams_be_select: [False] # 被选中的队伍
+teams_order: [0] # 队伍的顺序
 
 # 一号队伍设置
 team1_setting:
@@ -114,8 +116,8 @@ team1_setting:
   team_number: 1 # 使用的队伍序号
   shop_strategy: 0 # 商店策略
   sinners_be_select: 0 # 有几名罪人被选中
-  chosen_sinners: [ 0,0,0,0,0,0,0,0,0,0,0,0 ] # 有哪几名罪人被选中
-  sinner_order: [ 0,0,0,0,0,0,0,0,0,0,0,0 ] # 罪人被选中的顺序
+  chosen_sinners: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] # 有哪几名罪人被选中
+  sinner_order: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] # 罪人被选中的顺序
   system_burn: False # 弃置燃烧饰品
   system_bleed: False # 弃置流血饰品
   system_tremor: False # 弃置震颤饰品
@@ -146,8 +148,8 @@ team1_setting:
   reward_cards_select: 0 # 自定义奖励卡优先度
   choose_opening_bonus: False # 自选开局加成
   opening_bonus_select: 0 # 开局加成已选数量
-  opening_bonus: [ 0,0,0,0,0,0,0,0,0,0 ] # 启用的开局加成
-  opening_bonus_order: [ 0,0,0,0,0,0,0,0,0,0 ] # 启用的开局加成顺序
+  opening_bonus: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0] # 启用的开局加成
+  opening_bonus_order: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0] # 启用的开局加成顺序
   after_level_IV: False # 自定义合成四级后的操作
   after_level_IV_select: 0 # 合成四级后的操作
   shopping_strategy: False # 自定义购物策略
@@ -158,11 +160,11 @@ team1_setting:
   second_system: False # 启用第二体系
   second_system_select: 0 # 第二体系
   second_system_setting: 0 # 第二体系启用时间
-  second_system_action: [ 0,0,0,0 ] # 第二体系行动模式
+  second_system_action: [0, 0, 0, 0] # 第二体系行动模式
   skill_replacement: False # 自定义技能替换
   skill_replacement_select: 0 # 技能替换设置
   skill_replacement_mode: 0 # 技能替换模式
-  ignore_shop: [ 0,0,0,0,0 ] # 忽略商店楼层
+  ignore_shop: [0, 0, 0, 0, 0] # 忽略商店楼层
 team1_remark_name: # 队伍备注名
 team1_history:
   total_mirror_time_hard: [] # 困难镜牢总用时

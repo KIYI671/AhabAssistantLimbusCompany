@@ -18,7 +18,7 @@ class ToolsInterface(ScrollArea):
         self.__init_widget()
         self.__init_card()
         self.__initLayout()
-        self.set_style_sheet()
+        self.set_style_sheet()  # 设置滚动区域和内容容器的透明背景，使显示主窗口背景色
         self.__connect_signal()
         self.setWidget(self.scroll_widget)
 
@@ -71,7 +71,7 @@ class ToolsInterface(ScrollArea):
     def set_style_sheet(self):
         self.setStyleSheet("""
                 SettingInterface, #scrollWidget {
-                    background-color: #fdfdfd;
+                    background-color: transparent;
                 }
                 QScrollArea {
                     background-color: transparent;
