@@ -136,6 +136,7 @@ def select_battle_team(num):
 def deal_with_spills():
     import cv2
     import numpy as np
+
     from module.ocr import ocr
     from utils.image_utils import ImageUtils
 

@@ -1,20 +1,20 @@
-from ast import List
 import gc
 import math
 import random
 import time
-from PIL.Image import Image
+from ast import List
 
 import cv2
 import numpy as np
+from PIL.Image import Image
 
 from utils.image_utils import ImageUtils
 from utils.singletonmeta import SingletonMeta
 
-from .screenshot import ScreenShot
 from ..config import cfg
 from ..logger import log
 from ..ocr import ocr
+from .screenshot import ScreenShot
 
 
 class Automation(metaclass=SingletonMeta):

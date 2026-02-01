@@ -8,10 +8,10 @@ Custom Pivot component with full-width indicator and bottom divider line
 3. 父组件只需管理状态，不直接操作样式
 """
 
-from PySide6.QtCore import Qt, QRectF
-from PySide6.QtGui import QPainter, QColor, QPen
-from PySide6.QtWidgets import QWidget, QPushButton, QHBoxLayout, QSizePolicy
-from qfluentwidgets import Pivot, isDarkTheme, themeColor, qconfig
+from PySide6.QtCore import QRectF, Qt
+from PySide6.QtGui import QColor, QPainter, QPen
+from PySide6.QtWidgets import QHBoxLayout, QPushButton, QSizePolicy, QWidget
+from qfluentwidgets import Pivot, isDarkTheme, qconfig, themeColor
 
 
 class PivotItem(QPushButton):

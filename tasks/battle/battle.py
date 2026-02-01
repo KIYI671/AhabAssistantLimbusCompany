@@ -1,7 +1,8 @@
+import re
 import time
 from time import sleep
+from typing import Callable, Optional
 
-import re
 import cv2
 import numpy as np
 
@@ -15,8 +16,6 @@ from tasks.base.retry import retry
 from tasks.event import event_handling
 from utils.image_utils import ImageUtils
 from utils.utils import find_skill3
-
-from typing import Callable, Optional
 
 
 class Battle:

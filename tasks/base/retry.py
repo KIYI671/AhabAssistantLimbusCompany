@@ -98,8 +98,8 @@ def retry():
 
 def restart_game():
     """重启游戏"""
-    from tasks.base.script_task_scheme import init_game
     from tasks.base.back_init_menu import back_init_menu
+    from tasks.base.script_task_scheme import init_game
 
     init_game()
     back_init_menu()

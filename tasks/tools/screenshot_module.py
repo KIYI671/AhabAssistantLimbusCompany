@@ -1,8 +1,10 @@
-from module.automation import auto
-from module.logger import log
-from module.game_and_screen import screen
-from PySide6.QtCore import QThread
 import time
+
+from PySide6.QtCore import QThread
+
+from module.automation import auto
+from module.game_and_screen import screen
+from module.logger import log
 
 
 class ScreenshotGet(QThread):

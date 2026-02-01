@@ -2,17 +2,17 @@ try:
     from windows_toasts import (
         InteractableWindowsToaster,
         Toast,
-        ToastInputTextBox,
-        ToastInputSelectionBox,
-        ToastSelection,
-        ToastButton,
-        ToastDuration,
-        ToastDisplayImage,
-        ToastImagePosition,
-        ToastImage,
-        ToastButtonColour,
         ToastActivatedEventArgs,
         ToastAudio,
+        ToastButton,
+        ToastButtonColour,
+        ToastDisplayImage,
+        ToastDuration,
+        ToastImage,
+        ToastImagePosition,
+        ToastInputSelectionBox,
+        ToastInputTextBox,
+        ToastSelection,
     )
 
     IMPORT_SUCCESS = True
@@ -24,35 +24,37 @@ except ImportError:
         from windows_toasts import (
             InteractableWindowsToaster,
             Toast,
-            ToastButton,
-            ToastDuration,
-            ToastDisplayImage,
-            ToastImagePosition,
-            ToastImage,
-            ToastButtonColour,
             ToastActivatedEventArgs,
             ToastAudio,
+            ToastButton,
+            ToastButtonColour,
+            ToastDisplayImage,
+            ToastDuration,
+            ToastImage,
+            ToastImagePosition,
         )
 
 try:
-    from ..module.logger import log  # 正常导入方式
     from ..module.config import cfg
+    from ..module.logger import log  # 正常导入方式
 except ImportError:
     # 如果作为脚本直接运行，使用绝对路径
-    import sys
     import os
+    import sys
 
     sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-    from module.logger import log
     from module.config import cfg
+    from module.logger import log
 
-from pathlib import Path
-from enum import Enum
-from app import mediator
-from typing import Callable
-from PySide6.QtWidgets import QApplication
-import winreg
 import sys
+import winreg
+from enum import Enum
+from pathlib import Path
+from typing import Callable
+
+from PySide6.QtWidgets import QApplication
+
+from app import mediator
 
 APPID = "AALC_Notification"
 """注册表内的应用ID"""

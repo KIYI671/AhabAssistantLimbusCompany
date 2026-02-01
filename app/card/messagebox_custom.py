@@ -1,17 +1,17 @@
 import datetime
 
-from PySide6.QtCore import Qt, QUrl, QDate, QCoreApplication
-from PySide6.QtGui import QDesktopServices, QIcon, QWheelEvent, QKeyEvent
-from PySide6.QtWidgets import QSizePolicy, QDateTimeEdit
+from PySide6.QtCore import QCoreApplication, QDate, Qt, QUrl
+from PySide6.QtGui import QDesktopServices, QIcon, QKeyEvent, QWheelEvent
+from PySide6.QtWidgets import QDateTimeEdit, QSizePolicy
 from qfluentwidgets import (
-    MessageBox,
     BodyLabel,
-    FluentStyleSheet,
-    PrimaryPushButton,
-    LineEdit,
-    ScrollArea,
-    InfoBar,
     DateTimeEdit,
+    FluentStyleSheet,
+    InfoBar,
+    LineEdit,
+    MessageBox,
+    PrimaryPushButton,
+    ScrollArea,
     SpinBox,
 )
 from qfluentwidgets.common.icon import FluentIconBase

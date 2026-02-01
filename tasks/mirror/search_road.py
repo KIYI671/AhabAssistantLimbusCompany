@@ -3,10 +3,10 @@ from time import sleep
 
 import cv2
 
-from module.my_error.my_error import InputAttributeError
 from module.automation import auto
 from module.config import cfg
 from module.logger import log
+from module.my_error.my_error import InputAttributeError
 from tasks.base.retry import retry
 
 
@@ -551,8 +551,9 @@ def identify_road(bus_x, min_length=160, merge_distance=230):
         min_length (int): 线段最小长度阈值（用于筛选有效线段）
         merge_distance (int): 线段合并的最大距离阈值（用于合并相近线段）
     """
-    import numpy as np
     import math
+
+    import numpy as np
 
     min_length = min_length * (cfg.set_win_size / 1440)
 

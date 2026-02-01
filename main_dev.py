@@ -15,17 +15,17 @@ Features:
 """
 
 import os
-import sys
-import time
 import subprocess
+import sys
 import threading
+import time
 from pathlib import Path
 
 from module.logger import log
 
 try:
-    from watchdog.observers import Observer
     from watchdog.events import FileSystemEventHandler
+    from watchdog.observers import Observer
 except ImportError:
     log.critical(
         "watchdog not installed. Please run `uv sync` to install dependencies."

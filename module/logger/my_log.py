@@ -1,11 +1,11 @@
-from copy import deepcopy
 import logging
-import colorlog
-from concurrent_log_handler import ConcurrentRotatingFileHandler
 import os
 import sys
+from copy import deepcopy
 from pathlib import Path
 
+import colorlog
+from concurrent_log_handler import ConcurrentRotatingFileHandler
 from PySide6.QtWidgets import QApplication
 
 from utils.singletonmeta import SingletonMeta

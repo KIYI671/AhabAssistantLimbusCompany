@@ -1,8 +1,9 @@
-import PyInstaller.__main__
+import argparse
 import os
 import shutil
 import subprocess
-import argparse
+
+import PyInstaller.__main__
 
 # 读取版本号
 parser = argparse.ArgumentParser(description="Build AALC")

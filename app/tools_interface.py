@@ -2,10 +2,10 @@ import time
 
 from PySide6.QtCore import QT_TRANSLATE_NOOP, Qt
 from PySide6.QtWidgets import QWidget
-from qfluentwidgets import FluentIcon as FIF, InfoBarPosition
-from qfluentwidgets import ScrollArea, ExpandLayout
+from qfluentwidgets import ExpandLayout, InfoBarPosition, ScrollArea
+from qfluentwidgets import FluentIcon as FIF
 
-from app.base_combination import BaseSettingCardGroup, BasePushSettingCard
+from app.base_combination import BasePushSettingCard, BaseSettingCardGroup
 from app.card.messagebox_custom import BaseInfoBar
 from app.language_manager import LanguageManager
 from tasks import tools

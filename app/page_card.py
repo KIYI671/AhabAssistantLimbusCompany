@@ -1,43 +1,40 @@
 import os
 
-from PySide6.QtCore import Qt, QUrl, QCoreApplication, QRect, QTime
-from PySide6.QtGui import (
-    QDesktopServices,
-    QTextDocument,
-    QImage,
-    QPixmap,
-    QPainter,
-    QColor,
-)
-from PySide6.QtWidgets import QWidget, QFrame, QHBoxLayout, QTextBrowser, QVBoxLayout
 from markdown_it import MarkdownIt
-from qfluentwidgets import CheckBox, TimePicker
 from mdit_py_plugins.anchors import anchors_plugin
+from PySide6.QtCore import QCoreApplication, Qt, QUrl
+from PySide6.QtGui import (
+    QColor,
+    QDesktopServices,
+    QImage,
+    QPainter,
+    QTextDocument,
+)
+from PySide6.QtWidgets import QFrame, QHBoxLayout, QVBoxLayout, QWidget
 from qfluentwidgets import FluentIcon as FIF
 from qfluentwidgets import (
-    SegmentedWidget,
     ScrollArea,
+    SegmentedWidget,
+    TextBrowser,
     TransparentToolButton,
     isDarkTheme,
     qconfig,
-    TextBrowser,
     setCustomStyleSheet,
 )
-from app.common.ui_config import get_theme_aware_text_browser_qss
 from qfluentwidgets.window.stacked_widget import StackedWidget
 
 from app import *
 from app.base_combination import (
     LabelWithComboBox,
     LabelWithSpinBox,
-    MirrorTeamCombination,
     MirrorSpinBox,
+    MirrorTeamCombination,
     TextProgressBar,
 )
 from app.base_tools import BaseCheckBox
-from app.language_manager import LanguageManager, SUPPORTED_GAME_LANG_NAME
+from app.common.ui_config import get_theme_aware_text_browser_qss
+from app.language_manager import SUPPORTED_GAME_LANG_NAME, LanguageManager
 from module.config import cfg
-from .markdown_it_imgdiv import imgdiv_plugin, render_div_open, render_div_close
 from module.logger import log
 
 from .markdown_it_imgdiv import imgdiv_plugin, render_div_close, render_div_open

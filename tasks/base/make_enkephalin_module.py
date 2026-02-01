@@ -40,10 +40,11 @@ def get_the_timing(return_time=False):
 
 
 def get_current_enkephalin():
-    from utils.image_utils import ImageUtils
-    import numpy as np
-    from module.ocr import ocr
     import cv2
+    import numpy as np
+
+    from module.ocr import ocr
+    from utils.image_utils import ImageUtils
 
     enkephalin_bbox = ImageUtils.get_bbox(
         ImageUtils.load_image("enkephalin/enkephalin_now_bbox.png")

@@ -2,8 +2,8 @@ import asyncio
 import ctypes
 import json
 import os
-import subprocess
 import re
+import subprocess
 import sys
 import time
 from functools import partial
@@ -11,11 +11,12 @@ from time import sleep
 
 import cv2
 import numpy as np
-from adbutils import adb, AdbError
-from utils.utils import run_as_user
+from adbutils import AdbError, adb
+
 from module.config import cfg
 from module.logger import log
 from module.simulator import insert_swipe
+from utils.utils import run_as_user
 
 usual_key_code = {
     "q": 16,
@@ -975,7 +976,9 @@ class MumuControl:
         """占位"""
         return 0, 0
 
-    def mouse_drag_link(self, position: list, drag_time=0.25, min_distance=10, move_back=False) -> None:
+    def mouse_drag_link(
+        self, position: list, drag_time=0.25, min_distance=10, move_back=False
+    ) -> None:
         """鼠标从指定位置拖动到指定位置
         Args:
             x (int): 起始x坐标

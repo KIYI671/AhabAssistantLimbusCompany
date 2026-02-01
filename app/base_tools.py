@@ -4,30 +4,31 @@ from PySide6.QtCore import Qt, Signal
 from PySide6.QtGui import QIcon, QFont
 from PySide6.QtWidgets import (
     QFrame,
-    QHBoxLayout,
-    QVBoxLayout,
-    QSizePolicy,
-    QWidget,
     QGridLayout,
+    QHBoxLayout,
+    QSizePolicy,
+    QVBoxLayout,
+    QWidget,
 )
-from qfluentwidgets import isDarkTheme, qconfig
-from qfluentwidgets import FluentIcon as FIF
 from qfluentwidgets import (
-    FluentIconBase,
-    CheckBox,
-    ToggleToolButton,
-    ToolButton,
-    PushButton,
     BodyLabel,
+    CheckBox,
     ComboBox,
     DoubleSpinBox,
-    SpinBox,
+    FluentIconBase,
+    PushButton,
     RoundMenu,
+    SpinBox,
     SplitToolButton,
+    ToggleToolButton,
+    ToolButton,
     ToolTipFilter,
     ToolTipPosition,
     Action,
+    isDarkTheme,
+    qconfig,
 )
+from qfluentwidgets import FluentIcon as FIF
 from qfluentwidgets.components.settings.setting_card import SettingIconWidget
 
 from app import *

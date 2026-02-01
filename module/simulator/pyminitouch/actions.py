@@ -1,8 +1,8 @@
 import time
 from contextlib import contextmanager
 
-from module.simulator.pyminitouch.connection import MNTConnection, MNTServer
 import module.simulator.pyminitouch.config as config
+from module.simulator.pyminitouch.connection import MNTConnection, MNTServer
 
 
 class CommandBuilder(object):

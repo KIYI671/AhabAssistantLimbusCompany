@@ -2,8 +2,8 @@ import os
 
 import cv2
 import numpy as np
-from PIL import Image
 from cv2 import createCLAHE
+from PIL import Image
 
 from module.config import cfg
 from module.logger import log

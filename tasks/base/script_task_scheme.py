@@ -1,36 +1,38 @@
 import os
 import platform
 import random
+from datetime import datetime
 from sys import exc_info
 from time import sleep, time
-from datetime import datetime
 from traceback import format_exception
 
 import win32process
-from PySide6.QtCore import QThread, QMutex, QT_TRANSLATE_NOOP
 from playsound3 import playsound
+from PySide6.QtCore import QT_TRANSLATE_NOOP, QMutex, QThread
 
+from app import mediator
+from app.windows_toast import TemplateToast, send_toast
 from module.ALI import (
-    auto_switch_language_in_game,
     AutoSwitchCon,
+    auto_switch_language_in_game,
     get_game_config_from_registry,
 )
 from module.automation import auto
 from module.config import cfg
 from module.decorator.decorator import begin_and_finish_time_log
-from module.game_and_screen import screen, game_process
+from module.game_and_screen import game_process, screen
 from module.logger import log
 from module.my_error.my_error import (
-    userStopError,
-    unableToFindTeamError,
-    unexpectNumError,
+    backMainWinError,
     cannotOperateGameError,
     netWorkUnstableError,
-    backMainWinError,
-    withOutGameWinError,
     notWaitError,
-    withOutPicError,
+    unableToFindTeamError,
+    unexpectNumError,
+    userStopError,
     withOutAdminError,
+    withOutGameWinError,
+    withOutPicError,
 )
 from tasks.base.back_init_menu import back_init_menu
 from tasks.base.make_enkephalin_module import (
@@ -38,14 +40,12 @@ from tasks.base.make_enkephalin_module import (
     make_enkephalin_module,
 )
 from tasks.battle import battle
-from tasks.daily.get_prize import get_pass_prize, get_mail_prize
+from tasks.daily.get_prize import get_mail_prize, get_pass_prize
 from tasks.daily.luxcavation import EXP_luxcavation, thread_luxcavation
 from tasks.mirror.mirror import Mirror
 from tasks.teams.team_formation import select_battle_team
 from utils import pic_path
-from utils.utils import get_day_of_week, calculate_the_teams
-from app import mediator
-from app.windows_toast import send_toast, TemplateToast
+from utils.utils import calculate_the_teams, get_day_of_week
 
 
 @begin_and_finish_time_log(task_name="一次经验本")

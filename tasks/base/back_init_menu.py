@@ -45,9 +45,10 @@ def back_init_menu():
                 break
 
         if auto.find_element("base/notification_close_assets.png"):
-            from tasks.base.retry import kill_game, restart_game
-            from utils.utils import get_timezone, get_day_of_week
             from datetime import datetime, timedelta
+
+            from tasks.base.retry import kill_game, restart_game
+            from utils.utils import get_day_of_week, get_timezone
 
             kill_game()
             if get_day_of_week() == 4:

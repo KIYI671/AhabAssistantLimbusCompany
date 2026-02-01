@@ -1,14 +1,16 @@
 import time
 from ctypes import windll
-import pywintypes
-from PIL import Image
-from module.logger import log
-from module.config import cfg
-import pyautogui
-import win32gui
-import win32ui
+
 import cv2
 import numpy as np
+import pyautogui
+import pywintypes
+import win32gui
+import win32ui
+from PIL import Image
+
+from module.config import cfg
+from module.logger import log
 
 
 class ScreenShot:
@@ -219,6 +221,7 @@ class ScreenShot:
         except pywintypes.error as e:
             log.error(f"后台截图报错: {e}，尝试重启游戏")
             import os
+
             import win32process
 
             try:

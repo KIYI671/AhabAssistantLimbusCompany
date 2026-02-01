@@ -7,6 +7,7 @@ import win32process
 from PySide6.QtCore import QT_TRANSLATE_NOOP
 
 from app.language_manager import SUPPORTED_GAME_LANG_CODE
+
 from ..config import cfg
 from ..logger import log
 

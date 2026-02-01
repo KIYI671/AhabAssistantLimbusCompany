@@ -1,14 +1,11 @@
 import logging
 
-
 import cv2
 import numpy as np
-from PIL import Image
 from cv2 import createCLAHE
-
+from PIL import Image
 from rapidocr import EngineType, LangDet, LangRec, ModelType, OCRVersion, RapidOCR
 from rapidocr.utils.output import RapidOCROutput
-
 
 from utils.singletonmeta import SingletonMeta
 

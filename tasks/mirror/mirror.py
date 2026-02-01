@@ -9,10 +9,10 @@ from module.config import cfg
 from module.decorator.decorator import begin_and_finish_time_log
 from module.logger import log
 from module.my_error.my_error import (
-    unableToFindTeamError,
     InputAttributeError,
     backMainWinError,
     cannotOperateGameError,
+    unableToFindTeamError,
 )
 from module.ocr import ocr
 from tasks import all_systems, start_gift
@@ -24,12 +24,12 @@ from tasks.event import event_handling
 from tasks.mirror.in_shop import Shop
 from tasks.mirror.reward_card import get_reward_card
 from tasks.mirror.search_road import (
+    MirrorMap,
     search_road_default_distance,
     search_road_farthest_distance,
-    MirrorMap,
 )
 from tasks.mirror.select_theme_pack import select_theme_pack
-from tasks.teams.team_formation import team_formation, select_battle_team, check_team
+from tasks.teams.team_formation import check_team, select_battle_team, team_formation
 from utils.image_utils import ImageUtils
 
 
