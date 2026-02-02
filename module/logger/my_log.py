@@ -5,9 +5,11 @@ from copy import deepcopy
 from pathlib import Path
 
 import colorlog
+import yaml
 from concurrent_log_handler import ConcurrentRotatingFileHandler
 from PySide6.QtWidgets import QApplication
 
+from module import CONFIG_PATH, VERSION_PATH
 from utils.singletonmeta import SingletonMeta
 
 
@@ -21,6 +23,38 @@ class TranslationFormatter(colorlog.ColoredFormatter):
         record.pathname = os.path.relpath(record.pathname, self.project_root)
 
         return super().format(record)
+
+
+class SettingConcurrentRotatingFileHandler(ConcurrentRotatingFileHandler):
+    """自动输出设置文件内容在日志开头"""
+
+    def __read_config(self):
+        version = "未知"
+        config = "未知"
+        with open(VERSION_PATH, "r", encoding="utf-8") as f:
+            version = f.read().strip()
+        with open(CONFIG_PATH, "r", encoding="utf-8") as f:
+            config_data: dict = yaml.safe_load(f)
+            config = config_data
+
+        self.version = version
+        self.config = config
+
+    def do_open(self, mode: str | None = None):
+        stream = super().do_open(mode)
+        if stream is None:
+            return stream
+        if stream.tell() == 0:
+            try:
+                self.__read_config()
+                msg = f"""新文件创建, 当前配置文件内容如下: 
+AALC 版本: {self.version}, 配置文件版本: {self.config.get("config_version", "未知")}
+游戏分辨率: {self.config.get("set_win_size")}, 截图间隔: {self.config.get("screenshot_interval")}, 鼠标间隔 {self.config.get("mouse_action_interval")}
+详细内容: {self.config}"""
+            except Exception as e:
+                msg = f"新文件创建, 但读取配置文件内容时发生错误: {e}"
+            stream.write(msg + "\n")
+        return stream
 
 
 class Logger(metaclass=SingletonMeta):
@@ -55,7 +89,7 @@ class Logger(metaclass=SingletonMeta):
             os.makedirs("./logs", exist_ok=True)
 
             # debug日志文件，按文件大小切割
-            debug_file_handler = ConcurrentRotatingFileHandler(
+            debug_file_handler = SettingConcurrentRotatingFileHandler(
                 "./logs/debugLog.log",
                 maxBytes=5 * 1024 * 1024,  # 每份 5 MB
                 backupCount=10,  # 最多保留 10 份
