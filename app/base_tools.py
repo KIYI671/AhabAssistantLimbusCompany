@@ -1,7 +1,7 @@
 from typing import Union
 
 from PySide6.QtCore import Qt, Signal
-from PySide6.QtGui import QAction, QFont, QIcon
+from PySide6.QtGui import QIcon, QFont
 from PySide6.QtWidgets import (
     QFrame,
     QGridLayout,
@@ -24,6 +24,7 @@ from qfluentwidgets import (
     ToolButton,
     ToolTipFilter,
     ToolTipPosition,
+    Action,
     isDarkTheme,
     qconfig,
 )
@@ -264,10 +265,10 @@ class ToSettingButton(BaseButton):
         self.button = SplitToolButton(icon, self)
 
         self.menu = RoundMenu(parent=self)
-        self.edit_name = QAction(FIF.EDIT.icon(), "命名")
-        self.del_action = QAction(FIF.DELETE.icon(), "删除")
-        self.copy_settings = QAction(FIF.COPY.icon(), "复制")
-        self.paste_settings = QAction(FIF.PASTE.icon(), "粘贴")
+        self.edit_name = Action(FIF.EDIT, "命名")
+        self.del_action = Action(FIF.DELETE, "删除")
+        self.copy_settings = Action(FIF.COPY, "复制")
+        self.paste_settings = Action(FIF.PASTE, "粘贴")
         self.menu.addAction(self.edit_name)
         self.menu.addAction(self.del_action)
         self.menu.addAction(self.copy_settings)
@@ -359,6 +360,9 @@ class BaseLabel(BaseLayout):
         self.hBoxLayout.setContentsMargins(5, 0, 0, 0)
         self.setFixedHeight(25)
 
+        self.__on_theme_changed()
+        qconfig.themeChanged.connect(self.__on_theme_changed)
+
     def add_icon(self, icon):
         self.iconLabel = SettingIconWidget(icon, self)
         self.iconLabel.setFixedSize(20, 20)
@@ -371,6 +375,16 @@ class BaseLabel(BaseLayout):
     def setText(self, text):
         self.label.setText(text)
         self.label.repaint()
+
+    def __on_theme_changed(self, theme: str = "AUTO"):
+        # Preserve zoom-based font size when updating theme-dependent color
+        base_style = ""
+        if cfg.zoom_scale != 0:
+            base_style += "font-size: 16px; "
+        if isDarkTheme():
+            self.label.setStyleSheet(f"{base_style}color: white;")
+        else:
+            self.label.setStyleSheet(f"{base_style}color: black;")
 
 
 class BaseComboBox(BaseLayout):
