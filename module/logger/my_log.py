@@ -28,9 +28,12 @@ class TranslationFormatter(colorlog.ColoredFormatter):
 class SettingConcurrentRotatingFileHandler(ConcurrentRotatingFileHandler):
     """自动输出设置文件内容在日志开头"""
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.version = "未知"
+        self.config = {}
+
     def __read_config(self):
-        version = "未知"
-        config = "未知"
         with open(VERSION_PATH, "r", encoding="utf-8") as f:
             version = f.read().strip()
         with open(CONFIG_PATH, "r", encoding="utf-8") as f:
