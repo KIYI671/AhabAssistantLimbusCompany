@@ -129,3 +129,51 @@ def get_theme_aware_text_browser_qss() -> tuple[str, str]:
     return THEME_AWARE_TEXT_BROWSER_STYLES["light"], THEME_AWARE_TEXT_BROWSER_STYLES[
         "dark"
     ]
+
+
+# Pivot Item 样式配置
+# 注意：{theme_color} 需要在运行时替换
+PIVOT_ITEM_STYLES = {
+    "light": """
+        PivotItem[pivotItem="true"] {{
+            background-color: transparent;
+            border: none;
+            padding: 8px 16px;
+            font-family: 'Segoe UI', 'Microsoft YaHei', 'PingFang SC';
+            font-size: 14px;
+            font-weight: 400;
+            text-align: center;
+            color: rgba(0, 0, 0, 0.7);
+        }}
+        PivotItem[pivotItem="true"]:hover {{
+            color: rgba(0, 0, 0, 0.9);
+        }}
+        PivotItem[pivotItem="true"][selected="true"] {{
+            color: {theme_color};
+        }}
+    """,
+    "dark": """
+        PivotItem[pivotItem="true"] {{
+            background-color: transparent;
+            border: none;
+            padding: 8px 16px;
+            font-family: 'Segoe UI', 'Microsoft YaHei', 'PingFang SC';
+            font-size: 14px;
+            font-weight: 400;
+            text-align: center;
+            color: rgba(255, 255, 255, 0.7);
+        }}
+        PivotItem[pivotItem="true"]:hover {{
+            color: rgba(255, 255, 255, 0.9);
+        }}
+        PivotItem[pivotItem="true"][selected="true"] {{
+            color: {theme_color};
+        }}
+    """,
+}
+
+
+def get_pivot_item_qss(theme_color: str) -> tuple[str, str]:
+    light_qss = PIVOT_ITEM_STYLES["light"].format(theme_color=theme_color)
+    dark_qss = PIVOT_ITEM_STYLES["dark"].format(theme_color=theme_color)
+    return light_qss, dark_qss

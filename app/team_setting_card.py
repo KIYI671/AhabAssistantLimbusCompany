@@ -71,8 +71,16 @@ class TeamSettingCard(QFrame):
         self.combobox_layout = BaseSettingLayout(box_type=1)
         self.combobox_layout.setMaximumHeight(75)
         self.combobox_layout.BoxLayout.setSpacing(40)
-        self.select_sinner_layout_1 = QHBoxLayout()
-        self.select_sinner_layout_2 = QHBoxLayout()
+        self.select_sinner_container_1 = QWidget()
+        self.select_sinner_layout_1 = QHBoxLayout(self.select_sinner_container_1)
+        self.select_sinner_layout_1.setContentsMargins(
+            0, 10, 0, 10
+        )  # Add vertical margin for banner overflow
+        self.select_sinner_container_2 = QWidget()
+        self.select_sinner_layout_2 = QHBoxLayout(self.select_sinner_container_2)
+        self.select_sinner_layout_2.setContentsMargins(
+            0, 10, 0, 20
+        )  # Extra bottom margin for banner
 
         self.gift_system_layout = BaseSettingLayout(box_type=2)
         self.gift_system_layout.setMaximumHeight(150)
@@ -107,62 +115,74 @@ class TeamSettingCard(QFrame):
             "YiSang",
             self.tr("李箱"),
             None,
-            "./assets/app/sinner/Yi_Sang_ID_Photo_3.png",
+            "./assets/app/sinner/YiSang/LCB_Sinner_Yi_Sang.png",
         )
         self.sinner_Faust = SinnerSelect(
-            "Faust", self.tr("浮士德"), None, "./assets/app/sinner/Faust_ID_Photo_3.png"
+            "Faust",
+            self.tr("浮士德"),
+            None,
+            "./assets/app/sinner/Faust/LCB_Sinner_Faust.png",
         )
         self.sinner_DonQuixote = SinnerSelect(
             "DonQuixote",
             self.tr("堂吉诃德"),
             None,
-            "./assets/app/sinner/Don_Quixote_ID_Photo_3.png",
+            "./assets/app/sinner/DonQuixote/LCB_Sinner_Don_Quixote.png",
         )
         self.sinner_Ryoshu = SinnerSelect(
-            "Ryoshu", self.tr("良秀"), None, "./assets/app/sinner/Ryoshu_ID_Photo_3.png"
+            "Ryoshu",
+            self.tr("良秀"),
+            None,
+            "./assets/app/sinner/Ryoshu/LCB_Sinner_Ryōshū.png",
         )
         self.sinner_Meursault = SinnerSelect(
             "Meursault",
             self.tr("默尔索"),
             None,
-            "./assets/app/sinner/Meursault_ID_Photo_3.png",
+            "./assets/app/sinner/Meursault/LCB_Sinner_Meursault.webp",
         )
         self.sinner_HongLu = SinnerSelect(
             "HongLu",
             self.tr("鸿璐"),
             None,
-            "./assets/app/sinner/Hong_Lu_ID_Photo_3.png",
+            "./assets/app/sinner/HongLu/LCB_Sinner_Hong_Lu.png",
         )
 
         self.sinner_Heathcliff = SinnerSelect(
             "Heathcliff",
             self.tr("希斯克利夫"),
             None,
-            "./assets/app/sinner/Heathcliff_ID_Photo_3.png",
+            "./assets/app/sinner/Heathcliff/LCB_Sinner_Heathcliff.png",
         )
         self.sinner_Ishmael = SinnerSelect(
             "Ishmael",
             self.tr("以实玛利"),
             None,
-            "./assets/app/sinner/Ishmael_ID_Photo_3.png",
+            "./assets/app/sinner/Ishmael/LCB_Sinner_Ishmael.png",
         )
         self.sinner_Rodion = SinnerSelect(
-            "Rodion", self.tr("罗佳"), None, "./assets/app/sinner/Rodion_ID_Photo_3.png"
+            "Rodion",
+            self.tr("罗佳"),
+            None,
+            "./assets/app/sinner/Rodion/LCB_Sinner_Rodion.png",
         )
         self.sinner_Sinclair = SinnerSelect(
             "Sinclair",
             self.tr("辛克莱"),
             None,
-            "./assets/app/sinner/Sinclair_ID_Photo_3.png",
+            "./assets/app/sinner/Sinclair/LCB_Sinner_Sinclair.png",
         )
         self.sinner_Outis = SinnerSelect(
-            "Outis", self.tr("奥提斯"), None, "./assets/app/sinner/Outis_ID_Photo_3.png"
+            "Outis",
+            self.tr("奥提斯"),
+            None,
+            "./assets/app/sinner/Outis/LCB_Sinner_Outis.png",
         )
         self.sinner_Gregor = SinnerSelect(
             "Gregor",
             self.tr("格里高尔"),
             None,
-            "./assets/app/sinner/Gregor_ID_Photo_3.png",
+            "./assets/app/sinner/Gregor/LCB_Sinner_Gregor.png",
         )
 
         self.shop_setting = BaseLabel(self.tr("舍弃的体系"))
@@ -274,8 +294,12 @@ class TeamSettingCard(QFrame):
         self.setting_layout.addWidget(self.confirm_button)
 
         self.layout_.addWidget(self.combobox_layout)
-        self.layout_.addLayout(self.select_sinner_layout_1)
-        self.layout_.addLayout(self.select_sinner_layout_2)
+        self.layout_.addWidget(
+            self.select_sinner_container_1
+        )  # Use container for banner overflow
+        self.layout_.addWidget(
+            self.select_sinner_container_2
+        )  # Use container for banner overflow
         self.layout_.addWidget(self.gift_system_layout)
         self.layout_.addWidget(self.custom_layout)
         self.layout_.addWidget(self.custom_layout2)

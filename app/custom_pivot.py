@@ -4,14 +4,15 @@ Custom Pivot component with full-width indicator and bottom divider line
 
 采用自定义PivotItem类的方案：
 1. 创建专用的PivotItem类，管理自己的选中状态
-2. 使用统一的QSS样式表，通过属性选择器控制样式
-3. 父组件只需管理状态，不直接操作样式
+2. 使用setCustomStyleSheet管理样式，通过属性选择器控制样式
 """
 
 from PySide6.QtCore import QRectF, Qt
 from PySide6.QtGui import QColor, QPainter, QPen
 from PySide6.QtWidgets import QHBoxLayout, QPushButton, QSizePolicy, QWidget
-from qfluentwidgets import Pivot, isDarkTheme, qconfig, themeColor
+from qfluentwidgets import Pivot, isDarkTheme, qconfig, themeColor, setCustomStyleSheet
+
+from app.common.ui_config import get_pivot_item_qss
 
 
 class PivotItem(QPushButton):
@@ -44,10 +45,15 @@ class PivotItem(QPushButton):
         self._selected = selected
         self.setProperty("selected", "true" if selected else "false")
 
-        # 刷新样式
+        # 刷新样式属性
         self.style().unpolish(self)
         self.style().polish(self)
-        self.update()
+
+    def setTextColor(self, light_qss: str, dark_qss: str):
+        """设置文本颜色样式"""
+        # 根据当前主题直接设置样式表
+        qss = dark_qss if isDarkTheme() else light_qss
+        self.setStyleSheet(qss)
 
 
 class FullWidthPivot(Pivot):
@@ -64,47 +70,33 @@ class FullWidthPivot(Pivot):
         self._dividerHeight = 2
         self._currentIndicatorRect = QRectF()
 
-        # 应用统一的QSS样式表
-        self._applyUnifiedQss()
-
         # 连接主题变化信号
         qconfig.themeChanged.connect(self._updateTheme)
 
-    def _applyUnifiedQss(self):
-        """应用统一的QSS样式表"""
-        selected_color = themeColor().name()
-        unselected_color = (
-            "rgba(255, 255, 255, 0.7)" if isDarkTheme() else "rgba(0, 0, 0, 0.7)"
-        )
-
-        qss = f"""
-        QPushButton[pivotItem="true"] {{
-            background-color: transparent;
-            border: none;
-            padding: 8px 16px;
-            font-size: 14px;
-            font-weight: 400;
-            text-align: center;
-        }}
-        
-        QPushButton[pivotItem="true"][selected="false"] {{
-            color: {unselected_color};
-        }}
-        
-        QPushButton[pivotItem="true"][selected="true"] {{
-            color: {selected_color};
-        }}
-        """
-        self.setStyleSheet(qss)
+        # 初始化样式
+        self._updateTheme()
 
     def _updateTheme(self):
         """主题变化时更新样式"""
-        self._applyUnifiedQss()
+        # 获取当前主题色和对应的QSS
+        color = themeColor().name()
+        light_qss, dark_qss = get_pivot_item_qss(color)
+
+        # 更新所有子项的样式
+        for item in self.items.values():
+            item.setTextColor(light_qss, dark_qss)
+
         self.update()
 
     def createItem(self, routeKey: str, text: str) -> QPushButton:
         """重写创建item的方法，返回自定义PivotItem"""
         item = PivotItem(routeKey, text, self)
+
+        # 初始化单个item的样式
+        color = themeColor().name()
+        light_qss, dark_qss = get_pivot_item_qss(color)
+        item.setTextColor(light_qss, dark_qss)
+
         item.clicked.connect(lambda: self._onUiItemClicked(routeKey))
         return item
 
