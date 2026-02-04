@@ -6,12 +6,20 @@ from PySide6.QtCore import QObject, QRect, QTime, QUrl, Signal
 from PySide6.QtGui import (
     QColor,
     QDesktopServices,
+    QFont,
+    QFontDatabase,
     QKeyEvent,
     QKeySequence,
     QPainter,
     QPixmap,
 )
-from PySide6.QtWidgets import QFrame, QGraphicsOpacityEffect, QPushButton, QLabel
+from PySide6.QtWidgets import (
+    QFrame,
+    QGraphicsDropShadowEffect,
+    QGraphicsOpacityEffect,
+    QLabel,
+    QPushButton,
+)
 from qfluentwidgets import (
     IndicatorPosition,
     InfoBarPosition,
@@ -393,20 +401,19 @@ class SinnerSelect(QFrame):
         label_title,
         check_box_icon: Union[str, QIcon, FluentIconBase, None],
         sinner_img,
-        crop_left=13,
-        crop_right=13,
-        crop_top=93,
-        crop_bottom=90,
+        crop_left=0,
+        crop_right=0,
+        crop_top=0,
+        crop_bottom=0,
         parent=None,
     ):
         super().__init__(parent)
         self.setObjectName(config_name)
-        self.vBoxLayout = QVBoxLayout(self)
-        self.vBoxLayout.setContentsMargins(5, 5, 5, 5)
-        self.vBoxLayout.setSpacing(5)
+        # Disable clipping so banner/overlays can extend beyond widget bounds
+        self.setAttribute(Qt.WA_TransparentForMouseEvents, False)
 
         # Image Label
-        self.label_pic = BodyLabel()
+        self.label_pic = BodyLabel(self)
         self.label_pic.setAlignment(Qt.AlignCenter)
         # self.label_pic.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
 
@@ -425,8 +432,8 @@ class SinnerSelect(QFrame):
             )
             pixmap = pixmap.copy(rect)
 
-        # Manual scaling to fit the label area (approx 100x120) while keeping aspect ratio
-        pixmap = pixmap.scaled(92, 96, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+        # Image pixel size 30.7 x 32
+        pixmap = pixmap.scaled(155, 239, Qt.KeepAspectRatio, Qt.SmoothTransformation)
         self.label_pic.setPixmap(pixmap)
 
         # Opacity Effect for Image
@@ -434,44 +441,80 @@ class SinnerSelect(QFrame):
         self.opacity_effect.setOpacity(1.0)
         self.label_pic.setGraphicsEffect(self.opacity_effect)
 
-        self.vBoxLayout.addWidget(self.label_pic, stretch=5)
-        self.vBoxLayout.addWidget(self.label_str, stretch=1)
-
-        # Internal CheckBox (Hidden, for logic reuse)
+        # Internal CheckBox
         self.box = BaseCheckBox(config_name, check_box_icon, "", parent=self)
         self.box.setVisible(False)
         self.box.check_box.toggled.connect(self._on_internal_toggle)
 
-        # Overlay Widget (Container for number and SELECTED label)
-        self.overlay_widget = QWidget(self)
-        self.overlay_widget.setAttribute(Qt.WA_TransparentForMouseEvents)
-        self.overlay_layout = QVBoxLayout(self.overlay_widget)
-        self.overlay_layout.setAlignment(Qt.AlignCenter)
-        self.overlay_layout.setSpacing(5)  # Space between number and SELECTED text
-
         # Number Label
-        self.number_label = QLabel()  # Parent handled by layout
+        self.number_label = QLabel(self)
         self.number_label.setAlignment(Qt.AlignCenter)
+        self.number_label.setAttribute(Qt.WA_TransparentForMouseEvents)
 
         font = self.number_label.font()
         font.setPointSize(30)
         font.setBold(True)
         self.number_label.setFont(font)
         self.number_label.setStyleSheet(
-            "color: rgba(255, 255, 0, 1);"
-        )  # Number color: Yellow
+            """
+            color: rgb(255, 185, 0);
+            """
+        )  # Amber number color with glow
 
-        # SELECTED Label
-        self.selected_label = QLabel()  # Initialization, content/style set in set_text
-        self.selected_label.setAlignment(Qt.AlignCenter)
+        # Initialize persistent glow effect
+        self.number_glow_effect = QGraphicsDropShadowEffect()
+        self.number_glow_effect.setBlurRadius(20)
+        self.number_glow_effect.setOffset(0, 0)
+        self.number_label.setGraphicsEffect(self.number_glow_effect)
 
-        self.overlay_layout.addWidget(self.number_label)
-        self.overlay_layout.addWidget(self.selected_label)
+        self.number_label.hide()
 
-        self.overlay_widget.hide()
+        # SELECTED/BACKUP Banner
+        self.banner_label = QLabel(self)
+        self.banner_label.setScaledContents(True)  # Auto-scale to label geometry
+        self.banner_label.setAttribute(Qt.WA_TransparentForMouseEvents)
+        self.banner_label.hide()
 
-        # Fixed Size
-        self.setFixedSize(110, 145)  # Fixed size: 110x145
+        # Frame Overlay
+        self.frame_overlay = QLabel(self)
+        self.frame_overlay.setAttribute(Qt.WA_TransparentForMouseEvents)
+        frame_pixmap = QPixmap("./assets/app/sinner/ui_components/FrameOverlay.png")
+        self.frame_overlay.setPixmap(frame_pixmap)
+        self.frame_overlay.setScaledContents(True)
+
+        # Hover Overlay
+        self.hover_overlay = QLabel(self)
+        self.hover_overlay.setAttribute(Qt.WA_TransparentForMouseEvents)
+        hover_pixmap = QPixmap("./assets/app/sinner/ui_components/HoverOverlay.png")
+        self.hover_overlay.setPixmap(hover_pixmap)
+        self.hover_overlay.setScaledContents(True)
+        self.hover_overlay.hide()
+
+        # Name Label
+        self.name_label = QLabel(label_title, self)
+        self.name_label.setAlignment(Qt.AlignRight | Qt.AlignBottom)
+        self.name_label.setAttribute(Qt.WA_TransparentForMouseEvents)
+
+        # Load chinese font
+        font_id = QFontDatabase.addApplicationFont("./assets/app/fonts/ChineseFont.ttf")
+        family = (
+            QFontDatabase.applicationFontFamilies(font_id)[0]
+            if font_id != -1 and QFontDatabase.applicationFontFamilies(font_id)
+            else self.name_label.font().family()
+        )
+        name_font = QFont(family, 16)
+        self.name_label.setFont(name_font)
+        self.name_label.setStyleSheet(
+            """
+            color: rgb(251, 197, 0);
+            padding-right: 5px;
+            padding-bottom: 3px;
+            """
+        )
+
+        # sinner card size in game: 537 x 827
+        self.setFixedHeight(239)
+        self.setFixedWidth(155)
 
         # Initial Style
         self._update_style(self.box.check_box.isChecked())
@@ -485,13 +528,12 @@ class SinnerSelect(QFrame):
 
     def _update_style(self, checked):
         if checked:
-            self.opacity_effect.setOpacity(0.5)  # 选中时不透明度设为0.5（变暗50%）
+            self.opacity_effect.setOpacity(0.6)  # 选中时不透明度设为0.6
             self.setStyleSheet(
                 """
                 SinnerSelect {
-                    background-color: rgba(126.5, 126.5, 126.5, 1); /* 背景色黑，叠加50%透明度图片 -> 图片亮度减半 */
-                    border: 3px solid #FFD700; /* 选中态边框：3px实线，金色 */
-                    border-radius: 8px; /* 圆角半径：8px */
+                    background-color: rgba(28, 28, 28, 0.47); /* 半透明深色遮罩 */
+                    border-radius: 8px;
                 }
             """
             )
@@ -500,13 +542,8 @@ class SinnerSelect(QFrame):
             self.setStyleSheet(
                 """
                 SinnerSelect {
-                    border: 2px solid rgba(128, 128, 128, 0.4);  /* 未选中态边框：2px实线，淡灰色 */
-                    border-radius: 8px;                          /* 圆角半径：8px */
-                    background-color: transparent;               /* 未选中态背景：透明 */
-                }
-                SinnerSelect:hover {
-                    border: 4px solid #778899;                   /* 悬停态边框：4px实线，蓝灰色 */
-                    background-color: rgba(255, 255, 255, 0.1);  /* 悬停态背景：白色微透明 */
+                    border-radius: 8px;
+                    background-color: transparent;
                 }
             """
             )
@@ -514,54 +551,104 @@ class SinnerSelect(QFrame):
     def set_text(self, text):
         self.number_label.setText(text)
         if text and text != "0":
-            # Determine label style based on number
+            # Determine banner image and number color based on deployment order
             try:
                 number = int(text)
                 if number >= 8:
-                    self.selected_label.setText("BACK UP")
-                    self.selected_label.setStyleSheet(
-                        """
-                        background-color: rgba(179, 229, 252, 1); /* Light Blue background */
-                        color: rgba(1, 87, 155, 1);               /* Dark Blue text */
-                        font-weight: bold;
-                        padding: 2px 4px;
-                        border-radius: 4px;
-                    """
+                    # BACKUP: Teal style
+                    banner_pixmap = QPixmap(
+                        "./assets/app/sinner/ui_components/SinnerBackup.png"
                     )
+                    self.number_label.setStyleSheet(
+                        """
+                        color: rgb(34, 255, 227);
+                        """
+                    )
+                    # Teal Glow
+                    self.number_glow_effect.setColor(QColor(7, 104, 92))
                 else:
-                    self.selected_label.setText("SELECTED")
-                    self.selected_label.setStyleSheet(
-                        """
-                        background-color: rgba(211, 47, 47, 1); /* Red background */
-                        color: rgba(255, 255, 0, 1);            /* Yellow text */
-                        font-weight: bold;
-                        padding: 2px 4px;
-                        border-radius: 4px;
-                    """
+                    # SELECTED: Amber style
+                    banner_pixmap = QPixmap(
+                        "./assets/app/sinner/ui_components/SinnerSelected.png"
                     )
+                    self.number_label.setStyleSheet(
+                        """
+                        color: rgb(255, 185, 0);
+                        """
+                    )
+                    # Amber Glow
+                    self.number_glow_effect.setColor(QColor(254, 95, 0))
+                self.banner_label.setPixmap(banner_pixmap)
             except ValueError:
                 # Fallback if text is not a number
-                self.selected_label.setText("SELECTED")
-                self.selected_label.setStyleSheet(
-                    """
-                    background-color: rgba(211, 47, 47, 1); 
-                    color: rgba(255, 255, 0, 1);            
-                    font-weight: bold;
-                    padding: 2px 4px;
-                    border-radius: 4px;
-                """
+                banner_pixmap = QPixmap(
+                    "./assets/app/sinner/ui_components/SinnerSelected.png"
                 )
+                self.banner_label.setPixmap(banner_pixmap)
+                # Fallback Glow
+                self.number_glow_effect.setColor(QColor(254, 95, 0))
 
-            self.overlay_widget.show()
+            self.number_label.show()
+            self.banner_label.show()
+
+            # Z-Order stacking (Lowest -> Highest)
+            self.banner_label.raise_()
+            self.number_label.raise_()
+            self.name_label.raise_()
         else:
-            self.overlay_widget.hide()
+            self.number_label.hide()
+            self.banner_label.hide()
 
     def set_checkbox(self, checked):
         self.box.set_checked(checked)
 
     def resizeEvent(self, event):
-        self.overlay_widget.setGeometry(self.rect())
+        """
+        Resize event: Manually position sub-widgets.
+        """
+        # Resize background image to full size
+        self.label_pic.setGeometry(self.rect())
+
+        # Position frame and hover overlays at 110% size (5% offset on each side)
+        margin = int(self.width() * 0.05)
+        overlay_rect = self.rect().adjusted(-margin, -margin, margin, margin)
+        self.frame_overlay.setGeometry(overlay_rect)
+        self.hover_overlay.setGeometry(overlay_rect)
+        # Position number at 20% from top with 30% height (Expanded slightly for glow effect)
+        number_y = int(self.height() * 0.20)
+        number_height = int(self.height() * 0.30)
+        self.number_label.setGeometry(0, number_y, self.width(), number_height)
+        # Position banner at 50% from top, full widget width, height based on aspect ratio
+        # Original banner image is 138x42, aspect ratio = 42/138 ≈ 0.304
+        banner_width = int(self.width() * 1.15)  # 115% width for larger banner
+        banner_height = int(banner_width * 42 / 138)  # Maintain aspect ratio
+        banner_x = int((self.width() - banner_width) / 2)  # Center the banner
+        banner_y = int(self.height() * 0.50)
+        self.banner_label.setGeometry(banner_x, banner_y, banner_width, banner_height)
+        # Position name label near bottom of card (up a bit, left a bit)
+        name_height = 40  # Increased height for larger font
+        name_y = self.height() - name_height - 5  # Adjust Y position
+        name_x = -5  # Move left 5px
+        self.name_label.setGeometry(name_x, name_y, self.width(), name_height)
         super().resizeEvent(event)
+
+    def enterEvent(self, event):
+        """
+        Mouse enter event: Show hover overlay and adjust layering.
+        Ensures that critical info (number, name) remains visible above the overlay.
+        """
+        self.hover_overlay.show()
+        self.hover_overlay.raise_()
+        self.number_label.raise_()  # Keep number visible
+        self.name_label.raise_()  # Ensure name label stays on top of hover overlay
+        super().enterEvent(event)
+
+    def leaveEvent(self, event):
+        """
+        Mouse leave event: Hide hover overlay.
+        """
+        self.hover_overlay.hide()
+        super().leaveEvent(event)
 
 
 class ComboBoxSettingCard(SettingCard):
