@@ -5,9 +5,9 @@ from copy import deepcopy
 from pathlib import Path
 
 import colorlog
-import yaml
 from concurrent_log_handler import ConcurrentRotatingFileHandler
 from PySide6.QtWidgets import QApplication
+from ruamel.yaml import YAML
 
 from module import CONFIG_PATH, VERSION_PATH
 from utils.singletonmeta import SingletonMeta
@@ -34,10 +34,13 @@ class SettingConcurrentRotatingFileHandler(ConcurrentRotatingFileHandler):
         self.config = {}
 
     def __read_config(self):
+        yaml = YAML()
         with open(VERSION_PATH, "r", encoding="utf-8") as f:
             version = f.read().strip()
         with open(CONFIG_PATH, "r", encoding="utf-8") as f:
-            config_data: dict = yaml.safe_load(f)
+            config_data: dict = yaml.load(f)
+            if config_data is None:
+                raise ValueError("配置文件内容为空或格式错误")
             config = config_data
 
         self.version = version
