@@ -176,7 +176,7 @@ AALC的项目离不开以下开源项目的帮助
 | 三月七小助手  | [March7thAssistant](https://github.com/moesnow/March7thAssistant)                 | 从大佬这里学到了挺多                                |
 | BAAS    | [blue_archive_auto_script](https://github.com/pur1fying/blue_archive_auto_script) | 从大佬这里学习了模拟器相关代码                           |
 
-ChineseFont.ttf文件来源于[LocalizeLimbusCompany](https://github.com/LocalizeLimbusCompany/LocalizeLimbusCompany)，该部分代码遵循 **CC BY-NC-SA 4.0** 许可证。版权归 LocalizeLimbusCompany 所有。
+[ChineseFont.ttf](./assets/app/fonts/ChineseFont.ttf)文件来源于[LocalizeLimbusCompany](https://github.com/LocalizeLimbusCompany/LocalizeLimbusCompany)，该部分代码遵循 **CC BY-NC-SA 4.0** 许可证。版权归 LocalizeLimbusCompany 所有。
 
 ### 统一致谢
 
