@@ -413,28 +413,18 @@ class SinnerSelect(QFrame):
         self.setAttribute(Qt.WA_TransparentForMouseEvents, False)
 
         # Image Label
-        self.label_pic = BodyLabel(self)
-        self.label_pic.setAlignment(Qt.AlignCenter)
-        # self.label_pic.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        self.label_pic = QFrame(self)
+        self.label_pic.setStyleSheet(f"""
+            QFrame {{
+                border-radius: 16px;
+                background-color: transparent;
+                border-image: url({sinner_img}) 0 0 0 0 stretch stretch;
+                border-width: 0px;
+            }}""")
 
         # Name Label
         self.label_str = BodyLabel(label_title)
         self.label_str.setAlignment(Qt.AlignCenter)
-
-        # Load and set image
-        pixmap = QPixmap(sinner_img)
-        if crop_left or crop_right or crop_top or crop_bottom:
-            rect = QRect(
-                crop_left,
-                crop_top,
-                pixmap.width() - crop_left - crop_right,
-                pixmap.height() - crop_top - crop_bottom,
-            )
-            pixmap = pixmap.copy(rect)
-
-        # Image pixel size 30.7 x 32
-        pixmap = pixmap.scaled(155, 239, Qt.KeepAspectRatio, Qt.SmoothTransformation)
-        self.label_pic.setPixmap(pixmap)
 
         # Opacity Effect for Image
         self.opacity_effect = QGraphicsOpacityEffect(self.label_pic)
@@ -533,7 +523,7 @@ class SinnerSelect(QFrame):
                 """
                 SinnerSelect {
                     background-color: rgba(28, 28, 28, 0.47); /* 半透明深色遮罩 */
-                    border-radius: 8px;
+                    border-radius: 16px;
                 }
             """
             )
@@ -542,7 +532,7 @@ class SinnerSelect(QFrame):
             self.setStyleSheet(
                 """
                 SinnerSelect {
-                    border-radius: 8px;
+                    border-radius: 16px;
                     background-color: transparent;
                 }
             """
