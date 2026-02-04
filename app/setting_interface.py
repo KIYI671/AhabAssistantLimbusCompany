@@ -531,6 +531,7 @@ class SettingInterface(ScrollArea):
         self.game_path_group.retranslateUi()
         self.personal_group.retranslateUi()
         self.language_card.retranslateUi()
+        self.theme_card.retranslateUi()
         self.zoom_card.retranslateUi()
         self.hotkey_card.retranslateUi()
         self.autostart_card.retranslateUi()
