@@ -441,9 +441,6 @@ class SinnerSelect(QFrame):
         self.opacity_effect.setOpacity(1.0)
         self.label_pic.setGraphicsEffect(self.opacity_effect)
 
-        self.opacity_effect.setOpacity(1.0)
-        self.label_pic.setGraphicsEffect(self.opacity_effect)
-
         # Internal CheckBox
         self.box = BaseCheckBox(config_name, check_box_icon, "", parent=self)
         self.box.setVisible(False)
