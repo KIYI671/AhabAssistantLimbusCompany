@@ -42,10 +42,7 @@ protection
 This project aims to help you reduce the repetitive and boring parts of Limbus's gameplay, so that you can better enjoy
 the exciting story, performances, and mechanics inside
 
-
 <br>
-
-
 
 </div>
 
@@ -55,15 +52,15 @@ the exciting story, performances, and mechanics inside
 - **LUNACY to physical**: Automatically identify and use LUNACY for physical strength, and automatically synthesize
   enkephalin module (cake)
 - **Automatic Mirror Dungeons**: fully automatic Dungeons time
-    - Support multi-team rotation and round-robin battles
-    - Supports custom team accessories system selection
-    - Support mirror dungeon theme pack to automatically identify and filter based on weight
-    - Configure intelligent route planning (prioritize event nodes)
+  - Support multi-team rotation and round-robin battles
+  - Supports custom team accessories system selection
+  - Support mirror dungeon theme pack to automatically identify and filter based on weight
+  - Configure intelligent route planning (prioritize event nodes)
 
 - Imitation of MAA style GUI
 - Automatic version update
-    - Automatically download the latest version
-    - Automatically execute update operations
+  - Automatically download the latest version
+  - Automatically execute update operations
 - What You See Is What You Get.
 - Supports multi-resolution window execution.
 - Supports automatically closing the game or shutting down the computer after the task is completed
@@ -71,8 +68,8 @@ the exciting story, performances, and mechanics inside
 ### Special Features
 
 - Automatic team selection, there are two modes:
-    - Select a team based on get a team name from OCR (the initial team name must be maintained, e.g. [TEAM #1])
-    - Select a team based on their serial number
+  - Select a team based on get a team name from OCR (the initial team name must be maintained, e.g. [TEAM #1])
+  - Select a team based on their serial number
 - The Mirror Dungeon automatically selects theme packs based on weights
 - Supports running with English (EN) and Chinese Simplified (zh_cn) as the game language
 - Customized Mirror Dungeon experience
@@ -136,9 +133,9 @@ The file format is shown in the following picture.
 - **Related files can also be obtained by going to the tutorial
   author's [Home - Dynamic Page](https://space.bilibili.com/26715033/dynamic) from the top**.
 
-## Attention!!!
+## Attention
 
-- It is recommended to run with resolutions of 1920 * 1080 and 2160 * 1440</br> The screen is less than 1920 * 1080 is
+- It is recommended to run with resolutions of 1920 \* 1080 and 2160 \* 1440</br> The screen is less than 1920 * 1080 is
   not tested, it is not recommended to use it at resolutions less than that
 - **Please set Material Quality and Render Ratio in Settings-Image to High, Normal FPS and Combat FPS to 60, and
   Post-Processing to Off** to facilitate software recognition. If the performance of the device cannot be met, please
