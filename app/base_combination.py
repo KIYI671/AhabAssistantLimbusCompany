@@ -2,7 +2,15 @@ import base64
 import datetime
 
 import pyperclip
-from PySide6.QtCore import QObject, QRect, QTime, QUrl, Signal
+from PySide6.QtCore import (
+    QEasingCurve,
+    QObject,
+    QPropertyAnimation,
+    QRect,
+    QTime,
+    QUrl,
+    Signal,
+)
 from PySide6.QtGui import (
     QColor,
     QDesktopServices,
@@ -16,7 +24,6 @@ from PySide6.QtGui import (
 from PySide6.QtWidgets import (
     QFrame,
     QGraphicsDropShadowEffect,
-    QGraphicsOpacityEffect,
     QLabel,
     QPushButton,
 )
@@ -452,13 +459,10 @@ class SinnerSelect(QFrame):
         self.number_glow_effect.setOffset(0, 0)
         self.number_label.setGraphicsEffect(self.number_glow_effect)
 
-        self.number_label.hide()
-
         # SELECTED/BACKUP Banner
         self.banner_label = QLabel(self)
         self.banner_label.setScaledContents(True)  # Auto-scale to label geometry
         self.banner_label.setAttribute(Qt.WA_TransparentForMouseEvents)
-        self.banner_label.hide()
 
         # Frame Overlay
         self.frame_overlay = QLabel(self)
@@ -473,7 +477,6 @@ class SinnerSelect(QFrame):
         hover_pixmap = QPixmap(f"{ui_img_path}/HoverOverlay.png")
         self.hover_overlay.setPixmap(hover_pixmap)
         self.hover_overlay.setScaledContents(True)
-        self.hover_overlay.hide()
 
         # Name Label
         self.name_label = QLabel(label_title)
@@ -525,14 +528,40 @@ class SinnerSelect(QFrame):
         self.banner_label.raise_()
         self.mask_widget.stackUnder(self.number_label)
 
-        self.hover_overlay.stackUnder(self.mask_widget)
         self.frame_overlay.stackUnder(self.hover_overlay)
         self.name_label.stackUnder(self.mask_widget)
+        self.hover_overlay.lower()
 
-    def mousePressEvent(self, event):
-        if event.button() == Qt.LeftButton:
-            self.hover_overlay.hide()
-            self.box.check_box.toggle()
+        self.__init__animation__()
+
+    def __init__animation__(self):
+        self.ani = QPropertyAnimation(self, b"geometry")
+        self.ani_time = 100  # ms
+        self.ani.setDuration(self.ani_time)
+        self.ani.setEasingCurve(QEasingCurve.InOutQuad)
+        self.zoom_factor = 1.1  # 原地放大倍率
+        self.raw_geom = None
+        self._end_geom = None
+
+    @property
+    def end_geom(self):
+        """原地放大后的几何位置"""
+        if self._end_geom:
+            return self._end_geom
+        if not self.raw_geom:
+            return self.geometry()
+        new_width = self.raw_geom.width() * self.zoom_factor
+        new_height = self.raw_geom.height() * self.zoom_factor
+        new_x = self.raw_geom.x() - (new_width - self.raw_geom.width()) / 2
+        new_y = self.raw_geom.y() - (new_height - self.raw_geom.height()) / 2
+
+        self._end_geom = QRect(int(new_x), int(new_y), int(new_width), int(new_height))
+        self.setMaximumSize(int(new_width), int(new_height))
+        return self._end_geom
+
+    @end_geom.setter
+    def end_geom(self, value):
+        self._end_geom = value
 
     def _on_internal_toggle(self, checked):
         self._update_style(checked)
@@ -586,14 +615,23 @@ class SinnerSelect(QFrame):
                 # Fallback Glow
                 self.number_glow_effect.setColor(QColor(254, 95, 0))
 
-            self.number_label.show()
-            self.banner_label.show()
+            self.number_label.raise_()
+            self.banner_label.raise_()
         else:
-            self.number_label.hide()
-            self.banner_label.hide()
+            self.number_label.lower()
+            self.banner_label.lower()
 
     def set_checkbox(self, checked):
         self.box.set_checked(checked)
+
+    def mousePressEvent(self, event):
+        if event.button() == Qt.LeftButton:
+            self.hover_overlay.lower()
+            self.box.check_box.toggle()
+            self.ani.stop()
+            self.ani.setStartValue(self.geometry())
+            self.ani.setEndValue(self.raw_geom)
+            self.ani.start()
 
     def resizeEvent(self, event):
         """
@@ -625,15 +663,25 @@ class SinnerSelect(QFrame):
         Mouse enter event: Show hover overlay and adjust layering.
         Ensures that critical info (number, name) remains visible above the overlay.
         """
-        self.hover_overlay.show()
+        self.hover_overlay.stackUnder(self.mask_widget)
         super().enterEvent(event)
+        if self.raw_geom is None:
+            self.raw_geom = self.geometry()
+        self.ani.stop()
+        self.ani.setStartValue(self.raw_geom)
+        self.ani.setEndValue(self.end_geom)
+        self.ani.start()
 
     def leaveEvent(self, event):
         """
         Mouse leave event: Hide hover overlay.
         """
-        self.hover_overlay.hide()
+        self.hover_overlay.lower()
         super().leaveEvent(event)
+        self.ani.stop()
+        self.ani.setStartValue(self.geometry())
+        self.ani.setEndValue(self.raw_geom)
+        self.ani.start()
 
 
 class ComboBoxSettingCard(SettingCard):
