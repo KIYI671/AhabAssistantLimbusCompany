@@ -2,7 +2,15 @@ import base64
 import datetime
 
 import pyperclip
-from PySide6.QtCore import QObject, QRect, QTime, QUrl, Signal
+from PySide6.QtCore import (
+    QEasingCurve,
+    QObject,
+    QPropertyAnimation,
+    QRect,
+    QTime,
+    QUrl,
+    Signal,
+)
 from PySide6.QtGui import (
     QColor,
     QDesktopServices,
@@ -16,7 +24,6 @@ from PySide6.QtGui import (
 from PySide6.QtWidgets import (
     QFrame,
     QGraphicsDropShadowEffect,
-    QGraphicsOpacityEffect,
     QLabel,
     QPushButton,
 )
@@ -399,50 +406,35 @@ class SinnerSelect(QFrame):
         self,
         config_name,
         label_title,
-        check_box_icon: Union[str, QIcon, FluentIconBase, None],
-        sinner_img,
-        crop_left=0,
-        crop_right=0,
-        crop_top=0,
-        crop_bottom=0,
         parent=None,
     ):
         super().__init__(parent)
+        img_path = f"./assets/app/sinner/{config_name}"
+        ui_img_path = "./assets/app/sinner/ui_components"
+        self.main_layout = QVBoxLayout(self)
+        self.main_layout.setContentsMargins(0, 0, 0, 0)
         self.setObjectName(config_name)
         # Disable clipping so banner/overlays can extend beyond widget bounds
         self.setAttribute(Qt.WA_TransparentForMouseEvents, False)
-
+        # Initial Style
+        self.setStyleSheet(
+            """
+            QFrame{
+                border-radius: 16px;
+            }
+        """
+        )
         # Image Label
-        self.label_pic = BodyLabel(self)
-        self.label_pic.setAlignment(Qt.AlignCenter)
-        # self.label_pic.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
-
-        # Name Label
-        self.label_str = BodyLabel(label_title)
-        self.label_str.setAlignment(Qt.AlignCenter)
-
-        # Load and set image
-        pixmap = QPixmap(sinner_img)
-        if crop_left or crop_right or crop_top or crop_bottom:
-            rect = QRect(
-                crop_left,
-                crop_top,
-                pixmap.width() - crop_left - crop_right,
-                pixmap.height() - crop_top - crop_bottom,
-            )
-            pixmap = pixmap.copy(rect)
-
-        # Image pixel size 30.7 x 32
-        pixmap = pixmap.scaled(155, 239, Qt.KeepAspectRatio, Qt.SmoothTransformation)
-        self.label_pic.setPixmap(pixmap)
-
-        # Opacity Effect for Image
-        self.opacity_effect = QGraphicsOpacityEffect(self.label_pic)
-        self.opacity_effect.setOpacity(1.0)
-        self.label_pic.setGraphicsEffect(self.opacity_effect)
+        self.label_pic = QFrame(self)
+        self.label_pic.setStyleSheet(f"""
+            QFrame {{
+                background-color: transparent;
+                border-image: url({img_path}/Sinner.png) 0 0 0 0 stretch stretch;
+                border-width: 0px;
+            }}""")
 
         # Internal CheckBox
-        self.box = BaseCheckBox(config_name, check_box_icon, "", parent=self)
+        self.box = BaseCheckBox(config_name, None, "", parent=self)
         self.box.setVisible(False)
         self.box.check_box.toggled.connect(self._on_internal_toggle)
 
@@ -467,34 +459,31 @@ class SinnerSelect(QFrame):
         self.number_glow_effect.setOffset(0, 0)
         self.number_label.setGraphicsEffect(self.number_glow_effect)
 
-        self.number_label.hide()
-
         # SELECTED/BACKUP Banner
         self.banner_label = QLabel(self)
         self.banner_label.setScaledContents(True)  # Auto-scale to label geometry
         self.banner_label.setAttribute(Qt.WA_TransparentForMouseEvents)
-        self.banner_label.hide()
 
         # Frame Overlay
         self.frame_overlay = QLabel(self)
         self.frame_overlay.setAttribute(Qt.WA_TransparentForMouseEvents)
-        frame_pixmap = QPixmap("./assets/app/sinner/ui_components/FrameOverlay.png")
+        frame_pixmap = QPixmap(f"{ui_img_path}/FrameOverlay.png")
         self.frame_overlay.setPixmap(frame_pixmap)
         self.frame_overlay.setScaledContents(True)
 
         # Hover Overlay
         self.hover_overlay = QLabel(self)
         self.hover_overlay.setAttribute(Qt.WA_TransparentForMouseEvents)
-        hover_pixmap = QPixmap("./assets/app/sinner/ui_components/HoverOverlay.png")
+        hover_pixmap = QPixmap(f"{ui_img_path}/HoverOverlay.png")
         self.hover_overlay.setPixmap(hover_pixmap)
         self.hover_overlay.setScaledContents(True)
-        self.hover_overlay.hide()
 
         # Name Label
-        self.name_label = QLabel(label_title, self)
-        self.name_label.setAlignment(Qt.AlignRight | Qt.AlignBottom)
+        self.name_label = QLabel(label_title)
         self.name_label.setAttribute(Qt.WA_TransparentForMouseEvents)
 
+        self.main_layout.addWidget(self.name_label)
+        self.main_layout.setAlignment(self.name_label, Qt.AlignBottom | Qt.AlignRight)
         # Load chinese font
         font_id = QFontDatabase.addApplicationFont("./assets/app/fonts/ChineseFont.ttf")
         family = (
@@ -507,8 +496,8 @@ class SinnerSelect(QFrame):
         self.name_label.setStyleSheet(
             """
             color: rgb(251, 197, 0);
-            padding-right: 5px;
-            padding-bottom: 3px;
+            padding-right: 8px;
+            padding-bottom: 12px;
             """
         )
 
@@ -516,37 +505,75 @@ class SinnerSelect(QFrame):
         self.setFixedHeight(239)
         self.setFixedWidth(155)
 
-        # Initial Style
+        # 遮罩层
+        self.mask_widget = QFrame(self)
+        self.mask_widget.setStyleSheet(
+            """
+            QFrame[checked="true"] {
+                background-color: rgba(28, 28, 28, 0.4); /* 半透明深色遮罩 */
+                border-radius: 12px;
+            }
+            QFrame[checked="false"] {
+                background-color: transparent;
+                border-radius: 12px;
+            }
+        """
+        )
+
         self._update_style(self.box.check_box.isChecked())
 
-    def mousePressEvent(self, event):
-        if event.button() == Qt.LeftButton:
-            self.box.check_box.toggle()
+        # 调整层级顺序，确保覆盖关系正确
+        self.label_pic.lower()
+        self.number_label.raise_()
+        self.banner_label.raise_()
+        self.mask_widget.stackUnder(self.number_label)
+
+        self.frame_overlay.stackUnder(self.hover_overlay)
+        self.name_label.stackUnder(self.mask_widget)
+        self.hover_overlay.lower()
+
+        self.__init__animation__()
+
+    def __init__animation__(self):
+        self.ani = QPropertyAnimation(self, b"geometry")
+        self.ani_time = 100  # ms
+        self.ani.setDuration(self.ani_time)
+        self.ani.setEasingCurve(QEasingCurve.InOutQuad)
+        self.zoom_factor = 1.1  # 原地放大倍率
+        self.raw_geom = None
+        self._end_geom = None
+
+    @property
+    def end_geom(self):
+        """原地放大后的几何位置"""
+        if self._end_geom:
+            return self._end_geom
+        if not self.raw_geom:
+            return self.geometry()
+        new_width = self.raw_geom.width() * self.zoom_factor
+        new_height = self.raw_geom.height() * self.zoom_factor
+        new_x = self.raw_geom.x() - (new_width - self.raw_geom.width()) / 2
+        new_y = self.raw_geom.y() - (new_height - self.raw_geom.height()) / 2
+
+        self._end_geom = QRect(int(new_x), int(new_y), int(new_width), int(new_height))
+        self.setMaximumSize(int(new_width), int(new_height))
+        return self._end_geom
+
+    @end_geom.setter
+    def end_geom(self, value):
+        self._end_geom = value
 
     def _on_internal_toggle(self, checked):
         self._update_style(checked)
 
     def _update_style(self, checked):
         if checked:
-            self.opacity_effect.setOpacity(0.6)  # 选中时不透明度设为0.6
-            self.setStyleSheet(
-                """
-                SinnerSelect {
-                    background-color: rgba(28, 28, 28, 0.47); /* 半透明深色遮罩 */
-                    border-radius: 8px;
-                }
-            """
-            )
+            self.mask_widget.setProperty("checked", "true")
         else:
-            self.opacity_effect.setOpacity(1.0)  # 未选中时恢复图片不透明度
-            self.setStyleSheet(
-                """
-                SinnerSelect {
-                    border-radius: 8px;
-                    background-color: transparent;
-                }
-            """
-            )
+            self.mask_widget.setProperty("checked", "false")
+        self.mask_widget.style().unpolish(self.mask_widget)
+        self.mask_widget.style().polish(self.mask_widget)
+        self.update()
 
     def set_text(self, text):
         self.number_label.setText(text)
@@ -588,19 +615,23 @@ class SinnerSelect(QFrame):
                 # Fallback Glow
                 self.number_glow_effect.setColor(QColor(254, 95, 0))
 
-            self.number_label.show()
-            self.banner_label.show()
-
-            # Z-Order stacking (Lowest -> Highest)
-            self.banner_label.raise_()
             self.number_label.raise_()
-            self.name_label.raise_()
+            self.banner_label.raise_()
         else:
-            self.number_label.hide()
-            self.banner_label.hide()
+            self.number_label.lower()
+            self.banner_label.lower()
 
     def set_checkbox(self, checked):
         self.box.set_checked(checked)
+
+    def mousePressEvent(self, event):
+        if event.button() == Qt.LeftButton:
+            self.hover_overlay.lower()
+            self.box.check_box.toggle()
+            self.ani.stop()
+            self.ani.setStartValue(self.geometry())
+            self.ani.setEndValue(self.raw_geom)
+            self.ani.start()
 
     def resizeEvent(self, event):
         """
@@ -608,7 +639,7 @@ class SinnerSelect(QFrame):
         """
         # Resize background image to full size
         self.label_pic.setGeometry(self.rect())
-
+        self.mask_widget.setGeometry(self.rect())
         # Position frame and hover overlays at 110% size (5% offset on each side)
         margin = int(self.width() * 0.05)
         overlay_rect = self.rect().adjusted(-margin, -margin, margin, margin)
@@ -625,11 +656,6 @@ class SinnerSelect(QFrame):
         banner_x = int((self.width() - banner_width) / 2)  # Center the banner
         banner_y = int(self.height() * 0.50)
         self.banner_label.setGeometry(banner_x, banner_y, banner_width, banner_height)
-        # Position name label near bottom of card (up a bit, left a bit)
-        name_height = 40  # Increased height for larger font
-        name_y = self.height() - name_height - 5  # Adjust Y position
-        name_x = -5  # Move left 5px
-        self.name_label.setGeometry(name_x, name_y, self.width(), name_height)
         super().resizeEvent(event)
 
     def enterEvent(self, event):
@@ -637,18 +663,25 @@ class SinnerSelect(QFrame):
         Mouse enter event: Show hover overlay and adjust layering.
         Ensures that critical info (number, name) remains visible above the overlay.
         """
-        self.hover_overlay.show()
-        self.hover_overlay.raise_()
-        self.number_label.raise_()  # Keep number visible
-        self.name_label.raise_()  # Ensure name label stays on top of hover overlay
+        self.hover_overlay.stackUnder(self.mask_widget)
         super().enterEvent(event)
+        if self.raw_geom is None:
+            self.raw_geom = self.geometry()
+        self.ani.stop()
+        self.ani.setStartValue(self.raw_geom)
+        self.ani.setEndValue(self.end_geom)
+        self.ani.start()
 
     def leaveEvent(self, event):
         """
         Mouse leave event: Hide hover overlay.
         """
-        self.hover_overlay.hide()
+        self.hover_overlay.lower()
         super().leaveEvent(event)
+        self.ani.stop()
+        self.ani.setStartValue(self.geometry())
+        self.ani.setEndValue(self.raw_geom)
+        self.ani.start()
 
 
 class ComboBoxSettingCard(SettingCard):
