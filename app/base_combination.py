@@ -15,7 +15,6 @@ from PySide6.QtGui import (
     QColor,
     QDesktopServices,
     QFont,
-    QFontDatabase,
     QKeyEvent,
     QKeySequence,
     QPainter,
@@ -52,6 +51,7 @@ from app.card.messagebox_custom import (
     MessageBoxSpinbox,
 )
 from app.language_manager import LanguageManager
+from module.font_manager import font_manager
 from module.logger import log
 from module.my_error.my_error import settingsTypeError
 from module.update.check_update import check_update
@@ -485,12 +485,7 @@ class SinnerSelect(QFrame):
         self.main_layout.addWidget(self.name_label)
         self.main_layout.setAlignment(self.name_label, Qt.AlignBottom | Qt.AlignRight)
         # Load chinese font
-        font_id = QFontDatabase.addApplicationFont("./assets/app/fonts/ChineseFont.ttf")
-        family = (
-            QFontDatabase.applicationFontFamilies(font_id)[0]
-            if font_id != -1 and QFontDatabase.applicationFontFamilies(font_id)
-            else self.name_label.font().family()
-        )
+        family = font_manager.load_font("./assets/app/fonts/ChineseFont.ttf")
         name_font = QFont(family, 16)
         self.name_label.setFont(name_font)
         self.name_label.setStyleSheet(
