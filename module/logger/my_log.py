@@ -6,6 +6,7 @@ from pathlib import Path
 
 import colorlog
 from concurrent_log_handler import ConcurrentRotatingFileHandler
+from logging.handlers import MemoryHandler
 from PySide6.QtWidgets import QApplication
 from ruamel.yaml import YAML
 
@@ -106,6 +107,15 @@ class Logger(metaclass=SingletonMeta):
             debug_file_handler.setFormatter(file_formatter)
             debug_file_handler.setLevel(logging.DEBUG)
 
+            # 使用缓冲来减少磁盘写入次数
+            buffered_debug_handler = MemoryHandler(
+                capacity=200,
+                flushLevel=logging.WARNING,
+                target=debug_file_handler,
+            )
+            buffered_debug_handler.setLevel(logging.DEBUG)
+            buffered_debug_handler.setFormatter(file_formatter)
+
             # UI界面里的log显示，只记录INFO及以上级别
             user_log_handler = logging.FileHandler(
                 filename="./logs/user.log", encoding="utf-8"
@@ -119,7 +129,7 @@ class Logger(metaclass=SingletonMeta):
 
             self.logger.setLevel(logging.DEBUG)
             self.logger.addHandler(console_handler)
-            self.logger.addHandler(debug_file_handler)
+            self.logger.addHandler(buffered_debug_handler)
             self.logger.addHandler(user_log_handler)
 
     def get_logger(self) -> logging.Logger:
