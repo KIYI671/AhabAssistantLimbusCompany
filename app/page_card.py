@@ -64,8 +64,8 @@ class PageCard(QFrame):
         self.scroll_advanced.setWidget(self.page_advanced)
         self.scroll_advanced.setObjectName("advanced")
 
-        self.all_page.addWidget(self.scroll_general)
-        self.all_page.addWidget(self.scroll_advanced)
+        self.all_page.addWidget(self.scroll_general, deltaX=-76, deltaY=0)
+        self.all_page.addWidget(self.scroll_advanced, deltaX=76, deltaY=0)
 
         self.card_layout.addWidget(self.all_page)
         self.card_layout.addWidget(self.pivot)
