@@ -15,8 +15,7 @@ from PySide6.QtWidgets import (
     QVBoxLayout,
     QWidget,
 )
-from qfluentwidgets import ListWidget, PrimaryPushButton
-from qfluentwidgets import PopUpAniStackedWidget
+from qfluentwidgets import ListWidget, PopUpAniStackedWidget, PrimaryPushButton
 
 from app import AnnouncementStatus
 from module.config import cfg

@@ -13,6 +13,7 @@ from PySide6.QtGui import (
 from PySide6.QtWidgets import QFrame, QHBoxLayout, QVBoxLayout, QWidget
 from qfluentwidgets import FluentIcon as FIF
 from qfluentwidgets import (
+    PopUpAniStackedWidget,
     ScrollArea,
     SegmentedWidget,
     TextBrowser,
@@ -21,7 +22,6 @@ from qfluentwidgets import (
     qconfig,
     setCustomStyleSheet,
 )
-from qfluentwidgets import PopUpAniStackedWidget
 
 from app import *
 from app.base_combination import (

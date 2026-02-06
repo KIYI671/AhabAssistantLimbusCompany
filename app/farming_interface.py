@@ -5,8 +5,12 @@ from pynput import keyboard
 from PySide6.QtCore import QFile, QFileSystemWatcher
 from PySide6.QtGui import QTextCursor
 from PySide6.QtWidgets import QApplication, QTextEdit
-from qfluentwidgets import TextEdit, TransparentToolButton, setCustomStyleSheet
-from qfluentwidgets import PopUpAniStackedWidget
+from qfluentwidgets import (
+    PopUpAniStackedWidget,
+    TextEdit,
+    TransparentToolButton,
+    setCustomStyleSheet,
+)
 
 from app.base_combination import *
 from app.base_tools import *
