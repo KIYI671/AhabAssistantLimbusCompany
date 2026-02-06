@@ -6,7 +6,7 @@ from PySide6.QtCore import QFile, QFileSystemWatcher
 from PySide6.QtGui import QTextCursor
 from PySide6.QtWidgets import QApplication, QTextEdit
 from qfluentwidgets import TextEdit, TransparentToolButton, setCustomStyleSheet
-from qfluentwidgets.window.stacked_widget import StackedWidget
+from qfluentwidgets import PopUpAniStackedWidget
 
 from app.base_combination import *
 from app.base_tools import *
@@ -438,7 +438,7 @@ class FarmingInterfaceCenter(QWidget):
         # self.setting_box = CardWidget()
         self.vbox = QVBoxLayout(self)
 
-        self.setting_page = StackedWidget(self)
+        self.setting_page = PopUpAniStackedWidget(self)
 
     def __init_card(self):
         self.set_windows = PageSetWindows(self)
