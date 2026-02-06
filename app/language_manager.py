@@ -70,16 +70,22 @@ class LanguageManager(metaclass=SingletonMeta):
         if hasattr(component, retranslateUi):
             self.translatable_components.append(component)
             component_name = self.check_component_name(component)
-            log.debug(f"注册翻译组件: {component_name}")
+            log.debug(f"注册翻译组件: {component_name}", stacklevel=2)
         else:
             component_name = self.check_component_name(component)
 
-            log.warning(f"组件 {component_name} 没有 {retranslateUi} 方法，无法翻译")
+            log.warning(
+                f"组件 {component_name} 没有 {retranslateUi} 方法，无法翻译",
+                stacklevel=2,
+            )
 
     def unregister_component(self, component):
         """注销需要翻译的组件"""
         if component in self.translatable_components:
             self.translatable_components.remove(component)
+        else:
+            component_name = self.check_component_name(component)
+            log.warning(f"组件 {component_name} 未注册，无法注销", stacklevel=2)
 
     def init_language(self):
         """初始化语言设置"""

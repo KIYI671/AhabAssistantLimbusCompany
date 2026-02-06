@@ -40,6 +40,7 @@ from app.setting_interface import SettingInterface
 from app.team_setting_card import TeamSettingCard
 from app.tools_interface import ToolsInterface
 from module.config import cfg
+from module.font_manager import font_manager
 from module.logger import log
 from module.update.check_update import check_update
 
@@ -285,12 +286,14 @@ class MainWindow(FramelessWindow):
 
             LanguageManager().unregister_component(page)
             LanguageManager().unregister_component(page.customize_settings_module)
+            LanguageManager().unregister_component(page.customize_info_module)
 
             self.stackedWidget.removeWidget(page)
             page.setParent(None)
             page.deleteLater()
-            page = None
+            del page
             self.pivot.removeWidget("team_setting")
+            font_manager.unload_font("./assets/app/fonts/ChineseFont.ttf")
         except Exception as e:
             log.error(f"delete_team 出错：{e}")
 
