@@ -2,7 +2,8 @@ import os
 import sys
 
 from pynput import keyboard
-from PySide6.QtCore import QFile, QTimer
+from PySide6.QtCore import QFile, QFileSystemWatcher
+from PySide6.QtGui import QTextCursor
 from PySide6.QtWidgets import QApplication, QTextEdit
 from qfluentwidgets import TextEdit, TransparentToolButton, setCustomStyleSheet
 from qfluentwidgets.window.stacked_widget import StackedWidget
@@ -495,9 +496,13 @@ class FarmingInterfaceRight(QWidget):
 
         self._apply_theme_style()
 
-        self.timer = QTimer()
-        self.timer.timeout.connect(lambda option=0: self.set_log(option))
-        self.timer.start(1000)  # 每秒更新一次
+        self.log_path = os.path.normpath(os.path.abspath("./logs/user.log"))
+        self.log_directory = os.path.dirname(self.log_path) or "."
+        self.log_watcher = QFileSystemWatcher(self)
+        self.log_watcher.fileChanged.connect(self._handle_log_changed)
+        self.log_watcher.directoryChanged.connect(self._handle_directory_changed)
+        self._sync_log_watcher()
+        self.load_log_text()
 
         self.connect_mediator()
 
@@ -524,17 +529,21 @@ class FarmingInterfaceRight(QWidget):
             self.last_position = 0
 
     def load_log_text(self):
-        log_path = "./logs/user.log"
         MAX_SIZE_BYTES = 500 * 1024
 
-        if not os.path.exists(log_path):
+        if not os.path.exists(self.log_path):
             return
         else:
-            file_size_bytes = os.path.getsize(log_path)
+            file_size_bytes = os.path.getsize(self.log_path)
             if file_size_bytes > MAX_SIZE_BYTES:
-                os.remove(log_path)
+                os.remove(self.log_path)
+                self.last_position = 0
                 log.info("日志文件大小超过500KB，为防止加载过久或卡死，已删除")
-        file = QFile(log_path)
+                self._sync_log_watcher()
+                return
+            if file_size_bytes < self.last_position:
+                self.last_position = 0
+        file = QFile(self.log_path)
         if not file.exists():
             return
         if not file.open(QFile.ReadOnly):
@@ -567,10 +576,10 @@ class FarmingInterfaceRight(QWidget):
             for line in new_content.splitlines():
                 self.scroll_log_edit.append(line)
             if at_bottom:
-                self.scroll_log_edit.moveCursor(self.scroll_log_edit.textCursor().End)
+                self.scroll_log_edit.moveCursor(QTextCursor.End)
 
     def clear_all_log(self):
-        file = QFile("./logs/user.log")
+        file = QFile(self.log_path)
         if not file.open(QFile.WriteOnly | QFile.Text):
             self.scroll_log_edit.append("无法打开文件")
             return
@@ -580,6 +589,7 @@ class FarmingInterfaceRight(QWidget):
 
         # 关闭文件
         file.close()
+        self._sync_log_watcher()
         # 重新加载文件内容到 QTextEdit
         self.load_log_text()
 
@@ -587,14 +597,43 @@ class FarmingInterfaceRight(QWidget):
         if option == 0:
             try:
                 self.load_log_text()
-            except:
-                pass
-
+            except Exception as e:
+                log.debug(f"刷新日志失败: {e}")
         else:
             try:
                 self.clear_all_log()
-            except:
-                pass
+            except Exception as e:
+                log.debug(f"清空日志失败: {e}")
+
+    def _handle_log_changed(self, path: str):
+        if path != self.log_path:
+            return
+        if not os.path.exists(self.log_path):
+            self.last_position = 0
+            self.scroll_log_edit.clear()
+            self._sync_log_watcher()
+            return
+        current_size = os.path.getsize(self.log_path)
+        if current_size < self.last_position:
+            self.last_position = 0
+        self.load_log_text()
+
+    def _handle_directory_changed(self, path: str):
+        if path != self.log_directory:
+            return
+        self._sync_log_watcher()
+        if os.path.exists(self.log_path):
+            self.load_log_text()
+
+    def _sync_log_watcher(self):
+        if os.path.isdir(self.log_directory):
+            if self.log_directory not in self.log_watcher.directories():
+                self.log_watcher.addPath(self.log_directory)
+        if os.path.exists(self.log_path):
+            if self.log_path not in self.log_watcher.files():
+                self.log_watcher.addPath(self.log_path)
+        elif self.log_path in self.log_watcher.files():
+            self.log_watcher.removePath(self.log_path)
 
     def connect_mediator(self):
         # 连接所有可能信号

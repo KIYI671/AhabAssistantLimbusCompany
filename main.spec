@@ -60,6 +60,7 @@ exe = EXE(
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
+    uac_admin=True,
     icon="./assets/logo/my_icon_256X256.ico",
 )
 coll = COLLECT(

@@ -1,0 +1,5 @@
+VERSION_PATH = "./assets/config/version.txt"
+EXAMPLE_PATH = "./assets/config/config.example.yaml"
+CONFIG_PATH = "./config.yaml"
+THEME_PACK_LIST_EXAMPLE_PATH = "./assets/config/theme_pack_list.example.yaml"
+THEME_PACK_LIST_PATH = "./theme_pack_list.yaml"
