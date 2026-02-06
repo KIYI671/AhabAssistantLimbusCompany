@@ -120,7 +120,7 @@
 
 ## 注意事项
 
-- 建议使用 1920 *1080 和 2160* 1440 的分辨率运行</br> 未测试屏幕小于1920 * 1080的情况，不太建议在小于该分辨率下使用
+- 建议使用 1920 \* 1080 和 2160 \* 1440 的分辨率运行</br> 未测试屏幕小于1920 * 1080的情况，不太建议在小于该分辨率下使用
 - **请将设置-图像中的材质质量和渲染比例设为高，普通FPS和战斗FPS均设为60，后处理设为关闭**以便于软件进行识别。若设备性能无法满足也请尽量将
   **渲染比例设为高**，否则软件识别可能存在困难。
 - 游戏程序将在脚本启动后，被设置为窗口模式，中间如果出现切换全屏后又退出的行为，是正常的行为，无需担心
@@ -176,7 +176,7 @@ AALC的项目离不开以下开源项目的帮助
 | 三月七小助手  | [March7thAssistant](https://github.com/moesnow/March7thAssistant)                 | 从大佬这里学到了挺多                                |
 | BAAS    | [blue_archive_auto_script](https://github.com/pur1fying/blue_archive_auto_script) | 从大佬这里学习了模拟器相关代码                           |
 
-ChineseFont.ttf文件来源于[LocalizeLimbusCompany](https://github.com/LocalizeLimbusCompany/LocalizeLimbusCompany)，该部分代码遵循 **CC BY-NC-SA 4.0** 许可证。版权归 LocalizeLimbusCompany 所有。
+[ChineseFont.ttf](./assets/app/fonts/ChineseFont.ttf)文件来源于[LocalizeLimbusCompany](https://github.com/LocalizeLimbusCompany/LocalizeLimbusCompany)，该部分代码遵循 **CC BY-NC-SA 4.0** 许可证。版权归 LocalizeLimbusCompany 所有。
 
 ### 统一致谢
 
