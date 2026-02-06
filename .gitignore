@@ -2,6 +2,7 @@
 .cursor
 .venv
 .vscode
+.agent
 
 # 构建文件
 build

@@ -292,6 +292,11 @@ class TeamSettingCard(QFrame):
         mediator.team_setting.connect(self.setting_team)
         mediator.sinner_be_selected.connect(self.refresh_sinner_order)
 
+    def disconnect_mediator(self):
+        """断开所有 mediator 信号连接"""
+        mediator.team_setting.disconnect(self.setting_team)
+        mediator.sinner_be_selected.disconnect(self.refresh_sinner_order)
+
     def setting_team(self, data_dict: dict):
         keys = list(data_dict.keys())[0]
         values = list(data_dict.values())[0]

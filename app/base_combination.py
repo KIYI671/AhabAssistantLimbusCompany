@@ -402,6 +402,7 @@ class MirrorTeamCombination(QFrame):
 
 
 class SinnerSelect(QFrame):
+
     def __init__(
         self,
         config_name,
