@@ -65,14 +65,16 @@ class BaseSettingLayout(QFrame):
 
     def _apply_theme_style(self):
         style = get_setting_layout_style(isDarkTheme())
-        self.setStyleSheet(f"""
+        self.setStyleSheet(
+            f"""
             BaseSettingLayout {{
                 border: {style["border"]}; /* 边框 */
                 border-radius: 5px; /* 圆角 */
                 padding: 10px;   /* 内边距 */
                 background-color: transparent; /* 背景透明 */
             }}
-        """)
+        """
+        )
 
     def add(self, tool):
         if isinstance(tool, QWidget):

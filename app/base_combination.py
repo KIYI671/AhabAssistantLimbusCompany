@@ -395,6 +395,9 @@ class MirrorTeamCombination(QFrame):
 
 
 class SinnerSelect(QFrame):
+    # 类级别字体缓存，避免重复加载字体
+    _chinese_font_family = None
+
     def __init__(
         self,
         config_name,
@@ -496,13 +499,16 @@ class SinnerSelect(QFrame):
         self.name_label.setAttribute(Qt.WA_TransparentForMouseEvents)
 
         # Load chinese font
-        font_id = QFontDatabase.addApplicationFont("./assets/app/fonts/ChineseFont.ttf")
-        family = (
-            QFontDatabase.applicationFontFamilies(font_id)[0]
-            if font_id != -1 and QFontDatabase.applicationFontFamilies(font_id)
-            else self.name_label.font().family()
-        )
-        name_font = QFont(family, 16)
+        if SinnerSelect._chinese_font_family is None:
+            font_id = QFontDatabase.addApplicationFont(
+                "./assets/app/fonts/ChineseFont.ttf"
+            )
+            SinnerSelect._chinese_font_family = (
+                QFontDatabase.applicationFontFamilies(font_id)[0]
+                if font_id != -1 and QFontDatabase.applicationFontFamilies(font_id)
+                else self.name_label.font().family()
+            )
+        name_font = QFont(SinnerSelect._chinese_font_family, 16)
         self.name_label.setFont(name_font)
         self.name_label.setStyleSheet(
             """

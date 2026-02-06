@@ -283,8 +283,13 @@ class MainWindow(FramelessWindow):
             list(self.pivot.items.values())[0].click()
             page = self.findChild(TeamSettingCard, "team_setting")
 
+            # 断开信号连接
+            page.disconnect_mediator()
+
+            # 注销翻译组件
             LanguageManager().unregister_component(page)
             LanguageManager().unregister_component(page.customize_settings_module)
+            LanguageManager().unregister_component(page.customize_info_module)
 
             self.stackedWidget.removeWidget(page)
             page.setParent(None)
