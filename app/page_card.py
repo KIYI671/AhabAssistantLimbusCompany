@@ -21,7 +21,7 @@ from qfluentwidgets import (
     qconfig,
     setCustomStyleSheet,
 )
-from qfluentwidgets.window.stacked_widget import StackedWidget
+from qfluentwidgets import PopUpAniStackedWidget
 
 from app import *
 from app.base_combination import (
@@ -45,7 +45,7 @@ class PageCard(QFrame):
         super().__init__(parent=parent)
 
         self.card_layout = QVBoxLayout(self)
-        self.all_page = StackedWidget(self)
+        self.all_page = PopUpAniStackedWidget(self)
 
         self.page_general = QWidget()
         self.page_advanced = QWidget()
