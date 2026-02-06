@@ -9,7 +9,6 @@ class Mediator(QObject):
     close_setting = Signal()
     refresh_teams_order = Signal()
     sinner_be_selected = Signal()
-    scroll_log_show = Signal(str)
     link_start = Signal()
     save_warning = Signal()
     tasks_warning = Signal()

@@ -1,8 +1,6 @@
-import os
 import sys
 
 from pynput import keyboard
-from PySide6.QtCore import QFile, QFileSystemWatcher
 from PySide6.QtGui import QTextCursor
 from PySide6.QtWidgets import QApplication, QTextEdit
 from qfluentwidgets import TextEdit, TransparentToolButton, setCustomStyleSheet
@@ -22,7 +20,7 @@ from app.page_card import (
 from app.team_setting_card import TeamSettingCard
 from module.automation import auto
 from module.game_and_screen import screen
-from module.logger import log
+from module.logger import log, ui_log_dispatcher
 from tasks.base.script_task_scheme import my_script_task
 from utils.utils import check_hard_mirror_time
 
@@ -381,7 +379,7 @@ class FarmingInterfaceLeft(QWidget):
         try:
             msg = "开始进行所有任务"
             log.info(msg)
-            mediator.scroll_log_show.emit("clear")
+            ui_log_dispatcher.clear()
             # 启动脚本线程
             self.my_script = my_script_task()
             # 设置脚本线程为守护(当程序被关闭，一起停止)
@@ -492,19 +490,10 @@ class FarmingInterfaceRight(QWidget):
         self.__init_widget()
         self.__init_card()
         self.__init_layout()
-        self.last_position = 0
 
         self._apply_theme_style()
-
-        self.log_path = os.path.normpath(os.path.abspath("./logs/user.log"))
-        self.log_directory = os.path.dirname(self.log_path) or "."
-        self.log_watcher = QFileSystemWatcher(self)
-        self.log_watcher.fileChanged.connect(self._handle_log_changed)
-        self.log_watcher.directoryChanged.connect(self._handle_directory_changed)
-        self._sync_log_watcher()
-        self.load_log_text()
-
-        self.connect_mediator()
+        self._connect_log_stream()
+        self._bootstrap_log_history()
 
     def __init_widget(self):
         self.main_layout = QVBoxLayout(self)
@@ -522,122 +511,30 @@ class FarmingInterfaceRight(QWidget):
     def __init_layout(self):
         self.main_layout.addWidget(self.scroll_log_edit)
 
-    def set_scroll_log(self, target: str):
-        if target == "clear":
-            self.scroll_log_edit.clear()
-            self.set_log(option=1)
-            self.last_position = 0
+    def _connect_log_stream(self):
+        ui_log_dispatcher.new_lines.connect(self._handle_new_lines)
+        ui_log_dispatcher.cleared.connect(self._handle_log_cleared)
 
-    def load_log_text(self):
-        MAX_SIZE_BYTES = 500 * 1024
+    def _bootstrap_log_history(self):
+        history = ui_log_dispatcher.snapshot()
+        if history:
+            self._append_lines(history, force_scroll=True)
 
-        if not os.path.exists(self.log_path):
+    def _handle_new_lines(self, lines: list[str]):
+        self._append_lines(lines)
+
+    def _append_lines(self, lines: list[str], force_scroll: bool = False):
+        if not lines:
             return
-        else:
-            file_size_bytes = os.path.getsize(self.log_path)
-            if file_size_bytes > MAX_SIZE_BYTES:
-                os.remove(self.log_path)
-                self.last_position = 0
-                log.info("日志文件大小超过500KB，为防止加载过久或卡死，已删除")
-                self._sync_log_watcher()
-                return
-            if file_size_bytes < self.last_position:
-                self.last_position = 0
-        file = QFile(self.log_path)
-        if not file.exists():
-            return
-        if not file.open(QFile.ReadOnly):
-            return
+        scrollbar = self.scroll_log_edit.verticalScrollBar()
+        at_bottom = scrollbar.value() == scrollbar.maximum()
+        for line in lines:
+            self.scroll_log_edit.append(line)
+        if force_scroll or at_bottom:
+            self.scroll_log_edit.moveCursor(QTextCursor.End)
 
-        if not hasattr(self, "last_position"):
-            self.last_position = 0
-
-        # 跳到上次读取位置
-        file.seek(self.last_position)
-        raw = file.readAll()  # QByteArray
-        self.last_position = file.pos()
-        file.close()
-
-        if not raw:
-            return
-
-        try:
-            new_content = bytes(raw).decode("utf-8", errors="replace")
-        except Exception:
-            new_content = str(raw)
-
-            # 追加内容
-        if new_content:
-            at_bottom = (
-                self.scroll_log_edit.verticalScrollBar().value()
-                == self.scroll_log_edit.verticalScrollBar().maximum()
-            )
-            # 按行追加，避免 QTextEdit.append 在多段文本中额外插入空行
-            for line in new_content.splitlines():
-                self.scroll_log_edit.append(line)
-            if at_bottom:
-                self.scroll_log_edit.moveCursor(QTextCursor.End)
-
-    def clear_all_log(self):
-        file = QFile(self.log_path)
-        if not file.open(QFile.WriteOnly | QFile.Text):
-            self.scroll_log_edit.append("无法打开文件")
-            return
-
-        # 清空文件内容
-        file.write(b"")
-
-        # 关闭文件
-        file.close()
-        self._sync_log_watcher()
-        # 重新加载文件内容到 QTextEdit
-        self.load_log_text()
-
-    def set_log(self, option=0):
-        if option == 0:
-            try:
-                self.load_log_text()
-            except Exception as e:
-                log.debug(f"刷新日志失败: {e}")
-        else:
-            try:
-                self.clear_all_log()
-            except Exception as e:
-                log.debug(f"清空日志失败: {e}")
-
-    def _handle_log_changed(self, path: str):
-        if path != self.log_path:
-            return
-        if not os.path.exists(self.log_path):
-            self.last_position = 0
-            self.scroll_log_edit.clear()
-            self._sync_log_watcher()
-            return
-        current_size = os.path.getsize(self.log_path)
-        if current_size < self.last_position:
-            self.last_position = 0
-        self.load_log_text()
-
-    def _handle_directory_changed(self, path: str):
-        if path != self.log_directory:
-            return
-        self._sync_log_watcher()
-        if os.path.exists(self.log_path):
-            self.load_log_text()
-
-    def _sync_log_watcher(self):
-        if os.path.isdir(self.log_directory):
-            if self.log_directory not in self.log_watcher.directories():
-                self.log_watcher.addPath(self.log_directory)
-        if os.path.exists(self.log_path):
-            if self.log_path not in self.log_watcher.files():
-                self.log_watcher.addPath(self.log_path)
-        elif self.log_path in self.log_watcher.files():
-            self.log_watcher.removePath(self.log_path)
-
-    def connect_mediator(self):
-        # 连接所有可能信号
-        mediator.scroll_log_show.connect(self.set_scroll_log)
+    def _handle_log_cleared(self):
+        self.scroll_log_edit.clear()
 
 
 if __name__ == "__main__":
