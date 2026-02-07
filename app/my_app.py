@@ -31,6 +31,7 @@ from qfluentwidgets import (
 )
 from qfluentwidgets.components.widgets.frameless_window import FramelessWindow
 from qframelesswindow import StandardTitleBar
+from qframelesswindow.titlebar.title_bar_buttons import TitleBarButtonState
 
 from app import AnnouncementStatus, mediator
 from app.announcement_board import AnnouncementBoard, AnnouncementThread
@@ -63,6 +64,15 @@ from app.common.ui_config import (
     get_title_bar_style,
 )
 from app.widget.dev_watermark import DevWatermark
+
+
+# 自定义托盘菜单，处理鼠标在外部释放时关闭菜单
+class TrayRoundMenu(RoundMenu):
+    def mouseReleaseEvent(self, e):
+        if not self.rect().contains(e.pos()):
+            self.close()
+        else:
+            super().mouseReleaseEvent(e)
 
 
 # 使用无框窗口
@@ -179,6 +189,16 @@ class MainWindow(FramelessWindow):
         self.tray_icon.activated.connect(self.on_tray_icon_activated)
         self.tray_icon.show()
 
+    def restore_window(self):
+        """Restore window from minimized/hidden state and reset title bar button states"""
+        # 避免最小化按钮处于focus状态
+        for btn in [self.titleBar.minBtn, self.titleBar.closeBtn, self.titleBar.maxBtn]:
+            btn.setState(TitleBarButtonState.NORMAL)
+
+        self.showNormal()
+        self.raise_()
+        self.activateWindow()
+
     def on_tray_icon_activated(self, reason):
         if (
             reason == QSystemTrayIcon.ActivationReason.Trigger
@@ -187,38 +207,28 @@ class MainWindow(FramelessWindow):
             if self.tray_menu:
                 self.tray_menu.close()
                 self.tray_menu = None
-
-            self.showNormal()
-            self.raise_()
-            self.activateWindow()
-
-            # Clear focus from the minimize/close buttons to fix drag issue
-            self.titleBar.minBtn.clearFocus()
-            self.titleBar.closeBtn.clearFocus()
-            # Set focus to a safe widget
-            self.pivot.setFocus()
+            self.restore_window()
 
         elif reason == QSystemTrayIcon.ActivationReason.Context:
             if self.tray_menu:
                 self.tray_menu.close()
 
-            self.tray_menu = RoundMenu(parent=self)
+            self.tray_menu = TrayRoundMenu(parent=self)
 
             show_action = QAction(self.tr("主窗口"), self)
-            show_action.triggered.connect(self.showNormal)
+            show_action.triggered.connect(self.restore_window)
             quit_action = QAction(self.tr("退出"), self)
             quit_action.triggered.connect(self.quit_app)
 
             self.tray_menu.addAction(show_action)
             self.tray_menu.addAction(quit_action)
 
-            # Position of the tray menu
+            # 菜单位置
             self.tray_menu.adjustSize()
             pos = QCursor.pos()
             pos.setY(pos.y() - self.tray_menu.sizeHint().height() - 25)
             pos.setX(pos.x() + 5)
 
-            # Activate window to ensure menu closes on outside click
             self.activateWindow()
             self.tray_menu.exec(pos)
             self.tray_menu = None
