@@ -402,7 +402,6 @@ class MirrorTeamCombination(QFrame):
 
 
 class SinnerSelect(QFrame):
-
     def __init__(
         self,
         config_name,
@@ -427,12 +426,14 @@ class SinnerSelect(QFrame):
         )
         # Image Label
         self.label_pic = QFrame(self)
-        self.label_pic.setStyleSheet(f"""
+        self.label_pic.setStyleSheet(
+            f"""
             QFrame {{
                 background-color: transparent;
                 border-image: url({img_path}/Sinner.png) 0 0 0 0 stretch stretch;
                 border-width: 0px;
-            }}""")
+            }}"""
+        )
 
         # Internal CheckBox
         self.box = BaseCheckBox(config_name, None, "", parent=self)
@@ -835,7 +836,7 @@ class SwitchSettingCard(SettingCard):
         self.config_name = config_name
         self.switchButton = SwitchButton(self.tr("关"), self, IndicatorPosition.RIGHT)
 
-        self.setValue(cfg.get_value(self.config_name))
+        self.setValue(cfg.get_value(self.config_name, False))
 
         self.title = title
         self.content = content
