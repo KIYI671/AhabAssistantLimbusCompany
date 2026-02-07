@@ -244,16 +244,22 @@ class MumuControl:
     def adb_connect(self):
         # Try to connect
         for _ in range(3):
-            port = self.get_mumu_adb_port()
-            msg = adb.connect(port)
-            # Connected to 127.0.0.1:59865
-            # Already connected to 127.0.0.1:59865
-            if "connected" in msg:
-                log.debug(f"成功连接至:{port},连接信息: {msg}")
-                break
-            # bad port number '598265' in '127.0.0.1:598265'
-            elif "bad port" in msg:
-                log.error(f"连接失败，端口号{port}不正确，可能是拼写错误或不规范")
+            try:
+                port = self.get_mumu_adb_port()
+                msg = adb.connect(port)
+                # Connected to 127.0.0.1:59865
+                # Already connected to 127.0.0.1:59865
+                if "connected" in msg:
+                    log.debug(f"成功连接至:{port},连接信息: {msg}")
+                    return
+                # bad port number '598265' in '127.0.0.1:598265'
+                elif "bad port" in msg:
+                    log.error(f"连接失败，端口号{port}不正确，可能是拼写错误或不规范")
+            except:
+                continue
+        self.close_simulator()
+        self.start()
+        self.adb_connect()
 
     def adb_disconnect(self):
         try:
@@ -436,6 +442,16 @@ class MumuControl:
         except:
             self.mumu_control_api_backend()
             self.start()
+
+    def close_simulator(self):
+        command = [
+            self.exe_path,
+            "control",
+            "-v",
+            str(self.multi_instance_number),
+            "shutdown",
+        ]
+        run_as_user(command)
 
     def stop(self):
         try:
