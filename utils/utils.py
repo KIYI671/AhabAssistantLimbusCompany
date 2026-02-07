@@ -214,6 +214,28 @@ def decrypt_string(encrypted_b64: str, entropy: bytes = b"AALC") -> str:
     # 返回原始字符串
     return decrypted_data[1].decode("utf-8")
 
+def check_game_running() -> bool:
+    """检查游戏是否正在运行"""
+    if cfg.simulator:
+        if cfg.simulator_type == 0:
+            from module.simulator.mumu_control import MumuControl
+
+            return MumuControl.connection_device.check_game_alive()
+    else:
+        import psutil
+        for proc in psutil.process_iter(["name"]):
+            try:
+                # 获取进程的可执行文件名（如 "notepad.exe"）
+                proc_name = proc.info["name"]
+                # 精确匹配进程名（区分大小写，取决于系统）
+                if cfg.game_process_name in proc_name:
+                    return True
+            except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
+                # 忽略已终止、无权限或僵尸进程
+                continue
+
+    return False
+
 
 def run_as_user(command: list[str], timeout: int = 30):
     """

@@ -9,6 +9,7 @@ import win32process
 from module.automation import auto
 from module.config import cfg
 from module.logger import log
+from utils.utils import check_game_running
 
 
 def kill_game():
@@ -96,6 +97,10 @@ def retry():
             auto.mouse_click_blank()
             continue
         if auto.click_element("base/only_option_assets.png", model="clam"):
+            sleep(5)
+            if not check_game_running():
+                from tasks.base.script_task_scheme import init_game
+                init_game()
             continue
         break
 
