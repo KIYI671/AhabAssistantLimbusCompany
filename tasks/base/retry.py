@@ -95,6 +95,8 @@ def retry():
                 continue
             auto.mouse_click_blank()
             continue
+        if auto.click_element("base/only_option_assets.png", model="clam"):
+            continue
         break
 
 
