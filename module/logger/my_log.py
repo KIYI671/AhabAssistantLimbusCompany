@@ -1,12 +1,14 @@
 import logging
 import os
 import sys
+from collections import deque
 from copy import deepcopy
 from pathlib import Path
+from threading import Lock
 
 import colorlog
 from concurrent_log_handler import ConcurrentRotatingFileHandler
-from logging.handlers import MemoryHandler
+from PySide6.QtCore import QObject, Signal
 from PySide6.QtWidgets import QApplication
 from ruamel.yaml import YAML
 
@@ -24,6 +26,53 @@ class TranslationFormatter(colorlog.ColoredFormatter):
         record.pathname = os.path.relpath(record.pathname, self.project_root)
 
         return super().format(record)
+
+
+class UILogDispatcher(QObject):
+    """线程安全的 UI 日志环形缓冲区，保存user日志并通过信号分发给 UI 组件"""
+
+    new_lines = Signal(list)
+    cleared = Signal()
+
+    def __init__(self, max_lines: int = 10000):
+        super().__init__()
+        self._lock = Lock()
+        self._buffer = deque(maxlen=max_lines)
+
+    def snapshot(self) -> list[str]:
+        with self._lock:
+            return list(self._buffer)
+
+    def append_line(self, line: str) -> None:
+        if not line:
+            return
+        with self._lock:
+            self._buffer.append(line)
+        self.new_lines.emit([line])
+
+    def clear(self) -> None:
+        with self._lock:
+            self._buffer.clear()
+
+        self.cleared.emit()
+
+
+ui_log_dispatcher = UILogDispatcher()
+
+
+class UILogHandler(logging.Handler):
+    """将日志写入 UI 日志缓冲区"""
+
+    def __init__(self, dispatcher: UILogDispatcher):
+        super().__init__(level=logging.INFO)
+        self.dispatcher = dispatcher
+
+    def emit(self, record):
+        try:
+            msg = self.format(record)
+            self.dispatcher.append_line(msg)
+        except Exception:
+            self.handleError(record)
 
 
 class SettingConcurrentRotatingFileHandler(ConcurrentRotatingFileHandler):
@@ -107,30 +156,19 @@ class Logger(metaclass=SingletonMeta):
             debug_file_handler.setFormatter(file_formatter)
             debug_file_handler.setLevel(logging.DEBUG)
 
-            # 使用缓冲来减少磁盘写入次数
-            buffered_debug_handler = MemoryHandler(
-                capacity=200,
-                flushLevel=logging.WARNING,
-                target=debug_file_handler,
+            # 显示在 UI 窗口中的日志，写到 ring buffer，不落盘
+            ui_log_formatter = TranslationFormatter(
+                "%(asctime)s - %(message)s", "%H:%M:%S", no_color=True
             )
-            buffered_debug_handler.setLevel(logging.DEBUG)
-            buffered_debug_handler.setFormatter(file_formatter)
 
-            # UI界面里的log显示，只记录INFO及以上级别
-            user_log_handler = logging.FileHandler(
-                filename="./logs/user.log", encoding="utf-8"
-            )
-            user_log_handler.setLevel(logging.INFO)
-            user_log_handler.setFormatter(
-                TranslationFormatter(
-                    "%(asctime)s - %(message)s", "%H:%M:%S", no_color=True
-                ),
-            )
+            ui_log_handler = UILogHandler(ui_log_dispatcher)
+            ui_log_handler.setLevel(logging.INFO)
+            ui_log_handler.setFormatter(ui_log_formatter)
 
             self.logger.setLevel(logging.DEBUG)
             self.logger.addHandler(console_handler)
-            self.logger.addHandler(buffered_debug_handler)
-            self.logger.addHandler(user_log_handler)
+            self.logger.addHandler(debug_file_handler)
+            self.logger.addHandler(ui_log_handler)
 
     def get_logger(self) -> logging.Logger:
         return self.logger
