@@ -238,6 +238,8 @@ class MumuControl:
         self.is_pause = False
         self.restore_time = None
 
+        self.start_game_times = 0
+
         self.start()
         self.adb_connect()
 
@@ -284,9 +286,12 @@ class MumuControl:
             self.device = adb.device(self.get_mumu_adb_port())
         try:
             self.device.app_start(self.game_package_name)
-        except:
+        except Exception as e:
             log.error(
-                "启动游戏失败，请确认是否安装了Limbus Company，五秒后将重新尝试启动"
+                f"启动游戏失败，失败原因为{str(e)}"
+            )
+            log.error(
+                "启动游戏失败，请确认是否安装了Limbus Company，五秒后将重新尝试启动，每5次失败后将重启模拟器继续尝试"
             )
             if self.package_list is False:
                 self.package_list = True
@@ -314,6 +319,10 @@ class MumuControl:
                 )
                 log.debug(f"获取到的应用列表列表：{result.stdout}")
             sleep(5)
+            if self.start_game_times > 0 and self.start_game_times % 5 == 0:
+                self.close_simulator()
+                self.start()
+            self.start_game_times += 1
             self.start_game()
 
     def mumu_control_api_backend(self):
@@ -993,7 +1002,7 @@ class MumuControl:
         return 0, 0
 
     def mouse_drag_link(
-        self, position: list, drag_time=0.25, min_distance=10, move_back=False
+            self, position: list, drag_time=0.25, min_distance=10, move_back=False
     ) -> None:
         """鼠标从指定位置拖动到指定位置
         Args:
@@ -1045,7 +1054,6 @@ class MumuControl:
         if self.get_current_package() is None:
             return
         self.device.app_stop(self.get_current_package())
-
 
 #
 # if __name__ == "__main__":
