@@ -232,7 +232,7 @@ def run_as_user(command: list[str], timeout: int = 30):
                 log.debug(f"命令执行失败: {cmd}\n错误: {res.stderr.strip()}")
             return res
         except subprocess.TimeoutExpired:
-            log.error(f"命令执行超时: {cmd}")
+            log.debug(f"命令执行超时: {cmd}")
             return None
 
     try:
