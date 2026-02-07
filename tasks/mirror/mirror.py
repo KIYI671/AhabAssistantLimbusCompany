@@ -695,6 +695,7 @@ class Mirror:
                         take_screenshot=True,
                     ):
                         sleep(1)
+                    retry()
                     continue
             if auto.click_element(
                 "mirror/claim_reward/use_enkephalin_assets.png", threshold=0.75
