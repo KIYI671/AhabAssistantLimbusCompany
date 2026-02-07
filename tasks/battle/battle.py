@@ -113,21 +113,10 @@ class Battle:
                 auto.key_press("p")
                 sleep(0.5)
                 auto.key_press("enter")
-        elif self.defense_all_time and auto.find_element(
-            "battle/gear_left.png", threshold=0.9
-        ):
-            msg = "使用全员防御模式开始战斗"
-            if self._defense_this_round() is False:
-                defense_all_time = False
-                msg = "全员防御失败，本场战斗改为P+Enter"
-                auto.key_press("p")
-                sleep(0.5)
-                auto.key_press("enter")
-            sleep(2)
-            if not auto.find_element("battle/pause_assets.png", take_screenshot=True):
-                auto.key_press("p")
-                sleep(0.5)
-                auto.key_press("enter")
+        elif self.defense_all_time:
+            if auto.find_element("battle/gear_left.png", threshold=0.9):
+                msg = "使用全员防御模式开始战斗"
+                self._defense_this_round()
         elif avoid_skill_3 and auto.find_element("battle/gear_left.png", threshold=0.9):
             msg = "使用避免3技能模式开始战斗"
             if self._chain_battle() is False:
