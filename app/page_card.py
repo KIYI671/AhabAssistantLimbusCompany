@@ -13,6 +13,7 @@ from PySide6.QtGui import (
 from PySide6.QtWidgets import QFrame, QHBoxLayout, QVBoxLayout, QWidget
 from qfluentwidgets import FluentIcon as FIF
 from qfluentwidgets import (
+    PopUpAniStackedWidget,
     ScrollArea,
     SegmentedWidget,
     TextBrowser,
@@ -21,7 +22,6 @@ from qfluentwidgets import (
     qconfig,
     setCustomStyleSheet,
 )
-from qfluentwidgets.window.stacked_widget import StackedWidget
 
 from app import *
 from app.base_combination import (
@@ -45,7 +45,7 @@ class PageCard(QFrame):
         super().__init__(parent=parent)
 
         self.card_layout = QVBoxLayout(self)
-        self.all_page = StackedWidget(self)
+        self.all_page = PopUpAniStackedWidget(self)
 
         self.page_general = QWidget()
         self.page_advanced = QWidget()
@@ -64,8 +64,8 @@ class PageCard(QFrame):
         self.scroll_advanced.setWidget(self.page_advanced)
         self.scroll_advanced.setObjectName("advanced")
 
-        self.all_page.addWidget(self.scroll_general)
-        self.all_page.addWidget(self.scroll_advanced)
+        self.all_page.addWidget(self.scroll_general, deltaX=-76, deltaY=0)
+        self.all_page.addWidget(self.scroll_advanced, deltaX=76, deltaY=0)
 
         self.card_layout.addWidget(self.all_page)
         self.card_layout.addWidget(self.pivot)

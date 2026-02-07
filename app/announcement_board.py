@@ -15,8 +15,7 @@ from PySide6.QtWidgets import (
     QVBoxLayout,
     QWidget,
 )
-from qfluentwidgets import ListWidget, PrimaryPushButton
-from qfluentwidgets.window.stacked_widget import StackedWidget
+from qfluentwidgets import ListWidget, PopUpAniStackedWidget, PrimaryPushButton
 
 from app import AnnouncementStatus
 from module.config import cfg
@@ -123,7 +122,7 @@ class AnnouncementBoard(QDialog):
 
         # 右侧内容栏
         self.right_content_bar = QGridLayout()
-        self.content_stack = StackedWidget()
+        self.content_stack = PopUpAniStackedWidget()
         self.right_content_bar.addWidget(self.content_stack, 0, 0, 1, 3)
         horizontal_spacer = QSpacerItem(
             40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum
