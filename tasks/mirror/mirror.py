@@ -1115,6 +1115,8 @@ class Mirror:
                 continue
             if auto.click_element("mirror/road_in_mir/setting_assets.png"):
                 continue
+            if auto.click_element("battle/give_up_assets.png"):
+                continue
             auto.key_press("esc")
             time.sleep(1)
             if retry() is False:
