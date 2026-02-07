@@ -6,6 +6,7 @@ from ast import List
 
 import cv2
 import numpy as np
+import psutil
 from PIL.Image import Image
 
 from utils.image_utils import ImageUtils
@@ -69,6 +70,7 @@ class Automation(metaclass=SingletonMeta):
         self.mouse_to_blank = self.input_handler.mouse_to_blank
         self.mouse_drag_link = self.input_handler.mouse_drag_link
         self.key_press = self.input_handler.key_press
+        self.memory_protection = cfg.memory_protection
 
     def check_pause(self) -> bool:
         """
@@ -492,6 +494,13 @@ class Automation(metaclass=SingletonMeta):
         在当前截图中查找目标图像的位置
         """
         try:
+            if self.memory_protection:
+                memory = psutil.virtual_memory()
+                # memory.percent 直接返回当前已使用的百分比 (0.0 到 100.0)
+                current_percent = memory.percent
+                if current_percent>90:
+                    log.debug(f"当前系统内存总占用率: {current_percent}%，释放图片缓存")
+                    self.clear_img_cache()
             if cacheable and target in self.img_cache:
                 bbox = self.img_cache[target]["bbox"]
                 template = self.img_cache[target]["template"]

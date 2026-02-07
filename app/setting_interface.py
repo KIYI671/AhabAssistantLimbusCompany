@@ -95,6 +95,16 @@ class SettingInterface(ScrollArea):
             "background_click",
             parent=self.game_setting_group,
         )
+        self.memory_protection = SwitchSettingCard(
+            FIF.FRIGID,
+            QT_TRANSLATE_NOOP("SwitchSettingCard", "内存占用保护"),
+            QT_TRANSLATE_NOOP(
+                "SwitchSettingCard",
+                "自动检测电脑<font color=red>总内存占用</font>，超过90%执行内存清理，防止崩溃，可能略微影响脚本速度",
+            ),
+            "memory_protection",
+            parent=self.game_setting_group,
+        )
         self.screenshot_benchmark_card = BasePrimaryPushSettingCard(
             QT_TRANSLATE_NOOP("BasePrimaryPushSettingCard", "截图测试"),
             FIF.CAMERA,
@@ -313,6 +323,7 @@ class SettingInterface(ScrollArea):
         self.game_setting_group.addSettingCard(self.last_auto_hard_mirror_card)
         self.game_setting_group.addSettingCard(self.hard_mirror_chance_card)
         self.game_setting_group.addSettingCard(self.background_mode_card)
+        self.game_setting_group.addSettingCard(self.memory_protection)
         self.game_setting_group.addSettingCard(self.screenshot_benchmark_card)
 
         self.simulator_setting_group.addSettingCard(self.simulator_setting_card)
@@ -521,6 +532,7 @@ class SettingInterface(ScrollArea):
         self.last_auto_hard_mirror_card.retranslateUi()
         self.hard_mirror_chance_card.retranslateUi()
         self.background_mode_card.retranslateUi()
+        self.memory_protection.retranslateUi()
         self.screenshot_benchmark_card.retranslateUi()
         self.simulator_setting_group.retranslateUi()
         self.simulator_setting_card.retranslateUi()
