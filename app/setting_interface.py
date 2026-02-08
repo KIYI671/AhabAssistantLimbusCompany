@@ -181,6 +181,16 @@ class SettingInterface(ScrollArea):
             "autodaily",
             parent=self.game_path_group,
         )
+        self.minimize_to_tray_card = SwitchSettingCard(
+            FIF.REMOVE,
+            QT_TRANSLATE_NOOP("SwitchSettingCard", "最小化到托盘"),
+            QT_TRANSLATE_NOOP(
+                "SwitchSettingCard",
+                "开启后，最小化时将隐藏到系统托盘",
+            ),
+            "minimize_to_tray",
+            parent=self.game_path_group,
+        )
 
         self.personal_group = BaseSettingCardGroup(
             QT_TRANSLATE_NOOP("BaseSettingCardGroup", "个性化"), self.scroll_widget
@@ -335,6 +345,7 @@ class SettingInterface(ScrollArea):
 
         self.game_path_group.addSettingCard(self.game_path_card)
         self.game_path_group.addSettingCard(self.autostart_card)
+        self.game_path_group.addSettingCard(self.minimize_to_tray_card)
         self.game_path_group.addSettingCard(self.autodaily_card)
 
         self.personal_group.addSettingCard(self.language_card)
@@ -532,6 +543,7 @@ class SettingInterface(ScrollArea):
         self.last_auto_hard_mirror_card.retranslateUi()
         self.hard_mirror_chance_card.retranslateUi()
         self.background_mode_card.retranslateUi()
+        self.minimize_to_tray_card.retranslateUi()
         self.memory_protection.retranslateUi()
         self.screenshot_benchmark_card.retranslateUi()
         self.simulator_setting_group.retranslateUi()
