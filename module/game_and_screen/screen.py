@@ -57,7 +57,9 @@ class Handle:
         if self.hwnd == 0:
             return (0, 0, 0, 0)
         if client:
-            return win32gui.GetClientRect(self.hwnd)
+            _, _, width, height = win32gui.GetClientRect(self.hwnd)
+            x, y = win32gui.ClientToScreen(self.hwnd, (0, 0))
+            return (x, y, x + width, y + height)
         return win32gui.GetWindowRect(self.hwnd)
 
     def width(self, client: bool = False) -> int:
@@ -186,6 +188,7 @@ class Screen(metaclass=SingletonMeta):
 
     def set_win(self) -> None:
         """设置窗口大小与位置"""
+        return
 
         def _set_win():
             # 如果窗口最小化或不可见，先将其恢复
