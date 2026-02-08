@@ -1,44 +1,188 @@
 from ctypes import windll
 from time import sleep
+from typing import TYPE_CHECKING
 
-import pyautogui
+import win32api
 import win32con
 import win32gui
 
+from app import mediator
 from module.config import cfg
+from module.logger import log
 from utils.singletonmeta import SingletonMeta
+
+if TYPE_CHECKING:
+    from .game import Game
+
+
+class Handle:
+    """提供统一的获取窗口信息的接口"""
+
+    _hwnd: int = 0
+
+    def init_handle(self, title: str, class_name: str = "UnityWndClass") -> int:
+        """获取窗口句柄"""
+        self._hwnd = win32gui.FindWindow(class_name, title)
+        return self._hwnd
+
+    @property
+    def hwnd(self) -> int:
+        """获取窗口句柄"""
+        if self._hwnd == 0:
+            log.warning("窗口未初始化", stacklevel=3)
+        return self._hwnd
+
+    @property
+    def isMinimized(self) -> bool:
+        """判断窗口是否最小化"""
+        if self.hwnd == 0:
+            return False
+        return bool(win32gui.IsIconic(self.hwnd))
+
+    @property
+    def isActive(self) -> bool:
+        """判断窗口是否为活动窗口"""
+        if self.hwnd == 0:
+            return False
+        return self.hwnd == win32gui.GetForegroundWindow()
+
+    def rect(self, client: bool = False) -> tuple[int, int, int, int]:
+        """获取窗口位置和大小
+
+        Parameters
+        ---
+        client: bool
+            是否获取客户区大小，默认为`False`
+        """
+        if self.hwnd == 0:
+            return (0, 0, 0, 0)
+        if client:
+            return win32gui.GetClientRect(self.hwnd)
+        return win32gui.GetWindowRect(self.hwnd)
+
+    def width(self, client: bool = False) -> int:
+        """获取窗口宽度
+
+        Parameters
+        ---
+        client: bool
+            是否获取客户区大小，默认为`False`
+        """
+        if self.hwnd == 0:
+            return 0
+        rect = self.rect(client)
+        return rect[2] - rect[0]
+
+    def height(self, client: bool = False) -> int:
+        """获取窗口高度
+
+        Parameters
+        ---
+        client: bool
+            是否获取客户区大小，默认为`False`
+        """
+        if self.hwnd == 0:
+            return 0
+        rect = self.rect(client)
+        return rect[3] - rect[1]
+
+    @property
+    def monitor_info(self) -> dict:
+        """获取窗口所在显示器的信息"""
+        if self.hwnd == 0:
+            return {
+                "Monitor": (0, 0, 0, 0),
+                "Work": (0, 0, 0, 0),
+                "Flags": 0,
+                "Device": "Unknown",
+            }
+        monitor_info = win32api.GetMonitorInfo(
+            win32api.MonitorFromWindow(self.hwnd, win32con.MONITOR_DEFAULTTONEAREST)
+        )
+        return monitor_info
+
+    def monitor_size(self, get_work: bool = False) -> tuple[int, int]:
+        """获取窗口所在显示器的分辨率
+
+        Parameters
+        ---
+        get_work: bool
+            是否获取工作区分辨率，默认为`False`
+        """
+        info = self.monitor_info
+        if get_work:
+            rect = info["Work"]
+        else:
+            rect = info["Monitor"]
+        width = rect[2] - rect[0]
+        height = rect[3] - rect[1]
+        return width, height
+
+    def setForeground(self) -> None:
+        """将窗口设为前台窗口"""
+        if self.hwnd == 0:
+            return
+        win32gui.SetForegroundWindow(self.hwnd)
+
+    def setMaximized(self, value: bool = True) -> None:
+        """最大化窗口"""
+        if self.hwnd == 0:
+            return
+        if value:
+            win32gui.ShowWindow(self.hwnd, win32con.SW_MAXIMIZE)
+        else:
+            win32gui.ShowWindow(self.hwnd, win32con.SW_RESTORE)
+
+    def switchFullScreenMode(self) -> bool:
+        """切换全屏模式 (发送Alt+Enter)"""
+        if self.hwnd == 0:
+            return False
+
+        # 模拟按下
+        win32api.keybd_event(win32con.VK_MENU, 0, 0, 0)
+        sleep(0.05)
+        # 模拟按下
+        win32api.keybd_event(win32con.VK_RETURN, 0, 0, 0)
+        sleep(0.05)
+
+        # 模拟释放
+        win32api.keybd_event(win32con.VK_RETURN, 0, win32con.KEYEVENTF_KEYUP, 0)
+        sleep(0.05)
+        win32api.keybd_event(win32con.VK_MENU, 0, win32con.KEYEVENTF_KEYUP, 0)
+        return True
+
+    def restore(self) -> None:
+        """恢复窗口"""
+        if self.hwnd == 0:
+            return
+        win32gui.ShowWindow(self.hwnd, win32con.SW_RESTORE)
 
 
 class Screen(metaclass=SingletonMeta):
-    def __init__(self, title, logger, game):
-        self.logger = logger
+    def __init__(self, title: str, game: "Game"):
         self.title = title
         self.game = game
-        self.handle = None
+        self.handle = Handle()
 
-    def init_handle(self):
+    def init_handle(self) -> bool:
         try:
-            # 获取所有标题匹配的窗口
-            windows = pyautogui.getWindowsWithTitle(self.title)
-
-            while not windows:
-                self.logger.error(f"未能获取到游戏窗口: {self.title},尝试启动游戏")
+            self.handle.init_handle(self.title)
+            if self.handle.hwnd == 0:
+                log.info(f"未能获取到游戏窗口: {self.title},尝试启动游戏")
                 self.game.start_game()
                 sleep(30)
-                windows = pyautogui.getWindowsWithTitle(self.title)
+                self.handle.init_handle(self.title)
 
-            # 使用 next() 和生成器表达式直接获取第一个匹配的窗口
-            self.handle = next((t for t in windows if t.title == self.title), None)
-
-            if self.handle is None:
-                self.logger.error(f"未能获取到游戏窗口: {self.title}")
+            if self.handle.hwnd == 0:
+                log.error(f"未能获取到游戏窗口: {self.title}")
                 self.game.start_game()
                 return False
             else:
                 return True
         except Exception as e:
-            self.logger.error(f"未能获取到游戏窗口: {e}")
+            log.error(f"未能获取到游戏窗口: {e}")
             self.game.start_game()
+            return False
 
     def set_win(self) -> None:
         """设置窗口大小与位置"""
@@ -51,7 +195,7 @@ class Screen(metaclass=SingletonMeta):
                 self.handle.restore()
             # 将窗口设为活动窗口
             if not cfg.background_click:
-                win32gui.SetForegroundWindow(self.handle._hWnd)
+                self.handle.setForeground()
             self.set_win_size = cfg.set_win_size
             self.set_win_position = cfg.set_win_position
             if cfg.set_windows:
@@ -63,9 +207,8 @@ class Screen(metaclass=SingletonMeta):
         _set_win()
         while True:
             try:
-                rect = win32gui.GetWindowRect(self.handle._hWnd)
-                width = rect[2] - rect[0]
-                height = rect[3] - rect[1]
+                width = self.handle.width()
+                height = self.handle.height()
                 if (
                     width != int(cfg.set_win_size * 16 / 9)
                     or height != cfg.set_win_size
@@ -75,12 +218,12 @@ class Screen(metaclass=SingletonMeta):
                 else:
                     break
             except Exception as e:
-                self.logger.error(f"设置窗口出错: {e}")
+                log.error(f"设置窗口出错: {e}")
 
     def reduce_miscontact(self) -> None:
         """通过调整窗口置顶减少误触"""
         # 获取适用于win32gui与win32con的窗口句柄
-        hwnd = self.handle._hWnd
+        hwnd = self.handle.hwnd
 
         # 告诉系统当前进程是 DPI 感知的,确保窗口在高 DPI 系统上正确显示,并适应不同的 DPI 缩放
         windll.user32.SetProcessDPIAware()
@@ -112,7 +255,7 @@ class Screen(metaclass=SingletonMeta):
 
     def adjust_win_size(self, set_win_size: int) -> None:
         """调整窗口大小"""
-        hwnd = self.handle._hWnd
+        hwnd = self.handle.hwnd
         win32gui.SetWindowPos(
             hwnd,
             None,
@@ -123,37 +266,38 @@ class Screen(metaclass=SingletonMeta):
             win32con.SWP_NOMOVE,
         )
 
-    def adjust_win_position(self, set_win_position: tuple) -> None:
+    def adjust_win_position(self, set_win_position: tuple[int, int] = (0, 0)) -> None:
         """调整窗口位置"""
-        hwnd = self.handle._hWnd
+        hwnd = self.handle.hwnd
         win32gui.SetWindowPos(hwnd, None, 0, 0, 0, 0, win32con.SWP_NOSIZE)
 
     def check_win_size(self, set_win_size: int) -> None:
         """检查窗口大小是否合适，若不合适则切换全屏再切换回窗口模式"""
         try:
-            screen_width = pyautogui.size().width
-            screen_height = pyautogui.size().height
+            screen_width, screen_height = self.handle.monitor_size(
+                not cfg.background_click  # 前台模式使用工作区大小
+            )
             if screen_width < set_win_size * 16 / 9 or screen_height < set_win_size:
-                self.logger.error("屏幕分辨率过低，请重新设定分辨率")
-                pyautogui.hotkey("ctrl", "q")
-            pyautogui.hotkey("alt", "enter")
+                log.error("屏幕分辨率过低，请重新设定分辨率")
+                mediator.link_start.emit()
+                return
+            self.handle.switchFullScreenMode()
             sleep(0.5)
             # 进行判断如果全屏，再执行一次操作
             # 获取窗口位置和大小
-            width = self.handle.width
-            height = self.handle.height
-            # 获取屏幕分辨率
-            screen_width, screen_height = pyautogui.size()
+            width = self.handle.width()
+            height = self.handle.height()
             # 判断窗口是否全屏
+            screen_width, screen_height = self.handle.monitor_size()
             if width == screen_width and height == screen_height:
-                pyautogui.hotkey("alt", "enter")
+                self.handle.switchFullScreenMode()
         except Exception as e:
-            self.logger.error(f"检查屏幕分辨率失败: {e}")
+            log.error(f"检查屏幕分辨率失败: {e}")
 
     def reset_win(self) -> bool:
         """重置窗口"""
         try:
-            hwnd = self.handle._hWnd
+            hwnd = self.handle.hwnd
             # 获取窗口的当前样式
             style = win32gui.GetWindowLong(hwnd, win32con.GWL_STYLE)
             # 获取窗口的当前扩展样式
@@ -198,14 +342,12 @@ class Screen(metaclass=SingletonMeta):
             )
 
             # 获取窗口客户区的大小
-            client_rect = win32gui.GetClientRect(hwnd)
-            client_width = client_rect[2]
-            client_height = client_rect[3]
+            client_width = self.handle.width(client=True)
+            client_height = self.handle.height(client=True)
 
             # 获取窗口的大小（包括边框、标题栏等）
-            window_rect = win32gui.GetWindowRect(hwnd)
-            window_width = window_rect[2] - window_rect[0]
-            window_height = window_rect[3] - window_rect[1]
+            window_width = self.handle.width()
+            window_height = self.handle.height()
 
             win32gui.SetWindowPos(
                 hwnd,
@@ -217,7 +359,7 @@ class Screen(metaclass=SingletonMeta):
                 win32con.SWP_NOMOVE,
             )
         except Exception as e:
-            self.logger.error(f"重置窗口失败: {e}")
+            log.error(f"重置窗口失败: {e}")
             return False
         else:
             return True

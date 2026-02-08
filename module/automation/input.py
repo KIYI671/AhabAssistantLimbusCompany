@@ -281,7 +281,7 @@ class BackgroundInput(Input, metaclass=SingletonMeta):
         # FIXME：目前是不在游戏窗口内不移动鼠标, 但是我觉得应该把这个功能集成在截图里 - 233 25.10.4
         if move_back:
             current_mouse_position = self.get_mouse_position()
-            rect = win32gui.GetWindowRect(screen.handle._hWnd)
+            rect = win32gui.GetWindowRect(screen.handle.hwnd)
             if (
                 current_mouse_position[0] > rect[2]
                 or current_mouse_position[1] > rect[3]
@@ -442,7 +442,7 @@ class BackgroundInput(Input, metaclass=SingletonMeta):
 
     def set_focus(self):
         """将游戏窗口设置为输入焦点以让 Unity 接受输入事件"""
-        hwnd = screen.handle._hWnd
+        hwnd = screen.handle.hwnd
         if hwnd:
             # 如果最小化则显示
             placement = win32gui.GetWindowPlacement(hwnd)
@@ -469,7 +469,7 @@ class BackgroundInput(Input, metaclass=SingletonMeta):
         """
         x = int(x)
         y = int(y)
-        hwnd = screen.handle._hWnd
+        hwnd = screen.handle.hwnd
         long_positon = win32api.MAKELONG(x, y)
         win32api.SendMessage(hwnd, win32con.WM_LBUTTONDOWN, 0, long_positon)
         sleep(0.01)
@@ -482,7 +482,7 @@ class BackgroundInput(Input, metaclass=SingletonMeta):
         """
         x = int(x)
         y = int(y)
-        hwnd = screen.handle._hWnd
+        hwnd = screen.handle.hwnd
         long_positon = win32api.MAKELONG(x, y)
         win32api.SendMessage(hwnd, win32con.WM_LBUTTONUP, 0, long_positon)
         sleep(0.01)
@@ -495,7 +495,7 @@ class BackgroundInput(Input, metaclass=SingletonMeta):
         """
         x = int(x)
         y = int(y)
-        hwnd = screen.handle._hWnd
+        hwnd = screen.handle.hwnd
         rect = win32gui.GetWindowRect(hwnd)
         self._mouse_move_to(rect[0] + x, rect[1] + y)
 
@@ -504,7 +504,7 @@ class BackgroundInput(Input, metaclass=SingletonMeta):
         Args:
             key (str): 按键名称
         """
-        hwnd = screen.handle._hWnd
+        hwnd = screen.handle.hwnd
         lparam = 0x00000001  # 重复次数为1
         win32api.SendMessage(hwnd, win32con.WM_KEYDOWN, key_list[key.lower()], lparam)
 
@@ -513,7 +513,7 @@ class BackgroundInput(Input, metaclass=SingletonMeta):
         Args:
             key (str): 按键名称
         """
-        hwnd = screen.handle._hWnd
+        hwnd = screen.handle.hwnd
         lparam = 0xC0000001  # 转换状态为1（按键释放）
         win32api.SendMessage(hwnd, win32con.WM_KEYUP, key_list[key.lower()], lparam)
 
