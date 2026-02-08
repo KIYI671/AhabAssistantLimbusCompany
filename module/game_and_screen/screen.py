@@ -188,7 +188,6 @@ class Screen(metaclass=SingletonMeta):
 
     def set_win(self) -> None:
         """设置窗口大小与位置"""
-        return
 
         def _set_win():
             # 如果窗口最小化或不可见，先将其恢复
@@ -204,14 +203,16 @@ class Screen(metaclass=SingletonMeta):
             if cfg.set_windows:
                 self.check_win_size(self.set_win_size)
                 self.reduce_miscontact()
-                self.adjust_win_size(self.set_win_size)
-                self.adjust_win_position(self.set_win_position)
+                self.adjust_win_size(
+                    (int(self.set_win_size * 16 / 9), self.set_win_size)
+                )
+                # self.adjust_win_position(self.set_win_position)
 
         _set_win()
         while True:
             try:
-                width = self.handle.width()
-                height = self.handle.height()
+                width = self.handle.width(True)
+                height = self.handle.height(True)
                 if (
                     width != int(cfg.set_win_size * 16 / 9)
                     or height != cfg.set_win_size
@@ -244,35 +245,58 @@ class Screen(metaclass=SingletonMeta):
             )
         # 获取窗口的当前样式属性值
         style = win32gui.GetWindowLong(hwnd, win32con.GWL_STYLE)
-        # 移除窗口的标题栏
-        style &= ~win32con.WS_CAPTION
+        # # 移除窗口的标题栏
+        # style &= ~win32con.WS_CAPTION
         # 移除窗口的可调整大小的边框，使得窗口大小固定
         style &= ~win32con.WS_THICKFRAME
         # 移除窗口的单行边框
-        style &= ~win32con.WS_BORDER
+        # style &= ~win32con.WS_BORDER
         # 位运算符 &= 结合按位取反操作符 ~
-        # 将 win32con.WS_SIZEBOX、win32con.WS_MAXIMIZEBOX 这常量对应的位设置为 0，移除窗口大小调整框、最大化按钮
+        # 将 win32con.WS_SIZEBOX、win32con.WS_MAXIMIZEBOX 这常量对应的位设置为 0，
+        # 移除窗口大小调整框、最大化按钮
         style &= ~(win32con.WS_SIZEBOX | win32con.WS_MAXIMIZEBOX)
         # 将修改后的样式值 style 应用到窗口的样式属性上
         win32gui.SetWindowLong(hwnd, win32con.GWL_STYLE, style)
 
-    def adjust_win_size(self, set_win_size: int) -> None:
+    def adjust_win_size(self, set_win_size: tuple[int, int] = (1920, 1080)) -> None:
         """调整窗口大小"""
         hwnd = self.handle.hwnd
+        client_width, client_height = set_win_size
+
+        # 获取当前窗口和客户区大小
+        window_rect = win32gui.GetWindowRect(hwnd)
+        client_rect = win32gui.GetClientRect(hwnd)
+
+        # 计算边框和标题栏厚度
+        window_width = window_rect[2] - window_rect[0]
+        window_height = window_rect[3] - window_rect[1]
+        current_client_width = client_rect[2]
+        current_client_height = client_rect[3]
+
+        width_diff = window_width - current_client_width
+        height_diff = window_height - current_client_height
+
+        # 计算需要的窗口大小
+        required_window_width = client_width + width_diff
+        required_window_height = client_height + height_diff
+
+        # 设置窗口
         win32gui.SetWindowPos(
             hwnd,
             None,
             0,
             0,
-            int(set_win_size * 16 / 9),
-            set_win_size,
-            win32con.SWP_NOMOVE,
+            required_window_width,
+            required_window_height,
+            win32con.SWP_NOZORDER | win32con.SWP_NOMOVE,
         )
 
     def adjust_win_position(self, set_win_position: tuple[int, int] = (0, 0)) -> None:
         """调整窗口位置"""
         hwnd = self.handle.hwnd
-        win32gui.SetWindowPos(hwnd, None, 0, 0, 0, 0, win32con.SWP_NOSIZE)
+        if not isinstance(set_win_position, tuple):
+            set_win_position = (0, 0)
+        win32gui.SetWindowPos(hwnd, None, *set_win_position, 0, 0, win32con.SWP_NOSIZE)
 
     def check_win_size(self, set_win_size: int) -> None:
         """检查窗口大小是否合适，若不合适则切换全屏再切换回窗口模式"""
