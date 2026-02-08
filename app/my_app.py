@@ -218,7 +218,7 @@ class MainWindow(FramelessWindow):
             show_action = QAction(self.tr("主窗口"), self)
             show_action.triggered.connect(self.restore_window)
             quit_action = QAction(self.tr("退出"), self)
-            quit_action.triggered.connect(self.quit_app)
+            quit_action.triggered.connect(self.on_tray_quit)
 
             self.tray_menu.addAction(show_action)
             self.tray_menu.addAction(quit_action)
@@ -233,7 +233,7 @@ class MainWindow(FramelessWindow):
             self.tray_menu.exec(pos)
             self.tray_menu = None
 
-    def quit_app(self):
+    def on_tray_quit(self):
         """托盘退出入口，统一走 close() 让 closeEvent() 处理确认与收尾"""
         # close() 对隐藏窗口不生效，需先确保窗口可见
         if not self.isVisible():
