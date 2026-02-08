@@ -316,6 +316,10 @@ class ScreenShot:
         """
 
         try:
+            screen.init_handle()
+            if screen.handle.hwnd == 0:
+                log.info("未找到游戏窗口，无法进行截图性能测试")
+                return False, 0.0
             start_time = time.time()
             for i in range(test_time):
                 ScreenShot.take_screenshot(gray=False)
