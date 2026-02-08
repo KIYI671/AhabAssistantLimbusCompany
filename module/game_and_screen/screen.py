@@ -139,18 +139,18 @@ class Handle:
         """切换全屏模式 (发送Alt+Enter)"""
         if self.hwnd == 0:
             return False
-
+        hwnd = self.hwnd
         # 模拟按下
-        win32api.keybd_event(win32con.VK_MENU, 0, 0, 0)
+        win32api.SendMessage(hwnd, win32con.WM_KEYDOWN, win32con.VK_MENU, 0x00000001)
         sleep(0.05)
         # 模拟按下
-        win32api.keybd_event(win32con.VK_RETURN, 0, 0, 0)
+        win32api.SendMessage(hwnd, win32con.WM_KEYDOWN, win32con.VK_RETURN, 0x00000001)
         sleep(0.05)
 
         # 模拟释放
-        win32api.keybd_event(win32con.VK_RETURN, 0, win32con.KEYEVENTF_KEYUP, 0)
+        win32api.SendMessage(hwnd, win32con.WM_KEYUP, win32con.VK_RETURN, 0xC0000001)
         sleep(0.05)
-        win32api.keybd_event(win32con.VK_MENU, 0, win32con.KEYEVENTF_KEYUP, 0)
+        win32api.SendMessage(hwnd, win32con.WM_KEYUP, win32con.VK_MENU, 0xC0000001)
         return True
 
     def restore(self) -> None:
