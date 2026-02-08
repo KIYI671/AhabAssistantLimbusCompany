@@ -65,18 +65,21 @@ class ScreenShot:
     def move_game_window(work_area: bool = False):
         """将游戏窗口移动到屏幕可见区域"""
         rect = screen.handle.rect()
-        screen_width, screen_height = screen.handle.monitor_size(work_area)
+        monitor_info = screen.handle.monitor_info
+        left, top, right, bottom = (
+            monitor_info["Work"] if work_area else monitor_info["Monitor"]
+        )
         x_offset = 0
         y_offset = 0
         add_offset = 6
-        if rect[0] < 0:
+        if rect[0] < left:
             x_offset = -rect[0] + add_offset
-        elif rect[2] > screen_width:
-            x_offset = screen_width - rect[2] - add_offset
-        if rect[1] < 0:
+        elif rect[2] > right:
+            x_offset = right - rect[2] - add_offset
+        if rect[1] < top:
             y_offset = -rect[1] + add_offset
-        elif rect[3] > screen_height:
-            y_offset = screen_height - rect[3] - add_offset
+        elif rect[3] > bottom:
+            y_offset = bottom - rect[3] - add_offset
         if x_offset != 0 or y_offset != 0:
             win32gui.SetWindowPos(
                 screen.handle.hwnd,
@@ -102,7 +105,9 @@ class ScreenShot:
 
         # 获取屏幕尺寸
         hdc_screen = windll.user32.GetDC(0)
-        screen_width, screen_height = screen.handle.monitor_size()
+        screen_x, screen_y, right, bottom = screen.handle.monitor_info["Monitor"]
+        screen_width = right - screen_x
+        screen_height = bottom - screen_y
 
         # 创建设备上下文
         hdc_mem = windll.gdi32.CreateCompatibleDC(hdc_screen)
@@ -114,7 +119,15 @@ class ScreenShot:
         # 使用BitBlt复制屏幕内容到内存DC
         SRCCOPY = 0x00CC0020
         windll.gdi32.BitBlt(
-            hdc_mem, 0, 0, screen_width, screen_height, hdc_screen, 0, 0, SRCCOPY
+            hdc_mem,
+            0,
+            0,
+            screen_width,
+            screen_height,
+            hdc_screen,
+            screen_x,
+            screen_y,
+            SRCCOPY,
         )
 
         # 转换成PIL图像（需要 pywin32）
