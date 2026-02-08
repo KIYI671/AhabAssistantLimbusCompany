@@ -367,9 +367,9 @@ class BackgroundInput(Input, metaclass=SingletonMeta):
 
         scale = cfg.set_win_size / 1080
         self.set_focus()
-        self._mouse_move_to(x, y)
+        self.set_mouse_pos(x, y)
         self.mouse_down(x, y)
-        self._mouse_move_to(x, y + int(300 * scale * reverse), duration=0.4)
+        self.set_mouse_pos(x, y + int(300 * scale * reverse), duration=0.4)
         self.mouse_up(x, y)
 
         if move_back and current_mouse_position:
