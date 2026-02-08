@@ -237,7 +237,7 @@ class MainWindow(FramelessWindow):
         """托盘退出入口，统一走 close() 让 closeEvent() 处理确认与收尾"""
         # close() 对隐藏窗口不生效，需先确保窗口可见
         if not self.isVisible():
-            self.showNormal()
+            self.restore_window()
         self.close()
 
     def command_start(self, argv: list[str]):
