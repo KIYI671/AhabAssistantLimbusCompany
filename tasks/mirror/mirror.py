@@ -695,6 +695,7 @@ class Mirror:
                         take_screenshot=True,
                     ):
                         sleep(1)
+                    retry()
                     continue
             if auto.click_element(
                 "mirror/claim_reward/use_enkephalin_assets.png", threshold=0.75
@@ -1113,6 +1114,8 @@ class Mirror:
             if auto.click_element("mirror/road_in_mir/forfeit_assets.png"):
                 continue
             if auto.click_element("mirror/road_in_mir/setting_assets.png"):
+                continue
+            if auto.click_element("battle/give_up_assets.png"):
                 continue
             auto.key_press("esc")
             time.sleep(1)
