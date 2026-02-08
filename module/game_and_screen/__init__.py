@@ -5,4 +5,4 @@ from module.logger import log
 
 game_process = Game(logger=log)
 
-screen = Screen(title=cfg.game_title_name, logger=log, game=game_process)
+screen = Screen(title=cfg.game_title_name, game=game_process)

@@ -86,9 +86,9 @@ class ProductionWork(QThread):
         try:
             from module.game_and_screen import screen
 
-            hwnd = screen.handle
+            hwnd = screen.handle.hwnd
             win32gui.SetWindowPos(
-                hwnd._hWnd,  # 目标窗口句柄
+                hwnd,  # 目标窗口句柄
                 win32con.HWND_NOTOPMOST,  # 关键参数：取消置顶
                 0,
                 0,

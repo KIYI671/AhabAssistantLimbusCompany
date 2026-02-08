@@ -428,7 +428,7 @@ class SettingInterface(ScrollArea):
         os.startfile(os.path.abspath("./logs"))
 
     def __onScreenshotBenchmarkCardClicked(self):
-        from module.automation import ScreenShot
+        from module.automation.screenshot import ScreenShot
 
         flag, time = ScreenShot.screenshot_benchmark()
         if flag:

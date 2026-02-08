@@ -27,7 +27,7 @@ def kill_game():
     if platform.system() == "Windows":
         from module.game_and_screen import screen
 
-        _, pid = win32process.GetWindowThreadProcessId(screen.handle._hWnd)
+        _, pid = win32process.GetWindowThreadProcessId(screen.handle.hwnd)
         os.system(f"taskkill /F /PID {pid}")
     sleep(10)
     while True:
@@ -100,6 +100,7 @@ def retry():
             sleep(5)
             if not check_game_running():
                 from tasks.base.script_task_scheme import init_game
+
                 init_game()
             continue
         break
