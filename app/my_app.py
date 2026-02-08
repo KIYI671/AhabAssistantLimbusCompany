@@ -234,29 +234,11 @@ class MainWindow(FramelessWindow):
             self.tray_menu = None
 
     def quit_app(self):
-        # Check if there are running tasks
-        if (
-            self.farming_interface.interface_left.my_script is not None
-            and self.farming_interface.interface_left.my_script.isRunning()
-        ):
-            # If minimized/hidden, show window to display confirmation dialog
-            if not self.isVisible():
-                self.showNormal()
-                self.raise_()
-                self.activateWindow()
-
-            message_box = MessageBoxConfirm(
-                self.tr("有正在进行的任务"),
-                self.tr("脚本正在运行中，确定要退出程序吗？"),
-                self.window(),
-            )
-            if message_box.exec():
-                self.farming_interface.interface_left.my_script.terminate()
-            else:
-                return
-
-        # Ensure application exits
-        QApplication.instance().quit()
+        """托盘退出入口，统一走 close() 让 closeEvent() 处理确认与收尾"""
+        # close() 对隐藏窗口不生效，需先确保窗口可见
+        if not self.isVisible():
+            self.showNormal()
+        self.close()
 
     def command_start(self, argv: list[str]):
         """通过命令行参数控制程序启动行为"""
@@ -335,6 +317,12 @@ class MainWindow(FramelessWindow):
             self.farming_interface.interface_left.my_script is not None
             and self.farming_interface.interface_left.my_script.isRunning()
         ):
+            # 确保窗口可见，以便正确显示确认对话框
+            if not self.isVisible():
+                self.showNormal()
+                self.raise_()
+                self.activateWindow()
+
             message_box = MessageBoxConfirm(
                 self.tr("有正在进行的任务"),
                 self.tr("脚本正在运行中，确定要退出程序吗？"),
