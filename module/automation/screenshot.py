@@ -6,10 +6,12 @@ import numpy as np
 import pyautogui
 import pywintypes
 import win32gui
+import win32con
 import win32ui
 from PIL import Image
 
 from module.config import cfg
+from module.game_and_screen import screen
 from module.logger import log
 
 
@@ -36,6 +38,10 @@ class ScreenShot:
                 except Exception as e:
                     log.debug(f"adb截图报错 {type(e).__name__}: {e}")
                     return None
+        else:
+            # 判断是否在屏幕内
+            ScreenShot.move_game_window(not cfg.background_click)
+
         if cfg.background_click:
             try:
                 return ScreenShot.background_screenshot(gray)
@@ -56,6 +62,33 @@ class ScreenShot:
                     return None
 
     @staticmethod
+    def move_game_window(work_area: bool = False):
+        """将游戏窗口移动到屏幕可见区域"""
+        rect = screen.handle.rect()
+        screen_width, screen_height = screen.handle.monitor_size(work_area)
+        x_offset = 0
+        y_offset = 0
+        add_offset = 6
+        if rect[0] < 0:
+            x_offset = -rect[0] + add_offset
+        elif rect[2] > screen_width:
+            x_offset = screen_width - rect[2] - add_offset
+        if rect[1] < 0:
+            y_offset = -rect[1] + add_offset
+        elif rect[3] > screen_height:
+            y_offset = screen_height - rect[3] - add_offset
+        if x_offset != 0 or y_offset != 0:
+            win32gui.SetWindowPos(
+                screen.handle.hwnd,
+                None,
+                rect[0] + x_offset,
+                rect[1] + y_offset,
+                0,
+                0,
+                win32con.SWP_NOSIZE | win32con.SWP_NOZORDER,
+            )
+
+    @staticmethod
     def take_screenshot_gdi(gray: bool = True) -> Image.Image:
         """
         截取屏幕截图（避免HDR/系统渲染差异，直接从GDI获取）。
@@ -69,8 +102,7 @@ class ScreenShot:
 
         # 获取屏幕尺寸
         hdc_screen = windll.user32.GetDC(0)
-        screen_width = windll.user32.GetSystemMetrics(0)
-        screen_height = windll.user32.GetSystemMetrics(1)
+        screen_width, screen_height = screen.handle.monitor_size()
 
         # 创建设备上下文
         hdc_mem = windll.gdi32.CreateCompatibleDC(hdc_screen)
@@ -114,15 +146,14 @@ class ScreenShot:
         # =========================
         # 添加窗口大小约束 (保持16:9)
         # =========================
-        size_height = cfg.set_win_size
-        size_width = int(size_height / 9 * 16)
+        x, y, w, h = screen.handle.rect(True)
 
         # 防止越界
-        size_width = min(size_width, image.width)
-        size_height = min(size_height, image.height)
+        size_width = min(w, image.width)
+        size_height = min(h, image.height)
 
         # 裁剪截图 (从左上角开始)
-        image = image.crop((0, 0, size_width, size_height))
+        image = image.crop((x, y, size_width, size_height))
 
         return image
 
@@ -135,10 +166,6 @@ class ScreenShot:
         Returns:
             screenshot: 截取的屏幕截图。
         """
-        # 根据配置获取窗口的高度
-        size_height = cfg.set_win_size
-        # 计算窗口的宽度，保持16:9的宽高比
-        size_width = size_height / 9 * 16
 
         """# 如果move参数为True，则尝试移动鼠标到屏幕左上角
         if move:
@@ -156,9 +183,12 @@ class ScreenShot:
             screenshot = screenshot_temp.convert("L")
         else:
             screenshot = screenshot_temp
-
+        x, y, w, h = screen.handle.rect(True)
+        # 防止越界
+        size_width = min(w, screenshot.width)
+        size_height = min(h, screenshot.height)
         # 裁剪截图到指定的宽高
-        screenshot = screenshot.crop((0, 0, size_width, size_height))
+        screenshot = screenshot.crop((x, y, size_width, size_height))
 
         # 返回裁剪后的截图
         return screenshot
@@ -173,10 +203,10 @@ class ScreenShot:
 
         try:
             # 查找游戏窗口句柄
-            hwnd = win32gui.FindWindow("UnityWndClass", "LimbusCompany")
+            hwnd = screen.handle.hwnd
 
             # 获取窗口的坐标和尺寸
-            rect = win32gui.GetWindowRect(hwnd)
+            rect = screen.handle.rect(client=True)
             width, height = rect[2] - rect[0], rect[3] - rect[1]
 
             # 1. 获取窗口设备上下文(DC) - 需要 ReleaseDC
@@ -225,9 +255,7 @@ class ScreenShot:
             import win32process
 
             try:
-                from module.game_and_screen import screen
-
-                _, pid = win32process.GetWindowThreadProcessId(screen.handle._hWnd)
+                _, pid = win32process.GetWindowThreadProcessId(screen.handle.hwnd)
                 os.system(f"taskkill /F /PID {pid}")
             except:
                 pass
