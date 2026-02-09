@@ -498,7 +498,7 @@ class Automation(metaclass=SingletonMeta):
                 memory = psutil.virtual_memory()
                 # memory.percent 直接返回当前已使用的百分比 (0.0 到 100.0)
                 current_percent = memory.percent
-                if current_percent>90:
+                if current_percent > 90:
                     log.debug(f"当前系统内存总占用率: {current_percent}%，释放图片缓存")
                     self.clear_img_cache()
             if cacheable and target in self.img_cache:

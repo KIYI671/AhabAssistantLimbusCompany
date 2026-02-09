@@ -100,6 +100,7 @@ def retry():
             sleep(5)
             if not check_game_running():
                 from tasks.base.script_task_scheme import init_game
+
                 init_game()
             continue
         break

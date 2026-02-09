@@ -287,9 +287,7 @@ class MumuControl:
         try:
             self.device.app_start(self.game_package_name)
         except Exception as e:
-            log.error(
-                f"启动游戏失败，失败原因为{str(e)}"
-            )
+            log.error(f"启动游戏失败，失败原因为{str(e)}")
             log.error(
                 "启动游戏失败，请确认是否安装了Limbus Company，五秒后将重新尝试启动，每5次失败后将重启模拟器继续尝试"
             )
@@ -1002,7 +1000,7 @@ class MumuControl:
         return 0, 0
 
     def mouse_drag_link(
-            self, position: list, drag_time=0.25, min_distance=10, move_back=False
+        self, position: list, drag_time=0.25, min_distance=10, move_back=False
     ) -> None:
         """鼠标从指定位置拖动到指定位置
         Args:
@@ -1054,6 +1052,7 @@ class MumuControl:
         if self.get_current_package() is None:
             return
         self.device.app_stop(self.get_current_package())
+
 
 #
 # if __name__ == "__main__":

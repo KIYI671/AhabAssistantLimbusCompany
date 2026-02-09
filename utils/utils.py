@@ -214,6 +214,7 @@ def decrypt_string(encrypted_b64: str, entropy: bytes = b"AALC") -> str:
     # 返回原始字符串
     return decrypted_data[1].decode("utf-8")
 
+
 def check_game_running() -> bool:
     """检查游戏是否正在运行"""
     if cfg.simulator:
@@ -223,6 +224,7 @@ def check_game_running() -> bool:
             return MumuControl.connection_device.check_game_alive()
     else:
         import psutil
+
         for proc in psutil.process_iter(["name"]):
             try:
                 # 获取进程的可执行文件名（如 "notepad.exe"）
