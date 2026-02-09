@@ -6,7 +6,7 @@ import win32api
 import win32con
 import win32gui
 from pywintypes import error as PyWinTypesError
-
+from typing import overload
 from module.config import cfg
 from utils.singletonmeta import SingletonMeta
 
@@ -71,6 +71,22 @@ class Input(metaclass=SingletonMeta):
         self.restore_time = None
         # self.is_move_back = False  以后从配置里读取
 
+    @overload
+    def pos_offset(self, x: int, y: int) -> tuple[int, int]: ...
+    @overload
+    def pos_offset(self, pos: tuple[int, int]) -> tuple[int, int]: ...
+
+    def pos_offset(self, *args) -> tuple[int, int]:  # type: ignore
+        """根据当前窗口位置偏移点击位置"""
+        if len(args) == 2:
+            x, y = args
+        elif isinstance(args[0], tuple):
+            x, y = args[0]
+        else:
+            raise ValueError("pos_offset 接受两个整数参数或一个包含两个整数的元组")
+        real_x, real_y, _, _ = screen.handle.rect(True)
+        return x + real_x, y + real_y
+
     def set_pause(self) -> None:
         """
         设置暂停状态
@@ -110,6 +126,7 @@ class Input(metaclass=SingletonMeta):
 
         msg = f"点击位置:({x},{y})"
         log.debug(msg, stacklevel=2)
+        x, y = self.pos_offset(x, y)
         for i in range(times):
             pyautogui.click(x, y)
             # 多次点击执行很快所以暂停放到循环外
@@ -134,6 +151,7 @@ class Input(metaclass=SingletonMeta):
             current_mouse_position = self.get_mouse_position()
 
         scale = cfg.set_win_size / 1080
+        x, y = self.pos_offset(x, y)
         pyautogui.moveTo(x, y)
         pyautogui.mouseDown()
         pyautogui.dragTo(x, y + int(300 * scale * reverse), duration=0.4)
@@ -154,7 +172,7 @@ class Input(metaclass=SingletonMeta):
         """
         if move_back:
             current_mouse_position = self.get_mouse_position()
-
+        x, y = self.pos_offset(x, y)
         pyautogui.moveTo(x, y)
         pyautogui.mouseDown()
         pyautogui.moveTo(x + dx, y + dy, duration=drag_time)
@@ -199,6 +217,7 @@ class Input(metaclass=SingletonMeta):
         log.debug(msg, stacklevel=2)
         x = coordinate[0] + random.randint(0, 10)
         y = coordinate[1] + random.randint(0, 10)
+        x, y = self.pos_offset(x, y)
         for i in range(times):
             pyautogui.click(x, y)
 
@@ -253,10 +272,12 @@ class Input(metaclass=SingletonMeta):
         if move_back:
             current_mouse_position = self.get_mouse_position()
 
-        pyautogui.moveTo(position[0][0], position[0][1])
+        x, y = self.pos_offset(position[0][0], position[0][1])
+        pyautogui.moveTo(x, y)
         pyautogui.mouseDown()
         for pos in position:
-            pyautogui.moveTo(pos[0], pos[1], duration=drag_time)
+            x, y = self.pos_offset(pos[0], pos[1])
+            pyautogui.moveTo(x, y, duration=drag_time)
         pyautogui.mouseUp()
 
         if move_back and current_mouse_position:
@@ -281,7 +302,7 @@ class BackgroundInput(Input, metaclass=SingletonMeta):
         # FIXME：目前是不在游戏窗口内不移动鼠标, 但是我觉得应该把这个功能集成在截图里 - 233 25.10.4
         if move_back:
             current_mouse_position = self.get_mouse_position()
-            rect = win32gui.GetWindowRect(screen.handle._hWnd)
+            rect = screen.handle.rect(True)
             if (
                 current_mouse_position[0] > rect[2]
                 or current_mouse_position[1] > rect[3]
@@ -346,9 +367,9 @@ class BackgroundInput(Input, metaclass=SingletonMeta):
 
         scale = cfg.set_win_size / 1080
         self.set_focus()
-        self._mouse_move_to(x, y)
+        self.set_mouse_pos(x, y)
         self.mouse_down(x, y)
-        self._mouse_move_to(x, y + int(300 * scale * reverse), duration=0.4)
+        self.set_mouse_pos(x, y + int(300 * scale * reverse), duration=0.4)
         self.mouse_up(x, y)
 
         if move_back and current_mouse_position:
@@ -366,10 +387,10 @@ class BackgroundInput(Input, metaclass=SingletonMeta):
         """
         if move_back:
             current_mouse_position = self.get_mouse_position()
-        self._mouse_move_to(x, y)
+        self.set_mouse_pos(x, y)
         self.set_focus()
         self.mouse_down(x, y)
-        self._mouse_move_to(x + dx, y + dy, duration=drag_time)
+        self.set_mouse_pos(x + dx, y + dy, duration=drag_time)
         if drag_time * 0.3 > 0.5:
             sleep(drag_time * 0.3)
         else:
@@ -430,24 +451,23 @@ class BackgroundInput(Input, metaclass=SingletonMeta):
         if move_back:
             current_mouse_position = self.get_mouse_position()
 
-        self._mouse_move_to(position[0][0], position[0][1])
+        self.set_mouse_pos(position[0][0], position[0][1])
         self.set_focus()
         self.mouse_down(position[0][0], position[0][1])
         for pos in position:
-            self._mouse_move_to(pos[0], pos[1], duration=drag_time)
-        self.mouse_up(position[-1][-1], position[-1][-1])
+            self.set_mouse_pos(pos[0], pos[1], duration=drag_time)
+        self.mouse_up(position[-1][0], position[-1][1])
 
         if move_back and current_mouse_position:
             self.mouse_move(current_mouse_position)
 
     def set_focus(self):
         """将游戏窗口设置为输入焦点以让 Unity 接受输入事件"""
-        hwnd = screen.handle._hWnd
+        hwnd = screen.handle.hwnd
         if hwnd:
             # 如果最小化则显示
-            placement = win32gui.GetWindowPlacement(hwnd)
-            if placement[1] == win32con.SW_SHOWMINIMIZED:
-                win32gui.ShowWindow(hwnd, win32con.SW_RESTORE)
+            if screen.handle.isMinimized:
+                screen.handle.restore()
                 sleep(0.5)
 
             # 设置窗口的输入状态
@@ -469,7 +489,7 @@ class BackgroundInput(Input, metaclass=SingletonMeta):
         """
         x = int(x)
         y = int(y)
-        hwnd = screen.handle._hWnd
+        hwnd = screen.handle.hwnd
         long_positon = win32api.MAKELONG(x, y)
         win32api.SendMessage(hwnd, win32con.WM_LBUTTONDOWN, 0, long_positon)
         sleep(0.01)
@@ -482,12 +502,12 @@ class BackgroundInput(Input, metaclass=SingletonMeta):
         """
         x = int(x)
         y = int(y)
-        hwnd = screen.handle._hWnd
+        hwnd = screen.handle.hwnd
         long_positon = win32api.MAKELONG(x, y)
         win32api.SendMessage(hwnd, win32con.WM_LBUTTONUP, 0, long_positon)
         sleep(0.01)
 
-    def set_mouse_pos(self, x, y):
+    def set_mouse_pos(self, x, y, duration: float = 0):
         """移动光标位置
         Args:
             x (number): 相对于窗口左上角的 x 轴坐标
@@ -495,16 +515,18 @@ class BackgroundInput(Input, metaclass=SingletonMeta):
         """
         x = int(x)
         y = int(y)
-        hwnd = screen.handle._hWnd
-        rect = win32gui.GetWindowRect(hwnd)
-        self._mouse_move_to(rect[0] + x, rect[1] + y)
+        rect = screen.handle.rect(True)
+        if duration <= 0:
+            self._mouse_move_to(rect[0] + x, rect[1] + y)
+        else:
+            self._mouse_move_to(rect[0] + x, rect[1] + y, duration=duration)
 
     def key_down(self, key: str):
         """键盘按键按下
         Args:
             key (str): 按键名称
         """
-        hwnd = screen.handle._hWnd
+        hwnd = screen.handle.hwnd
         lparam = 0x00000001  # 重复次数为1
         win32api.SendMessage(hwnd, win32con.WM_KEYDOWN, key_list[key.lower()], lparam)
 
@@ -513,7 +535,7 @@ class BackgroundInput(Input, metaclass=SingletonMeta):
         Args:
             key (str): 按键名称
         """
-        hwnd = screen.handle._hWnd
+        hwnd = screen.handle.hwnd
         lparam = 0xC0000001  # 转换状态为1（按键释放）
         win32api.SendMessage(hwnd, win32con.WM_KEYUP, key_list[key.lower()], lparam)
 
