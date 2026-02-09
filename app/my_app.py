@@ -9,8 +9,9 @@ from PySide6.QtCore import (
     Qt,
     QThread,
     QTimer,
+    QEvent,
 )
-from PySide6.QtGui import QIcon
+from PySide6.QtGui import QIcon, QAction, QCursor
 from PySide6.QtWidgets import (
     QApplication,
     QHBoxLayout,
@@ -18,6 +19,7 @@ from PySide6.QtWidgets import (
     QStackedWidget,
     QVBoxLayout,
     QWidget,
+    QSystemTrayIcon,
 )
 from qfluentwidgets import (
     ProgressRing,
@@ -26,9 +28,11 @@ from qfluentwidgets import (
     qconfig,
     setTheme,
     setThemeColor,
+    RoundMenu,
 )
 from qfluentwidgets.components.widgets.frameless_window import FramelessWindow
 from qframelesswindow import StandardTitleBar
+from qframelesswindow.titlebar.title_bar_buttons import TitleBarButtonState
 
 from app import AnnouncementStatus, mediator
 from app.announcement_board import AnnouncementBoard, AnnouncementThread
@@ -61,6 +65,15 @@ from app.common.ui_config import (
     get_title_bar_style,
 )
 from app.widget.dev_watermark import DevWatermark
+
+
+# 自定义托盘菜单，处理鼠标在外部释放时关闭菜单
+class TrayRoundMenu(RoundMenu):
+    def mouseReleaseEvent(self, e):
+        if not self.rect().contains(e.pos()):
+            self.close()
+        else:
+            super().mouseReleaseEvent(e)
 
 
 # 使用无框窗口
@@ -96,7 +109,7 @@ class MainWindow(FramelessWindow):
         self.progress_ring.hide()
 
         self.resize(1080, 600)
-        # 恢复窗口位置（如果有保存）
+        # 恢复窗口位置
         saved_x = cfg.get_value("window_position_x", None)
         saved_y = cfg.get_value("window_position_y", None)
         if saved_x is not None and saved_y is not None:
@@ -167,6 +180,66 @@ class MainWindow(FramelessWindow):
         self.show_announcement_board()
 
         self.command_start(argv)
+
+        self.init_system_tray()
+
+    def init_system_tray(self):
+        self.tray_menu = None
+        self.tray_icon = QSystemTrayIcon(self)
+        self.tray_icon.setIcon(QIcon("./assets/logo/my_icon_256X256.ico"))
+        self.tray_icon.activated.connect(self.on_tray_icon_activated)
+        self.tray_icon.show()
+
+    def restore_window(self):
+        """Restore window from minimized/hidden state and reset title bar button states"""
+        # 避免最小化按钮处于focus状态
+        for btn in [self.titleBar.minBtn, self.titleBar.closeBtn, self.titleBar.maxBtn]:
+            btn.setState(TitleBarButtonState.NORMAL)
+
+        self.showNormal()
+        self.raise_()
+        self.activateWindow()
+
+    def on_tray_icon_activated(self, reason):
+        if (
+            reason == QSystemTrayIcon.ActivationReason.Trigger
+            or reason == QSystemTrayIcon.ActivationReason.DoubleClick
+        ):
+            if self.tray_menu:
+                self.tray_menu.close()
+                self.tray_menu = None
+            self.restore_window()
+
+        elif reason == QSystemTrayIcon.ActivationReason.Context:
+            if self.tray_menu:
+                self.tray_menu.close()
+
+            self.tray_menu = TrayRoundMenu(parent=self)
+
+            show_action = QAction(self.tr("主窗口"), self)
+            show_action.triggered.connect(self.restore_window)
+            quit_action = QAction(self.tr("退出"), self)
+            quit_action.triggered.connect(self.on_tray_quit)
+
+            self.tray_menu.addAction(show_action)
+            self.tray_menu.addAction(quit_action)
+
+            # 菜单位置
+            self.tray_menu.adjustSize()
+            pos = QCursor.pos()
+            pos.setY(pos.y() - self.tray_menu.sizeHint().height() - 25)
+            pos.setX(pos.x() + 5)
+
+            self.activateWindow()
+            self.tray_menu.exec(pos)
+            self.tray_menu = None
+
+    def on_tray_quit(self):
+        """托盘退出入口，统一走 close() 让 closeEvent() 处理确认与收尾"""
+        # close() 对隐藏窗口不生效，需先确保窗口可见
+        if not self.isVisible():
+            self.restore_window()
+        self.close()
 
     def command_start(self, argv: list[str]):
         """通过命令行参数控制程序启动行为"""
@@ -245,6 +318,12 @@ class MainWindow(FramelessWindow):
             self.farming_interface.interface_left.my_script is not None
             and self.farming_interface.interface_left.my_script.isRunning()
         ):
+            # 确保窗口可见，以便正确显示确认对话框
+            if not self.isVisible():
+                self.showNormal()
+                self.raise_()
+                self.activateWindow()
+
             message_box = MessageBoxConfirm(
                 self.tr("有正在进行的任务"),
                 self.tr("脚本正在运行中，确定要退出程序吗？"),
@@ -255,6 +334,7 @@ class MainWindow(FramelessWindow):
             else:
                 e.ignore()
                 return
+
         if self.tools_interface.tools:
             message_box = MessageBoxConfirm(
                 self.tr("有正在运行的工具"),
@@ -271,6 +351,18 @@ class MainWindow(FramelessWindow):
                 e.ignore()
                 return
         return super().closeEvent(e)
+
+    def changeEvent(self, event):
+        # 监听窗口状态改变事件
+        if event.type() == QEvent.WindowStateChange:
+            # 如果窗口被最小化
+            if self.windowState() & Qt.WindowMinimized:
+                # 检查是否启用了“最小化到托盘”选项
+                if cfg.get_value("minimize_to_tray", False):
+                    # 为了确保最小化到托盘的效果，延迟调用 hide()
+                    QTimer.singleShot(0, self.hide)
+                    self.tray_icon.show()
+        super().changeEvent(event)
 
     def addSubInterface(self, widget: QLabel, objectName, text):
         widget.setObjectName(objectName)

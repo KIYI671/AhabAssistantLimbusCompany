@@ -29,6 +29,7 @@ theme_mode: AUTO # 应用主题：AUTO, LIGHT, DARK
 autostart: False # 自启动
 autodaily: False # enable auto daily tasks
 autodaily_time: "00:00" # auto daily run time (HH:mm)
+minimize_to_tray: False # 最小化到托盘
 
 # 脚本运行速度设置
 screenshot_interval: 0.85 # 截图间隔时间
@@ -40,6 +41,7 @@ experimental_auto_lang: True # 是否自动修改语言
 
 # 实验性功能
 background_click: True # 是否使用后台点击
+
 
 # 模拟器设置
 simulator: False # 是否使用模拟器
