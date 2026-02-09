@@ -243,17 +243,15 @@ class ScreenShot:
             bmpinfo = save_bit_map.GetInfo()
             bmpstr = save_bit_map.GetBitmapBits(True)
 
-            # 将原始字节数据转换为numpy数组 (BGRA)
-            capture = np.frombuffer(bmpstr, dtype=np.uint8).reshape(
-                (bmpinfo["bmHeight"], bmpinfo["bmWidth"], 4)
+            pil_image = Image.frombuffer(
+                "RGB",
+                (bmpinfo["bmWidth"], bmpinfo["bmHeight"]),
+                bmpstr,
+                "raw",
+                "BGRX",
+                0,
+                1,
             )
-            capture = np.ascontiguousarray(capture)[..., :-1]  # 移除Alpha通道 (BGR)
-
-            # 将BGR格式转换为RGB格式
-            capture_rgb = cv2.cvtColor(capture, cv2.COLOR_BGR2RGB)
-
-            # 将numpy数组转换为PIL图像对象
-            pil_image = Image.fromarray(capture_rgb)
 
             # 将图片转换为灰度图
             if gray:
