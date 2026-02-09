@@ -7,6 +7,7 @@ from enum import Enum
 from PySide6.QtCore import (
     QLocale,
     Qt,
+    QThread,
     QTimer,
     QEvent,
 )
@@ -334,6 +335,21 @@ class MainWindow(FramelessWindow):
                 e.ignore()
                 return
 
+        if self.tools_interface.tools:
+            message_box = MessageBoxConfirm(
+                self.tr("有正在运行的工具"),
+                self.tr("有工具正在运行中，确定要退出程序吗？"),
+                self.window(),
+            )
+            if message_box.exec():
+                for tool in self.tools_interface.tools.values():
+                    if isinstance(tool.w, QWidget):
+                        tool.w.close()
+                    elif isinstance(tool.w, QThread):
+                        tool.w.terminate()
+            else:
+                e.ignore()
+                return
         return super().closeEvent(e)
 
     def changeEvent(self, event):
