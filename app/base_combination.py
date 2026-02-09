@@ -402,7 +402,6 @@ class MirrorTeamCombination(QFrame):
 
 
 class SinnerSelect(QFrame):
-
     def __init__(
         self,
         config_name,
@@ -743,6 +742,25 @@ class BasePushSettingCard(PushSettingCard):
         self.text = text
         self.title = title
         self.content = content
+
+        lt_qss = """
+        QPushButton[isRunning="true"] {
+            background-color: --ThemeColorPrimary;
+            color: white;
+        }"""
+        dk_qss = """
+        QPushButton[isRunning="true"] {
+            background-color: --ThemeColorPrimary;
+            color: black;
+        }"""
+        self.button.setProperty("isRunning", "false")
+        setCustomStyleSheet(self, lt_qss, dk_qss)
+
+    def update_button(self, is_running: bool):
+        self.button.setProperty("isRunning", "true" if is_running else "false")
+        self.button.style().unpolish(self.button)
+        self.button.style().polish(self.button)
+        self.button.update()
 
     def retranslateUi(self):
         self.titleLabel.setText(self.tr(self.title))
