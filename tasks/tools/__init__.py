@@ -23,6 +23,7 @@ class ToolManager:
             self.run_tools()
         except Exception as e:
             log.error(e)
+            self.initialized = None  # 启动失败返回
 
     def run_tools(self):
         """自动战斗：在主线程事件循环中展示新窗口"""
@@ -32,6 +33,7 @@ class ToolManager:
             log.error(
                 "未检测到正在运行的 Qt 应用，无法展示小工具窗口。请从主程序内启动该工具。"
             )
+            self.initialized = None
             return
 
         def create_and_show():
@@ -57,6 +59,7 @@ class ToolManager:
 
             except Exception as e:
                 log.error(e)
+                self.initialized = None
 
         # 将创建窗口的操作排队到主线程事件循环
         QTimer.singleShot(0, app, create_and_show)
