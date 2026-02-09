@@ -1,8 +1,12 @@
-import time
+from time import sleep
 
-from PySide6.QtCore import QT_TRANSLATE_NOOP, Qt
-from PySide6.QtWidgets import QWidget
-from qfluentwidgets import ExpandLayout, InfoBarPosition, ScrollArea
+from PySide6.QtCore import QT_TRANSLATE_NOOP, Qt, QThread
+from PySide6.QtWidgets import QApplication, QWidget
+from qfluentwidgets import (
+    ExpandLayout,
+    InfoBarPosition,
+    ScrollArea,
+)
 from qfluentwidgets import FluentIcon as FIF
 
 from app.base_combination import BasePushSettingCard, BaseSettingCardGroup
@@ -15,6 +19,7 @@ class ToolsInterface(ScrollArea):
     def __init__(self, parent=None):
         super().__init__(parent=parent)
         self.setObjectName("ToolsInterface")
+        self.tools = {}
         self.__init_widget()
         self.__init_card()
         self.__initLayout()
@@ -80,24 +85,56 @@ class ToolsInterface(ScrollArea):
             """)
 
     def __connect_signal(self):
-        self.auto_battle_card.clicked.connect(lambda: tools.start("battle"))
-        self.auto_production_card.clicked.connect(lambda: tools.start("production"))
-        self.get_screenshot_card.clicked.connect(lambda: tools.start("screenshot"))
-        self.get_screenshot_card.clicked.connect(self._onScreenshotToolButtonPressed)
+        self.auto_battle_card.clicked.connect(
+            lambda: self._tool_start(
+                "battle",
+                self.auto_battle_card,
+            )
+        )
+        self.auto_production_card.clicked.connect(
+            lambda: self._tool_start("production", self.auto_production_card)
+        )
+        self.get_screenshot_card.clicked.connect(
+            lambda: self._tool_start("screenshot", self.get_screenshot_card)
+        )
 
-    def retranslateUi(self):
-        self.tools_group.retranslateUi()
-        self.auto_battle_card.retranslateUi()
-        self.auto_production_card.retranslateUi()
-        self.get_screenshot_card.retranslateUi()
+    def _tool_start(self, tool_name: str, card: BasePushSettingCard):
+        if tool_name in self.tools:
+            tool = self.tools[tool_name]
+            if isinstance(tool.w, QWidget):
+                tool.w.activateWindow()
+                tool.w.raise_()
+            return
+        tool = tools.start(tool_name)
+        self.tools[tool_name] = tool
+        while tool.initialized is False:
+            QApplication.processEvents()
+            sleep(0.01)
+        if tool.initialized is None:
+            self.tools.pop(tool_name, None)
+            return
+        self._update_running_button(card)
+        tool.w.destroyed.connect(lambda _: self.tools.pop(tool_name, None))
+        tool.w.destroyed.connect(lambda _: self._restore_button_style(card))
+        if tool_name == "screenshot":
+            tool.w.on_saved_timestr.connect(self._onScreenshotToolButtonPressed)
+        if isinstance(tool.w, QThread):
+            tool.w.start()
 
-    def _onScreenshotToolButtonPressed(self):
-        time_str = time.strftime("%Y%m%d_%H%M%S", time.localtime())
+    def _update_running_button(self, card: BasePushSettingCard):
+        card.button.setText(QT_TRANSLATE_NOOP("BasePushSettingCard", "运行中"))
+        card.update_button(is_running=True)
+
+    def _restore_button_style(self, card: BasePushSettingCard):
+        card.button.setText(QT_TRANSLATE_NOOP("BasePushSettingCard", "运行"))
+        card.update_button(is_running=False)
+
+    def _onScreenshotToolButtonPressed(self, time_str: str):
         title = QT_TRANSLATE_NOOP("BaseInfoBar", "截图完成")
         msg = QT_TRANSLATE_NOOP(
             "BaseInfoBar", "图片保存为 AALC > screenshot_{time_str}.png"
         )
-        bar = BaseInfoBar.success(
+        BaseInfoBar.success(
             title=title,
             content=msg,
             content_kwargs={"time_str": time_str},
@@ -107,3 +144,9 @@ class ToolsInterface(ScrollArea):
             duration=-1,
             parent=self,
         )
+
+    def retranslateUi(self):
+        self.tools_group.retranslateUi()
+        self.auto_battle_card.retranslateUi()
+        self.auto_production_card.retranslateUi()
+        self.get_screenshot_card.retranslateUi()
