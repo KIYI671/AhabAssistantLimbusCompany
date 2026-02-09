@@ -216,7 +216,7 @@ class MainWindow(FramelessWindow):
 
             self.tray_menu = TrayRoundMenu(parent=self)
 
-            show_action = QAction(self.tr("主窗口"), self)
+            show_action = QAction(self.tr("打开主窗口"), self)
             show_action.triggered.connect(self.restore_window)
             quit_action = QAction(self.tr("退出"), self)
             quit_action.triggered.connect(self.on_tray_quit)
