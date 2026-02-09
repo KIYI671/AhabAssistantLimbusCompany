@@ -44,6 +44,8 @@ class Config(metaclass=SingletonMeta):
         本身不进行保存文件操作
         """
         log.info("检测到旧版本配置文件，正在进行升级...")
+
+        # 镜牢历史数据格式转换
         team_num = len(self.get_value("teams_be_select", []))
 
         def _calculate_time_history(time_list: list[float], count: int) -> list[float]:
@@ -72,25 +74,36 @@ class Config(metaclass=SingletonMeta):
 
             return new_time_list
 
-        if team_num > 0:
-            for i in range(1, team_num + 1):
-                history_key = f"team{i}_history"
-                history = self.get_value(history_key, {})
-                if not history:
-                    continue
-                hard_time = history.get("total_mirror_time_hard", [])
-                hard_count = history.get("mirror_hard_count", 0)
-                normal_time = history.get("total_mirror_time_normal", [])
-                normal_count = history.get("mirror_normal_count", 0)
+        try:
+            if team_num > 0:
+                for i in range(1, team_num + 1):
+                    history_key = f"team{i}_history"
+                    history = self.get_value(history_key, {})
+                    if not history:
+                        continue
+                    hard_time = history.get("total_mirror_time_hard", [])
+                    hard_count = history.get("mirror_hard_count", 0)
+                    normal_time = history.get("total_mirror_time_normal", [])
+                    normal_count = history.get("mirror_normal_count", 0)
 
-                hard_time = _calculate_time_history(hard_time, hard_count)
-                normal_time = _calculate_time_history(normal_time, normal_count)
-                history["total_mirror_time_hard"] = hard_time
-                history["mirror_hard_count"] = hard_count
-                history["total_mirror_time_normal"] = normal_time
-                history["mirror_normal_count"] = normal_count
-                self.unsaved_set_value(history_key, history)
-        pass
+                    hard_time = _calculate_time_history(hard_time, hard_count)
+                    normal_time = _calculate_time_history(normal_time, normal_count)
+                    history["total_mirror_time_hard"] = hard_time
+                    history["mirror_hard_count"] = hard_count
+                    history["total_mirror_time_normal"] = normal_time
+                    history["mirror_normal_count"] = normal_count
+                    self.unsaved_set_value(history_key, history)
+        except Exception as e:
+            log.error(f"镜牢历史数据格式转换失败，错误信息：{e}")
+
+        try:
+            # 旧配置类型转换
+            if self.get_value("set_win_position", True) is True:
+                self.unsaved_set_value("set_win_position", "free")
+        except Exception as e:
+            log.error(f"旧配置转换失败，错误信息：{e}")
+
+        log.info("配置升级完成")
 
     def _load_version(self, version_path: str) -> str:
         """加载版本信息"""
