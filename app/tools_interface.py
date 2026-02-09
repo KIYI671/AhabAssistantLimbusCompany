@@ -1,4 +1,6 @@
-from PySide6.QtCore import QT_TRANSLATE_NOOP, Qt
+from time import sleep
+
+from PySide6.QtCore import QT_TRANSLATE_NOOP, Qt, QThread
 from PySide6.QtWidgets import QApplication, QWidget
 from qfluentwidgets import (
     ExpandLayout,
@@ -107,6 +109,7 @@ class ToolsInterface(ScrollArea):
         self.tools[tool_name] = tool
         while tool.initialized is False:
             QApplication.processEvents()
+            sleep(0.01)
         if tool.initialized is None:
             self.tools.pop(tool_name, None)
             return
