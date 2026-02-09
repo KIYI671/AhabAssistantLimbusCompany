@@ -51,8 +51,9 @@ class ToolManager:
                     self.initialized = True
                 if isinstance(self.w, QWidget):
                     self.w.show()
-                elif isinstance(self.w, QThread):
-                    self.w.start()
+                # 等待主线程启动, 防止信号连接前任务结束
+                # elif isinstance(self.w, QThread):
+                #     self.w.start()
 
             except Exception as e:
                 log.error(e)

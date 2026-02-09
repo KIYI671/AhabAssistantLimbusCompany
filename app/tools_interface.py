@@ -115,6 +115,8 @@ class ToolsInterface(ScrollArea):
         tool.w.destroyed.connect(lambda _: self._restore_button_style(card))
         if tool_name == "screenshot":
             tool.w.on_saved_timestr.connect(self._onScreenshotToolButtonPressed)
+        if isinstance(tool.w, QThread):
+            tool.w.start()
 
     def _update_running_button(self, card: BasePushSettingCard):
         card.button.setText(QT_TRANSLATE_NOOP("BasePushSettingCard", "运行中"))
