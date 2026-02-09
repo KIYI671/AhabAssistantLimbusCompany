@@ -2,8 +2,8 @@ import sys
 import threading
 from typing import Literal
 
-from PySide6.QtCore import QTimer
-from PySide6.QtWidgets import QApplication
+from PySide6.QtCore import QObject, QThread, QTimer
+from PySide6.QtWidgets import QApplication, QWidget
 
 from module.logger import log
 from tasks.base.script_task_scheme import init_game
@@ -13,13 +13,18 @@ from tasks.tools.screenshot_module import ScreenshotGet
 
 
 class ToolManager:
-    def run(self, tool: Literal["battle", "production", "screenshot"]):
+    def __init__(self, tool: Literal["battle", "production", "screenshot"]):
+        self.tool = tool
+        self.initialized = False
+        self.w: QObject = None
+
+    def run(self):
         try:
-            self.run_tools(tool)
+            self.run_tools()
         except Exception as e:
             log.error(e)
 
-    def run_tools(self, tool):
+    def run_tools(self):
         """自动战斗：在主线程事件循环中展示新窗口"""
         app = QApplication.instance()
         if app is None:
@@ -31,29 +36,24 @@ class ToolManager:
 
         def create_and_show():
             try:
-                w = None
-                if tool == "battle":
-                    w = InfiniteBattles()
-                elif tool == "production":
-                    w = ProductionModule()
-                elif tool == "screenshot":
-                    w = ScreenshotGet()
-                    w.run()
+                if self.tool == "battle":
+                    self.w = InfiniteBattles()
+                elif self.tool == "production":
+                    self.w = ProductionModule()
+                elif self.tool == "screenshot":
+                    self.w = ScreenshotGet()
+                if self.w is None:
+                    log.error(f"工具 {self.tool} 未能成功启动")
+                    self.initialized = None  # 失败返回
                     return
-                if w is None:
-                    log.error(f"工具 {tool} 未能成功启动")
-                    return
-                w.show()
-                # 持有引用，避免被 GC 过早销毁
-                if not hasattr(self, "_windows"):
-                    self._windows = []
-                self._windows.append(w)
-                # 窗口销毁时移除引用
-                w.destroyed.connect(
-                    lambda *_: hasattr(self, "_windows") and self._windows.remove(w)
-                    if w in self._windows
-                    else None
-                )
+                else:
+                    log.debug(f"启动工具 {self.tool}")
+                    self.initialized = True
+                if isinstance(self.w, QWidget):
+                    self.w.show()
+                elif isinstance(self.w, QThread):
+                    self.w.start()
+
             except Exception as e:
                 log.error(e)
 
@@ -66,8 +66,7 @@ def start(tool: Literal["battle", "production", "screenshot"]):
     启动工具管理器的方法。
     :param tool: 启动工具，可以是"battle"。
     """
-    tool_manager = ToolManager()
-    tool_gui_thread = threading.Thread(
-        target=tool_manager.run, args=(tool,), daemon=True
-    )
+    tool_manager = ToolManager(tool)
+    tool_gui_thread = threading.Thread(target=tool_manager.run, daemon=True)
     tool_gui_thread.start()
+    return tool_manager
