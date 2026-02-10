@@ -177,3 +177,149 @@ def get_pivot_item_qss(theme_color: str) -> tuple[str, str]:
     light_qss = PIVOT_ITEM_STYLES["light"].format(theme_color=theme_color)
     dark_qss = PIVOT_ITEM_STYLES["dark"].format(theme_color=theme_color)
     return light_qss, dark_qss
+
+
+# 公告板侧边栏样式配置
+ANNOUNCEMENT_SIDEBAR_STYLES = {
+    "dark": """
+        QFrame#announcementSidebar {
+            background-color: rgba(45, 45, 45, 1);
+            border: none;
+            border-top-left-radius: 8px;
+            border-bottom-left-radius: 8px;
+        }
+        QLabel#sidebarTitle {
+            color: rgba(255, 255, 255, 0.95);
+            font-size: 16px;
+            font-weight: bold;
+            padding: 0px;
+        }
+    """,
+    "light": """
+        QFrame#announcementSidebar {
+            background-color: rgba(245, 245, 245, 1);
+            border: none;
+            border-right: 1px solid rgba(0, 0, 0, 0.1);
+            border-top-left-radius: 8px;
+            border-bottom-left-radius: 8px;
+        }
+        QLabel#sidebarTitle {
+            color: rgba(0, 0, 0, 0.9);
+            font-size: 16px;
+            font-weight: bold;
+            padding: 0px;
+        }
+    """,
+}
+
+
+def get_announcement_sidebar_qss() -> tuple[str, str]:
+    """返回 (light_qss, dark_qss) 用于公告板侧边栏"""
+    return ANNOUNCEMENT_SIDEBAR_STYLES["light"], ANNOUNCEMENT_SIDEBAR_STYLES["dark"]
+
+
+# 公告板列表项样式配置
+ANNOUNCEMENT_LIST_STYLES = {
+    "dark": """
+        ListWidget {
+            background-color: transparent;
+            border: none;
+            outline: 0px;
+        }
+        ListWidget::item {
+            color: rgba(255, 255, 255, 0.85);
+            background-color: transparent;
+            border-left: 3px solid transparent;
+            padding: 12px 15px;
+            margin: 2px 5px;
+            border-radius: 4px;
+        }
+        ListWidget::item:hover {
+            background-color: rgba(255, 255, 255, 0.08);
+        }
+        ListWidget::item:selected {
+            background-color: rgba(255, 255, 255, 0.12);
+            border-left: 3px solid #0078d4;
+        }
+    """,
+    "light": """
+        ListWidget {
+            background-color: transparent;
+            border: none;
+            outline: 0px;
+        }
+        ListWidget::item {
+            color: rgba(0, 0, 0, 0.85);
+            background-color: transparent;
+            border-left: 3px solid transparent;
+            padding: 12px 15px;
+            margin: 2px 5px;
+            border-radius: 4px;
+        }
+        ListWidget::item:hover {
+            background-color: rgba(0, 0, 0, 0.05);
+        }
+        ListWidget::item:selected {
+            background-color: rgba(0, 0, 0, 0.08);
+            border-left: 3px solid #0078d4;
+        }
+    """,
+}
+
+
+def get_announcement_list_qss() -> tuple[str, str]:
+    """返回 (light_qss, dark_qss) 用于公告板列表"""
+    return ANNOUNCEMENT_LIST_STYLES["light"], ANNOUNCEMENT_LIST_STYLES["dark"]
+
+
+ANNOUNCEMENT_CONTENT_STYLES = {
+    "dark": """
+        QTextBrowser {
+            color: rgb(201, 209, 217);
+            background-color: rgba(28, 28, 28, 1);
+            border: none;
+            padding: 20px;
+            selection-background-color: rgba(88, 166, 255, 0.3);
+            selection-color: rgb(255, 255, 255);
+        }
+    """,
+    "light": """
+        QTextBrowser {
+            color: rgb(36, 41, 47);
+            background-color: rgba(255, 255, 255, 1);
+            border: none;
+            padding: 20px;
+            selection-background-color: rgba(0, 120, 212, 0.3);
+            selection-color: rgb(0, 0, 0);
+        }
+    """,
+}
+
+
+def get_announcement_content_qss() -> tuple[str, str]:
+    """返回 (light_qss, dark_qss) 用于公告板内容区域"""
+    return ANNOUNCEMENT_CONTENT_STYLES["light"], ANNOUNCEMENT_CONTENT_STYLES["dark"]
+
+
+# 公告板底部按钮区域样式
+ANNOUNCEMENT_FOOTER_STYLES = {
+    "dark": """
+        QFrame#announcementFooter {
+            background-color: rgba(45, 45, 45, 1);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            border-bottom-right-radius: 8px;
+        }
+    """,
+    "light": """
+        QFrame#announcementFooter {
+            background-color: rgba(250, 250, 250, 1);
+            border-top: 1px solid rgba(0, 0, 0, 0.1);
+            border-bottom-right-radius: 8px;
+        }
+    """,
+}
+
+
+def get_announcement_footer_qss() -> tuple[str, str]:
+    """返回 (light_qss, dark_qss) 用于公告板底部区域"""
+    return ANNOUNCEMENT_FOOTER_STYLES["light"], ANNOUNCEMENT_FOOTER_STYLES["dark"]

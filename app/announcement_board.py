@@ -2,12 +2,12 @@ import time
 
 import requests
 from PySide6.QtCore import Qt, QThread, Signal, Slot
-from PySide6.QtGui import QFont, QIcon
+from PySide6.QtGui import QFont, QIcon, QPixmap
 from PySide6.QtWidgets import (
     QDialog,
     QFrame,
-    QGridLayout,
     QHBoxLayout,
+    QLabel,
     QListWidgetItem,
     QSizePolicy,
     QSpacerItem,
@@ -15,9 +15,24 @@ from PySide6.QtWidgets import (
     QVBoxLayout,
     QWidget,
 )
-from qfluentwidgets import ListWidget, PopUpAniStackedWidget, PrimaryPushButton
+from qfluentwidgets import (
+    CheckBox,
+    ListWidget,
+    PopUpAniStackedWidget,
+    PrimaryPushButton,
+    isDarkTheme,
+    qconfig,
+)
+from qframelesswindow import FramelessDialog, StandardTitleBar
 
 from app import AnnouncementStatus
+from app.common.ui_config import (
+    get_announcement_content_qss,
+    get_announcement_footer_qss,
+    get_announcement_list_qss,
+    get_announcement_sidebar_qss,
+    get_title_bar_style,
+)
 from module.config import cfg
 from module.logger import log
 
@@ -65,7 +80,14 @@ class AnnouncementThread(QThread):
 
 
 class Announcement(QWidget):
-    def __init__(self, parent=None, title="title", content="text", content_type="text"):
+    def __init__(
+        self,
+        parent=None,
+        title="title",
+        content="text",
+        content_type="text",
+        show_title=True,
+    ):
         super().__init__(parent)
         self.title = title
         # 保存原始内容（raw_content）以便合并到 ALL 页面时使用
@@ -78,17 +100,34 @@ class Announcement(QWidget):
         self.content.setAutoFillBackground(True)
 
         # 根据 content_type 渲染内容
-        if content_type == "html":
-            self.content.setHtml(content)
-        elif content_type == "markdown":
-            try:
-                self.content.setMarkdown(content)
-            except Exception:
-                # 兼容性回退：若不支持 setMarkdown 则设置为纯文本
-                self.content.setText(content)
+        if show_title:
+            if content_type == "html":
+                # 在内容前添加标题
+                styled_content = f"<h1 style='margin-bottom: 20px;'>{title}</h1>" + content
+                self.content.setHtml(styled_content)
+            elif content_type == "markdown":
+                try:
+                    # 在内容前添加标题
+                    styled_content = f"# {title}\n\n" + content
+                    self.content.setMarkdown(styled_content)
+                except Exception:
+                    # 兼容性回退
+                    styled_content = f"{title}\n\n" + content
+                    self.content.setText(styled_content)
+            else:
+                # 默认为纯文本
+                styled_content = f"{title}\n\n" + content
+                self.content.setText(styled_content)
         else:
-            # 默认为纯文本
-            self.content.setText(content)
+            if content_type == "html":
+                self.content.setHtml(content)
+            elif content_type == "markdown":
+                try:
+                    self.content.setMarkdown(content)
+                except Exception:
+                    self.content.setText(content)
+            else:
+                self.content.setText(content)
 
         self.layout().addWidget(self.content)
 
@@ -99,72 +138,113 @@ class Announcement(QWidget):
         return self.raw_content
 
 
-class AnnouncementBoard(QDialog):
+class AnnouncementBoard(FramelessDialog):
     def __init__(self, anno, time, parent=None):
         super().__init__(parent=parent)
 
+        # 设置标题栏
+        self.setTitleBar(StandardTitleBar(self))
+        self.titleBar.raise_()
+        # 隐藏标题栏按钮
+        self.titleBar.minBtn.hide()
+        self.titleBar.maxBtn.hide()
+        self.titleBar.closeBtn.hide()
+
+        # 设置模态
+        self.setWindowModality(Qt.WindowModal)
+
         # 主布局
         self.main_layout = QHBoxLayout(self)
-        self.main_layout.setContentsMargins(0, 0, 0, 0)
+        self.main_layout.setContentsMargins(0, 32, 0, 0)  # 留出标题栏高度
+        self.main_layout.setSpacing(0)
         self.setLayout(self.main_layout)
-        self.resize(750, 550)
-        self.setFont(QFont("MicroSoft YaHei", 13))
+        self.resize(800, 580)
+        self.setMinimumSize(700, 500)
+        self.setFont(QFont("Microsoft YaHei", 13))
         self.setWindowIcon(QIcon("./assets/logo/my_icon_256X256.ico"))
-        self.setWindowFlag(Qt.WindowType.WindowCloseButtonHint, False)
         self.setWindowTitle(self.tr("公告"))
 
-        # 左侧标题栏
+        # ========== 左侧侧边栏 ==========
+        self.sidebar = QFrame()
+        self.sidebar.setObjectName("announcementSidebar")
+        self.sidebar.setFixedWidth(180)
+        self.sidebar_layout = QVBoxLayout(self.sidebar)
+        self.sidebar_layout.setContentsMargins(0, 0, 0, 0)
+        self.sidebar_layout.setSpacing(0)
+
+        # 侧边栏头部（带图标和标题） - 已移除
+        # self.header_widget = QWidget()
+        # ...
+
+        # 标题列表
         self.title_list = ListWidget()
-        self.title_list.setSpacing(10)
-        self.title_list.setFixedWidth(150)  # 固定宽度
+        self.title_list.setSpacing(5)
+        self.title_list.setContentsMargins(0, 10, 0, 0) # 增加顶部间距代替头部
         self.title_list.currentRowChanged.connect(self.on_title_clicked)
-        self.title_list.addItem(QListWidgetItem("ALL"))
+        self.title_list.addItem(QListWidgetItem(self.tr("ALL~ 全部公告")))
 
-        # 右侧内容栏
-        self.right_content_bar = QGridLayout()
+        self.sidebar_layout.addWidget(self.title_list)
+
+        # ========== 右侧内容区 ==========
+        self.right_panel = QVBoxLayout()
+        self.right_panel.setContentsMargins(0, 0, 0, 0)
+        self.right_panel.setSpacing(0)
+
+        # 内容栈
         self.content_stack = PopUpAniStackedWidget()
-        self.right_content_bar.addWidget(self.content_stack, 0, 0, 1, 3)
-        horizontal_spacer = QSpacerItem(
-            40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum
-        )
-        self.right_content_bar.addItem(horizontal_spacer, 1, 0, 1, 1)
+        self.right_panel.addWidget(self.content_stack, 1)
 
-        self.buttonGroup = QFrame(parent)
-        self.yesButton = PrimaryPushButton(
-            self.tr("新公告前不再显示"), self.buttonGroup
-        )
-        self.cancelButton = PrimaryPushButton(self.tr("关闭"), self.buttonGroup)
+        # ========== 底部按钮区 ==========
+        self.footer = QFrame()
+        self.footer.setObjectName("announcementFooter")
+        self.footer.setFixedHeight(60)
+        self.footer_layout = QHBoxLayout(self.footer)
+        self.footer_layout.setContentsMargins(20, 10, 20, 10)
+        self.footer_layout.setSpacing(15)
+
+        # 复选框
+        self.dontShowCheckbox = CheckBox(self.tr("下次公告更新前不再显示"))
+        self.dontShowCheckbox.setChecked(False)
+        self.dontShowCheckbox.setEnabled(False)  # 初始禁用，滚动到底部后启用
+
+        # 确认按钮
+        self.yesButton = PrimaryPushButton(self.tr("确认"))
+        self.yesButton.setFixedWidth(100)
         self.yesButton.setAttribute(Qt.WA_LayoutUsesWidgetRect)
-        self.cancelButton.setAttribute(Qt.WA_LayoutUsesWidgetRect)
         self.yesButton.clicked.connect(self.accept)
-        self.cancelButton.clicked.connect(self.reject)
-        self.button_widget = QWidget(self.buttonGroup)
-        self.buttonLayout = QHBoxLayout(self.button_widget)
-        self.buttonLayout.addWidget(self.cancelButton, 1, Qt.AlignVCenter)
-        self.buttonLayout.addWidget(self.yesButton, 1, Qt.AlignVCenter)
+        self.yesButton.setEnabled(False)  # 初始禁用，滚动到底部后启用
 
-        self.right_content_bar.addWidget(self.button_widget, 1, 1, 1, 1)
+        self.footer_layout.addWidget(self.dontShowCheckbox, 0, Qt.AlignVCenter)
+        self.footer_layout.addStretch()
+        self.footer_layout.addWidget(self.yesButton, 0, Qt.AlignVCenter)
+
+        self.right_panel.addWidget(self.footer)
+
+        # ========== 组装主布局 ==========
+        self.main_layout.addWidget(self.sidebar)
+        self.main_layout.addLayout(self.right_panel, 1)
 
         # 创建ALL公告页面
+        # 创建ALL公告页面
         msg = self.tr("滚动至底部可关闭公告")
-        self.all = Announcement(
-            None,
-            "ALL",
+        content = (
             f"<h4>{msg}</h4>"
             "<h3>Ahab Assistant Limbus Company</h3>"
-            f"<h3>{cfg.version}</h3>",
+            f"<h3>{cfg.version}</h3>"
+        )
+        self.all = Announcement(
+            None,
+            self.tr("ALL~ 全部公告"),
+            content,
             content_type="markdown",
+            show_title=False,
         )
         self.content_stack.addWidget(self.all)
 
         # 存储标题和内容的映射
-        self.title_content_map = {"ALL": self.all}
+        self.title_content_map = {self.tr("ALL~ 全部公告"): self.all}
         # 存储 ALL 页的合并 markdown 文本
         self.all_markdown = str(self.all.content.toMarkdown())
-
-        # 添加到主布局
-        self.main_layout.addWidget(self.title_list)
-        self.main_layout.addLayout(self.right_content_bar)
 
         # 跟踪当前活动的滚动区域
         self.current_scroll_area = None
@@ -175,6 +255,9 @@ class AnnouncementBoard(QDialog):
         self.set_announcement(anno)
 
         self.announcement_time = time
+
+        # 应用主题样式
+        self._apply_styles()
 
     def set_announcement(self, announcements):
         """设置公告"""
@@ -191,7 +274,7 @@ class AnnouncementBoard(QDialog):
         title_name = self.tr("长期公告")
         if cfg.language_in_program == "zh_cn":
             msg = (
-                f"<h4>{title_name}</h4>"
+                f"<h4>   </h4>"
                 "<h2>Ahab Assistant Limbus Company</h2>"
                 f"<h2>{cfg.version}</h2>"
                 "<h3>声明：</h3>"
@@ -203,7 +286,7 @@ class AnnouncementBoard(QDialog):
             )
         else:
             msg = (
-                f"<h4>{title_name}</h4>"
+                f"<h4>   </h4>"
                 "<h2>Ahab Assistant Limbus Company</h2>"
                 f"<h2>{cfg.version}</h2>"
                 "<h3>Disclaimer:</h3>"
@@ -213,31 +296,22 @@ class AnnouncementBoard(QDialog):
                 "Please do not discuss anything related to AALC under the official posts of Limbus Company or the Project Moon across various platforms.<br>"
                 "In plain terms: Let’s not poke the official bear with AALC talk～(∠・ω&lt; )⌒☆</html>"
             )
-        self.add(Announcement(None, title_name, msg))
+        self.add(Announcement(None, title_name, msg, content_type="html"))
 
     def setup_scroll_handlers(self):
         """设置滚动事件处理"""
         # 为ALL页面设置滚动监听
         if hasattr(self.all.content, "verticalScrollBar"):
             scroll_bar = self.all.content.verticalScrollBar()
-            scroll_bar.valueChanged.connect(lambda: self.check_scroll_position("ALL"))
+            scroll_bar.valueChanged.connect(
+                lambda: self.check_scroll_position(self.tr("ALL~ 全部公告"))
+            )
 
         # 监听内容栈切换事件，以便为新显示的页面设置滚动监听
         self.content_stack.currentChanged.connect(self.on_stack_changed)
 
     def on_stack_changed(self, index):
         """当切换到新的内容页面时，设置滚动监听"""
-        # 移除之前页面的滚动监听
-        if self.current_scroll_area and hasattr(
-            self.current_scroll_area, "verticalScrollBar"
-        ):
-            scroll_bar = self.current_scroll_area.verticalScrollBar()
-            try:
-                scroll_bar.valueChanged.disconnect(self.check_current_scroll_position)
-            except TypeError:
-                pass  # 如果没有连接过，忽略错误
-
-        # 获取当前页面并设置新的滚动监听
         current_widget = self.content_stack.widget(index)
         if (
             current_widget
@@ -272,7 +346,8 @@ class AnnouncementBoard(QDialog):
                 is_at_bottom = scroll_bar.value() + 10 >= scroll_bar.maximum()
                 # 更新按钮状态
                 self.yesButton.setEnabled(is_at_bottom)
-                self.cancelButton.setEnabled(is_at_bottom)
+                # 复选框在滚动到底部后启用
+                self.dontShowCheckbox.setEnabled(is_at_bottom)
 
     def add(self, dialog: Announcement):
         """添加一个公告条目"""
@@ -292,9 +367,9 @@ class AnnouncementBoard(QDialog):
         if new_md:
             # 用分隔符分隔不同公告，保留原始 markdown
             if self.all_markdown:
-                self.all_markdown += "\n\n---\n\n" + new_md
+                self.all_markdown += f"\n\n---\n\n# {title}\n\n" + new_md
             else:
-                self.all_markdown = new_md
+                self.all_markdown = f"# {title}\n\n" + new_md
             try:
                 # 尝试直接以 markdown 设置 ALL 页内容
                 self.all.content.setMarkdown(self.all_markdown)
@@ -312,7 +387,7 @@ class AnnouncementBoard(QDialog):
             scroll_bar.valueChanged.connect(_on_value_changed)
 
         # 重新检查ALL页面的滚动状态，因为内容已更新
-        self.check_scroll_position("ALL")
+        self.check_scroll_position(self.tr("ALL~ 全部公告"))
 
     @Slot(int)
     def on_title_clicked(self, index):
@@ -322,13 +397,85 @@ class AnnouncementBoard(QDialog):
     def setDefault(self, index: int):
         self.title_list.setCurrentRow(index)
         self.all.content.verticalScrollBar().setValue(0)
-        # 确保按钮初始为禁用状态
+        # 确保按钮和复选框初始为禁用状态
         self.yesButton.setEnabled(False)
-        self.cancelButton.setEnabled(False)
+        self.dontShowCheckbox.setEnabled(False)
 
     def reject(self) -> None:
         super().reject()
 
     def accept(self) -> None:
-        cfg.set_value("announcement", self.announcement_time + 1)
+        # 如果选中了复选框，则记录公告时间戳
+        if self.dontShowCheckbox.isChecked():
+            cfg.set_value("announcement", self.announcement_time + 1)
         super().accept()
+
+    def _apply_styles(self):
+        """应用主题样式到各个组件"""
+        # 获取样式
+        light_sidebar, dark_sidebar = get_announcement_sidebar_qss()
+        light_list, dark_list = get_announcement_list_qss()
+        light_content, dark_content = get_announcement_content_qss()
+        light_footer, dark_footer = get_announcement_footer_qss()
+
+        if isDarkTheme():
+            self.sidebar.setStyleSheet(dark_sidebar)
+            self.title_list.setStyleSheet(dark_list)
+            self.footer.setStyleSheet(dark_footer)
+            # 应用内容区样式
+            self._apply_content_style(dark_content)
+            # 设置标题栏样式
+            self.titleBar.setStyleSheet(
+                """
+                TitleBar {
+                    background-color: rgba(45, 45, 45, 1);
+                    color: white;
+                }
+                TitleBar > QLabel#titleLabel {
+                    color: white;
+                }
+                """
+            )
+            self.setStyleSheet("AnnouncementBoard { background-color: rgba(28, 28, 28, 1); }")
+        else:
+            self.sidebar.setStyleSheet(light_sidebar)
+            self.title_list.setStyleSheet(light_list)
+            self.footer.setStyleSheet(light_footer)
+            self._apply_content_style(light_content)
+            # 设置标题栏样式
+            self.titleBar.setStyleSheet(
+                """
+                TitleBar {
+                    background-color: rgba(245, 245, 245, 1);
+                    color: black;
+                }
+                TitleBar > QLabel#titleLabel {
+                    color: black;
+                }
+                """
+            )
+            self.setStyleSheet("AnnouncementBoard { background-color: white; }")
+
+    def _apply_content_style(self, qss: str):
+        """应用内容区域样式并加载 Markdown CSS"""
+        # 应用 QSS 样式
+        for title, widget in self.title_content_map.items():
+            if hasattr(widget, "content"):
+                widget.content.setStyleSheet(qss)
+
+        # 加载 GitHub Markdown 样式
+        css_path = (
+            "./assets/styles/github-markdown-dark.css"
+            if isDarkTheme()
+            else "./assets/styles/github-markdown-light.css"
+        )
+        try:
+            with open(css_path, encoding="utf-8") as f:
+                css_content = f.read()
+                for title, widget in self.title_content_map.items():
+                    if hasattr(widget, "content") and hasattr(
+                        widget.content, "document"
+                    ):
+                        widget.content.document().setDefaultStyleSheet(css_content)
+        except Exception:
+            pass  # 样式加载失败时使用默认样式
