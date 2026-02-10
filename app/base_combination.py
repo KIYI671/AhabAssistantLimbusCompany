@@ -760,6 +760,8 @@ class BasePushSettingCard(PushSettingCard):
 
     def update_button(self, is_running: bool):
         self.button.setProperty("isRunning", "true" if is_running else "false")
+        self.text = self.button.text()
+        self.button.setText(self.tr(self.text))
         self.button.style().unpolish(self.button)
         self.button.style().polish(self.button)
         self.button.update()
