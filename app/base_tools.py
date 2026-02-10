@@ -1,7 +1,7 @@
 from typing import Union
 
 from PySide6.QtCore import Qt, Signal
-from PySide6.QtGui import QIcon, QFont
+from PySide6.QtGui import QFont, QIcon
 from PySide6.QtWidgets import (
     QFrame,
     QGridLayout,
@@ -11,6 +11,7 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 from qfluentwidgets import (
+    Action,
     BodyLabel,
     CheckBox,
     ComboBox,
@@ -24,7 +25,6 @@ from qfluentwidgets import (
     ToolButton,
     ToolTipFilter,
     ToolTipPosition,
-    Action,
     isDarkTheme,
     qconfig,
 )

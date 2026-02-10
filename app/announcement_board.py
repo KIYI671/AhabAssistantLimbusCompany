@@ -2,15 +2,11 @@ import time
 
 import requests
 from PySide6.QtCore import Qt, QThread, Signal, Slot
-from PySide6.QtGui import QFont, QIcon, QPixmap
+from PySide6.QtGui import QFont, QIcon
 from PySide6.QtWidgets import (
-    QDialog,
     QFrame,
     QHBoxLayout,
-    QLabel,
     QListWidgetItem,
-    QSizePolicy,
-    QSpacerItem,
     QTextBrowser,
     QVBoxLayout,
     QWidget,
@@ -21,7 +17,6 @@ from qfluentwidgets import (
     PopUpAniStackedWidget,
     PrimaryPushButton,
     isDarkTheme,
-    qconfig,
 )
 from qframelesswindow import FramelessDialog, StandardTitleBar
 
@@ -31,7 +26,6 @@ from app.common.ui_config import (
     get_announcement_footer_qss,
     get_announcement_list_qss,
     get_announcement_sidebar_qss,
-    get_title_bar_style,
 )
 from module.config import cfg
 from module.logger import log
@@ -103,7 +97,9 @@ class Announcement(QWidget):
         if show_title:
             if content_type == "html":
                 # 在内容前添加标题
-                styled_content = f"<h1 style='margin-bottom: 20px;'>{title}</h1>" + content
+                styled_content = (
+                    f"<h1 style='margin-bottom: 20px;'>{title}</h1>" + content
+                )
                 self.content.setHtml(styled_content)
             elif content_type == "markdown":
                 try:
@@ -179,7 +175,7 @@ class AnnouncementBoard(FramelessDialog):
         # 标题列表
         self.title_list = ListWidget()
         self.title_list.setSpacing(5)
-        self.title_list.setContentsMargins(0, 10, 0, 0) # 增加顶部间距代替头部
+        self.title_list.setContentsMargins(0, 10, 0, 0)  # 增加顶部间距代替头部
         self.title_list.currentRowChanged.connect(self.on_title_clicked)
         self.title_list.addItem(QListWidgetItem(self.tr("ALL~ 全部公告")))
 
@@ -436,7 +432,9 @@ class AnnouncementBoard(FramelessDialog):
                 }
                 """
             )
-            self.setStyleSheet("AnnouncementBoard { background-color: rgba(28, 28, 28, 1); }")
+            self.setStyleSheet(
+                "AnnouncementBoard { background-color: rgba(28, 28, 28, 1); }"
+            )
         else:
             self.sidebar.setStyleSheet(light_sidebar)
             self.title_list.setStyleSheet(light_list)

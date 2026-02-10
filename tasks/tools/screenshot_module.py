@@ -1,6 +1,7 @@
 import time
 
 from PySide6.QtCore import QThread, Signal
+
 from module.automation import auto
 from module.game_and_screen import screen
 from module.logger import log

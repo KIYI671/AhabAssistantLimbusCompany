@@ -5,30 +5,30 @@ import sys
 from enum import Enum
 
 from PySide6.QtCore import (
+    QEvent,
     QLocale,
     Qt,
     QThread,
     QTimer,
-    QEvent,
 )
-from PySide6.QtGui import QIcon, QAction, QCursor
+from PySide6.QtGui import QAction, QCursor, QIcon
 from PySide6.QtWidgets import (
     QApplication,
     QHBoxLayout,
     QLabel,
     QStackedWidget,
+    QSystemTrayIcon,
     QVBoxLayout,
     QWidget,
-    QSystemTrayIcon,
 )
 from qfluentwidgets import (
     ProgressRing,
+    RoundMenu,
     Theme,
     isDarkTheme,
     qconfig,
     setTheme,
     setThemeColor,
-    RoundMenu,
 )
 from qfluentwidgets.components.widgets.frameless_window import FramelessWindow
 from qframelesswindow import StandardTitleBar

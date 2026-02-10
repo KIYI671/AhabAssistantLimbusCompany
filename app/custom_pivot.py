@@ -10,7 +10,7 @@ Custom Pivot component with full-width indicator and bottom divider line
 from PySide6.QtCore import QRectF, Qt
 from PySide6.QtGui import QColor, QPainter, QPen
 from PySide6.QtWidgets import QHBoxLayout, QPushButton, QSizePolicy, QWidget
-from qfluentwidgets import Pivot, isDarkTheme, qconfig, themeColor, setCustomStyleSheet
+from qfluentwidgets import Pivot, isDarkTheme, qconfig, themeColor
 
 from app.common.ui_config import get_pivot_item_qss
 
