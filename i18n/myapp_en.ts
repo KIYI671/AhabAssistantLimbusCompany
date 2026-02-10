@@ -4,27 +4,36 @@
 <context>
     <name>AnnouncementBoard</name>
     <message>
-        <location filename="../app/announcement_board.py" line="114"/>
+        <location filename="../app/announcement_board.py" line="161"/>
         <source>公告</source>
         <translation>Announcement Board</translation>
     </message>
     <message>
-        <location filename="../app/announcement_board.py" line="134"/>
-        <source>新公告前不再显示</source>
-        <translation>Don&apos;t Show Until New</translation>
+        <location filename="../app/announcement_board.py" line="180"/>
+        <location filename="../app/announcement_board.py" line="233"/>
+        <location filename="../app/announcement_board.py" line="241"/>
+        <location filename="../app/announcement_board.py" line="303"/>
+        <location filename="../app/announcement_board.py" line="386"/>
+        <source>ALL~ 全部公告</source>
+        <translation>All announcements</translation>
     </message>
     <message>
-        <location filename="../app/announcement_board.py" line="136"/>
-        <source>关闭</source>
-        <translation>Close</translation>
+        <location filename="../app/announcement_board.py" line="202"/>
+        <source>下次公告更新前不再显示</source>
+        <translation>Don&apos;t show until next update</translation>
     </message>
     <message>
-        <location filename="../app/announcement_board.py" line="150"/>
+        <location filename="../app/announcement_board.py" line="207"/>
+        <source>确认</source>
+        <translation>Confirm</translation>
+    </message>
+    <message>
+        <location filename="../app/announcement_board.py" line="226"/>
         <source>滚动至底部可关闭公告</source>
         <translation>Scroll to the bottom to close the announcement.</translation>
     </message>
     <message>
-        <location filename="../app/announcement_board.py" line="192"/>
+        <location filename="../app/announcement_board.py" line="271"/>
         <source>长期公告</source>
         <translation>Long-term announcement</translation>
     </message>
@@ -294,30 +303,6 @@ Right-click to set as permanent</translation>
         <location filename="../app/__init__.py" line="32"/>
         <source>左上角（0，0）</source>
         <translation>Top left corner (0,0)</translation>
-    </message>
-    <message>
-        <source>无限制</source>
-        <translation type="finished">Free</translation>
-    </message>
-    <message>
-        <source>左上角</source>
-        <translation type="finished">Top Left</translation>
-    </message>
-    <message>
-        <source>左下角</source>
-        <translation type="finished">Bottom Left</translation>
-    </message>
-    <message>
-        <source>右上角</source>
-        <translation type="finished">Top Right</translation>
-    </message>
-    <message>
-        <source>右下角</source>
-        <translation type="finished">Bottom Right</translation>
-    </message>
-    <message>
-        <source>居中</source>
-        <translation type="finished">Center</translation>
     </message>
     <message>
         <location filename="../app/__init__.py" line="33"/>
@@ -1166,32 +1151,39 @@ Right-click to set as permanent</translation>
 <context>
     <name>InfiniteBattles</name>
     <message>
+        <location filename="../tasks/tools/infinite_battle.py" line="133"/>
         <source>开始战斗</source>
-        <translation type="vanished">Battle Start</translation>
+        <translation>Battle Start</translation>
     </message>
     <message>
+        <location filename="../tasks/tools/infinite_battle.py" line="135"/>
         <source>无限守备</source>
-        <translation type="vanished">Defense All Time</translation>
+        <translation>Defense All Time</translation>
     </message>
     <message>
+        <location filename="../tasks/tools/infinite_battle.py" line="136"/>
         <source>第一回合开启守备</source>
-        <translation type="obsolete">Defense First Turn</translation>
+        <translation>Defense First Turn</translation>
     </message>
     <message>
+        <location filename="../tasks/tools/infinite_battle.py" line="166"/>
         <source>停止战斗</source>
-        <translation type="vanished">Stop Battle</translation>
+        <translation>Stop Battle</translation>
     </message>
     <message>
+        <location filename="../tasks/tools/infinite_battle.py" line="175"/>
         <source>状态：战斗中...</source>
-        <translation type="vanished">Status: In combat...</translation>
+        <translation>Status: In combat...</translation>
     </message>
     <message>
+        <location filename="../tasks/tools/infinite_battle.py" line="207"/>
         <source>状态：正在战斗...</source>
-        <translation type="vanished">Status: Currently in battle...</translation>
+        <translation>Status: Currently in battle...</translation>
     </message>
     <message>
+        <location filename="../tasks/tools/infinite_battle.py" line="216"/>
         <source>战斗操作执行</source>
-        <translation type="vanished">Combat operations execution</translation>
+        <translation>Combat operations execution</translation>
     </message>
 </context>
 <context>
@@ -1368,12 +1360,12 @@ Right-click to set as permanent</translation>
     <message>
         <location filename="../app/my_app.py" line="219"/>
         <source>打开主窗口</source>
-        <translation type="finished">Open Main Window</translation>
+        <translation>Open Main Window</translation>
     </message>
     <message>
         <location filename="../app/my_app.py" line="221"/>
         <source>退出</source>
-        <translation type="finished">Exit</translation>
+        <translation>Exit</translation>
     </message>
     <message>
         <location filename="../app/my_app.py" line="328"/>
@@ -1388,12 +1380,12 @@ Right-click to set as permanent</translation>
     <message>
         <location filename="../app/my_app.py" line="340"/>
         <source>有正在运行的工具</source>
-        <translation type="finished">Tools Running</translation>
+        <translation>Tools Running</translation>
     </message>
     <message>
         <location filename="../app/my_app.py" line="341"/>
         <source>有工具正在运行中，确定要退出程序吗？</source>
-        <translation type="finished">There are tools running, are you sure you want to exit the program?</translation>
+        <translation>There are tools running, are you sure you want to exit the program?</translation>
     </message>
     <message>
         <location filename="../app/my_app.py" line="415"/>
