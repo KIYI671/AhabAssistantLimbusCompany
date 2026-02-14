@@ -81,7 +81,8 @@ redundant_files = [
     "rapidocr/models/ch_PP-OCRv5_rec_mobile_infer.onnx",
     "rapidocr/models/ch_PP-OCRv5_mobile_det.onnx",
     # rapidocr用来可视化识别结果的字体，我们不用这个功能
-    "rapidocr/models/FZYTK.TTF",
+    # 但是因为rapidocr代码耦合的问题，即使不用可视化也会强制下载这个文件，所以还是留着吧...
+    # "rapidocr/models/FZYTK.TTF",
     # opencv的videoio插件，我们不需要
     "cv2/opencv_videoio_ffmpeg4110_64.dll",
 ]
