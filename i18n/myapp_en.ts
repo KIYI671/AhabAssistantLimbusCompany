@@ -300,38 +300,34 @@ Right-click to set as permanent</translation>
         <translation>Exit Game and AALC</translation>
     </message>
     <message>
-        <source>左上角（0，0）</source>
-        <translation type="vanished">Top left corner (0,0)</translation>
-    </message>
-    <message>
         <location filename="../app/__init__.py" line="33"/>
         <source>无限制</source>
-        <translation type="finished">Free</translation>
+        <translation>Free</translation>
     </message>
     <message>
         <location filename="../app/__init__.py" line="34"/>
         <source>左上角</source>
-        <translation type="finished">Top Left</translation>
+        <translation>Top Left</translation>
     </message>
     <message>
         <location filename="../app/__init__.py" line="35"/>
         <source>左下角</source>
-        <translation type="finished">Bottom Left</translation>
+        <translation>Bottom Left</translation>
     </message>
     <message>
         <location filename="../app/__init__.py" line="36"/>
         <source>右上角</source>
-        <translation type="finished">Top Right</translation>
+        <translation>Top Right</translation>
     </message>
     <message>
         <location filename="../app/__init__.py" line="37"/>
         <source>右下角</source>
-        <translation type="finished">Bottom Right</translation>
+        <translation>Bottom Right</translation>
     </message>
     <message>
         <location filename="../app/__init__.py" line="38"/>
         <source>居中</source>
-        <translation type="finished">Center</translation>
+        <translation>Center</translation>
     </message>
     <message>
         <location filename="../app/__init__.py" line="40"/>
