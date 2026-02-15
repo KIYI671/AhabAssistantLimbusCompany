@@ -200,8 +200,7 @@ class MainWindow(FramelessWindow):
         if not self.isVisible():
             self.setWindowOpacity(0)
             self.showNormal()
-            QApplication.processEvents()
-            self.setWindowOpacity(1)
+            QTimer.singleShot(0, lambda: self.setWindowOpacity(1))
         else:
             self.showNormal()
 
