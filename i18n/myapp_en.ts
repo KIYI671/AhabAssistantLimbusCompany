@@ -4,27 +4,36 @@
 <context>
     <name>AnnouncementBoard</name>
     <message>
-        <location filename="../app/announcement_board.py" line="114"/>
+        <location filename="../app/announcement_board.py" line="161"/>
         <source>公告</source>
         <translation>Announcement Board</translation>
     </message>
     <message>
-        <location filename="../app/announcement_board.py" line="134"/>
-        <source>新公告前不再显示</source>
-        <translation>Don&apos;t Show Until New</translation>
+        <location filename="../app/announcement_board.py" line="180"/>
+        <location filename="../app/announcement_board.py" line="233"/>
+        <location filename="../app/announcement_board.py" line="241"/>
+        <location filename="../app/announcement_board.py" line="303"/>
+        <location filename="../app/announcement_board.py" line="386"/>
+        <source>ALL~ 全部公告</source>
+        <translation>All announcements</translation>
     </message>
     <message>
-        <location filename="../app/announcement_board.py" line="136"/>
-        <source>关闭</source>
-        <translation>Close</translation>
+        <location filename="../app/announcement_board.py" line="202"/>
+        <source>下次公告更新前不再显示</source>
+        <translation>Don&apos;t show until next update</translation>
     </message>
     <message>
-        <location filename="../app/announcement_board.py" line="150"/>
+        <location filename="../app/announcement_board.py" line="207"/>
+        <source>确认</source>
+        <translation>Confirm</translation>
+    </message>
+    <message>
+        <location filename="../app/announcement_board.py" line="226"/>
         <source>滚动至底部可关闭公告</source>
         <translation>Scroll to the bottom to close the announcement.</translation>
     </message>
     <message>
-        <location filename="../app/announcement_board.py" line="192"/>
+        <location filename="../app/announcement_board.py" line="271"/>
         <source>长期公告</source>
         <translation>Long-term announcement</translation>
     </message>
@@ -558,8 +567,8 @@ Right-click to set as permanent</translation>
         <translation>Checking update failed (╥╯﹏╰╥)</translation>
     </message>
     <message>
-        <location filename="../app/setting_interface.py" line="460"/>
-        <location filename="../app/setting_interface.py" line="512"/>
+        <location filename="../app/setting_interface.py" line="471"/>
+        <location filename="../app/setting_interface.py" line="523"/>
         <source>更改将在重新启动后生效</source>
         <translation>The changes will take effect after the restart</translation>
     </message>
@@ -584,28 +593,28 @@ Right-click to set as permanent</translation>
         <translation>Settings pasted</translation>
     </message>
     <message>
-        <location filename="../app/setting_interface.py" line="436"/>
+        <location filename="../app/setting_interface.py" line="447"/>
         <source>10次截图平均耗时 {time:.2f} ms</source>
         <translation>Average screenshot time over 10 attempts: {time:.2f} ms</translation>
     </message>
     <message>
-        <location filename="../app/setting_interface.py" line="437"/>
-        <location filename="../app/setting_interface.py" line="449"/>
+        <location filename="../app/setting_interface.py" line="448"/>
+        <location filename="../app/setting_interface.py" line="460"/>
         <source>截图测试结束</source>
         <translation>Screenshot test completed</translation>
     </message>
     <message>
-        <location filename="../app/setting_interface.py" line="448"/>
+        <location filename="../app/setting_interface.py" line="459"/>
         <source>截图性能测试失败</source>
         <translation>Screenshot performance test failed</translation>
     </message>
     <message>
-        <location filename="../app/tools_interface.py" line="97"/>
+        <location filename="../app/tools_interface.py" line="134"/>
         <source>截图完成</source>
         <translation>Screenshot completed</translation>
     </message>
     <message>
-        <location filename="../app/tools_interface.py" line="100"/>
+        <location filename="../app/tools_interface.py" line="137"/>
         <source>图片保存为 AALC &gt; screenshot_{time_str}.png</source>
         <translation>Image saved as AALC &gt; screenshot_{time_str}.png</translation>
     </message>
@@ -626,39 +635,39 @@ Right-click to set as permanent</translation>
 <context>
     <name>BasePrimaryPushSettingCard</name>
     <message>
-        <location filename="../app/setting_interface.py" line="278"/>
+        <location filename="../app/setting_interface.py" line="288"/>
         <source>日志</source>
         <translation>Logs</translation>
     </message>
     <message>
-        <location filename="../app/setting_interface.py" line="280"/>
+        <location filename="../app/setting_interface.py" line="290"/>
         <source>打开日志文件夹</source>
         <translation>Open logs folder</translation>
     </message>
     <message>
-        <location filename="../app/setting_interface.py" line="288"/>
-        <location filename="../app/setting_interface.py" line="290"/>
+        <location filename="../app/setting_interface.py" line="298"/>
+        <location filename="../app/setting_interface.py" line="300"/>
         <source>项目主页</source>
         <translation>Object repo</translation>
     </message>
     <message>
-        <location filename="../app/setting_interface.py" line="294"/>
+        <location filename="../app/setting_interface.py" line="304"/>
         <source>加入群聊</source>
         <translation>Join Discord Server</translation>
     </message>
     <message>
-        <location filename="../app/setting_interface.py" line="296"/>
+        <location filename="../app/setting_interface.py" line="306"/>
         <source>discord群</source>
         <translation>Discord</translation>
     </message>
     <message>
-        <location filename="../app/setting_interface.py" line="300"/>
-        <location filename="../app/setting_interface.py" line="302"/>
+        <location filename="../app/setting_interface.py" line="310"/>
+        <location filename="../app/setting_interface.py" line="312"/>
         <source>提供反馈</source>
         <translation>Feedback</translation>
     </message>
     <message>
-        <location filename="../app/setting_interface.py" line="305"/>
+        <location filename="../app/setting_interface.py" line="315"/>
         <source>帮助我们改进 AhabAssistantLimbusCompany</source>
         <translation>Help us to enhance AhabAssistantLimbusCompany</translation>
     </message>
@@ -682,7 +691,7 @@ Right-click to set as permanent</translation>
     <name>BasePushSettingCard</name>
     <message>
         <location filename="../app/setting_interface.py" line="162"/>
-        <location filename="../app/setting_interface.py" line="227"/>
+        <location filename="../app/setting_interface.py" line="237"/>
         <source>修改</source>
         <translation>Edit</translation>
     </message>
@@ -692,61 +701,67 @@ Right-click to set as permanent</translation>
         <translation>Game path</translation>
     </message>
     <message>
-        <location filename="../app/setting_interface.py" line="229"/>
+        <location filename="../app/setting_interface.py" line="239"/>
         <source>快捷键设置</source>
         <translation>Shortcut Settings</translation>
     </message>
     <message>
-        <location filename="../app/setting_interface.py" line="233"/>
+        <location filename="../app/setting_interface.py" line="243"/>
         <source>结束运行的脚本</source>
         <translation>Stop running script</translation>
     </message>
     <message>
-        <location filename="../app/setting_interface.py" line="236"/>
+        <location filename="../app/setting_interface.py" line="246"/>
         <source>暂停脚本运行</source>
         <translation>Pause running script</translation>
     </message>
     <message>
-        <location filename="../app/setting_interface.py" line="239"/>
+        <location filename="../app/setting_interface.py" line="249"/>
         <source>恢复脚本运行</source>
         <translation>Resume running script</translation>
     </message>
     <message>
-        <location filename="../app/tools_interface.py" line="38"/>
-        <location filename="../app/tools_interface.py" line="48"/>
-        <location filename="../app/tools_interface.py" line="57"/>
+        <location filename="../app/tools_interface.py" line="43"/>
+        <location filename="../app/tools_interface.py" line="53"/>
+        <location filename="../app/tools_interface.py" line="62"/>
+        <location filename="../app/tools_interface.py" line="129"/>
         <source>运行</source>
         <translation>Run</translation>
     </message>
     <message>
-        <location filename="../app/tools_interface.py" line="40"/>
+        <location filename="../app/tools_interface.py" line="45"/>
         <source>自动战斗</source>
         <translation>Auto Battle</translation>
     </message>
     <message>
-        <location filename="../app/tools_interface.py" line="44"/>
+        <location filename="../app/tools_interface.py" line="49"/>
         <source>这只是一个为你自动按下P键和Enter键的小工具，不要怀抱太多期待</source>
         <translation>It&apos;s just a gadget that automatically presses the P and Enter keys for you, so don&apos;t expect too much</translation>
     </message>
     <message>
-        <location filename="../app/tools_interface.py" line="50"/>
+        <location filename="../app/tools_interface.py" line="55"/>
         <source>自动体力换饼</source>
         <translation>Auto Stamina Replacement</translation>
     </message>
     <message>
-        <location filename="../app/tools_interface.py" line="53"/>
+        <location filename="../app/tools_interface.py" line="58"/>
         <source>辅助自动换饼小工具，防止体力溢出</source>
         <translation>It&apos;s just a gadget that automatically replaces the cogito for you, preventing stamina overflow</translation>
     </message>
     <message>
-        <location filename="../app/tools_interface.py" line="59"/>
+        <location filename="../app/tools_interface.py" line="64"/>
         <source>截图小工具</source>
         <translation>Screenshot Tool</translation>
     </message>
     <message>
-        <location filename="../app/tools_interface.py" line="60"/>
+        <location filename="../app/tools_interface.py" line="65"/>
         <source>辅助截图小工具</source>
         <translation>It&apos;s just a gadget that takes screenshots for you</translation>
+    </message>
+    <message>
+        <location filename="../app/tools_interface.py" line="125"/>
+        <source>运行中</source>
+        <translation>Running</translation>
     </message>
 </context>
 <context>
@@ -767,32 +782,32 @@ Right-click to set as permanent</translation>
         <translation>Start Game</translation>
     </message>
     <message>
-        <location filename="../app/setting_interface.py" line="186"/>
+        <location filename="../app/setting_interface.py" line="196"/>
         <source>个性化</source>
         <translation>Personalization</translation>
     </message>
     <message>
-        <location filename="../app/setting_interface.py" line="245"/>
+        <location filename="../app/setting_interface.py" line="255"/>
         <source>更新设置</source>
         <translation>Update Settings</translation>
     </message>
     <message>
-        <location filename="../app/setting_interface.py" line="275"/>
+        <location filename="../app/setting_interface.py" line="285"/>
         <source>日志设置</source>
         <translation>logs Settings</translation>
     </message>
     <message>
-        <location filename="../app/setting_interface.py" line="285"/>
+        <location filename="../app/setting_interface.py" line="295"/>
         <source>关于</source>
         <translation>About</translation>
     </message>
     <message>
-        <location filename="../app/tools_interface.py" line="35"/>
+        <location filename="../app/tools_interface.py" line="40"/>
         <source>工具箱</source>
         <translation>Toolbox</translation>
     </message>
     <message>
-        <location filename="../app/setting_interface.py" line="309"/>
+        <location filename="../app/setting_interface.py" line="319"/>
         <source>实验性内容</source>
         <translation>Experimental sections</translation>
     </message>
@@ -906,68 +921,68 @@ Right-click to set as permanent</translation>
         <translation>Others</translation>
     </message>
     <message>
-        <location filename="../app/setting_interface.py" line="191"/>
+        <location filename="../app/setting_interface.py" line="201"/>
         <source>语言</source>
         <translation>Language</translation>
     </message>
     <message>
-        <location filename="../app/setting_interface.py" line="192"/>
+        <location filename="../app/setting_interface.py" line="202"/>
         <source>设置程序 UI 使用的语言</source>
         <translation>Set program language</translation>
     </message>
     <message>
-        <location filename="../app/setting_interface.py" line="199"/>
+        <location filename="../app/setting_interface.py" line="209"/>
         <source>应用主题</source>
         <translation>App Theme</translation>
     </message>
     <message>
-        <location filename="../app/setting_interface.py" line="200"/>
+        <location filename="../app/setting_interface.py" line="210"/>
         <source>调整应用的主题外观</source>
         <translation>Adjust the app theme appearance</translation>
     </message>
     <message>
-        <location filename="../app/setting_interface.py" line="203"/>
+        <location filename="../app/setting_interface.py" line="213"/>
         <source>亮色模式</source>
         <translation>Light Mode</translation>
     </message>
     <message>
-        <location filename="../app/setting_interface.py" line="204"/>
+        <location filename="../app/setting_interface.py" line="214"/>
         <source>深色模式</source>
         <translation>Dark Mode</translation>
     </message>
     <message>
-        <location filename="../app/setting_interface.py" line="257"/>
+        <location filename="../app/setting_interface.py" line="267"/>
         <source>更新源</source>
         <translation>Update source</translation>
     </message>
     <message>
-        <location filename="../app/setting_interface.py" line="258"/>
+        <location filename="../app/setting_interface.py" line="268"/>
         <source>选择更新源</source>
         <translation>Choose update source</translation>
     </message>
     <message>
-        <location filename="../app/setting_interface.py" line="260"/>
+        <location filename="../app/setting_interface.py" line="270"/>
         <source>Github源</source>
         <translation>Github</translation>
     </message>
     <message>
-        <location filename="../app/setting_interface.py" line="261"/>
+        <location filename="../app/setting_interface.py" line="271"/>
         <source>Mirror 酱</source>
         <translation>Mirror Chyan</translation>
     </message>
     <message>
-        <location filename="../app/setting_interface.py" line="211"/>
+        <location filename="../app/setting_interface.py" line="221"/>
         <source>缩放</source>
         <translation>Zoom</translation>
     </message>
     <message>
-        <location filename="../app/setting_interface.py" line="212"/>
+        <location filename="../app/setting_interface.py" line="222"/>
         <source>设置程序 UI 使用的缩放</source>
         <translation>Set program zoom</translation>
     </message>
     <message>
-        <location filename="../app/setting_interface.py" line="202"/>
-        <location filename="../app/setting_interface.py" line="214"/>
+        <location filename="../app/setting_interface.py" line="212"/>
+        <location filename="../app/setting_interface.py" line="224"/>
         <source>跟随系统</source>
         <translation>Follow system</translation>
     </message>
@@ -1134,22 +1149,22 @@ Right-click to set as permanent</translation>
 <context>
     <name>HotketInputCard</name>
     <message>
-        <location filename="../app/base_combination.py" line="1158"/>
+        <location filename="../app/base_combination.py" line="1180"/>
         <source>保存</source>
         <translation>Save</translation>
     </message>
     <message>
-        <location filename="../app/base_combination.py" line="1159"/>
+        <location filename="../app/base_combination.py" line="1181"/>
         <source>重置</source>
         <translation>Reset</translation>
     </message>
     <message>
-        <location filename="../app/base_combination.py" line="1161"/>
+        <location filename="../app/base_combination.py" line="1183"/>
         <source>取消</source>
         <translation>Cancel</translation>
     </message>
     <message>
-        <location filename="../app/base_combination.py" line="1164"/>
+        <location filename="../app/base_combination.py" line="1186"/>
         <source>按下键盘以设置快捷键, 部分特殊按键可能无法使用</source>
         <translation>Press a key to set the shortcut, some special keys may not be usable</translation>
     </message>
@@ -1157,7 +1172,7 @@ Right-click to set as permanent</translation>
 <context>
     <name>HotkeyEditCard</name>
     <message>
-        <location filename="../app/base_combination.py" line="1115"/>
+        <location filename="../app/base_combination.py" line="1137"/>
         <source>返回</source>
         <translation>Back</translation>
     </message>
@@ -1165,38 +1180,45 @@ Right-click to set as permanent</translation>
 <context>
     <name>InfiniteBattles</name>
     <message>
+        <location filename="../tasks/tools/infinite_battle.py" line="133"/>
         <source>开始战斗</source>
-        <translation type="vanished">Battle Start</translation>
+        <translation>Battle Start</translation>
     </message>
     <message>
+        <location filename="../tasks/tools/infinite_battle.py" line="135"/>
         <source>无限守备</source>
-        <translation type="vanished">Defense All Time</translation>
+        <translation>Defense All Time</translation>
     </message>
     <message>
+        <location filename="../tasks/tools/infinite_battle.py" line="136"/>
         <source>第一回合开启守备</source>
-        <translation type="obsolete">Defense First Turn</translation>
+        <translation>Defense First Turn</translation>
     </message>
     <message>
+        <location filename="../tasks/tools/infinite_battle.py" line="166"/>
         <source>停止战斗</source>
-        <translation type="vanished">Stop Battle</translation>
+        <translation>Stop Battle</translation>
     </message>
     <message>
+        <location filename="../tasks/tools/infinite_battle.py" line="175"/>
         <source>状态：战斗中...</source>
-        <translation type="vanished">Status: In combat...</translation>
+        <translation>Status: In combat...</translation>
     </message>
     <message>
+        <location filename="../tasks/tools/infinite_battle.py" line="207"/>
         <source>状态：正在战斗...</source>
-        <translation type="vanished">Status: Currently in battle...</translation>
+        <translation>Status: Currently in battle...</translation>
     </message>
     <message>
+        <location filename="../tasks/tools/infinite_battle.py" line="216"/>
         <source>战斗操作执行</source>
-        <translation type="vanished">Combat operations execution</translation>
+        <translation>Combat operations execution</translation>
     </message>
 </context>
 <context>
     <name>KeyEditButton</name>
     <message>
-        <location filename="../app/base_combination.py" line="1081"/>
+        <location filename="../app/base_combination.py" line="1103"/>
         <source>设置快捷键</source>
         <translation>Set Shortcut</translation>
     </message>
@@ -1339,78 +1361,98 @@ Right-click to set as permanent</translation>
 <context>
     <name>MainWindow</name>
     <message>
-        <location filename="../app/my_app.py" line="277"/>
-        <location filename="../app/my_app.py" line="384"/>
+        <location filename="../app/my_app.py" line="385"/>
+        <location filename="../app/my_app.py" line="492"/>
         <source>队伍设置</source>
         <translation>Team Settings</translation>
     </message>
     <message>
-        <location filename="../app/my_app.py" line="378"/>
+        <location filename="../app/my_app.py" line="486"/>
         <source>一键长草</source>
         <translation>One-Click Grass Mode</translation>
     </message>
     <message>
-        <location filename="../app/my_app.py" line="379"/>
+        <location filename="../app/my_app.py" line="487"/>
         <source>帮助</source>
         <translation>Help</translation>
     </message>
     <message>
-        <location filename="../app/my_app.py" line="381"/>
+        <location filename="../app/my_app.py" line="489"/>
         <source>设置</source>
         <translation>Settings</translation>
     </message>
     <message>
-        <location filename="../app/my_app.py" line="306"/>
+        <location filename="../app/my_app.py" line="414"/>
         <source>设置未保存</source>
         <translation>SETTINGS UNSAVE</translation>
     </message>
     <message>
-        <location filename="../app/my_app.py" line="248"/>
+        <location filename="../app/my_app.py" line="219"/>
+        <source>打开主窗口</source>
+        <translation>Open Main Window</translation>
+    </message>
+    <message>
+        <location filename="../app/my_app.py" line="221"/>
+        <source>退出</source>
+        <translation>Exit</translation>
+    </message>
+    <message>
+        <location filename="../app/my_app.py" line="328"/>
         <source>有正在进行的任务</source>
         <translation>Task in Progress</translation>
     </message>
     <message>
-        <location filename="../app/my_app.py" line="249"/>
+        <location filename="../app/my_app.py" line="329"/>
         <source>脚本正在运行中，确定要退出程序吗？</source>
         <translation>The script is running, are you sure you want to exit the program?</translation>
     </message>
     <message>
-        <location filename="../app/my_app.py" line="307"/>
+        <location filename="../app/my_app.py" line="340"/>
+        <source>有正在运行的工具</source>
+        <translation>Tools Running</translation>
+    </message>
+    <message>
+        <location filename="../app/my_app.py" line="341"/>
+        <source>有工具正在运行中，确定要退出程序吗？</source>
+        <translation>There are tools running, are you sure you want to exit the program?</translation>
+    </message>
+    <message>
+        <location filename="../app/my_app.py" line="415"/>
         <source>存在未保存的设置，请执行保存或取消操作</source>
         <translation>Didn&apos;t save settings, please do save or cancel</translation>
     </message>
     <message>
-        <location filename="../app/my_app.py" line="380"/>
+        <location filename="../app/my_app.py" line="488"/>
         <source>小工具</source>
         <translation>Gadget</translation>
     </message>
     <message>
-        <location filename="../app/my_app.py" line="368"/>
+        <location filename="../app/my_app.py" line="476"/>
         <source>更新提醒</source>
         <translation>Update Notice</translation>
     </message>
     <message>
-        <location filename="../app/my_app.py" line="368"/>
+        <location filename="../app/my_app.py" line="476"/>
         <source>下载已经完成，是否开始更新</source>
         <translation>Download completed, would you like to start updating</translation>
     </message>
     <message>
-        <location filename="../app/my_app.py" line="316"/>
+        <location filename="../app/my_app.py" line="424"/>
         <source>任务设置出错</source>
         <translation>Task settings are incorrect</translation>
     </message>
     <message>
-        <location filename="../app/my_app.py" line="317"/>
+        <location filename="../app/my_app.py" line="425"/>
         <source>未设置任何任务，请勾选主页面左边的选项框需要执行的任务</source>
         <translation>No task is set, check the task to be performed in the option box on the left side of the main page</translation>
     </message>
     <message>
-        <location filename="../app/my_app.py" line="312"/>
+        <location filename="../app/my_app.py" line="420"/>
         <source>警告！</source>
         <translation>Warning！</translation>
     </message>
     <message>
-        <location filename="../app/my_app.py" line="271"/>
+        <location filename="../app/my_app.py" line="379"/>
         <source>存在未保存的队伍设置</source>
         <translation>There are unsaved team settings</translation>
     </message>
@@ -1634,17 +1676,17 @@ Right-click to set as permanent</translation>
 <context>
     <name>PushSettingCardMirrorchyan</name>
     <message>
-        <location filename="../app/setting_interface.py" line="266"/>
+        <location filename="../app/setting_interface.py" line="276"/>
         <source>修改</source>
         <translation>Edit</translation>
     </message>
     <message>
-        <location filename="../app/setting_interface.py" line="268"/>
+        <location filename="../app/setting_interface.py" line="278"/>
         <source>Mirror 酱 CDK</source>
         <translation>Mirror Chyan CDK</translation>
     </message>
     <message>
-        <location filename="../app/base_combination.py" line="816"/>
+        <location filename="../app/base_combination.py" line="838"/>
         <source>获取 CDK</source>
         <translation>Get CDK</translation>
     </message>
@@ -1652,25 +1694,25 @@ Right-click to set as permanent</translation>
 <context>
     <name>SwitchSettingCard</name>
     <message>
-        <location filename="../app/base_combination.py" line="836"/>
-        <location filename="../app/base_combination.py" line="856"/>
-        <location filename="../app/base_combination.py" line="861"/>
+        <location filename="../app/base_combination.py" line="858"/>
+        <location filename="../app/base_combination.py" line="878"/>
+        <location filename="../app/base_combination.py" line="883"/>
         <source>关</source>
         <translation>OFF</translation>
     </message>
     <message>
-        <location filename="../app/base_combination.py" line="856"/>
-        <location filename="../app/base_combination.py" line="860"/>
+        <location filename="../app/base_combination.py" line="878"/>
+        <location filename="../app/base_combination.py" line="882"/>
         <source>开</source>
         <translation>ON</translation>
     </message>
     <message>
-        <location filename="../app/setting_interface.py" line="249"/>
+        <location filename="../app/setting_interface.py" line="259"/>
         <source>加入预览版更新渠道</source>
         <translation>Join Beta update</translation>
     </message>
     <message>
-        <location filename="../app/setting_interface.py" line="314"/>
+        <location filename="../app/setting_interface.py" line="324"/>
         <source>自动检测并切换游戏语言</source>
         <translation>Auto identify and switch game language</translation>
     </message>
@@ -1697,12 +1739,12 @@ Right-click to set as permanent</translation>
     <message>
         <location filename="../app/setting_interface.py" line="100"/>
         <source>内存占用保护</source>
-        <translation type="finished">Memory Usage Protection</translation>
+        <translation>Memory Usage Protection</translation>
     </message>
     <message>
         <location filename="../app/setting_interface.py" line="104"/>
         <source>自动检测电脑&lt;font color=red&gt;总内存占用&lt;/font&gt;，超过90%执行内存清理，防止崩溃，可能略微影响脚本速度</source>
-        <translation type="finished">Automatically detect &lt;font color=red&gt;total memory usage&lt;/font&gt; of the computer, perform memory cleanup when it exceeds 90% to prevent crashes, which may slightly affect script speed</translation>
+        <translation>Automatically detect &lt;font color=red&gt;total memory usage&lt;/font&gt; of the computer, perform memory cleanup when it exceeds 90% to prevent crashes, which may slightly affect script speed</translation>
     </message>
     <message>
         <location filename="../app/setting_interface.py" line="121"/>
@@ -1713,6 +1755,16 @@ Right-click to set as permanent</translation>
         <location filename="../app/setting_interface.py" line="170"/>
         <source>开机时启动 AALC</source>
         <translation>Starting AALC at booting</translation>
+    </message>
+    <message>
+        <location filename="../app/setting_interface.py" line="186"/>
+        <source>最小化到托盘</source>
+        <translation>Minimize to tray</translation>
+    </message>
+    <message>
+        <location filename="../app/setting_interface.py" line="190"/>
+        <source>开启后，最小化时将隐藏到系统托盘</source>
+        <translation>When enabled, the application will be hidden to the system tray when minimized</translation>
     </message>
 </context>
 <context>

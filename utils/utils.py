@@ -214,6 +214,7 @@ def decrypt_string(encrypted_b64: str, entropy: bytes = b"AALC") -> str:
     # 返回原始字符串
     return decrypted_data[1].decode("utf-8")
 
+
 def check_game_running() -> bool:
     """检查游戏是否正在运行"""
     if cfg.simulator:
@@ -223,6 +224,7 @@ def check_game_running() -> bool:
             return MumuControl.connection_device.check_game_alive()
     else:
         import psutil
+
         for proc in psutil.process_iter(["name"]):
             try:
                 # 获取进程的可执行文件名（如 "notepad.exe"）
@@ -262,7 +264,9 @@ def run_as_user(command: list[str], timeout: int = 30):
         run_cmd(f'schtasks /delete /tn "{task_name}" /f', ignore_error=True)
 
         # 2. 创建临时批处理文件
-        with tempfile.NamedTemporaryFile(delete=False, suffix=".bat", mode="w", encoding="gbk") as bat:
+        with tempfile.NamedTemporaryFile(
+            delete=False, suffix=".bat", mode="w", encoding="gbk"
+        ) as bat:
             # 使用 @echo off 减少输出，添加 exit 确保批处理退出
             bat.write(f"@echo off\n{subprocess.list2cmdline(command)}\nexit\n")
             bat_path = bat.name
@@ -274,11 +278,13 @@ def run_as_user(command: list[str], timeout: int = 30):
             f'schtasks /create /f /tn "{task_name}" /sc once /st 23:59 '
             f'/ru "{username}" /tr "cmd.exe /c \'{bat_path}\'"'
         )
-        if run_cmd(create_cmd) is None: return False
+        if run_cmd(create_cmd) is None:
+            return False
 
         # 4. 立即执行任务
         log.debug(f"启动任务: {command}")
-        if run_cmd(f'schtasks /run /tn "{task_name}"') is None: return False
+        if run_cmd(f'schtasks /run /tn "{task_name}"') is None:
+            return False
 
         # 5. 等待执行 (根据需求调整)
         # 注意：schtasks /run 是异步的，这里 sleep 是等待程序启动

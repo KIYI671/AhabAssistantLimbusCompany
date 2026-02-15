@@ -402,7 +402,6 @@ class MirrorTeamCombination(QFrame):
 
 
 class SinnerSelect(QFrame):
-
     def __init__(
         self,
         config_name,
@@ -427,12 +426,14 @@ class SinnerSelect(QFrame):
         )
         # Image Label
         self.label_pic = QFrame(self)
-        self.label_pic.setStyleSheet(f"""
+        self.label_pic.setStyleSheet(
+            f"""
             QFrame {{
                 background-color: transparent;
                 border-image: url({img_path}/Sinner.png) 0 0 0 0 stretch stretch;
                 border-width: 0px;
-            }}""")
+            }}"""
+        )
 
         # Internal CheckBox
         self.box = BaseCheckBox(config_name, None, "", parent=self)
@@ -744,6 +745,27 @@ class BasePushSettingCard(PushSettingCard):
         self.title = title
         self.content = content
 
+        lt_qss = """
+        QPushButton[isRunning="true"] {
+            background-color: --ThemeColorPrimary;
+            color: white;
+        }"""
+        dk_qss = """
+        QPushButton[isRunning="true"] {
+            background-color: --ThemeColorPrimary;
+            color: black;
+        }"""
+        self.button.setProperty("isRunning", "false")
+        setCustomStyleSheet(self, lt_qss, dk_qss)
+
+    def update_button(self, is_running: bool):
+        self.button.setProperty("isRunning", "true" if is_running else "false")
+        self.text = self.button.text()
+        self.button.setText(self.tr(self.text))
+        self.button.style().unpolish(self.button)
+        self.button.style().polish(self.button)
+        self.button.update()
+
     def retranslateUi(self):
         self.titleLabel.setText(self.tr(self.title))
         self.contentLabel.setText(self.tr(self.content))
@@ -835,7 +857,7 @@ class SwitchSettingCard(SettingCard):
         self.config_name = config_name
         self.switchButton = SwitchButton(self.tr("关"), self, IndicatorPosition.RIGHT)
 
-        self.setValue(cfg.get_value(self.config_name))
+        self.setValue(cfg.get_value(self.config_name, False))
 
         self.title = title
         self.content = content
