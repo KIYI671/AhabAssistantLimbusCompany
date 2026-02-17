@@ -196,7 +196,14 @@ class MainWindow(FramelessWindow):
         for btn in [self.titleBar.minBtn, self.titleBar.closeBtn, self.titleBar.maxBtn]:
             btn.setState(TitleBarButtonState.NORMAL)
 
-        self.showNormal()
+        # 隐藏从托盘恢复时短暂显示的白色窗口
+        if not self.isVisible():
+            self.setWindowOpacity(0)
+            self.showNormal()
+            QTimer.singleShot(0, lambda: self.setWindowOpacity(1))
+        else:
+            self.showNormal()
+
         self.raise_()
         self.activateWindow()
 
