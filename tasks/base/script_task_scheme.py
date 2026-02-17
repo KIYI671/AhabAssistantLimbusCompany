@@ -172,25 +172,27 @@ def Resonate_with_Ahab():
         f"assets/audio/This_is_all_your_fault_{random_number}.mp3", block=False
     )
 
-def Daily_task(get_reward=None):
-    back_init_menu()
-    make_enkephalin_module()
-    exp_times = cfg.set_EXP_count
-    if get_reward and get_reward == "EXP":
-        exp_times -= 1
-    thread_times = cfg.set_thread_count
-    if get_reward and get_reward == "thread":
-        thread_times -= 1
-    for i in range(exp_times):
-        onetime_EXP_process()
-    for i in range(thread_times):
-        onetime_thread_process()
+def Daily_task_wrapper(get_reward=None):
+    def wrapper():
+        back_init_menu()
+        make_enkephalin_module()
+        exp_times = cfg.set_EXP_count
+        if get_reward and get_reward == "EXP":
+            exp_times -= 1
+        thread_times = cfg.set_thread_count
+        if get_reward and get_reward == "thread":
+            thread_times -= 1
+        for i in range(exp_times):
+            onetime_EXP_process()
+        for i in range(thread_times):
+            onetime_thread_process()
+    return wrapper
 
 def Buy_enkephalin():
     back_init_menu()
     lunacy_to_enkephalin(times=cfg.set_lunacy_to_enkephalin)
 
-def Mirror_wrapper():
+def Mirror_task():
     # 判断执行镜牢任务的次数
         mir_times = cfg.set_mirror_count
         if cfg.infinite_dungeons:
@@ -316,19 +318,19 @@ def script_task() -> None | int:
     task_list = []
     # 执行日常刷本任务
     if cfg.daily_task:
-        task_list.append(Daily_task(get_reward=get_reward))
+        task_list.append(Daily_task_wrapper(get_reward=get_reward))
 
     # 执行奖励领取任务
     if cfg.get_reward:
-        task_list.append(to_get_reward())
+        task_list.append(to_get_reward)
 
     # 执行狂气换饼任务
     if cfg.buy_enkephalin:
-        task_list.append(Buy_enkephalin())
+        task_list.append(Buy_enkephalin)
 
     # 执行镜牢任务
     if cfg.mirror:
-        task_list.append(Mirror_wrapper())
+        task_list.append(Mirror_task)
 
     for task in task_list:
         task()

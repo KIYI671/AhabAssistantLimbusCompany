@@ -120,7 +120,7 @@ class PageSetWindows(PageCard):
         )
         self.recovery_window = LabelWithComboBox(
             QT_TRANSLATE_NOOP("LabelWithComboBox", "结束后恢复窗口"),
-            "set_recovery_window",
+            "set_reduce_miscontact",
             set_reduce_miscontact_options,
         )
         if cfg.experimental_auto_lang:

@@ -30,7 +30,7 @@ set_win_size_options = {
     "3840*2160": 2160,
 }
 set_win_position_options = {QT_TRANSLATE_NOOP("BaseComboBox", "左上角（0，0）"): True}
-set_reduce_miscontact_options = {QT_TRANSLATE_NOOP("BaseComboBox", "是"): True}
+set_reduce_miscontact_options = {QT_TRANSLATE_NOOP("BaseComboBox", "是"): True, QT_TRANSLATE_NOOP("BaseComboBox", "否"): False}
 set_lunacy_to_enkephalin_options = {
     QT_TRANSLATE_NOOP("BaseComboBox", "不换"): 0,
     QT_TRANSLATE_NOOP("BaseComboBox", "换第一次"): 1,
