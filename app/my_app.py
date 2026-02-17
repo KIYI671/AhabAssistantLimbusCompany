@@ -251,6 +251,7 @@ class MainWindow(FramelessWindow):
     def command_start(self, argv: list[str]):
         """通过命令行参数控制程序启动行为"""
         # 初始化控制符
+        log.debug(f"接收到命令行参数: {argv}")
         skip_arg_times = 0
         start_flag = False
         exit_flag = False
@@ -296,6 +297,7 @@ class MainWindow(FramelessWindow):
             )
 
         if start_flag:
+            log.info("开始通过命令行参数启动程序")
             QTimer.singleShot(3000, mediator.finished_signal.emit)
 
     def _apply_theme_styles(self):
