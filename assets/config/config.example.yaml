@@ -8,6 +8,7 @@ game_path: C:\Program Files (x86)\Steam\steamapps\common\Limbus Company\LimbusCo
 
 language_in_game: en # 游戏语言
 after_completion: 0 # 脚本结束后的操作
+keep_after_completion: False # 是否保持脚本结束后的操作
 language_in_program: "" # 程序语言
 shutdown_hotkey: "<ctrl>+q" # 关闭快捷键
 pause_hotkey: "<alt>+p" # 暂停快捷键

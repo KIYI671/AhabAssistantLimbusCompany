@@ -389,15 +389,44 @@ class BaseLabel(BaseLayout):
             self.label.setStyleSheet(f"{base_style}color: black;")
 
 
+class RightClickComboBox(ComboBox):
+    RightClicked = Signal()
+
+    def __init__(self, parent=None):
+        super().__init__(parent=parent)
+        self.right_clicked = False
+
+    def mousePressEvent(self, e):
+        self.right_clicked = False
+        return super().mousePressEvent(e)
+
+    def mouseReleaseEvent(self, e):
+        super().mouseReleaseEvent(e)
+        if e.button() == Qt.RightButton and self.dropMenu is not None:
+            self.right_clicked = True
+            self.RightClicked.emit()
+
+
 class BaseComboBox(BaseLayout):
-    def __init__(self, config_name, combo_box_width=None, parent=None):
+    def __init__(
+        self,
+        config_name: str,
+        combo_box_width: int | None = None,
+        tool_tip_delay: int = 0,
+        parent=None,
+    ):
         super().__init__(parent=parent)
         self.setObjectName(config_name)
         self.config_name = config_name
         self.items = None
-        self.combo_box = ComboBox(self)
+        self.combo_box = RightClickComboBox(self)
         self.hBoxLayout.addWidget(self.combo_box, stretch=1)
         self.setFixedHeight(30)
+        self.installEventFilter(
+            ToolTipFilter(
+                self, showDelay=tool_tip_delay, position=ToolTipPosition.BOTTOM_LEFT
+            )
+        )
         if combo_box_width and isinstance(combo_box_width, int):
             self.combo_box.setFixedWidth(combo_box_width)
 
@@ -432,6 +461,8 @@ class BaseComboBox(BaseLayout):
             for key in self.items:
                 self.combo_box.setItemText(index, self.tr(key))
                 index += 1
+        if self.toolTip():
+            self.setToolTip(self.tr(self.toolTip()))
 
 
 class BaseSpinBox(BaseLayout):

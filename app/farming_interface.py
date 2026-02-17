@@ -1,6 +1,7 @@
 import sys
 
 from pynput import keyboard
+from PySide6.QtCore import Qt
 from PySide6.QtGui import QTextCursor
 from PySide6.QtWidgets import QApplication, QTextEdit
 from qfluentwidgets import (
@@ -27,6 +28,23 @@ from module.game_and_screen import screen
 from module.logger import log, ui_log_dispatcher
 from tasks.base.script_task_scheme import my_script_task
 from utils.utils import check_hard_mirror_time
+
+
+class ThenComboBox(BaseComboBox):
+    """添加右键永久保存, 不泛用"""
+
+    def __init__(self, config_name, combo_box_width=None, parent=None):
+        super().__init__(
+            config_name, combo_box_width, tool_tip_delay=600, parent=parent
+        )
+
+    def on_change(self, index):
+        if cfg.get_value(self.config_name) is not None:
+            cfg.unsaved_set_value("keep_after_completion", self.combo_box.right_clicked)
+            cfg.set_value(self.config_name, list(self.items.items())[index][1])
+        else:
+            data_dict = {self.config_name: list(self.items.items())[index][1]}
+            self.send_switch_signal(data_dict)
 
 
 class FarmingInterface(QWidget):
@@ -90,6 +108,7 @@ class FarmingInterfaceLeft(QWidget):
         self.setObjectName("FarmingInterfaceLeft")
 
         self.my_script = None
+        self.then_info_bar = None
 
         self.__init_widget()
         self.__init_card()
@@ -163,9 +182,18 @@ class FarmingInterfaceLeft(QWidget):
 
         self.then = BaseLabel(QT_TRANSLATE_NOOP("BaseLabel", "之后"))
 
-        self.then_combobox = BaseComboBox("after_completion")
+        self.then_combobox = ThenComboBox("after_completion")
+        self.then_combobox.setToolTip(
+            QT_TRANSLATE_NOOP(
+                "ThenComboBox", "选择脚本结束后的操作，右键点击并更改选项可永久保存"
+            )
+        )
         self.then_combobox.add_items(set_after_completion_options)
-        self.then_combobox.set_options(0)
+        self.then_combobox.combo_box.RightClicked.connect(
+            self.then_combobox_right_clicked
+        )
+        if cfg.keep_after_completion is False:
+            self.then_combobox.set_options(0)
         self.link_start_button = NormalTextButton("Link Start!", "link_start", 0)
         self.link_start_button.clicked.connect(self.start_and_stop_tasks)
         self.link_start_button.button.setMinimumSize(130, 70)
@@ -378,6 +406,22 @@ class FarmingInterfaceLeft(QWidget):
             else:
                 # 递归处理子部件的子部件（如布局中的嵌套控件）
                 self._enable_setting(child)
+
+    def then_combobox_right_clicked(self):
+        if self.then_info_bar is not None:
+            return
+        self.then_info_bar = BaseInfoBar.info(
+            title=self.tr("当前选择后会永久保存"),
+            content="",
+            orient=Qt.Horizontal,
+            isClosable=True,
+            position=InfoBarPosition.BOTTOM_LEFT,
+            duration=1500,
+            parent=self.window(),
+        )
+        self.then_info_bar.destroyed.connect(
+            lambda: setattr(self, "then_info_bar", None)
+        )
 
     def create_and_start_script(self):
         try:
