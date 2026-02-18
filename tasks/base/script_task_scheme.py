@@ -166,54 +166,14 @@ def init_game():
         if cfg.set_windows:
             screen.set_win()
 
+def Resonate_with_Ahab():
+    random_number = random.randint(1, 4)
+    playsound(
+        f"assets/audio/This_is_all_your_fault_{random_number}.mp3", block=False
+    )
 
-def script_task() -> None | int:
-    start_time = time()
-    # 获取（启动）游戏对游戏窗口进行设置
-    init_game()
-
-    # 自动更改语言, 如果不支持则直接退出
-    try:
-        if cfg.experimental_auto_lang:
-            ret = auto_switch_language_in_game(screen.handle._hWnd)
-            if ret == AutoSwitchCon.FAILED:
-                log.info("自动切换语言失败，使用英语尝试")
-                cfg.set_value("language_in_game", "en")
-        else:
-            if cfg.language_in_game == "-":
-                log.warning("自动切换语言已关闭但是并未设置语言! 即将使用英语尝试!")
-                cfg.set_value("language_in_game", "en")
-    except Exception as e:
-        log.error(f"自动切换语言出错: {e}，使用英语尝试")
-        cfg.set_value("language_in_game", "en")
-
-    # 低渲染比例发出警告
-    if get_game_config_from_registry().get("_renderingScale", -1) == 2:
-        log.warning("当前游戏渲染比例为低, 可能会导致识别错误, 建议设置为中或更高")
-    if cfg.set_win_size == 720:
-        log.warning(
-            "当前游戏分辨率为1280*720, 可能会导致识别错误或卡死, 建议设置为更高分辨率"
-        )
-
-    if cfg.language_in_game == "zh_cn" and pic_path[0] != "zh_cn":
-        pic_path.insert(0, "zh_cn")
-    elif cfg.language_in_game == "en":
-        while pic_path[0] != "share":
-            pic_path.pop(0)
-        pic_path.insert(0, "en")
-
-    if cfg.resonate_with_Ahab:
-        random_number = random.randint(1, 4)
-        playsound(
-            f"assets/audio/This_is_all_your_fault_{random_number}.mp3", block=False
-        )
-    # 如果是战斗中，先处理战斗
-    get_reward = None
-    if auto.click_element("battle/turn_assets.png", take_screenshot=True):
-        get_reward = battle.fight()
-
-    # 执行日常刷本任务
-    if cfg.daily_task:
+def Daily_task_wrapper(get_reward=None):
+    def wrapper():
         back_init_menu()
         make_enkephalin_module()
         exp_times = cfg.set_EXP_count
@@ -226,18 +186,14 @@ def script_task() -> None | int:
             onetime_EXP_process()
         for i in range(thread_times):
             onetime_thread_process()
-    # 执行奖励领取任务
-    if cfg.get_reward:
-        to_get_reward()
+    return wrapper
 
-    # 执行狂气换饼任务
-    if cfg.buy_enkephalin:
-        back_init_menu()
-        lunacy_to_enkephalin(times=cfg.set_lunacy_to_enkephalin)
+def Buy_enkephalin():
+    back_init_menu()
+    lunacy_to_enkephalin(times=cfg.set_lunacy_to_enkephalin)
 
-    # 执行镜牢任务
-    if cfg.mirror:
-        # 判断执行镜牢任务的次数
+def Mirror_task():
+    # 判断执行镜牢任务的次数
         mir_times = cfg.set_mirror_count
         if cfg.infinite_dungeons:
             mir_times = 9999
@@ -307,10 +263,77 @@ def script_task() -> None | int:
                 mediator.mirror_signal.emit(finish_times, mir_times)
                 msg = f"已完成 {finish_times} 次镜牢"
                 log.info(msg)
+                if finish_times == 1 and cfg.re_claim_rewards: # 完成第一次镜牢后重新领取奖励
+                    to_get_reward()
+                     
 
         mediator.mirror_bar_kill_signal.emit()
-        if cfg.re_claim_rewards:
+        if cfg.re_claim_rewards and finish_times > 0:
             to_get_reward()
+            
+
+def script_task() -> None | int:
+    start_time = time()
+    # 获取（启动）游戏对游戏窗口进行设置
+    init_game()
+
+    # 自动更改语言, 如果不支持则直接退出
+    try:
+        if cfg.experimental_auto_lang:
+            ret = auto_switch_language_in_game(screen.handle._hWnd)
+            if ret == AutoSwitchCon.FAILED:
+                log.info("自动切换语言失败，使用英语尝试")
+                cfg.set_value("language_in_game", "en")
+        else:
+            if cfg.language_in_game == "-":
+                log.warning("自动切换语言已关闭但是并未设置语言! 即将使用英语尝试!")
+                cfg.set_value("language_in_game", "en")
+    except Exception as e:
+        log.error(f"自动切换语言出错: {e}，使用英语尝试")
+        cfg.set_value("language_in_game", "en")
+
+    # 低渲染比例发出警告
+    if get_game_config_from_registry().get("_renderingScale", -1) == 2:
+        log.warning("当前游戏渲染比例为低, 可能会导致识别错误, 建议设置为中或更高")
+    if cfg.set_win_size == 720:
+        log.warning(
+            "当前游戏分辨率为1280*720, 可能会导致识别错误或卡死, 建议设置为更高分辨率"
+        )
+
+    if cfg.language_in_game == "zh_cn" and pic_path[0] != "zh_cn":
+        pic_path.insert(0, "zh_cn")
+    elif cfg.language_in_game == "en":
+        while pic_path[0] != "share":
+            pic_path.pop(0)
+        pic_path.insert(0, "en")
+
+    if cfg.resonate_with_Ahab:
+        Resonate_with_Ahab()
+    # 如果是战斗中，先处理战斗
+
+    get_reward = None
+    if auto.click_element("battle/turn_assets.png", take_screenshot=True):
+        get_reward = battle.fight()
+
+    task_list = []
+    # 执行日常刷本任务
+    if cfg.daily_task:
+        task_list.append(Daily_task_wrapper(get_reward=get_reward))
+
+    # 执行奖励领取任务
+    if cfg.get_reward:
+        task_list.append(to_get_reward)
+
+    # 执行狂气换饼任务
+    if cfg.buy_enkephalin:
+        task_list.append(Buy_enkephalin)
+
+    # 执行镜牢任务
+    if cfg.mirror:
+        task_list.append(Mirror_task)
+
+    for task in task_list:
+        task()
 
     if cfg.set_reduce_miscontact and not cfg.simulator:
         screen.reset_win()
@@ -336,10 +359,7 @@ def script_task() -> None | int:
         template=TemplateToast.NormalTemplate,
     )
     if cfg.resonate_with_Ahab:
-        random_number = random.randint(1, 4)
-        playsound(
-            f"assets/audio/This_is_all_your_fault_{random_number}.mp3", block=False
-        )
+        Resonate_with_Ahab()
 
     if platform.system() == "Windows":
         after_completion = cfg.after_completion

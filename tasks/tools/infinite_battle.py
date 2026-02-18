@@ -25,10 +25,11 @@ class BattleWorker(QThread):
     error_occurred = Signal(str)
     initialization_complete = Signal()
 
-    def __init__(self, defense=False, defense_on_turn1=False, parent=None):
+    def __init__(self, defense=False, defense_on_turn1=False, choice_event_handling=True, parent=None):
         super().__init__(parent)
         self.defense = defense
         self.defense_on_turn1 = defense_on_turn1
+        self.choice_event_handling = choice_event_handling
         self.initialized = False
         self.battle = Battle()  # 复用镜牢战斗逻辑
         self.background_click = cfg.background_click
@@ -64,6 +65,7 @@ class BattleWorker(QThread):
             infinite_battle=True,
             defense_on_turn1=self.defense_on_turn1,
             defense_all_time=self.defense,
+            choice_event_handling=self.choice_event_handling,
         )
 
     def _set_win(self):
@@ -134,9 +136,11 @@ class InfiniteBattles(QWidget):
         self.start_stop_button.clicked.connect(self.toggle_battle)
         self.defense_box = QCheckBox(self.tr("无限守备"))
         self.defense_on_turn1_box = QCheckBox(self.tr("第一回合开启守备"))
+        self.not_choose_event_box = QCheckBox(self.tr("不处理事件"))
         button_layout.addWidget(self.start_stop_button)
         button_layout.addWidget(self.defense_box)
         button_layout.addWidget(self.defense_on_turn1_box)
+        button_layout.addWidget(self.not_choose_event_box)
 
         button_layout.setAlignment(Qt.AlignCenter)
 
@@ -157,6 +161,7 @@ class InfiniteBattles(QWidget):
             self.worker = BattleWorker(
                 defense=self.defense_box.isChecked(),
                 defense_on_turn1=self.defense_on_turn1_box.isChecked(),
+                choice_event_handling=not self.not_choose_event_box.isChecked(),
             )
             self.worker.finished.connect(self.on_battle_finished)
             self.worker.battle_executed.connect(self.on_battle_executed)
@@ -168,7 +173,7 @@ class InfiniteBattles(QWidget):
             self.status_label.setText("状态：初始化中...")
             self.defense_box.setDisabled(True)
             self.defense_on_turn1_box.setDisabled(True)
-
+            self.not_choose_event_box.setDisabled(True)
     def on_initialization_complete(self):
         """当初始化完成时调用"""
         self.log_text.append("游戏初始化完成，开始战斗")
@@ -192,6 +197,7 @@ class InfiniteBattles(QWidget):
                 self.worker.wait(1000)
             self.defense_box.setDisabled(False)
             self.defense_on_turn1_box.setDisabled(False)
+            self.not_choose_event_box.setDisabled(False)
             screen.reset_win()
             auto.clear_img_cache()
 

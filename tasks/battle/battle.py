@@ -157,6 +157,7 @@ class Battle:
         infinite_battle=False,
         defense_all_time=False,
         defense_on_turn1=False,
+        choice_event_handling=True,
     ):
         chance = self.INIT_CHANCE
         waiting = self._update_wait_time()
@@ -394,7 +395,7 @@ class Battle:
                     waiting = self._update_wait_time(waiting, False, total_count)
 
             # 如果战斗中途出现事件
-            if auto.find_element("event/choices_assets.png") and auto.find_element(
+            if choice_event_handling and auto.find_element("event/choices_assets.png") and auto.find_element(
                 "event/select_first_option_assets.png"
             ):
                 if event_chance > 5:
