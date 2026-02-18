@@ -280,7 +280,7 @@ def script_task() -> None | int:
     # 自动更改语言, 如果不支持则直接退出
     try:
         if cfg.experimental_auto_lang:
-            ret = auto_switch_language_in_game(screen.handle.hWnd)
+            ret = auto_switch_language_in_game(screen.handle.hwnd)
             if ret == AutoSwitchCon.FAILED:
                 log.info("自动切换语言失败，使用英语尝试")
                 cfg.set_value("language_in_game", "en")
