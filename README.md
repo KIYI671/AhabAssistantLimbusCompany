@@ -90,6 +90,8 @@
 
 同时 **ALT+P** 可以暂停脚本，**ALT+R** 可以恢复脚本
 
+以上快捷键均可以通过设置界面内的**快捷键设置**选项卡更改
+
 其他没什么需要说明的，所见即所得
 
 如果发现问题，可以通过 [Issue](https://github.com/KIYI671/AhabAssistantLimbusCompany/issues) 反馈
@@ -212,15 +214,31 @@ AALC的项目离不开以下开源项目的帮助
 
 如果你是完全不懂的小白，请通过上面的方式下载安装，不用往下看了。
 
-```cmd
-# Installation (using venv is recommended)
+### 使用 uv (推荐)
+
+```ps1
+# 克隆仓库
 git clone https://github.com/KIYI671/AhabAssistantLimbusCompany
 cd AhabAssistantLimbusCompany
-# Please use python >= 3.12
+# 通过uv下载依赖, uv工具自行下载
+uv sync --frozen
+uv run main.py
+
+# 更新
+git pull
+```
+
+### 使用 pip (不包含dev工具)
+
+```ps1
+# 克隆仓库
+git clone https://github.com/KIYI671/AhabAssistantLimbusCompany
+cd AhabAssistantLimbusCompany
+# 请使用版本高于 3.13 的 Python 二进制程序 (含GIL)
 pip install -r requirements.txt
 python main.py
 
-# Update
+# 更新
 git pull
 ```
 

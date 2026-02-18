@@ -99,6 +99,8 @@ script is restarted, which can be solved by restarting the script program).
 
 At the same time **ALT+P** can pause the script, **ALT+R** can resume the script
 
+The above shortcuts can all be modified in the **Shortcut Settings** tab within the settings interface.
+
 There is nothing to explain, what you see is what you get.
 
 If you find any problems (except for the team numbering problem below), you can report them
@@ -236,11 +238,27 @@ Thanks to the following developers for their outstanding contributions to AALC:
 If you don't understand it at all, please download and install it through the above method, and you don't have to look
 down.
 
-```cmd
-# Installation (using venv is recommended)
+### Using uv (Recommended)
+
+```ps1
+# Clone the repository
 git clone https://github.com/KIYI671/AhabAssistantLimbusCompany
 cd AhabAssistantLimbusCompany
-# Please use python >= 3.12
+# Download dependencies via uv (uv tool needs to be installed separately)
+uv sync --frozen
+uv run main.py
+
+# Update
+git pull
+```
+
+### Using pip (Excludes dev packages)
+
+```ps1
+# Clone the repository
+git clone https://github.com/KIYI671/AhabAssistantLimbusCompany
+cd AhabAssistantLimbusCompany
+# Please use a Python binary with version higher than 3.13 (with GIL)
 pip install -r requirements.txt
 python main.py
 
