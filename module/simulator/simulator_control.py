@@ -85,7 +85,19 @@ class SimulatorControl:
     def start_game(self):
         if self.simulator_device is None:
             self.get_simulator()
-        self.simulator_device.app_start(self.game_package_name)
+        try:
+            self.simulator_device.app_start(self.game_package_name)
+        except Exception as e:
+            log.error(f"启动游戏失败，失败原因为{str(e)}")
+            log.error(
+                "启动游戏失败，请确认是否安装了Limbus Company，五秒后将重新尝试启动"
+            )
+            try:
+                log.debug(f"获取到的应用列表列表：{self.simulator_device.list_packages()}")
+            except Exception as e:
+                log.error(f"获取应用列表失败，失败原因为{str(e)}")
+            sleep(5)
+            self.start_game()
 
     def adb_connect(self):
         # Try to connect
