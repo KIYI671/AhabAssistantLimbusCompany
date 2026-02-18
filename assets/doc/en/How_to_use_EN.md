@@ -17,6 +17,9 @@ the script starts again, which can be solved by restarting the script program)
 You can use the **ALT+P** keys to pause the script and the **ALT+R** keys to resume the script
 
 The method of using the simulator is at the [bottom of this article](#simulator-usage)
+
+For additional support regarding external scripts, please refer to [Third-Party Script Support](#third-party-script-support)
+
 </div>
 
 ---
@@ -46,6 +49,7 @@ The method of using the simulator is at the [bottom of this article](#simulator-
 #### ⑪ Click to start executing the script task
 
 #### ⑫ Set the resolution of the window, choose according to the computer configuration (1920*1080 or
+
 2560*1440 is recommended)
 
 #### ⑬ Modify the language used in the game
@@ -120,7 +124,7 @@ The method of using the simulator is at the [bottom of this article](#simulator-
 
 In the Settings screen, turn on the "Use Emulator" option, and it is recommended to use the MUMU emulator.
 
-### Selection and Acquisition of Emulator Port Number:
+### Selection and Acquisition of Emulator Port Number
 
 #### mumu emulator: menu bar in the upper right corner of the emulator - Problem diagnosis - find "ADB debug port"
 
@@ -133,7 +137,7 @@ In the Settings screen, turn on the "Use Emulator" option, and it is recommended
 - MEmu Simulator 21503
 - NOX Simulator 62001 / 59865
 
-### Note：
+### Note
 
 - Different emulators may have different port numbers, which need to be selected according to the actual situation
 - Some emulators may require enabling adb port debugging in settings, such as BlueStacks Simulator, LDPlayer Simulator
@@ -143,3 +147,30 @@ In the Settings screen, turn on the "Use Emulator" option, and it is recommended
   in "Windows Setting" in AALC
 - Emulators may cause the script to run slowly, so it is recommended to use a higher configuration computer and give the
   emulator enough memory and CPU resources
+
+### Third-Party Script Support
+
+## Command Line Launch
+
+Launch method:
+
+```ps1
+# < > indicates required content
+# [ ] indicates optional parameters
+# Parameters without brackets should be filled according to the corresponding command description
+AALC.exe <command_name> command_args extra_args
+
+# The following examples omit "AALC.exe"
+```
+
+Currently supported commands:
+
+- `start [--exit [int]]`
+  - `start`
+    AALC will automatically run tasks after startup; tasks need to be set in advance
+  - `[--exit]` Optional parameter, comes with an additional parameter
+    - `[int]` An integer string representing the index of the `combobox` on the AALC idle screen. If not specified, the default is `5`, which means **Exit AALC**
+
+Example: `AALC.exe start --exit 6`
+
+In the current version, this will exit both AALC and the game after completion.
