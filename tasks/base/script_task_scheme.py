@@ -265,12 +265,12 @@ def Mirror_task():
                 log.info(msg)
                 if finish_times == 1 and cfg.re_claim_rewards: # 完成第一次镜牢后重新领取奖励
                     to_get_reward()
-                     
+
 
         mediator.mirror_bar_kill_signal.emit()
         if cfg.re_claim_rewards and finish_times > 0:
             to_get_reward()
-            
+
 
 def script_task() -> None | int:
     start_time = time()
@@ -280,7 +280,7 @@ def script_task() -> None | int:
     # 自动更改语言, 如果不支持则直接退出
     try:
         if cfg.experimental_auto_lang:
-            ret = auto_switch_language_in_game(screen.handle._hWnd)
+            ret = auto_switch_language_in_game(screen.handle.hWnd)
             if ret == AutoSwitchCon.FAILED:
                 log.info("自动切换语言失败，使用英语尝试")
                 cfg.set_value("language_in_game", "en")
@@ -371,7 +371,7 @@ def script_task() -> None | int:
             elif after_completion == 3:
                 os.system("shutdown /s /t 30")
             elif after_completion == 4 or after_completion == 6:
-                _, pid = win32process.GetWindowThreadProcessId(screen.handle._hWnd)
+                _, pid = win32process.GetWindowThreadProcessId(screen.handle.hwnd)
                 ret = os.system(f"taskkill /F /PID {pid}")
                 if ret == 0:
                     log.info("成功关闭 Limbus Company")

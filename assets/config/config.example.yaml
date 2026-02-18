@@ -69,7 +69,7 @@ default_page: 0
 # 是否进行自动窗口设置
 set_windows: True # 是否进行自动窗口设置
 set_win_size: 1080 # 设置使用的分辨率,1080:1920*1080,1440:2560*1440,2160:3840*2160,720:1280*720,900:1600*900,1800:3200*1800
-set_win_position: True # 是否自动设置窗口的位置
+set_win_position: free # 是否自动设置窗口的位置
 set_reduce_miscontact: True # 是否防止误触
 
 select_team_by_order: False # 是否按顺序(而非名称)选择队伍

@@ -29,7 +29,14 @@ set_win_size_options = {
     "3200*1800": 1800,
     "3840*2160": 2160,
 }
-set_win_position_options = {QT_TRANSLATE_NOOP("BaseComboBox", "左上角（0，0）"): True}
+set_win_position_options = {
+    QT_TRANSLATE_NOOP("BaseComboBox", "无限制"): "free",
+    QT_TRANSLATE_NOOP("BaseComboBox", "左上角"): "left_top",
+    QT_TRANSLATE_NOOP("BaseComboBox", "左下角"): "left_bottom",
+    QT_TRANSLATE_NOOP("BaseComboBox", "右上角"): "right_top",
+    QT_TRANSLATE_NOOP("BaseComboBox", "右下角"): "right_bottom",
+    QT_TRANSLATE_NOOP("BaseComboBox", "居中"): "center",
+}
 set_reduce_miscontact_options = {QT_TRANSLATE_NOOP("BaseComboBox", "是"): True, QT_TRANSLATE_NOOP("BaseComboBox", "否"): False}
 set_lunacy_to_enkephalin_options = {
     QT_TRANSLATE_NOOP("BaseComboBox", "不换"): 0,
