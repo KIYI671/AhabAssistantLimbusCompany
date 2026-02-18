@@ -28,8 +28,14 @@ window_position_x: 0 # 窗口位置x
 window_position_y: 0 # 窗口位置y
 theme_mode: AUTO # 应用主题：AUTO, LIGHT, DARK
 autostart: False # 自启动
-autodaily: False # enable auto daily tasks
-autodaily_time: "00:00" # auto daily run time (HH:mm)
+autodaily: False # 启用定时执行
+autodaily_time: "00:00" # 定时执行时间 (HH:mm)
+autodaily2: False # 启用定时执行2
+autodaily_time2: "00:00" # 定时执行时间2 (HH:mm)
+autodaily3: False # 启用定时执行3
+autodaily_time3: "00:00" # 定时执行时间3 (HH:mm)
+autodaily4: False # 启用定时执行4
+autodaily_time4: "00:00" # 定时执行时间4 (HH:mm)
 minimize_to_tray: False # 最小化到托盘
 
 # 脚本运行速度设置

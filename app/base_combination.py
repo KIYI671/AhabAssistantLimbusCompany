@@ -957,7 +957,12 @@ class DailySettingCard(SwitchSettingCard):
         super().__init__(icon, title, content, config_name, parent)
         self.config_name = config_name
         self.autodaily_timepicker = TimePicker()
-        autodaily_time = cfg.get_value("autodaily_time") or "00:00"
+        if "_" in self.config_name and self.config_name[-1] in ["2", "3", "4"]:
+            self.value_name = "autodaily_time" + self.config_name.split("_")[-1]
+        else:
+            self.value_name = "autodaily_time"
+
+        autodaily_time = cfg.get_value(self.value_name) or "00:00"
         autodaily_qtime = QTime.fromString(autodaily_time, "HH:mm")
         if not autodaily_qtime.isValid():
             autodaily_qtime = QTime(0, 0)
@@ -1003,7 +1008,7 @@ class DailySettingCard(SwitchSettingCard):
         helper = ScheduleHelper()
         task_name = self.__autodaily_taskname()
 
-        cfg.set_value("autodaily_time", time.toString("HH:mm"))
+        cfg.set_value(self.value_name, time.toString("HH:mm"))
         helper.unregister_task(task_name)
         helper.register_daily_task(
             task_name, "start --exit", time.hour(), time.minute()

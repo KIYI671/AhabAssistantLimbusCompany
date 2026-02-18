@@ -172,14 +172,39 @@ class SettingInterface(ScrollArea):
             "autostart",
             parent=self.game_path_group,
         )
+        self.autodaily_group = BaseSettingCardGroup(
+            QT_TRANSLATE_NOOP("BaseSettingCardGroup", "定时执行 AALC"),
+            self.scroll_widget,
+        )
         self.autodaily_card = DailySettingCard(
             FIF.HISTORY,
-            QT_TRANSLATE_NOOP("DailySettingCard", "定时执行 AALC"),
+            QT_TRANSLATE_NOOP("DailySettingCard", "定时执行 1"),
             QT_TRANSLATE_NOOP(
                 "DailySettingCard", "如果计算机处于启动状态，将在指定时间执行 AALC 任务"
             ),
             "autodaily",
-            parent=self.game_path_group,
+            parent=self.autodaily_group,
+        )
+        self.autodaily_card_2 = DailySettingCard(
+            FIF.HISTORY,
+            QT_TRANSLATE_NOOP("DailySettingCard", "定时执行 2"),
+            None,
+            "autodaily_2",
+            parent=self.autodaily_group,
+        )
+        self.autodaily_card_3 = DailySettingCard(
+            FIF.HISTORY,
+            QT_TRANSLATE_NOOP("DailySettingCard", "定时执行 3"),
+            None,
+            "autodaily_3",
+            parent=self.autodaily_group,
+        )
+        self.autodaily_card_4 = DailySettingCard(
+            FIF.HISTORY,
+            QT_TRANSLATE_NOOP("DailySettingCard", "定时执行 4"),
+            None,
+            "autodaily_4",
+            parent=self.autodaily_group,
         )
         self.minimize_to_tray_card = SwitchSettingCard(
             FIF.REMOVE,
@@ -346,7 +371,11 @@ class SettingInterface(ScrollArea):
         self.game_path_group.addSettingCard(self.game_path_card)
         self.game_path_group.addSettingCard(self.autostart_card)
         self.game_path_group.addSettingCard(self.minimize_to_tray_card)
-        self.game_path_group.addSettingCard(self.autodaily_card)
+
+        self.autodaily_group.addSettingCard(self.autodaily_card)
+        self.autodaily_group.addSettingCard(self.autodaily_card_2)
+        self.autodaily_group.addSettingCard(self.autodaily_card_3)
+        self.autodaily_group.addSettingCard(self.autodaily_card_4)
 
         self.personal_group.addSettingCard(self.language_card)
         self.personal_group.addSettingCard(self.theme_card)
@@ -368,6 +397,7 @@ class SettingInterface(ScrollArea):
         self.expand_layout.addWidget(self.game_setting_group)
         self.expand_layout.addWidget(self.simulator_setting_group)
         self.expand_layout.addWidget(self.game_path_group)
+        self.expand_layout.addWidget(self.autodaily_group)
         self.expand_layout.addWidget(self.personal_group)
         self.expand_layout.addWidget(self.update_group)
         self.expand_layout.addWidget(self.logs_group)
@@ -408,7 +438,25 @@ class SettingInterface(ScrollArea):
         self.autodaily_card.switchButton.checkedChanged.connect(
             self.__onAutoDailyCheckboxChanged
         )
+        self.autodaily_card_2.switchButton.checkedChanged.connect(
+            self.__onAutoDailyCheckboxChanged
+        )
+        self.autodaily_card_3.switchButton.checkedChanged.connect(
+            self.__onAutoDailyCheckboxChanged
+        )
+        self.autodaily_card_4.switchButton.checkedChanged.connect(
+            self.__onAutoDailyCheckboxChanged
+        )
         self.autodaily_card.autodaily_timepicker.timeChanged.connect(
+            self.__onAutoDailyTimepickerChanged
+        )
+        self.autodaily_card_2.autodaily_timepicker.timeChanged.connect(
+            self.__onAutoDailyTimepickerChanged
+        )
+        self.autodaily_card_3.autodaily_timepicker.timeChanged.connect(
+            self.__onAutoDailyTimepickerChanged
+        )
+        self.autodaily_card_4.autodaily_timepicker.timeChanged.connect(
             self.__onAutoDailyTimepickerChanged
         )
 
@@ -495,16 +543,22 @@ class SettingInterface(ScrollArea):
         helper = ScheduleHelper()
         task_name = self.__autodaily_taskname()
 
-        cfg.set_value("autodaily", isChecked)
+        task_order = self.sender().parent().config_name
+        task_order = task_order[-1]
+        if task_order in ["2", "3", "4"]:
+            task_order = task_order
+        else:
+            task_order = ""
+
         if isChecked:
-            self.autodaily_card.autodaily_timepicker.setDisabled(False)
+            self.sender().parent().autodaily_timepicker.setDisabled(False)
             time = self.autodaily_card.autodaily_timepicker.getTime()
             helper.register_daily_task(
-                task_name, "start --exit", time.hour(), time.minute()
+                task_name + task_order, "start --exit", time.hour(), time.minute()
             )
         else:
-            self.autodaily_card.autodaily_timepicker.setDisabled(True)
-            helper.unregister_task(task_name)
+            self.sender().parent().autodaily_timepicker.setDisabled(True)
+            helper.unregister_task(task_name + task_order)
 
     def __onAutoDailyTimepickerChanged(self, time: QTime):
         from utils.schedule_helper import ScheduleHelper
@@ -512,10 +566,20 @@ class SettingInterface(ScrollArea):
         helper = ScheduleHelper()
         task_name = self.__autodaily_taskname()
 
-        cfg.set_value("autodaily_time", time.toString("HH:mm"))
-        helper.unregister_task(task_name)
+        task_order = self.sender().parent().config_name
+        task_order = task_order[-1]
+        if task_order in ["2", "3", "4"]:
+            value_name = "autodaily_time" + task_order
+        else:
+            value_name = "autodaily_time"
+
+        print(value_name)
+        print(task_name + task_order)
+
+        cfg.set_value(value_name, time.toString("HH:mm"))
+        helper.unregister_task(task_name + task_order)
         helper.register_daily_task(
-            task_name, "start --exit", time.hour(), time.minute()
+            task_name + task_order, "start --exit", time.hour(), time.minute()
         )
 
     def __onAutoLangCardChecked(self, Checked):
@@ -553,6 +617,7 @@ class SettingInterface(ScrollArea):
         self.start_emulator_timeout_chance_card.retranslateUi()
         self.game_path_card.retranslateUi()
         self.game_path_group.retranslateUi()
+        self.autodaily_group.retranslateUi()
         self.personal_group.retranslateUi()
         self.language_card.retranslateUi()
         self.theme_card.retranslateUi()
