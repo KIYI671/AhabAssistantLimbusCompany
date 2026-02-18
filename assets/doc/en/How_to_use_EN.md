@@ -169,7 +169,7 @@ Currently supported commands:
   - `start`
     AALC will automatically run tasks after startup; tasks need to be set in advance
   - `[--exit]` Optional parameter, comes with an additional parameter
-    - `[int]` An integer string representing the index of the `combobox` on the AALC idle screen. If not specified, the default is `5`, which means **Exit AALC**
+    - `[int]` An integer string representing the index of the `combobox` on the AALC One-Click Grass interface. If not specified, the default is `5`, which means **Exit AALC**
 
 Example: `AALC.exe start --exit 6`
 
