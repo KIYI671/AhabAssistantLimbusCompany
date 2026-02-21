@@ -378,6 +378,8 @@ class Shop:
             protect_list = [
                 "mirror/shop/level_IV_gifts/lunar_memory.png",
                 f"mirror/shop/level_IV_gifts/{self.system}_level_IV.png",
+                "mirror/shop/must_be_abandoned/leave2_vestige2.png",
+                "mirror/shop/must_be_abandoned/leave3_vestige.png"
             ]
             if self.second_system and self.second_system_action[0]:
                 protect_list.append(
