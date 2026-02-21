@@ -813,6 +813,7 @@ class Shop:
 
         list_block = False
         system_sell = True
+        sell_chance = 20
         second = None
         log.debug("开始执行饰品出售模块")
         while True:
@@ -857,9 +858,12 @@ class Shop:
                         if retry() is False:
                             raise self.RestartGame()
                         gift_sell = True
+                        sell_chance -= 1
                         break
 
             if gift_sell:
+                if sell_chance < 0:
+                    return
                 continue
 
             if list_block is False and auto.find_element(
