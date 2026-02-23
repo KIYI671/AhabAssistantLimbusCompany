@@ -39,8 +39,8 @@ class ScreenShot:
                     log.debug(f"adb截图报错 {type(e).__name__}: {e}")
                     return None
         else:
-            # 判断是否在屏幕内
-            ScreenShot.move_game_window(not cfg.background_click)
+            # 将窗口移动到屏幕可见区域，确保获取到完整的内容
+            screen.handle.bring_window_into_view(not cfg.background_click)
 
         if cfg.background_click:
             try:
@@ -60,41 +60,6 @@ class ScreenShot:
                     msg = f"pyautogui截图失败，错误信息：{e2}"
                     log.debug(msg)
                     return None
-
-    @staticmethod
-    def move_game_window(work_area: bool = False):
-        """将游戏窗口移动到屏幕可见区域"""
-        rect = screen.handle.rect(True)
-        window_rect = screen.handle.rect(False)
-        monitor_info = screen.handle.monitor_info
-        left, top, right, bottom = (
-            monitor_info["Work"] if work_area else monitor_info["Monitor"]
-        )
-        need_x = rect[0]
-        need_y = rect[1]
-        if rect[2] > right:
-            need_x = right - (rect[2] - rect[0])
-        elif rect[0] < left:
-            need_x = left
-
-        if rect[3] > bottom:
-            need_y = bottom - (rect[3] - rect[1])
-        elif rect[1] < top:
-            need_y = top
-
-        x, y = screen.handle.client_to_screen(
-            need_x, need_y, client_rect=rect, window_rect=window_rect
-        )
-        if need_x != rect[0] or need_y != rect[1]:
-            win32gui.SetWindowPos(
-                screen.handle.hwnd,
-                None,
-                x,
-                y,
-                0,
-                0,
-                win32con.SWP_NOSIZE | win32con.SWP_NOZORDER,
-            )
 
     @staticmethod
     def take_screenshot_gdi(gray: bool = True) -> Image.Image:

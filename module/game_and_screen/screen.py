@@ -189,6 +189,47 @@ class Handle:
         return (x + x_diff, y + y_diff)
 
 
+    def set_window_pos(self, x: int, y: int) -> None:
+        """将窗口移动到屏幕坐标 (x, y)"""
+        if self.hwnd == 0:
+            return
+        win32gui.SetWindowPos(
+            self.hwnd,
+            None,
+            x,
+            y,
+            0,
+            0,
+            win32con.SWP_NOSIZE | win32con.SWP_NOZORDER,
+        )
+
+    def bring_window_into_view(self, work_area: bool = False):
+        """将窗口移动到屏幕可见区域"""
+        rect = self.rect(True)
+        window_rect = self.rect(False)
+        monitor_info = self.monitor_info
+        left, top, right, bottom = (
+            monitor_info["Work"] if work_area else monitor_info["Monitor"]
+        )
+        need_x = rect[0]
+        need_y = rect[1]
+        if rect[2] > right:
+            need_x = right - (rect[2] - rect[0])
+        elif rect[0] < left:
+            need_x = left
+
+        if rect[3] > bottom:
+            need_y = bottom - (rect[3] - rect[1])
+        elif rect[1] < top:
+            need_y = top
+
+        x, y = self.client_to_screen(
+            need_x, need_y, client_rect=rect, window_rect=window_rect
+        )
+        if need_x != rect[0] or need_y != rect[1]:
+            self.set_window_pos(x, y)
+
+
 class Screen(metaclass=SingletonMeta):
     def __init__(self, title: str, game: "Game"):
         self.title = title
