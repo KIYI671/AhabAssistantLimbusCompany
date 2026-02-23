@@ -140,17 +140,16 @@ class Handle:
         if self.hwnd == 0:
             return False
         hwnd = self.hwnd
-        # 模拟按下
-        win32api.SendMessage(hwnd, win32con.WM_KEYDOWN, win32con.VK_MENU, 0x00000001)
-        sleep(0.05)
-        # 模拟按下
-        win32api.SendMessage(hwnd, win32con.WM_KEYDOWN, win32con.VK_RETURN, 0x00000001)
-        sleep(0.05)
 
-        # 模拟释放
-        win32api.SendMessage(hwnd, win32con.WM_KEYUP, win32con.VK_RETURN, 0xC0000001)
+        if self.isMinimized:
+            self.restore()
+            sleep(0.5)
+        # 模拟按下
+        win32api.PostMessage(
+            hwnd, win32con.WM_SYSKEYDOWN, win32con.VK_RETURN, 0x00000001
+        )
         sleep(0.05)
-        win32api.SendMessage(hwnd, win32con.WM_KEYUP, win32con.VK_MENU, 0xC0000001)
+        win32api.PostMessage(hwnd, win32con.WM_SYSKEYUP, win32con.VK_RETURN, 0xC0000001)
         return True
 
     def restore(self) -> None:
