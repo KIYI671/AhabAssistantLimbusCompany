@@ -1,6 +1,6 @@
 from ctypes import windll
 from time import sleep
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, overload
 
 import win32api
 import win32con
@@ -158,6 +158,36 @@ class Handle:
         if self.hwnd == 0:
             return
         win32gui.ShowWindow(self.hwnd, win32con.SW_RESTORE)
+
+    @overload
+    def client_to_screen(self, x: int, y: int, /) -> tuple[int, int]: ...
+    @overload
+    def client_to_screen(
+        self,
+        x: int,
+        y: int,
+        /,
+        client_rect: tuple[int, int, int, int],
+        window_rect: tuple[int, int, int, int],
+    ) -> tuple[int, int]: ...
+    def client_to_screen(
+        self,
+        x: int,
+        y: int,
+        /,
+        client_rect: tuple[int, int, int, int] | None = None,
+        window_rect: tuple[int, int, int, int] | None = None,
+    ) -> tuple[int, int]:
+        """将客户区坐标转换为屏幕坐标"""
+        if self.hwnd == 0:
+            return (x, y)
+        if client_rect is None or window_rect is None:
+            client_rect = self.rect(True)
+            window_rect = self.rect(False)
+
+        x_diff = window_rect[0] - client_rect[0]
+        y_diff = window_rect[1] - client_rect[1]
+        return (x + x_diff, y + y_diff)
 
 
 class Screen(metaclass=SingletonMeta):
