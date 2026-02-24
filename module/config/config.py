@@ -38,7 +38,7 @@ class Config(metaclass=SingletonMeta):
         # 进程退出前确保落盘
         atexit.register(self.flush)
 
-    def _old_version_cfg_upgrade(self):
+    def _old_version_cfg_upgrade(self, saved_version: int):
         """旧版本配置升级处理
 
         本身不进行保存文件操作
@@ -46,62 +46,68 @@ class Config(metaclass=SingletonMeta):
         log.info("检测到旧版本配置文件，正在进行升级...")
 
         # 镜牢历史数据格式转换
-        team_num = len(self.get_value("teams_be_select", []))
+        if saved_version < 1768403022:
+            team_num = len(self.get_value("teams_be_select", []))
 
-        def _calculate_time_history(time_list: list[float], count: int) -> list[float]:
-            """从每局都记录转换为只记录三种平均值"""
-            if count == 0:
-                return [0.0, 0.0, 0.0]
-            if len(time_list) == 3 and count != 3:
-                return time_list  # 已经是新格式，直接返回
-            elif len(time_list) == 3 and count == 3:
-                # 判断是否是巧合
-                if time_list[0] == time_list[1] == time_list[2]:
-                    return time_list
-            total_avr = 0
-            five_avr = 0
-            ten_avr = 0
-            for index in range(-1, -len(time_list) - 1, -1):
-                total_avr += time_list[index]
-                if index >= -5:
-                    five_avr += time_list[index]
-                if index >= -10:
-                    ten_avr += time_list[index]
-            total_avr /= count
-            five_avr /= min(5, count)
-            ten_avr /= min(10, count)
-            new_time_list = [total_avr, five_avr, ten_avr]
+            def _calculate_time_history(
+                time_list: list[float], count: int
+            ) -> list[float]:
+                """从每局都记录转换为只记录三种平均值"""
+                if count == 0:
+                    return [0.0, 0.0, 0.0]
+                if len(time_list) == 3 and count != 3:
+                    return time_list  # 已经是新格式，直接返回
+                elif len(time_list) == 3 and count == 3:
+                    # 判断是否是巧合
+                    if time_list[0] == time_list[1] == time_list[2]:
+                        return time_list
+                total_avr = 0
+                five_avr = 0
+                ten_avr = 0
+                for index in range(-1, -len(time_list) - 1, -1):
+                    total_avr += time_list[index]
+                    if index >= -5:
+                        five_avr += time_list[index]
+                    if index >= -10:
+                        ten_avr += time_list[index]
+                total_avr /= count
+                five_avr /= min(5, count)
+                ten_avr /= min(10, count)
+                new_time_list = [total_avr, five_avr, ten_avr]
 
-            return new_time_list
+                return new_time_list
 
-        try:
-            if team_num > 0:
-                for i in range(1, team_num + 1):
-                    history_key = f"team{i}_history"
-                    history = self.get_value(history_key, {})
-                    if not history:
-                        continue
-                    hard_time = history.get("total_mirror_time_hard", [])
-                    hard_count = history.get("mirror_hard_count", 0)
-                    normal_time = history.get("total_mirror_time_normal", [])
-                    normal_count = history.get("mirror_normal_count", 0)
+            try:
+                if team_num > 0:
+                    for i in range(1, team_num + 1):
+                        history_key = f"team{i}_history"
+                        history = self.get_value(history_key, {})
+                        if not history:
+                            continue
+                        hard_time = history.get("total_mirror_time_hard", [])
+                        hard_count = history.get("mirror_hard_count", 0)
+                        normal_time = history.get("total_mirror_time_normal", [])
+                        normal_count = history.get("mirror_normal_count", 0)
 
-                    hard_time = _calculate_time_history(hard_time, hard_count)
-                    normal_time = _calculate_time_history(normal_time, normal_count)
-                    history["total_mirror_time_hard"] = hard_time
-                    history["mirror_hard_count"] = hard_count
-                    history["total_mirror_time_normal"] = normal_time
-                    history["mirror_normal_count"] = normal_count
-                    self.unsaved_set_value(history_key, history)
-        except Exception as e:
-            log.error(f"镜牢历史数据格式转换失败，错误信息：{e}")
+                        hard_time = _calculate_time_history(hard_time, hard_count)
+                        normal_time = _calculate_time_history(normal_time, normal_count)
+                        history["total_mirror_time_hard"] = hard_time
+                        history["mirror_hard_count"] = hard_count
+                        history["total_mirror_time_normal"] = normal_time
+                        history["mirror_normal_count"] = normal_count
+                        self.unsaved_set_value(history_key, history)
+            except Exception as e:
+                log.error(f"镜牢历史数据格式转换失败，错误信息：{e}")
 
-        try:
-            # 旧配置类型转换
+        # 旧配置类型转换
+        if saved_version < 1771413380:
             if self.get_value("set_win_position", True) is True:
                 self.unsaved_set_value("set_win_position", "free")
-        except Exception as e:
-            log.error(f"旧配置转换失败，错误信息：{e}")
+        if saved_version < 1771965838:
+            if self.get_value("background_click", True) is True:
+                self.unsaved_set_value("win_input_type", "background")
+            else:
+                self.unsaved_set_value("win_input_type", "foreground")
 
         log.info("配置升级完成")
 
@@ -141,11 +147,12 @@ class Config(metaclass=SingletonMeta):
                         old_flag = False
                     self._update_config(self.config, loaded_config)
                     if old_flag:
+                        saved_version = loaded_config.get("config_version", 0)
                         self.unsaved_set_value(
                             "config_version",
                             self._load_default_config().get("config_version", 0),
                         )
-                        self._old_version_cfg_upgrade()
+                        self._old_version_cfg_upgrade(saved_version)
                     self._save_config()
         except FileNotFoundError:
             self._save_config()
