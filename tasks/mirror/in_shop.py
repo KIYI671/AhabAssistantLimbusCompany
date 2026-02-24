@@ -400,7 +400,7 @@ class Shop:
                         coord[1] + 100 * scale,
                     ]
                     if auto.find_element(
-                        "mirror/shop/enhance_gifts/burn.png", my_crop=system_bbox
+                        f"mirror/shop/enhance_gifts/{self.system}.png", my_crop=system_bbox
                     ):
                         protect_coord.append(coord)
                 for coord in protect_coord:
