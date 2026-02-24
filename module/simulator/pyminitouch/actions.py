@@ -257,14 +257,19 @@ class MNTDevice(object):
             cur_point = points[each_index]
             next_point = points[each_index + 1]
 
-            offset = (
-                int((next_point[0] - cur_point[0]) / part),
-                int((next_point[1] - cur_point[1]) / part),
-            )
-            new_points = [
-                (cur_point[0] + i * offset[0], cur_point[1] + i * offset[1])
-                for i in range(part + 1)
-            ]
+            # 使用浮点步长并在最后强制对齐到 next_point，避免整数除法导致终点偏移，
+            # 从而减少实际触点位置与预期终点不一致带来的额外惯性滑动
+            step_x = (next_point[0] - cur_point[0]) / float(part)
+            step_y = (next_point[1] - cur_point[1]) / float(part)
+
+            new_points = []
+            for i in range(part):
+                x = int(round(cur_point[0] + step_x * i))
+                y = int(round(cur_point[1] + step_y * i))
+                new_points.append((x, y))
+            # 最后一个点强制为 next_point，确保精确到达目标坐标
+            new_points.append((next_point[0], next_point[1]))
+
             self.swipe(
                 new_points,
                 pressure=pressure,
