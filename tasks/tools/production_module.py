@@ -196,7 +196,8 @@ class ProductionModule(QWidget):
                 self.worker.terminate()
                 self.worker.wait(1000)
             self.kill_game_box.setDisabled(False)
-            screen.reset_win()
+            if cfg.set_reduce_miscontact:
+                screen.reset_win()
             auto.clear_img_cache()
 
     def toggle_production(self):
@@ -253,7 +254,8 @@ class ProductionModule(QWidget):
         # 资源清理
         try:
             if self.worker is not None and self.worker.isRunning():
-                screen.reset_win()
+                if cfg.set_reduce_miscontact:
+                    screen.reset_win()
                 auto.clear_img_cache()
                 self.listener.stop()
         except Exception:

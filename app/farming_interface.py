@@ -331,7 +331,7 @@ class FarmingInterfaceLeft(QWidget):
             self._disable_setting(self.parent())
             self.create_and_start_script()
         else:
-            if cfg.simulator is False:
+            if cfg.set_reduce_miscontact and cfg.simulator is False:
                 screen.reset_win()
             else:
                 if cfg.simulator_type == 0:
