@@ -528,7 +528,7 @@ class SettingInterface(ScrollArea):
         elif input_type == "window_move":
             content = QT_TRANSLATE_NOOP(
                 "ComboBoxSettingCard",
-                "基于移动窗口的后台模式，有效规避了后台模式需要移动鼠标的情况，但是性能和稳定性较差，<font color=red>不推荐长时间无人使用</font>",
+                "基于移动窗口的后台模式，有效规避了后台模式需要移动鼠标的情况，<br/>但是性能和稳定性较差，<font color=red>不推荐长时间无人使用</font>",
             )
             cfg.set_value("background_click", True)
         else:
@@ -538,6 +538,7 @@ class SettingInterface(ScrollArea):
 
         self.win_input_type_card.content = content
         self.win_input_type_card.setContent(content)
+        self.win_input_type_card.retranslateUi()
 
         if show_bar:
             self.__onZoomCardValueChanged()
