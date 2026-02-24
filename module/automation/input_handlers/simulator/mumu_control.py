@@ -15,8 +15,10 @@ from adbutils import AdbError, adb
 
 from module.config import cfg
 from module.logger import log
-from module.simulator import insert_swipe
 from utils.utils import run_as_user
+
+from .. import AbstractInput
+from . import insert_swipe
 
 usual_key_code = {
     "q": 16,
@@ -204,7 +206,7 @@ class CaptureNemuIpc(CaptureStd):
             raise NemuIpcError("Emulator instance is probably dead")
 
 
-class MumuControl:
+class MumuControl(AbstractInput):
     connection_device = None
 
     @staticmethod

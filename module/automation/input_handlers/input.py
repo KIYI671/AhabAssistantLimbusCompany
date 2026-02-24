@@ -1,17 +1,19 @@
 import random
 from time import sleep, time
+from typing import overload
 
 import pyautogui
 import win32api
 import win32con
 import win32gui
 from pywintypes import error as PyWinTypesError
-from typing import overload
+
 from module.config import cfg
 from utils.singletonmeta import SingletonMeta
 
-from ..game_and_screen import screen
-from ..logger import log
+from ...game_and_screen import screen
+from ...logger import log
+from . import AbstractInput
 
 key_list = {
     "a": 0x41,
@@ -60,16 +62,27 @@ key_list = {
 }
 
 
-class Input(metaclass=SingletonMeta):
+class WinAbstractInput(AbstractInput):
+    """输入接口类，定义输入方法的抽象接口
+    专用于 Windows 系统, 提供了一些额外的通用方法
+
+    Tips: 有特殊需求写在对应方法描述中
+    """
+
+    def get_mouse_position(self) -> tuple[int, int]:
+        """获取鼠标当前位置
+
+        Returns:
+            tuple: 当前鼠标位置的元组 (x, y)
+        """
+        return win32api.GetCursorPos()
+
+
+class Input(WinAbstractInput, metaclass=SingletonMeta):
     """基于 `pyautogui` 的输入类, 仅支持前台操作"""
 
     # 禁用pyautogui的失败安全特性，防止意外中断
     pyautogui.FAILSAFE = False
-
-    def __init__(self):
-        self.is_pause = False
-        self.restore_time = None
-        # self.is_move_back = False  以后从配置里读取
 
     @overload
     def pos_offset(self, x: int, y: int) -> tuple[int, int]: ...
@@ -87,40 +100,7 @@ class Input(metaclass=SingletonMeta):
         real_x, real_y, _, _ = screen.handle.rect(True)
         return x + real_x, y + real_y
 
-    def set_pause(self) -> None:
-        """
-        设置暂停状态
-        """
-        self.is_pause = not self.is_pause  # 设置暂停状态
-        if self.is_pause:
-            msg = "操作将在下一次点击时暂停"
-        else:
-            msg = "继续操作"
-        log.info(msg)
-
-    def wait_pause(self) -> None:
-        """
-        当处于暂停状态时堵塞的进行等待
-        """
-        pause_identity = False
-        while self.is_pause:
-            if pause_identity is not False:
-                log.info("AALC 已暂停")
-                pause_identity = True
-            sleep(1)
-            self.restore_time = time()
-
     def mouse_click(self, x, y, times=1, move_back=False) -> bool:
-        """在指定坐标上执行点击操作
-
-        Args:
-            x (int): x坐标
-            y (int): y坐标
-            times (int): 点击次数
-            move_back (bool): 是否在点击后将鼠标移动回原位置
-        Returns:
-            bool (True) : 总是返回True表示操作执行完毕
-        """
         if move_back:
             current_mouse_position = self.get_mouse_position()
 
@@ -139,14 +119,6 @@ class Input(metaclass=SingletonMeta):
         return True
 
     def mouse_drag_down(self, x, y, reverse=1, move_back=True) -> None:
-        """鼠标从指定位置向下拖动
-
-        Args:
-            x (int): x坐标
-            y (int): y坐标
-            reverse (int): 拖动方向，1表示向下，-1表示向上
-            move_back (bool): 是否在拖动后将鼠标移动回原位置
-        """
         if move_back:
             current_mouse_position = self.get_mouse_position()
 
@@ -161,15 +133,6 @@ class Input(metaclass=SingletonMeta):
             self.mouse_move(current_mouse_position)
 
     def mouse_drag(self, x, y, drag_time=0.1, dx=0, dy=0, move_back=True) -> None:
-        """鼠标从指定位置拖动到另一个位置
-        Args:
-            x (int): 起始x坐标
-            y (int): 起始y坐标
-            drag_time (float): 拖动时间
-            dx (int): x方向拖动距离
-            dy (int): y方向拖动距离
-            move_back (bool): 是否在拖动后将鼠标移动回原位置
-        """
         if move_back:
             current_mouse_position = self.get_mouse_position()
         x, y = self.pos_offset(x, y)
@@ -186,13 +149,6 @@ class Input(metaclass=SingletonMeta):
             self.mouse_move(current_mouse_position)
 
     def mouse_scroll(self, direction: int = -3) -> bool:
-        """
-        进行鼠标滚动操作
-        Args:
-            direction (int): 滚动方向，正值表示拉近，负值表示缩小
-        Returns:
-            bool (True) : 表示是否支持该操作
-        """
         if direction <= 0:
             msg = "鼠标滚动滚轮，远离界面"
         else:
@@ -202,14 +158,6 @@ class Input(metaclass=SingletonMeta):
         return True
 
     def mouse_click_blank(self, coordinate=(1, 1), times=1, move_back=False) -> bool:
-        """在空白位置点击鼠标
-        Args:
-            coordinate (tuple): 坐标元组 (x, y)
-            times (int): 点击次数
-            move_back (bool): 是否在点击后将鼠标移动回原位置
-        Returns:
-            bool (True) : 总是返回True表示操作执行完毕
-        """
         if move_back:
             current_mouse_position = self.get_mouse_position()
 
@@ -228,11 +176,6 @@ class Input(metaclass=SingletonMeta):
         return True
 
     def mouse_to_blank(self, coordinate=(1, 1), move_back=False) -> None:
-        """鼠标移动到空白位置，避免遮挡
-        Args:
-            coordinate (tuple): 坐标元组 (x, y)
-            move_back (bool): 是否在移动后将鼠标移动回原位置
-        """
         if move_back:
             current_mouse_position = self.get_mouse_position()
 
@@ -253,22 +196,7 @@ class Input(metaclass=SingletonMeta):
         pyautogui.moveTo(coordinate[0], coordinate[1])
         self.wait_pause()
 
-    def get_mouse_position(self) -> tuple[int, int]:
-        """获取鼠标当前位置
-
-        Returns:
-            tuple: 当前鼠标位置的元组 (x, y)
-        """
-        return pyautogui.position()
-
     def mouse_drag_link(self, position: list, drag_time=0.1, move_back=False) -> None:
-        """鼠标从指定位置拖动到指定位置
-        Args:
-            x (int): 起始x坐标
-            y (int): 起始y坐标
-            position (list): 目标位置列表
-            drag_time (float): 拖动时间
-        """
         if move_back:
             current_mouse_position = self.get_mouse_position()
 
@@ -287,7 +215,7 @@ class Input(metaclass=SingletonMeta):
         return pyautogui.press(key)
 
 
-class BackgroundInput(Input, metaclass=SingletonMeta):
+class BackgroundInput(WinAbstractInput, metaclass=SingletonMeta):
     """基于 `pywin32` 的输入类, 支持后台操作
     \n 除了不支持滚轮事件, 其余同 `Input` 类
     """
@@ -597,7 +525,7 @@ class BackgroundInput(Input, metaclass=SingletonMeta):
                 log.error(f"鼠标移动失败: {type(e)}: {e}")
 
 
-class WindowMoveInput(Input, metaclass=SingletonMeta):
+class WindowMoveInput(WinAbstractInput, metaclass=SingletonMeta):
     """"""
 
     def mouse_to_blank(self, coordinate=(1, 1), move_back=False) -> None:

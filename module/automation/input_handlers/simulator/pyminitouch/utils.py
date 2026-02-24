@@ -1,9 +1,9 @@
 import socket
 import tempfile
 
+import config
 import requests
 
-import module.simulator.pyminitouch.config as config
 from module.logger import log
 
 

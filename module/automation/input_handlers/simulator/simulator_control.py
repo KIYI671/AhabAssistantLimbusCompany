@@ -8,7 +8,9 @@ from adbutils import adb
 
 from module.config import cfg
 from module.logger import log
-from module.simulator.pyminitouch import MNTDevice
+
+from .. import AbstractInput
+from .pyminitouch import MNTDevice
 
 key_list = {
     "a": 29,
@@ -57,7 +59,7 @@ key_list = {
 }
 
 
-class SimulatorControl:
+class SimulatorControl(AbstractInput):
     connection_device = None
 
     @staticmethod
@@ -93,7 +95,9 @@ class SimulatorControl:
                 "启动游戏失败，请确认是否安装了Limbus Company，五秒后将重新尝试启动"
             )
             try:
-                log.debug(f"获取到的应用列表列表：{self.simulator_device.list_packages()}")
+                log.debug(
+                    f"获取到的应用列表列表：{self.simulator_device.list_packages()}"
+                )
             except Exception as e:
                 log.error(f"获取应用列表失败，失败原因为{str(e)}")
             sleep(5)

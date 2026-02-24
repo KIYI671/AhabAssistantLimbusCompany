@@ -37,7 +37,10 @@ set_win_position_options = {
     QT_TRANSLATE_NOOP("BaseComboBox", "右下角"): "right_bottom",
     QT_TRANSLATE_NOOP("BaseComboBox", "居中"): "center",
 }
-set_reduce_miscontact_options = {QT_TRANSLATE_NOOP("BaseComboBox", "是"): True, QT_TRANSLATE_NOOP("BaseComboBox", "否"): False}
+set_reduce_miscontact_options = {
+    QT_TRANSLATE_NOOP("BaseComboBox", "是"): True,
+    QT_TRANSLATE_NOOP("BaseComboBox", "否"): False,
+}
 set_lunacy_to_enkephalin_options = {
     QT_TRANSLATE_NOOP("BaseComboBox", "不换"): 0,
     QT_TRANSLATE_NOOP("BaseComboBox", "换第一次"): 1,
@@ -203,6 +206,14 @@ all_checkbox_config_name = [
     "skill_replacement",
     "ignore_shop",
 ]
+
+win_input_type_options = {
+    QT_TRANSLATE_NOOP("BaseComboBox", "前台模式 (pyautogui)"): "foreground",
+    QT_TRANSLATE_NOOP("BaseComboBox", "后台模式 (pywin32)"): "background",
+    QT_TRANSLATE_NOOP(
+        "BaseComboBox", "后台增强 (pywin32+set_window_pos)"
+    ): "window_move",
+}
 
 
 class AnnouncementStatus(Enum):
