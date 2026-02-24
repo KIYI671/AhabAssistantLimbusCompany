@@ -188,11 +188,19 @@ class Handle:
         y_diff = window_rect[1] - client_rect[1]
         return (x + x_diff, y + y_diff)
 
+    def mouse_pos_to_client_mouse(self, x: int, y: int) -> tuple[int, int]:
+        """将鼠标坐标转换为客户区坐标"""
+        if self.hwnd == 0:
+            return (x, y)
+        client_rect = self.rect(True)
+        return (x - client_rect[0], y - client_rect[1])
 
     def set_window_pos(self, x: int, y: int) -> None:
         """将窗口移动到屏幕坐标 (x, y)"""
         if self.hwnd == 0:
             return
+        x = int(x)
+        y = int(y)
         win32gui.SetWindowPos(
             self.hwnd,
             None,
