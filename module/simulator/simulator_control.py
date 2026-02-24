@@ -265,7 +265,7 @@ class SimulatorControl:
         self.wait_pause()
         return True
 
-    def mouse_to_blank(self, coordinate=(1, 1)) -> None:  # background未重载
+    def mouse_to_blank(self, coordinate=(1, 1), move_back=False) -> None:  # background未重载
         """占位"""
         return
 
