@@ -28,12 +28,18 @@ pip install -r requirements.txt
 ## 启动开发服务器
 
 ```bash
+# 默认：启用热重载（自动重启 + Ctrl+R）
 python main_dev.py
+
+# 仅手动重载：禁用自动热重载，但保留 Ctrl+R
+python main_dev.py --no-reload
 ```
 
 ## 开发特性
 
-- **热重载**：代码修改后自动重新加载
+- **热重载**：
+  - 默认：代码修改后自动重新加载
+  - `--no-reload`：只在按下 `Ctrl+R` 时才重启
 - **快捷键**：
   - `Ctrl+R`：手动触发重载
   - `Ctrl+C`：退出程序
