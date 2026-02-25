@@ -407,7 +407,16 @@ class Screen(metaclass=SingletonMeta):
             )
             if screen_width < set_win_size * 16 / 9 or screen_height < set_win_size:
                 log.error("屏幕分辨率过低，请重新设定分辨率")
+                log.debug(f"窗口所在的屏幕分辨率: {screen_width}x{screen_height}")
+                if not cfg.background_click:
+                    screen_width, screen_height = self.handle.monitor_size(False)
+                    if (
+                        screen_width >= set_win_size * 16 / 9
+                        and screen_height >= set_win_size
+                    ):
+                        log.info("当前屏幕全尺寸可考虑使用后台输入模式")
                 mediator.link_start.emit()
+                sleep(1)  # 等待结束
                 return
             self.handle.switchFullScreenMode()
             sleep(0.5)
