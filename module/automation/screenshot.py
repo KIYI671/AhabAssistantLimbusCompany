@@ -311,7 +311,7 @@ class ScreenShot:
         Returns:
             Image.Image: 截图图像
         """
-        from module.simulator.mumu_control import MumuControl
+        from module.automation.input_handlers.simulator.mumu_control import MumuControl
 
         if MumuControl.connection_device is not None:
             image = MumuControl.connection_device.screenshot()
@@ -335,7 +335,9 @@ class ScreenShot:
         Returns:
             Image.Image: 截图图像
         """
-        from module.simulator.simulator_control import SimulatorControl
+        from module.automation.input_handlers.simulator.simulator_control import (
+            SimulatorControl,
+        )
 
         if SimulatorControl.connection_device is not None:
             image = SimulatorControl.connection_device.screenshot()
