@@ -428,7 +428,7 @@ class SettingInterface(ScrollArea):
             self.__onAutoLangCardChecked
         )
         self.win_input_type_card.valueChanged.connect(self.__onWinInputTypeChanged)
-        self.__onWinInputTypeChanged(show_bar=False)
+        self.__onWinInputTypeChanged()
         self.autostart_card.switchButton.checkedChanged.connect(
             self.__onAutostartCardChanged
         )
@@ -516,7 +516,7 @@ class SettingInterface(ScrollArea):
                 parent=self,
             )
 
-    def __onWinInputTypeChanged(self, show_bar=True):
+    def __onWinInputTypeChanged(self):
         input_type = cfg.get_value("win_input_type")
         if input_type == "background":
             content = QT_TRANSLATE_NOOP(
@@ -543,9 +543,6 @@ class SettingInterface(ScrollArea):
         self.win_input_type_card.content = content
         self.win_input_type_card.setContent(content)
         self.win_input_type_card.retranslateUi()
-
-        if show_bar:
-            self.__onZoomCardValueChanged()
 
     def __onZoomCardValueChanged(self):
         bar = BaseInfoBar.success(
