@@ -418,6 +418,8 @@ class Screen(metaclass=SingletonMeta):
                 mediator.link_start.emit()
                 sleep(1)  # 等待结束
                 return
+            if cfg.set_win_position == "free":
+                win_pos = self.handle.rect()[:2]
             self.handle.switchFullScreenMode()
             sleep(0.5)
             # 进行判断如果全屏，再执行一次操作
@@ -428,6 +430,9 @@ class Screen(metaclass=SingletonMeta):
             screen_width, screen_height = self.handle.monitor_size()
             if width == screen_width and height == screen_height:
                 self.handle.switchFullScreenMode()
+            if cfg.set_win_position == "free":
+                self.handle.set_window_pos(*win_pos)
+                sleep(0.1)
         except Exception as e:
             log.error(f"检查屏幕分辨率失败: {e}")
 
