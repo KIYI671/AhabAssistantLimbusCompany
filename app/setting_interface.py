@@ -472,9 +472,13 @@ class SettingInterface(ScrollArea):
 
     def __onGamePathCardClicked(self):
         game_path, _ = QFileDialog.getOpenFileName(
-            self, "选择游戏路径", "", "All Files (*)"
+            self, "选择游戏路径", "", "Game Executable (LimbusCompany.exe)"
         )
-        if not game_path or cfg.game_path == game_path:
+        if (
+            not game_path
+            or cfg.game_path == game_path
+            or not game_path.endswith("LimbusCompany.exe")
+        ):
             return
         cfg.set_value("game_path", game_path)
         self.game_path_card.setContent(game_path)
