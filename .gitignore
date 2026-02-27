@@ -27,3 +27,6 @@ __main_dev_temp__.py
 
 # 测试文件
 /test*.py
+
+# 其他
+MaaFramework
