@@ -379,7 +379,7 @@ class Shop:
                 "mirror/shop/level_IV_gifts/lunar_memory.png",
                 f"mirror/shop/level_IV_gifts/{self.system}_level_IV.png",
                 "mirror/shop/must_be_abandoned/leave2_vestige2.png",
-                "mirror/shop/must_be_abandoned/leave3_vestige.png"
+                "mirror/shop/must_be_abandoned/leave3_vestige.png",
             ]
             if self.second_system and self.second_system_action[0]:
                 protect_list.append(
@@ -402,7 +402,8 @@ class Shop:
                         coord[1] + 100 * scale,
                     ]
                     if auto.find_element(
-                        f"mirror/shop/enhance_gifts/{self.system}.png", my_crop=system_bbox
+                        f"mirror/shop/enhance_gifts/{self.system}.png",
+                        my_crop=system_bbox,
                     ):
                         protect_coord.append(coord)
                 for coord in protect_coord:

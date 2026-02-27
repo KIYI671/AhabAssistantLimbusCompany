@@ -1054,24 +1054,3 @@ class MumuControl(AbstractInput):
         if self.get_current_package() is None:
             return
         self.device.app_stop(self.get_current_package())
-
-
-#
-# if __name__ == "__main__":
-#     # mumu = MumuControl()
-#     # mumu.start()
-#     # mumu.click(1400,550)
-#     mumu = MumuControl(instance_number=1)
-#     mumu.start()
-#     print(adb.list())
-#     adb_port = mumu.get_mumu_adb_port()
-#     mumu.adb_connect()
-#     print(mumu.get_launch_status())
-#     #
-#     #
-#     #
-#     # d = adb.device(adb_port)
-#     #
-#     # print(d.app_current().package)
-#
-#     print(adb.list())

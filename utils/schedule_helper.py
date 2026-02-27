@@ -113,7 +113,7 @@ class ScheduleHelper_Win32:
             log.error(f"创建任务 {task_name} 失败")
             raise e
 
-    def register_onstart_task_registry(self,task_name, executable_path=None):
+    def register_onstart_task_registry(self, task_name, executable_path=None):
         """
         使用注册表实现当前用户的开机自启动（无需管理员权限）
         """
@@ -126,7 +126,9 @@ class ScheduleHelper_Win32:
 
         try:
             # 打开注册表项
-            key = winreg.OpenKey(winreg.HKEY_CURRENT_USER, key_path, 0, winreg.KEY_SET_VALUE)
+            key = winreg.OpenKey(
+                winreg.HKEY_CURRENT_USER, key_path, 0, winreg.KEY_SET_VALUE
+            )
             # 设置数值：任务名 = 程序路径
             winreg.SetValueEx(key, task_name, 0, winreg.REG_SZ, executable_path)
             winreg.CloseKey(key)
@@ -134,13 +136,15 @@ class ScheduleHelper_Win32:
         except Exception as e:
             log.error(f"通过写入注册表添加启动项失败: {e}")
 
-    def unregister_onstart_task_registry(self,task_name):
+    def unregister_onstart_task_registry(self, task_name):
         """
         删除自启动项
         """
         key_path = r"Software\Microsoft\Windows\CurrentVersion\Run"
         try:
-            key = winreg.OpenKey(winreg.HKEY_CURRENT_USER, key_path, 0, winreg.KEY_SET_VALUE)
+            key = winreg.OpenKey(
+                winreg.HKEY_CURRENT_USER, key_path, 0, winreg.KEY_SET_VALUE
+            )
             winreg.DeleteValue(key, task_name)
             winreg.CloseKey(key)
             log.info(f"已移除启动项: {task_name}")

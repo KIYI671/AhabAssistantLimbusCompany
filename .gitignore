@@ -3,6 +3,7 @@
 .venv
 .vscode
 .agent
+.idea
 
 # 构建文件
 build

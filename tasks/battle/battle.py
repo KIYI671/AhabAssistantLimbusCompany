@@ -395,8 +395,10 @@ class Battle:
                     waiting = self._update_wait_time(waiting, False, total_count)
 
             # 如果战斗中途出现事件
-            if choice_event_handling and auto.find_element("event/choices_assets.png") and auto.find_element(
-                "event/select_first_option_assets.png"
+            if (
+                choice_event_handling
+                and auto.find_element("event/choices_assets.png")
+                and auto.find_element("event/select_first_option_assets.png")
             ):
                 if event_chance > 5:
                     auto.click_element("event/select_first_option_assets.png")

@@ -55,9 +55,7 @@ class AALCReloader:
     def start(self):
         """Start the development mode"""
         if self.no_reload:
-            log.info(
-                "AALC Development Mode - Hot Reload Disabled (manual Ctrl+R only)"
-            )
+            log.info("AALC Development Mode - Hot Reload Disabled (manual Ctrl+R only)")
         else:
             log.info("AALC Development Mode - Hot Reload Enabled")
             log.info(f"Watching directory: {Path.cwd()}")

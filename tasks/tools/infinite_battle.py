@@ -25,7 +25,13 @@ class BattleWorker(QThread):
     error_occurred = Signal(str)
     initialization_complete = Signal()
 
-    def __init__(self, defense=False, defense_on_turn1=False, choice_event_handling=True, parent=None):
+    def __init__(
+        self,
+        defense=False,
+        defense_on_turn1=False,
+        choice_event_handling=True,
+        parent=None,
+    ):
         super().__init__(parent)
         self.defense = defense
         self.defense_on_turn1 = defense_on_turn1
@@ -174,6 +180,7 @@ class InfiniteBattles(QWidget):
             self.defense_box.setDisabled(True)
             self.defense_on_turn1_box.setDisabled(True)
             self.not_choose_event_box.setDisabled(True)
+
     def on_initialization_complete(self):
         """当初始化完成时调用"""
         self.log_text.append("游戏初始化完成，开始战斗")

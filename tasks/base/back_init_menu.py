@@ -4,7 +4,6 @@ from module.automation import auto
 from module.config import cfg
 from module.decorator.decorator import begin_and_finish_time_log
 from module.logger import log
-from module.my_error.my_error import backMainWinError
 from tasks.base.retry import retry
 from tasks.mirror.reward_card import get_reward_card
 
