@@ -4,7 +4,8 @@ AALC Development Mode with Hot Reload
 This script provides automatic hot reload functionality for development.
 
 Usage:
-    python main_dev.py
+    python main_dev.py              # with hot reload
+    python main_dev.py --no-reload  # dev mode without auto-restart
 
 Features:
 - Auto-restarts when .py files are modified
@@ -42,28 +43,35 @@ except ImportError:
 class AALCReloader:
     """Main hot reload manager"""
 
-    def __init__(self):
+    def __init__(self, no_reload=False):
         self.process = None
         self.observer = None
         self.should_restart = False
         self.restart_lock = threading.Lock()
         self.last_restart_time = 0
         self.restart_cooldown = 1.0  # seconds
+        self.no_reload = no_reload
 
     def start(self):
         """Start the development mode"""
-        log.info("AALC Development Mode - Hot Reload Enabled")
-        log.info(f"Watching directory: {Path.cwd()}")
+        if self.no_reload:
+            log.info(
+                "AALC Development Mode - Hot Reload Disabled (manual Ctrl+R only)"
+            )
+        else:
+            log.info("AALC Development Mode - Hot Reload Enabled")
+            log.info(f"Watching directory: {Path.cwd()}")
 
         # Set development environment variables
         os.environ["AALC_DEV_MODE"] = "1"
         os.environ["AALC_SKIP_ADMIN"] = "1"
         os.environ["AALC_FAST_START"] = "1"
 
-        # Start file watcher
-        self.start_file_watcher()
+        # Start file watcher (skip when --no-reload)
+        if not self.no_reload:
+            self.start_file_watcher()
 
-        # Start keyboard listener if available
+        # Start keyboard listener if available (always allow manual reload)
         if keyboard:
             self.start_keyboard_listener()
 
@@ -261,6 +269,8 @@ class FileChangeHandler(FileSystemEventHandler):
 
 def main():
     """Entry point"""
+    no_reload = "--no-reload" in sys.argv
+
     # Check Python version
     if sys.version_info < (3, 12):
         log.warning(f"Python 3.12+ recommended (current: {sys.version})")
@@ -270,7 +280,7 @@ def main():
         log.error("main.py not found in current directory")
         sys.exit(1)
 
-    reloader = AALCReloader()
+    reloader = AALCReloader(no_reload=no_reload)
     reloader.start()
 
 
