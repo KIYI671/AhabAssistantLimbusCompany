@@ -5,11 +5,12 @@ from contextlib import contextmanager
 from pathlib import Path
 
 import adbutils
+import config
 from adbutils import AdbError
 
-import module.simulator.pyminitouch.config as config
 from module.logger import log
-from module.simulator.pyminitouch.utils import is_port_using, str2byte
+
+from .utils import is_port_using, str2byte
 
 
 class MNTInstaller(object):

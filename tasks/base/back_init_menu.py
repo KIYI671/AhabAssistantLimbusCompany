@@ -16,12 +16,16 @@ def back_init_menu():
     while True:
         if cfg.simulator:
             if cfg.simulator_type == 0:
-                from module.simulator.mumu_control import MumuControl
+                from module.automation.input_handlers.simulator.mumu_control import (
+                    MumuControl,
+                )
 
                 if MumuControl.connection_device.check_game_alive() is False:
                     MumuControl.connection_device.start_game()
             else:
-                from module.simulator.simulator_control import SimulatorControl
+                from module.automation.input_handlers.simulator.simulator_control import (
+                    SimulatorControl,
+                )
 
                 if SimulatorControl.connection_device.check_game_alive() is False:
                     SimulatorControl.connection_device.start_game()
@@ -140,6 +144,7 @@ def back_init_menu():
             auto.model = "aggressive"
         if loop_count < 0:
             from tasks.base.retry import kill_game, restart_game
+
             log.error("无法返回主界面，尝试重启游戏")
             kill_game()
             restart_game()

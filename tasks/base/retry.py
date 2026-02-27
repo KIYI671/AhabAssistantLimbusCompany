@@ -16,11 +16,15 @@ def kill_game():
     """关闭游戏"""
     if cfg.simulator:
         if cfg.simulator_type == 0:
-            from module.simulator.mumu_control import MumuControl
+            from module.automation.input_handlers.simulator.mumu_control import (
+                MumuControl,
+            )
 
             MumuControl.connection_device.close_current_app()
         else:
-            from module.simulator.simulator_control import SimulatorControl
+            from module.automation.input_handlers.simulator.simulator_control import (
+                SimulatorControl,
+            )
 
             SimulatorControl.connection_device.close_current_app()
         return

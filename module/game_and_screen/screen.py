@@ -1,6 +1,6 @@
 from ctypes import windll
 from time import sleep
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, overload
 
 import win32api
 import win32con
@@ -140,17 +140,16 @@ class Handle:
         if self.hwnd == 0:
             return False
         hwnd = self.hwnd
-        # 模拟按下
-        win32api.SendMessage(hwnd, win32con.WM_KEYDOWN, win32con.VK_MENU, 0x00000001)
-        sleep(0.05)
-        # 模拟按下
-        win32api.SendMessage(hwnd, win32con.WM_KEYDOWN, win32con.VK_RETURN, 0x00000001)
-        sleep(0.05)
 
-        # 模拟释放
-        win32api.SendMessage(hwnd, win32con.WM_KEYUP, win32con.VK_RETURN, 0xC0000001)
+        if self.isMinimized:
+            self.restore()
+            sleep(0.5)
+        # 模拟按下
+        win32api.PostMessage(
+            hwnd, win32con.WM_SYSKEYDOWN, win32con.VK_RETURN, 0x00000001
+        )
         sleep(0.05)
-        win32api.SendMessage(hwnd, win32con.WM_KEYUP, win32con.VK_MENU, 0xC0000001)
+        win32api.PostMessage(hwnd, win32con.WM_SYSKEYUP, win32con.VK_RETURN, 0xC0000001)
         return True
 
     def restore(self) -> None:
@@ -158,6 +157,85 @@ class Handle:
         if self.hwnd == 0:
             return
         win32gui.ShowWindow(self.hwnd, win32con.SW_RESTORE)
+
+    @overload
+    def client_to_screen(self, x: int, y: int, /) -> tuple[int, int]: ...
+    @overload
+    def client_to_screen(
+        self,
+        x: int,
+        y: int,
+        /,
+        client_rect: tuple[int, int, int, int],
+        window_rect: tuple[int, int, int, int],
+    ) -> tuple[int, int]: ...
+    def client_to_screen(
+        self,
+        x: int,
+        y: int,
+        /,
+        client_rect: tuple[int, int, int, int] | None = None,
+        window_rect: tuple[int, int, int, int] | None = None,
+    ) -> tuple[int, int]:
+        """将客户区坐标转换为屏幕坐标"""
+        if self.hwnd == 0:
+            return (x, y)
+        if client_rect is None or window_rect is None:
+            client_rect = self.rect(True)
+            window_rect = self.rect(False)
+
+        x_diff = window_rect[0] - client_rect[0]
+        y_diff = window_rect[1] - client_rect[1]
+        return (x + x_diff, y + y_diff)
+
+    def mouse_pos_to_client_mouse(self, x: int, y: int) -> tuple[int, int]:
+        """将鼠标坐标转换为客户区坐标"""
+        if self.hwnd == 0:
+            return (x, y)
+        client_rect = self.rect(True)
+        return (x - client_rect[0], y - client_rect[1])
+
+    def set_window_pos(self, x: int, y: int) -> None:
+        """将窗口移动到屏幕坐标 (x, y)"""
+        if self.hwnd == 0:
+            return
+        x = int(x)
+        y = int(y)
+        win32gui.SetWindowPos(
+            self.hwnd,
+            None,
+            x,
+            y,
+            0,
+            0,
+            win32con.SWP_NOSIZE | win32con.SWP_NOZORDER,
+        )
+
+    def bring_window_into_view(self, work_area: bool = False):
+        """将窗口移动到屏幕可见区域"""
+        rect = self.rect(True)
+        window_rect = self.rect(False)
+        monitor_info = self.monitor_info
+        left, top, right, bottom = (
+            monitor_info["Work"] if work_area else monitor_info["Monitor"]
+        )
+        need_x = rect[0]
+        need_y = rect[1]
+        if rect[2] > right:
+            need_x = right - (rect[2] - rect[0])
+        elif rect[0] < left:
+            need_x = left
+
+        if rect[3] > bottom:
+            need_y = bottom - (rect[3] - rect[1])
+        elif rect[1] < top:
+            need_y = top
+
+        x, y = self.client_to_screen(
+            need_x, need_y, client_rect=rect, window_rect=window_rect
+        )
+        if need_x != rect[0] or need_y != rect[1]:
+            self.set_window_pos(x, y)
 
 
 class Screen(metaclass=SingletonMeta):
@@ -329,8 +407,19 @@ class Screen(metaclass=SingletonMeta):
             )
             if screen_width < set_win_size * 16 / 9 or screen_height < set_win_size:
                 log.error("屏幕分辨率过低，请重新设定分辨率")
+                log.debug(f"窗口所在的屏幕分辨率: {screen_width}x{screen_height}")
+                if not cfg.background_click:
+                    screen_width, screen_height = self.handle.monitor_size(False)
+                    if (
+                        screen_width >= set_win_size * 16 / 9
+                        and screen_height >= set_win_size
+                    ):
+                        log.info("当前屏幕全尺寸可考虑使用后台输入模式")
                 mediator.link_start.emit()
+                sleep(1)  # 等待结束
                 return
+            if cfg.set_win_position == "free":
+                win_pos = self.handle.rect()[:2]
             self.handle.switchFullScreenMode()
             sleep(0.5)
             # 进行判断如果全屏，再执行一次操作
@@ -341,6 +430,9 @@ class Screen(metaclass=SingletonMeta):
             screen_width, screen_height = self.handle.monitor_size()
             if width == screen_width and height == screen_height:
                 self.handle.switchFullScreenMode()
+            if cfg.set_win_position == "free":
+                self.handle.set_window_pos(*win_pos)
+                sleep(0.1)
         except Exception as e:
             log.error(f"检查屏幕分辨率失败: {e}")
 

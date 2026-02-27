@@ -335,7 +335,9 @@ class FarmingInterfaceLeft(QWidget):
                 screen.reset_win()
             else:
                 if cfg.simulator_type == 0:
-                    from module.simulator.mumu_control import MumuControl
+                    from module.automation.input_handlers.simulator.mumu_control import (
+                        MumuControl,
+                    )
 
                     while True:
                         try:
@@ -344,7 +346,9 @@ class FarmingInterfaceLeft(QWidget):
                         except:
                             continue
                 else:
-                    from module.simulator.simulator_control import SimulatorControl
+                    from module.automation.input_handlers.simulator.simulator_control import (
+                        SimulatorControl,
+                    )
 
                     while True:
                         try:
