@@ -15,6 +15,7 @@ from utils.singletonmeta import SingletonMeta
 from ..config import cfg
 from ..logger import log
 from ..ocr import ocr
+from .input_handlers.input import AbstractInput
 from .screenshot import ScreenShot
 
 
@@ -24,7 +25,7 @@ class Automation(metaclass=SingletonMeta):
     def __init__(self, windows_title):
         self.windows_title = windows_title
         self.screenshot = None
-        self.input_handler = None
+        self.input_handler = AbstractInput()
 
         self.init_input()
 
@@ -35,31 +36,44 @@ class Automation(metaclass=SingletonMeta):
 
     def init_input(self):
         """初始化输入处理器，将输入操作如点击、拖动等绑定至实例变量"""
+        if self.input_handler:
+            self.input_handler = None
         if cfg.simulator:
             if cfg.simulator_type == 0:
-                from ..simulator.mumu_control import MumuControl
+                from .input_handlers.simulator.mumu_control import MumuControl
 
+                log.debug("使用MuMu模拟器输入模块")
                 if MumuControl.connection_device is not None:
                     self.input_handler = MumuControl.connection_device
             else:
-                from module.simulator.simulator_control import SimulatorControl
+                from .input_handlers.simulator.simulator_control import SimulatorControl
 
+                log.debug("使用基于PyMiniTouch的通用模拟器输入模块")
                 self.input_handler = SimulatorControl.connection_device
         else:
-            if cfg.background_click:
-                from .input import BackgroundInput
+            input_type = cfg.win_input_type
+            if input_type == "background":
+                from .input_handlers.input import BackgroundInput
 
                 log.debug("使用后台点击模块")
                 self.input_handler = BackgroundInput()
-            else:
-                from .input import Input
+            elif input_type == "foreground":
+                from .input_handlers.input import Input
 
                 log.debug("使用前台点击模块")
                 self.input_handler = Input()
+            elif input_type == "window_move":
+                from .input_handlers.input import WindowMoveInput
+
+                log.debug("使用基于窗口移动的后台点击模块")
+                self.input_handler = WindowMoveInput()
         if self.input_handler is None:
-            from .input import BackgroundInput
+            from .input_handlers.input import BackgroundInput
 
             self.input_handler = BackgroundInput()
+        assert isinstance(self.input_handler, AbstractInput), (
+            "输入处理器必须是AbstractInput的实例"
+        )
         self.mouse_click = self.input_handler.mouse_click
         self.mouse_click_blank = self.input_handler.mouse_click_blank
         self.mouse_drag = self.input_handler.mouse_drag

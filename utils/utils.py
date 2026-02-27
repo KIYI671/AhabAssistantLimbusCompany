@@ -219,7 +219,9 @@ def check_game_running() -> bool:
     """检查游戏是否正在运行"""
     if cfg.simulator:
         if cfg.simulator_type == 0:
-            from module.simulator.mumu_control import MumuControl
+            from module.automation.input_handlers.simulator.mumu_control import (
+                MumuControl,
+            )
 
             return MumuControl.connection_device.check_game_alive()
     else:

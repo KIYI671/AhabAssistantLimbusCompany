@@ -39,8 +39,8 @@ class ScreenShot:
                     log.debug(f"adb截图报错 {type(e).__name__}: {e}")
                     return None
         else:
-            # 判断是否在屏幕内
-            ScreenShot.move_game_window(not cfg.background_click)
+            # 将窗口移动到屏幕可见区域，确保获取到完整的内容
+            screen.handle.bring_window_into_view(not cfg.background_click)
 
         if cfg.background_click:
             try:
@@ -60,36 +60,6 @@ class ScreenShot:
                     msg = f"pyautogui截图失败，错误信息：{e2}"
                     log.debug(msg)
                     return None
-
-    @staticmethod
-    def move_game_window(work_area: bool = False):
-        """将游戏窗口移动到屏幕可见区域"""
-        rect = screen.handle.rect()
-        monitor_info = screen.handle.monitor_info
-        left, top, right, bottom = (
-            monitor_info["Work"] if work_area else monitor_info["Monitor"]
-        )
-        x_offset = 0
-        y_offset = 0
-        add_offset = 6
-        if rect[0] < left:
-            x_offset = -rect[0] + add_offset
-        elif rect[2] > right:
-            x_offset = right - rect[2] - add_offset
-        if rect[1] < top:
-            y_offset = -rect[1] + add_offset
-        elif rect[3] > bottom:
-            y_offset = bottom - rect[3] - add_offset
-        if x_offset != 0 or y_offset != 0:
-            win32gui.SetWindowPos(
-                screen.handle.hwnd,
-                None,
-                rect[0] + x_offset,
-                rect[1] + y_offset,
-                0,
-                0,
-                win32con.SWP_NOSIZE | win32con.SWP_NOZORDER,
-            )
 
     @staticmethod
     def take_screenshot_gdi(gray: bool = True) -> Image.Image:
@@ -341,7 +311,7 @@ class ScreenShot:
         Returns:
             Image.Image: 截图图像
         """
-        from module.simulator.mumu_control import MumuControl
+        from module.automation.input_handlers.simulator.mumu_control import MumuControl
 
         if MumuControl.connection_device is not None:
             image = MumuControl.connection_device.screenshot()
@@ -365,7 +335,9 @@ class ScreenShot:
         Returns:
             Image.Image: 截图图像
         """
-        from module.simulator.simulator_control import SimulatorControl
+        from module.automation.input_handlers.simulator.simulator_control import (
+            SimulatorControl,
+        )
 
         if SimulatorControl.connection_device is not None:
             image = SimulatorControl.connection_device.screenshot()

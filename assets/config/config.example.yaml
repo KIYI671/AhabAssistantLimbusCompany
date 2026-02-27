@@ -1,4 +1,4 @@
-config_version: 1771413380 # 配置文件版本号 (时间戳)
+config_version: 1771965838 # 配置文件版本号 (时间戳)
 
 # 游戏设置
 game_title_name: LimbusCompany # 游戏窗口标题。
@@ -17,6 +17,9 @@ resume_hotkey: "<alt>+r" # 继续快捷键
 announcement: 1715990400 # 公告板时间戳
 
 memory_protection: False # 内存占用保护
+
+background_click: True # 是否使用后台点击
+win_input_type: "background" # 键鼠操控方式
 
 auto_hard_mirror: False # 周四自动切换困难镜牢
 last_auto_change: 1715990400 # 上次自动切换困难镜牢的时间戳
@@ -44,10 +47,8 @@ mouse_action_interval: 0.5 # 鼠标操作间隔时间
 
 resonate_with_Ahab: False # 是否播放亚哈语录
 
-experimental_auto_lang: True # 是否自动修改语言
-
 # 实验性功能
-background_click: True # 是否使用后台点击
+experimental_auto_lang: True # 是否自动修改语言
 
 
 # 模拟器设置

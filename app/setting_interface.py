@@ -4,6 +4,7 @@ from PySide6.QtWidgets import QFileDialog, QWidget
 from qfluentwidgets import ExpandLayout, InfoBarPosition, ScrollArea, Theme, setTheme
 from qfluentwidgets import FluentIcon as FIF
 
+from app import win_input_type_options
 from app.base_combination import (
     BasePrimaryPushSettingCard,
     BasePushSettingCard,
@@ -85,14 +86,12 @@ class SettingInterface(ScrollArea):
             ),
             config_name="hard_mirror_chance",
         )
-        self.background_mode_card = SwitchSettingCard(
+        self.win_input_type_card = ComboBoxSettingCard(
+            "win_input_type",
             FIF.CONNECT,
-            QT_TRANSLATE_NOOP("SwitchSettingCard", "后台运行模式"),
-            QT_TRANSLATE_NOOP(
-                "SwitchSettingCard",
-                "该模式下游戏不强制置顶, 但是<font color=red>游戏不能处于最小化状态!!</font>",
-            ),
-            "background_click",
+            QT_TRANSLATE_NOOP("ComboBoxSettingCard", "操控方式"),
+            "  ",
+            texts=win_input_type_options,
             parent=self.game_setting_group,
         )
         self.memory_protection = SwitchSettingCard(
@@ -357,7 +356,7 @@ class SettingInterface(ScrollArea):
         self.game_setting_group.addSettingCard(self.auto_hard_mirror_card)
         self.game_setting_group.addSettingCard(self.last_auto_hard_mirror_card)
         self.game_setting_group.addSettingCard(self.hard_mirror_chance_card)
-        self.game_setting_group.addSettingCard(self.background_mode_card)
+        self.game_setting_group.addSettingCard(self.win_input_type_card)
         self.game_setting_group.addSettingCard(self.memory_protection)
         self.game_setting_group.addSettingCard(self.screenshot_benchmark_card)
 
@@ -428,9 +427,8 @@ class SettingInterface(ScrollArea):
         self.auto_lang_card.switchButton.checkedChanged.connect(
             self.__onAutoLangCardChecked
         )
-        self.background_mode_card.switchButton.checkedChanged.connect(
-            self.__onZoomCardValueChanged
-        )
+        self.win_input_type_card.valueChanged.connect(self.__onWinInputTypeChanged)
+        self.__onWinInputTypeChanged()
         self.autostart_card.switchButton.checkedChanged.connect(
             self.__onAutostartCardChanged
         )
@@ -474,9 +472,13 @@ class SettingInterface(ScrollArea):
 
     def __onGamePathCardClicked(self):
         game_path, _ = QFileDialog.getOpenFileName(
-            self, "选择游戏路径", "", "All Files (*)"
+            self, "选择游戏路径", "", "Game Executable (LimbusCompany.exe)"
         )
-        if not game_path or cfg.game_path == game_path:
+        if (
+            not game_path
+            or cfg.game_path == game_path
+            or not game_path.endswith("LimbusCompany.exe")
+        ):
             return
         cfg.set_value("game_path", game_path)
         self.game_path_card.setContent(game_path)
@@ -513,6 +515,34 @@ class SettingInterface(ScrollArea):
                 duration=5000,
                 parent=self,
             )
+
+    def __onWinInputTypeChanged(self):
+        input_type = cfg.get_value("win_input_type")
+        if input_type == "background":
+            content = QT_TRANSLATE_NOOP(
+                "ComboBoxSettingCard",
+                "后台模式，游戏可以在后台运行，但是<font color=red>游戏不能处于最小化状态!!</font>",
+            )
+            cfg.set_value("background_click", True)
+        elif input_type == "foreground":
+            content = QT_TRANSLATE_NOOP(
+                "ComboBoxSettingCard", "前台模式，游戏必须在显示在最上方"
+            )
+            cfg.set_value("background_click", False)
+        elif input_type == "window_move":
+            content = QT_TRANSLATE_NOOP(
+                "ComboBoxSettingCard",
+                "基于移动窗口的后台模式，有效规避了后台模式需要移动鼠标的情况，<br/>但是性能和稳定性较差，<font color=red>不推荐长时间无人使用</font>",
+            )
+            cfg.set_value("background_click", True)
+        else:
+            content = QT_TRANSLATE_NOOP(
+                "ComboBoxSettingCard", "未知的输入模式，发生了错误"
+            )
+
+        self.win_input_type_card.content = content
+        self.win_input_type_card.setContent(content)
+        self.win_input_type_card.retranslateUi()
 
     def __onZoomCardValueChanged(self):
         bar = BaseInfoBar.success(
@@ -606,7 +636,7 @@ class SettingInterface(ScrollArea):
         self.auto_hard_mirror_card.retranslateUi()
         self.last_auto_hard_mirror_card.retranslateUi()
         self.hard_mirror_chance_card.retranslateUi()
-        self.background_mode_card.retranslateUi()
+        self.win_input_type_card.retranslateUi()
         self.minimize_to_tray_card.retranslateUi()
         self.memory_protection.retranslateUi()
         self.screenshot_benchmark_card.retranslateUi()

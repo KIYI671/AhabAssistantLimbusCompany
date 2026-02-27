@@ -142,21 +142,29 @@ def init_game():
                     log.info("设置的模拟器端口非常用默认端口，使用默认mumu模拟器")
             elif cfg.mumu_instance_number != -1:
                 mumu_instance_number = cfg.mumu_instance_number
-            from module.simulator.mumu_control import MumuControl
+            from module.automation.input_handlers.simulator.mumu_control import (
+                MumuControl,
+            )
 
             simulator = MumuControl(instance_number=mumu_instance_number)
         else:
-            from module.simulator.simulator_control import SimulatorControl
+            from module.automation.input_handlers.simulator.simulator_control import (
+                SimulatorControl,
+            )
 
             simulator = SimulatorControl()
     auto.init_input()
     if cfg.simulator:
         if cfg.simulator_type == 0:
-            from module.simulator.mumu_control import MumuControl
+            from module.automation.input_handlers.simulator.mumu_control import (
+                MumuControl,
+            )
 
             MumuControl.connection_device.start_game()
         else:
-            from module.simulator.simulator_control import SimulatorControl
+            from module.automation.input_handlers.simulator.simulator_control import (
+                SimulatorControl,
+            )
 
             SimulatorControl.connection_device.start_game()
     else:
@@ -343,7 +351,9 @@ def script_task() -> None | int:
         screen.reset_win()
     if cfg.simulator:
         if cfg.simulator_type == 0:
-            from module.simulator.mumu_control import MumuControl
+            from module.automation.input_handlers.simulator.mumu_control import (
+                MumuControl,
+            )
 
             MumuControl.clean_connect()
 
