@@ -1,7 +1,7 @@
 import socket
 import tempfile
 
-import config
+from . import config
 import requests
 
 from module.logger import log
