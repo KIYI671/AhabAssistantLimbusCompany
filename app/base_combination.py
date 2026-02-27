@@ -25,6 +25,7 @@ from PySide6.QtWidgets import (
     QGraphicsDropShadowEffect,
     QLabel,
     QPushButton,
+    QButtonGroup,
 )
 from qfluentwidgets import (
     IndicatorPosition,
@@ -40,6 +41,9 @@ from qfluentwidgets import (
     SwitchButton,
     TimePicker,
     setCustomStyleSheet,
+    FlyoutViewBase,
+    PopupTeachingTip,
+    TeachingTipTailPosition,
 )
 
 from app.base_tools import *
@@ -945,6 +949,152 @@ class PushSettingCardChance(BasePushSettingCard):
             self.line_text.setText(str(message_box.getValue()))
 
 
+class AutoDailyView(FlyoutViewBase):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.config_name = None
+
+        self.vBoxLayout = QVBoxLayout(self)
+        self.line_1_box = QWidget(self)
+        self.line_1 = QHBoxLayout(self.line_1_box)
+        self.label = BodyLabel("选择执行的行动")
+        self.task_name = [
+            "autodaily_daily",
+            "autodaily_get_reward",
+            "autodaily_buy_enkephalin",
+            "autodaily_mirror",
+        ]
+        self.box_daily = BaseCheckBox(
+            "autodaily_daily", None, QT_TRANSLATE_NOOP("AutoDailyView", "自动执行日常")
+        )
+        self.box_get_reward = BaseCheckBox(
+            "autodaily_get_reward",
+            None,
+            QT_TRANSLATE_NOOP("AutoDailyView", "自动获取奖励"),
+        )
+        self.box_buy_enkephalin = BaseCheckBox(
+            "autodaily_buy_enkephalin",
+            None,
+            QT_TRANSLATE_NOOP("AutoDailyView", "自动狂气换体"),
+        )
+        self.box_mirror = BaseCheckBox(
+            "autodaily_mirror", None, QT_TRANSLATE_NOOP("AutoDailyView", "自动镜牢")
+        )
+        self.line_1.addWidget(self.box_daily)
+        self.line_1.addWidget(self.box_get_reward)
+        self.line_1.addWidget(self.box_buy_enkephalin)
+        self.line_1.addWidget(self.box_mirror)
+
+        self.label2 = BodyLabel("运行结束后")
+        self.line_2_box = QWidget(self)
+        self.line_2 = QHBoxLayout(self.line_2_box)
+        self.exit_task_name = [
+            "autodaily_exit_game",
+            "autodaily_exit_aalc",
+            "autodaily_sleep",
+            "autodaily_hibernate",
+            "autodaily_shutdown",
+        ]
+        self.box_exit_game = BaseCheckBox(
+            "autodaily_exit_game", None, QT_TRANSLATE_NOOP("AutoDailyView", "退出游戏")
+        )
+        self.box_exit_aalc = BaseCheckBox(
+            "autodaily_exit_aalc", None, QT_TRANSLATE_NOOP("AutoDailyView", "退出AALC")
+        )
+        self.box_sleep = BaseCheckBox(
+            "autodaily_sleep", None, QT_TRANSLATE_NOOP("AutoDailyView", "睡眠")
+        )
+        self.box_hibernate = BaseCheckBox(
+            "autodaily_hibernate", None, QT_TRANSLATE_NOOP("AutoDailyView", "休眠")
+        )
+        self.box_shutdown = BaseCheckBox(
+            "autodaily_shutdown", None, QT_TRANSLATE_NOOP("AutoDailyView", "关机")
+        )
+        self.line_2.addWidget(self.box_exit_game)
+        self.line_2.addWidget(self.box_exit_aalc)
+        self.line_2.addWidget(self.box_sleep)
+        self.line_2.addWidget(self.box_hibernate)
+        self.line_2.addWidget(self.box_shutdown)
+
+        self.line_3_box = QWidget(self)
+        self.line_3 = QHBoxLayout(self.line_3_box)
+
+        self.save_button = PrimaryPushButton(QT_TRANSLATE_NOOP("AutoDailyView", "保存"))
+
+        self.line_3.addWidget(self.save_button)
+
+        self.checkboxes = [self.box_sleep, self.box_hibernate, self.box_shutdown]
+        for cb in self.checkboxes:
+            cb.check_box.clicked.connect(self.__on_checkbox_clicked)
+
+        self.vBoxLayout.setSpacing(12)
+        self.vBoxLayout.setContentsMargins(20, 16, 20, 16)
+        self.vBoxLayout.addWidget(self.label)
+        self.vBoxLayout.addWidget(self.line_1_box)
+        self.vBoxLayout.addWidget(self.label2)
+        self.vBoxLayout.addWidget(self.line_2_box)
+        self.vBoxLayout.addWidget(self.line_3_box)
+
+        self.__get_init()
+
+        mediator.autodaily_setting.connect(self.__autodaily_setting)
+        self.save_button.clicked.connect(self.__save)
+
+    def __get_init(self):
+        while self.config_name is None:
+            self.config_name = self.__search_parent_class().config_name
+        self.setting = cfg.get_value(self.config_name + "_task")
+        self.exit_setting = cfg.get_value(self.config_name + "_task_exit")
+
+        task = [
+            self.box_daily,
+            self.box_get_reward,
+            self.box_buy_enkephalin,
+            self.box_mirror,
+        ]
+        for i in range(len(task)):
+            task[i].set_checked(self.setting[i])
+        exit_task = [
+            self.box_exit_game,
+            self.box_exit_aalc,
+            self.box_sleep,
+            self.box_hibernate,
+            self.box_shutdown,
+        ]
+        for i in range(len(exit_task)):
+            exit_task[i].set_checked(self.exit_setting[i])
+
+    def __on_checkbox_clicked(self):
+        clicked_cb = self.sender()
+        # 如果当前点击的被勾选了，则把其他的都取消勾选
+        for cb in self.checkboxes:
+            if cb.check_box is not clicked_cb:
+                cb.blockSignals(True)
+                cb.set_checked(False)
+                cb.blockSignals(False)
+
+    def __autodaily_setting(self, config_name: str):
+        if config_name in self.task_name:
+            index = self.task_name.index(config_name)
+            self.setting[index] = not self.setting[index]
+        elif config_name in self.exit_task_name:
+            index = self.exit_task_name.index(config_name)
+            self.exit_setting[index] = not self.exit_setting[index]
+
+    def __save(self):
+        cfg.set_value(self.config_name + "_task", self.setting)
+        cfg.set_value(self.config_name + "_task_exit", self.exit_setting)
+
+    def __search_parent_class(self, class_name="DailySettingCard"):
+        current = self.parentWidget()
+        while current is not None:
+            # 使用 __class__.__name__ 获取类名字符串进行比对
+            if current.__class__.__name__ == class_name:
+                return current
+            current = current.parentWidget()
+        return None
+
+
 class DailySettingCard(SwitchSettingCard):
     def __init__(
         self,
@@ -957,8 +1107,8 @@ class DailySettingCard(SwitchSettingCard):
         super().__init__(icon, title, content, config_name, parent)
         self.config_name = config_name
         self.autodaily_timepicker = TimePicker()
-        if "_" in self.config_name and self.config_name[-1] in ["2", "3", "4"]:
-            self.value_name = "autodaily_time" + self.config_name.split("_")[-1]
+        if self.config_name[-1] in ["2", "3", "4"]:
+            self.value_name = "autodaily_time" + self.config_name[-1]
         else:
             self.value_name = "autodaily_time"
 
@@ -967,12 +1117,29 @@ class DailySettingCard(SwitchSettingCard):
         if not autodaily_qtime.isValid():
             autodaily_qtime = QTime(0, 0)
         self.autodaily_timepicker.setTime(autodaily_qtime)
+        self.button = PushButton(
+            QT_TRANSLATE_NOOP("DailySettingCard", "设置任务项"), self
+        )
         current_count = self.hBoxLayout.count()
         self.hBoxLayout.insertWidget(current_count - 2, self.autodaily_timepicker)
+        self.hBoxLayout.insertSpacing(current_count - 1, 20)
+        current_count = self.hBoxLayout.count()
+        self.hBoxLayout.insertWidget(current_count - 2, self.button)
         self.hBoxLayout.insertSpacing(current_count - 1, 20)
         self.autodaily_timepicker.setDisabled(not self.switchButton.isChecked())
         self.autodaily_timepicker.timeChanged.connect(
             self.__onAutoDailyTimepickerChanged
+        )
+        self.button.clicked.connect(self.__show_view)
+        self.__connect_signal()
+
+    def __show_view(self):
+        PopupTeachingTip.make(
+            target=self.button,
+            view=AutoDailyView(self),
+            tailPosition=TeachingTipTailPosition.RIGHT,
+            duration=-1,
+            parent=self,
         )
 
     def __connect_signal(self):
@@ -990,13 +1157,18 @@ class DailySettingCard(SwitchSettingCard):
 
         helper = ScheduleHelper()
         task_name = self.__autodaily_taskname()
+        if self.config_name[-1] in ["2", "3", "4"]:
+            task_name += self.config_name[-1]
 
         cfg.set_value(self.config_name, isChecked)
         if isChecked:
             self.autodaily_timepicker.setDisabled(False)
             time = self.autodaily_timepicker.getTime()
             helper.register_daily_task(
-                task_name, "start --exit", time.hour(), time.minute()
+                task_name,
+                f"start --exit {self.config_name}",
+                time.hour(),
+                time.minute(),
             )
         else:
             self.autodaily_timepicker.setDisabled(True)
@@ -1007,11 +1179,13 @@ class DailySettingCard(SwitchSettingCard):
 
         helper = ScheduleHelper()
         task_name = self.__autodaily_taskname()
+        if self.config_name[-1] in ["2", "3", "4"]:
+            task_name += self.config_name[-1]
 
         cfg.set_value(self.value_name, time.toString("HH:mm"))
         helper.unregister_task(task_name)
         helper.register_daily_task(
-            task_name, "start --exit", time.hour(), time.minute()
+            task_name, f"start --exit {self.config_name}", time.hour(), time.minute()
         )
 
 

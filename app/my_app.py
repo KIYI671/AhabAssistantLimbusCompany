@@ -276,10 +276,29 @@ class MainWindow(FramelessWindow):
                 skip_arg_times = 1
                 exit_type = 5
                 try:
-                    exit_type = int(argv[index + 1])
-                    if exit_type < 0 or exit_type > 6:
-                        exit_type = 0
-                        log.error(f'命令行参数 --exit 后输入值"{argv[index + 1]}"越界')
+                    if isinstance(argv[index + 1], str) and argv[index + 1].startswith(
+                        "autodaily"
+                    ):
+                        exit_task = cfg.get_value(argv[index + 1] + "_task_exit")
+                        if exit_task[4]:
+                            exit_type = 3
+                        elif exit_task[3]:
+                            exit_type = 2
+                        elif exit_task[2]:
+                            exit_type = 1
+                        elif exit_task[0] and exit_task[1]:
+                            exit_type = 6
+                        elif exit_task[1]:
+                            exit_type = 5
+                        elif exit_task[0]:
+                            exit_type = 4
+                    else:
+                        exit_type = int(argv[index + 1])
+                        if exit_type < 0 or exit_type > 6:
+                            exit_type = 0
+                            log.error(
+                                f'命令行参数 --exit 后输入值"{argv[index + 1]}"越界'
+                            )
                 except (IndexError, ValueError):
                     # 由于输入值为可选, 所以在强制int失败或缺少时将跳过参数数值重置为0
                     skip_arg_times = 0

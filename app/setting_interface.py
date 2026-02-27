@@ -188,21 +188,21 @@ class SettingInterface(ScrollArea):
             FIF.HISTORY,
             QT_TRANSLATE_NOOP("DailySettingCard", "定时执行 2"),
             None,
-            "autodaily_2",
+            "autodaily2",
             parent=self.autodaily_group,
         )
         self.autodaily_card_3 = DailySettingCard(
             FIF.HISTORY,
             QT_TRANSLATE_NOOP("DailySettingCard", "定时执行 3"),
             None,
-            "autodaily_3",
+            "autodaily3",
             parent=self.autodaily_group,
         )
         self.autodaily_card_4 = DailySettingCard(
             FIF.HISTORY,
             QT_TRANSLATE_NOOP("DailySettingCard", "定时执行 4"),
             None,
-            "autodaily_4",
+            "autodaily4",
             parent=self.autodaily_group,
         )
         self.minimize_to_tray_card = SwitchSettingCard(
@@ -433,30 +433,6 @@ class SettingInterface(ScrollArea):
             self.__onAutostartCardChanged
         )
         self.theme_card.valueChanged.connect(self.__onThemeCardChanged)
-        self.autodaily_card.switchButton.checkedChanged.connect(
-            self.__onAutoDailyCheckboxChanged
-        )
-        self.autodaily_card_2.switchButton.checkedChanged.connect(
-            self.__onAutoDailyCheckboxChanged
-        )
-        self.autodaily_card_3.switchButton.checkedChanged.connect(
-            self.__onAutoDailyCheckboxChanged
-        )
-        self.autodaily_card_4.switchButton.checkedChanged.connect(
-            self.__onAutoDailyCheckboxChanged
-        )
-        self.autodaily_card.autodaily_timepicker.timeChanged.connect(
-            self.__onAutoDailyTimepickerChanged
-        )
-        self.autodaily_card_2.autodaily_timepicker.timeChanged.connect(
-            self.__onAutoDailyTimepickerChanged
-        )
-        self.autodaily_card_3.autodaily_timepicker.timeChanged.connect(
-            self.__onAutoDailyTimepickerChanged
-        )
-        self.autodaily_card_4.autodaily_timepicker.timeChanged.connect(
-            self.__onAutoDailyTimepickerChanged
-        )
 
         self.github_card.clicked.connect(
             self.__openUrl("https://github.com/KIYI671/AhabAssistantLimbusCompany")
@@ -562,55 +538,6 @@ class SettingInterface(ScrollArea):
             helper.register_onstart_task(TASK_NAME, "")
         else:
             helper.unregister_task(TASK_NAME)
-
-    @staticmethod
-    def __autodaily_taskname() -> str:
-        return "AALC Daily Task"
-
-    def __onAutoDailyCheckboxChanged(self, isChecked):
-        from utils.schedule_helper import ScheduleHelper
-
-        helper = ScheduleHelper()
-        task_name = self.__autodaily_taskname()
-
-        task_order = self.sender().parent().config_name
-        task_order = task_order[-1]
-        if task_order in ["2", "3", "4"]:
-            task_order = task_order
-        else:
-            task_order = ""
-
-        if isChecked:
-            self.sender().parent().autodaily_timepicker.setDisabled(False)
-            time = self.autodaily_card.autodaily_timepicker.getTime()
-            helper.register_daily_task(
-                task_name + task_order, "start --exit", time.hour(), time.minute()
-            )
-        else:
-            self.sender().parent().autodaily_timepicker.setDisabled(True)
-            helper.unregister_task(task_name + task_order)
-
-    def __onAutoDailyTimepickerChanged(self, time: QTime):
-        from utils.schedule_helper import ScheduleHelper
-
-        helper = ScheduleHelper()
-        task_name = self.__autodaily_taskname()
-
-        task_order = self.sender().parent().config_name
-        task_order = task_order[-1]
-        if task_order in ["2", "3", "4"]:
-            value_name = "autodaily_time" + task_order
-        else:
-            value_name = "autodaily_time"
-
-        print(value_name)
-        print(task_name + task_order)
-
-        cfg.set_value(value_name, time.toString("HH:mm"))
-        helper.unregister_task(task_name + task_order)
-        helper.register_daily_task(
-            task_name + task_order, "start --exit", time.hour(), time.minute()
-        )
 
     def __onAutoLangCardChecked(self, Checked):
         bar = BaseInfoBar.success(

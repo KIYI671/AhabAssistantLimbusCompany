@@ -8,6 +8,7 @@ class Mediator(QObject):
     team_setting = Signal(dict)
     close_setting = Signal()
     refresh_teams_order = Signal()
+    autodaily_setting = Signal(str)
     sinner_be_selected = Signal()
     link_start = Signal()
     save_warning = Signal()

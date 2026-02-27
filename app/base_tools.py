@@ -202,6 +202,8 @@ class BaseCheckBox(BaseLayout):
                 cfg.set_value("teams_be_select", teams_be_select)
                 cfg.set_value("teams_order", teams_order)
             mediator.refresh_teams_order.emit()
+        elif self.config_name.startswith("autodaily"):
+            mediator.autodaily_setting.emit(self.config_name)
         else:
             data_dict = {self.config_name: checked}
             self.send_switch_signal(data_dict)
