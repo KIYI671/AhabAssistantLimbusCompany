@@ -5,7 +5,7 @@ from contextlib import contextmanager
 from pathlib import Path
 
 import adbutils
-import config
+from . import config
 from adbutils import AdbError
 
 from module.logger import log

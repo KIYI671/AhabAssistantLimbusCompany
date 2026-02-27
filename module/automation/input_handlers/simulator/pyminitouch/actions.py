@@ -1,8 +1,8 @@
 import time
 from contextlib import contextmanager
 
-import config
-from connection import MNTConnection, MNTServer
+from . import config
+from .connection import MNTConnection, MNTServer
 
 
 class CommandBuilder(object):
