@@ -596,10 +596,15 @@ class WindowMoveInput(WinAbstractInput, metaclass=SingletonMeta):
         dx = (target_x - current_x) / duration * 100
         dy = (target_y - current_y) / duration * 100
         steps = duration // 100
+        time_per_step = duration / steps / accur
         for index in range(steps - 1):
+            start = time()
             x = int(current_x + dx * (index + 1))
             y = int(current_y + dy * (index + 1))
             self._set_window_pos(x, y)
+            elapsed = time() - start
+            if time_per_step - elapsed > 0.01:
+                sleep(time_per_step - elapsed)
 
         self._set_window_pos(target_x, target_y)
         return raw_pos
