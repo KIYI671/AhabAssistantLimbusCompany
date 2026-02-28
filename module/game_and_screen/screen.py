@@ -383,7 +383,9 @@ class Screen(metaclass=SingletonMeta):
         # 获取当前窗口和客户区大小
         window_rect = win32gui.GetWindowRect(hwnd)
         client_rect = win32gui.GetClientRect(hwnd)
-        if window_rect != client_rect:
+        if (
+            window_rect[:2] != client_rect[:2]
+        ):  # 如果窗口和客户区位置不同，说明有边框和标题栏
             # 计算边框和标题栏厚度
             window_width = window_rect[2] - window_rect[0]
             window_height = window_rect[3] - window_rect[1]
