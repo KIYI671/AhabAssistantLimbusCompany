@@ -230,6 +230,14 @@ class Handle:
             need_y = bottom - (rect[3] - rect[1])
         elif rect[1] < top:
             need_y = top
+        elif rect[1] == top:
+            if cfg.set_win_position == "free":
+                need_y = (
+                    top
+                    - self.client_to_screen(
+                        0, 0, client_rect=rect, window_rect=window_rect
+                    )[1]
+                )  # 防止标题栏不在窗口内
 
         x, y = self.client_to_screen(
             need_x, need_y, client_rect=rect, window_rect=window_rect
