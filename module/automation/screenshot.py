@@ -247,7 +247,7 @@ class ScreenShot:
 
             init_game()
 
-        except ValueError as e:
+        except ValueError:
             if screen.handle.isMinimized:
                 screen.handle.set_window_transparent(True)
                 screen.handle.restore()
@@ -257,7 +257,7 @@ class ScreenShot:
                 sleep(0.5)
                 return ScreenShot.background_screenshot(gray)
             else:
-                raise e
+                raise
 
         except Exception as e:
             # 统一错误处理，如果发生异常，资源清理流程将很重要
