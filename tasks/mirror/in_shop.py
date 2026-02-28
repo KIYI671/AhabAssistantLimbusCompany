@@ -278,8 +278,6 @@ class Shop:
                 raise self.RestartGame()
 
             my_remaining_money = self._get_cost()
-            if my_remaining_money == -1:
-                my_remaining_money = self._get_cost(in_heal=True) # 可能在治疗界面
             if my_remaining_money <= 300:
                 refresh_keyword = True
             if my_remaining_money <= 200:
@@ -1403,8 +1401,9 @@ class Shop:
                     ImageUtils.load_image("mirror/shop/my_money_bbox.png")
                 )
             my_money = auto.get_text_from_screenshot(money_bbox)
-            my_remaining_money = int(my_money[0])
-            if not isinstance(my_remaining_money, int):
+            if my_money: # 避免非空
+                my_remaining_money = int(my_money[0])
+            if not my_money or not isinstance(my_remaining_money, int):
                 log.error("获取剩余金钱失败")
             else:
                 log.debug(f"剩余金钱：{my_remaining_money}")
