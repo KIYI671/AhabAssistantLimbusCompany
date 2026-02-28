@@ -336,6 +336,18 @@ class Screen(metaclass=SingletonMeta):
         style &= ~(win32con.WS_SIZEBOX | win32con.WS_MAXIMIZEBOX)
         # 将修改后的样式值 style 应用到窗口的样式属性上
         win32gui.SetWindowLong(hwnd, win32con.GWL_STYLE, style)
+        win32gui.SetWindowPos(
+            hwnd,
+            None,
+            0,
+            0,
+            0,
+            0,
+            win32con.SWP_NOMOVE
+            | win32con.SWP_NOSIZE
+            | win32con.SWP_NOZORDER
+            | win32con.SWP_FRAMECHANGED,
+        )
 
     def adjust_win_size(self, set_win_size: tuple[int, int] = (1920, 1080)) -> None:
         """调整窗口大小"""
@@ -418,21 +430,25 @@ class Screen(metaclass=SingletonMeta):
                 mediator.link_start.emit()
                 sleep(1)  # 等待结束
                 return
-            if cfg.set_win_position == "free":
-                win_pos = self.handle.rect()[:2]
-            self.handle.switchFullScreenMode()
-            sleep(0.5)
-            # 进行判断如果全屏，再执行一次操作
-            # 获取窗口位置和大小
+
+            # 如果全屏，则切回窗口
             width = self.handle.width()
             height = self.handle.height()
-            # 判断窗口是否全屏
             screen_width, screen_height = self.handle.monitor_size()
             if width == screen_width and height == screen_height:
+                if cfg.set_win_position == "free":
+                    win_pos = self.handle.rect()[:2]
                 self.handle.switchFullScreenMode()
-            if cfg.set_win_position == "free":
-                self.handle.set_window_pos(*win_pos)
-                sleep(0.1)
+                sleep(0.5)
+                # 进行判断如果还是全屏，再执行一次操作
+                width = self.handle.width()
+                height = self.handle.height()
+                if width == screen_width and height == screen_height:
+                    self.handle.switchFullScreenMode()
+                    sleep(0.5)
+                if cfg.set_win_position == "free":
+                    self.handle.set_window_pos(*win_pos)
+                    sleep(0.1)
         except Exception as e:
             log.error(f"检查屏幕分辨率失败: {e}")
 
