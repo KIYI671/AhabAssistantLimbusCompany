@@ -257,7 +257,7 @@ class Handle:
         if hwnd == 0:
             return
         if not cfg.background_click:
-            return
+            transparent = False
 
         ex_style = win32gui.GetWindowLong(hwnd, win32con.GWL_EXSTYLE)
         if not (ex_style & win32con.WS_EX_LAYERED) and transparent:
