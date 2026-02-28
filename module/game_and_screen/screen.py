@@ -156,7 +156,7 @@ class Handle:
         """恢复窗口"""
         if self.hwnd == 0:
             return
-        win32gui.ShowWindow(self.hwnd, win32con.SW_RESTORE)
+        win32gui.ShowWindow(self.hwnd, win32con.SW_SHOWNOACTIVATE)
 
     @overload
     def client_to_screen(self, x: int, y: int, /) -> tuple[int, int]: ...
