@@ -19,6 +19,7 @@ class Handle:
     """提供统一的获取窗口信息的接口"""
 
     _hwnd: int = 0
+    _transparent = False
 
     def init_handle(self, title: str, class_name: str = "UnityWndClass") -> int:
         """获取窗口句柄"""
@@ -31,6 +32,11 @@ class Handle:
         if self._hwnd == 0:
             log.warning("窗口未初始化", stacklevel=3)
         return self._hwnd
+
+    @property
+    def isTransparent(self) -> bool:
+        """判断窗口是否透明"""
+        return self._transparent
 
     @property
     def isMinimized(self) -> bool:
@@ -244,6 +250,29 @@ class Handle:
         )
         if need_x != rect[0] or need_y != rect[1]:
             self.set_window_pos(x, y)
+
+    def set_window_transparent(self, transparent: bool = True) -> None:
+        """设置窗口是否透明, 同时设置鼠标穿透"""
+        hwnd = self.hwnd
+        if hwnd == 0:
+            return
+        if not cfg.background_click:
+            return
+
+        ex_style = win32gui.GetWindowLong(hwnd, win32con.GWL_EXSTYLE)
+        if not (ex_style & win32con.WS_EX_LAYERED) and transparent:
+            ex_style = ex_style | win32con.WS_EX_LAYERED
+            win32gui.SetWindowLong(hwnd, win32con.GWL_EXSTYLE, ex_style)
+
+        if transparent:
+            ex_style |= win32con.WS_EX_LAYERED
+            ex_style |= win32con.WS_EX_TRANSPARENT
+            win32gui.SetLayeredWindowAttributes(hwnd, 0, 0, win32con.LWA_ALPHA)
+        else:
+            ex_style &= ~win32con.WS_EX_LAYERED
+            ex_style &= ~win32con.WS_EX_TRANSPARENT
+        win32gui.SetWindowLong(hwnd, win32con.GWL_EXSTYLE, ex_style)
+        self._transparent = transparent
 
 
 class Screen(metaclass=SingletonMeta):
@@ -468,6 +497,7 @@ class Screen(metaclass=SingletonMeta):
             ex_style &= ~win32con.WS_EX_TOPMOST
             # 应用修改后的扩展样式
             win32gui.SetWindowLong(hwnd, win32con.GWL_EXSTYLE, ex_style)
+            self.handle.set_window_transparent(False)
 
             # 更新窗口，使样式改变生效
             win32gui.SetWindowPos(

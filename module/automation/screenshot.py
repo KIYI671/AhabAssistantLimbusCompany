@@ -186,6 +186,10 @@ class ScreenShot:
         try:
             # 查找游戏窗口句柄
             hwnd = screen.handle.hwnd
+            if screen.handle.isMinimized:
+                raise ValueError("窗口最小化，无法截图")
+            elif screen.handle.isActive and screen.handle.isTransparent:
+                screen.handle.set_window_transparent(False)
 
             # 获取窗口的坐标和尺寸
             rect = screen.handle.rect(client=True)
@@ -242,6 +246,18 @@ class ScreenShot:
             from tasks.base.script_task_scheme import init_game
 
             init_game()
+
+        except ValueError as e:
+            if screen.handle.isMinimized:
+                screen.handle.set_window_transparent(True)
+                screen.handle.restore()
+
+                from time import sleep
+
+                sleep(0.5)
+                return ScreenShot.background_screenshot(gray)
+            else:
+                raise e
 
         except Exception as e:
             # 统一错误处理，如果发生异常，资源清理流程将很重要

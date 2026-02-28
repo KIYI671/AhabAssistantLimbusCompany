@@ -395,6 +395,7 @@ class BackgroundInput(WinAbstractInput, metaclass=SingletonMeta):
         if hwnd:
             # 如果最小化则显示
             if screen.handle.isMinimized:
+                screen.handle.set_window_transparent()
                 screen.handle.restore()
                 sleep(0.5)
 
@@ -621,6 +622,10 @@ class WindowMoveInput(WinAbstractInput, metaclass=SingletonMeta):
             x, y = x_or_pos
         else:
             x = x_or_pos
+        if screen.handle.isMinimized:
+            screen.handle.set_window_transparent()
+            screen.handle.restore()
+            sleep(0.1)  # 先恢复窗口,防止被放在左上角
         original_rect = screen.handle.rect()
         mouse_pos = self.get_mouse_position()
         x = int(x)
@@ -653,6 +658,7 @@ class WindowMoveInput(WinAbstractInput, metaclass=SingletonMeta):
         if hwnd:
             # 如果最小化则显示
             if screen.handle.isMinimized:
+                screen.handle.set_window_transparent()
                 screen.handle.restore()
                 sleep(0.5)
 
