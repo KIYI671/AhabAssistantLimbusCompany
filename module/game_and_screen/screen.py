@@ -336,6 +336,7 @@ class Screen(metaclass=SingletonMeta):
         style &= ~(win32con.WS_SIZEBOX | win32con.WS_MAXIMIZEBOX)
         # 将修改后的样式值 style 应用到窗口的样式属性上
         win32gui.SetWindowLong(hwnd, win32con.GWL_STYLE, style)
+        sleep(0.1)  # 确保样式修改生效
 
     def adjust_win_size(self, set_win_size: tuple[int, int] = (1920, 1080)) -> None:
         """调整窗口大小"""
@@ -345,19 +346,22 @@ class Screen(metaclass=SingletonMeta):
         # 获取当前窗口和客户区大小
         window_rect = win32gui.GetWindowRect(hwnd)
         client_rect = win32gui.GetClientRect(hwnd)
+        if window_rect != client_rect:
+            # 计算边框和标题栏厚度
+            window_width = window_rect[2] - window_rect[0]
+            window_height = window_rect[3] - window_rect[1]
+            current_client_width = client_rect[2]
+            current_client_height = client_rect[3]
 
-        # 计算边框和标题栏厚度
-        window_width = window_rect[2] - window_rect[0]
-        window_height = window_rect[3] - window_rect[1]
-        current_client_width = client_rect[2]
-        current_client_height = client_rect[3]
+            width_diff = window_width - current_client_width
+            height_diff = window_height - current_client_height
 
-        width_diff = window_width - current_client_width
-        height_diff = window_height - current_client_height
-
-        # 计算需要的窗口大小
-        required_window_width = client_width + width_diff
-        required_window_height = client_height + height_diff
+            # 计算需要的窗口大小
+            required_window_width = client_width + width_diff
+            required_window_height = client_height + height_diff
+        else:
+            required_window_width = client_width
+            required_window_height = client_height
         # 设置窗口
         win32gui.SetWindowPos(
             hwnd,
