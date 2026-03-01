@@ -395,6 +395,7 @@ class BackgroundInput(WinAbstractInput, metaclass=SingletonMeta):
         if hwnd:
             # 如果最小化则显示
             if screen.handle.isMinimized:
+                screen.handle.set_window_transparent()
                 screen.handle.restore()
                 sleep(0.5)
 
@@ -564,7 +565,6 @@ class WindowMoveInput(WinAbstractInput, metaclass=SingletonMeta):
         for pos in position:
             self._window_move_to(pos[0], pos[1], duration=drag_time)
 
-        sleep(0.5)
         self.mouse_up(position[-1][0], position[-1][1])
         screen.handle.set_window_pos(*raw_pos)
 
@@ -591,23 +591,22 @@ class WindowMoveInput(WinAbstractInput, metaclass=SingletonMeta):
         current_x, current_y = screen.handle.mouse_pos_to_client_mouse(
             *self.get_mouse_position()
         )
-        duration = int(max(duration, 0.3) * 1000)
+        accur = 7000
+        duration = int(max(duration, 0.01) * accur)
         dx = (target_x - current_x) / duration * 100
         dy = (target_y - current_y) / duration * 100
         steps = duration // 100
-        time_per_step = duration / steps / 1000
-
+        time_per_step = duration / steps / accur
         for index in range(steps - 1):
-            in_start = time()
+            start = time()
             x = int(current_x + dx * (index + 1))
             y = int(current_y + dy * (index + 1))
             self._set_window_pos(x, y)
-            in_end = time()
-            if in_end - in_start < time_per_step:
-                sleep(time_per_step - (in_end - in_start))
+            elapsed = time() - start
+            if time_per_step - elapsed > 0.01:
+                sleep(time_per_step - elapsed)
 
         self._set_window_pos(target_x, target_y)
-
         return raw_pos
 
     def get_mouse_position(self) -> tuple[int, int]:
@@ -628,6 +627,10 @@ class WindowMoveInput(WinAbstractInput, metaclass=SingletonMeta):
             x, y = x_or_pos
         else:
             x = x_or_pos
+        if screen.handle.isMinimized:
+            screen.handle.set_window_transparent()
+            screen.handle.restore()
+            sleep(0.1)  # 先恢复窗口,防止被放在左上角
         original_rect = screen.handle.rect()
         mouse_pos = self.get_mouse_position()
         x = int(x)
@@ -645,7 +648,11 @@ class WindowMoveInput(WinAbstractInput, metaclass=SingletonMeta):
             mouse_pos[1] - y + dy,
             0,
             0,
-            win32con.SWP_NOSIZE | win32con.SWP_NOZORDER | win32con.SWP_NOACTIVATE,
+            win32con.SWP_NOSIZE
+            | win32con.SWP_NOZORDER
+            | win32con.SWP_NOACTIVATE
+            | win32con.SWP_NOSENDCHANGING
+            | win32con.SWP_NOREDRAW,
         )
 
         return original_rect[:2]
@@ -656,6 +663,7 @@ class WindowMoveInput(WinAbstractInput, metaclass=SingletonMeta):
         if hwnd:
             # 如果最小化则显示
             if screen.handle.isMinimized:
+                screen.handle.set_window_transparent()
                 screen.handle.restore()
                 sleep(0.5)
 
