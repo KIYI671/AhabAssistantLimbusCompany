@@ -50,6 +50,7 @@ theme_pack_list:
   check: -5 # 霍恩海姆
   sweep: -5 # 深夜清扫
   Hatred: -5 # 绝望骑士
+  Wander: -5 # 灯客蚣檀
   compassion: -5 # 明日方舟联动
 
 theme_pack_list_hard:
@@ -63,7 +64,7 @@ theme_pack_list_hard:
   sigh: 0 # 故障机器人、诺姆
   supply: 0 # 蜈蚣、导游机器人
 
-  four: -1 #四大家族
+  four: -4 #四大家族
   opening: -2 # 血魔
   procession: -2 # 血魔
   unchanging: -5 # 东朗
@@ -87,6 +88,9 @@ theme_pack_list_hard:
   poised: -5 # 亚哈、金笠、洋流
   ending: -5 # 桑丘
   witnessing: -5 # 夫子、贾母
+  Text: -5 #卢西奥、火蛾
+  Blade: -5 #黑檀、莲、阿尔比娜
+  Unsever: -5 #空
 
 theme_pack_list_cn:
   遗忘: 0 # G 公司（道中斩击建议）
@@ -142,6 +146,7 @@ theme_pack_list_cn:
   绝望: -5 # 绝望骑士
   巡礼: -5 # 明日方舟联动
   unknown: -5 # 未汉化的新卡包
+  彷徨: -5 # 提灯、乘客、蜈蚣、黑檀
 
 theme_pack_list_hard_cn:
   奇迹复刻: 0 # 诺姆
@@ -154,7 +159,7 @@ theme_pack_list_hard_cn:
   叹息: 0 # 故障机器人、诺姆
   动力: 0 # 蜈蚣、导游机器人
 
-  家族: -1 # 四大家族
+  家族: -4 # 四大家族
   无尽的: -2 # 血魔
   开园: -2 # 血魔
   无改变: -5 # 东朗
@@ -176,3 +181,6 @@ theme_pack_list_hard_cn:
   循环呼: -5 # 亚哈、金笠、洋流
   终焉: -5 # 桑丘
   观望: -5 # 夫子、贾母
+  刀与作: -5 # 黑檀、莲、阿尔比娜
+  割舍: -5 # 空
+  教材: -5 # 卢西奥、火蛾
