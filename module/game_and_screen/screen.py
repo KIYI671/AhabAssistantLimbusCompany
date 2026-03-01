@@ -19,6 +19,7 @@ class Handle:
     """提供统一的获取窗口信息的接口"""
 
     _hwnd: int = 0
+    _transparent = False
 
     def init_handle(self, title: str, class_name: str = "UnityWndClass") -> int:
         """获取窗口句柄"""
@@ -31,6 +32,11 @@ class Handle:
         if self._hwnd == 0:
             log.warning("窗口未初始化", stacklevel=3)
         return self._hwnd
+
+    @property
+    def isTransparent(self) -> bool:
+        """判断窗口是否透明"""
+        return self._transparent
 
     @property
     def isMinimized(self) -> bool:
@@ -156,7 +162,7 @@ class Handle:
         """恢复窗口"""
         if self.hwnd == 0:
             return
-        win32gui.ShowWindow(self.hwnd, win32con.SW_RESTORE)
+        win32gui.ShowWindow(self.hwnd, win32con.SW_SHOWNOACTIVATE)
 
     @overload
     def client_to_screen(self, x: int, y: int, /) -> tuple[int, int]: ...
@@ -230,12 +236,43 @@ class Handle:
             need_y = bottom - (rect[3] - rect[1])
         elif rect[1] < top:
             need_y = top
+        elif rect[1] == top:
+            if cfg.set_win_position == "free":
+                need_y = (
+                    top
+                    - self.client_to_screen(
+                        0, 0, client_rect=rect, window_rect=window_rect
+                    )[1]
+                )  # 防止标题栏不在窗口内
 
         x, y = self.client_to_screen(
             need_x, need_y, client_rect=rect, window_rect=window_rect
         )
         if need_x != rect[0] or need_y != rect[1]:
             self.set_window_pos(x, y)
+
+    def set_window_transparent(self, transparent: bool = True) -> None:
+        """设置窗口是否透明, 同时设置鼠标穿透"""
+        hwnd = self.hwnd
+        if hwnd == 0:
+            return
+        if not cfg.background_click:
+            transparent = False
+
+        ex_style = win32gui.GetWindowLong(hwnd, win32con.GWL_EXSTYLE)
+        if not (ex_style & win32con.WS_EX_LAYERED) and transparent:
+            ex_style = ex_style | win32con.WS_EX_LAYERED
+            win32gui.SetWindowLong(hwnd, win32con.GWL_EXSTYLE, ex_style)
+
+        if transparent:
+            ex_style |= win32con.WS_EX_LAYERED
+            ex_style |= win32con.WS_EX_TRANSPARENT
+            win32gui.SetLayeredWindowAttributes(hwnd, 0, 0, win32con.LWA_ALPHA)
+        else:
+            ex_style &= ~win32con.WS_EX_LAYERED
+            ex_style &= ~win32con.WS_EX_TRANSPARENT
+        win32gui.SetWindowLong(hwnd, win32con.GWL_EXSTYLE, ex_style)
+        self._transparent = transparent
 
 
 class Screen(metaclass=SingletonMeta):
@@ -348,6 +385,7 @@ class Screen(metaclass=SingletonMeta):
             | win32con.SWP_NOZORDER
             | win32con.SWP_FRAMECHANGED,
         )
+        sleep(0.1)  # 确保样式修改生效
 
     def adjust_win_size(self, set_win_size: tuple[int, int] = (1920, 1080)) -> None:
         """调整窗口大小"""
@@ -357,19 +395,24 @@ class Screen(metaclass=SingletonMeta):
         # 获取当前窗口和客户区大小
         window_rect = win32gui.GetWindowRect(hwnd)
         client_rect = win32gui.GetClientRect(hwnd)
+        if (
+            window_rect[:2] != client_rect[:2]
+        ):  # 如果窗口和客户区位置不同，说明有边框和标题栏
+            # 计算边框和标题栏厚度
+            window_width = window_rect[2] - window_rect[0]
+            window_height = window_rect[3] - window_rect[1]
+            current_client_width = client_rect[2]
+            current_client_height = client_rect[3]
 
-        # 计算边框和标题栏厚度
-        window_width = window_rect[2] - window_rect[0]
-        window_height = window_rect[3] - window_rect[1]
-        current_client_width = client_rect[2]
-        current_client_height = client_rect[3]
+            width_diff = window_width - current_client_width
+            height_diff = window_height - current_client_height
 
-        width_diff = window_width - current_client_width
-        height_diff = window_height - current_client_height
-
-        # 计算需要的窗口大小
-        required_window_width = client_width + width_diff
-        required_window_height = client_height + height_diff
+            # 计算需要的窗口大小
+            required_window_width = client_width + width_diff
+            required_window_height = client_height + height_diff
+        else:
+            required_window_width = client_width
+            required_window_height = client_height
         # 设置窗口
         win32gui.SetWindowPos(
             hwnd,
@@ -472,6 +515,7 @@ class Screen(metaclass=SingletonMeta):
             ex_style &= ~win32con.WS_EX_TOPMOST
             # 应用修改后的扩展样式
             win32gui.SetWindowLong(hwnd, win32con.GWL_EXSTYLE, ex_style)
+            self.handle.set_window_transparent(False)
 
             # 更新窗口，使样式改变生效
             win32gui.SetWindowPos(

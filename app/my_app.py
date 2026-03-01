@@ -7,6 +7,7 @@ from enum import Enum
 from PySide6.QtCore import (
     QEvent,
     QLocale,
+    QRect,
     Qt,
     QThread,
     QTimer,
@@ -113,7 +114,17 @@ class MainWindow(FramelessWindow):
         saved_x = cfg.get_value("window_position_x", None)
         saved_y = cfg.get_value("window_position_y", None)
         if saved_x is not None and saved_y is not None:
-            self.move(saved_x, saved_y)
+            screen = QApplication.screenAt(
+                QRect(saved_x, saved_y, self.width(), self.height()).center()
+            )
+            if screen:
+                self.move(saved_x, saved_y)
+            else:
+                # 重置为默认居中位置
+                screen = QApplication.primaryScreen()
+                geometry = screen.availableGeometry() if screen else self.geometry()
+                w, h = geometry.width(), geometry.height()
+                self.move(w // 2 - self.width() // 2, h // 2 - self.height() // 2)
         else:
             # 默认居中
             screen = QApplication.primaryScreen()
