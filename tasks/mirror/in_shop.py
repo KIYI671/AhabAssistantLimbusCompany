@@ -1250,7 +1250,14 @@ class Shop:
             auto.mouse_click(coins[select_mode][0], coins[select_mode][1])
             sleep(0.5)
             auto.click_element("mirror/shop/skill_replace_type_confirm_assets.png")
-            auto.click_element("mirror/shop/skill_replace_type_confirm_assets.png")
+            is_enter_skill_replace_confirm = auto.find_element(
+                "mirror/shop/skill_replace_confirm_assets.png"
+            )
+            if is_enter_skill_replace_confirm:
+                auto.click_element("mirror/shop/skill_replace_type_confirm_assets.png")
+            else:
+                log.debug(f"{sinner} 已无技能可替换")
+                return
             if retry() is False:
                 raise self.RestartGame()
 
@@ -1314,7 +1321,7 @@ class Shop:
             id_x = sinner_x[target_sinner_index] * my_scale
             id_y = (1440 - 141) * my_scale
             auto.mouse_click(id_x, id_y)
-
+            sleep(0.5)
             coins = auto.find_element(
                 "mirror/shop/skill_replacement_coins.png",
                 find_type="image_with_multiple_targets",
@@ -1327,6 +1334,7 @@ class Shop:
             select_mode = 3 - self.skill_replacement_mode - 1
             auto.mouse_click(coins[select_mode][0], coins[select_mode][1])
             auto.click_element("mirror/shop/skill_replace_type_confirm_assets.png")
+            sleep(5)
             is_enter_skill_replace_confirm = auto.find_element(
                 "mirror/shop/skill_replace_confirm_assets.png"
             )
@@ -1411,6 +1419,7 @@ class Shop:
 
         # 普通商店流程
         else:
+            log.debug("当前位于普通商店，执行普通商店替换技能逻辑")
             if module_position := auto.find_element(
                 "mirror/shop/skill_replacement_assets.png", take_screenshot=True
             ):
