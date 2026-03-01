@@ -122,32 +122,41 @@ class Shop:
 
         def re_sort_points(points):
             commodity_every_line = 4
-            coins_point = auto.find_element("mirror/shop/shop_coins_assets.png",take_screenshot=True)
-            scale = cfg.set_win_size/1440
+            coins_point = auto.find_element(
+                "mirror/shop/shop_coins_assets.png", take_screenshot=True
+            )
+            scale = cfg.set_win_size / 1440
             if not coins_point or not points:
-                auto.mouse_click_blank(3)
-                coins_point = auto.find_element("mirror/shop/shop_coins_assets.png", take_screenshot=True)
+                auto.mouse_click_blank(times=3)
+                coins_point = auto.find_element(
+                    "mirror/shop/shop_coins_assets.png", take_screenshot=True
+                )
                 if not coins_point or not points:
                     return points
             step = 300 * scale
-            first_grid = [coins_point[0]+150*scale, coins_point[1]+250*scale]
+            first_grid_x = coins_point[0] + 150 * scale
             new_points = []
             for p in points:
-                # 计算当前点相对于第一个格子的逻辑行列索引 (从 0 开始)
-                # 使用 round 确保即使有微小像素偏差也能正确归位到网格
-                col = round((p[0] - first_grid[0]) / step)
-                row = round((p[1] - first_grid[1]) / step)
-                # 计算当前是一维下的第几个位置 (index = row * 每行个数 + col)
-                current_index = row * commodity_every_line + col
-                # 执行“前移一位”：目标位置索引为 current_index - 1
-                target_index = current_index - 1
-                # 将一维索引转回新的行列坐标（实现跨行移动）
-                new_row = target_index // commodity_every_line
-                new_col = target_index % commodity_every_line
-                # 转换为实际像素坐标
-                new_x = first_grid[0] + new_col * step
-                new_y = first_grid[1] + new_row * step
+                orig_x, orig_y = p[0], p[1]
+
+                # 计算当前所在的列索引 (0, 1, 2, 3...)
+                # 注意：这里只用 x 判定列，不需要 round 整个坐标，只需要知道它在哪一列
+                col = round((orig_x - first_grid_x) / step)
+
+                if col > 0:
+                    # --- 情况 A: 还在同行 ---
+                    # y 值绝对不变，x 值减去一个 step
+                    new_x = orig_x - step
+                    new_y = orig_y
+                else:
+                    # --- 情况 B: 跨行移动 (col == 0) ---
+                    # x 值跳到最后一列：增加 (每行个数 - 1) 个 step
+                    # y 值向上移动一个 step
+                    new_x = orig_x + (commodity_every_line - 1) * step
+                    new_y = orig_y - step
+
                 new_points.append([new_x, new_y])
+
             return new_points
 
         log.debug("开始执行饰品购买模块")
@@ -164,7 +173,7 @@ class Shop:
                 # 购买必买项（回血饰品）
                 log.debug("开始购买必买项")
                 for commodity in must_purchase:
-                    if auto.click_element(commodity, threshold=0.85,take_screenshot=True):
+                    if auto.click_element(commodity, threshold=0.85):
                         buy_chance = 10
                         while (
                             auto.click_element("mirror/shop/purchase_assets.png")
@@ -275,7 +284,7 @@ class Shop:
                             take_screenshot=True,
                         )
                         complete_count += 1
-                        re_sort_points(system_gift)
+                        system_gift = re_sort_points(system_gift)
                         auto.mouse_click_blank(times=3)
                         continue
                     else:
@@ -317,7 +326,7 @@ class Shop:
                                 take_screenshot=True,
                             )
                             complete_count += 1
-                            re_sort_points(system_gift)
+                            system_gift = re_sort_points(system_gift)
                             auto.mouse_click_blank(times=3)
                             continue
                         else:
@@ -1438,7 +1447,7 @@ class Shop:
             log.error("执行商店操作期间出现错误，尝试重启游戏")
             return
 
-    def _get_cost(self,in_heal=False) -> int:
+    def _get_cost(self, in_heal=False) -> int:
         """获取当前剩余的经费"""
         my_remaining_money = -1
         try:
@@ -1451,7 +1460,7 @@ class Shop:
                     ImageUtils.load_image("mirror/shop/my_money_bbox.png")
                 )
             my_money = auto.get_text_from_screenshot(money_bbox)
-            if my_money: # 避免非空
+            if my_money:  # 避免非空
                 my_remaining_money = int(my_money[0])
             if not my_money or not isinstance(my_remaining_money, int):
                 log.error("获取剩余金钱失败")
