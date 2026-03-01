@@ -71,9 +71,9 @@ class Automation(metaclass=SingletonMeta):
             from .input_handlers.input import BackgroundInput
 
             self.input_handler = BackgroundInput()
-        assert isinstance(self.input_handler, AbstractInput), (
-            "输入处理器必须是AbstractInput的实例"
-        )
+        assert isinstance(
+            self.input_handler, AbstractInput
+        ), "输入处理器必须是AbstractInput的实例"
         self.mouse_click = self.input_handler.mouse_click
         self.mouse_click_blank = self.input_handler.mouse_click_blank
         self.mouse_drag = self.input_handler.mouse_drag
@@ -280,7 +280,7 @@ class Automation(metaclass=SingletonMeta):
         """
         查找元素，并根据指定的查找类型执行不同的查找策略。
         Args:
-            target: 查找目标，可以是图像路径或文字。
+            target: 查找目标，可以是图像路径或文字。(zh_cn)->en->share
             find_type: 查找类型，例如'image', 'text'等。
             threshold: 查找阈值，用于图像查找时的相似度匹配。
             max_retries: 最大重试次数。
