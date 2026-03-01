@@ -1,8 +1,10 @@
 import time
+import math
 from contextlib import contextmanager
 
 from . import config
 from .connection import MNTConnection, MNTServer
+from .. import insert_swipe
 
 
 class CommandBuilder(object):
@@ -253,30 +255,59 @@ class MNTDevice(object):
 
         points = [list(map(int, each_point)) for each_point in points]
 
+        all_points = []
+
         for each_index in range(len(points) - 1):
-            cur_point = points[each_index]
-            next_point = points[each_index + 1]
+            p0 = points[each_index]
+            p3 = points[each_index + 1]
 
-            # 使用浮点步长并在最后强制对齐到 next_point，避免整数除法导致终点偏移，
-            # 从而减少实际触点位置与预期终点不一致带来的额外惯性滑动
-            step_x = (next_point[0] - cur_point[0]) / float(part)
-            step_y = (next_point[1] - cur_point[1]) / float(part)
+            # 使用 simulator.insert_swipe 中的三次贝塞尔轨迹生成中间点
+            x0, y0 = p0
+            x3, y3 = p3
+            dx = x3 - x0
+            dy = y3 - y0
+            length = math.hypot(dx, dy)
+            if length == 0:
+                continue
 
-            new_points = []
-            for i in range(part):
-                x = int(round(cur_point[0] + step_x * i))
-                y = int(round(cur_point[1] + step_y * i))
-                new_points.append((x, y))
-            # 最后一个点强制为 next_point，确保精确到达目标坐标
-            new_points.append((next_point[0], next_point[1]))
+            # 通过 part 近似控制插值点数量：距离越长或 part 越大，speed 越小，点越多
+            speed = max(int(length / part), 1)
 
-            self.swipe(
-                new_points,
-                pressure=pressure,
-                duration=duration,
-                no_down=no_down,
-                no_up=no_up,
-            )
+            segment_points = insert_swipe(p0, p3, speed=speed, min_distance=1)
+
+            if not all_points:
+                all_points.extend(segment_points)
+            else:
+                # 避免重复连接点
+                all_points.extend(segment_points[1:])
+
+        if not all_points:
+            return
+
+        # 确保最终点与原始路径的终点一致，并统一使用 tuple 以便可哈希/去重
+        last_target = tuple(points[-1])
+        all_points = [tuple(p) for p in all_points]
+        if all_points[-1] != last_target:
+            all_points.append(last_target)
+
+        total = len(all_points)
+        unique = len(set(all_points))
+        head = all_points[:10]
+        tail = all_points[-10:] if total > 10 else []
+
+        # 统计连续重复点数量
+        consecutive_dups = 0
+        for idx in range(1, total):
+            if all_points[idx] == all_points[idx - 1]:
+                consecutive_dups += 1
+
+        self.swipe(
+            all_points,
+            pressure=pressure,
+            duration=duration,
+            no_down=no_down,
+            no_up=no_up,
+        )
 
 
 @contextmanager
