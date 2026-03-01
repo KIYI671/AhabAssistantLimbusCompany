@@ -1218,6 +1218,15 @@ class Shop:
         log.info("合成四级，切换到非激进模式")
 
     def id_skill_replacement(self, module_position, my_scale, sinner):
+        """
+        处理普通技能替换选项。该方法负责识别并点击位于指定模块位置的技能替换区域，
+        并针对给定的罪人名称（如果匹配）执行替换点击流程。
+
+        参数:
+            module_position (tuple): 代表该技能替换模块的坐标 (x, y)。
+            my_scale (float): 基于当前分辨率的坐标缩放比例 (相对于 1440)。
+            sinner (list): 当前需要进行技能替换的优先罪人(Sinner)名字列表。
+        """
         bbox = (
             module_position[0] - 150 * my_scale,
             module_position[1] + 20 * my_scale,
@@ -1234,19 +1243,31 @@ class Shop:
                 take_screenshot=True,
             )
             if len(coins) != 3:
+                log.debug("未进入技能替换界面，跳过")
                 return
             coins = sorted(coins, key=lambda x: x[0])
             select_mode = 3 - self.skill_replacement_mode - 1
             auto.mouse_click(coins[select_mode][0], coins[select_mode][1])
             sleep(0.5)
-            auto.click_element("mirror/shop/skill_replacement_confirm_assets.png")
-            auto.click_element("mirror/shop/skill_replacement_confirm_assets.png")
+            auto.click_element("mirror/shop/skill_replace_type_confirm_assets.png")
+            auto.click_element("mirror/shop/skill_replace_type_confirm_assets.png")
             if retry() is False:
                 raise self.RestartGame()
 
     def selected_id_skill_replacement(
         self, id_search_position, my_scale, sinner, sinner_x
     ):
+        """
+        处理超级商店中的特色 “ID 技能替换” (Selected ID Skill Replacement) 功能。
+        该方法会先点击“ID 技能搜索”按钮，进入全员角色选项界面，
+        再通过指定的优先罪人列表，选定其对应的 UI 坐标并点击该罪人进行一次技能替换操作。
+
+        参数:
+            id_search_position (tuple): "ID 技能搜索"选项在屏幕上的坐标 (x, y)。
+            my_scale (float): 基于当前分辨率的坐标缩放比例 (相对于 1440)。
+            sinner (list): 当前需要进行技能替换的优先罪人名字列表。
+            sinner_x (list): 不同罪人在商店界面的固定X轴坐标列表。
+        """
         log.debug("找到超级商店的 ID 技能搜索位点")
         auto.mouse_click(id_search_position[0], id_search_position[1])
 
@@ -1300,16 +1321,30 @@ class Shop:
                 take_screenshot=True,
             )
             if len(coins) != 3:
+                log.debug("未进入技能替换界面，跳过")
                 return
             coins = sorted(coins, key=lambda x: x[0])
             select_mode = 3 - self.skill_replacement_mode - 1
             auto.mouse_click(coins[select_mode][0], coins[select_mode][1])
-            auto.click_element("mirror/shop/skill_replacement_confirm_assets.png")
-            auto.click_element("mirror/shop/skill_replacement_confirm_assets.png")
+            auto.click_element("mirror/shop/skill_replace_type_confirm_assets.png")
+            is_enter_skill_replace_confirm = auto.find_element(
+                "mirror/shop/skill_replace_confirm_assets.png"
+            )
+            if is_enter_skill_replace_confirm:
+                auto.click_element("mirror/shop/skill_replace_type_confirm_assets.png")
+            else:
+                log.debug(f"{sinner} 已无技能可替换")
+                return
             if retry() is False:
                 raise self.RestartGame()
 
     def replacement_skill(self):
+        """
+        技能替换主流程管理方法。
+        会依据当前身处的商店类型（普通商店 or 超级商店）决定执行的替换逻辑：
+        如果是超级商店，则依次对两个普通替换选项以及全员技能搜索选项（如果存在）执行替换操作；
+        如果是普通商店，则对唯一的技能替换选项执行操作。
+        """
         msg = "执行商店技能替换任务"
         log.debug(msg)
         my_scale = cfg.set_win_size / 1440
