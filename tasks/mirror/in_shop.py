@@ -125,7 +125,7 @@ class Shop:
             coins_point = auto.find_element("mirror/shop/shop_coins_assets.png",take_screenshot=True)
             scale = cfg.set_win_size/1440
             if not coins_point or not points:
-                auto.mouse_click_blank(3)
+                auto.mouse_click_blank(times=3)
                 coins_point = auto.find_element("mirror/shop/shop_coins_assets.png", take_screenshot=True)
                 if not coins_point or not points:
                     return points
