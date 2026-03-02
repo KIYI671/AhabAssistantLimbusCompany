@@ -3,7 +3,7 @@ import platform
 # connection
 DEFAULT_HOST = "127.0.0.1"
 PORT_SET = set(range(20000, 21000))
-DEFAULT_BUFFER_SIZE = 0
+DEFAULT_BUFFER_SIZE = 4096
 DEFAULT_CHARSET = "utf-8"
 
 # operation
