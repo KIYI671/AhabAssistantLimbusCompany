@@ -37,7 +37,7 @@ e.g.
 
 分享一个制作链接：<https://www.figma.com/design/DEGOtWVZ5rLzXzX5jXd54h/%E5%9B%BE%E7%89%87%E7%B4%A0%E6%9D%90?node-id=70-5&t=2xNR5DiqFva25uH3-1>
 
-### 匹配阈值
+### 参数
 
-- 默认阈值：`0.8` (80% 相似度)
-- 可配置：通过 `threshold` 参数调整
+- 匹配阈值：`threshold=0.8` (80% 相似度)
+- 主动截图：`take_screenshot=True`（部分页面变化需要添加该参数，防止识别时使用旧截图）
