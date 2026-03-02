@@ -373,6 +373,10 @@ class Automation(metaclass=SingletonMeta):
             if target.lower() in text.lower():
                 log.debug(f"识别到目标：{text},坐标为：{ocr_dict[text]}")
                 return ocr_dict[text]
+            # 去除空格后再匹配，解决OCR识别结果带空格的问题（如 "HongLu" vs "Hong Lu"）
+            if target.replace(" ", "").lower() in text.replace(" ", "").lower():
+                log.debug(f"识别到目标（去空格匹配）：{text},坐标为：{ocr_dict[text]}")
+                return ocr_dict[text]
         return False
 
     def find_text_element(

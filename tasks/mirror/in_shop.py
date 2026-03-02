@@ -60,20 +60,6 @@ class Shop:
         self.skill_replacement_select = team_setting["skill_replacement_select"]
         self.skill_replacement_mode = team_setting["skill_replacement_mode"]
         self.ignore_shop = team_setting["ignore_shop"]  # 忽略的商店楼层
-        # 需要进行人格替换的列表，储存人格ID序列
-        # skill_replacement_select: 0→1人, 1→3人, 2→7人, 3→12人
-        _select_to_nums = {0: 1, 1: 3, 2: 7, 3: 12}
-        sinner_nums = _select_to_nums.get(self.skill_replacement_select, 12)
-        # sinner_order 中 index=罪人编号(0-11), value=优先级(0表示未选中)
-        # 按优先级从小到大排序，取前 sinner_nums 个已选中的罪人
-        selected = [
-            (idx, priority)
-            for idx, priority in enumerate(self.sinner_team)
-            if priority > 0
-        ]
-        selected.sort(key=lambda x: x[1])
-        self.skill_replacement_sinner_list = [idx for idx, _ in selected[:sinner_nums]]
-        log.debug(f"技能替换候选罪人ID列表: {self.skill_replacement_sinner_list}")
 
         self.aggressive_also_enhance = team_setting[
             "aggressive_also_enhance"
@@ -1238,56 +1224,51 @@ class Shop:
 
         参数:
             image_path (str): 代表该技能替换模块的图片路径。
-            my_scale (float): 基于当前分辨率的坐标缩放比例 (相对于 1440)。
             sinner (list): 当前需要进行技能替换的优先罪人(Sinner)名字列表。
         """
-
-        my_scale = cfg.set_win_size / 1440
-        exist_skill_replace = False
-        while True:
-            if exist_skill_replace and auto.find_element(
-                "mirror/shop/skill_replace_confirm_assets.png"
-            ):
-                auto.click_element("mirror/shop/choose_skill_replace_assets.png")
-                break
-            if exist_skill_replace and not auto.find_element(
-                "mirror/shop/skill_replace_confirm_assets.png"
-            ):
-                log.info("罪人不存在可替换技能")
-                break
-            if coins := auto.find_element(
-                "mirror/shop/skill_replacement_coins.png",
-                find_type="image_with_multiple_targets",
-                take_screenshot=True,
-            ):
-                if len(coins) != 3:
-                    log.error("未进入技能替换界面，跳过")
-                    break
-                coins = sorted(coins, key=lambda x: x[0])
-                select_mode = 3 - self.skill_replacement_mode - 1
-                auto.mouse_click(coins[select_mode][0], coins[select_mode][1])
-                auto.click_element("mirror/shop/choose_skill_replace_assets.png")
-                exist_skill_replace = True
-                continue
-            if module_position := auto.find_element(image_path):
-                bbox = (
-                    module_position[0] - 150 * my_scale,
-                    module_position[1] + 20 * my_scale,
-                    module_position[0] + 150 * my_scale,
-                    module_position[1] + 100 * my_scale,
-                )
-                # 检查当前罪人是否在替换列表
-                sinner_names = [
-                    all_sinners_name[i] for i in self.skill_replacement_sinner_list
-                ] + [all_sinners_name_zh[i] for i in self.skill_replacement_sinner_list]
-                if not auto.find_text_element(sinner_names, my_crop=bbox):
-                    log.info("当前罪人不在替换列表中，跳过")
-                    break
+        if module_position := auto.find_element(image_path):
+            my_scale = cfg.set_win_size / 1440
+            bbox = (
+                module_position[0] - 150 * my_scale,
+                module_position[1] + 20 * my_scale,
+                module_position[0] + 150 * my_scale,
+                module_position[1] + 100 * my_scale,
+            )
+            sinner_nums = {0: 1, 1: 3, 2: 7}.get(self.skill_replacement_select, 12)
+            if cfg.language_in_game == "en":
+                sinner = [
+                    all_sinners_name[self.sinner_team.index(i + 1)]
+                    for i in range(sinner_nums)
+                    if (i + 1) in self.sinner_team
+                ]
+            else:
+                sinner = [
+                    all_sinners_name_zh[self.sinner_team.index(i + 1)]
+                    for i in range(sinner_nums)
+                    if (i + 1) in self.sinner_team
+                ]
+            if auto.find_text_element(sinner, my_crop=bbox):
                 auto.mouse_click(
                     module_position[0], module_position[1] - 100 * my_scale
                 )
-                continue
-        return
+                sleep(0.5)
+                coins = auto.find_element(
+                    "mirror/shop/skill_replacement_coins.png",
+                    find_type="image_with_multiple_targets",
+                    take_screenshot=True,
+                )
+                if len(coins) != 3:
+                    self.replacement = True
+                    return
+                coins = sorted(coins, key=lambda x: x[0])
+                select_mode = 3 - self.skill_replacement_mode - 1
+                auto.mouse_click(coins[select_mode][0], coins[select_mode][1])
+                sleep(0.5)
+                auto.click_element("mirror/shop/skill_replacement_confirm_assets.png")
+                auto.click_element("mirror/shop/skill_replacement_confirm_assets.png")
+                # 检测游戏是否异常，若异常则重启游戏
+                if retry() is False:
+                    raise self.RestartGame()
 
     def selected_id_skill_replacement(self, image_path):
         """
@@ -1321,54 +1302,31 @@ class Shop:
             ]
         ]  # 人格图像位置硬编码
         sinner_y = 1299 * my_scale
-        sinner_index = 0
-        exist_replaceable_skill = False
-        while True:
-            if exist_replaceable_skill:
-                sleep(0.5)
-                if auto.find_element(
-                    "mirror/shop/skill_replace_confirm_assets.png", take_screenshot=True
-                ):
-                    log.info("成功替换技能")
-                    auto.click_element("mirror/shop/choose_skill_replace_assets.png")
-                    break
-                else:
-                    log.info("未进入技能替换确认界面，跳过")
-                    exist_replaceable_skill = False
-                    auto.mouse_click_blank(times=1)
-                    continue
-
-            if coins := auto.find_element(
+        sinner_nums = {0: 1, 1: 3, 2: 7}.get(self.skill_replacement_select, 12)
+        sinner_indices = [i for i in range(sinner_nums) if (i + 1) in self.sinner_team]
+        for i in sinner_indices:
+            if auto.find_element("mirror/shop/ID_skill_replace_0_purchased_assets.png"):
+                return
+            auto.click_element(image_path)
+            sleep(0.5)
+            auto.mouse_click(sinner_x[i], sinner_y)
+            sleep(0.5)
+            coins = auto.find_element(
                 "mirror/shop/skill_replacement_coins.png",
                 find_type="image_with_multiple_targets",
                 take_screenshot=True,
-            ):
-                log.info("找到技能替换硬币")
-                if len(coins) != 3:
-                    break
-                coins = sorted(coins, key=lambda x: x[0])
-                select_mode = 3 - self.skill_replacement_mode - 1
-                auto.mouse_click(coins[select_mode][0], coins[select_mode][1])
-                auto.click_element(
-                    "mirror/shop/choose_skill_replace_assets.png", take_screenshot=True
-                )
-                exist_replaceable_skill = True
-                continue
-            if auto.find_element("mirror/shop/return_assets.png"):
-                log.info("找到返回按钮")
-                if sinner_index < len(self.skill_replacement_sinner_list):
-                    log.info("选择第{}个罪人".format(sinner_index))
-                    auto.mouse_click(
-                        sinner_x[self.skill_replacement_sinner_list[sinner_index]],
-                        sinner_y,
-                    )
-                    sinner_index += 1
-                else:
-                    break
-                continue
-            if auto.click_element(image_path):
-                continue
-        return
+            )
+            if len(coins) != 3:
+                self.replacement = True
+                return
+            coins = sorted(coins, key=lambda x: x[0])
+            select_mode = 3 - self.skill_replacement_mode - 1
+            auto.mouse_click(coins[select_mode][0], coins[select_mode][1])
+            sleep(0.5)
+            auto.click_element("mirror/shop/skill_replacement_confirm_assets.png")
+            auto.click_element("mirror/shop/skill_replacement_confirm_assets.png")
+            if retry() is False:
+                raise self.RestartGame()
 
     def replacement_skill(self):
         """
@@ -1399,7 +1357,6 @@ class Shop:
                     "mirror/shop/super_shop_skill_replacement_2_assets.png"
                 )
 
-            auto.mouse_click_blank(times=3)
             # 2. 自定义替换技能
             if not auto.find_element(
                 "mirror/shop/ID_skill_replace_0_purchased_assets.png"
@@ -1410,7 +1367,7 @@ class Shop:
 
         # 普通商店流程
         else:
-            log.debug("当前位于普通商店，执行普通商店替换技能逻辑")
+            log.debug("普通商店")
             self.id_skill_replacement("mirror/shop/skill_replacement_assets.png")
 
     # 在商店的处理
