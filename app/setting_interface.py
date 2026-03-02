@@ -19,6 +19,7 @@ from app.base_combination import (
 )
 from app.card.messagebox_custom import BaseInfoBar
 from app.language_manager import SUPPORTED_LANG_NAME, LanguageManager
+from app.theme_pack_setting_interface import ThemePackSettingDialog
 from module.config import cfg
 from utils.schedule_helper import ScheduleHelper
 
@@ -339,6 +340,20 @@ class SettingInterface(ScrollArea):
             ),
         )
 
+        self.theme_pack_group = BaseSettingCardGroup(
+            QT_TRANSLATE_NOOP("BaseSettingCardGroup", "镜牢主题包设置"), self.scroll_widget
+        )
+        self.theme_pack_card = BasePrimaryPushSettingCard(
+            QT_TRANSLATE_NOOP("BasePrimaryPushSettingCard", "配置"),
+            FIF.LIBRARY,
+            QT_TRANSLATE_NOOP("BasePrimaryPushSettingCard", "主题包权重配置"),
+            QT_TRANSLATE_NOOP(
+                "BasePrimaryPushSettingCard",
+                "配置镜牢主题包的选择优先级权重",
+            ),
+            parent=self.theme_pack_group,
+        )
+
         self.experimental_group = BaseSettingCardGroup(
             QT_TRANSLATE_NOOP("BaseSettingCardGroup", "实验性内容"), self.scroll_widget
         )
@@ -359,6 +374,8 @@ class SettingInterface(ScrollArea):
         self.game_setting_group.addSettingCard(self.win_input_type_card)
         self.game_setting_group.addSettingCard(self.memory_protection)
         self.game_setting_group.addSettingCard(self.screenshot_benchmark_card)
+
+        self.theme_pack_group.addSettingCard(self.theme_pack_card)
 
         self.simulator_setting_group.addSettingCard(self.simulator_setting_card)
         self.simulator_setting_group.addSettingCard(self.simulator_type_setting_card)
@@ -394,6 +411,7 @@ class SettingInterface(ScrollArea):
         self.experimental_group.addSettingCard(self.auto_lang_card)
 
         self.expand_layout.addWidget(self.game_setting_group)
+        self.expand_layout.addWidget(self.theme_pack_group)
         self.expand_layout.addWidget(self.simulator_setting_group)
         self.expand_layout.addWidget(self.game_path_group)
         self.expand_layout.addWidget(self.autodaily_group)
@@ -422,6 +440,7 @@ class SettingInterface(ScrollArea):
         self.screenshot_benchmark_card.clicked.connect(
             self.__onScreenshotBenchmarkCardClicked
         )
+        self.theme_pack_card.clicked.connect(self.__onThemePackCardClicked)
 
         self.zoom_card.valueChanged.connect(self.__onZoomCardValueChanged)
         self.auto_lang_card.switchButton.checkedChanged.connect(
@@ -557,6 +576,11 @@ class SettingInterface(ScrollArea):
     def __openUrl(self, url):
         return lambda: QDesktopServices.openUrl(QUrl(url))
 
+    def __onThemePackCardClicked(self):
+        """打开主题包权重配置对话框"""
+        dialog = ThemePackSettingDialog(self)
+        dialog.exec()
+
     def retranslateUi(self):
         self.game_setting_group.retranslateUi()
         self.game_setting_card.retranslateUi()
@@ -567,6 +591,8 @@ class SettingInterface(ScrollArea):
         self.minimize_to_tray_card.retranslateUi()
         self.memory_protection.retranslateUi()
         self.screenshot_benchmark_card.retranslateUi()
+        self.theme_pack_group.retranslateUi()
+        self.theme_pack_card.retranslateUi()
         self.simulator_setting_group.retranslateUi()
         self.simulator_setting_card.retranslateUi()
         self.simulator_type_setting_card.retranslateUi()
