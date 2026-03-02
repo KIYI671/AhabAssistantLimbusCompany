@@ -1218,12 +1218,11 @@ class Shop:
 
     def id_skill_replacement(self, image_path):
         """
-        处理普通技能替换选项。该方法负责识别并点击位于指定模块位置的技能替换区域，
-        并针对给定的罪人名称（如果匹配）执行替换点击流程。
+        处理普通技能替换选项。识别指定模块位置的技能替换区域，
+        根据当前语言和队伍配置构建优先罪人列表，若匹配则执行替换点击流程。
 
         参数:
             image_path (str): 代表该技能替换模块的图片路径。
-            sinner (list): 当前需要进行技能替换的优先罪人(Sinner)名字列表。
         """
         if module_position := auto.find_element(image_path):
             my_scale = cfg.set_win_size / 1440
@@ -1270,16 +1269,12 @@ class Shop:
 
     def selected_id_skill_replacement(self, image_path):
         """
-        处理超级商店中的特色 “ID 技能替换” (Selected ID Skill Replacement) 功能。
-        该方法会先点击“ID 技能搜索”按钮，进入全员角色选项界面，
-        再通过指定的优先罪人列表，遍历罪人并尝试进行替换操作。如果当前罪人无技能可替换，
-        则回退并尝试列表中的下一个罪人。
+        处理超级商店中的 "ID 技能替换" 功能。
+        点击"ID 技能搜索"按钮进入全员角色选项界面，
+        遍历优先罪人列表尝试替换操作。若当前罪人无技能可替换则跳过并尝试下一个。
 
         参数:
             image_path (str): 代表该技能替换模块的图片路径。
-            my_scale (float): 基于当前分辨率的坐标缩放比例 (相对于 1440)。
-            sinner (list): 当前需要进行技能替换的优先罪人名字列表。
-            sinner_x (list): 不同罪人在商店界面的固定X轴坐标列表。
         """
         my_scale = cfg.set_win_size / 1440
         sinner_x = [
@@ -1315,7 +1310,7 @@ class Shop:
                 take_screenshot=True,
             )
             if len(coins) != 3:
-                return
+                continue
             coins = sorted(coins, key=lambda x: x[0])
             select_mode = 3 - self.skill_replacement_mode - 1
             auto.mouse_click(coins[select_mode][0], coins[select_mode][1])
@@ -1447,9 +1442,6 @@ class Shop:
                 break
 
             auto.mouse_click_blank(times=3)
-            # 根据要求，为了防止直接退出镜牢商店/观察，退出前 sleep 30s
-            log.info("等待 30s 再退出镜牢商店...")
-            sleep(30)
 
             loop_count = 30
             auto.model = "clam"
