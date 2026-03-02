@@ -4,6 +4,7 @@ from contextlib import contextmanager
 
 from . import config
 from .connection import MNTConnection, MNTServer
+from module.logger import log
 from .. import insert_swipe
 
 
@@ -60,7 +61,17 @@ class CommandBuilder(object):
         """apply current commands (_content), to your device"""
         self.commit()
         final_content = self._content
-        connection.send(final_content)
+        try:
+            connection.send(final_content)
+        except Exception as e:
+            # 发送失败时记录错误并尝试断开连接，让上层重新初始化 minitouch
+            log.error("minitouch publish failed, len=%s, err=%s", len(final_content), e)
+            try:
+                connection.disconnect()
+            except Exception:
+                pass
+            # 向上抛出，让调用方决定是否重试整个手势
+            raise
         time.sleep(self._delay / 1000 + config.DEFAULT_DELAY)
         self.reset()
 
@@ -224,6 +235,16 @@ class MNTDevice(object):
         if not no_up:
             _builder.up(point_id)
             _builder.publish(self.connection)
+
+    def up(self, contact_id: int = 0):
+        """
+        仅抬起当前指定触点，不再移动
+
+        :param contact_id: 触点 id，默认 0
+        """
+        _builder = CommandBuilder()
+        _builder.up(contact_id)
+        _builder.publish(self.connection)
 
     # extra functions' name starts with 'ext_'
     def ext_smooth_swipe(

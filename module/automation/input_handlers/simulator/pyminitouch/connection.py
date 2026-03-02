@@ -1,6 +1,8 @@
 import random
 import socket
 import time
+import json
+from collections import deque
 from contextlib import contextmanager
 from pathlib import Path
 
@@ -195,6 +197,10 @@ class MNTConnection(object):
     def __init__(self, port):
         self.port = port
 
+        # 用于累积和存储来自 minitouch 的 jlog 日志
+        self._recv_buffer = ""
+        self.jlog_records = deque(maxlen=1000)
+
         # build connection
         client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         client.connect((self._DEFAULT_HOST, self.port))
@@ -232,11 +238,103 @@ class MNTConnection(object):
         self.client = None
         log.debug("minitouch disconnected")
 
+    def _parse_jlog_chunk(self, chunk: bytes):
+        """
+        解析来自 minitouch 的 jlog 日志，返回当前 chunk 中解析出的记录列表。
+        """
+        records = []
+        if not chunk:
+            return records
+
+        try:
+            text = chunk.decode("utf-8", errors="ignore")
+        except Exception:
+            return records
+
+        # 处理跨 recv 的半行情况
+        text = self._recv_buffer + text
+        lines = text.splitlines(keepends=False)
+
+        # 如果最后一行没有换行符，认为是半行，缓存起来等待下一次 recv
+        if text and not text.endswith("\n"):
+            self._recv_buffer = lines[-1]
+            lines = lines[:-1]
+        else:
+            self._recv_buffer = ""
+
+        for line in lines:
+            if not line.startswith("jlog "):
+                continue
+            payload = line[5:]
+            try:
+                record = json.loads(payload)
+            except Exception:
+                continue
+            records.append(record)
+
+        return records
+
+    def _drain_logs(self):
+        """
+        从 socket 中尽可能读取当前可用的所有日志数据，避免缓冲区积压。
+        不落盘，仅在 debug 日志中打印条数与首尾 cmd 摘要。
+        :return: 本次 drain 得到的 jlog 记录列表，无数据或未连接时返回空列表。
+        """
+        if not self.client:
+            return []
+
+        all_records = []
+
+        prev_timeout = self.client.gettimeout()
+        try:
+            # 使用一个很小的超时时间，仅拉取当前缓冲区已有的数据
+            self.client.settimeout(0.01)
+            while True:
+                try:
+                    chunk = self.client.recv(self._DEFAULT_BUFFER_SIZE)
+                except socket.timeout:
+                    # 当前没有更多数据
+                    break
+                if not chunk:
+                    # EOF
+                    all_records.extend(self._parse_jlog_chunk(chunk))
+                    break
+                all_records.extend(self._parse_jlog_chunk(chunk))
+        finally:
+            self.client.settimeout(prev_timeout)
+
+        if not all_records:
+            return []
+
+        # 仅打 debug 摘要，不落盘
+        try:
+            first_cmd = all_records[0].get("cmd")
+            last_cmd = all_records[-1].get("cmd")
+            log.debug(
+                "minitouch jlog drain: count=%d first=%s last=%s",
+                len(all_records),
+                first_cmd,
+                last_cmd,
+            )
+        except Exception:
+            pass
+
+        return all_records
+
     def send(self, content):
-        """send message and get its response"""
+        """发送指令并拉取 minitouch 写回的响应。"""
         byte_content = str2byte(content)
-        self.client.sendall(byte_content)
-        return self.client.recv(self._DEFAULT_BUFFER_SIZE)
+        try:
+            self.client.sendall(byte_content)
+            log.debug("minitouch send ok, %d bytes", len(byte_content))
+        except Exception as e:
+            log.error("minitouch send failed: %s", e)
+            raise
+        # 必须 调用 _drain_logs()
+        # minitouch 每处理一条命令会往 socket 写回 ok/jlog。若不读走，
+        # 本机 TCP 接收缓冲区会积满，TCP 流控会让 minitouch 在 write 时阻塞，
+        # 无法继续 send 我们后续的命令，导致 drag 等操作卡住、无法完成。
+        return self._drain_logs()
 
 
 @contextmanager
