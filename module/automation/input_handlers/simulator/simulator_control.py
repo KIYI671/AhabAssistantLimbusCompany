@@ -332,11 +332,7 @@ class SimulatorControl(AbstractInput):
             sleep(drag_time * 0.3)
         else:
             sleep(0.5)
-        self.simulator_control.swipe(
-            [(pos_x_2, pos_y_2), (pos_x_2, pos_y_2)],
-            duration=drag_time * 1000 / 10,
-            no_down=True,
-        )
+        self.simulator_control.up()
 
     def close_current_app(self):
         if self.simulator_device is None:
