@@ -70,7 +70,6 @@ class Shop:
         self.fuse_system_gift_1 = False
         self.fuse_system_gift_2 = False
         self.the_first_line_position = None
-        self.replacement = False
 
         # 用于记录已升级的ego饰品
         self.enhance_gifts_list = []
@@ -1258,7 +1257,6 @@ class Shop:
                     take_screenshot=True,
                 )
                 if len(coins) != 3:
-                    self.replacement = True
                     return
                 coins = sorted(coins, key=lambda x: x[0])
                 select_mode = 3 - self.skill_replacement_mode - 1
@@ -1317,7 +1315,6 @@ class Shop:
                 take_screenshot=True,
             )
             if len(coins) != 3:
-                self.replacement = True
                 return
             coins = sorted(coins, key=lambda x: x[0])
             select_mode = 3 - self.skill_replacement_mode - 1
@@ -1377,7 +1374,6 @@ class Shop:
         buy = False
         fuse = False
         enhance = False
-        skill = False
         try:
             while True:
                 # 忽略楼层商店的情况
@@ -1394,10 +1390,8 @@ class Shop:
                 auto.click_element("mirror/shop/return_assets.png")
                 sleep(1)
 
-                if self.skill_replacement and skill is False:
-                    self.replacement = False
+                if self.skill_replacement:
                     self.replacement_skill()
-                    skill = True
                     continue
 
                 if heal is False:
