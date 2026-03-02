@@ -241,7 +241,7 @@ class ThemePackCard(QFrame):
 
     def __init__(self, pack_key, weight, is_hard=False, parent=None):
         super().__init__(parent)
-        self.pack_key = pack_key
+        self.pack_key = str(pack_key)  # 确保是字符串，与 Signal 声明一致
         self.is_hard = is_hard
         self.weight = int(weight)  # 确保是整数
         self.setObjectName(f"ThemePackCard_{pack_key}")
@@ -367,9 +367,11 @@ class ThemePackCard(QFrame):
         self.weight_label.setText(self.tr("权重:"))
 
     def __del__(self):
-        """析构时注销组件"""
+        """析构时注销组件（静默处理，因为closeEvent已负责主要清理）"""
         try:
-            LanguageManager().unregister_component(self)
+            # 使用丢弃模式注销，避免重复注销时的警告
+            if self in LanguageManager().translatable_components:
+                LanguageManager().translatable_components.remove(self)
         except:
             pass
 
@@ -541,6 +543,8 @@ class ThemePackSettingDialog(QDialog):
 
         # 直接修改配置并保存（避免重新加载配置）
         config = theme_list.get_value(config_key, {})
+        # 确保所有键都是字符串类型（YAML可能将数字键解析为整数）
+        config = {str(k): v for k, v in config.items()}
         config[pack_key] = weight
         # 直接修改内部配置并保存
         theme_list.config[config_key] = copy.deepcopy(config)
@@ -579,6 +583,35 @@ class ThemePackSettingDialog(QDialog):
     def save_and_close(self):
         """保存并关闭对话框"""
         self.close()
+
+    def closeEvent(self, event):
+        """对话框关闭时注销所有组件，防止内存泄漏"""
+        # 注销所有普通模式卡片
+        for card in self.normal_cards.values():
+            try:
+                LanguageManager().unregister_component(card)
+            except:
+                pass
+
+        # 注销所有困难模式卡片
+        for card in self.hard_cards.values():
+            try:
+                LanguageManager().unregister_component(card)
+            except:
+                pass
+
+        # 注销对话框自身
+        try:
+            LanguageManager().unregister_component(self)
+        except:
+            pass
+
+        # 清空卡片字典，帮助垃圾回收
+        self.normal_cards.clear()
+        self.hard_cards.clear()
+
+        # 调用父类的 closeEvent
+        super().closeEvent(event)
 
     def retranslateUi(self, lang_code=None):
         """更新界面翻译"""
