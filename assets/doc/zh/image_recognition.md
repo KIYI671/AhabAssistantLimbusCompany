@@ -35,9 +35,8 @@ e.g.
 2. **文件命名**：含黑幕的完整截图使用 `assets` 后缀，只有核心图像的截图不使用 `assets` 后缀
 3. **优先使用含黑幕的完整截图**：便于系统自动计算有效区域，适应UI变化
 
-分享一个制作链接：<https://www.figma.com/design/DEGOtWVZ5rLzXzX5jXd54h/%E5%9B%BE%E7%89%87%E7%B4%A0%E6%9D%90?node-id=70-5&t=2xNR5DiqFva25uH3-1>
+分享一个制作链接：[figma](https://www.figma.com/design/DEGOtWVZ5rLzXzX5jXd54h/image?node-id=0-1&t=f9i0jD8xf5fCvM2x-1)
 
 ### 参数
 
 - 匹配阈值：`threshold=0.8` (80% 相似度)
-- 主动截图：`take_screenshot=True`（部分页面变化需要添加该参数，防止识别时使用旧截图）
