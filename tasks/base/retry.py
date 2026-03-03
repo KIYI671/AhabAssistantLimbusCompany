@@ -103,6 +103,7 @@ def retry():
         if auto.click_element("base/only_option_assets.png", model="clam"):
             sleep(5)
             if not check_game_running():
+                log.debug("检测到游戏未运行，调用 init_game() 重新初始化")
                 from tasks.base.script_task_scheme import init_game
 
                 init_game()
