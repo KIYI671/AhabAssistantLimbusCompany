@@ -70,6 +70,7 @@ class Shop:
         self.fuse_system_gift_1 = False
         self.fuse_system_gift_2 = False
         self.the_first_line_position = None
+        self.replacement = 0
 
         # 用于记录已升级的ego饰品
         self.enhance_gifts_list = []
@@ -289,7 +290,7 @@ class Shop:
                     sleep(3)
                     if retry() is False:
                         raise self.RestartGame()
-                    if self.skill_replacement and self.replacement is False:
+                    if self.skill_replacement and self.replacement <= 3:
                         self.replacement_skill()
                     continue
 
@@ -307,7 +308,7 @@ class Shop:
                     sleep(3)
                     if retry() is False:
                         raise self.RestartGame()
-                    if self.skill_replacement and self.replacement is False:
+                    if self.skill_replacement and self.replacement <= 3:
                         self.replacement_skill()
                     continue
 
@@ -1329,11 +1330,11 @@ class Shop:
         """
         msg = "执行商店技能替换任务"
         log.debug(msg)
-
+        self.replacement = 0
         # 检查是否在超级商店
         is_super_shop = auto.find_element("mirror/shop/super_shop_assets.png")
         if is_super_shop:
-            log.debug("当前位于超级商店，执行超级商店替换技能逻辑")
+            log.debug("超级商店")
 
             # 1. 超级商店存在两个普通技能替换
             if not auto.find_element(
@@ -1342,25 +1343,35 @@ class Shop:
                 self.id_skill_replacement(
                     "mirror/shop/super_shop_skill_replacement_1_assets.png"
                 )
+            else:
+                self.replacement += 1
             if not auto.find_element(
                 "mirror/shop/ID_skill_replace_2_purchased_assets.png"
             ):
                 self.id_skill_replacement(
                     "mirror/shop/super_shop_skill_replacement_2_assets.png"
                 )
+            else:
+                self.replacement += 1
 
-            # 2. 自定义替换技能
             if not auto.find_element(
                 "mirror/shop/ID_skill_replace_0_purchased_assets.png"
             ):
                 self.selected_id_skill_replacement(
                     "mirror/shop/ID_skill_search_assets.png"
                 )
+            else:
+                self.replacement += 1
 
         # 普通商店流程
         else:
             log.debug("普通商店")
-            self.id_skill_replacement("mirror/shop/skill_replacement_assets.png")
+            if not auto.find_element(
+                "mirror/shop/ID_skill_replace_0_purchased_assets.png"
+            ):
+                self.id_skill_replacement("mirror/shop/skill_replacement_assets.png")
+            else:
+                self.replacement = 3
 
     # 在商店的处理
     def in_shop(self, layer):
@@ -1385,7 +1396,7 @@ class Shop:
                 auto.click_element("mirror/shop/return_assets.png")
                 sleep(1)
 
-                if self.skill_replacement:
+                if self.skill_replacement and self.replacement < 3:
                     self.replacement_skill()
                     continue
 
