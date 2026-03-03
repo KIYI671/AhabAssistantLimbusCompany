@@ -40,8 +40,8 @@ body:
     id: log
     attributes:
       label: "运行日志 | Log Files"
-      description: 请将`logs`文件夹下最新的日志文件粘贴到这里。<br>Please paste the latest log file from the `logs` folder here.
-      placeholder: "通常位于`AALC安装目录/logs/`下, 名称包含`debuglog`的文件\n不上传日志可能会被无视或直接关闭此issue\n\nUsually located in the ` AALC installation directory/logs/`, the file name includes ` debuglog `\nIf you don't provide the log file, your issue may be ignored or closed directly."
+      description: 请将`logs`文件夹下最新的日志文件粘贴到这里，**请不要复制内容**。<br>Please paste the latest log file from the `logs` folder here, **do not paste content**.
+      placeholder: "通常位于`AALC安装目录/logs/`下, 名称包含`debuglog`的文件\n不上传日志可能会被无视或直接关闭此issue\n**请不要复制内容！！！**\n\nUsually located in the ` AALC installation directory/logs/`, the file name includes ` debuglog `\nIf you don't provide the log file, your issue may be ignored or closed directly.\n**Please do not paste content!!!**"
     validations:
       required: true
   - type: input
@@ -64,7 +64,7 @@ body:
     id: windows-version
     attributes:
       label: "Windows版本 | Windows Version"
-      description: "如果你使用了模拟器，请注明模拟器名称与版本 <br>If you are using an emulator, please specify the name and version of the emulator"
+      description: "如果你使用了模拟器，请**额外注明**模拟器名称与版本 <br>If you are using an emulator, please **additional specify** the name and version of the emulator"
       placeholder: "在命令行输入`cmd /c ver`，把结果粘贴到这里"
     validations:
       required: true
