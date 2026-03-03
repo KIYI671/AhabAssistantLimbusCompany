@@ -197,9 +197,8 @@ class MNTConnection(object):
     def __init__(self, port):
         self.port = port
 
-        # 用于累积和存储来自 minitouch 的 jlog 日志
+        # 用于处理半行jlog数据
         self._recv_buffer = ""
-        self.jlog_records = deque(maxlen=1000)
 
         # build connection
         client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -326,7 +325,6 @@ class MNTConnection(object):
         byte_content = str2byte(content)
         try:
             self.client.sendall(byte_content)
-            log.debug("minitouch send ok, %d bytes", len(byte_content))
         except Exception as e:
             log.error("minitouch send failed: %s", e)
             raise
