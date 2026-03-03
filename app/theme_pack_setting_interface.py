@@ -1,5 +1,7 @@
+import copy
+
 from PySide6.QtCore import Qt, Signal
-from PySide6.QtGui import QPixmap, QFont
+from PySide6.QtGui import QPixmap
 from PySide6.QtWidgets import (
     QFrame,
     QGridLayout,
@@ -7,7 +9,6 @@ from PySide6.QtWidgets import (
     QLabel,
     QVBoxLayout,
     QWidget,
-    QDialog,
 )
 from qfluentwidgets import (
     BodyLabel,
@@ -16,14 +17,125 @@ from qfluentwidgets import (
     ScrollArea,
     SubtitleLabel,
     TitleLabel,
+    isDarkTheme,
 )
 from qfluentwidgets import FluentIcon as FIF
+from qframelesswindow import FramelessDialog, StandardTitleBar
+from ruamel.yaml import YAML
 
 from app.base_tools import BaseSpinBox
 from app.language_manager import LanguageManager
-from module.config import theme_list
+from module import THEME_PACK_LIST_EXAMPLE_PATH
+from module.config import cfg, theme_list
 from module.logger import log
 
+# 英文key到中文名称的映射表（普通模式）
+THEME_PACK_NAME_MAP = {
+    "forgot": "遗忘",
+    "gambl": "赌徒",
+    "und": "钉与锤",
+    "faith": "信仰",
+    "unconf": "无作为",
+    "workshop": "工坊",
+    "tearful": "落泪",
+    "lake": "湖的",
+    "dregs": "宅邸",
+    "certain": "某个世界",
+    "chick": "地狱鸡",
+    "s.e.a": "海·边",
+    "miracle": "区的奇",
+    "bullet": "句点",
+    "cleaved": "当斩",
+    "penetra": "穿刺者",
+    "pierced": "当贯",
+    "crushers": "粉碎者",
+    "repression": "情感压迫",
+    "addict": "沉迷的",
+    "seduct": "感情困惑",
+    "dolen": "情感懒",
+    "glutton": "吞噬的",
+    "cravi": "情感饥渴",
+    "gloom": "落的忧",
+    "subserv": "情感屈从",
+    "nsignif": "寒微",
+    "judgment": "情感评判",
+    "outcast": "无归属",
+    "curshed": "当碎",
+    "crushed": "当碎",
+    "automated": "自动",
+    "spring": "琢春",
+    "unloving": "无慈悲",
+    "flowers": "落花",
+    "abyss": "伏行",
+    "bones": "骨断",
+    "time": "时间杀人",
+    "warp": "谋杀",
+    "violet": "紫罗兰",
+    "dicers": "斩切",
+    "wrath": "压抑的",
+    "sloth": "沉溺者",
+    "flood": "空转",
+    "vain": "虚张声势",
+    "check": "体检",
+    "sweep": "清扫",
+    "Hatred": "绝望",
+    "Wander": "彷徨",
+    "compassion": "巡礼",
+}
+
+# 英文key到中文名称的映射表（困难模式）
+THEME_PACK_HARD_NAME_MAP = {
+    "20": "奇迹复刻",
+    "seismic": "地震",
+    "extrenal": "破坏性",
+    "thunder": "电闪雷鸣",
+    "sanguine": "渗出的",
+    "dizzying": "缭乱的",
+    "pang": "沉于",
+    "sigh": "叹息",
+    "supply": "动力",
+    "four": "家族",
+    "opening": "开园",
+    "procession": "无尽的",
+    "unchanging": "无改变",
+    "unchang": "无改变",
+    "evil": "定义为",
+    "heartb": "心意相",
+    "line": "号线",
+    "repressed": "压抑的",
+    "unbound": "解放的",
+    "tangling": "束缚的",
+    "inert": "停滞的",
+    "excessive": "漫溢的",
+    "sunk": "沉溺的",
+    "pride": "自以为",
+    "pitiful": "凄惨的",
+    "haze": "摇曳",
+    "season": "盛火",
+    "corpses": "血海",
+    "might": "破竹",
+    "deluge": "沉沦泛",
+    "poised": "循环呼",
+    "ending": "终焉",
+    "witnessing": "观望",
+    "Text": "教材",
+    "Blade": "刀与作",
+    "Unsever": "割舍",
+}
+
+# 中文名称到英文key的反向映射表（普通模式）
+CN_TO_EN_NAME_MAP = {v: k for k, v in THEME_PACK_NAME_MAP.items()}
+
+# 中文名称到英文key的反向映射表（困难模式）
+CN_TO_EN_HARD_NAME_MAP = {v: k for k, v in THEME_PACK_HARD_NAME_MAP.items()}
+
+# OCR 备用名称映射表（备用名称 -> 主名称）
+# 用于处理 OCR 识别误差，备用名称在 GUI 中不显示，但权重会同步更新
+CN_OCR_ALTERNATIVES = {
+    "海边": "海·边",      # s.e.a 主题包的 OCR 备用
+    "切琢": "琢春",      # spring 主题包的 OCR 备用
+    "体险": "体检",      # check 主题包的 OCR 备用
+}
 
 # 主题包 key 到图片文件名的映射表（普通模式）
 THEME_PACK_IMAGE_MAP = {
@@ -81,100 +193,6 @@ THEME_PACK_IMAGE_MAP = {
     # "compassion": "The Compassion.png",  # 明日方舟联动/巡礼
 }
 
-# 英文key到中文名称的映射表（普通模式）
-THEME_PACK_NAME_MAP = {
-    "forgot": "遗忘",
-    "gambl": "赌徒",
-    "und": "钉与锤",
-    "faith": "信仰",
-    "unconf": "无作为",
-    "workshop": "工坊",
-    "tearful": "落泪",
-    "lake": "湖的",
-    "dregs": "宅邸",
-    "certain": "某个世界",
-    "chick": "地狱鸡",
-    "s.e.a": "海·边",
-    "miracle": "20区的奇迹",
-    "bullet": "句点",
-    "cleaved": "当斩",
-    "penetra": "穿刺者",
-    "pierced": "当贯",
-    "crushers": "粉碎者",
-    "repression": "情感压迫",
-    "addict": "沉迷的色欲",
-    "seduct": "感情困惑",
-    "dolen": "情感懒惰",
-    "glutton": "吞噬的暴食",
-    "cravi": "情感饥渴",
-    "gloom": "没落的忧郁",
-    "subserv": "情感屈从",
-    "nsignif": "寒微的嫉妒",
-    "judgment": "情感评判",
-    "outcast": "无归属",
-    "curshed": "当碎",
-    "crushed": "当碎",
-    "automated": "自动化工厂",
-    "spring": "琢春",
-    "unloving": "无慈悲",
-    "flowers": "落花",
-    "abyss": "伏行深渊",
-    "bones": "骨断",
-    "time": "时间杀人",
-    "warp": "谋杀",
-    "violet": "紫罗兰",
-    "dicers": "斩切",
-    "wrath": "压抑的暴怒",
-    "sloth": "沉溺者",
-    "flood": "空转",
-    "vain": "虚张声势",
-    "check": "体检",
-    "sweep": "清扫",
-    "Hatred": "绝望",
-    "Wander": "彷徨",
-    "compassion": "巡礼",
-}
-
-# 英文key到中文名称的映射表（困难模式）
-THEME_PACK_HARD_NAME_MAP = {
-    "20": "20区的奇迹",
-    "seismic": "异常震区",
-    "extrenal": "破坏性外力",
-    "thunder": "电闪雷鸣",
-    "sanguine": "渗出的鲜血丝",
-    "dizzying": "缭乱之舞",
-    "pang": "沉于光芒之海",
-    "sigh": "深邃的叹息",
-    "supply": "冉冉升起的能量供给",
-    "four": "四大家族",
-    "opening": "拉曼查兰开园",
-    "procession": "无限游行",
-    "unchanging": "未改变的",
-    "unchang": "未改变的",
-    "evil": "定义为恶",
-    "heartb": "心意相悖",
-    "line": "号线",
-    "repressed": "压抑的暴怒",
-    "unbound": "解放的暴怒",
-    "tangling": "束缚的色欲",
-    "inert": "停滞的懒惰",
-    "excessive": "漫溢的暴食",
-    "sunk": "沉溺的忧郁",
-    "pride": "自以为是的傲慢",
-    "pitiful": "凄惨的嫉妒",
-    "haze": "雾霭氤氲",
-    "season": "盛火之季",
-    "corpses": "血山",
-    "might": "破竹之势",
-    "deluge": "沉沦泛滥",
-    "poised": "循环呼吸",
-    "ending": "梦之终焉",
-    "witnessing": "观望",
-    "Text": "教材",
-    "Blade": "刀与作",
-    "Unsever": "割舍",
-}
-
 # 主题包 key 到图片文件名的映射表（困难模式）
 THEME_PACK_HARD_IMAGE_MAP = {
     "20": "Miracle in District 20.png",
@@ -222,63 +240,61 @@ THEME_PACK_HARD_IMAGE_MAP = {
     # "line5": "Line 5.png",
 }
 
+# 中文主题包名称到图片文件名的映射表（普通模式）
+# 通过复用英文映射表和反向映射表来生成
+THEME_PACK_CN_IMAGE_MAP = {
+    cn_name: THEME_PACK_IMAGE_MAP.get(en_key, "")
+    for cn_name, en_key in CN_TO_EN_NAME_MAP.items()
+    if en_key in THEME_PACK_IMAGE_MAP
+}
 
-def get_image_path(pack_key, is_hard=False):
+# 中文主题包名称到图片文件名的映射表（困难模式）
+THEME_PACK_CN_HARD_IMAGE_MAP = {
+    cn_name: THEME_PACK_HARD_IMAGE_MAP.get(en_key, "")
+    for cn_name, en_key in CN_TO_EN_HARD_NAME_MAP.items()
+    if en_key in THEME_PACK_HARD_IMAGE_MAP
+}
+
+
+def get_image_path(pack_key, is_hard=False, is_cn=False):
     """获取主题包图片路径"""
-    image_map = THEME_PACK_HARD_IMAGE_MAP if is_hard else THEME_PACK_IMAGE_MAP
+    # 根据是否为中文配置选择对应的映射表
+    if is_cn:
+        image_map = THEME_PACK_CN_HARD_IMAGE_MAP if is_hard else THEME_PACK_CN_IMAGE_MAP
+    else:
+        image_map = THEME_PACK_HARD_IMAGE_MAP if is_hard else THEME_PACK_IMAGE_MAP
+
     # 将key转换为字符串进行比较
     pack_key_str = str(pack_key)
     image_name = image_map.get(pack_key_str, "")
     if image_name:
-        return f"./assets/images/share/mirror/theme_pack/theme_packs/{image_name}"
+        return f"./assets/app/theme_packs/{image_name}"
     return ""
 
 
 class ThemePackCard(QFrame):
     """单个主题包卡片组件"""
 
-    weight_changed = Signal(str, int, bool)  # pack_key, weight, is_hard
+    weight_changed = Signal(str, int, bool, bool)  # pack_key, weight, is_hard, is_cn
 
-    def __init__(self, pack_key, weight, is_hard=False, parent=None):
+    def __init__(self, pack_key, weight, is_hard=False, is_cn=False, parent=None):
         super().__init__(parent)
         self.pack_key = str(pack_key)  # 确保是字符串，与 Signal 声明一致
         self.is_hard = is_hard
+        self.is_cn = is_cn  # 是否为中文配置
         self.weight = int(weight)  # 确保是整数
-        self.setObjectName(f"ThemePackCard_{pack_key}")
-        self.setFixedSize(200, 380)  # 设置卡片尺寸
+        self.setObjectName(f"ThemePackCard_{pack_key}_{'cn' if is_cn else 'en'}")
+        self.setFixedSize(200, 395)  # 按设置卡片尺寸
 
         self.__init_widget()
         self.__init_layout()
-        self.set_style_sheet()
+        self._apply_styles()
 
         # 设置初始权重值
         self.weight_spinbox.spin_box.setValue(self.weight)
 
         # 注册到语言管理器
         LanguageManager().register_component(self)
-
-    def get_display_name(self):
-        """根据当前语言获取显示名称"""
-        from module.config import cfg
-
-        # 获取当前语言，优先使用 current_lang，否则从配置读取
-        lang = LanguageManager().current_lang
-        if lang is None:
-            lang = cfg.get_value("language_in_program", "zh_CN")
-
-        # 确保 pack_key 是字符串
-        pack_key_str = str(self.pack_key)
-
-        # 判断是否为中文环境
-        is_chinese = lang and ("zh" in lang.lower() or "cn" in lang.lower() or lang == "简体中文")
-
-        if is_chinese:
-            # 中文环境，尝试获取中文名称
-            name_map = THEME_PACK_HARD_NAME_MAP if self.is_hard else THEME_PACK_NAME_MAP
-            return name_map.get(pack_key_str, pack_key_str)
-        else:
-            # 英文环境，直接返回英文key
-            return pack_key_str
 
     def __init_widget(self):
         self.main_layout = QVBoxLayout(self)
@@ -287,12 +303,12 @@ class ThemePackCard(QFrame):
 
         # 图片标签 - 根据原始图片分辨率 170x330 按比例缩放
         self.image_label = QLabel(self)
-        self.image_label.setFixedSize(140, 270)  # 放大图片尺寸
+        self.image_label.setFixedSize(140, 272)  # 保持 170:330 原始比例 (140*330/170≈272)
         self.image_label.setScaledContents(True)
         self.image_label.setAlignment(Qt.AlignCenter)
 
         # 加载图片
-        image_path = get_image_path(self.pack_key, self.is_hard)
+        image_path = get_image_path(self.pack_key, self.is_hard, self.is_cn)
         if image_path:
             pixmap = QPixmap(image_path)
             if not pixmap.isNull():
@@ -305,15 +321,12 @@ class ThemePackCard(QFrame):
             self.image_label.setStyleSheet("background-color: rgba(128, 128, 128, 0.3); border-radius: 5px;")
 
         # 主题包名称标签
-        self.name_label = BodyLabel()
-        self.name_label.setText(self.get_display_name())
+        self.name_label = TitleLabel()
+        # 初始化时从配置获取语言
+        # init_lang = cfg.get_value("language_in_program", "zh_cn")
+        self.name_label.setText(str(self.pack_key))
         self.name_label.setAlignment(Qt.AlignCenter)
         self.name_label.setWordWrap(True)
-        self.name_label.setFixedHeight(24)  # 增加高度以显示完整名称
-        font = QFont()
-        font.setPointSize(13)  # 增大字体
-        font.setBold(True)
-        self.name_label.setFont(font)
 
         # 权重输入框 - 使用 BaseSpinBox
         self.weight_spinbox = BaseSpinBox(None, parent=self, min_value=-10, min_step=1)
@@ -338,45 +351,106 @@ class ThemePackCard(QFrame):
         self.weight_layout.addStretch()
 
         self.main_layout.addLayout(self.weight_layout)
-        self.main_layout.addStretch()
 
-    def set_style_sheet(self):
-        self.setStyleSheet("""
-            ThemePackCard {
-                background-color: rgba(255, 255, 255, 0.05);
-                border: 1px solid rgba(128, 128, 128, 0.3);
-                border-radius: 8px;
-            }
-            ThemePackCard:hover {
-                background-color: rgba(255, 255, 255, 0.1);
-                border: 1px solid rgba(128, 128, 128, 0.5);
-            }
-        """)
+    def _apply_styles(self):
+        """根据当前主题设置样式表"""
+        if isDarkTheme():
+            self.setStyleSheet("""
+                ThemePackCard {
+                    background-color: rgba(255, 255, 255, 0.05);
+                    border: 1px solid rgba(255, 255, 255, 0.15);
+                    border-radius: 8px;
+                }
+                ThemePackCard:hover {
+                    background-color: rgba(255, 255, 255, 0.1);
+                    border: 1px solid rgba(255, 255, 255, 0.3);
+                }
+                TitleLabel {
+                    color: white;
+                    background-color: transparent;
+                }
+                BodyLabel {
+                    color: rgba(255, 255, 255, 0.85);
+                    background-color: transparent;
+                    border: none;
+                }
+                BaseSpinBox {
+                    background-color: transparent;
+                    border: none;
+                }
+                SpinBox {
+                    background-color: rgba(255, 255, 255, 0.08);
+                    border: 1px solid rgba(255, 255, 255, 0.2);
+                    border-radius: 4px;
+                    color: white;
+                }
+                SpinBox:hover {
+                    background-color: rgba(255, 255, 255, 0.12);
+                    border: 1px solid rgba(255, 255, 255, 0.3);
+                }
+            """)
+        else:
+            self.setStyleSheet("""
+                ThemePackCard {
+                    background-color: rgba(0, 0, 0, 0.03);
+                    border: 1px solid rgba(0, 0, 0, 0.1);
+                    border-radius: 8px;
+                }
+                ThemePackCard:hover {
+                    background-color: rgba(0, 0, 0, 0.06);
+                    border: 1px solid rgba(0, 0, 0, 0.2);
+                }
+                TitleLabel {
+                    color: black;
+                    background-color: transparent;
+                }
+                BodyLabel {
+                    color: rgba(0, 0, 0, 0.85);
+                    background-color: transparent;
+                    border: none;
+                }
+                BaseSpinBox {
+                    background-color: transparent;
+                    border: none;
+                }
+                SpinBox {
+                    background-color: rgba(255, 255, 255, 0.8);
+                    border: 1px solid rgba(0, 0, 0, 0.15);
+                    border-radius: 4px;
+                    color: black;
+                }
+                SpinBox:hover {
+                    background-color: rgba(255, 255, 255, 1);
+                    border: 1px solid rgba(0, 0, 0, 0.25);
+                }
+            """)
 
     def _on_weight_changed(self, value):
         """权重值改变时触发"""
-        self.weight_changed.emit(self.pack_key, value, self.is_hard)
+        self.weight_changed.emit(self.pack_key, value, self.is_hard, self.is_cn)
 
     def update_weight(self, weight):
         """更新权重显示值"""
         self.weight_spinbox.spin_box.setValue(int(weight))
 
-    def retranslateUi(self, lang_code=None):
+    def retranslateUi(self):
         """更新界面翻译"""
-        self.name_label.setText(self.get_display_name())
+        self.name_label.setText(str(self.pack_key))
         self.weight_label.setText(self.tr("权重:"))
+        # 更新无图片文本（如果有）
+        no_image_text = self.tr("无图片")
+        if self.image_label.text() == no_image_text or self.image_label.text() == self.tr("无图片"):
+            self.image_label.setText(no_image_text)
 
-    def __del__(self):
-        """析构时注销组件（静默处理，因为closeEvent已负责主要清理）"""
+    def cleanup(self):
+        """清理资源，断开信号连接"""
         try:
-            # 使用丢弃模式注销，避免重复注销时的警告
-            if self in LanguageManager().translatable_components:
-                LanguageManager().translatable_components.remove(self)
-        except:
-            pass
+            self.weight_spinbox.spin_box.valueChanged.disconnect(self._on_weight_changed)
+        except (RuntimeError, TypeError):
+            pass  # 信号可能已经被断开或对象已被销毁
 
 
-class ThemePackSettingDialog(QDialog):
+class ThemePackSettingDialog(FramelessDialog):
     """主题包权重设置对话框"""
 
     def __init__(self, parent=None):
@@ -386,13 +460,33 @@ class ThemePackSettingDialog(QDialog):
         self.setMinimumSize(1100, 600)
         self.resize(1200, 700)
 
+        # 设置自定义标题栏
+        self.setTitleBar(StandardTitleBar(self))
+        self.titleBar.raise_()
+        # 隐藏最小化和最大化按钮
+        self.titleBar.minBtn.hide()
+        self.titleBar.maxBtn.hide()
+
+        # 获取当前界面语言，决定加载哪种语言的配置
+        self.lang_code = cfg.get_value("language_in_program", "zh_cn")
+        self.is_cn = self.lang_code == "zh_cn"  # 是否加载中文配置
+
         self.normal_cards = {}
         self.hard_cards = {}
+
+        # 标记是否有未保存的修改
+        self._has_unsaved_changes = False
+
+        # 标记是否是保存并关闭
+        self._is_save_and_close = False
+
+        # 保存原始配置的副本，用于关闭时不保存恢复
+        self._original_config = copy.deepcopy(theme_list.config)
 
         self.__init_widget()
         self.__init_layout()
         self.load_theme_packs()
-        self.set_style_sheet()
+        self._apply_styles()
 
         LanguageManager().register_component(self)
 
@@ -470,41 +564,89 @@ class ThemePackSettingDialog(QDialog):
 
         # 主布局 - 上方是滚动区域，下方是固定按钮区域
         self.main_layout = QVBoxLayout(self)
-        self.main_layout.setContentsMargins(0, 0, 0, 0)
+        self.main_layout.setContentsMargins(0, 32, 0, 0)  # 顶部留出 32px 标题栏高度
+        self.main_layout.setSpacing(0)
         self.main_layout.addWidget(self.scroll_area, 1)  # 滚动区域占据剩余空间
         self.main_layout.addWidget(self.button_widget)  # 按钮区域固定在底部
 
-    def set_style_sheet(self):
-        # 获取对话框实际背景色
-        bg_color = self.palette().window().color().name()
+    def _apply_styles(self):
+        """应用主题样式到各个组件"""
+        # 设置对话框自身样式
+        if isDarkTheme():
+            bg_color = "rgba(28, 28, 28, 1)"
+            text_color = "white"
+        else:
+            bg_color = "white"
+            text_color = "black"
 
+        # 设置对话框自身背景色
         self.setStyleSheet(f"""
             ThemePackSettingDialog {{
-                background-color: {bg_color};
-            }}
-            QScrollArea {{
-                background-color: {bg_color};
-                border: none;
+                background-color: transparent;
             }}
             QScrollArea > QWidget {{
                 background-color: {bg_color};
             }}
             #button_widget {{
-                background-color: {bg_color};
+                background-color: transparent;
+            }}
+            TitleLabel {{
+                color: {text_color};
+                background-color: transparent;
+            }}
+            SubtitleLabel {{
+                color: {text_color};
+                background-color: transparent;
+            }}
+            BodyLabel {{
+                color: {text_color};
+                background-color: transparent;
             }}
         """)
 
+        # 设置标题栏样式
+        self.titleBar.titleLabel.setStyleSheet(
+            f"QLabel {{ background: transparent; font-size: 13px; padding: 0 4px; color: {text_color}; }}"
+        )
+        for btn in [self.titleBar.minBtn, self.titleBar.maxBtn, self.titleBar.closeBtn]:
+            btn.setNormalColor(Qt.GlobalColor.white if isDarkTheme() else Qt.GlobalColor.black)
+            btn.setHoverColor(Qt.GlobalColor.white if isDarkTheme() else Qt.GlobalColor.black)
+            btn.setPressedColor(Qt.GlobalColor.white if isDarkTheme() else Qt.GlobalColor.black)
+        self.titleBar.closeBtn.setHoverColor(Qt.GlobalColor.white)
+
+        # 直接设置各内容区域的背景色
+        self.scroll_widget.setStyleSheet(f"background-color: {bg_color};")
+        self.normal_grid_widget.setStyleSheet(f"background-color: {bg_color};")
+        self.hard_grid_widget.setStyleSheet(f"background-color: {bg_color};")
+
+        # 通知所有卡片更新样式
+        for card in self.normal_cards.values():
+            card._apply_styles()
+        for card in self.hard_cards.values():
+            card._apply_styles()
+
     def load_theme_packs(self):
-        """加载主题包配置并创建卡片"""
-        # 加载普通模式主题包
-        normal_packs = theme_list.get_value("theme_pack_list", {})
+        """加载主题包配置并创建卡片，根据语言参数加载对应配置"""
+        # 根据语言参数决定加载哪种配置
+        if self.is_cn:
+            # 中文界面，加载中文配置
+            normal_packs = theme_list.get_value("theme_pack_list_cn", {})
+            hard_packs = theme_list.get_value("theme_pack_list_hard_cn", {})
+        else:
+            # 英文界面，加载英文配置
+            normal_packs = theme_list.get_value("theme_pack_list", {})
+            hard_packs = theme_list.get_value("theme_pack_list_hard", {})
 
         col_count = 5  # 每行5个卡片
+
+        # 加载普通模式主题包（过滤掉 OCR 备用名称）
         row = 0
         col = 0
-
         for pack_key, weight in normal_packs.items():
-            card = ThemePackCard(pack_key, weight, is_hard=False)
+            # 如果是 OCR 备用名称，跳过不显示（但配置中保留）
+            if self.is_cn and pack_key in CN_OCR_ALTERNATIVES:
+                continue
+            card = ThemePackCard(pack_key, weight, is_hard=False, is_cn=self.is_cn)
             card.weight_changed.connect(self._on_weight_changed)
             self.normal_cards[pack_key] = card
 
@@ -514,15 +656,14 @@ class ThemePackSettingDialog(QDialog):
                 col = 0
                 row += 1
 
-        # 加载困难模式主题包
-        hard_packs = theme_list.get_value("theme_pack_list_hard", {})
-
-        col_count = 5  # 每行5个卡片
+        # 加载困难模式主题包（过滤掉 OCR 备用名称）
         row = 0
         col = 0
-
         for pack_key, weight in hard_packs.items():
-            card = ThemePackCard(pack_key, weight, is_hard=True)
+            # 如果是 OCR 备用名称，跳过不显示（但配置中保留）
+            if self.is_cn and pack_key in CN_OCR_ALTERNATIVES:
+                continue
+            card = ThemePackCard(pack_key, weight, is_hard=True, is_cn=self.is_cn)
             card.weight_changed.connect(self._on_weight_changed)
             self.hard_cards[pack_key] = card
 
@@ -532,88 +673,158 @@ class ThemePackSettingDialog(QDialog):
                 col = 0
                 row += 1
 
-    def _on_weight_changed(self, pack_key, weight, is_hard):
-        """处理权重改变事件，实时保存到配置"""
-        import copy
+    def _on_weight_changed(self, pack_key, weight, is_hard, is_cn):
+        """处理权重改变事件，只更新内存中的配置，不保存到文件"""
+        pack_key_str = str(pack_key)
 
+        # 确定当前模式的配置键和映射表
         if is_hard:
-            config_key = "theme_pack_list_hard"
+            en_config_key = "theme_pack_list_hard"
+            cn_config_key = "theme_pack_list_hard_cn"
+            name_map = THEME_PACK_HARD_NAME_MAP
+            reverse_map = CN_TO_EN_HARD_NAME_MAP
         else:
-            config_key = "theme_pack_list"
+            en_config_key = "theme_pack_list"
+            cn_config_key = "theme_pack_list_cn"
+            name_map = THEME_PACK_NAME_MAP
+            reverse_map = CN_TO_EN_NAME_MAP
 
-        # 直接修改配置并保存（避免重新加载配置）
-        config = theme_list.get_value(config_key, {})
-        # 确保所有键都是字符串类型（YAML可能将数字键解析为整数）
-        config = {str(k): v for k, v in config.items()}
-        config[pack_key] = weight
-        # 直接修改内部配置并保存
-        theme_list.config[config_key] = copy.deepcopy(config)
-        theme_list.save_config()
+        # 同时更新两套配置
+        # 1. 更新英文配置
+        en_config = theme_list.get_value(en_config_key, {})
+        en_config = {str(k): v for k, v in en_config.items()}
+
+        # 2. 更新中文配置
+        cn_config = theme_list.get_value(cn_config_key, {})
+        cn_config = {str(k): v for k, v in cn_config.items()}
+
+        if self.is_cn:
+            # 当前是中文界面，pack_key 是中文名称
+            cn_config[pack_key_str] = weight
+
+            # 检查是否有 OCR 备用名称，如果有则同步更新
+            if pack_key_str in CN_OCR_ALTERNATIVES:
+                # pack_key 是备用名称，找到主名称并更新
+                main_name = CN_OCR_ALTERNATIVES[pack_key_str]
+                if main_name in cn_config:
+                    cn_config[main_name] = weight
+            else:
+                # pack_key 是主名称，检查是否有备用名称需要同步更新
+                for alt_name, main_name in CN_OCR_ALTERNATIVES.items():
+                    if main_name == pack_key_str and alt_name in cn_config:
+                        cn_config[alt_name] = weight
+
+            # 找到对应的中文名称并更新英文配置
+            en_key = reverse_map.get(pack_key_str)
+            if en_key and en_key in en_config:
+                en_config[en_key] = weight
+        else:
+            # 当前是英文界面，pack_key 是英文 key
+            en_config[pack_key_str] = weight
+            # 找到对应的英文 key 并更新中文配置
+            cn_key = name_map.get(pack_key_str)
+            if cn_key and cn_key in cn_config:
+                cn_config[cn_key] = weight
+                # 同时检查该中文名称是否有 OCR 备用名称，一并更新
+                for alt_name, main_name in CN_OCR_ALTERNATIVES.items():
+                    if main_name == cn_key and alt_name in cn_config:
+                        cn_config[alt_name] = weight
+
+        # 只更新内存中的配置，不保存到文件
+        theme_list.config[en_config_key] = copy.deepcopy(en_config)
+        theme_list.config[cn_config_key] = copy.deepcopy(cn_config)
+
+        # 标记有未保存的修改
+        self._has_unsaved_changes = True
 
     def reset_to_default(self):
-        """重置为默认配置"""
-        import copy
-
-        # 获取示例配置路径
-        from module import THEME_PACK_LIST_EXAMPLE_PATH
-
+        """重置为默认配置，只更新内存中的配置和界面，不保存到文件"""
         # 加载示例配置
         with open(THEME_PACK_LIST_EXAMPLE_PATH, "r", encoding="utf-8") as f:
-            from ruamel.yaml import YAML
             yaml = YAML()
             example_config = yaml.load(f) or {}
 
-        # 重置普通模式
-        normal_default = example_config.get("theme_pack_list", {})
+        # 用示例配置替换内存中的配置，但不保存到文件
+        theme_list.config = copy.deepcopy(example_config)
+
+        # 根据当前语言更新界面显示
+        if self.is_cn:
+            normal_default = example_config.get("theme_pack_list_cn", {})
+            hard_default = example_config.get("theme_pack_list_hard_cn", {})
+        else:
+            normal_default = example_config.get("theme_pack_list", {})
+            hard_default = example_config.get("theme_pack_list_hard", {})
+
+        # 重置普通模式显示
         for pack_key, weight in normal_default.items():
             if pack_key in self.normal_cards:
                 self.normal_cards[pack_key].update_weight(weight)
 
-        # 重置困难模式
-        hard_default = example_config.get("theme_pack_list_hard", {})
+        # 重置困难模式显示
         for pack_key, weight in hard_default.items():
             if pack_key in self.hard_cards:
                 self.hard_cards[pack_key].update_weight(weight)
 
-        # 保存重置后的配置
-        theme_list.config["theme_pack_list"] = copy.deepcopy(normal_default)
-        theme_list.config["theme_pack_list_hard"] = copy.deepcopy(hard_default)
-        theme_list.save_config()
+        # 标记有未保存的修改
+        self._has_unsaved_changes = True
 
     def save_and_close(self):
-        """保存并关闭对话框"""
+        """保存配置到文件并关闭对话框"""
+        # 保存配置到文件
+        theme_list.save_config()
+        self._has_unsaved_changes = False
+        self._is_save_and_close = True  # 标记是保存并关闭
         self.close()
 
     def closeEvent(self, event):
-        """对话框关闭时注销所有组件，防止内存泄漏"""
-        # 注销所有普通模式卡片
+        """对话框关闭时注销所有组件，防止内存泄漏
+
+        如果用户点击了关闭按钮（而非保存并关闭）且有未保存的修改，
+        则恢复到原始配置，不保存到文件。
+        """
+        # 如果不是保存并关闭，且有未保存的修改，恢复到原始配置
+        if not self._is_save_and_close and self._has_unsaved_changes:
+            theme_list.config = self._original_config
+
+        # 先断开所有信号连接，防止在清理过程中触发信号
         for card in self.normal_cards.values():
             try:
-                LanguageManager().unregister_component(card)
-            except:
+                card.weight_changed.disconnect(self._on_weight_changed)
+            except RuntimeError:
+                pass  # 信号可能已经被断开
+            # 清理卡片内部资源
+            card.cleanup()
+
+        for card in self.hard_cards.values():
+            try:
+                card.weight_changed.disconnect(self._on_weight_changed)
+            except RuntimeError:
                 pass
+            # 清理卡片内部资源
+            card.cleanup()
+
+        # 注销所有普通模式卡片
+        for card in self.normal_cards.values():
+            LanguageManager().unregister_component(card)
 
         # 注销所有困难模式卡片
         for card in self.hard_cards.values():
-            try:
-                LanguageManager().unregister_component(card)
-            except:
-                pass
+            LanguageManager().unregister_component(card)
 
         # 注销对话框自身
-        try:
-            LanguageManager().unregister_component(self)
-        except:
-            pass
+        LanguageManager().unregister_component(self)
 
         # 清空卡片字典，帮助垃圾回收
         self.normal_cards.clear()
         self.hard_cards.clear()
 
+        # 使用 deleteLater 延迟销毁，避免 C++ 对象已删除的问题
+        self.deleteLater()
+
         # 调用父类的 closeEvent
         super().closeEvent(event)
 
-    def retranslateUi(self, lang_code=None):
+    def retranslateUi(self):
         """更新界面翻译"""
         self.setWindowTitle(self.tr("主题包权重配置"))
         self.title_label.setText(self.tr("主题包权重配置"))
@@ -624,4 +835,8 @@ class ThemePackSettingDialog(QDialog):
         self.save_button.setText(self.tr("保存并关闭"))
         self.close_button.setText(self.tr("关闭"))
 
-        # 卡片会通过 LanguageManager 自动更新翻译
+        # 通知所有卡片更新翻译
+        for card in self.normal_cards.values():
+            card.retranslateUi()
+        for card in self.hard_cards.values():
+            card.retranslateUi()

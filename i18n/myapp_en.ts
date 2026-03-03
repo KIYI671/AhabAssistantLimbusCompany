@@ -687,6 +687,21 @@ Right-click to set as permanent</translation>
         <source>测试截图功能的性能</source>
         <translation>Testing the performance of the screenshot function</translation>
     </message>
+    <message>
+        <location filename="../app/setting_interface.py" line="349"/>
+        <source>配置</source>
+        <translation>Configure</translation>
+    </message>
+    <message>
+        <location filename="../app/setting_interface.py" line="349"/>
+        <source>主题包权重配置</source>
+        <translation>Theme Pack Weight Configuration</translation>
+    </message>
+    <message>
+        <location filename="../app/setting_interface.py" line="352"/>
+        <source>配置镜牢主题包的选择优先级权重</source>
+        <translation>Configure the selection priority weights for Mirror Dungeon theme packs</translation>
+    </message>
 </context>
 <context>
     <name>BasePushSettingCard</name>
@@ -816,6 +831,11 @@ Right-click to set as permanent</translation>
         <location filename="../app/setting_interface.py" line="344"/>
         <source>实验性内容</source>
         <translation>Experimental sections</translation>
+    </message>
+    <message>
+        <location filename="../app/setting_interface.py" line="344"/>
+        <source>镜牢主题包设置</source>
+        <translation>Mirror Dungeon Theme Pack Settings</translation>
     </message>
 </context>
 <context>
@@ -2000,6 +2020,70 @@ Right-click to set as permanent</translation>
         <location filename="../app/base_tools.py" line="298"/>
         <source>粘贴</source>
         <translation>Paste</translation>
+    </message>
+</context>
+<context>
+    <name>ThemePackCard</name>
+    <message>
+        <location filename="../app/theme_pack_setting_interface.py" line="317"/>
+        <location filename="../app/theme_pack_setting_interface.py" line="320"/>
+        <location filename="../app/theme_pack_setting_interface.py" line="441"/>
+        <location filename="../app/theme_pack_setting_interface.py" line="442"/>
+        <source>无图片</source>
+        <translation>No Image</translation>
+    </message>
+    <message>
+        <location filename="../app/theme_pack_setting_interface.py" line="339"/>
+        <location filename="../app/theme_pack_setting_interface.py" line="439"/>
+        <source>权重:</source>
+        <translation>Weight:</translation>
+    </message>
+</context>
+<context>
+    <name>ThemePackSettingDialog</name>
+    <message>
+        <location filename="../app/theme_pack_setting_interface.py" line="459"/>
+        <location filename="../app/theme_pack_setting_interface.py" line="508"/>
+        <location filename="../app/theme_pack_setting_interface.py" line="829"/>
+        <location filename="../app/theme_pack_setting_interface.py" line="830"/>
+        <source>主题包权重配置</source>
+        <translation>Theme Pack Weight Configuration</translation>
+    </message>
+    <message>
+        <location filename="../app/theme_pack_setting_interface.py" line="513"/>
+        <location filename="../app/theme_pack_setting_interface.py" line="831"/>
+        <source>权重说明: 正数=优先选择(值越大优先级越高), 负数=避免选择, 0=无特殊偏好</source>
+        <translation>Weight description: Positive=Prefer (higher value=higher priority), Negative=Avoid, 0=No special preference</translation>
+    </message>
+    <message>
+        <location filename="../app/theme_pack_setting_interface.py" line="519"/>
+        <location filename="../app/theme_pack_setting_interface.py" line="832"/>
+        <source>普通模式主题包</source>
+        <translation>Normal Mode Theme Packs</translation>
+    </message>
+    <message>
+        <location filename="../app/theme_pack_setting_interface.py" line="526"/>
+        <location filename="../app/theme_pack_setting_interface.py" line="833"/>
+        <source>困难模式主题包</source>
+        <translation>Hard Mode Theme Packs</translation>
+    </message>
+    <message>
+        <location filename="../app/theme_pack_setting_interface.py" line="538"/>
+        <location filename="../app/theme_pack_setting_interface.py" line="834"/>
+        <source>重置为默认</source>
+        <translation>Reset to Default</translation>
+    </message>
+    <message>
+        <location filename="../app/theme_pack_setting_interface.py" line="541"/>
+        <location filename="../app/theme_pack_setting_interface.py" line="835"/>
+        <source>保存并关闭</source>
+        <translation>Save and Close</translation>
+    </message>
+    <message>
+        <location filename="../app/theme_pack_setting_interface.py" line="544"/>
+        <location filename="../app/theme_pack_setting_interface.py" line="836"/>
+        <source>关闭</source>
+        <translation>Close</translation>
     </message>
 </context>
 <context>
