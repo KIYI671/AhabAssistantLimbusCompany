@@ -1,4 +1,3 @@
-from ctypes import windll
 from time import sleep
 from typing import TYPE_CHECKING, overload
 
@@ -343,9 +342,6 @@ class Screen(metaclass=SingletonMeta):
         """通过调整窗口置顶减少误触"""
         # 获取适用于win32gui与win32con的窗口句柄
         hwnd = self.handle.hwnd
-
-        # 告诉系统当前进程是 DPI 感知的,确保窗口在高 DPI 系统上正确显示,并适应不同的 DPI 缩放
-        windll.user32.SetProcessDPIAware()
 
         # 设置窗口始终置顶
         if not cfg.background_click:
