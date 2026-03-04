@@ -247,9 +247,7 @@ class MNTDevice(object):
         _builder.publish(self.connection)
 
     # extra functions' name starts with 'ext_'
-    def ext_smooth_swipe(
-        self, points, pressure=100, duration=None, part=None, no_down=None, no_up=None
-    ):
+    def ext_smooth_swipe(self, points, pressure=100, duration=None, part=None, no_down=None, no_up=None):
         """
         smoothly swipe between points, one by one
         it will split distance between points into pieces

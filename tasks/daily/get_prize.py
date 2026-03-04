@@ -13,9 +13,7 @@ def get_pass_prize():
         # 自动截图
         if auto.take_screenshot() is None:
             continue
-        if coordinates := auto.find_element(
-            "pass/pass_coin.png", find_type="image_with_multiple_targets"
-        ):
+        if coordinates := auto.find_element("pass/pass_coin.png", find_type="image_with_multiple_targets"):
             for coordinate in coordinates:
                 auto.mouse_click(coordinate[0], coordinate[1])
                 retry()
@@ -26,9 +24,7 @@ def get_pass_prize():
             if auto.click_element("home/season_assets.png"):
                 continue
         else:
-            season_bbox = ImageUtils.get_bbox(
-                ImageUtils.load_image("home/season_assets.png")
-            )
+            season_bbox = ImageUtils.get_bbox(ImageUtils.load_image("home/season_assets.png"))
             if auto.find_text_element("season", season_bbox):
                 auto.mouse_click(
                     (season_bbox[0] + season_bbox[2]) / 2,
@@ -84,9 +80,7 @@ def get_mail_prize():
         if auto.click_element("mail/claim_all_assets.png"):
             auto.click_element("mail/close_assets.png")
             break
-        if auto.click_element("home/mail_assets.png") or auto.click_element(
-            "home/mail_cn_assets.png", model="normal"
-        ):
+        if auto.click_element("home/mail_assets.png") or auto.click_element("home/mail_cn_assets.png", model="normal"):
             continue
         auto.mouse_to_blank()
         loop_count -= 1

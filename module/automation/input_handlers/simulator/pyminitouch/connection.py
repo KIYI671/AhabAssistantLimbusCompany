@@ -121,9 +121,7 @@ class MNTServer(object):
 
         # make sure it's up
         time.sleep(1)
-        assert self.heartbeat(), (
-            "minitouch did not work. see https://github.com/williamfzc/pyminitouch/issues/11"
-        )
+        assert self.heartbeat(), "minitouch did not work. see https://github.com/williamfzc/pyminitouch/issues/11"
 
     def stop(self):
         """停止服务并清理资源"""
@@ -227,9 +225,7 @@ class MNTConnection(object):
 
         log.debug("在端口上运行的 Minitouch：{}，PID：{}".format(self.port, self.pid))
         log.debug(
-            "max_contact: {}; max_x: {}; max_y: {}; max_pressure: {}".format(
-                max_contacts, max_x, max_y, max_pressure
-            )
+            "max_contact: {}; max_x: {}; max_y: {}; max_pressure: {}".format(max_contacts, max_x, max_y, max_pressure)
         )
 
     def disconnect(self):

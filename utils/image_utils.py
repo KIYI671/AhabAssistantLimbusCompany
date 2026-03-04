@@ -120,9 +120,7 @@ class ImageUtils:
         image = image[y1:y2, x1:x2]
         # 如果裁剪区域超出了图像边界，对裁剪后的图像进行边框填充。
         if sum(border) > 0:
-            image = cv2.copyMakeBorder(
-                image, *border, borderType=cv2.BORDER_CONSTANT, value=(0, 0, 0)
-            )
+            image = cv2.copyMakeBorder(image, *border, borderType=cv2.BORDER_CONSTANT, value=(0, 0, 0))
         # 如果需要，返回图像的一个副本。
         if copy:
             image = image.copy()
@@ -172,9 +170,7 @@ class ImageUtils:
                     )
             if bbox is not None and model != "aggressive":
                 screenshot_crop = screenshot[bbox[1] : bbox[3], bbox[0] : bbox[2]]
-                result = cv2.matchTemplate(
-                    screenshot_crop, template, cv2.TM_CCOEFF_NORMED
-                )
+                result = cv2.matchTemplate(screenshot_crop, template, cv2.TM_CCOEFF_NORMED)
                 min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(result)
                 h, w = template.shape[:2]
                 center = (bbox[0] + max_loc[0] + w // 2, bbox[1] + max_loc[1] + h // 2)
@@ -207,16 +203,11 @@ class ImageUtils:
         if sorted_points:
             for pt in sorted_points:
                 # 检查当前匹配点是否与已保留的匹配点太近
-                if all(
-                    np.linalg.norm(np.array(pt) - np.array(kept_pt)) > min_dist
-                    for kept_pt in center_points
-                ):
+                if all(np.linalg.norm(np.array(pt) - np.array(kept_pt)) > min_dist for kept_pt in center_points):
                     # 如果没有太近的匹配点，保留当前匹配点
                     center_points.append(pt)
             # 计算每个匹配点的中心坐标
-            center_points = [
-                (int(pt[0] + w / 2), int(pt[1] + h / 2)) for pt in center_points
-            ]
+            center_points = [(int(pt[0] + w / 2), int(pt[1] + h / 2)) for pt in center_points]
             return center_points
         log.debug(f"未找到匹配项，最高匹配度为：{np.max(res)}")
         return []
@@ -234,12 +225,8 @@ class ImageUtils:
     def feature_matching(template_img, target_img, min_matches=8):
         # 读取图像并进行预处理
 
-        template = cv2.resize(
-            template_img, None, fx=2, fy=2, interpolation=cv2.INTER_LINEAR
-        )
-        target = cv2.resize(
-            target_img, None, fx=2, fy=2, interpolation=cv2.INTER_LINEAR
-        )
+        template = cv2.resize(template_img, None, fx=2, fy=2, interpolation=cv2.INTER_LINEAR)
+        target = cv2.resize(target_img, None, fx=2, fy=2, interpolation=cv2.INTER_LINEAR)
 
         # 使用ORB特征检测器
         orb = cv2.ORB_create(nfeatures=1000, scaleFactor=1.2, edgeThreshold=10)
@@ -250,9 +237,7 @@ class ImageUtils:
 
         # 使用FLANN匹配器
         FLANN_INDEX_LSH = 6
-        index_params = dict(
-            algorithm=FLANN_INDEX_LSH, table_number=6, key_size=12, multi_probe_level=1
-        )
+        index_params = dict(algorithm=FLANN_INDEX_LSH, table_number=6, key_size=12, multi_probe_level=1)
         search_params = dict(checks=50)
         flann = cv2.FlannBasedMatcher(index_params, search_params)
 

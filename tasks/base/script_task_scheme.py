@@ -128,15 +128,8 @@ def init_game():
             if cfg.simulator_port == 0 and cfg.mumu_instance_number == -1:
                 log.info("未设置模拟器端口或实例编号，使用默认mumu模拟器")
             elif cfg.simulator_port != 0:
-                if (
-                    cfg.simulator_port == 16384
-                    or (cfg.simulator_port - 16384) % 32 == 0
-                ):
-                    mumu_instance_number = (
-                        0
-                        if cfg.simulator_port == 16384
-                        else (cfg.simulator_port - 16384) // 32
-                    )
+                if cfg.simulator_port == 16384 or (cfg.simulator_port - 16384) % 32 == 0:
+                    mumu_instance_number = 0 if cfg.simulator_port == 16384 else (cfg.simulator_port - 16384) // 32
                     log.debug(f"使用mumu模拟器实例号为 {mumu_instance_number}")
                 else:
                     log.info("设置的模拟器端口非常用默认端口，使用默认mumu模拟器")
@@ -234,9 +227,7 @@ def Mirror_task():
 
         teams_order = cfg.teams_order  # 复制一份队伍顺序
         team_num = teams_order.index(1)  # 获取序号1的队伍在队伍顺序中的位置
-        team_setting = cfg.get_value(
-            f"team{team_num + 1}_setting"
-        )  # 获取序号1的队伍的配置
+        team_setting = cfg.get_value(f"team{team_num + 1}_setting")  # 获取序号1的队伍的配置
         # 如果该队伍固定了用途，且不用途符合当前情况，将序号1的队伍移动到队伍顺序的最后
         if "fixed_team_use" in team_setting and team_setting["fixed_team_use"]:
             if (team_setting["fixed_team_use_select"] == 0 and not cfg.hard_mirror) or (
@@ -274,9 +265,7 @@ def Mirror_task():
             mediator.mirror_signal.emit(finish_times, mir_times)
             msg = f"已完成 {finish_times} 次镜牢"
             log.info(msg)
-            if (
-                finish_times == 1 and cfg.re_claim_rewards
-            ):  # 完成第一次镜牢后重新领取奖励
+            if finish_times == 1 and cfg.re_claim_rewards:  # 完成第一次镜牢后重新领取奖励
                 to_get_reward()
 
     mediator.mirror_bar_kill_signal.emit()
@@ -308,9 +297,7 @@ def script_task() -> None | int:
     if get_game_config_from_registry().get("_renderingScale", -1) == 2:
         log.warning("当前游戏渲染比例为低, 可能会导致识别错误, 建议设置为中或更高")
     if cfg.set_win_size == 720:
-        log.warning(
-            "当前游戏分辨率为1280*720, 可能会导致识别错误或卡死, 建议设置为更高分辨率"
-        )
+        log.warning("当前游戏分辨率为1280*720, 可能会导致识别错误或卡死, 建议设置为更高分辨率")
 
     if cfg.language_in_game == "zh_cn" and pic_path[0] != "zh_cn":
         pic_path.insert(0, "zh_cn")

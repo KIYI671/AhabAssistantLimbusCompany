@@ -63,9 +63,7 @@ class ProductionWork(QThread):
                 return
             back_init_menu()
             make_enkephalin_module(cancel=False, skip=False)
-            while not auto.find_element(
-                "enkephalin/lunacy_assets.png", take_screenshot=True
-            ):
+            while not auto.find_element("enkephalin/lunacy_assets.png", take_screenshot=True):
                 auto.click_element("enkephalin/use_lunacy_assets.png")
             current_enkephalin = get_current_enkephalin()
             timing = None
@@ -131,9 +129,7 @@ class ProductionModule(QWidget):
 
         # 添加状态显示标签
         self.status_label = QLabel("状态：初始化中...")
-        self.status_label.setStyleSheet(
-            "QLabel { background-color: #f0f0f0; padding: 5px; border: 1px solid #ccc; }"
-        )
+        self.status_label.setStyleSheet("QLabel { background-color: #f0f0f0; padding: 5px; border: 1px solid #ccc; }")
         layout.addWidget(self.status_label)
 
         # 添加控制按钮
@@ -214,10 +210,7 @@ class ProductionModule(QWidget):
         import time
 
         current_time = int(time.time())
-        if (
-            not hasattr(self, "_last_log_time")
-            or current_time - self._last_log_time > 10
-        ):
+        if not hasattr(self, "_last_log_time") or current_time - self._last_log_time > 10:
             self.log_text.append("生产操作执行")
             self._last_log_time = current_time
 
@@ -235,12 +228,8 @@ class ProductionModule(QWidget):
         self.log_text.append(f"状态：等待 - 下一次体力回复时间: {next_time} s")
         self.log_text.append(f"等待: 下一次执行模块生产等待时间: {waiting_time} s")
         future_time = now_time + timedelta(seconds=waiting_time)
-        self.log_text.append(
-            f"预计下一次操作时间: {future_time.strftime('%Y-%m-%d %H:%M:%S')}"
-        )
-        log.info(
-            f"生产等待: 下一次体力回复时间: {next_time} s，下一次执行模块生产等待时间: {waiting_time} s"
-        )
+        self.log_text.append(f"预计下一次操作时间: {future_time.strftime('%Y-%m-%d %H:%M:%S')}")
+        log.info(f"生产等待: 下一次体力回复时间: {next_time} s，下一次执行模块生产等待时间: {waiting_time} s")
 
     def closeEvent(self, event):
         """窗口关闭时停止所有定时器和工作线程"""

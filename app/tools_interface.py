@@ -36,9 +36,7 @@ class ToolsInterface(ScrollArea):
         self.setWidgetResizable(True)
 
     def __init_card(self):
-        self.tools_group = BaseSettingCardGroup(
-            QT_TRANSLATE_NOOP("BaseSettingCardGroup", "工具箱"), self.scroll_widget
-        )
+        self.tools_group = BaseSettingCardGroup(QT_TRANSLATE_NOOP("BaseSettingCardGroup", "工具箱"), self.scroll_widget)
         self.auto_battle_card = BasePushSettingCard(
             QT_TRANSLATE_NOOP("BasePushSettingCard", "运行"),
             FIF.CAFE,
@@ -53,9 +51,7 @@ class ToolsInterface(ScrollArea):
             QT_TRANSLATE_NOOP("BasePushSettingCard", "运行"),
             FIF.CAFE,
             QT_TRANSLATE_NOOP("BasePushSettingCard", "自动体力换饼"),
-            QT_TRANSLATE_NOOP(
-                "BasePushSettingCard", "辅助自动换饼小工具，防止体力溢出"
-            ),
+            QT_TRANSLATE_NOOP("BasePushSettingCard", "辅助自动换饼小工具，防止体力溢出"),
             parent=self.tools_group,
         )
         self.get_screenshot_card = BasePushSettingCard(
@@ -91,12 +87,8 @@ class ToolsInterface(ScrollArea):
                 self.auto_battle_card,
             )
         )
-        self.auto_production_card.clicked.connect(
-            lambda: self._tool_start("production", self.auto_production_card)
-        )
-        self.get_screenshot_card.clicked.connect(
-            lambda: self._tool_start("screenshot", self.get_screenshot_card)
-        )
+        self.auto_production_card.clicked.connect(lambda: self._tool_start("production", self.auto_production_card))
+        self.get_screenshot_card.clicked.connect(lambda: self._tool_start("screenshot", self.get_screenshot_card))
 
     def _tool_start(self, tool_name: str, card: BasePushSettingCard):
         if tool_name in self.tools:
@@ -131,9 +123,7 @@ class ToolsInterface(ScrollArea):
 
     def _onScreenshotToolButtonPressed(self, time_str: str):
         title = QT_TRANSLATE_NOOP("BaseInfoBar", "截图完成")
-        msg = QT_TRANSLATE_NOOP(
-            "BaseInfoBar", "图片保存为 AALC > screenshot_{time_str}.png"
-        )
+        msg = QT_TRANSLATE_NOOP("BaseInfoBar", "图片保存为 AALC > screenshot_{time_str}.png")
         BaseInfoBar.success(
             title=title,
             content=msg,

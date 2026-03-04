@@ -24,6 +24,7 @@ from pathlib import Path
 
 # 解决 Windows DPI 缩放问题
 from ctypes import windll
+
 windll.shcore.SetProcessDpiAwareness(2)
 
 from module.logger import log
@@ -32,9 +33,7 @@ try:
     from watchdog.events import FileSystemEventHandler
     from watchdog.observers import Observer
 except ImportError:
-    log.critical(
-        "watchdog not installed. Please run `uv sync` to install dependencies."
-    )
+    log.critical("watchdog not installed. Please run `uv sync` to install dependencies.")
     sys.exit(1)
 
 try:
@@ -190,9 +189,7 @@ os.environ['AALC_DEV_MODE'] = '1'
 """
 
         # Replace admin check
-        dev_content = dev_content.replace(
-            "if not pyuac.isUserAdmin():", "if False and not pyuac.isUserAdmin():"
-        )
+        dev_content = dev_content.replace("if not pyuac.isUserAdmin():", "if False and not pyuac.isUserAdmin():")
 
         # Replace mutex check
         dev_content = dev_content.replace(

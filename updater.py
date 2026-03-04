@@ -24,9 +24,7 @@ class Updater:
         self.changes_file_path = os.path.abspath("./update_temp/changes.json")
 
         self.download_file_path = os.path.join(self.temp_path, self.file_name)
-        self.extract_folder_path = os.path.join(
-            self.temp_path, self.file_name.rsplit(".", 1)[0]
-        )
+        self.extract_folder_path = os.path.join(self.temp_path, self.file_name.rsplit(".", 1)[0])
 
     def extract_file(self):
         """解压下载的文件。"""
@@ -63,9 +61,7 @@ class Updater:
         print("开始覆盖安装...")
         while True:
             try:
-                shutil.copytree(
-                    self.extract_folder_path, self.cover_folder_path, dirs_exist_ok=True
-                )
+                shutil.copytree(self.extract_folder_path, self.cover_folder_path, dirs_exist_ok=True)
                 print("覆盖安装完成")
                 break
             except Exception as e:
@@ -76,9 +72,7 @@ class Updater:
         """终止相关进程以准备更新。"""
         print("开始终止进程...")
         for proc in psutil.process_iter(attrs=["pid", "name"]):
-            if proc.info["name"] in self.process_names or any(
-                name in proc.info["name"] for name in self.process_names
-            ):
+            if proc.info["name"] in self.process_names or any(name in proc.info["name"] for name in self.process_names):
                 try:
                     proc.terminate()
                     try:
@@ -112,9 +106,7 @@ class Updater:
         self.terminate_processes()
         self.cover_folder()
         self.cleanup()
-        input(
-            "已完成更新，按回车键退出并打开软件\nThe update is complete, press enter to exit and open the software"
-        )
+        input("已完成更新，按回车键退出并打开软件\nThe update is complete, press enter to exit and open the software")
         if os.system(f'cmd /c start "" "{os.path.abspath("./AALC.exe")}"'):
             subprocess.Popen(os.path.abspath("./AALC.exe"))
 

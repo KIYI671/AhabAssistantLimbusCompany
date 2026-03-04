@@ -276,9 +276,7 @@ class ThemePackCard(QFrame):
 
     weight_changed = Signal(str, int, bool, bool)  # pack_key, weight, is_hard, is_cn
 
-    def __init__(
-        self, pack_key: str, weight: int, is_hard=False, is_cn=False, parent=None
-    ):
+    def __init__(self, pack_key: str, weight: int, is_hard=False, is_cn=False, parent=None):
         super().__init__(parent)
         self.pack_key = str(pack_key)  # 确保是字符串，与 Signal 声明一致
         self.is_hard = is_hard
@@ -301,9 +299,7 @@ class ThemePackCard(QFrame):
 
         # 图片标签 - 根据原始图片分辨率 170x330 按比例缩放
         self.image_label = QLabel(self)
-        self.image_label.setFixedSize(
-            140, 272
-        )  # 保持 170:330 原始比例 (140*330/170≈272)
+        self.image_label.setFixedSize(140, 272)  # 保持 170:330 原始比例 (140*330/170≈272)
         self.image_label.setScaledContents(True)
         self.image_label.setAlignment(Qt.AlignCenter)
 
@@ -315,14 +311,10 @@ class ThemePackCard(QFrame):
                 self.image_label.setPixmap(pixmap)
             else:
                 self.image_label.setText(self.tr("无图片"))
-                self.image_label.setStyleSheet(
-                    "background-color: rgba(128, 128, 128, 0.3); border-radius: 5px;"
-                )
+                self.image_label.setStyleSheet("background-color: rgba(128, 128, 128, 0.3); border-radius: 5px;")
         else:
             self.image_label.setText(self.tr("无图片"))
-            self.image_label.setStyleSheet(
-                "background-color: rgba(128, 128, 128, 0.3); border-radius: 5px;"
-            )
+            self.image_label.setStyleSheet("background-color: rgba(128, 128, 128, 0.3); border-radius: 5px;")
 
         # 主题包名称标签
         self.name_label = TitleLabel()
@@ -440,9 +432,7 @@ class ThemePackCard(QFrame):
     def cleanup(self):
         """清理资源，断开信号连接"""
         try:
-            self.weight_spinbox.spin_box.valueChanged.disconnect(
-                self._on_weight_changed
-            )
+            self.weight_spinbox.spin_box.valueChanged.disconnect(self._on_weight_changed)
         except (RuntimeError, TypeError):
             pass  # 信号可能已经被断开或对象已被销毁
 
@@ -610,15 +600,9 @@ class ThemePackSettingDialog(FramelessDialog):
             f"QLabel {{ background: transparent; font-size: 13px; padding: 0 4px; color: {text_color}; }}"
         )
         for btn in [self.titleBar.minBtn, self.titleBar.maxBtn, self.titleBar.closeBtn]:
-            btn.setNormalColor(
-                Qt.GlobalColor.white if isDarkTheme() else Qt.GlobalColor.black
-            )
-            btn.setHoverColor(
-                Qt.GlobalColor.white if isDarkTheme() else Qt.GlobalColor.black
-            )
-            btn.setPressedColor(
-                Qt.GlobalColor.white if isDarkTheme() else Qt.GlobalColor.black
-            )
+            btn.setNormalColor(Qt.GlobalColor.white if isDarkTheme() else Qt.GlobalColor.black)
+            btn.setHoverColor(Qt.GlobalColor.white if isDarkTheme() else Qt.GlobalColor.black)
+            btn.setPressedColor(Qt.GlobalColor.white if isDarkTheme() else Qt.GlobalColor.black)
         self.titleBar.closeBtn.setHoverColor(Qt.GlobalColor.white)
 
         # 直接设置各内容区域的背景色

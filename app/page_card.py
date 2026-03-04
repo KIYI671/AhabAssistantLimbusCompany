@@ -81,9 +81,7 @@ class PageCard(QFrame):
         self.pivot.addItem("general", "常规设置")
         self.pivot.addItem("advanced", "高级设置")
         self.pivot.setCurrentItem("general")
-        self.pivot.currentItemChanged.connect(
-            lambda k: self.all_page.setCurrentWidget(self.findChild(QWidget, k))
-        )
+        self.pivot.currentItemChanged.connect(lambda k: self.all_page.setCurrentWidget(self.findChild(QWidget, k)))
 
     def __init_widget(self):
         self.card_layout.setAlignment(Qt.AlignTop)
@@ -216,9 +214,7 @@ class PageDailyTask(PageCard):
             "EXP_day_5_6",
             all_teams,
         )
-        self.EXP_day_7 = LabelWithComboBox(
-            QT_TRANSLATE_NOOP("LabelWithComboBox", "周日"), "EXP_day_7", all_teams
-        )
+        self.EXP_day_7 = LabelWithComboBox(QT_TRANSLATE_NOOP("LabelWithComboBox", "周日"), "EXP_day_7", all_teams)
         self.targeted_teaming_thread = BaseCheckBox(
             "targeted_teaming_thread",
             None,
@@ -349,9 +345,7 @@ class PageLunacyToEnkephalin(PageCard):
             "skip_enkephalin",
             None,
             QT_TRANSLATE_NOOP("BaseCheckBox", "不自动兑换脑啡肽 (?)"),
-            tips=QT_TRANSLATE_NOOP(
-                "BaseCheckBox", "勾选后除狂气换体以外不执行兑换脑啡肽的操作"
-            ),
+            tips=QT_TRANSLATE_NOOP("BaseCheckBox", "勾选后除狂气换体以外不执行兑换脑啡肽的操作"),
             center=False,
         )
 
@@ -391,9 +385,7 @@ class PageMirror(PageCard):
             "team1_setting",
         )
 
-        self.mirror_count = MirrorSpinBox(
-            QT_TRANSLATE_NOOP("MirrorSpinBox", "坐牢次数"), "set_mirror_count"
-        )
+        self.mirror_count = MirrorSpinBox(QT_TRANSLATE_NOOP("MirrorSpinBox", "坐牢次数"), "set_mirror_count")
 
         self.add_team = QHBoxLayout()
         self.add_team_button = TransparentToolButton(FIF.ADD, None)
@@ -438,9 +430,7 @@ class PageMirror(PageCard):
             "save_rewards",
             None,
             QT_TRANSLATE_NOOP("BaseCheckBox", "保存困牢奖励"),
-            tips=QT_TRANSLATE_NOOP(
-                "BaseCheckBox", "仅在进行困难镜牢时生效，普通难度不生效"
-            ),
+            tips=QT_TRANSLATE_NOOP("BaseCheckBox", "仅在进行困难镜牢时生效，普通难度不生效"),
             center=False,
         )
         self.hard_mirror_single_bonuses = BaseCheckBox(
@@ -580,9 +570,7 @@ class PageMirror(PageCard):
                 if cfg.get_value(f"team{i}_setting") is not None:
                     self.vbox_general.insertWidget(
                         self.vbox_general.count() - 1,
-                        MirrorTeamCombination(
-                            i, f"the_team_{i}", f"编队{i}", None, f"team{i}_setting"
-                        ),
+                        MirrorTeamCombination(i, f"the_team_{i}", f"编队{i}", None, f"team{i}_setting"),
                     )
         finally:
             self.page_general.setUpdatesEnabled(True)
@@ -603,16 +591,12 @@ class PageMirror(PageCard):
                 )
 
                 newTeamComb.retranslateUi()
-                self.vbox_general.insertWidget(
-                    self.vbox_general.count() - 1, newTeamComb
-                )
+                self.vbox_general.insertWidget(self.vbox_general.count() - 1, newTeamComb)
             finally:
                 self.page_general.setUpdatesEnabled(True)
 
             if cfg.get_value(f"team{number}_setting") is None:
-                cfg.unsaved_set_value(
-                    f"team{number}_setting", dict(team_setting_template)
-                )
+                cfg.unsaved_set_value(f"team{number}_setting", dict(team_setting_template))
                 cfg.unsaved_set_value(f"team{number}_remark_name", None)
                 teams_be_select = cfg.get_value("teams_be_select")
                 teams_be_select.append(False)
@@ -638,9 +622,7 @@ class PageMirror(PageCard):
         try:
             team = self.findChild(MirrorTeamCombination, target)
             if team is not None:
-                team_order_box = team.findChild(
-                    BaseCheckBox, f"the_team_{team.team_number}"
-                )
+                team_order_box = team.findChild(BaseCheckBox, f"the_team_{team.team_number}")
                 if team_order_box is not None:
                     team_order_box.set_check_false()
             self.remove_team_card(target)
@@ -665,17 +647,10 @@ class PageMirror(PageCard):
 
     def refresh_team_setting_card(self):
         for i in range(1, 21):
-            if (
-                cfg.get_value(f"team{i}_setting") is None
-                and cfg.get_value(f"team{i + 1}_setting") is not None
-            ):
-                cfg.unsaved_set_value(
-                    f"team{i}_setting", cfg.get_value(f"team{i + 1}_setting")
-                )
+            if cfg.get_value(f"team{i}_setting") is None and cfg.get_value(f"team{i + 1}_setting") is not None:
+                cfg.unsaved_set_value(f"team{i}_setting", cfg.get_value(f"team{i + 1}_setting"))
                 cfg.unsaved_del_key(f"team{i + 1}_setting")
-                cfg.unsaved_set_value(
-                    f"team{i}_remark_name", cfg.get_value(f"team{i + 1}_remark_name")
-                )
+                cfg.unsaved_set_value(f"team{i}_remark_name", cfg.get_value(f"team{i + 1}_remark_name"))
                 cfg.unsaved_del_key(f"team{i + 1}_remark_name")
         cfg.request_save()
         self.get_setting()
@@ -785,9 +760,7 @@ class MarkdownViewer(QWidget):
         self.text_browser = ThemeAwareTextBrowser()
         self.text_browser.setOpenExternalLinks(False)
         self.text_browser.anchorClicked.connect(self.handle_link_clicked)
-        self.text_browser.setContextMenuPolicy(
-            Qt.ContextMenuPolicy.NoContextMenu
-        )  # 禁用右键菜单
+        self.text_browser.setContextMenuPolicy(Qt.ContextMenuPolicy.NoContextMenu)  # 禁用右键菜单
 
         self.md = (
             MarkdownIt("commonmark", {"html": True})
@@ -826,9 +799,7 @@ class MarkdownViewer(QWidget):
             self.load_markdown(self.help_path)
             self.text_browser.setHtml(self.html)
         else:
-            self.text_browser.setPlainText(
-                f"错误: 无法加载文件 {self.help_path}，请检查文件路径是否正确。"
-            )
+            self.text_browser.setPlainText(f"错误: 无法加载文件 {self.help_path}，请检查文件路径是否正确。")
 
     def handle_link_clicked(self, url: QUrl):
         """

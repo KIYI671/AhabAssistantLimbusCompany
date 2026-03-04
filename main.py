@@ -5,6 +5,7 @@ import threading
 
 # 解决 Windows DPI 缩放问题
 from ctypes import windll
+
 windll.shcore.SetProcessDpiAwareness(2)
 
 from app.language_manager import LanguageManager
@@ -13,9 +14,7 @@ from module.config import cfg
 
 # 将当前工作目录设置为程序所在的目录，确保无论从哪里执行，其工作目录都正确设置为程序本身的位置，避免路径错误。
 os.chdir(
-    os.path.dirname(sys.executable)
-    if getattr(sys, "frozen", False)
-    else os.path.dirname(os.path.abspath(__file__))
+    os.path.dirname(sys.executable) if getattr(sys, "frozen", False) else os.path.dirname(os.path.abspath(__file__))
 )
 
 # 获取管理员权限
@@ -31,9 +30,7 @@ if not pyuac.isUserAdmin():
 from PySide6.QtCore import QObject, Qt, QTimer, Signal
 from PySide6.QtWidgets import QApplication
 
-QApplication.setHighDpiScaleFactorRoundingPolicy(
-    Qt.HighDpiScaleFactorRoundingPolicy.PassThrough
-)
+QApplication.setHighDpiScaleFactorRoundingPolicy(Qt.HighDpiScaleFactorRoundingPolicy.PassThrough)
 QApplication.setAttribute(Qt.AA_DontCreateNativeWidgetSiblings)
 
 
@@ -108,9 +105,7 @@ if __name__ == "__main__":
     # 4. 在后台启动 Socket 服务器（非阻塞主线程）
     # 注意：这里需要捕获 bind 异常，防止极短时间内双击导致的竞争
     try:
-        threading.Thread(
-            target=start_socket_server, args=(APP_PORT, signaler), daemon=True
-        ).start()
+        threading.Thread(target=start_socket_server, args=(APP_PORT, signaler), daemon=True).start()
     except OSError:
         # 如果走到这说明刚才的 bind 突然成功了但又瞬间失败，通常直接退出即可
         sys.exit(1)

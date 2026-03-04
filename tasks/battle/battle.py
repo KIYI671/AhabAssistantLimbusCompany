@@ -69,9 +69,7 @@ class Battle:
                 break
 
     @staticmethod
-    def _update_wait_time(
-        time: float = None, fail_flag: bool = False, total_count: int = 1
-    ):
+    def _update_wait_time(time: float = None, fail_flag: bool = False, total_count: int = 1):
         MAX_WAITING = 3.0  # 最大等待时间
         MIN_WAITING = 0.5  # 最小等待时间
         INIT_WAITING = 1.5  # 初始等待时间
@@ -92,15 +90,9 @@ class Battle:
 
         return new_time
 
-    def _battle_operation(
-        self, first_turn: bool, defense_first_round: bool, avoid_skill_3: bool
-    ):
+    def _battle_operation(self, first_turn: bool, defense_first_round: bool, avoid_skill_3: bool):
         auto.mouse_click_blank()
-        if (
-            first_turn
-            and defense_first_round
-            and auto.find_element("battle/gear_left.png", threshold=0.9)
-        ):
+        if first_turn and defense_first_round and auto.find_element("battle/gear_left.png", threshold=0.9):
             msg = "第一回合全员防御，开始战斗"
             if self._defense_this_round() is False:
                 defense_first_round = False
@@ -170,9 +162,7 @@ class Battle:
             self.defense_all_time = defense_all_time
         if defense_on_turn1:
             defense_first_round = True
-            turn_ocr_bbox = ImageUtils.get_bbox(
-                ImageUtils.load_image("battle/turn_ocr_assets.png")
-            )
+            turn_ocr_bbox = ImageUtils.get_bbox(ImageUtils.load_image("battle/turn_ocr_assets.png"))
 
         first_turn = True
         start_time = time.time()
@@ -186,9 +176,7 @@ class Battle:
                 continue
             if auto.get_restore_time() is not None:
                 start_time = max(start_time, auto.get_restore_time())
-            if infinite_battle is False and check_times(
-                start_time, timeout=900, logs=False
-            ):
+            if infinite_battle is False and check_times(start_time, timeout=900, logs=False):
                 from tasks.base.back_init_menu import back_init_menu
 
                 back_init_menu()
@@ -207,18 +195,12 @@ class Battle:
                 continue
 
             # 判断是否为镜牢战斗
-            if in_mirror is False and auto.find_element(
-                "battle/in_mirror_assets.png", model="aggressive"
-            ):
+            if in_mirror is False and auto.find_element("battle/in_mirror_assets.png", model="aggressive"):
                 in_mirror = True
 
-            if view_status := auto.find_element(
-                "battle/view_status_assets.png", model="clam"
-            ):
+            if view_status := auto.find_element("battle/view_status_assets.png", model="clam"):
                 my_scale = cfg.set_win_size / 1440
-                auto.click_element(
-                    view_status[0] + 100 * my_scale, view_status[1] - 500 * my_scale
-                )
+                auto.click_element(view_status[0] + 100 * my_scale, view_status[1] - 500 * my_scale)
                 continue
 
             # 如果正在交战过程
@@ -230,16 +212,12 @@ class Battle:
 
             # 战斗失败重启
             if auto.find_element("battle/dead_all.png"):
-                dead_select = auto.find_element(
-                    "battle/dead_all.png", find_type="image_with_multiple_targets"
-                )
+                dead_select = auto.find_element("battle/dead_all.png", find_type="image_with_multiple_targets")
                 if len(dead_select) == 3:
                     dead_select = sorted(dead_select, key=lambda y: y[1])
                     auto.mouse_click(dead_select[1][0], dead_select[1][1])
                 else:
-                    confirm_button = auto.find_element(
-                        "battle/dead_all_confirm_assets.png"
-                    )
+                    confirm_button = auto.find_element("battle/dead_all_confirm_assets.png")
                     try:
                         my_scale = cfg.set_win_size / 1440
                         auto.mouse_click(
@@ -275,9 +253,7 @@ class Battle:
                             auto.mouse_to_blank()
                             if auto.take_screenshot() is None:
                                 continue
-                            if auto.find_element(
-                                "mirror/road_in_mir/legend_assets.png"
-                            ):
+                            if auto.find_element("mirror/road_in_mir/legend_assets.png"):
                                 return False
                             if auto.click_element("battle/give_up_assets.png"):
                                 sleep(2)
@@ -288,9 +264,7 @@ class Battle:
             if fail_count >= 10 or self.identify_keyword_turn is False:
                 # 如果多次识别不到战斗界面
                 try:
-                    turn_bbox = ImageUtils.get_bbox(
-                        ImageUtils.load_image("battle/turn_assets.png")
-                    )
+                    turn_bbox = ImageUtils.get_bbox(ImageUtils.load_image("battle/turn_assets.png"))
                     sc = ImageUtils.crop(np.array(auto.screenshot), turn_bbox)
                     sc = cv2.inRange(sc, 50, 255)
                     result = ocr.run(sc)
@@ -299,20 +273,14 @@ class Battle:
                 except:
                     ocr_result = ""
                 if "turn" in ocr_result:
-                    self._battle_operation(
-                        first_turn, defense_first_round, avoid_skill_3
-                    )
+                    self._battle_operation(first_turn, defense_first_round, avoid_skill_3)
                     chance = self.INIT_CHANCE
                     waiting = self._update_wait_time(waiting, False, total_count)
                     self.identify_keyword_turn = False
                     continue
             elif fail_count >= 5:
-                if auto.click_element("battle/turn_assets.png") or auto.find_element(
-                    "battle/win_rate_assets.png"
-                ):
-                    self._battle_operation(
-                        first_turn, defense_first_round, avoid_skill_3
-                    )
+                if auto.click_element("battle/turn_assets.png") or auto.find_element("battle/win_rate_assets.png"):
+                    self._battle_operation(first_turn, defense_first_round, avoid_skill_3)
                     chance = self.INIT_CHANCE
                     waiting = self._update_wait_time(waiting, False, total_count)
                     continue
@@ -336,9 +304,9 @@ class Battle:
                     except:
                         self.cur_turn = -1  # 表示识别失败
 
-                if auto.find_element(
-                    "battle/more_information_assets.png"
-                ) or auto.find_element("battle/win_rate_assets.png"):
+                if auto.find_element("battle/more_information_assets.png") or auto.find_element(
+                    "battle/win_rate_assets.png"
+                ):
                     self._battle_operation(
                         first_turn,
                         defense_first_round,
@@ -351,9 +319,7 @@ class Battle:
                 if not infinite_battle:
                     auto.mouse_to_blank()
                 try:
-                    turn_bbox = ImageUtils.get_bbox(
-                        ImageUtils.load_image("battle/turn_assets.png")
-                    )
+                    turn_bbox = ImageUtils.get_bbox(ImageUtils.load_image("battle/turn_assets.png"))
                     sc = ImageUtils.crop(np.array(auto.screenshot), turn_bbox)
                     sc = cv2.inRange(sc, 50, 255)
                     result = ocr.run(sc)
@@ -367,9 +333,7 @@ class Battle:
                     or auto.find_element("battle/win_rate_assets.png")
                     or auto.find_element("battle/win_rate_card.png", threshold=0.75)
                 ):
-                    self._battle_operation(
-                        first_turn, defense_first_round, avoid_skill_3
-                    )
+                    self._battle_operation(first_turn, defense_first_round, avoid_skill_3)
                     chance = self.INIT_CHANCE
                     waiting = self._update_wait_time(waiting, False, total_count)
                     continue
@@ -377,9 +341,7 @@ class Battle:
                 if not infinite_battle:
                     auto.mouse_to_blank()
                 if auto.find_text_element(["rate", "胜率"]):
-                    self._battle_operation(
-                        first_turn, defense_first_round, avoid_skill_3
-                    )
+                    self._battle_operation(first_turn, defense_first_round, avoid_skill_3)
                     chance = self.INIT_CHANCE
                     waiting = self._update_wait_time(waiting, False, total_count)
                     sleep(1)
@@ -388,9 +350,7 @@ class Battle:
                     continue
             if self.mouse_click_rate:
                 if auto.find_element("battle/win_rate_card.png", threshold=0.75):
-                    self._battle_operation(
-                        first_turn, defense_first_round, avoid_skill_3
-                    )
+                    self._battle_operation(first_turn, defense_first_round, avoid_skill_3)
                     chance = self.INIT_CHANCE
                     waiting = self._update_wait_time(waiting, False, total_count)
 
@@ -414,9 +374,7 @@ class Battle:
                         "event/select_first_option_assets.png",
                         find_type="image_with_multiple_targets",
                     )
-                    finishes_bbox = ImageUtils.get_bbox(
-                        ImageUtils.load_image("event/continue_assets.png")
-                    )
+                    finishes_bbox = ImageUtils.get_bbox(ImageUtils.load_image("event/continue_assets.png"))
                     if auto.find_text_element(
                         [
                             "conti",
@@ -452,9 +410,9 @@ class Battle:
                 continue
 
             # 战斗结束，进入结算页面
-            if auto.click_element(
-                "battle/battle_finish_confirm_assets.png", click=False
-            ) or auto.find_element("mirror/claim_reward/battle_statistics_assets.png"):
+            if auto.click_element("battle/battle_finish_confirm_assets.png", click=False) or auto.find_element(
+                "mirror/claim_reward/battle_statistics_assets.png"
+            ):
                 sleep(1)
                 if auto.click_element("base/leave_up_assets.png"):
                     auto.click_element("base/leave_up_confirm_assets.png")
@@ -482,15 +440,11 @@ class Battle:
                 if infinite_battle:
                     continue
                 break
-            if auto.find_element(
-                "mirror/road_in_mir/select_encounter_reward_card_assets.png"
-            ):
+            if auto.find_element("mirror/road_in_mir/select_encounter_reward_card_assets.png"):
                 if infinite_battle:
                     continue
                 break
-            if chance <= (self.INIT_CHANCE // 2 + 1) and auto.find_element(
-                "teams/announcer_assets.png"
-            ):
+            if chance <= (self.INIT_CHANCE // 2 + 1) and auto.find_element("teams/announcer_assets.png"):
                 if infinite_battle:
                     continue
                 break
@@ -603,13 +557,9 @@ class Battle:
             )
             for index in skill3:
                 skill_list[index][1] += 125 * scale
-                skill_list[index] = custom_tune(
-                    skill_list[index], index, skill_nums, scale, reverse=-1
-                )
+                skill_list[index] = custom_tune(skill_list[index], index, skill_nums, scale, reverse=-1)
 
-            skill_list.append(
-                [gear_right[0] + 5 * skill_nums * scale, gear_right[1] + 150 * scale]
-            )
+            skill_list.append([gear_right[0] + 5 * skill_nums * scale, gear_right[1] + 150 * scale])
 
             auto.mouse_drag_link(skill_list)
 
@@ -646,9 +596,7 @@ class Battle:
                     sleep(cfg.mouse_action_interval // 1.5)
 
             skill_list.insert(0, gear_left)
-            skill_list.append(
-                [gear_right[0] + 5 * skill_nums * scale, gear_right[1] + 150 * scale]
-            )
+            skill_list.append([gear_right[0] + 5 * skill_nums * scale, gear_right[1] + 150 * scale])
 
             auto.mouse_drag_link(skill_list)
 

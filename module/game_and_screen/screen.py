@@ -103,9 +103,7 @@ class Handle:
                 "Flags": 0,
                 "Device": "Unknown",
             }
-        monitor_info = win32api.GetMonitorInfo(
-            win32api.MonitorFromWindow(self.hwnd, win32con.MONITOR_DEFAULTTONEAREST)
-        )
+        monitor_info = win32api.GetMonitorInfo(win32api.MonitorFromWindow(self.hwnd, win32con.MONITOR_DEFAULTTONEAREST))
         return monitor_info
 
     def monitor_size(self, get_work: bool = False) -> tuple[int, int]:
@@ -150,9 +148,7 @@ class Handle:
             self.restore()
             sleep(0.5)
         # 模拟按下
-        win32api.PostMessage(
-            hwnd, win32con.WM_SYSKEYDOWN, win32con.VK_RETURN, 0x00000001
-        )
+        win32api.PostMessage(hwnd, win32con.WM_SYSKEYDOWN, win32con.VK_RETURN, 0x00000001)
         sleep(0.05)
         win32api.PostMessage(hwnd, win32con.WM_SYSKEYUP, win32con.VK_RETURN, 0xC0000001)
         return True
@@ -221,9 +217,7 @@ class Handle:
         rect = self.rect(True)
         window_rect = self.rect(False)
         monitor_info = self.monitor_info
-        left, top, right, bottom = (
-            monitor_info["Work"] if work_area else monitor_info["Monitor"]
-        )
+        left, top, right, bottom = monitor_info["Work"] if work_area else monitor_info["Monitor"]
         need_x = rect[0]
         need_y = rect[1]
         if rect[2] > right:
@@ -238,15 +232,10 @@ class Handle:
         elif rect[1] == top:
             if cfg.set_win_position == "free":
                 need_y = (
-                    top
-                    - self.client_to_screen(
-                        0, 0, client_rect=rect, window_rect=window_rect
-                    )[1]
+                    top - self.client_to_screen(0, 0, client_rect=rect, window_rect=window_rect)[1]
                 )  # 防止标题栏不在窗口内
 
-        x, y = self.client_to_screen(
-            need_x, need_y, client_rect=rect, window_rect=window_rect
-        )
+        x, y = self.client_to_screen(need_x, need_y, client_rect=rect, window_rect=window_rect)
         if need_x != rect[0] or need_y != rect[1]:
             self.set_window_pos(x, y)
 
@@ -305,9 +294,7 @@ class Screen(metaclass=SingletonMeta):
 
         def _set_win():
             # 如果窗口最小化或不可见，先将其恢复
-            if self.handle.isMinimized or (
-                not self.handle.isActive and not cfg.background_click
-            ):
+            if self.handle.isMinimized or (not self.handle.isActive and not cfg.background_click):
                 self.handle.restore()
             # 将窗口设为活动窗口
             if not cfg.background_click:
@@ -317,9 +304,7 @@ class Screen(metaclass=SingletonMeta):
             if cfg.set_windows:
                 self.check_win_size(self.set_win_size)
                 self.reduce_miscontact(self.set_win_position)
-                self.adjust_win_size(
-                    (int(self.set_win_size * 16 / 9), self.set_win_size)
-                )
+                self.adjust_win_size((int(self.set_win_size * 16 / 9), self.set_win_size))
                 self.adjust_win_position(self.set_win_position)
 
         _set_win()
@@ -327,10 +312,7 @@ class Screen(metaclass=SingletonMeta):
             try:
                 width = self.handle.width(True)
                 height = self.handle.height(True)
-                if (
-                    width != int(cfg.set_win_size * 16 / 9)
-                    or height != cfg.set_win_size
-                ):
+                if width != int(cfg.set_win_size * 16 / 9) or height != cfg.set_win_size:
                     _set_win()
                     sleep(1)
                 else:
@@ -376,10 +358,7 @@ class Screen(metaclass=SingletonMeta):
             0,
             0,
             0,
-            win32con.SWP_NOMOVE
-            | win32con.SWP_NOSIZE
-            | win32con.SWP_NOZORDER
-            | win32con.SWP_FRAMECHANGED,
+            win32con.SWP_NOMOVE | win32con.SWP_NOSIZE | win32con.SWP_NOZORDER | win32con.SWP_FRAMECHANGED,
         )
         sleep(0.1)  # 确保样式修改生效
 
@@ -425,9 +404,7 @@ class Screen(metaclass=SingletonMeta):
         hwnd = self.handle.hwnd
         monitor_info = self.handle.monitor_info
         is_back: bool = cfg.background_click
-        left, top, right, bottom = (
-            monitor_info["Monitor"] if is_back else monitor_info["Work"]
-        )
+        left, top, right, bottom = monitor_info["Monitor"] if is_back else monitor_info["Work"]
         width = self.handle.width(True)
         height = self.handle.height(True)
         if set_win_position == "left_top":
@@ -459,10 +436,7 @@ class Screen(metaclass=SingletonMeta):
                 log.debug(f"窗口所在的屏幕分辨率: {screen_width}x{screen_height}")
                 if not cfg.background_click:
                     screen_width, screen_height = self.handle.monitor_size(False)
-                    if (
-                        screen_width >= set_win_size * 16 / 9
-                        and screen_height >= set_win_size
-                    ):
+                    if screen_width >= set_win_size * 16 / 9 and screen_height >= set_win_size:
                         log.info("当前屏幕全尺寸可考虑使用后台输入模式")
                 mediator.link_start.emit()
                 sleep(1)  # 等待结束
@@ -499,9 +473,7 @@ class Screen(metaclass=SingletonMeta):
             ex_style = win32gui.GetWindowLong(hwnd, win32con.GWL_EXSTYLE)
 
             # 恢复窗口样式：标题栏、大小调整框、最大化按钮
-            style |= (
-                win32con.WS_CAPTION | win32con.WS_THICKFRAME | win32con.WS_MAXIMIZEBOX
-            )
+            style |= win32con.WS_CAPTION | win32con.WS_THICKFRAME | win32con.WS_MAXIMIZEBOX
             # 应用修改后的样式
             win32gui.SetWindowLong(hwnd, win32con.GWL_STYLE, style)
 
@@ -519,10 +491,7 @@ class Screen(metaclass=SingletonMeta):
                 0,
                 0,
                 0,
-                win32con.SWP_FRAMECHANGED
-                | win32con.SWP_NOMOVE
-                | win32con.SWP_NOSIZE
-                | win32con.SWP_NOZORDER,
+                win32con.SWP_FRAMECHANGED | win32con.SWP_NOMOVE | win32con.SWP_NOSIZE | win32con.SWP_NOZORDER,
             )
 
             # 恢复窗口状态

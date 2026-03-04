@@ -126,9 +126,7 @@ THEME_AWARE_TEXT_BROWSER_STYLES = {
 
 def get_theme_aware_text_browser_qss() -> tuple[str, str]:
     """Return (light_qss, dark_qss) for ThemeAwareTextBrowser."""
-    return THEME_AWARE_TEXT_BROWSER_STYLES["light"], THEME_AWARE_TEXT_BROWSER_STYLES[
-        "dark"
-    ]
+    return THEME_AWARE_TEXT_BROWSER_STYLES["light"], THEME_AWARE_TEXT_BROWSER_STYLES["dark"]
 
 
 # Pivot Item 样式配置

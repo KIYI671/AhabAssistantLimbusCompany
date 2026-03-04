@@ -151,9 +151,7 @@ class FullWidthPivot(Pivot):
         """计算指示器位置"""
         item = self.currentItem()
         if not item:
-            return QRectF(
-                0, self.height() - self._indicatorHeight, 0, self._indicatorHeight
-            )
+            return QRectF(0, self.height() - self._indicatorHeight, 0, self._indicatorHeight)
 
         rect = item.geometry()
         return QRectF(

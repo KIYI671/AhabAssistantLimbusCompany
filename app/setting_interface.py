@@ -82,9 +82,7 @@ class SettingInterface(ScrollArea):
             FIF.UNIT,
             QT_TRANSLATE_NOOP("PushSettingCardChance", "困难模式剩余次数"),
             3,
-            QT_TRANSLATE_NOOP(
-                "PushSettingCardChance", "第一次运行请手动设定，之后将自动修改"
-            ),
+            QT_TRANSLATE_NOOP("PushSettingCardChance", "第一次运行请手动设定，之后将自动修改"),
             config_name="hard_mirror_chance",
         )
         self.win_input_type_card = ComboBoxSettingCard(
@@ -146,9 +144,7 @@ class SettingInterface(ScrollArea):
         self.start_emulator_timeout_chance_card = PushSettingCardChance(
             QT_TRANSLATE_NOOP("PushSettingCardChance", "修改"),
             FIF.TRAIN,
-            QT_TRANSLATE_NOOP(
-                "PushSettingCardChance", "仅限MUMU模拟器——启动模拟器超时时间(秒)"
-            ),
+            QT_TRANSLATE_NOOP("PushSettingCardChance", "仅限MUMU模拟器——启动模拟器超时时间(秒)"),
             3600,
             "",
             "start_emulator_timeout",
@@ -179,9 +175,7 @@ class SettingInterface(ScrollArea):
         self.autodaily_card = DailySettingCard(
             FIF.HISTORY,
             QT_TRANSLATE_NOOP("DailySettingCard", "定时执行 1"),
-            QT_TRANSLATE_NOOP(
-                "DailySettingCard", "如果计算机处于启动状态，将在指定时间执行 AALC 任务"
-            ),
+            QT_TRANSLATE_NOOP("DailySettingCard", "如果计算机处于启动状态，将在指定时间执行 AALC 任务"),
             "autodaily",
             parent=self.autodaily_group,
         )
@@ -263,15 +257,9 @@ class SettingInterface(ScrollArea):
             FIF.EDIT,
             QT_TRANSLATE_NOOP("BasePushSettingCard", "快捷键设置"),
             {
-                QT_TRANSLATE_NOOP(
-                    "BasePushSettingCard", "结束运行的脚本"
-                ): "shutdown_hotkey",
-                QT_TRANSLATE_NOOP(
-                    "BasePushSettingCard", "暂停脚本运行"
-                ): "pause_hotkey",
-                QT_TRANSLATE_NOOP(
-                    "BasePushSettingCard", "恢复脚本运行"
-                ): "resume_hotkey",
+                QT_TRANSLATE_NOOP("BasePushSettingCard", "结束运行的脚本"): "shutdown_hotkey",
+                QT_TRANSLATE_NOOP("BasePushSettingCard", "暂停脚本运行"): "pause_hotkey",
+                QT_TRANSLATE_NOOP("BasePushSettingCard", "恢复脚本运行"): "resume_hotkey",
             },
             parent=self.personal_group,
         )
@@ -316,9 +304,7 @@ class SettingInterface(ScrollArea):
             parent=self.logs_group,
         )
 
-        self.about_group = BaseSettingCardGroup(
-            QT_TRANSLATE_NOOP("BaseSettingCardGroup", "关于"), self.scroll_widget
-        )
+        self.about_group = BaseSettingCardGroup(QT_TRANSLATE_NOOP("BaseSettingCardGroup", "关于"), self.scroll_widget)
         self.github_card = BasePrimaryPushSettingCard(
             QT_TRANSLATE_NOOP("BasePrimaryPushSettingCard", "项目主页"),
             FIF.GITHUB,
@@ -335,13 +321,12 @@ class SettingInterface(ScrollArea):
             QT_TRANSLATE_NOOP("BasePrimaryPushSettingCard", "提供反馈"),
             FIF.FEEDBACK,
             QT_TRANSLATE_NOOP("BasePrimaryPushSettingCard", "提供反馈"),
-            QT_TRANSLATE_NOOP(
-                "BasePrimaryPushSettingCard", "帮助我们改进 AhabAssistantLimbusCompany"
-            ),
+            QT_TRANSLATE_NOOP("BasePrimaryPushSettingCard", "帮助我们改进 AhabAssistantLimbusCompany"),
         )
 
         self.theme_pack_group = BaseSettingCardGroup(
-            QT_TRANSLATE_NOOP("BaseSettingCardGroup", "镜牢主题包设置"), self.scroll_widget
+            QT_TRANSLATE_NOOP("BaseSettingCardGroup", "镜牢主题包设置"),
+            self.scroll_widget,
         )
         self.theme_pack_card = BasePrimaryPushSettingCard(
             QT_TRANSLATE_NOOP("BasePrimaryPushSettingCard", "配置"),
@@ -380,9 +365,7 @@ class SettingInterface(ScrollArea):
         self.simulator_setting_group.addSettingCard(self.simulator_setting_card)
         self.simulator_setting_group.addSettingCard(self.simulator_type_setting_card)
         self.simulator_setting_group.addSettingCard(self.simulator_port_chance_card)
-        self.simulator_setting_group.addSettingCard(
-            self.start_emulator_timeout_chance_card
-        )
+        self.simulator_setting_group.addSettingCard(self.start_emulator_timeout_chance_card)
 
         self.game_path_group.addSettingCard(self.game_path_card)
         self.game_path_group.addSettingCard(self.autostart_card)
@@ -437,43 +420,25 @@ class SettingInterface(ScrollArea):
     def __connect_signal(self):
         self.game_path_card.clicked.connect(self.__onGamePathCardClicked)
         self.open_logs_card.clicked.connect(self.__onOpenLogsCardClicked)
-        self.screenshot_benchmark_card.clicked.connect(
-            self.__onScreenshotBenchmarkCardClicked
-        )
+        self.screenshot_benchmark_card.clicked.connect(self.__onScreenshotBenchmarkCardClicked)
         self.theme_pack_card.clicked.connect(self.__onThemePackCardClicked)
 
         self.zoom_card.valueChanged.connect(self.__onZoomCardValueChanged)
-        self.auto_lang_card.switchButton.checkedChanged.connect(
-            self.__onAutoLangCardChecked
-        )
+        self.auto_lang_card.switchButton.checkedChanged.connect(self.__onAutoLangCardChecked)
         self.win_input_type_card.valueChanged.connect(self.__onWinInputTypeChanged)
         self.__onWinInputTypeChanged()
-        self.autostart_card.switchButton.checkedChanged.connect(
-            self.__onAutostartCardChanged
-        )
+        self.autostart_card.switchButton.checkedChanged.connect(self.__onAutostartCardChanged)
         self.theme_card.valueChanged.connect(self.__onThemeCardChanged)
 
-        self.github_card.clicked.connect(
-            self.__openUrl("https://github.com/KIYI671/AhabAssistantLimbusCompany")
-        )
-        self.discord_group_card.clicked.connect(
-            self.__openUrl("https://discord.gg/vUAw98cEVe")
-        )
+        self.github_card.clicked.connect(self.__openUrl("https://github.com/KIYI671/AhabAssistantLimbusCompany"))
+        self.discord_group_card.clicked.connect(self.__openUrl("https://discord.gg/vUAw98cEVe"))
         self.feedback_card.clicked.connect(
-            self.__openUrl(
-                "https://github.com/KIYI671/AhabAssistantLimbusCompany/issues"
-            )
+            self.__openUrl("https://github.com/KIYI671/AhabAssistantLimbusCompany/issues")
         )
 
     def __onGamePathCardClicked(self):
-        game_path, _ = QFileDialog.getOpenFileName(
-            self, "选择游戏路径", "", "Game Executable (LimbusCompany.exe)"
-        )
-        if (
-            not game_path
-            or cfg.game_path == game_path
-            or not game_path.endswith("LimbusCompany.exe")
-        ):
+        game_path, _ = QFileDialog.getOpenFileName(self, "选择游戏路径", "", "Game Executable (LimbusCompany.exe)")
+        if not game_path or cfg.game_path == game_path or not game_path.endswith("LimbusCompany.exe"):
             return
         cfg.set_value("game_path", game_path)
         self.game_path_card.setContent(game_path)
@@ -520,9 +485,7 @@ class SettingInterface(ScrollArea):
             )
             cfg.set_value("background_click", True)
         elif input_type == "foreground":
-            content = QT_TRANSLATE_NOOP(
-                "ComboBoxSettingCard", "前台模式，游戏必须在显示在最上方"
-            )
+            content = QT_TRANSLATE_NOOP("ComboBoxSettingCard", "前台模式，游戏必须在显示在最上方")
             cfg.set_value("background_click", False)
         elif input_type == "window_move":
             content = QT_TRANSLATE_NOOP(
@@ -531,9 +494,7 @@ class SettingInterface(ScrollArea):
             )
             cfg.set_value("background_click", True)
         else:
-            content = QT_TRANSLATE_NOOP(
-                "ComboBoxSettingCard", "未知的输入模式，发生了错误"
-            )
+            content = QT_TRANSLATE_NOOP("ComboBoxSettingCard", "未知的输入模式，发生了错误")
 
         self.win_input_type_card.content = content
         self.win_input_type_card.setContent(content)

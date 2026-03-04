@@ -71,9 +71,7 @@ class Automation(metaclass=SingletonMeta):
             from .input_handlers.input import BackgroundInput
 
             self.input_handler = BackgroundInput()
-        assert isinstance(
-            self.input_handler, AbstractInput
-        ), "输入处理器必须是AbstractInput的实例"
+        assert isinstance(self.input_handler, AbstractInput), "输入处理器必须是AbstractInput的实例"
         self.mouse_click = self.input_handler.mouse_click
         self.mouse_click_blank = self.input_handler.mouse_click_blank
         self.mouse_drag = self.input_handler.mouse_drag
@@ -190,9 +188,7 @@ class Automation(metaclass=SingletonMeta):
         """
         if find_type == "image_with_multiple_targets" and len(coordinates) > 0:
             for c in coordinates:
-                self.mouse_action_with_pos(
-                    c, offset, action, times, dx, dy, find_type="image", interval=1
-                )
+                self.mouse_action_with_pos(c, offset, action, times, dx, dy, find_type="image", interval=1)
             return True
 
         if cfg.mouse_action_interval and interval == 0.5:
@@ -240,15 +236,12 @@ class Automation(metaclass=SingletonMeta):
             Image: 截取当前屏幕的图像对象
         """
         start_time = time.time()
-        screenshot_interval_time = (
-            cfg.screenshot_interval if cfg.screenshot_interval else 0.85
-        )
+        screenshot_interval_time = cfg.screenshot_interval if cfg.screenshot_interval else 0.85
         while True:
             try:
                 if time.time() - self.last_screenshot_time < screenshot_interval_time:
                     wait_time = max(
-                        screenshot_interval_time
-                        - (time.time() - self.last_screenshot_time),
+                        screenshot_interval_time - (time.time() - self.last_screenshot_time),
                         0,
                     )
                     time.sleep(wait_time)
@@ -314,20 +307,14 @@ class Automation(metaclass=SingletonMeta):
                     )
                 elif find_type == "text":
                     # 使用文本查找方法查找元素
-                    center = self.find_text_element(
-                        target, my_crop, addtional_stack=addtional_stack
-                    )
+                    center = self.find_text_element(target, my_crop, addtional_stack=addtional_stack)
                 if center:
                     return center
             elif find_type in ["feature"]:
-                return self.find_feature_element(
-                    target, my_crop, addtional_stack=addtional_stack
-                )
+                return self.find_feature_element(target, my_crop, addtional_stack=addtional_stack)
             elif find_type in ["image_with_multiple_targets"]:
                 # 使用多目标图像查找方法查找元素
-                return self.find_image_with_multiple_targets(
-                    target, threshold, addtional_stack=addtional_stack
-                )
+                return self.find_image_with_multiple_targets(target, threshold, addtional_stack=addtional_stack)
             else:
                 raise ValueError("错误的类型")
 
@@ -335,9 +322,7 @@ class Automation(metaclass=SingletonMeta):
                 time.sleep(1)  # 在重试前等待一定时间
         return None
 
-    def find_image_with_multiple_targets(
-        self, target, threshold, addtional_stack
-    ) -> List:
+    def find_image_with_multiple_targets(self, target, threshold, addtional_stack) -> List:
         """
         在当前截图中查找多个目标图像的位置
         """
@@ -349,9 +334,7 @@ class Automation(metaclass=SingletonMeta):
             if template is None:
                 raise ValueError("读取图片失败")
             screenshot = np.array(self.screenshot)
-            matches = ImageUtils.match_template_with_multiple_targets(
-                screenshot, template, threshold
-            )
+            matches = ImageUtils.match_template_with_multiple_targets(screenshot, template, threshold)
             if len(matches) == 0:
                 log.debug(f"未找到任何目标图像{target}", stacklevel=addtional_stack + 3)
                 return []
@@ -379,9 +362,7 @@ class Automation(metaclass=SingletonMeta):
                 return ocr_dict[text]
         return False
 
-    def find_text_element(
-        self, target, my_crop=None, all_text=False, only_text=False, addtional_stack=0
-    ):
+    def find_text_element(self, target, my_crop=None, all_text=False, only_text=False, addtional_stack=0):
         """
         寻找文本元素所在的坐标位置
         """
@@ -402,10 +383,7 @@ class Automation(metaclass=SingletonMeta):
                 y = (box[0][1] + box[2][1]) / 2
                 ocr_position_list.append([x, y])
 
-            ocr_dict = {
-                text: position
-                for text, position in zip(ocr_text_list, ocr_position_list)
-            }
+            ocr_dict = {text: position for text, position in zip(ocr_text_list, ocr_position_list)}
             log.debug(f"识别到文本及其坐标：{ocr_dict}", stacklevel=addtional_stack + 3)
         else:
             ocr_dict = {}
@@ -446,9 +424,7 @@ class Automation(metaclass=SingletonMeta):
 
         return ocr_text_list
 
-    def find_feature_element(
-        self, target, pic_crop=None, min_matches=8, addtional_stack=0
-    ):
+    def find_feature_element(self, target, pic_crop=None, min_matches=8, addtional_stack=0):
         """
         寻找特征元素所在的坐标位置
         """
@@ -477,9 +453,7 @@ class Automation(metaclass=SingletonMeta):
                 elif cfg.set_win_size > 1440:
                     pic_crop = [int(i * cfg.set_win_size / 1440) for i in pic_crop]
                 screenshot = ImageUtils.crop(screenshot, pic_crop)
-            result, num_matches = ImageUtils.feature_matching(
-                template, screenshot, min_matches
-            )
+            result, num_matches = ImageUtils.feature_matching(template, screenshot, min_matches)
             log.debug(
                 f"匹配目标特征图片：{target.replace('./assets/images/', '')}结果{result}, 找到 {num_matches} 个匹配点",
                 stacklevel=addtional_stack + 3,
@@ -534,19 +508,12 @@ class Automation(metaclass=SingletonMeta):
             screenshot = np.array(self.screenshot)
             if my_crop:
                 screenshot = ImageUtils.crop(screenshot, my_crop)
-            center, matchVal = ImageUtils.match_template(
-                screenshot, template, bbox, model
-            )  # 匹配模板
+            center, matchVal = ImageUtils.match_template(screenshot, template, bbox, model)  # 匹配模板
             log.debug(
-                f"目标图片：{target.replace('./assets/images/', '')}, 相似度：{matchVal:.2f}, "
-                f"目标位置：{center}",
+                f"目标图片：{target.replace('./assets/images/', '')}, 相似度：{matchVal:.2f}, 目标位置：{center}",
                 stacklevel=addtional_stack + 3,
             )
-            if (
-                isinstance(matchVal, (int, float))
-                and not math.isinf(matchVal)
-                and matchVal >= threshold
-            ):
+            if isinstance(matchVal, (int, float)) and not math.isinf(matchVal) and matchVal >= threshold:
                 return center
         except Exception as e:
             log.error(f"寻找图片失败:{e}")

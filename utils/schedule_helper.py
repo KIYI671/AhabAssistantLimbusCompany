@@ -82,11 +82,7 @@ class ScheduleHelper_Win32:
         task_def.RegistrationInfo.Author = current_user
 
         trigger = task_def.Triggers.Create(2)  # 每日触发器
-        trigger.StartBoundary = (
-            datetime.datetime.now()
-            .replace(hour=h, minute=m, second=0, microsecond=0)
-            .isoformat()
-        )
+        trigger.StartBoundary = datetime.datetime.now().replace(hour=h, minute=m, second=0, microsecond=0).isoformat()
         trigger.DaysInterval = 1
         trigger.Enabled = True
 
@@ -126,9 +122,7 @@ class ScheduleHelper_Win32:
 
         try:
             # 打开注册表项
-            key = winreg.OpenKey(
-                winreg.HKEY_CURRENT_USER, key_path, 0, winreg.KEY_SET_VALUE
-            )
+            key = winreg.OpenKey(winreg.HKEY_CURRENT_USER, key_path, 0, winreg.KEY_SET_VALUE)
             # 设置数值：任务名 = 程序路径
             winreg.SetValueEx(key, task_name, 0, winreg.REG_SZ, executable_path)
             winreg.CloseKey(key)
@@ -142,9 +136,7 @@ class ScheduleHelper_Win32:
         """
         key_path = r"Software\Microsoft\Windows\CurrentVersion\Run"
         try:
-            key = winreg.OpenKey(
-                winreg.HKEY_CURRENT_USER, key_path, 0, winreg.KEY_SET_VALUE
-            )
+            key = winreg.OpenKey(winreg.HKEY_CURRENT_USER, key_path, 0, winreg.KEY_SET_VALUE)
             winreg.DeleteValue(key, task_name)
             winreg.CloseKey(key)
             log.info(f"已移除启动项: {task_name}")

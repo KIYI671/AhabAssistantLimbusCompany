@@ -58,9 +58,7 @@ def get_reward_card(model=0):
             break
         if auto.find_element("mirror/road_in_mir/acquire_ego_gift_card.png"):
             break
-        if auto.click_element(
-            "mirror/get_reward_card/continue_choosing_assets.png", model="clam"
-        ):
+        if auto.click_element("mirror/get_reward_card/continue_choosing_assets.png", model="clam"):
             continue
         select_reward = False
         for card in reward_card:
@@ -84,23 +82,17 @@ def get_reward_card(model=0):
     if retry() is False:
         return False
     get_reward_card_confirm_bbox = ImageUtils.get_bbox(
-        ImageUtils.load_image(
-            "mirror/get_reward_card/get_reward_card_confirm_assets.png"
-        )
+        ImageUtils.load_image("mirror/get_reward_card/get_reward_card_confirm_assets.png")
     )
     auto.mouse_click(
         (get_reward_card_confirm_bbox[0] + get_reward_card_confirm_bbox[2]) / 2,
         (get_reward_card_confirm_bbox[1] + get_reward_card_confirm_bbox[3]) / 2,
     )
-    while auto.click_element(
-        "mirror/get_reward_card/get_reward_card_confirm_assets.png", threshold=0.75
-    ):
+    while auto.click_element("mirror/get_reward_card/get_reward_card_confirm_assets.png", threshold=0.75):
         while auto.take_screenshot() is None:
             continue
         auto.mouse_to_blank()
-        if auto.click_element(
-            "mirror/get_reward_card/continue_choosing_assets.png", model="clam"
-        ):
+        if auto.click_element("mirror/get_reward_card/continue_choosing_assets.png", model="clam"):
             break
         if retry() is False:
             return False

@@ -57,9 +57,7 @@ class TeamSettingCard(QFrame):
         self.main_layout = QVBoxLayout(self)
         self.scroll_general = ScrollArea()
         self.scroll_general.setWidgetResizable(True)
-        self.scroll_general.setHorizontalScrollBarPolicy(
-            Qt.ScrollBarPolicy.ScrollBarAlwaysOff
-        )
+        self.scroll_general.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
 
         self.page_widget = QWidget()
         self.scroll_general.setWidget(self.page_widget)
@@ -83,21 +81,15 @@ class TeamSettingCard(QFrame):
             title=self.tr("自定义设置（设置存在冲突时，将根据优先级覆盖生效）"),
         )
 
-        self.custom_layout2 = ExpandSettingCard(
-            icon=FIF.INFO, title=self.tr("编队统计数据")
-        )
+        self.custom_layout2 = ExpandSettingCard(icon=FIF.INFO, title=self.tr("编队统计数据"))
 
         self.setting_layout = QHBoxLayout()
 
         self.scroll_general.enableTransparentBackground()
 
     def __init_card(self):
-        self.select_team = LabelWithComboBox(
-            self.tr("选择队伍名称"), "team_number", all_teams, vbox=False
-        )
-        self.select_system = LabelWithComboBox(
-            self.tr("选择队伍体系"), "team_system", all_systems, vbox=False
-        )
+        self.select_team = LabelWithComboBox(self.tr("选择队伍名称"), "team_number", all_teams, vbox=False)
+        self.select_system = LabelWithComboBox(self.tr("选择队伍体系"), "team_system", all_systems, vbox=False)
         self.select_shop_strategy = LabelWithComboBox(
             self.tr("选择商店策略"), "shop_strategy", shop_strategy, vbox=False
         )
@@ -309,9 +301,7 @@ class TeamSettingCard(QFrame):
             if values:
                 self.team_setting["sinners_be_select"] += 1
                 self.team_setting["chosen_sinners"][sinner_index] = 1
-                self.team_setting["sinner_order"][sinner_index] = self.team_setting[
-                    "sinners_be_select"
-                ]
+                self.team_setting["sinner_order"][sinner_index] = self.team_setting["sinners_be_select"]
             else:
                 order = self.team_setting["sinner_order"][sinner_index]
                 self.team_setting["sinners_be_select"] -= 1
@@ -326,9 +316,7 @@ class TeamSettingCard(QFrame):
             if values:
                 self.team_setting["opening_bonus_select"] += 1
                 self.team_setting["opening_bonus"][starlight_index] = 1
-                self.team_setting["opening_bonus_order"][starlight_index] = (
-                    self.team_setting["opening_bonus_select"]
-                )
+                self.team_setting["opening_bonus_order"][starlight_index] = self.team_setting["opening_bonus_select"]
             else:
                 order = self.team_setting["opening_bonus_order"][starlight_index]
                 self.team_setting["opening_bonus_select"] -= 1
@@ -405,20 +393,14 @@ class TeamSettingCard(QFrame):
 
         for checkbox in all_checkbox_config_name:
             if self.findChild(BaseCheckBox, checkbox):
-                self.findChild(BaseCheckBox, checkbox).set_checked(
-                    self.team_setting[checkbox]
-                )
+                self.findChild(BaseCheckBox, checkbox).set_checked(self.team_setting[checkbox])
 
         for combobox in all_combobox_config_name:
             if self.findChild(BaseComboBox, combobox):
                 if combobox == "team_number":
-                    self.findChild(BaseComboBox, combobox).set_options(
-                        self.team_setting[combobox] - 1
-                    )
+                    self.findChild(BaseComboBox, combobox).set_options(self.team_setting[combobox] - 1)
                 else:
-                    self.findChild(BaseComboBox, combobox).set_options(
-                        self.team_setting[combobox]
-                    )
+                    self.findChild(BaseComboBox, combobox).set_options(self.team_setting[combobox])
                     if combobox == "team_system":
                         self.foolproof(self.team_setting[combobox])
 
@@ -427,9 +409,7 @@ class TeamSettingCard(QFrame):
             if check_box := self.findChild(BaseCheckBox, checkbox):
                 if checkbox.startswith("system_"):
                     check_box.set_box_enabled(True)
-        check_box = self.findChild(
-            BaseCheckBox, f"system_{all_systems_name[team_system]}"
-        )
+        check_box = self.findChild(BaseCheckBox, f"system_{all_systems_name[team_system]}")
         if check_box:
             check_box.set_checked(False)
             check_box.set_box_enabled(False)
@@ -519,21 +499,11 @@ class CustomizeSettingsModule(QFrame):
         self.floor_shop = QHBoxLayout()
 
     def __init_card(self):
-        self.do_not_heal = BaseCheckBox(
-            "do_not_heal", None, QT_TRANSLATE_NOOP("BaseCheckBox", "不治疗罪人")
-        )
-        self.do_not_buy = BaseCheckBox(
-            "do_not_buy", None, QT_TRANSLATE_NOOP("BaseCheckBox", "不购买饰品")
-        )
-        self.do_not_fuse = BaseCheckBox(
-            "do_not_fuse", None, QT_TRANSLATE_NOOP("BaseCheckBox", "不合成饰品")
-        )
-        self.do_not_sell = BaseCheckBox(
-            "do_not_sell", None, QT_TRANSLATE_NOOP("BaseCheckBox", "不出售饰品")
-        )
-        self.do_not_enhance = BaseCheckBox(
-            "do_not_enhance", None, QT_TRANSLATE_NOOP("BaseCheckBox", "不升级饰品")
-        )
+        self.do_not_heal = BaseCheckBox("do_not_heal", None, QT_TRANSLATE_NOOP("BaseCheckBox", "不治疗罪人"))
+        self.do_not_buy = BaseCheckBox("do_not_buy", None, QT_TRANSLATE_NOOP("BaseCheckBox", "不购买饰品"))
+        self.do_not_fuse = BaseCheckBox("do_not_fuse", None, QT_TRANSLATE_NOOP("BaseCheckBox", "不合成饰品"))
+        self.do_not_sell = BaseCheckBox("do_not_sell", None, QT_TRANSLATE_NOOP("BaseCheckBox", "不出售饰品"))
+        self.do_not_enhance = BaseCheckBox("do_not_enhance", None, QT_TRANSLATE_NOOP("BaseCheckBox", "不升级饰品"))
 
         self.only_aggressive_fuse = BaseCheckBox(
             "only_aggressive_fuse",
@@ -561,9 +531,7 @@ class CustomizeSettingsModule(QFrame):
             None,
             QT_TRANSLATE_NOOP("BaseCheckBox", "每楼层重新编队"),
         )
-        self.use_starlight = BaseCheckBox(
-            "use_starlight", None, QT_TRANSLATE_NOOP("BaseCheckBox", "开局星光换钱")
-        )
+        self.use_starlight = BaseCheckBox("use_starlight", None, QT_TRANSLATE_NOOP("BaseCheckBox", "开局星光换钱"))
 
         self.aggressive_also_enhance = BaseCheckBox(
             "aggressive_also_enhance",
@@ -654,9 +622,7 @@ class CustomizeSettingsModule(QFrame):
         self.second_system_fuse_IV = BaseCheckBox(
             "second_system_fuse_IV", None, QT_TRANSLATE_NOOP("BaseCheckBox", "合成四级")
         )
-        self.second_system_buy = BaseCheckBox(
-            "second_system_buy", None, QT_TRANSLATE_NOOP("BaseCheckBox", "购买")
-        )
+        self.second_system_buy = BaseCheckBox("second_system_buy", None, QT_TRANSLATE_NOOP("BaseCheckBox", "购买"))
         self.second_system_select = BaseCheckBox(
             "second_system_choose",
             None,
@@ -681,21 +647,11 @@ class CustomizeSettingsModule(QFrame):
         QT_TRANSLATE_NOOP("BaseLabel", "忽略商店")
         self.ignore_shop = BaseLabel("忽略商店")
         self.ignore_shop.add_icon(FIF.CUT)
-        self.floor_shop_1 = BaseCheckBox(
-            "ignore_shop_1", None, QT_TRANSLATE_NOOP("BaseCheckBox", "第一层")
-        )
-        self.floor_shop_2 = BaseCheckBox(
-            "ignore_shop_2", None, QT_TRANSLATE_NOOP("BaseCheckBox", "第二层")
-        )
-        self.floor_shop_3 = BaseCheckBox(
-            "ignore_shop_3", None, QT_TRANSLATE_NOOP("BaseCheckBox", "第三层")
-        )
-        self.floor_shop_4 = BaseCheckBox(
-            "ignore_shop_4", None, QT_TRANSLATE_NOOP("BaseCheckBox", "第四层")
-        )
-        self.floor_shop_5 = BaseCheckBox(
-            "ignore_shop_5", None, QT_TRANSLATE_NOOP("BaseCheckBox", "第五层")
-        )
+        self.floor_shop_1 = BaseCheckBox("ignore_shop_1", None, QT_TRANSLATE_NOOP("BaseCheckBox", "第一层"))
+        self.floor_shop_2 = BaseCheckBox("ignore_shop_2", None, QT_TRANSLATE_NOOP("BaseCheckBox", "第二层"))
+        self.floor_shop_3 = BaseCheckBox("ignore_shop_3", None, QT_TRANSLATE_NOOP("BaseCheckBox", "第三层"))
+        self.floor_shop_4 = BaseCheckBox("ignore_shop_4", None, QT_TRANSLATE_NOOP("BaseCheckBox", "第四层"))
+        self.floor_shop_5 = BaseCheckBox("ignore_shop_5", None, QT_TRANSLATE_NOOP("BaseCheckBox", "第五层"))
 
     def __init_layout(self):
         self.first_line.addWidget(self.do_not_heal)
@@ -837,27 +793,13 @@ class CustomizeInfoModule(QFrame):
     def __init_card(self):
         self.total_count = BaseLabel(self.tr("总镜牢次数: 统计数据不足"), parent=self)
         self.hard_count = BaseLabel(self.tr("困难镜牢次数: 统计数据不足"), parent=self)
-        self.normal_count = BaseLabel(
-            self.tr("普通镜牢次数: 统计数据不足"), parent=self
-        )
-        self.average_time_hard = BaseLabel(
-            self.tr("困难平均用时: 统计数据不足"), parent=self
-        )
-        self.average_time_hard_last5 = BaseLabel(
-            self.tr("困难最近5次平均用时: 统计数据不足"), parent=self
-        )
-        self.average_time_hard_last10 = BaseLabel(
-            self.tr("困难最近10次平均用时: 统计数据不足"), parent=self
-        )
-        self.average_time_normal = BaseLabel(
-            self.tr("普通平均用时: 统计数据不足"), parent=self
-        )
-        self.average_time_normal_last5 = BaseLabel(
-            self.tr("普通最近5次平均用时: 统计数据不足"), parent=self
-        )
-        self.average_time_normal_last10 = BaseLabel(
-            self.tr("普通最近10次平均用时: 统计数据不足"), parent=self
-        )
+        self.normal_count = BaseLabel(self.tr("普通镜牢次数: 统计数据不足"), parent=self)
+        self.average_time_hard = BaseLabel(self.tr("困难平均用时: 统计数据不足"), parent=self)
+        self.average_time_hard_last5 = BaseLabel(self.tr("困难最近5次平均用时: 统计数据不足"), parent=self)
+        self.average_time_hard_last10 = BaseLabel(self.tr("困难最近10次平均用时: 统计数据不足"), parent=self)
+        self.average_time_normal = BaseLabel(self.tr("普通平均用时: 统计数据不足"), parent=self)
+        self.average_time_normal_last5 = BaseLabel(self.tr("普通最近5次平均用时: 统计数据不足"), parent=self)
+        self.average_time_normal_last10 = BaseLabel(self.tr("普通最近10次平均用时: 统计数据不足"), parent=self)
 
         self.refesh_button = PushButton(self.tr("刷新数据"))
         self.refesh_button.clicked.connect(self.fresh_data)
@@ -889,53 +831,31 @@ class CustomizeInfoModule(QFrame):
     def get_info(self, team_num):
         return_dict = {}
         if config_team_history := cfg.get_value(f"team{team_num}_history"):
-            team_total_mirror_time_hard = config_team_history.get(
-                "total_mirror_time_hard", [0.0, 0.0, 0.0]
-            )
-            team_total_mirror_hard_count = config_team_history.get(
-                "mirror_hard_count", 0
-            )
-            team_total_mirror_time_normal = config_team_history.get(
-                "total_mirror_time_normal", [0.0, 0.0, 0.0]
-            )
-            team_total_mirror_normal_count = config_team_history.get(
-                "mirror_normal_count", 0
-            )
+            team_total_mirror_time_hard = config_team_history.get("total_mirror_time_hard", [0.0, 0.0, 0.0])
+            team_total_mirror_hard_count = config_team_history.get("mirror_hard_count", 0)
+            team_total_mirror_time_normal = config_team_history.get("total_mirror_time_normal", [0.0, 0.0, 0.0])
+            team_total_mirror_normal_count = config_team_history.get("mirror_normal_count", 0)
 
-            return_dict["total_count"] = (
-                team_total_mirror_hard_count + team_total_mirror_normal_count
-            )
+            return_dict["total_count"] = team_total_mirror_hard_count + team_total_mirror_normal_count
             return_dict["hard_count"] = team_total_mirror_hard_count
             return_dict["normal_count"] = team_total_mirror_normal_count
             return_dict["average_time_hard"] = (
-                team_total_mirror_time_hard[0]
-                if len(team_total_mirror_time_hard) > 0
-                else 0
+                team_total_mirror_time_hard[0] if len(team_total_mirror_time_hard) > 0 else 0
             )
             return_dict["average_time_hard_last5"] = (
-                team_total_mirror_time_hard[1]
-                if len(team_total_mirror_time_hard) > 1
-                else 0
+                team_total_mirror_time_hard[1] if len(team_total_mirror_time_hard) > 1 else 0
             )
             return_dict["average_time_hard_last10"] = (
-                team_total_mirror_time_hard[2]
-                if len(team_total_mirror_time_hard) > 2
-                else 0
+                team_total_mirror_time_hard[2] if len(team_total_mirror_time_hard) > 2 else 0
             )
             return_dict["average_time_normal"] = (
-                team_total_mirror_time_normal[0]
-                if len(team_total_mirror_time_normal) > 0
-                else 0
+                team_total_mirror_time_normal[0] if len(team_total_mirror_time_normal) > 0 else 0
             )
             return_dict["average_time_normal_last5"] = (
-                team_total_mirror_time_normal[1]
-                if len(team_total_mirror_time_normal) > 1
-                else 0
+                team_total_mirror_time_normal[1] if len(team_total_mirror_time_normal) > 1 else 0
             )
             return_dict["average_time_normal_last10"] = (
-                team_total_mirror_time_normal[2]
-                if len(team_total_mirror_time_normal) > 2
-                else 0
+                team_total_mirror_time_normal[2] if len(team_total_mirror_time_normal) > 2 else 0
             )
         return return_dict
 
@@ -950,15 +870,9 @@ class CustomizeInfoModule(QFrame):
         self.fresh_data()
 
     def update_data(self):
-        self.total_count.setText(
-            self.tr("总镜牢次数: ") + str(self.info.get("total_count", 0))
-        )
-        self.hard_count.setText(
-            self.tr("困难镜牢次数: ") + str(self.info.get("hard_count", 0))
-        )
-        self.normal_count.setText(
-            self.tr("普通镜牢次数: ") + str(self.info.get("normal_count", 0))
-        )
+        self.total_count.setText(self.tr("总镜牢次数: ") + str(self.info.get("total_count", 0)))
+        self.hard_count.setText(self.tr("困难镜牢次数: ") + str(self.info.get("hard_count", 0)))
+        self.normal_count.setText(self.tr("普通镜牢次数: ") + str(self.info.get("normal_count", 0)))
         average_time_hard = self.info.get("average_time_hard", 0.0)
         if average_time_hard >= 0.005:
             self.average_time_hard.setText(
@@ -976,9 +890,7 @@ class CustomizeInfoModule(QFrame):
                 )
             )
         else:
-            self.average_time_hard_last5.setText(
-                self.tr("困难最近5次平均用时: 统计数据不足")
-            )
+            self.average_time_hard_last5.setText(self.tr("困难最近5次平均用时: 统计数据不足"))
         average_time_hard_last10 = self.info.get("average_time_hard_last10", 0.0)
         if average_time_hard_last10 >= 0.005:
             self.average_time_hard_last10.setText(
@@ -988,9 +900,7 @@ class CustomizeInfoModule(QFrame):
                 )
             )
         else:
-            self.average_time_hard_last10.setText(
-                self.tr("困难最近10次平均用时: 统计数据不足")
-            )
+            self.average_time_hard_last10.setText(self.tr("困难最近10次平均用时: 统计数据不足"))
         average_time_normal = self.info.get("average_time_normal", 0.0)
         if average_time_normal >= 0.005:
             self.average_time_normal.setText(
@@ -1009,9 +919,7 @@ class CustomizeInfoModule(QFrame):
                 )
             )
         else:
-            self.average_time_normal_last5.setText(
-                self.tr("普通最近5次平均用时: 统计数据不足")
-            )
+            self.average_time_normal_last5.setText(self.tr("普通最近5次平均用时: 统计数据不足"))
         average_time_normal_last10 = self.info.get("average_time_normal_last10", 0.0)
         if average_time_normal_last10 >= 0.005:
             self.average_time_normal_last10.setText(
@@ -1021,9 +929,7 @@ class CustomizeInfoModule(QFrame):
                 )
             )
         else:
-            self.average_time_normal_last10.setText(
-                self.tr("普通最近10次平均用时: 统计数据不足")
-            )
+            self.average_time_normal_last10.setText(self.tr("普通最近10次平均用时: 统计数据不足"))
 
     def fresh_data(self):
         self.info = self.get_info(self.team_num)

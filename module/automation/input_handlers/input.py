@@ -231,17 +231,11 @@ class BackgroundInput(WinAbstractInput, metaclass=SingletonMeta):
         if move_back:
             current_mouse_position = self.get_mouse_position()
             rect = screen.handle.rect(True)
-            if (
-                current_mouse_position[0] > rect[2]
-                or current_mouse_position[1] > rect[3]
-            ):
+            if current_mouse_position[0] > rect[2] or current_mouse_position[1] > rect[3]:
                 # 在窗口右下角外
                 log.debug("当前鼠标位置不在游戏窗口内，取消移动到空白", stacklevel=2)
                 return
-            elif (
-                current_mouse_position[0] < rect[0]
-                or current_mouse_position[1] < rect[1]
-            ):
+            elif current_mouse_position[0] < rect[0] or current_mouse_position[1] < rect[1]:
                 # 在窗口左上角外
                 log.debug("当前鼠标位置不在游戏窗口内，取消移动到空白", stacklevel=2)
                 return
@@ -576,9 +570,7 @@ class WindowMoveInput(WinAbstractInput, metaclass=SingletonMeta):
         self.mouse_click(x, y, times=times)
         return True
 
-    def _window_move_to(
-        self, x_or_pos: int | tuple[int, int], y: int = -32000, duration: float = 0
-    ) -> tuple[int, int]:
+    def _window_move_to(self, x_or_pos: int | tuple[int, int], y: int = -32000, duration: float = 0) -> tuple[int, int]:
         if duration <= 0:
             return self._set_window_pos(x_or_pos, y)
         else:
@@ -588,9 +580,7 @@ class WindowMoveInput(WinAbstractInput, metaclass=SingletonMeta):
                 target_x = x_or_pos
                 target_y = y
         raw_pos = screen.handle.rect()[:2]
-        current_x, current_y = screen.handle.mouse_pos_to_client_mouse(
-            *self.get_mouse_position()
-        )
+        current_x, current_y = screen.handle.mouse_pos_to_client_mouse(*self.get_mouse_position())
         accur = 7000
         duration = int(max(duration, 0.01) * accur)
         dx = (target_x - current_x) / duration * 100
