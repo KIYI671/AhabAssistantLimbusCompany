@@ -1,5 +1,4 @@
 import os
-import types
 
 from markdown_it import MarkdownIt
 from mdit_py_plugins.anchors import anchors_plugin
@@ -16,7 +15,6 @@ from qfluentwidgets import FluentIcon as FIF
 from qfluentwidgets import (
     PopUpAniStackedWidget,
     ScrollArea,
-    SegmentedWidget,
     TextBrowser,
     TransparentToolButton,
     isDarkTheme,
@@ -33,12 +31,9 @@ from app.base_combination import (
     TextProgressBar,
 )
 from app.base_tools import BaseCheckBox
-from app.common.ui_config import (
-    get_segmented_widget_qss,
-    get_theme_aware_text_browser_qss,
-    segmented_widget_paint_event,
-)
+from app.common.ui_config import get_theme_aware_text_browser_qss
 from app.language_manager import SUPPORTED_GAME_LANG_NAME, LanguageManager
+from app.widget.custom_segmented_widget import CustomSegmentedWidget
 from module.config import cfg
 from module.logger import log
 
@@ -81,20 +76,8 @@ class PageCard(QFrame):
         self.__init_widget()
 
     def set_pivot(self):
-        from qfluentwidgets import themeColor
-
-        self.pivot = SegmentedWidget(self)
+        self.pivot = CustomSegmentedWidget(self)
         self.pivot.setFixedHeight(36)
-
-        # 应用集中管理的样式，并传入当前的主题色
-        c = themeColor().name()
-        light_qss, dark_qss = get_segmented_widget_qss(c)
-        setCustomStyleSheet(self.pivot, light_qss, dark_qss)
-
-        # 移除选中后的底部指示线
-        self.pivot.paintEvent = types.MethodType(
-            segmented_widget_paint_event, self.pivot
-        )
 
         self.pivot.addItem("general", "常规设置")
         self.pivot.addItem("advanced", "高级设置")
