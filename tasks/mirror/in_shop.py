@@ -112,9 +112,57 @@ class Shop:
                 break
 
     def buy_gifts(self):
+        def sort_points(points, complete=0, threshold=40):
+            # 第一步：先按 X 坐标排好（左右顺序）
+            points.sort(key=lambda p: p[0])
+            # 第二步：按 Y 坐标“归一化”后排序（上下顺序）
+            points.sort(key=lambda p: p[1] // threshold)
+
+            return points[:-complete] if complete > 0 else points
+
+        def re_sort_points(points):
+            commodity_every_line = 4
+            coins_point = auto.find_element(
+                "mirror/shop/shop_coins_assets.png", take_screenshot=True
+            )
+            scale = cfg.set_win_size / 1440
+            if not coins_point or not points:
+                auto.mouse_click_blank(times=3)
+                coins_point = auto.find_element(
+                    "mirror/shop/shop_coins_assets.png", take_screenshot=True
+                )
+                if not coins_point or not points:
+                    return points
+            step = 300 * scale
+            first_grid_x = coins_point[0] + 150 * scale
+            new_points = []
+            for p in points:
+                orig_x, orig_y = p[0], p[1]
+
+                # 计算当前所在的列索引 (0, 1, 2, 3...)
+                # 注意：这里只用 x 判定列，不需要 round 整个坐标，只需要知道它在哪一列
+                col = round((orig_x - first_grid_x) / step)
+
+                if col > 0:
+                    # --- 情况 A: 还在同行 ---
+                    # y 值绝对不变，x 值减去一个 step
+                    new_x = orig_x - step
+                    new_y = orig_y
+                else:
+                    # --- 情况 B: 跨行移动 (col == 0) ---
+                    # x 值跳到最后一列：增加 (每行个数 - 1) 个 step
+                    # y 值向上移动一个 step
+                    new_x = orig_x + (commodity_every_line - 1) * step
+                    new_y = orig_y - step
+
+                new_points.append([new_x, new_y])
+
+            return new_points
+
         log.debug("开始执行饰品购买模块")
         refresh = False
         refresh_keyword = False
+        complete_count = 0
         while True:
             # 自动截图
             if auto.take_screenshot() is None:
@@ -138,6 +186,7 @@ class Shop:
                             if auto.click_element(
                                 "mirror/road_in_mir/ego_gift_get_confirm_assets.png"
                             ):
+                                complete_count += 1
                                 break
                             buy_chance -= 1
                             if buy_chance <= 5:
@@ -174,6 +223,7 @@ class Shop:
                             auto.click_element(
                                 "mirror/road_in_mir/ego_gift_get_confirm_assets.png"
                             )
+                            complete_count += 1
                             continue
                         else:
                             auto.mouse_click_blank()
@@ -192,6 +242,7 @@ class Shop:
                                 "mirror/road_in_mir/ego_gift_get_confirm_assets.png",
                                 take_screenshot=True,
                             )
+                            complete_count += 1
                             continue
                         else:
                             auto.mouse_click_blank()
@@ -207,7 +258,9 @@ class Shop:
                     threshold=0.85,
                     take_screenshot=True,
                 )
-                for gift in system_gift:
+                system_gift = sort_points(system_gift, complete_count)
+                while system_gift:
+                    gift = system_gift.pop(0)
                     auto.mouse_click(gift[0], gift[1])
                     sleep(1)
                     while auto.take_screenshot() is None:
@@ -230,6 +283,8 @@ class Shop:
                             "mirror/road_in_mir/ego_gift_get_confirm_assets.png",
                             take_screenshot=True,
                         )
+                        complete_count += 1
+                        system_gift = re_sort_points(system_gift)
                         auto.mouse_click_blank(times=3)
                         continue
                     else:
@@ -245,7 +300,9 @@ class Shop:
                         find_type="image_with_multiple_targets",
                         threshold=0.85,
                     )
-                    for gift in system_gift:
+                    system_gift = sort_points(system_gift, complete_count)
+                    while system_gift:
+                        gift = system_gift.pop(0)
                         auto.mouse_click(gift[0], gift[1])
                         sleep(1)
                         while auto.take_screenshot() is None:
@@ -268,6 +325,8 @@ class Shop:
                                 "mirror/road_in_mir/ego_gift_get_confirm_assets.png",
                                 take_screenshot=True,
                             )
+                            complete_count += 1
+                            system_gift = re_sort_points(system_gift)
                             auto.mouse_click_blank(times=3)
                             continue
                         else:

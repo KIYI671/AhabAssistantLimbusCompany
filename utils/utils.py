@@ -224,6 +224,18 @@ def check_game_running() -> bool:
             )
 
             return MumuControl.connection_device.check_game_alive()
+        else:
+            # 其他模拟器类型，使用通用的 SimulatorControl 检查
+            try:
+                from module.automation.input_handlers.simulator.simulator_control import (
+                    SimulatorControl,
+                )
+
+                if SimulatorControl.connection_device is None:
+                    return False
+                return SimulatorControl.connection_device.check_game_alive()
+            except Exception:
+                return False
     else:
         import psutil
 

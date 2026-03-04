@@ -1,4 +1,3 @@
-from ctypes import windll
 from time import sleep
 from typing import TYPE_CHECKING, overload
 
@@ -344,9 +343,6 @@ class Screen(metaclass=SingletonMeta):
         # 获取适用于win32gui与win32con的窗口句柄
         hwnd = self.handle.hwnd
 
-        # 告诉系统当前进程是 DPI 感知的,确保窗口在高 DPI 系统上正确显示,并适应不同的 DPI 缩放
-        windll.user32.SetProcessDPIAware()
-
         # 设置窗口始终置顶
         if not cfg.background_click:
             win32gui.SetWindowPos(
@@ -396,8 +392,8 @@ class Screen(metaclass=SingletonMeta):
         window_rect = win32gui.GetWindowRect(hwnd)
         client_rect = win32gui.GetClientRect(hwnd)
         if (
-            window_rect[:2] != client_rect[:2]
-        ):  # 如果窗口和客户区位置不同，说明有边框和标题栏
+            window_rect[2:] != client_rect[2:]
+        ):  # 如果窗口和客户区右下角位置不同，说明有边框和标题栏
             # 计算边框和标题栏厚度
             window_width = window_rect[2] - window_rect[0]
             window_height = window_rect[3] - window_rect[1]

@@ -3,6 +3,10 @@ import socket
 import sys
 import threading
 
+# 解决 Windows DPI 缩放问题
+from ctypes import windll
+windll.shcore.SetProcessDpiAwareness(2)
+
 from app.language_manager import LanguageManager
 from app.my_app import MainWindow
 from module.config import cfg
