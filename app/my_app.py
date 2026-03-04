@@ -194,6 +194,46 @@ class MainWindow(FramelessWindow):
 
         self.init_system_tray()
 
+        # 判断是否需要降低缩放以适配小屏幕
+        screen_rect = (
+            self.screen().availableGeometry()
+        )  # 获取到的rect会经过缩放因子的缩放
+        self_rect = self.geometry()
+        if (
+            screen_rect.width() < self_rect.width()
+            or screen_rect.height() < self_rect.height()
+        ):
+            log.info("屏幕分辨率较小，自动降低缩放以适配界面，将在重启后生效")
+            screen_width = screen_rect.width() * cfg.zoom_scale / 100
+            screen_height = screen_rect.height() * cfg.zoom_scale / 100
+            scale_factor = int(
+                min(
+                    screen_width / self_rect.width(), screen_height / self_rect.height()
+                )
+                * 100
+            )
+            if scale_factor < 50:
+                scale_factor = 50
+                log.warning("计算得到的缩放因子小于最低预设值，调整为20%")
+            elif scale_factor < 75:
+                scale_factor = 50
+            elif scale_factor < 90:
+                scale_factor = 75
+            elif scale_factor < 100:
+                scale_factor = 90
+            elif scale_factor < 125:
+                scale_factor = 100
+            elif scale_factor < 150:
+                scale_factor = 125
+            elif scale_factor < 175:
+                scale_factor = 150
+            elif scale_factor < 200:
+                scale_factor = 175
+            else:
+                scale_factor = 200
+                log.warning("计算得到的缩放因子大于最高预设值，调整为200%")
+            cfg.set_value("zoom_scale", scale_factor)
+
     def init_system_tray(self):
         self.tray_menu = None
         self.tray_icon = QSystemTrayIcon(self)
