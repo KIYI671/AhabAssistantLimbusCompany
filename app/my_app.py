@@ -216,7 +216,7 @@ class MainWindow(FramelessWindow):
                 scale_factor = self.screen().logicalDotsPerInch() / 96 * 100
             if scale_factor < 50:
                 scale_factor = 50
-                log.warning("计算得到的缩放因子小于最低预设值，调整为20%")
+                log.warning("计算得到的缩放因子小于最低预设值，调整为50%")
             elif scale_factor < 75:
                 scale_factor = 50
             elif scale_factor < 90:
