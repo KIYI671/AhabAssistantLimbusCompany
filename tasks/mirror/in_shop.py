@@ -290,7 +290,7 @@ class Shop:
                     sleep(3)
                     if retry() is False:
                         raise self.RestartGame()
-                    if self.skill_replacement and self.replacement <= 3:
+                    if self.skill_replacement and self.replacement < 3:
                         self.replacement_skill()
                     continue
 
@@ -308,7 +308,7 @@ class Shop:
                     sleep(3)
                     if retry() is False:
                         raise self.RestartGame()
-                    if self.skill_replacement and self.replacement <= 3:
+                    if self.skill_replacement and self.replacement < 3:
                         self.replacement_skill()
                     continue
 
@@ -1380,6 +1380,7 @@ class Shop:
         buy = False
         fuse = False
         enhance = False
+        skill = False
         try:
             while True:
                 # 忽略楼层商店的情况
@@ -1396,8 +1397,9 @@ class Shop:
                 auto.click_element("mirror/shop/return_assets.png")
                 sleep(1)
 
-                if self.skill_replacement and self.replacement < 3:
+                if self.skill_replacement and skill is False:
                     self.replacement_skill()
+                    skill = True
                     continue
 
                 if heal is False:
