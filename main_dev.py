@@ -22,6 +22,10 @@ import threading
 import time
 from pathlib import Path
 
+# 解决 Windows DPI 缩放问题
+from ctypes import windll
+windll.shcore.SetProcessDpiAwareness(2)
+
 from module.logger import log
 
 try:
