@@ -5,6 +5,7 @@ from time import sleep, time
 import cv2
 import numpy as np
 from adbutils import adb
+from adbutils.errors import AdbError
 
 from module.config import cfg
 from module.logger import log
@@ -140,36 +141,63 @@ class SimulatorControl(AbstractInput):
         if self.simulator_device is not None:
             return self.simulator_device
 
-        if self.simulator_port is None:
-            self.adb_connect()
+        last_error: Exception | None = None
+        for attempt in range(3):
+            try:
+                if self.simulator_port is None:
+                    self.adb_connect()
 
-        self.simulator_device = adb.device(self.simulator_port)
+                self.simulator_device = adb.device(self.simulator_port)
 
-        # 提取目标设备的序列号
-        target_serial = self.simulator_device.serial
+                # 提取目标设备的序列号
+                target_serial = self.simulator_device.serial
 
-        # 通过序列号获取设备对象
-        self.simulator_control = MNTDevice(target_serial)
+                # 通过序列号获取设备对象
+                self.simulator_control = MNTDevice(target_serial)
 
-        # 提取分辨率（如 1080x1920）
-        size_output = self.simulator_device.shell(["wm", "size"])
-        match = re.search(r"(\d+)x(\d+)", size_output)
-        if match:
-            height = int(match.group(2))  # Y: 高度
-            self.simulator_max_y = height
-            width = int(match.group(1))  # X: 宽度
-            self.simulator_max_x = width
+                # 提取分辨率（如 1080x1920）
+                size_output = self.simulator_device.shell(["wm", "size"])
+                match = re.search(r"(\d+)x(\d+)", size_output)
+                if match:
+                    height = int(match.group(2))  # Y: 高度
+                    self.simulator_max_y = height
+                    width = int(match.group(1))  # X: 宽度
+                    self.simulator_max_x = width
 
-            self.simulator_control.real_width = width
-            self.simulator_control.real_height = height
-            if int(self.simulator_control.connection.max_x) > 1440:
-                self.simulator_bluestacks = True
+                    self.simulator_control.real_width = width
+                    self.simulator_control.real_height = height
+                    if int(self.simulator_control.connection.max_x) > 1440:
+                        self.simulator_bluestacks = True
 
-        SimulatorControl.connection_device = self
+                SimulatorControl.connection_device = self
 
-        log.debug("连接成功，已将模拟器实例记录至SimulatorControl.connection_device")
+                log.debug(
+                    "连接成功，已将模拟器实例记录至 SimulatorControl.connection_device"
+                )
 
-        return self.simulator_device
+                return self.simulator_device
+            except AdbError as e:
+                last_error = e
+                log.error(
+                    f"获取模拟器设备失败，ADB 错误: {e}，正在尝试重新连接 "
+                    f"({attempt + 1}/3)"
+                )
+                try:
+                    self.adb_disconnect()
+                except Exception:
+                    pass
+                self.simulator_device = None
+                self.simulator_port = None
+                sleep(1)
+            except Exception as e:
+                last_error = e
+                log.error(f"初始化模拟器时出现未知异常: {e}")
+                break
+
+        if last_error is not None:
+            raise RuntimeError(f"无法连接到模拟器设备: {last_error}") from last_error
+
+        raise RuntimeError("无法连接到模拟器设备，原因未知")
 
     def screenshot(self):
         data = self.simulator_device.shell(
@@ -332,11 +360,7 @@ class SimulatorControl(AbstractInput):
             sleep(drag_time * 0.3)
         else:
             sleep(0.5)
-        self.simulator_control.swipe(
-            [(pos_x_2, pos_y_2), (pos_x_2, pos_y_2)],
-            duration=drag_time * 1000 / 10,
-            no_down=True,
-        )
+        self.simulator_control.up()
 
     def close_current_app(self):
         if self.simulator_device is None:
