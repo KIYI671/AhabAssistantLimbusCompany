@@ -4,7 +4,6 @@ from ctypes import windll
 import cv2
 import pyautogui
 import pywintypes
-import win32con
 import win32gui
 import win32ui
 from PIL import Image

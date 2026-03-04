@@ -1,4 +1,4 @@
-from PySide6.QtCore import QT_TRANSLATE_NOOP, Qt, QTime, QUrl
+from PySide6.QtCore import QT_TRANSLATE_NOOP, Qt, QUrl
 from PySide6.QtGui import QDesktopServices
 from PySide6.QtWidgets import QFileDialog, QWidget
 from qfluentwidgets import ExpandLayout, InfoBarPosition, ScrollArea, Theme, setTheme

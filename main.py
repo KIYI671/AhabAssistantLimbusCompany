@@ -19,7 +19,7 @@ except (AttributeError, OSError):
         try:
             # 3. 最后的兜底方案 (Win7/Vista)
             windll.user32.SetProcessDPIAware()
-        except Exception as e:
+        except Exception:
             pass
 
 from app.language_manager import LanguageManager

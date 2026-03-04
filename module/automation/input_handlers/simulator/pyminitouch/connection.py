@@ -1,17 +1,16 @@
+import json
 import random
 import socket
 import time
-import json
-from collections import deque
 from contextlib import contextmanager
 from pathlib import Path
 
 import adbutils
-from . import config
 from adbutils import AdbError
 
 from module.logger import log
 
+from . import config
 from .utils import is_port_using, str2byte
 
 

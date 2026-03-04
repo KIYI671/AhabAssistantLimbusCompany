@@ -25,13 +25,14 @@ from PySide6.QtWidgets import (
     QGraphicsDropShadowEffect,
     QLabel,
     QPushButton,
-    QButtonGroup,
 )
 from qfluentwidgets import (
+    FlyoutViewBase,
     IndicatorPosition,
     InfoBarPosition,
     LineEdit,
     MessageBox,
+    PopupTeachingTip,
     PrimaryPushButton,
     PrimaryPushSettingCard,
     ProgressBar,
@@ -39,11 +40,9 @@ from qfluentwidgets import (
     SettingCard,
     SettingCardGroup,
     SwitchButton,
+    TeachingTipTailPosition,
     TimePicker,
     setCustomStyleSheet,
-    FlyoutViewBase,
-    PopupTeachingTip,
-    TeachingTipTailPosition,
 )
 
 from app.base_tools import *

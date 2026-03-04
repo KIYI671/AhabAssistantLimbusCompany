@@ -20,10 +20,10 @@ import subprocess
 import sys
 import threading
 import time
-from pathlib import Path
 
 # 解决 Windows DPI 缩放问题
 from ctypes import windll
+from pathlib import Path
 
 try:
     # 1. 尝试 Win10 1703+ 的最强方案 (Per Monitor V2)
@@ -38,7 +38,7 @@ except (AttributeError, OSError):
         try:
             # 3. 最后的兜底方案 (Win7/Vista)
             windll.user32.SetProcessDPIAware()
-        except Exception as e:
+        except Exception:
             pass
 
 from module.logger import log

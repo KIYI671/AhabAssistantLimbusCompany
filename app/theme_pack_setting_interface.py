@@ -19,14 +19,12 @@ from qfluentwidgets import (
     TitleLabel,
     isDarkTheme,
 )
-from qfluentwidgets import FluentIcon as FIF
 from qframelesswindow import FramelessDialog, StandardTitleBar
 from ruamel.yaml import YAML
 
 from app.base_tools import BaseSpinBox
 from module import THEME_PACK_LIST_EXAMPLE_PATH
 from module.config import cfg, theme_list
-from module.logger import log
 
 # 英文key到中文名称的映射表（普通模式）
 THEME_PACK_NAME_MAP = {

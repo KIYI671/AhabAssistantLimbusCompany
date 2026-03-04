@@ -1,11 +1,12 @@
-import time
 import math
+import time
 from contextlib import contextmanager
 
+from module.logger import log
+
+from .. import insert_swipe
 from . import config
 from .connection import MNTConnection, MNTServer
-from module.logger import log
-from .. import insert_swipe
 
 
 class CommandBuilder(object):

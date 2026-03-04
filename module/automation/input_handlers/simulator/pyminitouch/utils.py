@@ -1,10 +1,11 @@
 import socket
 import tempfile
 
-from . import config
 import requests
 
 from module.logger import log
+
+from . import config
 
 
 def str2byte(content):
