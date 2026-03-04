@@ -1,14 +1,6 @@
 # 应用 UI 配置
-from typing import TYPE_CHECKING
-
-from PySide6.QtCore import QRectF, Qt
-from PySide6.QtGui import QColor, QPainter, QPainterPath, QPen
-from PySide6.QtWidgets import QWidget
+from PySide6.QtCore import Qt
 from qfluentwidgets import qconfig
-
-if TYPE_CHECKING:
-    from PySide6.QtGui import QPaintEvent
-    from qfluentwidgets import SegmentedWidget
 
 # 全局字体配置
 FONT_FAMILIES = [
@@ -134,10 +126,9 @@ THEME_AWARE_TEXT_BROWSER_STYLES = {
 
 def get_theme_aware_text_browser_qss() -> tuple[str, str]:
     """Return (light_qss, dark_qss) for ThemeAwareTextBrowser."""
-    return (
-        THEME_AWARE_TEXT_BROWSER_STYLES["light"],
-        THEME_AWARE_TEXT_BROWSER_STYLES["dark"],
-    )
+    return THEME_AWARE_TEXT_BROWSER_STYLES["light"], THEME_AWARE_TEXT_BROWSER_STYLES[
+        "dark"
+    ]
 
 
 # Pivot Item 样式配置
@@ -186,194 +177,6 @@ def get_pivot_item_qss(theme_color: str) -> tuple[str, str]:
     light_qss = PIVOT_ITEM_STYLES["light"].format(theme_color=theme_color)
     dark_qss = PIVOT_ITEM_STYLES["dark"].format(theme_color=theme_color)
     return light_qss, dark_qss
-
-
-# SegmentedWidget 样式配置
-SEGMENTED_WIDGET_STYLES = {
-    "light": """
-        SegmentedWidget {{
-            background: transparent;
-            border: none;
-        }}
-        SegmentedItem[pivotItem="true"] {{
-            padding: 6px 16px;
-            font-size: 14px;
-            font-weight: 400;
-            color: rgba(0, 0, 0, 0.7);
-            background: transparent;
-            border: none;
-        }}
-        SegmentedItem[pivotItem="true"]:hover {{
-            color: rgba(0, 0, 0, 0.9);
-        }}
-        SegmentedItem[pivotItem="true"][selected="true"] {{
-            color: {theme_color};
-            font-weight: bold;
-        }}
-    """,
-    "dark": """
-        SegmentedWidget {{
-            background: transparent;
-            border: none;
-        }}
-        SegmentedItem[pivotItem="true"] {{
-            padding: 6px 16px;
-            font-size: 14px;
-            font-weight: 400;
-            color: rgba(255, 255, 255, 0.7);
-            background: transparent;
-            border: none;
-        }}
-        SegmentedItem[pivotItem="true"]:hover {{
-            color: rgba(255, 255, 255, 0.9);
-        }}
-        SegmentedItem[pivotItem="true"][selected="true"] {{
-            color: {theme_color};
-            font-weight: bold;
-        }}
-    """,
-}
-
-
-def get_segmented_widget_qss(theme_color: str) -> tuple[str, str]:
-    """Return (light_qss, dark_qss) for SegmentedWidget."""
-    light_qss = SEGMENTED_WIDGET_STYLES["light"].format(theme_color=theme_color)
-    dark_qss = SEGMENTED_WIDGET_STYLES["dark"].format(theme_color=theme_color)
-    return light_qss, dark_qss
-
-
-def segmented_widget_paint_event(
-    widget: "SegmentedWidget", e: "QPaintEvent", original_paint_event=None
-) -> None:
-    """SegmentedWidget 的自定义 paintEvent，实现自定义外框和选中高亮（中间直角，外侧圆角）。
-
-    Args:
-        widget: SegmentedWidget 实例
-        e: QPaintEvent 事件
-        original_paint_event: 原始的 paintEvent 方法（可选）
-
-    使用方式（无需子类化）:
-        import types
-        original_paint = widget.paintEvent
-        widget.paintEvent = types.MethodType(
-            lambda w, ev: segmented_widget_paint_event(w, ev, original_paint),
-            widget
-        )
-    """
-    from qfluentwidgets import isDarkTheme, themeColor
-
-    # 先调用原始的 paintEvent（如果提供）
-    if original_paint_event is not None:
-        original_paint_event(e)
-    else:
-        QWidget.paintEvent(widget, e)
-
-    # 验证 widget 是否有必需的属性
-    if not hasattr(widget, "items") or not widget.items:
-        return
-
-    painter = QPainter(widget)
-    painter.setRenderHints(QPainter.Antialiasing)
-
-    # 1. 绘制外部全局边框 (未选中时的底层)
-    is_dark = isDarkTheme()
-    if is_dark:
-        border_color = QColor(255, 255, 255, 40)
-        bg_color = QColor(255, 255, 255, 5)
-    else:
-        border_color = QColor(0, 0, 0, 30)
-        bg_color = QColor(0, 0, 0, 3)
-
-    painter.setPen(QPen(border_color, 1))
-    painter.setBrush(bg_color)
-
-    # 整个组件的外框
-    rect_all = widget.rect().adjusted(1, 1, -1, -1)
-    painter.drawRoundedRect(rect_all, 6.0, 6.0)
-
-    # 绘制内部各项之间的竖直分割线
-    items = list(widget.items.values())
-    for i in range(len(items) - 1):
-        item_rect = items[i].geometry()
-        x = item_rect.right()
-        painter.drawLine(x, rect_all.top(), x, rect_all.bottom())
-
-    # 2. 如果没有任何选中项，结束
-    if not widget.currentItem():
-        return
-
-    # 3. 绘制带有主题色的滑动选中框
-    c = themeColor()
-    painter.setPen(QPen(c, 1.5))
-    if is_dark:
-        painter.setBrush(QColor(30, 30, 30, 255))
-    else:
-        painter.setBrush(QColor(255, 255, 255, 255))
-
-    item = widget.currentItem()
-    slidex = int(widget.slideAni.value())
-
-    rect_active = QRectF(slidex + 1, 1, item.width() - 2, widget.height() - 2)
-
-    # 为了让中间呈直角，两端呈圆角，利用 QPainterPath 绘制自定义形状
-    path = QPainterPath()
-
-    # 判断当前滑块位于哪一项，以决定哪边需要圆角
-    # 注意：在滑动动画过程中，它是在项之间平滑过渡的，简单处理只在最左和最右项到达位置时绘制对应圆角
-    # 更平滑的做法：通过 x 坐标位置来判断。这里如果在最左边界，左侧圆角；如果在最右边界，右侧圆角
-
-    is_left_edge = slidex <= widget.rect().left() + 2
-    is_right_edge = slidex + item.width() >= widget.rect().right() - 2
-
-    if is_left_edge and is_right_edge:
-        # 窗口大小可能只有一个项，四个角都是圆角
-        path.addRoundedRect(
-            rect_active,
-            6.0,
-            6.0,
-        )
-    else:
-        # 手动绘制路径
-        x, y, w, h = (
-            rect_active.x(),
-            rect_active.y(),
-            rect_active.width(),
-            rect_active.height(),
-        )
-        radius = 6.0
-
-        # 左上角
-        path.moveTo(x + (radius if is_left_edge else 0), y)
-
-        # 上边缘与右上角
-        if is_right_edge:
-            path.lineTo(x + w - radius, y)
-            path.arcTo(x + w - 2 * radius, y, 2 * radius, 2 * radius, 90, -90)
-        else:
-            path.lineTo(x + w, y)
-
-        # 右边缘与右下角
-        if is_right_edge:
-            path.lineTo(x + w, y + h - radius)
-            path.arcTo(
-                x + w - 2 * radius, y + h - 2 * radius, 2 * radius, 2 * radius, 0, -90
-            )
-        else:
-            path.lineTo(x + w, y + h)
-
-        # 下边缘与左下角
-        if is_left_edge:
-            path.lineTo(x + radius, y + h)
-            path.arcTo(x, y + h - 2 * radius, 2 * radius, 2 * radius, 270, -90)
-        else:
-            path.lineTo(x, y + h)
-
-        # 左边缘，闭合路径
-        path.lineTo(x, y + (radius if is_left_edge else 0))
-        if is_left_edge:
-            path.arcTo(x, y, 2 * radius, 2 * radius, 180, -90)
-
-    painter.drawPath(path)
 
 
 # 公告板侧边栏样式配置
