@@ -24,7 +24,6 @@ from qframelesswindow import FramelessDialog, StandardTitleBar
 from ruamel.yaml import YAML
 
 from app.base_tools import BaseSpinBox
-from app.language_manager import LanguageManager
 from module import THEME_PACK_LIST_EXAMPLE_PATH
 from module.config import cfg, theme_list
 from module.logger import log
@@ -132,9 +131,9 @@ CN_TO_EN_HARD_NAME_MAP = {v: k for k, v in THEME_PACK_HARD_NAME_MAP.items()}
 # OCR 备用名称映射表（备用名称 -> 主名称）
 # 用于处理 OCR 识别误差，备用名称在 GUI 中不显示，但权重会同步更新
 CN_OCR_ALTERNATIVES = {
-    "海边": "海·边",      # s.e.a 主题包的 OCR 备用
-    "切琢": "琢春",      # spring 主题包的 OCR 备用
-    "体险": "体检",      # check 主题包的 OCR 备用
+    "海边": "海·边",  # s.e.a 主题包的 OCR 备用
+    "切琢": "琢春",  # spring 主题包的 OCR 备用
+    "体险": "体检",  # check 主题包的 OCR 备用
 }
 
 # 主题包 key 到图片文件名的映射表（普通模式）
@@ -277,7 +276,9 @@ class ThemePackCard(QFrame):
 
     weight_changed = Signal(str, int, bool, bool)  # pack_key, weight, is_hard, is_cn
 
-    def __init__(self, pack_key, weight, is_hard=False, is_cn=False, parent=None):
+    def __init__(
+        self, pack_key: str, weight: int, is_hard=False, is_cn=False, parent=None
+    ):
         super().__init__(parent)
         self.pack_key = str(pack_key)  # 确保是字符串，与 Signal 声明一致
         self.is_hard = is_hard
@@ -293,9 +294,6 @@ class ThemePackCard(QFrame):
         # 设置初始权重值
         self.weight_spinbox.spin_box.setValue(self.weight)
 
-        # 注册到语言管理器
-        LanguageManager().register_component(self)
-
     def __init_widget(self):
         self.main_layout = QVBoxLayout(self)
         self.main_layout.setContentsMargins(10, 10, 10, 10)
@@ -303,7 +301,9 @@ class ThemePackCard(QFrame):
 
         # 图片标签 - 根据原始图片分辨率 170x330 按比例缩放
         self.image_label = QLabel(self)
-        self.image_label.setFixedSize(140, 272)  # 保持 170:330 原始比例 (140*330/170≈272)
+        self.image_label.setFixedSize(
+            140, 272
+        )  # 保持 170:330 原始比例 (140*330/170≈272)
         self.image_label.setScaledContents(True)
         self.image_label.setAlignment(Qt.AlignCenter)
 
@@ -315,10 +315,14 @@ class ThemePackCard(QFrame):
                 self.image_label.setPixmap(pixmap)
             else:
                 self.image_label.setText(self.tr("无图片"))
-                self.image_label.setStyleSheet("background-color: rgba(128, 128, 128, 0.3); border-radius: 5px;")
+                self.image_label.setStyleSheet(
+                    "background-color: rgba(128, 128, 128, 0.3); border-radius: 5px;"
+                )
         else:
             self.image_label.setText(self.tr("无图片"))
-            self.image_label.setStyleSheet("background-color: rgba(128, 128, 128, 0.3); border-radius: 5px;")
+            self.image_label.setStyleSheet(
+                "background-color: rgba(128, 128, 128, 0.3); border-radius: 5px;"
+            )
 
         # 主题包名称标签
         self.name_label = TitleLabel()
@@ -433,19 +437,12 @@ class ThemePackCard(QFrame):
         """更新权重显示值"""
         self.weight_spinbox.spin_box.setValue(int(weight))
 
-    def retranslateUi(self):
-        """更新界面翻译"""
-        self.name_label.setText(str(self.pack_key))
-        self.weight_label.setText(self.tr("权重:"))
-        # 更新无图片文本（如果有）
-        no_image_text = self.tr("无图片")
-        if self.image_label.text() == no_image_text or self.image_label.text() == self.tr("无图片"):
-            self.image_label.setText(no_image_text)
-
     def cleanup(self):
         """清理资源，断开信号连接"""
         try:
-            self.weight_spinbox.spin_box.valueChanged.disconnect(self._on_weight_changed)
+            self.weight_spinbox.spin_box.valueChanged.disconnect(
+                self._on_weight_changed
+            )
         except (RuntimeError, TypeError):
             pass  # 信号可能已经被断开或对象已被销毁
 
@@ -471,8 +468,8 @@ class ThemePackSettingDialog(FramelessDialog):
         self.lang_code = cfg.get_value("language_in_program", "zh_cn")
         self.is_cn = self.lang_code == "zh_cn"  # 是否加载中文配置
 
-        self.normal_cards = {}
-        self.hard_cards = {}
+        self.normal_cards: dict[str, ThemePackCard] = {}
+        self.hard_cards: dict[str, ThemePackCard] = {}
 
         # 标记是否有未保存的修改
         self._has_unsaved_changes = False
@@ -487,8 +484,6 @@ class ThemePackSettingDialog(FramelessDialog):
         self.__init_layout()
         self.load_theme_packs()
         self._apply_styles()
-
-        LanguageManager().register_component(self)
 
     def __init_widget(self):
         # 主滚动区域
@@ -510,8 +505,10 @@ class ThemePackSettingDialog(FramelessDialog):
 
         # 说明标签
         self.info_label = BodyLabel(
-            self.tr("权重说明: 正数=优先选择(值越大优先级越高), 负数=避免选择, 0=无特殊偏好"),
-            self
+            self.tr(
+                "权重说明: 正数=优先选择(值越大优先级越高), 负数=避免选择, 0=无特殊偏好\n保存时会自动同步其他语言配置权重 (如有)"
+            ),
+            self,
         )
         self.info_label.setAlignment(Qt.AlignCenter)
 
@@ -536,12 +533,15 @@ class ThemePackSettingDialog(FramelessDialog):
         self.button_layout.setContentsMargins(0, 10, 0, 10)
 
         self.reset_button = PushButton(self.tr("重置为默认"), self)
+        self.reset_button.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         self.reset_button.clicked.connect(self.reset_to_default)
 
         self.save_button = PrimaryPushButton(self.tr("保存并关闭"), self)
+        self.save_button.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         self.save_button.clicked.connect(self.save_and_close)
 
         self.close_button = PushButton(self.tr("关闭"), self)
+        self.close_button.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         self.close_button.clicked.connect(self.close)
 
         self.button_layout.addStretch()
@@ -588,7 +588,7 @@ class ThemePackSettingDialog(FramelessDialog):
                 background-color: {bg_color};
             }}
             #button_widget {{
-                background-color: transparent;
+                background-color: {"#2B2B2B" if isDarkTheme() else "#f3f3f3"};
             }}
             TitleLabel {{
                 color: {text_color};
@@ -597,6 +597,7 @@ class ThemePackSettingDialog(FramelessDialog):
             SubtitleLabel {{
                 color: {text_color};
                 background-color: transparent;
+                border-bottom: 2px solid {text_color}; padding-bottom: 4px;
             }}
             BodyLabel {{
                 color: {text_color};
@@ -609,21 +610,21 @@ class ThemePackSettingDialog(FramelessDialog):
             f"QLabel {{ background: transparent; font-size: 13px; padding: 0 4px; color: {text_color}; }}"
         )
         for btn in [self.titleBar.minBtn, self.titleBar.maxBtn, self.titleBar.closeBtn]:
-            btn.setNormalColor(Qt.GlobalColor.white if isDarkTheme() else Qt.GlobalColor.black)
-            btn.setHoverColor(Qt.GlobalColor.white if isDarkTheme() else Qt.GlobalColor.black)
-            btn.setPressedColor(Qt.GlobalColor.white if isDarkTheme() else Qt.GlobalColor.black)
+            btn.setNormalColor(
+                Qt.GlobalColor.white if isDarkTheme() else Qt.GlobalColor.black
+            )
+            btn.setHoverColor(
+                Qt.GlobalColor.white if isDarkTheme() else Qt.GlobalColor.black
+            )
+            btn.setPressedColor(
+                Qt.GlobalColor.white if isDarkTheme() else Qt.GlobalColor.black
+            )
         self.titleBar.closeBtn.setHoverColor(Qt.GlobalColor.white)
 
         # 直接设置各内容区域的背景色
         self.scroll_widget.setStyleSheet(f"background-color: {bg_color};")
         self.normal_grid_widget.setStyleSheet(f"background-color: {bg_color};")
         self.hard_grid_widget.setStyleSheet(f"background-color: {bg_color};")
-
-        # 通知所有卡片更新样式
-        for card in self.normal_cards.values():
-            card._apply_styles()
-        for card in self.hard_cards.values():
-            card._apply_styles()
 
     def load_theme_packs(self):
         """加载主题包配置并创建卡片，根据语言参数加载对应配置"""
@@ -803,17 +804,6 @@ class ThemePackSettingDialog(FramelessDialog):
             # 清理卡片内部资源
             card.cleanup()
 
-        # 注销所有普通模式卡片
-        for card in self.normal_cards.values():
-            LanguageManager().unregister_component(card)
-
-        # 注销所有困难模式卡片
-        for card in self.hard_cards.values():
-            LanguageManager().unregister_component(card)
-
-        # 注销对话框自身
-        LanguageManager().unregister_component(self)
-
         # 清空卡片字典，帮助垃圾回收
         self.normal_cards.clear()
         self.hard_cards.clear()
@@ -823,20 +813,3 @@ class ThemePackSettingDialog(FramelessDialog):
 
         # 调用父类的 closeEvent
         super().closeEvent(event)
-
-    def retranslateUi(self):
-        """更新界面翻译"""
-        self.setWindowTitle(self.tr("主题包权重配置"))
-        self.title_label.setText(self.tr("主题包权重配置"))
-        self.info_label.setText(self.tr("权重说明: 正数=优先选择(值越大优先级越高), 负数=避免选择, 0=无特殊偏好"))
-        self.normal_group_label.setText(self.tr("普通模式主题包"))
-        self.hard_group_label.setText(self.tr("困难模式主题包"))
-        self.reset_button.setText(self.tr("重置为默认"))
-        self.save_button.setText(self.tr("保存并关闭"))
-        self.close_button.setText(self.tr("关闭"))
-
-        # 通知所有卡片更新翻译
-        for card in self.normal_cards.values():
-            card.retranslateUi()
-        for card in self.hard_cards.values():
-            card.retranslateUi()
