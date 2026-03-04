@@ -6,7 +6,21 @@ import threading
 # 解决 Windows DPI 缩放问题
 from ctypes import windll
 
-windll.shcore.SetProcessDpiAwareness(2)
+try:
+    # 1. 尝试 Win10 1703+ 的最强方案 (Per Monitor V2)
+    # -4 对应 DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2
+    windll.user32.SetProcessDpiAwarenessContext(-4)
+except (AttributeError, OSError):
+    try:
+        # 2. 尝试 Win8.1+ 的方案 (Per Monitor)
+        # 2 对应 PROCESS_PER_MONITOR_DPI_AWARE
+        windll.shcore.SetProcessDpiAwareness(2)
+    except (AttributeError, OSError):
+        try:
+            # 3. 最后的兜底方案 (Win7/Vista)
+            windll.user32.SetProcessDPIAware()
+        except Exception as e:
+            pass
 
 from app.language_manager import LanguageManager
 from app.my_app import MainWindow
