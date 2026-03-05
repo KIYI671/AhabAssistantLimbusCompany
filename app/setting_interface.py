@@ -1,7 +1,23 @@
-from PySide6.QtCore import QT_TRANSLATE_NOOP, Qt, QTime, QUrl
+from PySide6.QtCore import QT_TRANSLATE_NOOP, Qt, QTime, QUrl, QPoint
 from PySide6.QtGui import QDesktopServices
-from PySide6.QtWidgets import QFileDialog, QWidget
-from qfluentwidgets import ExpandLayout, InfoBarPosition, ScrollArea, Theme, setTheme
+from PySide6.QtWidgets import (
+    QFrame,
+    QHBoxLayout,
+    QVBoxLayout,
+    QFileDialog,
+    QPushButton,
+    QWidget,
+    QSizePolicy,
+)
+from qfluentwidgets import (
+    ExpandLayout,
+    InfoBarPosition,
+    ScrollArea,
+    Theme,
+    isDarkTheme,
+    qconfig,
+    setTheme,
+)
 from qfluentwidgets import FluentIcon as FIF
 
 from app import win_input_type_options
@@ -30,17 +46,54 @@ class SettingInterface(ScrollArea):
         self.__init_widget()
         self.__init_card()
         self.__initLayout()
+        self.__init_nav()
         self.set_style_sheet()
         self.__connect_signal()
-        self.setWidget(self.scroll_widget)
+        qconfig.themeChanged.connect(self.set_style_sheet)
         self.setObjectName("SettingInterface")
 
         LanguageManager().register_component(self)
 
     def __init_widget(self):
+        # main container
+        self.main_widget = QWidget()
+        self.main_layout = QHBoxLayout(self.main_widget)
+        self.main_layout.setContentsMargins(0, 0, 0, 0)
+        self.main_layout.setSpacing(0)
+
+        # left navigation frame
+        self.nav_frame = QFrame()
+        self.nav_frame.setObjectName("navFrame")
+        self.nav_frame.setFixedWidth(200)
+        self.nav_frame.setMinimumWidth(180)
+        self.nav_layout = QVBoxLayout(self.nav_frame)
+        self.nav_layout.setContentsMargins(10, 10, 10, 10)
+        self.nav_layout.setSpacing(4)
+
+        # right scroll area with existing content
+        self.content_scroll = ScrollArea(self)
+        self.content_scroll.setObjectName("contentScroll")
+        self.content_scroll.setWidgetResizable(True)
+        self.content_scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self.content_scroll.enableTransparentBackground()
+
         self.scroll_widget = QWidget()
         self.scroll_widget.setObjectName("scrollWidget")
         self.expand_layout = ExpandLayout(self.scroll_widget)
+        self.content_scroll.setWidget(self.scroll_widget)
+
+        # assemble
+        self.main_layout.addWidget(self.nav_frame)
+        self.main_layout.addWidget(self.content_scroll)
+        self.main_layout.setStretch(0, 0)
+        self.main_layout.setStretch(1, 1)
+
+        # give nav a fixed width and prevent stretch
+        self.nav_frame.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Expanding)
+        self.nav_frame.setMinimumWidth(160)
+        self.content_scroll.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+
+        self.setWidget(self.main_widget)
         self.setWidgetResizable(True)
 
     def __init_card(self):
@@ -341,7 +394,8 @@ class SettingInterface(ScrollArea):
         )
 
         self.theme_pack_group = BaseSettingCardGroup(
-            QT_TRANSLATE_NOOP("BaseSettingCardGroup", "镜牢主题包设置"), self.scroll_widget
+            QT_TRANSLATE_NOOP("BaseSettingCardGroup", "镜牢主题包设置"),
+            self.scroll_widget,
         )
         self.theme_pack_card = BasePrimaryPushSettingCard(
             QT_TRANSLATE_NOOP("BasePrimaryPushSettingCard", "配置"),
@@ -421,16 +475,140 @@ class SettingInterface(ScrollArea):
         self.expand_layout.addWidget(self.about_group)
         self.expand_layout.addWidget(self.experimental_group)
 
-    def set_style_sheet(self):
+    def __init_nav(self):
+        # ordered navigation items: (key, title, widget)
+        self.nav_items = [
+            ("game", QT_TRANSLATE_NOOP("Nav", "游戏设置"), self.game_setting_group),
+            (
+                "theme_pack",
+                QT_TRANSLATE_NOOP("Nav", "镜牢主题包"),
+                self.theme_pack_group,
+            ),
+            (
+                "simulator",
+                QT_TRANSLATE_NOOP("Nav", "模拟器设置"),
+                self.simulator_setting_group,
+            ),
+            ("game_path", QT_TRANSLATE_NOOP("Nav", "启动游戏"), self.game_path_group),
+            ("autodaily", QT_TRANSLATE_NOOP("Nav", "定时执行"), self.autodaily_group),
+            ("personal", QT_TRANSLATE_NOOP("Nav", "个性化"), self.personal_group),
+            ("update", QT_TRANSLATE_NOOP("Nav", "更新设置"), self.update_group),
+            ("logs", QT_TRANSLATE_NOOP("Nav", "日志设置"), self.logs_group),
+            ("about", QT_TRANSLATE_NOOP("Nav", "关于"), self.about_group),
+            (
+                "experimental",
+                QT_TRANSLATE_NOOP("Nav", "实验性"),
+                self.experimental_group,
+            ),
+        ]
+
+        self.nav_buttons: dict[str, QPushButton] = {}
+        self._current_nav: str | None = None
+
+        for key, title, _widget in self.nav_items:
+            btn = QPushButton(title)
+            btn.setObjectName(f"navButton_{key}")
+            btn.setCheckable(True)
+            btn.setFlat(True)
+            btn.setMinimumHeight(32)
+            btn.clicked.connect(self.__make_nav_click_handler(key))
+            self.nav_layout.addWidget(btn)
+            self.nav_buttons[key] = btn
+
+        self.nav_layout.addStretch(1)
+        if self.nav_items:
+            self.__set_active_nav(self.nav_items[0][0], scroll_to=False)
+
+        # connect scroll sync
+        self.content_scroll.verticalScrollBar().valueChanged.connect(
+            self.__on_content_scrolled
+        )
+
+    def __make_nav_click_handler(self, key: str):
+        def handler():
+            self.__set_active_nav(key, scroll_to=True)
+
+        return handler
+
+    def __set_active_nav(self, key: str, scroll_to: bool = True):
+        if key not in self.nav_buttons:
+            return
+        self._current_nav = key
+        for k, btn in self.nav_buttons.items():
+            btn.setChecked(k == key)
+        if scroll_to:
+            for k, _title, widget in self.nav_items:
+                if k == key:
+                    target_y = widget.mapTo(self.scroll_widget, QPoint(0, 0)).y()
+                    bar = self.content_scroll.verticalScrollBar()
+                    bar.setValue(max(0, target_y - 8))
+                    break
+
+    def __on_content_scrolled(self, _value: int):
+        if not self.nav_items:
+            return
+        value = self.content_scroll.verticalScrollBar().value()
+        closest_key = None
+        closest_delta = None
+        for key, _title, widget in self.nav_items:
+            y = widget.mapTo(self.scroll_widget, QPoint(0, 0)).y()
+            delta = abs(y - value)
+            if closest_delta is None or delta < closest_delta:
+                closest_delta = delta
+                closest_key = key
+        if closest_key and closest_key != self._current_nav:
+            self.__set_active_nav(closest_key, scroll_to=False)
+
+    def set_style_sheet(self, *_):
+        if isDarkTheme():
+            bg = "rgb(28, 28, 28)"
+            border_color = "rgba(255, 255, 255, 0.08)"
+            text_normal = "rgba(255, 255, 255, 0.7)"
+            text_hover = "rgba(255, 255, 255, 0.9)"
+            text_checked = "rgb(255, 255, 255)"
+            hover_bg = "rgba(255, 255, 255, 0.08)"
+            checked_bg = "rgba(255, 255, 255, 0.12)"
+        else:
+            bg = "rgb(255, 255, 255)"
+            border_color = "rgba(0, 0, 0, 0.08)"
+            text_normal = "rgba(0, 0, 0, 0.6)"
+            text_hover = "rgba(0, 0, 0, 0.85)"
+            text_checked = "rgb(0, 0, 0)"
+            hover_bg = "rgba(0, 0, 0, 0.06)"
+            checked_bg = "rgba(0, 0, 0, 0.09)"
+
         self.setStyleSheet(
-            """
-                SettingInterface, #scrollWidget {
-                    background-color: transparent;
-                }
-                QScrollArea {
+            f"""
+                SettingInterface, #scrollWidget, QWidget {{
+                    background-color: {bg};
+                }}
+                QScrollArea, QScrollArea > QWidget, QScrollArea > QWidget > QWidget {{
+                    background-color: {bg};
+                    border: none;
+                }}
+                #navFrame {{
+                    background-color: {bg};
+                    border: 1px solid {border_color};
+                    border-radius: 8px;
+                }}
+                #navFrame QPushButton {{
+                    text-align: left;
+                    padding: 8px 12px;
+                    border-radius: 6px;
+                    color: {text_normal};
+                    margin: 0px;
                     background-color: transparent;
                     border: none;
-                }
+                }}
+                #navFrame QPushButton:hover {{
+                    background-color: {hover_bg};
+                    color: {text_hover};
+                }}
+                #navFrame QPushButton:checked {{
+                    background-color: {checked_bg};
+                    color: {text_checked};
+                    font-weight: bold;
+                }}
             """
         )
 
