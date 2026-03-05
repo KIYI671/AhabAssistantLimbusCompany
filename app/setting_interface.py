@@ -22,6 +22,7 @@ from qfluentwidgets import (
 from qfluentwidgets import FluentIcon as FIF
 
 from app import win_input_type_options
+from app.widget.setting_nav import SettingNav
 from app.base_combination import (
     BasePrimaryPushSettingCard,
     BasePushSettingCard,
@@ -65,13 +66,7 @@ class SettingInterface(QWidget):
         self.main_layout.setSpacing(0)
 
         # left navigation frame
-        self.nav_frame = QFrame()
-        self.nav_frame.setObjectName("navFrame")
-        self.nav_frame.setFixedWidth(200)
-        self.nav_frame.setMinimumWidth(180)
-        self.nav_layout = QVBoxLayout(self.nav_frame)
-        self.nav_layout.setContentsMargins(10, 10, 10, 10)
-        self.nav_layout.setSpacing(4)
+        self.setting_nav = SettingNav(self)
 
         # right scroll area with existing content
         self.content_scroll = ScrollArea(self)
@@ -86,14 +81,13 @@ class SettingInterface(QWidget):
         self.content_scroll.setWidget(self.scroll_widget)
 
         # assemble
-        self.main_layout.addWidget(self.nav_frame)
+        self.main_layout.addWidget(self.setting_nav)
         self.main_layout.addWidget(self.content_scroll)
         self.main_layout.setStretch(0, 0)
         self.main_layout.setStretch(1, 1)
 
         # give nav a fixed width and prevent stretch
-        self.nav_frame.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Expanding)
-        self.nav_frame.setMinimumWidth(160)
+        self.setting_nav.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Expanding)
         self.content_scroll.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
 
     def __init_card(self):
@@ -478,7 +472,7 @@ class SettingInterface(QWidget):
     def __init_nav(self):
         """初始化左侧导航栏组件"""
         # ordered navigation items: (key, title, widget)
-        self.nav_items = [
+        nav_items = [
             ("game", QT_TRANSLATE_NOOP("Nav", "游戏设置"), self.game_setting_group),
             (
                 "theme_pack",
@@ -503,73 +497,23 @@ class SettingInterface(QWidget):
             ),
         ]
 
-        self.nav_buttons: dict[str, QPushButton] = {}
-        self._current_nav: str | None = None
-
-        for key, title, _widget in self.nav_items:
-            btn = QPushButton(title)
-            btn.setObjectName(f"navButton_{key}")
-            btn.setCheckable(True)
-            btn.setFlat(True)
-            btn.setMinimumHeight(32)
-            btn.clicked.connect(self.__make_nav_click_handler(key))
-            self.nav_layout.addWidget(btn)
-            self.nav_buttons[key] = btn
-
-        self.nav_layout.addStretch(1)
-        if self.nav_items:
-            self.__set_active_nav(self.nav_items[0][0], scroll_to=False)
+        self.setting_nav.add_nav_items(nav_items)
 
         # connect scroll sync
+        self.setting_nav.navClicked.connect(self.__on_nav_clicked)
         self.content_scroll.verticalScrollBar().valueChanged.connect(
             self.__on_content_scrolled
         )
 
-    def __make_nav_click_handler(self, key: str):
-        """生成导航栏按钮的点击事件处理函数
-        当点击左侧导航栏的某个按钮时，滚动右侧内容区域到对应的卡片组
-        """
+    def __on_nav_clicked(self, key: str, widget):
+        """导航栏点击，滚动到指定内容"""
+        target_y = widget.mapTo(self.scroll_widget, QPoint(0, 0)).y()
+        bar = self.content_scroll.verticalScrollBar()
+        bar.setValue(max(0, target_y - 8))
 
-        def handler():
-            self.__set_active_nav(key, scroll_to=True)
-
-        return handler
-
-    def __set_active_nav(self, key: str, scroll_to: bool = True):
-        """设置当前激活的导航栏项目
-        :param key: 导航栏项目的标识符
-        :param scroll_to: 是否滚动右侧内容区域至该部分
-        """
-        if key not in self.nav_buttons:
-            return
-        self._current_nav = key
-        for k, btn in self.nav_buttons.items():
-            btn.setChecked(k == key)
-        if scroll_to:
-            for k, _title, widget in self.nav_items:
-                if k == key:
-                    target_y = widget.mapTo(self.scroll_widget, QPoint(0, 0)).y()
-                    bar = self.content_scroll.verticalScrollBar()
-                    bar.setValue(max(0, target_y - 8))
-                    break
-
-    def __on_content_scrolled(self, _value: int):
-        """处理右侧内容区域的滚动事件
-        根据当前滚动条的位置，计算哪个卡片组最靠近顶部，并自动高亮左侧导航栏的对应项目
-        """
-        if not self.nav_items:
-            return
-        value = self.content_scroll.verticalScrollBar().value()
-        closest_key = None
-        closest_delta = None
-        for key, _title, widget in self.nav_items:
-            y = widget.mapTo(self.scroll_widget, QPoint(0, 0)).y()
-            delta = abs(y - value)
-            if closest_delta is None or delta < closest_delta:
-                closest_delta = delta
-                closest_key = key
-        if closest_key and closest_key != self._current_nav:
-            self.__set_active_nav(closest_key, scroll_to=False)
+    def __on_content_scrolled(self, value: int):
+        """内容区域滚动，同步高亮导航栏"""
+        self.setting_nav.process_content_scrolled(value, self.scroll_widget)
 
     def _apply_theme_style(self, *_):
         light_qss, dark_qss = get_setting_interface_qss()
@@ -723,12 +667,7 @@ class SettingInterface(QWidget):
         dialog.exec()
 
     def retranslateUi(self):
-        for key, title_key, _widget in self.nav_items:
-            # We recreate the translation for the button from QT_TRANSLATE_NOOP
-            if key in self.nav_buttons:
-                # Use QCoreApplication.translate to correctly find the string in the "Nav" context
-                translated_title = QCoreApplication.translate("Nav", title_key)
-                self.nav_buttons[key].setText(translated_title)
+        self.setting_nav.retranslateUi()
 
         self.game_setting_group.retranslateUi()
         self.game_setting_card.retranslateUi()
