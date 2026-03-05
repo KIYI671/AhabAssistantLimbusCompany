@@ -386,3 +386,77 @@ ANNOUNCEMENT_FOOTER_STYLES = {
 def get_announcement_footer_qss() -> tuple[str, str]:
     """返回 (light_qss, dark_qss) 用于公告板底部区域"""
     return ANNOUNCEMENT_FOOTER_STYLES["light"], ANNOUNCEMENT_FOOTER_STYLES["dark"]
+
+
+# 设置界面样式配置
+SETTING_INTERFACE_STYLES = {
+    "dark": """
+        SettingInterface, #scrollWidget, QWidget {
+            background-color: rgb(28, 28, 28);
+        }
+        QScrollArea, QScrollArea > QWidget, QScrollArea > QWidget > QWidget {
+            background-color: rgb(28, 28, 28);
+            border: none;
+        }
+        #navFrame {
+            background-color: rgb(28, 28, 28);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 8px;
+        }
+        #navFrame QPushButton {
+            text-align: left;
+            padding: 8px 12px;
+            border-radius: 6px;
+            color: rgba(255, 255, 255, 0.7);
+            margin: 0px;
+            background-color: transparent;
+            border: none;
+        }
+        #navFrame QPushButton:hover {
+            background-color: rgba(255, 255, 255, 0.08);
+            color: rgba(255, 255, 255, 0.9);
+        }
+        #navFrame QPushButton:checked {
+            background-color: rgba(255, 255, 255, 0.12);
+            color: rgb(255, 255, 255);
+            font-weight: bold;
+        }
+    """,
+    "light": """
+        SettingInterface, #scrollWidget, QWidget {
+            background-color: rgb(255, 255, 255);
+        }
+        QScrollArea, QScrollArea > QWidget, QScrollArea > QWidget > QWidget {
+            background-color: rgb(255, 255, 255);
+            border: none;
+        }
+        #navFrame {
+            background-color: rgb(255, 255, 255);
+            border: 1px solid rgba(0, 0, 0, 0.08);
+            border-radius: 8px;
+        }
+        #navFrame QPushButton {
+            text-align: left;
+            padding: 8px 12px;
+            border-radius: 6px;
+            color: rgba(0, 0, 0, 0.6);
+            margin: 0px;
+            background-color: transparent;
+            border: none;
+        }
+        #navFrame QPushButton:hover {
+            background-color: rgba(0, 0, 0, 0.06);
+            color: rgba(0, 0, 0, 0.85);
+        }
+        #navFrame QPushButton:checked {
+            background-color: rgba(0, 0, 0, 0.09);
+            color: rgb(0, 0, 0);
+            font-weight: bold;
+        }
+    """,
+}
+
+
+def get_setting_interface_qss() -> tuple[str, str]:
+    """返回 (light_qss, dark_qss) 用于设置界面"""
+    return SETTING_INTERFACE_STYLES["light"], SETTING_INTERFACE_STYLES["dark"]

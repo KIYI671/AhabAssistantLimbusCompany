@@ -36,6 +36,7 @@ from app.base_combination import (
 from app.card.messagebox_custom import BaseInfoBar
 from app.language_manager import SUPPORTED_LANG_NAME, LanguageManager
 from app.theme_pack_setting_interface import ThemePackSettingDialog
+from app.common.ui_config import get_setting_interface_qss
 from module.config import cfg
 from utils.schedule_helper import ScheduleHelper
 
@@ -47,9 +48,11 @@ class SettingInterface(ScrollArea):
         self.__init_card()
         self.__initLayout()
         self.__init_nav()
-        self.set_style_sheet()
+
+        self._apply_theme_style()
+        qconfig.themeChanged.connect(self._apply_theme_style)
+
         self.__connect_signal()
-        qconfig.themeChanged.connect(self.set_style_sheet)
         self.setObjectName("SettingInterface")
 
         LanguageManager().register_component(self)
@@ -559,58 +562,9 @@ class SettingInterface(ScrollArea):
         if closest_key and closest_key != self._current_nav:
             self.__set_active_nav(closest_key, scroll_to=False)
 
-    def set_style_sheet(self, *_):
-        if isDarkTheme():
-            bg = "rgb(28, 28, 28)"
-            border_color = "rgba(255, 255, 255, 0.08)"
-            text_normal = "rgba(255, 255, 255, 0.7)"
-            text_hover = "rgba(255, 255, 255, 0.9)"
-            text_checked = "rgb(255, 255, 255)"
-            hover_bg = "rgba(255, 255, 255, 0.08)"
-            checked_bg = "rgba(255, 255, 255, 0.12)"
-        else:
-            bg = "rgb(255, 255, 255)"
-            border_color = "rgba(0, 0, 0, 0.08)"
-            text_normal = "rgba(0, 0, 0, 0.6)"
-            text_hover = "rgba(0, 0, 0, 0.85)"
-            text_checked = "rgb(0, 0, 0)"
-            hover_bg = "rgba(0, 0, 0, 0.06)"
-            checked_bg = "rgba(0, 0, 0, 0.09)"
-
-        self.setStyleSheet(
-            f"""
-                SettingInterface, #scrollWidget, QWidget {{
-                    background-color: {bg};
-                }}
-                QScrollArea, QScrollArea > QWidget, QScrollArea > QWidget > QWidget {{
-                    background-color: {bg};
-                    border: none;
-                }}
-                #navFrame {{
-                    background-color: {bg};
-                    border: 1px solid {border_color};
-                    border-radius: 8px;
-                }}
-                #navFrame QPushButton {{
-                    text-align: left;
-                    padding: 8px 12px;
-                    border-radius: 6px;
-                    color: {text_normal};
-                    margin: 0px;
-                    background-color: transparent;
-                    border: none;
-                }}
-                #navFrame QPushButton:hover {{
-                    background-color: {hover_bg};
-                    color: {text_hover};
-                }}
-                #navFrame QPushButton:checked {{
-                    background-color: {checked_bg};
-                    color: {text_checked};
-                    font-weight: bold;
-                }}
-            """
-        )
+    def _apply_theme_style(self, *_):
+        light_qss, dark_qss = get_setting_interface_qss()
+        self.setStyleSheet(dark_qss if isDarkTheme() else light_qss)
 
     def __connect_signal(self):
         self.game_path_card.clicked.connect(self.__onGamePathCardClicked)
