@@ -326,6 +326,17 @@ class MainWindow(FramelessWindow):
                             exit_type = 5
                         elif exit_task[0]:
                             exit_type = 4
+                        else:
+                            exit_type = 0
+                        autodaily_task = cfg.get_value(argv[index + 1] + "_task")
+                        if autodaily_task[0]:
+                            self.farming_interface.interface_left.daily_task.box.set_check_true()
+                        if autodaily_task[1]:
+                            self.farming_interface.interface_left.get_reward.box.set_check_true()
+                        if autodaily_task[2]:
+                            self.farming_interface.interface_left.buy_enkephalin.box.set_check_true()
+                        if autodaily_task[3]:
+                            self.farming_interface.interface_left.mirror.box.set_check_true()
                     else:
                         exit_type = int(argv[index + 1])
                         if exit_type < 0 or exit_type > 6:
