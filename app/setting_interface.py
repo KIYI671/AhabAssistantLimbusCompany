@@ -1,4 +1,4 @@
-from PySide6.QtCore import QT_TRANSLATE_NOOP, Qt, QTime, QUrl, QPoint
+from PySide6.QtCore import QT_TRANSLATE_NOOP, Qt, QTime, QUrl, QPoint, QCoreApplication
 from PySide6.QtGui import QDesktopServices
 from PySide6.QtWidgets import (
     QFrame,
@@ -726,30 +726,8 @@ class SettingInterface(QWidget):
         for key, title_key, _widget in self.nav_items:
             # We recreate the translation for the button from QT_TRANSLATE_NOOP
             if key in self.nav_buttons:
-                # Need to use tr() to get the translated string
-                translated_title = self.tr(title_key)
-                # Ensure the original untranslated 'title_key' is picked up by tr
-                if title_key == QT_TRANSLATE_NOOP("Nav", "游戏设置"):
-                    translated_title = self.tr("Game Settings")
-                elif title_key == QT_TRANSLATE_NOOP("Nav", "镜牢主题包"):
-                    translated_title = self.tr("Theme Pack")
-                elif title_key == QT_TRANSLATE_NOOP("Nav", "模拟器设置"):
-                    translated_title = self.tr("Emulator Settings")
-                elif title_key == QT_TRANSLATE_NOOP("Nav", "启动游戏"):
-                    translated_title = self.tr("Start Game")
-                elif title_key == QT_TRANSLATE_NOOP("Nav", "定时执行"):
-                    translated_title = self.tr("Scheduled Tasks")
-                elif title_key == QT_TRANSLATE_NOOP("Nav", "个性化"):
-                    translated_title = self.tr("Personalization")
-                elif title_key == QT_TRANSLATE_NOOP("Nav", "更新设置"):
-                    translated_title = self.tr("Update Settings")
-                elif title_key == QT_TRANSLATE_NOOP("Nav", "日志设置"):
-                    translated_title = self.tr("Log Settings")
-                elif title_key == QT_TRANSLATE_NOOP("Nav", "关于"):
-                    translated_title = self.tr("About")
-                elif title_key == QT_TRANSLATE_NOOP("Nav", "实验性"):
-                    translated_title = self.tr("Experimental")
-
+                # Use QCoreApplication.translate to correctly find the string in the "Nav" context
+                translated_title = QCoreApplication.translate("Nav", title_key)
                 self.nav_buttons[key].setText(translated_title)
 
         self.game_setting_group.retranslateUi()
