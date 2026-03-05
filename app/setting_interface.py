@@ -17,6 +17,7 @@ from qfluentwidgets import (
     isDarkTheme,
     qconfig,
     setTheme,
+    setCustomStyleSheet,
 )
 from qfluentwidgets import FluentIcon as FIF
 
@@ -41,7 +42,7 @@ from module.config import cfg
 from utils.schedule_helper import ScheduleHelper
 
 
-class SettingInterface(ScrollArea):
+class SettingInterface(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent=parent)
         self.__init_widget()
@@ -59,8 +60,7 @@ class SettingInterface(ScrollArea):
 
     def __init_widget(self):
         # main container
-        self.main_widget = QWidget()
-        self.main_layout = QHBoxLayout(self.main_widget)
+        self.main_layout = QHBoxLayout(self)
         self.main_layout.setContentsMargins(0, 0, 0, 0)
         self.main_layout.setSpacing(0)
 
@@ -95,9 +95,6 @@ class SettingInterface(ScrollArea):
         self.nav_frame.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Expanding)
         self.nav_frame.setMinimumWidth(160)
         self.content_scroll.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
-
-        self.setWidget(self.main_widget)
-        self.setWidgetResizable(True)
 
     def __init_card(self):
         self.game_setting_group = BaseSettingCardGroup(
@@ -479,6 +476,7 @@ class SettingInterface(ScrollArea):
         self.expand_layout.addWidget(self.experimental_group)
 
     def __init_nav(self):
+        """初始化左侧导航栏组件"""
         # ordered navigation items: (key, title, widget)
         self.nav_items = [
             ("game", QT_TRANSLATE_NOOP("Nav", "游戏设置"), self.game_setting_group),
@@ -528,12 +526,20 @@ class SettingInterface(ScrollArea):
         )
 
     def __make_nav_click_handler(self, key: str):
+        """生成导航栏按钮的点击事件处理函数
+        当点击左侧导航栏的某个按钮时，滚动右侧内容区域到对应的卡片组
+        """
+
         def handler():
             self.__set_active_nav(key, scroll_to=True)
 
         return handler
 
     def __set_active_nav(self, key: str, scroll_to: bool = True):
+        """设置当前激活的导航栏项目
+        :param key: 导航栏项目的标识符
+        :param scroll_to: 是否滚动右侧内容区域至该部分
+        """
         if key not in self.nav_buttons:
             return
         self._current_nav = key
@@ -548,6 +554,9 @@ class SettingInterface(ScrollArea):
                     break
 
     def __on_content_scrolled(self, _value: int):
+        """处理右侧内容区域的滚动事件
+        根据当前滚动条的位置，计算哪个卡片组最靠近顶部，并自动高亮左侧导航栏的对应项目
+        """
         if not self.nav_items:
             return
         value = self.content_scroll.verticalScrollBar().value()
@@ -714,6 +723,35 @@ class SettingInterface(ScrollArea):
         dialog.exec()
 
     def retranslateUi(self):
+        for key, title_key, _widget in self.nav_items:
+            # We recreate the translation for the button from QT_TRANSLATE_NOOP
+            if key in self.nav_buttons:
+                # Need to use tr() to get the translated string
+                translated_title = self.tr(title_key)
+                # Ensure the original untranslated 'title_key' is picked up by tr
+                if title_key == QT_TRANSLATE_NOOP("Nav", "游戏设置"):
+                    translated_title = self.tr("Game Settings")
+                elif title_key == QT_TRANSLATE_NOOP("Nav", "镜牢主题包"):
+                    translated_title = self.tr("Theme Pack")
+                elif title_key == QT_TRANSLATE_NOOP("Nav", "模拟器设置"):
+                    translated_title = self.tr("Emulator Settings")
+                elif title_key == QT_TRANSLATE_NOOP("Nav", "启动游戏"):
+                    translated_title = self.tr("Start Game")
+                elif title_key == QT_TRANSLATE_NOOP("Nav", "定时执行"):
+                    translated_title = self.tr("Scheduled Tasks")
+                elif title_key == QT_TRANSLATE_NOOP("Nav", "个性化"):
+                    translated_title = self.tr("Personalization")
+                elif title_key == QT_TRANSLATE_NOOP("Nav", "更新设置"):
+                    translated_title = self.tr("Update Settings")
+                elif title_key == QT_TRANSLATE_NOOP("Nav", "日志设置"):
+                    translated_title = self.tr("Log Settings")
+                elif title_key == QT_TRANSLATE_NOOP("Nav", "关于"):
+                    translated_title = self.tr("About")
+                elif title_key == QT_TRANSLATE_NOOP("Nav", "实验性"):
+                    translated_title = self.tr("Experimental")
+
+                self.nav_buttons[key].setText(translated_title)
+
         self.game_setting_group.retranslateUi()
         self.game_setting_card.retranslateUi()
         self.auto_hard_mirror_card.retranslateUi()
