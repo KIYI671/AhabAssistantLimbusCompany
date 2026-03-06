@@ -30,7 +30,7 @@ def team_formation(sinner_team):
     while auto.take_screenshot() is None:
         continue
     if reset_team := auto.find_element("teams/support_assets.png"):
-        first_sinner = [reset_team[0] - 1814 * scale, reset_team[1] - 151 * scale]
+        first_sinner = [reset_team[0] - 1800 * scale, reset_team[1] - 150 * scale]
     else:
         log.error("无法找到罪人编队的起始位置")
         return
@@ -59,16 +59,18 @@ def select_battle_team(num):
     find = False
     while auto.take_screenshot() is None:
         continue
-    if auto.find_element("home/first_prompt_assets.png", model="clam") and auto.find_element(
-        "home/back_assets.png", model="normal"
-    ):
+    if auto.find_element(
+        "home/first_prompt_assets.png", model="clam"
+    ) and auto.find_element("home/back_assets.png", model="normal"):
         auto.click_element("home/back_assets.png")
     if position := auto.find_element("battle/teams_assets.png", take_screenshot=True):
         auto.mouse_click(1, 1)
         my_position[0] += position[0]
         my_position[1] += position[1]
         for _ in range(3):
-            auto.mouse_drag(my_position[0], my_position[1], dy=1333 * scale, drag_time=0.3)
+            auto.mouse_drag(
+                my_position[0], my_position[1], dy=1333 * scale, drag_time=0.3
+            )
         sleep(0.75)
         first_position = [position[0], position[1] + 70 * scale]
         if cfg.select_team_by_order:
@@ -83,7 +85,9 @@ def select_battle_team(num):
                 )
                 sleep(1)
             if num <= 15:
-                auto.mouse_click(first_position[0], first_position[1] + 75 * team_order * scale)
+                auto.mouse_click(
+                    first_position[0], first_position[1] + 75 * team_order * scale
+                )
             else:
                 auto.mouse_click(
                     first_position[0],
@@ -100,7 +104,9 @@ def select_battle_team(num):
             for i in range(10):
                 while auto.take_screenshot() is None:
                     continue
-                if auto.click_element(team_name, find_type="text", offset=False, my_crop=position_bbox):
+                if auto.click_element(
+                    team_name, find_type="text", offset=False, my_crop=position_bbox
+                ):
                     find = True
                     break
                 if auto.click_element(
@@ -139,7 +145,9 @@ def deal_with_spills():
     from utils.image_utils import ImageUtils
 
     scale = cfg.set_win_size / 1440
-    sinner_nums_bbox = ImageUtils.get_bbox(ImageUtils.load_image("battle/normal_to_battle_assets.png"))
+    sinner_nums_bbox = ImageUtils.get_bbox(
+        ImageUtils.load_image("battle/normal_to_battle_assets.png")
+    )
     sinner_nums_bbox = (
         sinner_nums_bbox[0],
         sinner_nums_bbox[1] - 115 * scale,
@@ -168,7 +176,9 @@ def deal_with_spills():
             now = int(re.sub(r"\D", "", result[-2]))
             max = int(re.sub(r"\D", "", result[-1]))
             if now > max:
-                all_selected = auto.find_element("teams/selected.png", find_type="image_with_multiple_targets")
+                all_selected = auto.find_element(
+                    "teams/selected.png", find_type="image_with_multiple_targets"
+                )
                 kernel = np.ones((3, 3), np.uint8)
                 for selected in all_selected:
                     try:
@@ -195,7 +205,9 @@ def deal_with_spills():
                             # 再膨胀 2 次
                             background2 = cv2.dilate(background2, kernel, iterations=2)
                             result = ocr.run(background2)
-                            ocr_result = [result.txts[i] for i in range(len(result.txts))]
+                            ocr_result = [
+                                result.txts[i] for i in range(len(result.txts))
+                            ]
                             ocr_result = "".join(ocr_result)
                         if int(ocr_result) > max:
                             auto.mouse_click(selected[0], selected[1])
