@@ -20,7 +20,7 @@ class Handle:
     _hwnd: int = 0
     _transparent = False
 
-    def init_handle(self, title: str, class_name: str = "UnityWndClass") -> int:
+    def init_handle(self, title: str = "LimbusCompany", class_name: str = "UnityWndClass") -> int:
         """获取窗口句柄"""
         self._hwnd = win32gui.FindWindow(class_name, title)
         return self._hwnd

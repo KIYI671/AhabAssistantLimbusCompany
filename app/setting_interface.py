@@ -465,7 +465,7 @@ class SettingInterface(ScrollArea):
                 content_kwargs={"time": time},
             )
         else:
-            msg = QT_TRANSLATE_NOOP("BaseInfoBar", "截图性能测试失败")
+            msg = QT_TRANSLATE_NOOP("BaseInfoBar", "请确保LimbusCompany正在运行")
             BaseInfoBar.error(
                 title=QT_TRANSLATE_NOOP("BaseInfoBar", "截图测试结束"),
                 content=msg,
