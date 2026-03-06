@@ -214,8 +214,6 @@ class Handle:
 
     def bring_window_into_view(self, work_area: bool = False) -> None:
         """将窗口移动到屏幕可见区域"""
-        if cfg.win_input_type == "window_move":
-            return
         rect = self.rect(True)
         window_rect = self.rect(False)
         monitor_info = self.monitor_info
