@@ -29,8 +29,11 @@ def team_formation(sinner_team):
     clean_team()
     while auto.take_screenshot() is None:
         continue
-    announcer_position = auto.find_element("teams/announcer_assets.png")
-    first_sinner = [announcer_position[0] + 350 * scale, announcer_position[1]]
+    if reset_team := auto.find_element("teams/support_assets.png"):
+        first_sinner = [reset_team[0] - 1814 * scale, reset_team[1] - 151 * scale]
+    else:
+        log.error("无法找到罪人编队的起始位置")
+        return
     sleep(0.5)
 
     for i in range(1, 13):
