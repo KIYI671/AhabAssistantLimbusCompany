@@ -212,8 +212,10 @@ class Handle:
             win32con.SWP_NOSIZE | win32con.SWP_NOZORDER,
         )
 
-    def bring_window_into_view(self, work_area: bool = False):
+    def bring_window_into_view(self, work_area: bool = False) -> None:
         """将窗口移动到屏幕可见区域"""
+        if cfg.win_input_type == "window_move":
+            return
         rect = self.rect(True)
         window_rect = self.rect(False)
         monitor_info = self.monitor_info
@@ -231,9 +233,10 @@ class Handle:
             need_y = top
         elif rect[1] == top:
             if cfg.set_win_position == "free":
-                need_y = (
-                    top - self.client_to_screen(0, 0, client_rect=rect, window_rect=window_rect)[1]
-                )  # 防止标题栏不在窗口内
+                if rect[3] - rect[1] != bottom - top:
+                    need_y = (
+                        top - self.client_to_screen(0, 0, client_rect=rect, window_rect=window_rect)[1]
+                    )  # 防止标题栏不在窗口内
 
         x, y = self.client_to_screen(need_x, need_y, client_rect=rect, window_rect=window_rect)
         if need_x != rect[0] or need_y != rect[1]:
