@@ -431,16 +431,17 @@ class Screen(metaclass=SingletonMeta):
             screen_width, screen_height = self.handle.monitor_size(
                 not cfg.background_click  # 前台模式使用工作区大小
             )
-            if screen_width < set_win_size * 16 / 9 or screen_height < set_win_size:
-                log.error("屏幕分辨率过低，请重新设定分辨率")
-                log.debug(f"窗口所在的屏幕分辨率: {screen_width}x{screen_height}")
-                if not cfg.background_click:
-                    screen_width, screen_height = self.handle.monitor_size(False)
-                    if screen_width >= set_win_size * 16 / 9 and screen_height >= set_win_size:
-                        log.info("当前屏幕全尺寸可考虑使用后台输入模式")
-                mediator.link_start.emit()
-                sleep(1)  # 等待结束
-                return
+            if cfg.win_input_type != "window_move":
+                if screen_width < set_win_size * 16 / 9 or screen_height < set_win_size:
+                    log.error("屏幕分辨率过低，请重新设定分辨率，或考虑使用后台增强模式")
+                    log.debug(f"窗口所在的屏幕分辨率: {screen_width}x{screen_height}")
+                    if not cfg.background_click:
+                        screen_width, screen_height = self.handle.monitor_size(False)
+                        if screen_width >= set_win_size * 16 / 9 and screen_height >= set_win_size:
+                            log.info("当前屏幕全尺寸可考虑使用后台输入模式")
+                    mediator.link_start.emit()
+                    sleep(1)  # 等待结束
+                    return
 
             # 如果全屏，则切回窗口
             width = self.handle.width()
