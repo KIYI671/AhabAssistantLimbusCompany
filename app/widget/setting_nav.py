@@ -12,7 +12,6 @@ class SettingNav(QFrame):
         super().__init__(parent=parent)
         self.setObjectName("navFrame")
         self.setFixedWidth(200)
-        self.setMinimumWidth(180)
 
         self.nav_layout = QVBoxLayout(self)
         self.nav_layout.setContentsMargins(10, 10, 10, 10)
