@@ -1,6 +1,12 @@
 # 应用 UI 配置
+from typing import TYPE_CHECKING
+
 from PySide6.QtCore import Qt
 from qfluentwidgets import qconfig
+
+if TYPE_CHECKING:
+    from PySide6.QtGui import QPaintEvent
+    from qfluentwidgets import SegmentedWidget
 
 # 全局字体配置
 FONT_FAMILIES = [
@@ -126,7 +132,10 @@ THEME_AWARE_TEXT_BROWSER_STYLES = {
 
 def get_theme_aware_text_browser_qss() -> tuple[str, str]:
     """Return (light_qss, dark_qss) for ThemeAwareTextBrowser."""
-    return THEME_AWARE_TEXT_BROWSER_STYLES["light"], THEME_AWARE_TEXT_BROWSER_STYLES["dark"]
+    return (
+        THEME_AWARE_TEXT_BROWSER_STYLES["light"],
+        THEME_AWARE_TEXT_BROWSER_STYLES["dark"],
+    )
 
 
 # Pivot Item 样式配置
@@ -174,6 +183,60 @@ PIVOT_ITEM_STYLES = {
 def get_pivot_item_qss(theme_color: str) -> tuple[str, str]:
     light_qss = PIVOT_ITEM_STYLES["light"].format(theme_color=theme_color)
     dark_qss = PIVOT_ITEM_STYLES["dark"].format(theme_color=theme_color)
+    return light_qss, dark_qss
+
+
+# SegmentedWidget 样式配置
+SEGMENTED_WIDGET_STYLES = {
+    "light": """
+        SegmentedWidget {{
+            background: transparent;
+            border: none;
+        }}
+        SegmentedItem[pivotItem="true"] {{
+            padding: 6px 16px;
+            font-size: 14px;
+            font-weight: 400;
+            color: rgba(0, 0, 0, 0.7);
+            background: transparent;
+            border: none;
+        }}
+        SegmentedItem[pivotItem="true"]:hover {{
+            color: rgba(0, 0, 0, 0.9);
+        }}
+        SegmentedItem[pivotItem="true"][selected="true"] {{
+            color: {theme_color};
+            font-weight: bold;
+        }}
+    """,
+    "dark": """
+        SegmentedWidget {{
+            background: transparent;
+            border: none;
+        }}
+        SegmentedItem[pivotItem="true"] {{
+            padding: 6px 16px;
+            font-size: 14px;
+            font-weight: 400;
+            color: rgba(255, 255, 255, 0.7);
+            background: transparent;
+            border: none;
+        }}
+        SegmentedItem[pivotItem="true"]:hover {{
+            color: rgba(255, 255, 255, 0.9);
+        }}
+        SegmentedItem[pivotItem="true"][selected="true"] {{
+            color: {theme_color};
+            font-weight: bold;
+        }}
+    """,
+}
+
+
+def get_segmented_widget_qss(theme_color: str) -> tuple[str, str]:
+    """Return (light_qss, dark_qss) for SegmentedWidget."""
+    light_qss = SEGMENTED_WIDGET_STYLES["light"].format(theme_color=theme_color)
+    dark_qss = SEGMENTED_WIDGET_STYLES["dark"].format(theme_color=theme_color)
     return light_qss, dark_qss
 
 
@@ -321,3 +384,85 @@ ANNOUNCEMENT_FOOTER_STYLES = {
 def get_announcement_footer_qss() -> tuple[str, str]:
     """返回 (light_qss, dark_qss) 用于公告板底部区域"""
     return ANNOUNCEMENT_FOOTER_STYLES["light"], ANNOUNCEMENT_FOOTER_STYLES["dark"]
+
+
+# 设置界面样式配置
+SETTING_INTERFACE_STYLES = {
+    "dark": """
+        SettingInterface, #scrollWidget, QWidget {
+            background-color: rgb(28, 28, 28);
+        }
+        QScrollArea, QScrollArea > QWidget, QScrollArea > QWidget > QWidget {
+            background-color: rgb(28, 28, 28);
+            border: none;
+        }
+        /* 导航栏背景 (Navigation Bar Background) */
+        #navFrame {
+            background-color: rgb(28, 28, 28);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 8px;
+        }
+        /* 项目背景与字体颜色 (Item Background and Font Color - Normal State) */
+        #navFrame QPushButton {
+            text-align: left;
+            padding: 8px 12px;
+            border-radius: 6px;
+            color: rgba(255, 255, 255, 0.7); /* 项目默认字体颜色 */
+            margin: 0px;
+            background-color: transparent; /* 项目默认背景透明 */
+            border: none;
+        }
+        /* 项目背景与字体颜色 (Item Background and Font Color - Hover State) */
+        #navFrame QPushButton:hover {
+            background-color: rgba(255, 255, 255, 0.08); /* 悬停时的项目背景色 */
+            color: rgba(255, 255, 255, 0.9); /* 悬停时的项目字体颜色 */
+        }
+        /* 项目背景与字体颜色 (Item Background and Font Color - Checked/Active State) */
+        #navFrame QPushButton:checked {
+            background-color: rgba(255, 255, 255, 0.12); /* 选中时的项目背景色 */
+            color: rgb(255, 255, 255); /* 选中时的项目字体颜色 */
+            font-weight: bold;
+        }
+    """,
+    "light": """
+        SettingInterface, #scrollWidget, QWidget {
+            background-color: rgb(255, 255, 255);
+        }
+        QScrollArea, QScrollArea > QWidget, QScrollArea > QWidget > QWidget {
+            background-color: rgb(255, 255, 255);
+            border: none;
+        }
+        /* 导航栏背景 (Navigation Bar Background) */
+        #navFrame {
+            background-color: rgb(255, 255, 255);
+            border: 1px solid rgba(0, 0, 0, 0.08);
+            border-radius: 8px;
+        }
+        /* 项目背景与字体颜色 (Item Background and Font Color - Normal State) */
+        #navFrame QPushButton {
+            text-align: left;
+            padding: 8px 12px;
+            border-radius: 6px;
+            color: rgba(0, 0, 0, 0.6); /* 项目默认字体颜色 */
+            margin: 0px;
+            background-color: transparent; /* 项目默认背景透明 */
+            border: none;
+        }
+        /* 项目背景与字体颜色 (Item Background and Font Color - Hover State) */
+        #navFrame QPushButton:hover {
+            background-color: rgba(0, 0, 0, 0.06); /* 悬停时的项目背景色 */
+            color: rgba(0, 0, 0, 0.85); /* 悬停时的项目字体颜色 */
+        }
+        /* 项目背景与字体颜色 (Item Background and Font Color - Checked/Active State) */
+        #navFrame QPushButton:checked {
+            background-color: rgba(0, 0, 0, 0.09); /* 选中时的项目背景色 */
+            color: rgb(0, 0, 0); /* 选中时的项目字体颜色 */
+            font-weight: bold;
+        }
+    """,
+}
+
+
+def get_setting_interface_qss() -> tuple[str, str]:
+    """返回 (light_qss, dark_qss) 用于设置界面"""
+    return SETTING_INTERFACE_STYLES["light"], SETTING_INTERFACE_STYLES["dark"]
