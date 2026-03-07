@@ -948,7 +948,7 @@ Right-click to set as permanent</translation>
     <message>
         <location filename="../app/team_setting_card.py" line="646" />
         <source>第二体系</source>
-        <translation>Secend system</translation>
+        <translation>Second system</translation>
     </message>
     <message>
         <location filename="../app/team_setting_card.py" line="673" />
@@ -981,7 +981,7 @@ Right-click to set as permanent</translation>
     <message>
         <location filename="../app/setting_interface.py" line="146" />
         <source>操控方式</source>
-        <translation type="unfinished" />
+        <translation>Control method</translation>
     </message>
     <message>
         <location filename="../app/setting_interface.py" line="182" />
