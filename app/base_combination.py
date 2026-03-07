@@ -924,31 +924,33 @@ class AutoDailyView(FlyoutViewBase):
         self.vBoxLayout = QVBoxLayout(self)
         self.line_1_box = QWidget(self)
         self.line_1 = QHBoxLayout(self.line_1_box)
-        self.label = BodyLabel("选择执行的行动")
+        self.label_text = QT_TRANSLATE_NOOP("AutoDailyView", "选择执行的行动")
+        self.label = BodyLabel(self.label_text)
         self.task_name = [
             "autodaily_daily",
             "autodaily_get_reward",
             "autodaily_buy_enkephalin",
             "autodaily_mirror",
         ]
-        self.box_daily = BaseCheckBox("autodaily_daily", None, QT_TRANSLATE_NOOP("AutoDailyView", "自动执行日常"))
+        self.box_daily = BaseCheckBox("autodaily_daily", None, QT_TRANSLATE_NOOP("BaseCheckBox", "自动执行日常"))
         self.box_get_reward = BaseCheckBox(
             "autodaily_get_reward",
             None,
-            QT_TRANSLATE_NOOP("AutoDailyView", "自动获取奖励"),
+            QT_TRANSLATE_NOOP("BaseCheckBox", "自动获取奖励"),
         )
         self.box_buy_enkephalin = BaseCheckBox(
             "autodaily_buy_enkephalin",
             None,
-            QT_TRANSLATE_NOOP("AutoDailyView", "自动狂气换体"),
+            QT_TRANSLATE_NOOP("BaseCheckBox", "自动狂气换体"),
         )
-        self.box_mirror = BaseCheckBox("autodaily_mirror", None, QT_TRANSLATE_NOOP("AutoDailyView", "自动镜牢"))
+        self.box_mirror = BaseCheckBox("autodaily_mirror", None, QT_TRANSLATE_NOOP("BaseCheckBox", "自动镜牢"))
         self.line_1.addWidget(self.box_daily)
         self.line_1.addWidget(self.box_get_reward)
         self.line_1.addWidget(self.box_buy_enkephalin)
         self.line_1.addWidget(self.box_mirror)
 
-        self.label2 = BodyLabel("运行结束后")
+        self.label2_text = QT_TRANSLATE_NOOP("AutoDailyView", "运行结束后")
+        self.label2 = BodyLabel(self.label2_text)
         self.line_2_box = QWidget(self)
         self.line_2 = QHBoxLayout(self.line_2_box)
         self.exit_task_name = [
@@ -958,11 +960,11 @@ class AutoDailyView(FlyoutViewBase):
             "autodaily_hibernate",
             "autodaily_shutdown",
         ]
-        self.box_exit_game = BaseCheckBox("autodaily_exit_game", None, QT_TRANSLATE_NOOP("AutoDailyView", "退出游戏"))
-        self.box_exit_aalc = BaseCheckBox("autodaily_exit_aalc", None, QT_TRANSLATE_NOOP("AutoDailyView", "退出AALC"))
-        self.box_sleep = BaseCheckBox("autodaily_sleep", None, QT_TRANSLATE_NOOP("AutoDailyView", "睡眠"))
-        self.box_hibernate = BaseCheckBox("autodaily_hibernate", None, QT_TRANSLATE_NOOP("AutoDailyView", "休眠"))
-        self.box_shutdown = BaseCheckBox("autodaily_shutdown", None, QT_TRANSLATE_NOOP("AutoDailyView", "关机"))
+        self.box_exit_game = BaseCheckBox("autodaily_exit_game", None, QT_TRANSLATE_NOOP("BaseCheckBox", "退出游戏"))
+        self.box_exit_aalc = BaseCheckBox("autodaily_exit_aalc", None, QT_TRANSLATE_NOOP("BaseCheckBox", "退出AALC"))
+        self.box_sleep = BaseCheckBox("autodaily_sleep", None, QT_TRANSLATE_NOOP("BaseCheckBox", "睡眠"))
+        self.box_hibernate = BaseCheckBox("autodaily_hibernate", None, QT_TRANSLATE_NOOP("BaseCheckBox", "休眠"))
+        self.box_shutdown = BaseCheckBox("autodaily_shutdown", None, QT_TRANSLATE_NOOP("BaseCheckBox", "关机"))
         self.line_2.addWidget(self.box_exit_game)
         self.line_2.addWidget(self.box_exit_aalc)
         self.line_2.addWidget(self.box_sleep)
@@ -972,7 +974,8 @@ class AutoDailyView(FlyoutViewBase):
         self.line_3_box = QWidget(self)
         self.line_3 = QHBoxLayout(self.line_3_box)
 
-        self.save_button = PrimaryPushButton(QT_TRANSLATE_NOOP("AutoDailyView", "保存"))
+        self.save_button_text = QT_TRANSLATE_NOOP("AutoDailyView", "保存")
+        self.save_button = PrimaryPushButton(self.save_button_text)
 
         self.line_3.addWidget(self.save_button)
 
@@ -992,6 +995,7 @@ class AutoDailyView(FlyoutViewBase):
 
         mediator.autodaily_setting.connect(self.__autodaily_setting)
         self.save_button.clicked.connect(self.__save)
+        self.retranslateUi()
 
     def __get_init(self):
         while self.config_name is None:
@@ -1047,6 +1051,20 @@ class AutoDailyView(FlyoutViewBase):
             current = current.parentWidget()
         return None
 
+    def retranslateUi(self):
+        self.label.setText(self.tr(self.label_text))
+        self.label2.setText(self.tr(self.label2_text))
+        self.save_button.setText(self.tr(self.save_button_text))
+        self.box_daily.retranslateUi()
+        self.box_get_reward.retranslateUi()
+        self.box_buy_enkephalin.retranslateUi()
+        self.box_mirror.retranslateUi()
+        self.box_exit_game.retranslateUi()
+        self.box_exit_aalc.retranslateUi()
+        self.box_sleep.retranslateUi()
+        self.box_hibernate.retranslateUi()
+        self.box_shutdown.retranslateUi()
+
 
 class DailySettingCard(SwitchSettingCard):
     def __init__(
@@ -1064,13 +1082,14 @@ class DailySettingCard(SwitchSettingCard):
             self.value_name = "autodaily_time" + self.config_name[-1]
         else:
             self.value_name = "autodaily_time"
+        self.button_text = QT_TRANSLATE_NOOP("DailySettingCard", "设置任务项")
 
         autodaily_time = cfg.get_value(self.value_name) or "00:00"
         autodaily_qtime = QTime.fromString(autodaily_time, "HH:mm")
         if not autodaily_qtime.isValid():
             autodaily_qtime = QTime(0, 0)
         self.autodaily_timepicker.setTime(autodaily_qtime)
-        self.button = PushButton(QT_TRANSLATE_NOOP("DailySettingCard", "设置任务项"), self)
+        self.button = PushButton(self.button_text, self)
         current_count = self.hBoxLayout.count()
         self.hBoxLayout.insertWidget(current_count - 2, self.autodaily_timepicker)
         self.hBoxLayout.insertSpacing(current_count - 1, 20)
@@ -1081,6 +1100,7 @@ class DailySettingCard(SwitchSettingCard):
         self.autodaily_timepicker.timeChanged.connect(self.__onAutoDailyTimepickerChanged)
         self.button.clicked.connect(self.__show_view)
         self.__connect_signal()
+        self.retranslateUi()
 
     def __show_view(self):
         PopupTeachingTip.make(
@@ -1132,6 +1152,11 @@ class DailySettingCard(SwitchSettingCard):
         cfg.set_value(self.value_name, time.toString("HH:mm"))
         helper.unregister_task(task_name)
         helper.register_daily_task(task_name, f"start --exit {self.config_name}", time.hour(), time.minute())
+
+    def retranslateUi(self):
+        self.button.setText(self.tr(self.button_text))
+        self.titleLabel.setText(self.tr(self.title))
+        self.contentLabel.setText(self.tr(self.content))
 
 
 class HotkeySettingCard(BasePushSettingCard):
