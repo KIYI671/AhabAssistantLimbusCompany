@@ -3,7 +3,6 @@ from typing import TYPE_CHECKING
 
 from PySide6.QtCore import QRectF
 from PySide6.QtGui import QColor, QPainter, QPainterPath, QPen
-from PySide6.QtWidgets import QWidget
 from qfluentwidgets import SegmentedWidget, isDarkTheme, setCustomStyleSheet, themeColor
 
 if TYPE_CHECKING:
