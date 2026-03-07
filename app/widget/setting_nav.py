@@ -41,7 +41,9 @@ class SettingNav(QFrame):
             self.set_active_nav(self.nav_items[0][0], emit_signal=False)
 
     def __make_nav_click_handler(self, key: str):
-        """生成导航栏按钮的点击事件处理函数"""
+        """生成导航栏按钮的点击事件处理函数
+        Factory to create click handlers with proper key capture (avoids late binding issues)
+        """
 
         def handler():
             self.set_active_nav(key, emit_signal=True)
@@ -65,7 +67,7 @@ class SettingNav(QFrame):
                     self.navClicked.emit(k, widget)
                     break
 
-    def process_content_scrolled(self, value: int, scroll_widget):
+    def process_content_scrolled(self, value: int, scroll_widget: QWidget):
         """处理右侧内容区域的滚动事件
         根据当前滚动条的位置，计算哪个卡片组最靠近顶部，并自动高亮左侧导航栏的对应项目
         """

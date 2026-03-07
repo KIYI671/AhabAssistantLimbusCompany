@@ -509,7 +509,9 @@ class SettingInterface(QWidget):
         """导航栏点击，滚动到指定内容"""
         target_y = widget.mapTo(self.scroll_widget, QPoint(0, 0)).y()
         bar = self.content_scroll.verticalScrollBar()
-        bar.setValue(max(0, target_y - 8))
+        # Offset to prevent the card from sticking exactly to the top edge
+        SCROLL_OFFSET_PX = 8
+        bar.setValue(max(0, target_y - SCROLL_OFFSET_PX))
 
     def __on_content_scrolled(self, value: int):
         """内容区域滚动，同步高亮导航栏"""
