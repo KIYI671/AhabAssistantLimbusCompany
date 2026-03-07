@@ -296,7 +296,7 @@ class ScreenShot:
         """
 
         try:
-            screen.init_handle()
+            screen.handle.init_handle()
             if screen.handle.hwnd == 0:
                 log.info("未找到游戏窗口，无法进行截图性能测试")
                 return False, 0.0

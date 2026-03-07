@@ -20,7 +20,7 @@ class Handle:
     _hwnd: int = 0
     _transparent = False
 
-    def init_handle(self, title: str, class_name: str = "UnityWndClass") -> int:
+    def init_handle(self, title: str = "LimbusCompany", class_name: str = "UnityWndClass") -> int:
         """获取窗口句柄"""
         self._hwnd = win32gui.FindWindow(class_name, title)
         return self._hwnd
@@ -212,7 +212,7 @@ class Handle:
             win32con.SWP_NOSIZE | win32con.SWP_NOZORDER,
         )
 
-    def bring_window_into_view(self, work_area: bool = False):
+    def bring_window_into_view(self, work_area: bool = False) -> None:
         """将窗口移动到屏幕可见区域"""
         rect = self.rect(True)
         window_rect = self.rect(False)
@@ -231,9 +231,10 @@ class Handle:
             need_y = top
         elif rect[1] == top:
             if cfg.set_win_position == "free":
-                need_y = (
-                    top - self.client_to_screen(0, 0, client_rect=rect, window_rect=window_rect)[1]
-                )  # 防止标题栏不在窗口内
+                if rect[3] - rect[1] != bottom - top:
+                    need_y = (
+                        top - self.client_to_screen(0, 0, client_rect=rect, window_rect=window_rect)[1]
+                    )  # 防止标题栏不在窗口内
 
         x, y = self.client_to_screen(need_x, need_y, client_rect=rect, window_rect=window_rect)
         if need_x != rect[0] or need_y != rect[1]:
@@ -431,16 +432,17 @@ class Screen(metaclass=SingletonMeta):
             screen_width, screen_height = self.handle.monitor_size(
                 not cfg.background_click  # 前台模式使用工作区大小
             )
-            if screen_width < set_win_size * 16 / 9 or screen_height < set_win_size:
-                log.error("屏幕分辨率过低，请重新设定分辨率")
-                log.debug(f"窗口所在的屏幕分辨率: {screen_width}x{screen_height}")
-                if not cfg.background_click:
-                    screen_width, screen_height = self.handle.monitor_size(False)
-                    if screen_width >= set_win_size * 16 / 9 and screen_height >= set_win_size:
-                        log.info("当前屏幕全尺寸可考虑使用后台输入模式")
-                mediator.link_start.emit()
-                sleep(1)  # 等待结束
-                return
+            if cfg.win_input_type != "window_move":
+                if screen_width < set_win_size * 16 / 9 or screen_height < set_win_size:
+                    log.error("屏幕分辨率过低，请重新设定分辨率，或考虑使用后台增强模式")
+                    log.debug(f"窗口所在的屏幕分辨率: {screen_width}x{screen_height}")
+                    if not cfg.background_click:
+                        screen_width, screen_height = self.handle.monitor_size(False)
+                        if screen_width >= set_win_size * 16 / 9 and screen_height >= set_win_size:
+                            log.info("当前屏幕全尺寸可考虑使用后台输入模式")
+                    mediator.link_start.emit()
+                    sleep(1)  # 等待结束
+                    return
 
             # 如果全屏，则切回窗口
             width = self.handle.width()
