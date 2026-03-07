@@ -1,5 +1,5 @@
 from PySide6.QtCore import QPoint, QCoreApplication, Signal
-from PySide6.QtWidgets import QFrame, QVBoxLayout, QPushButton
+from PySide6.QtWidgets import QFrame, QVBoxLayout, QPushButton, QWidget
 
 
 class SettingNav(QFrame):
