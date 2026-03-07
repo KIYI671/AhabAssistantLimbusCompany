@@ -257,9 +257,11 @@ class Automation(metaclass=SingletonMeta):
                 log.error(f"截图失败:{e}")
             time.sleep(1)
             if time.time() - start_time > 60:
-                log.error(f"截图超时，尝试重启游戏")
+                log.error("截图超时，尝试重启游戏")
                 import os
+
                 import win32process
+
                 from module.game_and_screen import screen
 
                 try:

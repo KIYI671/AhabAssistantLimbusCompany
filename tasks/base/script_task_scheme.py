@@ -294,7 +294,6 @@ def script_task() -> None | int:
         cfg.set_value("language_in_game", "en")
 
     if not cfg.simulator:
-
         # 低渲染比例发出警告
         if get_game_config_from_registry().get("_renderingScale", -1) == 2:
             log.warning("当前游戏渲染比例为低, 可能会导致识别错误, 建议设置为中或更高")
