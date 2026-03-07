@@ -5,62 +5,10 @@ from PySide6.QtCore import QRectF
 from PySide6.QtGui import QColor, QPainter, QPainterPath, QPen
 from qfluentwidgets import SegmentedWidget, isDarkTheme, setCustomStyleSheet, themeColor
 
+from app.common.ui_config import get_segmented_widget_qss
+
 if TYPE_CHECKING:
     from PySide6.QtGui import QPaintEvent
-
-
-# 样式配置
-_SEGMENTED_STYLES = {
-    "light": """
-        SegmentedWidget {{
-            background: transparent;
-            border: none;
-        }}
-        SegmentedItem[pivotItem="true"] {{
-            padding: 6px 16px;
-            font-size: 14px;
-            font-weight: 400;
-            color: rgba(0, 0, 0, 0.7);
-            background: transparent;
-            border: none;
-        }}
-        SegmentedItem[pivotItem="true"]:hover {{
-            color: rgba(0, 0, 0, 0.9);
-        }}
-        SegmentedItem[pivotItem="true"][selected="true"] {{
-            color: {theme_color};
-            font-weight: bold;
-        }}
-    """,
-    "dark": """
-        SegmentedWidget {{
-            background: transparent;
-            border: none;
-        }}
-        SegmentedItem[pivotItem="true"] {{
-            padding: 6px 16px;
-            font-size: 14px;
-            font-weight: 400;
-            color: rgba(255, 255, 255, 0.7);
-            background: transparent;
-            border: none;
-        }}
-        SegmentedItem[pivotItem="true"]:hover {{
-            color: rgba(255, 255, 255, 0.9);
-        }}
-        SegmentedItem[pivotItem="true"][selected="true"] {{
-            color: {theme_color};
-            font-weight: bold;
-        }}
-    """,
-}
-
-
-def _get_segmented_qss(theme_color: str) -> tuple[str, str]:
-    """返回 (light_qss, dark_qss) 样式。"""
-    light = _SEGMENTED_STYLES["light"].format(theme_color=theme_color)
-    dark = _SEGMENTED_STYLES["dark"].format(theme_color=theme_color)
-    return light, dark
 
 
 class CustomSegmentedWidget(SegmentedWidget):
@@ -73,7 +21,7 @@ class CustomSegmentedWidget(SegmentedWidget):
     def _apply_style(self):
         """应用自定义 QSS 样式。"""
         color = themeColor().name()
-        light_qss, dark_qss = _get_segmented_qss(color)
+        light_qss, dark_qss = get_segmented_widget_qss(color)
         setCustomStyleSheet(self, light_qss, dark_qss)
 
     def paintEvent(self, e: "QPaintEvent"):
