@@ -14,26 +14,19 @@ reward_card_model = {
     ],
     1: [
         "gain_starlight",
-        "gain_ego",
         "gain_cost",
+        "gain_ego",
         "gain_cost_and_ego",
         "gain_ego_resource",
     ],
     2: [
-        "gain_starlight",
         "gain_cost",
         "gain_ego",
         "gain_cost_and_ego",
         "gain_ego_resource",
+        "gain_starlight",
     ],
     3: [
-        "gain_cost",
-        "gain_ego",
-        "gain_cost_and_ego",
-        "gain_ego_resource",
-        "gain_starlight",
-    ],
-    4: [
         "gain_ego",
         "gain_cost",
         "gain_cost_and_ego",
