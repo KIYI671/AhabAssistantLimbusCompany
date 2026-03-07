@@ -981,7 +981,7 @@ Right-click to set as permanent</translation>
     <message>
         <location filename="../app/setting_interface.py" line="146" />
         <source>操控方式</source>
-        <translation type="unfinished" />
+        <translation>Control method</translation>
     </message>
     <message>
         <location filename="../app/setting_interface.py" line="182" />
