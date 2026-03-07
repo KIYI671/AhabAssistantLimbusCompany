@@ -43,7 +43,5 @@ class FontManager(metaclass=SingletonMeta):
         if not families:
             log.warning(f"无法获取字体族名称: {font_path}", stacklevel=2)
             return qconfig.fontFamilies.value
-        self.loaded_fonts[font_path] = Font(
-            families=families, font_id=font_id, font_path=font_path
-        )
+        self.loaded_fonts[font_path] = Font(families=families, font_id=font_id, font_path=font_path)
         return families

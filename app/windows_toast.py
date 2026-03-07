@@ -72,9 +72,7 @@ class TemplateToast(Enum):
     NormalTemplate = 2
 
 
-def _register_hkey(
-    appId: str = APPID, appName: str = APPNAME, iconPath: Path | None = None
-):
+def _register_hkey(appId: str = APPID, appName: str = APPNAME, iconPath: Path | None = None):
     """实际注册行为"""
     winreg.ConnectRegistry(None, winreg.HKEY_CURRENT_USER)
     keyPath = f"SOFTWARE\\Classes\\AppUserModelId\\{appId}"
@@ -84,9 +82,7 @@ def _register_hkey(
             winreg.SetValueEx(masterKey, "IconUri", 0, winreg.REG_SZ, str(iconPath))
 
 
-def _register_toast(
-    key_name: str = APPID, app_name: str = APPNAME, icon_path: str = ICONPATH
-) -> bool:
+def _register_toast(key_name: str = APPID, app_name: str = APPNAME, icon_path: str = ICONPATH) -> bool:
     """注册通知"""
     try:
         relative_path = icon_path
@@ -145,18 +141,14 @@ def _normal_template_toast(title, msg, app_id, on_activated, **kwargs):
     """常用的模板通知"""
     toaster = InteractableWindowsToaster("AALC", app_id)
     toaster.clear_toasts()
-    hero_image = ToastDisplayImage.fromPath(
-        imagePath=ICONPATH, position=ToastImagePosition.Hero
-    )
+    hero_image = ToastDisplayImage.fromPath(imagePath=ICONPATH, position=ToastImagePosition.Hero)
 
     def on_click(args: ToastActivatedEventArgs):
         log.debug(f"用户点击了通知，参数: {args.arguments}, 输入: {args.inputs}")
         if args.arguments == "close":
             mediator.kill_signal.emit()
 
-    confirm_botton = ToastButton(
-        content=QApplication.translate("WindowsToast", "知道了"), arguments="confirm"
-    )
+    confirm_botton = ToastButton(content=QApplication.translate("WindowsToast", "知道了"), arguments="confirm")
     close_botton = ToastButton(
         content=QApplication.translate("WindowsToast", "关闭 AALC"),
         arguments="close",
@@ -184,13 +176,9 @@ def _test_template_toast(title, msg, app_id, on_activated):
     # 无位置参数为默认位置, 即通知内容中
     image1 = ToastDisplayImage.fromPath(imagePath=ICONPATH, altText="这是一个图标")
     # Hero 位置为通知上方的大图
-    image2 = ToastDisplayImage.fromPath(
-        imagePath=ICONPATH, position=ToastImagePosition.Hero
-    )
+    image2 = ToastDisplayImage.fromPath(imagePath=ICONPATH, position=ToastImagePosition.Hero)
     # AppLogo 位置为通知左侧的小图
-    image3 = ToastDisplayImage.fromPath(
-        imagePath=ICONPATH, position=ToastImagePosition.AppLogo
-    )
+    image3 = ToastDisplayImage.fromPath(imagePath=ICONPATH, position=ToastImagePosition.AppLogo)
     # 按钮的图标 压缩为16x16
     botton_image = ToastImage(ICONPATH)
     # 创建按钮, *tooltip* 为无障碍阅读器使用的文本
@@ -233,9 +221,7 @@ def _test_template_toast(title, msg, app_id, on_activated):
     if cfg.resonate_with_Ahab:
         from random import randint
 
-        toast.audio = ToastAudio(
-            Path(r"assets\audio\This_is_all_your_fault_" + f"{randint(1, 4)}.mp3")
-        )
+        toast.audio = ToastAudio(Path(r"assets\audio\This_is_all_your_fault_" + f"{randint(1, 4)}.mp3"))
 
     # 定义回调函数
     def on_click(args: ToastActivatedEventArgs):
@@ -289,9 +275,7 @@ def send_toast(
             for index, content in enumerate(msg):
                 msg[index] = QApplication.translate("WindowsToast", content)
 
-        return _send_template_toast(
-            title, msg, app_name, app_id, icon_path, template, on_activated, **kwargs
-        )
+        return _send_template_toast(title, msg, app_name, app_id, icon_path, template, on_activated, **kwargs)
 
     try:
         _register_toast(app_id, app_name, icon_path)

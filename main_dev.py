@@ -20,11 +20,26 @@ import subprocess
 import sys
 import threading
 import time
-from pathlib import Path
 
 # 解决 Windows DPI 缩放问题
 from ctypes import windll
-windll.shcore.SetProcessDpiAwareness(2)
+from pathlib import Path
+
+try:
+    # 1. 尝试 Win10 1703+ 的最强方案 (Per Monitor V2)
+    # -4 对应 DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2
+    windll.user32.SetProcessDpiAwarenessContext(-4)
+except (AttributeError, OSError):
+    try:
+        # 2. 尝试 Win8.1+ 的方案 (Per Monitor)
+        # 2 对应 PROCESS_PER_MONITOR_DPI_AWARE
+        windll.shcore.SetProcessDpiAwareness(2)
+    except (AttributeError, OSError):
+        try:
+            # 3. 最后的兜底方案 (Win7/Vista)
+            windll.user32.SetProcessDPIAware()
+        except Exception:
+            pass
 
 from module.logger import log
 
@@ -32,9 +47,7 @@ try:
     from watchdog.events import FileSystemEventHandler
     from watchdog.observers import Observer
 except ImportError:
-    log.critical(
-        "watchdog not installed. Please run `uv sync` to install dependencies."
-    )
+    log.critical("watchdog not installed. Please run `uv sync` to install dependencies.")
     sys.exit(1)
 
 try:
@@ -190,9 +203,7 @@ os.environ['AALC_DEV_MODE'] = '1'
 """
 
         # Replace admin check
-        dev_content = dev_content.replace(
-            "if not pyuac.isUserAdmin():", "if False and not pyuac.isUserAdmin():"
-        )
+        dev_content = dev_content.replace("if not pyuac.isUserAdmin():", "if False and not pyuac.isUserAdmin():")
 
         # Replace mutex check
         dev_content = dev_content.replace(

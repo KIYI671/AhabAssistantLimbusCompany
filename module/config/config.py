@@ -19,9 +19,7 @@ class Config(metaclass=SingletonMeta):
         self._pending_save = False
         # 后台写盘线程
         self._writer_event = threading.Event()
-        self._writer_thread = threading.Thread(
-            target=self._writer_loop, name="ConfigWriter", daemon=True
-        )
+        self._writer_thread = threading.Thread(target=self._writer_loop, name="ConfigWriter", daemon=True)
         self._writer_thread.start()
 
         # 加载版本信息
@@ -32,9 +30,7 @@ class Config(metaclass=SingletonMeta):
         self.config_path = config_path
         # 加载实际配置，此方法会根据实际配置覆盖默认配置
         self._load_config()
-        log.debug(
-            f"配置文件已加载，版本号：{self.version}, 配置版本: {self.get_value('config_version', '未知')}"
-        )
+        log.debug(f"配置文件已加载，版本号：{self.version}, 配置版本: {self.get_value('config_version', '未知')}")
         # 进程退出前确保落盘
         atexit.register(self.flush)
 
@@ -49,9 +45,7 @@ class Config(metaclass=SingletonMeta):
         if saved_version < 1768403022:
             team_num = len(self.get_value("teams_be_select", []))
 
-            def _calculate_time_history(
-                time_list: list[float], count: int
-            ) -> list[float]:
+            def _calculate_time_history(time_list: list[float], count: int) -> list[float]:
                 """从每局都记录转换为只记录三种平均值"""
                 if count == 0:
                     return [0.0, 0.0, 0.0]
@@ -139,9 +133,7 @@ class Config(metaclass=SingletonMeta):
                 loaded_config = self.yaml.load(file)
 
                 if loaded_config:
-                    if loaded_config.get("config_version", 0) < self.get_value(
-                        "config_version", 0
-                    ):
+                    if loaded_config.get("config_version", 0) < self.get_value("config_version", 0):
                         old_flag = True
                     else:
                         old_flag = False
@@ -198,9 +190,7 @@ class Config(metaclass=SingletonMeta):
 
             # 防止 cdk 泄露
             masked_value = "已加密" if key == "mirrorchyan_cdk" else value
-            log.debug(
-                f"{key} change to: {masked_value}", stacklevel=2
-            )  # 增加设置修改的信息
+            log.debug(f"{key} change to: {masked_value}", stacklevel=2)  # 增加设置修改的信息
 
             # 安排一次延迟保存
             self._schedule_save()

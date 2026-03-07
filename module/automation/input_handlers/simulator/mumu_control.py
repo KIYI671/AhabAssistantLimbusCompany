@@ -190,9 +190,7 @@ class CaptureNemuIpc(CaptureStd):
         # Tested on 3.7.3
         # b'nemu_capture_display rpc error: 1745\r\n'
         if b"error: 1783" in self.stderr or b"error: 1745" in self.stderr:
-            raise NemuIpcIncompatible(
-                "NemuIpc requires MuMu12 version >= 3.8.13, please check your version"
-            )
+            raise NemuIpcIncompatible("NemuIpc requires MuMu12 version >= 3.8.13, please check your version")
         # contact_id incorrect
         # b'nemu_capture_display cannot find rpc connection\r\n'
         if b"cannot find rpc connection" in self.stderr:
@@ -277,9 +275,7 @@ class MumuControl(AbstractInput):
                     break
                 # bad port number '598265' in '127.0.0.1:598265'
                 elif "bad port" in msg:
-                    log.error(
-                        f"断开连接失败，端口号{port}不正确，可能是拼写错误或不规范"
-                    )
+                    log.error(f"断开连接失败，端口号{port}不正确，可能是拼写错误或不规范")
         except:
             pass
 
@@ -304,11 +300,7 @@ class MumuControl(AbstractInput):
                     "info",
                     "-i",
                 ]
-                no_window_flag = (
-                    subprocess.CREATE_NO_WINDOW
-                    if hasattr(subprocess, "CREATE_NO_WINDOW")
-                    else 0x08000000
-                )
+                no_window_flag = subprocess.CREATE_NO_WINDOW if hasattr(subprocess, "CREATE_NO_WINDOW") else 0x08000000
                 result = subprocess.run(
                     command,
                     universal_newlines=True,
@@ -351,9 +343,7 @@ class MumuControl(AbstractInput):
                         continue
                 if not key:
                     return None
-                self.install_path = os.path.dirname(
-                    winreg.QueryValueEx(key, "DisplayIcon")[0]
-                ).strip('"')
+                self.install_path = os.path.dirname(winreg.QueryValueEx(key, "DisplayIcon")[0]).strip('"')
                 mumu_version, _ = winreg.QueryValueEx(key, "DisplayVersion")
                 winreg.CloseKey(key)
             except:
@@ -397,11 +387,7 @@ class MumuControl(AbstractInput):
                 self.multi_instance_number = 0
             if int(self.multi_instance_number) <= 1536:
                 cmd = f"{self.exe_path} adb -v {self.multi_instance_number}"
-                no_window_flag = (
-                    subprocess.CREATE_NO_WINDOW
-                    if hasattr(subprocess, "CREATE_NO_WINDOW")
-                    else 0x08000000
-                )
+                no_window_flag = subprocess.CREATE_NO_WINDOW if hasattr(subprocess, "CREATE_NO_WINDOW") else 0x08000000
                 proc = subprocess.run(
                     cmd,
                     universal_newlines=True,
@@ -485,9 +471,7 @@ class MumuControl(AbstractInput):
         # 获取MuMuNxDevice.exe所在的目录
         try:
             if self.mumu_version == 5:
-                return os.path.join(
-                    os.path.dirname(self.install_path), "nx_device", "12.0", "shell"
-                )
+                return os.path.join(os.path.dirname(self.install_path), "nx_device", "12.0", "shell")
             else:
                 return self.install_path
         except:
@@ -511,9 +495,7 @@ class MumuControl(AbstractInput):
                     "external_renderer_ipc.dll",
                 )
             else:
-                return os.path.join(
-                    self.install_path, "sdk", "external_renderer_ipc.dll"
-                )
+                return os.path.join(self.install_path, "sdk", "external_renderer_ipc.dll")
         except:
             self.mumu_control_api_backend()
             self.get_nemu_client_path()
@@ -523,11 +505,7 @@ class MumuControl(AbstractInput):
         try:
             log.debug("开始获取应用保活状态")
             command = f""" "{self.exe_path}" setting -v {self.multi_instance_number} -k app_keptlive"""
-            no_window_flag = (
-                subprocess.CREATE_NO_WINDOW
-                if hasattr(subprocess, "CREATE_NO_WINDOW")
-                else 0x08000000
-            )
+            no_window_flag = subprocess.CREATE_NO_WINDOW if hasattr(subprocess, "CREATE_NO_WINDOW") else 0x08000000
             proc = subprocess.run(
                 command,
                 shell=True,
@@ -544,18 +522,14 @@ class MumuControl(AbstractInput):
             # 尝试解析JSON
             try:
                 proc_result = json.loads(proc.stdout.strip())
-                result = bool(
-                    proc_result.get("app_keptlive") == "true"
-                )  # 使用get避免KeyError
+                result = bool(proc_result.get("app_keptlive") == "true")  # 使用get避免KeyError
                 return result
             except json.JSONDecodeError:
                 log.error(f"JSON解析失败！原始输出: {proc.stdout}")
                 raise  # 重新抛出异常或处理
 
         except subprocess.CalledProcessError as cmd_err:
-            log.debug(
-                f"命令执行失败！返回码: {cmd_err.returncode}, 错误输出: {cmd_err.stderr}"
-            )
+            log.debug(f"命令执行失败！返回码: {cmd_err.returncode}, 错误输出: {cmd_err.stderr}")
             # 可选：根据业务需求返回默认值或重新抛出
             return False
         except Exception as e:
@@ -568,11 +542,7 @@ class MumuControl(AbstractInput):
         try:
             command = f""" "{self.exe_path}" setting -v {self.multi_instance_number} -k app_keptlive -val false"""
             # 新增：使用shell=True执行命令
-            no_window_flag = (
-                subprocess.CREATE_NO_WINDOW
-                if hasattr(subprocess, "CREATE_NO_WINDOW")
-                else 0x08000000
-            )
+            no_window_flag = subprocess.CREATE_NO_WINDOW if hasattr(subprocess, "CREATE_NO_WINDOW") else 0x08000000
             subprocess.run(
                 command,
                 shell=True,
@@ -588,11 +558,7 @@ class MumuControl(AbstractInput):
         # 开启保活
         try:
             command = f""" "{self.exe_path}" setting -v {self.multi_instance_number} -k app_keptlive -val true"""
-            no_window_flag = (
-                subprocess.CREATE_NO_WINDOW
-                if hasattr(subprocess, "CREATE_NO_WINDOW")
-                else 0x08000000
-            )
+            no_window_flag = subprocess.CREATE_NO_WINDOW if hasattr(subprocess, "CREATE_NO_WINDOW") else 0x08000000
             subprocess.run(
                 command,
                 universal_newlines=True,
@@ -606,11 +572,7 @@ class MumuControl(AbstractInput):
     def get_launch_status(self):
         # 获取启动状态
         cmd = [self.exe_path, "info", "-v", str(self.multi_instance_number)]
-        no_window_flag = (
-            subprocess.CREATE_NO_WINDOW
-            if hasattr(subprocess, "CREATE_NO_WINDOW")
-            else 0x08000000
-        )
+        no_window_flag = subprocess.CREATE_NO_WINDOW if hasattr(subprocess, "CREATE_NO_WINDOW") else 0x08000000
         proc = subprocess.run(
             cmd,
             universal_newlines=True,
@@ -628,15 +590,9 @@ class MumuControl(AbstractInput):
         nemu_folder = os.path.dirname(self.install_path)
         list_dll = [
             # MuMuPlayer12
-            os.path.abspath(
-                os.path.join(nemu_folder, "./shell/sdk/external_renderer_ipc.dll")
-            ),
+            os.path.abspath(os.path.join(nemu_folder, "./shell/sdk/external_renderer_ipc.dll")),
             # MuMuPlayer12 5.0
-            os.path.abspath(
-                os.path.join(
-                    nemu_folder, "./nx_device/12.0/shell/sdk/external_renderer_ipc.dll"
-                )
-            ),
+            os.path.abspath(os.path.join(nemu_folder, "./nx_device/12.0/shell/sdk/external_renderer_ipc.dll")),
         ]
         ipc_dll = ""
         for ipc_dll in list_dll:
@@ -654,9 +610,7 @@ class MumuControl(AbstractInput):
             log.error("以下路径均不存在")
             for path in list_dll:
                 log.error(f"{path}")
-            raise NemuIpcIncompatible(
-                "请在AALC设置中检查您的MuMu播放器12版本和安装路径。"
-            )
+            raise NemuIpcIncompatible("请在AALC设置中检查您的MuMu播放器12版本和安装路径。")
         else:
             log.debug(f"ipc_dll={ipc_dll} 加载成功")
 
@@ -666,13 +620,9 @@ class MumuControl(AbstractInput):
 
         self.nemu_folder = os.path.dirname(self.install_path)
 
-        connect_id = self.ev_run_sync(
-            self.lib.nemu_connect, self.nemu_folder, self.multi_instance_number
-        )
+        connect_id = self.ev_run_sync(self.lib.nemu_connect, self.nemu_folder, self.multi_instance_number)
         if connect_id == 0:
-            raise NemuIpcError(
-                "连接失败，请检查nemu_folder是否正确，模拟器是否正在运行"
-            )
+            raise NemuIpcError("连接失败，请检查nemu_folder是否正确，模拟器是否正在运行")
 
         self.connect_id = connect_id
 
@@ -707,9 +657,7 @@ class MumuControl(AbstractInput):
         func_wrapped = partial(func, *args, **kwargs)
         # Increased timeout for slow PCs
         # Default screenshot interval is 0.2s, so a 0.15s timeout would have a fast retry without extra time costs
-        result = await asyncio.wait_for(
-            self._ev.run_in_executor(None, func_wrapped), timeout=timeout
-        )
+        result = await asyncio.wait_for(self._ev.run_in_executor(None, func_wrapped), timeout=timeout)
         return result
 
     def ev_run_sync(self, func, *args, **kwargs):
@@ -737,9 +685,7 @@ class MumuControl(AbstractInput):
         if err:
             log.warning(f"调用 {func.__name__} 失败，结果={result}")
             with CaptureNemuIpc(log):
-                result = self._ev.run_until_complete(
-                    self.ev_run_async(func, *args, **kwargs)
-                )
+                result = self._ev.run_until_complete(self.ev_run_async(func, *args, **kwargs))
 
         return result
 
@@ -774,9 +720,7 @@ class MumuControl(AbstractInput):
                 from module.automation import auto
 
                 auto.clear_img_cache()
-                log.debug(
-                    f"自动将AALC识别的分辨率适配模拟器设置: {self.width} x {self.height}"
-                )
+                log.debug(f"自动将AALC识别的分辨率适配模拟器设置: {self.width} x {self.height}")
 
     def screenshot(self, timeout=0.15):
         """
@@ -809,9 +753,7 @@ class MumuControl(AbstractInput):
             raise NemuIpcError("nemu_capture_display failed during screenshot()")
 
         # image = np.ctypeslib.as_array(pixels_pointer, shape=(self.height, self.width, 4))
-        image = np.ctypeslib.as_array(pixels_pointer.contents).reshape(
-            (self.height, self.width, 4)
-        )
+        image = np.ctypeslib.as_array(pixels_pointer.contents).reshape((self.height, self.width, 4))
         image = cv2.cvtColor(image, cv2.COLOR_BGRA2RGB)
         cv2.flip(image, 0, dst=image)
         return image
@@ -828,9 +770,7 @@ class MumuControl(AbstractInput):
         x = int(x)
         y = int(y)
 
-        ret = self.ev_run_sync(
-            self.lib.nemu_input_event_touch_down, self.connect_id, self.display_id, x, y
-        )
+        ret = self.ev_run_sync(self.lib.nemu_input_event_touch_down, self.connect_id, self.display_id, x, y)
         if ret > 0:
             raise NemuIpcError("nemu_input_event_touch_down failed")
 
@@ -841,9 +781,7 @@ class MumuControl(AbstractInput):
         if self.connect_id == 0:
             self.connect()
 
-        ret = self.ev_run_sync(
-            self.lib.nemu_input_event_touch_up, self.connect_id, self.display_id
-        )
+        ret = self.ev_run_sync(self.lib.nemu_input_event_touch_up, self.connect_id, self.display_id)
         if ret > 0:
             raise NemuIpcError("nemu_input_event_touch_up failed")
 
@@ -864,9 +802,7 @@ class MumuControl(AbstractInput):
         if self.connect_id == 0:
             self.connect()
 
-        ret = self.ev_run_sync(
-            self.lib.nemu_input_event_key_up, self.connect_id, self.display_id, key_code
-        )
+        ret = self.ev_run_sync(self.lib.nemu_input_event_key_up, self.connect_id, self.display_id, key_code)
         if ret > 0:
             raise NemuIpcError("nemu_input_event_key_up failed")
 
@@ -1001,9 +937,7 @@ class MumuControl(AbstractInput):
         """占位"""
         return 0, 0
 
-    def mouse_drag_link(
-        self, position: list, drag_time=0.25, min_distance=10, move_back=False
-    ) -> None:
+    def mouse_drag_link(self, position: list, drag_time=0.25, min_distance=10, move_back=False) -> None:
         """鼠标从指定位置拖动到指定位置
         Args:
             x (int): 起始x坐标
@@ -1014,9 +948,7 @@ class MumuControl(AbstractInput):
         self.down(position[0][0], position[0][1])
         p = (position[0][0], position[0][1])
         for pos in position[1:]:
-            points = insert_swipe(
-                p0=(p[0], p[1]), p3=(pos[0], pos[1]), min_distance=min_distance
-            )
+            points = insert_swipe(p0=(p[0], p[1]), p3=(pos[0], pos[1]), min_distance=min_distance)
 
             for point in points:
                 self.down(*point)

@@ -22,9 +22,7 @@ def get_day_of_week():
     day = now_time.isoweekday()  # isoweekday() 返回 1（周一）~7（周日）
     hour = now_time.hour  # 小时（0-23）
 
-    if (
-        hour < 6 and day == 1
-    ):  # 如果是凌晨0点到6点之间，且不是周一，则视为前一天 （修复周一凌晨判断传参为0的bug）
+    if hour < 6 and day == 1:  # 如果是凌晨0点到6点之间，且不是周一，则视为前一天 （修复周一凌晨判断传参为0的bug）
         day = 7
     elif hour < 6:
         day -= 1
@@ -143,9 +141,7 @@ def find_skill3(background, known_rgb, threshold=40, min_pixels=10):
     while cluster_centers:
         current = cluster_centers.pop()
         group = [c for c in cluster_centers if np.linalg.norm(current - c) <= 67 * comp]
-        cluster_centers = [
-            c for c in cluster_centers if np.linalg.norm(current - c) > 66 * comp
-        ]
+        cluster_centers = [c for c in cluster_centers if np.linalg.norm(current - c) > 66 * comp]
         merged.append(np.mean([current] + group, axis=0))
 
     return merged
@@ -263,9 +259,7 @@ def run_as_user(command: list[str], timeout: int = 30):
     def run_cmd(cmd: str, ignore_error: bool = False):
         try:
             # 增加 timeout 防止进程挂起
-            res = subprocess.run(
-                cmd, shell=True, capture_output=True, text=True, timeout=10
-            )
+            res = subprocess.run(cmd, shell=True, capture_output=True, text=True, timeout=10)
             if res.returncode != 0 and not ignore_error:
                 log.debug(f"命令执行失败: {cmd}\n错误: {res.stderr.strip()}")
             return res
@@ -278,9 +272,7 @@ def run_as_user(command: list[str], timeout: int = 30):
         run_cmd(f'schtasks /delete /tn "{task_name}" /f', ignore_error=True)
 
         # 2. 创建临时批处理文件
-        with tempfile.NamedTemporaryFile(
-            delete=False, suffix=".bat", mode="w", encoding="gbk"
-        ) as bat:
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".bat", mode="w", encoding="gbk") as bat:
             # 使用 @echo off 减少输出，添加 exit 确保批处理退出
             bat.write(f"@echo off\n{subprocess.list2cmdline(command)}\nexit\n")
             bat_path = bat.name
@@ -289,8 +281,7 @@ def run_as_user(command: list[str], timeout: int = 30):
         # /f: 强制创建；/rl limited: 确保以受限权限运行（非管理员）
         username = os.environ.get("USERNAME")
         create_cmd = (
-            f'schtasks /create /f /tn "{task_name}" /sc once /st 23:59 '
-            f'/ru "{username}" /tr "cmd.exe /c \'{bat_path}\'"'
+            f'schtasks /create /f /tn "{task_name}" /sc once /st 23:59 /ru "{username}" /tr "cmd.exe /c \'{bat_path}\'"'
         )
         if run_cmd(create_cmd) is None:
             return False

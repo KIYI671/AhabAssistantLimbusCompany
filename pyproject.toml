@@ -82,3 +82,6 @@ files = [
 select = ["E", "F", "I", "T201"]
 # 忽略特定的规则
 ignore = ["E501"]
+[tool.ruff]
+line-length = 120
+target-version = "py312"

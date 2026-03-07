@@ -130,9 +130,7 @@ class InfiniteBattles(QWidget):
 
         # 添加状态显示标签
         self.status_label = QLabel("状态：初始化中...")
-        self.status_label.setStyleSheet(
-            "QLabel { background-color: #f0f0f0; padding: 5px; border: 1px solid #ccc; }"
-        )
+        self.status_label.setStyleSheet("QLabel { background-color: #f0f0f0; padding: 5px; border: 1px solid #ccc; }")
         layout.addWidget(self.status_label)
 
         # 添加控制按钮
@@ -222,10 +220,7 @@ class InfiniteBattles(QWidget):
         import time
 
         current_time = int(time.time())
-        if (
-            not hasattr(self, "_last_log_time")
-            or current_time - self._last_log_time > 10
-        ):
+        if not hasattr(self, "_last_log_time") or current_time - self._last_log_time > 10:
             self.log_text.append(self.tr("战斗操作执行"))
             self._last_log_time = current_time
 

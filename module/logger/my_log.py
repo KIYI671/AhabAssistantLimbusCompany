@@ -157,9 +157,7 @@ class Logger(metaclass=SingletonMeta):
             debug_file_handler.setLevel(logging.DEBUG)
 
             # 显示在 UI 窗口中的日志，写到 ring buffer，不落盘
-            ui_log_formatter = TranslationFormatter(
-                "%(asctime)s - %(message)s", "%H:%M:%S", no_color=True
-            )
+            ui_log_formatter = TranslationFormatter("%(asctime)s - %(message)s", "%H:%M:%S", no_color=True)
 
             ui_log_handler = UILogHandler(ui_log_dispatcher)
             ui_log_handler.setLevel(logging.INFO)

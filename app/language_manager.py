@@ -163,9 +163,7 @@ class LanguageManager(metaclass=SingletonMeta):
                     if self.method_needs_args(getattr(component, retranslateUi)):
                         if lang_code is None:
                             component_name = self.check_component_name(component)
-                            raise ValueError(
-                                f"component {component_name}.{retranslateUi} 需要参数 但是为空"
-                            )
+                            raise ValueError(f"component {component_name}.{retranslateUi} 需要参数 但是为空")
                         component.retranslateUi(lang_code)
                     else:
                         component.retranslateUi()

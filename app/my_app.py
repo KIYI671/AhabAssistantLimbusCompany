@@ -114,9 +114,7 @@ class MainWindow(FramelessWindow):
         saved_x = cfg.get_value("window_position_x", None)
         saved_y = cfg.get_value("window_position_y", None)
         if saved_x is not None and saved_y is not None:
-            screen = QApplication.screenAt(
-                QRect(saved_x, saved_y, self.width(), self.height()).center()
-            )
+            screen = QApplication.screenAt(QRect(saved_x, saved_y, self.width(), self.height()).center())
             if screen:
                 self.move(saved_x, saved_y)
             else:
@@ -163,9 +161,7 @@ class MainWindow(FramelessWindow):
         self.pivot.setMaximumHeight(50)
 
         # Tab 切换逻辑：点击 Tab 时切换对应页面
-        self.pivot.currentItemChanged.connect(
-            lambda k: self.stackedWidget.setCurrentWidget(self.findChild(QWidget, k))
-        )
+        self.pivot.currentItemChanged.connect(lambda k: self.stackedWidget.setCurrentWidget(self.findChild(QWidget, k)))
         self.pivot.setCurrentItem(self.farming_interface.objectName())  # 设置默认Tab
 
         # 標題置頂
@@ -194,6 +190,38 @@ class MainWindow(FramelessWindow):
 
         self.init_system_tray()
 
+        # 判断是否需要降低缩放以适配小屏幕
+        screen_rect = self.screen().availableGeometry()  # 获取到的rect会经过缩放因子的缩放
+        self_rect = self.geometry()
+        if screen_rect.width() < self_rect.width() or screen_rect.height() < self_rect.height():
+            log.info("屏幕分辨率较小，自动降低缩放以适配界面，将在重启后生效")
+            screen_width = screen_rect.width() * cfg.zoom_scale / 100
+            screen_height = screen_rect.height() * cfg.zoom_scale / 100
+            scale_factor = int(min(screen_width / self_rect.width(), screen_height / self_rect.height()) * 100)
+            if scale_factor <= 0:
+                scale_factor = self.screen().logicalDotsPerInch() / 96 * 100
+            if scale_factor < 50:
+                scale_factor = 50
+                log.warning("计算得到的缩放因子小于最低预设值，调整为50%")
+            elif scale_factor < 75:
+                scale_factor = 50
+            elif scale_factor < 90:
+                scale_factor = 75
+            elif scale_factor < 100:
+                scale_factor = 90
+            elif scale_factor < 125:
+                scale_factor = 100
+            elif scale_factor < 150:
+                scale_factor = 125
+            elif scale_factor < 175:
+                scale_factor = 150
+            elif scale_factor < 200:
+                scale_factor = 175
+            else:
+                scale_factor = 200
+                log.warning("计算得到的缩放因子大于最高预设值，调整为200%")
+            cfg.set_value("zoom_scale", scale_factor)
+
     def init_system_tray(self):
         self.tray_menu = None
         self.tray_icon = QSystemTrayIcon(self)
@@ -219,10 +247,7 @@ class MainWindow(FramelessWindow):
         self.activateWindow()
 
     def on_tray_icon_activated(self, reason):
-        if (
-            reason == QSystemTrayIcon.ActivationReason.Trigger
-            or reason == QSystemTrayIcon.ActivationReason.DoubleClick
-        ):
+        if reason == QSystemTrayIcon.ActivationReason.Trigger or reason == QSystemTrayIcon.ActivationReason.DoubleClick:
             if self.tray_menu:
                 self.tray_menu.close()
                 self.tray_menu = None
@@ -287,9 +312,7 @@ class MainWindow(FramelessWindow):
                 skip_arg_times = 1
                 exit_type = 5
                 try:
-                    if isinstance(argv[index + 1], str) and argv[index + 1].startswith(
-                        "autodaily"
-                    ):
+                    if isinstance(argv[index + 1], str) and argv[index + 1].startswith("autodaily"):
                         exit_task = cfg.get_value(argv[index + 1] + "_task_exit")
                         if exit_task[4]:
                             exit_type = 3
@@ -303,13 +326,22 @@ class MainWindow(FramelessWindow):
                             exit_type = 5
                         elif exit_task[0]:
                             exit_type = 4
+                        else:
+                            exit_type = 0
+                        autodaily_task = cfg.get_value(argv[index + 1] + "_task")
+                        if autodaily_task[0]:
+                            self.farming_interface.interface_left.daily_task.box.set_check_true()
+                        if autodaily_task[1]:
+                            self.farming_interface.interface_left.get_reward.box.set_check_true()
+                        if autodaily_task[2]:
+                            self.farming_interface.interface_left.buy_enkephalin.box.set_check_true()
+                        if autodaily_task[3]:
+                            self.farming_interface.interface_left.mirror.box.set_check_true()
                     else:
                         exit_type = int(argv[index + 1])
                         if exit_type < 0 or exit_type > 6:
                             exit_type = 0
-                            log.error(
-                                f'命令行参数 --exit 后输入值"{argv[index + 1]}"越界'
-                            )
+                            log.error(f'命令行参数 --exit 后输入值"{argv[index + 1]}"越界')
                 except (IndexError, ValueError):
                     # 由于输入值为可选, 所以在强制int失败或缺少时将跳过参数数值重置为0
                     skip_arg_times = 0
@@ -322,9 +354,7 @@ class MainWindow(FramelessWindow):
 
         # 最终执行操作
         if exit_flag:
-            self.farming_interface.interface_left.then_combobox.combo_box.setCurrentIndex(
-                exit_type
-            )
+            self.farming_interface.interface_left.then_combobox.combo_box.setCurrentIndex(exit_type)
 
         if start_flag:
             log.info("开始通过命令行参数启动程序")
@@ -335,9 +365,7 @@ class MainWindow(FramelessWindow):
         mainWindow_style = get_main_window_style(is_dark)
         titleBar_style = get_title_bar_style(is_dark)
 
-        self.setStyleSheet(
-            f"MainWindow {{ background-color: {mainWindow_style['bg_color']}; }}"
-        )
+        self.setStyleSheet(f"MainWindow {{ background-color: {mainWindow_style['bg_color']}; }}")
         self.titleBar.titleLabel.setStyleSheet(
             f"QLabel {{ background: transparent; font-size: 13px; padding: 0 4px; color: {titleBar_style['text_color']}; }}"
         )
@@ -419,9 +447,7 @@ class MainWindow(FramelessWindow):
                 self.pivot.setCurrentItem("team_setting")
             else:
                 """切换页面（带越界保护）"""
-                self.addSubInterface(
-                    TeamSettingCard(num), "team_setting", self.tr("队伍设置")
-                )
+                self.addSubInterface(TeamSettingCard(num), "team_setting", self.tr("队伍设置"))
                 QTimer.singleShot(0, lambda: self.pivot.setCurrentItem("team_setting"))
         except Exception as e:
             log.error(f"【异常】switch_to_page 出错：{type(e).__name__}:{e}")
@@ -511,15 +537,11 @@ class MainWindow(FramelessWindow):
             self.help_interface.load_markdown(url)
 
     def download_and_install(self, file_name):
-        messages_box = MessageBoxConfirm(
-            self.tr("更新提醒"), self.tr("下载已经完成，是否开始更新"), self.window()
-        )
+        messages_box = MessageBoxConfirm(self.tr("更新提醒"), self.tr("下载已经完成，是否开始更新"), self.window())
         if messages_box.exec():
             source_file = os.path.abspath("./AALC Updater.exe")
             assert_name = file_name
-            subprocess.Popen(
-                [source_file, assert_name], creationflags=subprocess.DETACHED_PROCESS
-            )
+            subprocess.Popen([source_file, assert_name], creationflags=subprocess.DETACHED_PROCESS)
 
     def retranslateUi(self):
         self.pivot.setItemText("farming_interface", self.tr("一键长草"))

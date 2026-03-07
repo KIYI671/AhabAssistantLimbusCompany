@@ -97,9 +97,7 @@ class Announcement(QWidget):
         if show_title:
             if content_type == "html":
                 # 在内容前添加标题
-                styled_content = (
-                    f"<h1 style='margin-bottom: 20px;'>{title}</h1>" + content
-                )
+                styled_content = f"<h1 style='margin-bottom: 20px;'>{title}</h1>" + content
                 self.content.setHtml(styled_content)
             elif content_type == "markdown":
                 try:
@@ -223,11 +221,7 @@ class AnnouncementBoard(FramelessDialog):
         # 创建ALL公告页面
         # 创建ALL公告页面
         msg = self.tr("滚动至底部可关闭公告")
-        content = (
-            f"<h4>{msg}</h4>"
-            "<h3>Ahab Assistant Limbus Company</h3>"
-            f"<h3>{cfg.version}</h3>"
-        )
+        content = f"<h4>{msg}</h4><h3>Ahab Assistant Limbus Company</h3><h3>{cfg.version}</h3>"
         self.all = Announcement(
             None,
             self.tr("ALL~ 全部公告"),
@@ -299,9 +293,7 @@ class AnnouncementBoard(FramelessDialog):
         # 为ALL页面设置滚动监听
         if hasattr(self.all.content, "verticalScrollBar"):
             scroll_bar = self.all.content.verticalScrollBar()
-            scroll_bar.valueChanged.connect(
-                lambda: self.check_scroll_position(self.tr("ALL~ 全部公告"))
-            )
+            scroll_bar.valueChanged.connect(lambda: self.check_scroll_position(self.tr("ALL~ 全部公告")))
 
         # 监听内容栈切换事件，以便为新显示的页面设置滚动监听
         self.content_stack.currentChanged.connect(self.on_stack_changed)
@@ -432,9 +424,7 @@ class AnnouncementBoard(FramelessDialog):
                 }
                 """
             )
-            self.setStyleSheet(
-                "AnnouncementBoard { background-color: rgba(28, 28, 28, 1); }"
-            )
+            self.setStyleSheet("AnnouncementBoard { background-color: rgba(28, 28, 28, 1); }")
         else:
             self.sidebar.setStyleSheet(light_sidebar)
             self.title_list.setStyleSheet(light_list)
@@ -463,17 +453,13 @@ class AnnouncementBoard(FramelessDialog):
 
         # 加载 GitHub Markdown 样式
         css_path = (
-            "./assets/styles/github-markdown-dark.css"
-            if isDarkTheme()
-            else "./assets/styles/github-markdown-light.css"
+            "./assets/styles/github-markdown-dark.css" if isDarkTheme() else "./assets/styles/github-markdown-light.css"
         )
         try:
             with open(css_path, encoding="utf-8") as f:
                 css_content = f.read()
                 for title, widget in self.title_content_map.items():
-                    if hasattr(widget, "content") and hasattr(
-                        widget.content, "document"
-                    ):
+                    if hasattr(widget, "content") and hasattr(widget.content, "document"):
                         widget.content.document().setDefaultStyleSheet(css_content)
         except Exception:
             pass  # 样式加载失败时使用默认样式

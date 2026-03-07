@@ -60,12 +60,8 @@ def back_init_menu():
                 offset = timedelta(hours=cfg.timezone)
                 now_time_offset = now_time + offset
                 # 创建当天10:00和12:00的时间对象（与now_time_offset同日期）
-                today_10am = now_time_offset.replace(
-                    hour=10, minute=0, second=0, microsecond=0
-                )
-                today_12pm = now_time_offset.replace(
-                    hour=12, minute=0, second=0, microsecond=0
-                )
+                today_10am = now_time_offset.replace(hour=10, minute=0, second=0, microsecond=0)
+                today_12pm = now_time_offset.replace(hour=12, minute=0, second=0, microsecond=0)
 
                 # 判断是否在10:00-12:00之间
                 if today_10am <= now_time_offset <= today_12pm:
@@ -88,9 +84,7 @@ def back_init_menu():
             auto.click_element("mirror/road_in_mir/setting_assets.png")
             continue
 
-        if auto.find_element(
-            "mirror/road_in_mir/select_encounter_reward_card_assets.png"
-        ):
+        if auto.find_element("mirror/road_in_mir/select_encounter_reward_card_assets.png"):
             get_reward_card()
 
         # 在剧情中

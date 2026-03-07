@@ -83,20 +83,14 @@ class UpdateThread(QThread):
                 flags=re.IGNORECASE,
             )
             if cfg.update_source == "GitHub":
-                content = (
-                    content
-                    + "\n\n若下载速度较慢，可尝试使用 Mirror酱（设置 → 关于 → 更新源） 高速下载"
-                )
+                content = content + "\n\n若下载速度较慢，可尝试使用 Mirror酱（设置 → 关于 → 更新源） 高速下载"
 
             # 比较当前版本和最新版本，如果最新版本更高，则准备更新
             if parse(version.lstrip("Vv")) > parse(cfg.version.lstrip("Vv")):
-                self.title = self.tr(
-                    "发现新版本：{Old_version} ——> {New_version}\n更新日志:"
-                ).format(Old_version=cfg.version, New_version=version)
-                self.content = (
-                    "<style>a {color: #586f50; font-weight: bold;}</style>"
-                    + md_renderer.render(content)
+                self.title = self.tr("发现新版本：{Old_version} ——> {New_version}\n更新日志:").format(
+                    Old_version=cfg.version, New_version=version
                 )
+                self.content = "<style>a {color: #586f50; font-weight: bold;}</style>" + md_renderer.render(content)
                 self.updateSignal.emit(UpdateStatus.UPDATE_AVAILABLE)
             else:
                 # 如果没有新版本，则发送成功信号
@@ -117,10 +111,7 @@ class UpdateThread(QThread):
                 assets_url = self.get_download_url_from_assets(data["assets"])
 
                 if cfg.update_source == "GitHub":
-                    content = (
-                        content
-                        + "\n\n若下载速度较慢，可尝试使用 Mirror酱（设置 → 关于 → 更新源） 高速下载"
-                    )
+                    content = content + "\n\n若下载速度较慢，可尝试使用 Mirror酱（设置 → 关于 → 更新源） 高速下载"
 
                 # 如果没有可用的下载 URL，则发送成功信号并返回
                 if assets_url is None:
@@ -129,13 +120,10 @@ class UpdateThread(QThread):
 
                 # 比较当前版本和最新版本，如果最新版本更高，则准备更新
                 if parse(version.lstrip("Vv")) > parse(cfg.version.lstrip("Vv")):
-                    self.title = self.tr(
-                        "发现新版本：{Old_version} ——> {New_version}\n更新日志:"
-                    ).format(Old_version=cfg.version, New_version=version)
-                    self.content = (
-                        "<style>a {color: #586f50; font-weight: bold;}</style>"
-                        + md_renderer.render(content)
+                    self.title = self.tr("发现新版本：{Old_version} ——> {New_version}\n更新日志:").format(
+                        Old_version=cfg.version, New_version=version
                     )
+                    self.content = "<style>a {color: #586f50; font-weight: bold;}</style>" + md_renderer.render(content)
                     self.updateSignal.emit(UpdateStatus.UPDATE_AVAILABLE)
                 else:
                     # 如果没有新版本，则发送成功信号
@@ -236,10 +224,7 @@ class UpdateThread(QThread):
                 response = self.check_update_info_mirrorchyan(cdk)
                 if response.status_code == 200:
                     mirrorchyan_data = response.json()
-                    if (
-                        mirrorchyan_data["code"] == 0
-                        and mirrorchyan_data["msg"] == "success"
-                    ):
+                    if mirrorchyan_data["code"] == 0 and mirrorchyan_data["msg"] == "success":
                         url = mirrorchyan_data["data"]["url"]
                         return url
                 else:
@@ -275,11 +260,7 @@ class UpdateThread(QThread):
                         headers=cfg.useragent,
                     )
                 response.raise_for_status()
-                data = (
-                    response.json()[0]
-                    if cfg.update_prerelease_enable
-                    else response.json()
-                )
+                data = response.json()[0] if cfg.update_prerelease_enable else response.json()
 
                 assets_url = self.get_download_url_from_assets(data["assets"])
 
@@ -309,9 +290,7 @@ def check_update(self, timeout=5, flag=False):
         """
         if status == UpdateStatus.UPDATE_AVAILABLE:
             # 当有可用更新时，创建一个消息框对象并显示详细信息
-            messages_box = MessageBoxUpdate(
-                self.update_thread.title, self.update_thread.content, self.window()
-            )
+            messages_box = MessageBoxUpdate(self.update_thread.title, self.update_thread.content, self.window())
             if messages_box.exec():
                 # 如果用户确认更新，则从指定的URL下载更新资源
                 assets_url = self.update_thread.get_assets_url()
@@ -452,6 +431,4 @@ def start_update_thread(assets_url):
 
 def start_update(assert_name):
     source_file = os.path.abspath("./AALC Updater.exe")
-    subprocess.Popen(
-        [source_file, assert_name], creationflags=subprocess.DETACHED_PROCESS
-    )
+    subprocess.Popen([source_file, assert_name], creationflags=subprocess.DETACHED_PROCESS)

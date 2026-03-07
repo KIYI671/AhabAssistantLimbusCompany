@@ -30,9 +30,7 @@ class ToolManager:
         app = QApplication.instance()
         if app is None:
             # 无运行中的 Qt 应用，无法安全创建窗口
-            log.error(
-                "未检测到正在运行的 Qt 应用，无法展示小工具窗口。请从主程序内启动该工具。"
-            )
+            log.error("未检测到正在运行的 Qt 应用，无法展示小工具窗口。请从主程序内启动该工具。")
             self.initialized = None
             return
 

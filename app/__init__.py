@@ -210,9 +210,7 @@ all_checkbox_config_name = [
 win_input_type_options = {
     QT_TRANSLATE_NOOP("ComboBoxSettingCard", "前台模式 (pyautogui)"): "foreground",
     QT_TRANSLATE_NOOP("ComboBoxSettingCard", "后台模式 (默认) (pywin32)"): "background",
-    QT_TRANSLATE_NOOP(
-        "ComboBoxSettingCard", "后台增强 (pywin32+set_window_pos)"
-    ): "window_move",
+    QT_TRANSLATE_NOOP("ComboBoxSettingCard", "后台增强 (pywin32+set_window_pos)"): "window_move",
 }
 
 

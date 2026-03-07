@@ -50,9 +50,7 @@ class AbstractInput:
         Extra:<br>
             输出日志: "点击位置:(x,y)"
         """
-        raise InterruptedError(
-            f"未实现的输入方法 {self.__class__.__name__}.mouse_click"
-        )
+        raise InterruptedError(f"未实现的输入方法 {self.__class__.__name__}.mouse_click")
 
     def mouse_click_blank(self, coordinate=(1, 1), times=1, move_back=False) -> bool:
         """在空白位置点击鼠标
@@ -66,9 +64,7 @@ class AbstractInput:
         Extra:<br>
             输出日志: "点击（1，1）空白位置"
         """
-        raise InterruptedError(
-            f"未实现的输入方法 {self.__class__.__name__}.mouse_click_blank"
-        )
+        raise InterruptedError(f"未实现的输入方法 {self.__class__.__name__}.mouse_click_blank")
 
     def mouse_drag(self, x, y, drag_time=0.1, dx=0, dy=0, move_back=True) -> None:
         """鼠标从指定位置拖动到另一个位置
@@ -91,9 +87,7 @@ class AbstractInput:
             reverse (int): 拖动方向，1表示向下，-1表示向上
             move_back (bool): 是否在拖动后将鼠标移动回原位置
         """
-        raise InterruptedError(
-            f"未实现的输入方法 {self.__class__.__name__}.mouse_drag_down"
-        )
+        raise InterruptedError(f"未实现的输入方法 {self.__class__.__name__}.mouse_drag_down")
 
     def mouse_drag_link(self, position: list, drag_time=0.1, move_back=False) -> None:
         """鼠标从指定位置拖动到指定位置
@@ -103,9 +97,7 @@ class AbstractInput:
             position (list): 目标位置列表
             drag_time (float): 拖动时间
         """
-        raise InterruptedError(
-            f"未实现的输入方法 {self.__class__.__name__}.mouse_drag_link"
-        )
+        raise InterruptedError(f"未实现的输入方法 {self.__class__.__name__}.mouse_drag_link")
 
     def mouse_scroll(self, direction: int = -3) -> bool:
         """
@@ -119,9 +111,7 @@ class AbstractInput:
             如果`direction`为负数, 输出日志: "鼠标滚动滚轮，远离界面"<br>
             如果`direction`为正数, 输出日志: "鼠标滚动滚轮，拉近界面"
         """
-        raise InterruptedError(
-            f"未实现的输入方法 {self.__class__.__name__}.mouse_scroll"
-        )
+        raise InterruptedError(f"未实现的输入方法 {self.__class__.__name__}.mouse_scroll")
 
     def mouse_to_blank(self, coordinate=(1, 1), move_back=False) -> None:
         """鼠标移动到空白位置，避免遮挡
@@ -132,9 +122,7 @@ class AbstractInput:
         Extra:<br>
             输出日志: "鼠标移动到空白，避免遮挡"
         """
-        raise InterruptedError(
-            f"未实现的输入方法 {self.__class__.__name__}.mouse_to_blank"
-        )
+        raise InterruptedError(f"未实现的输入方法 {self.__class__.__name__}.mouse_to_blank")
 
     def key_press(self, key) -> None:
         raise InterruptedError(f"未实现的输入方法 {self.__class__.__name__}.key_press")

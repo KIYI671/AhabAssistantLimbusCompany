@@ -4,7 +4,6 @@ from ctypes import windll
 import cv2
 import pyautogui
 import pywintypes
-import win32con
 import win32gui
 import win32ui
 from PIL import Image
@@ -80,9 +79,7 @@ class ScreenShot:
 
         # 创建设备上下文
         hdc_mem = windll.gdi32.CreateCompatibleDC(hdc_screen)
-        hbitmap = windll.gdi32.CreateCompatibleBitmap(
-            hdc_screen, screen_width, screen_height
-        )
+        hbitmap = windll.gdi32.CreateCompatibleBitmap(hdc_screen, screen_width, screen_height)
         windll.gdi32.SelectObject(hdc_mem, hbitmap)
 
         # 使用BitBlt复制屏幕内容到内存DC

@@ -130,9 +130,7 @@ class BaseCheckBox(BaseLayout):
         self.tips = tips
         self.check_box = RightClickCheckBox(title, self)
         self.check_box.installEventFilter(
-            ToolTipFilter(
-                self.check_box, showDelay=0, position=ToolTipPosition.BOTTOM_LEFT
-            )
+            ToolTipFilter(self.check_box, showDelay=0, position=ToolTipPosition.BOTTOM_LEFT)
         )
 
         self.hBoxLayout.addWidget(self.check_box, 0, Qt.AlignLeft)
@@ -179,9 +177,7 @@ class BaseCheckBox(BaseLayout):
         elif self.config_name.startswith("the_team_"):
             index = int(self.config_name.split("_")[-1]) - 1
             if checked:
-                cfg.set_value(
-                    "teams_be_select_num", cfg.get_value("teams_be_select_num") + 1
-                )
+                cfg.set_value("teams_be_select_num", cfg.get_value("teams_be_select_num") + 1)
                 teams_be_select = cfg.get_value("teams_be_select")
                 teams_be_select[index] = True
                 teams_order = cfg.get_value("teams_order")
@@ -189,9 +185,7 @@ class BaseCheckBox(BaseLayout):
                 cfg.set_value("teams_be_select", teams_be_select)
                 cfg.set_value("teams_order", teams_order)
             else:
-                cfg.set_value(
-                    "teams_be_select_num", cfg.get_value("teams_be_select_num") - 1
-                )
+                cfg.set_value("teams_be_select_num", cfg.get_value("teams_be_select_num") - 1)
                 teams_be_select = cfg.get_value("teams_be_select")
                 teams_be_select[index] = False
                 teams_order = cfg.get_value("teams_order")
@@ -424,11 +418,7 @@ class BaseComboBox(BaseLayout):
         self.combo_box = RightClickComboBox(self)
         self.hBoxLayout.addWidget(self.combo_box, stretch=1)
         self.setFixedHeight(30)
-        self.installEventFilter(
-            ToolTipFilter(
-                self, showDelay=tool_tip_delay, position=ToolTipPosition.BOTTOM_LEFT
-            )
-        )
+        self.installEventFilter(ToolTipFilter(self, showDelay=tool_tip_delay, position=ToolTipPosition.BOTTOM_LEFT))
         if combo_box_width and isinstance(combo_box_width, int):
             self.combo_box.setFixedWidth(combo_box_width)
 

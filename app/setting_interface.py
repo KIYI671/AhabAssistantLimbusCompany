@@ -390,6 +390,8 @@ class SettingInterface(QWidget):
         self.theme_pack_group = BaseSettingCardGroup(
             QT_TRANSLATE_NOOP("BaseSettingCardGroup", "镜牢主题包设置"),
             self.scroll_widget,
+            QT_TRANSLATE_NOOP("BaseSettingCardGroup", "镜牢主题包设置"),
+            self.scroll_widget,
         )
         self.theme_pack_card = BasePrimaryPushSettingCard(
             QT_TRANSLATE_NOOP("BasePrimaryPushSettingCard", "配置"),

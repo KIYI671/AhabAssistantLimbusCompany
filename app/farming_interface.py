@@ -34,9 +34,7 @@ class ThenComboBox(BaseComboBox):
     """添加右键永久保存, 不泛用"""
 
     def __init__(self, config_name, combo_box_width=None, parent=None):
-        super().__init__(
-            config_name, combo_box_width, tool_tip_delay=600, parent=parent
-        )
+        super().__init__(config_name, combo_box_width, tool_tip_delay=600, parent=parent)
 
     def on_change(self, index):
         if cfg.get_value(self.config_name) is not None:
@@ -170,36 +168,26 @@ class FarmingInterfaceLeft(QWidget):
 
         self.resonate_with_Ahab.button.setEnabled(False)
 
-        self.select_all = NormalTextButton(
-            QT_TRANSLATE_NOOP("NormalTextButton", "全选"), "select_all"
-        )
+        self.select_all = NormalTextButton(QT_TRANSLATE_NOOP("NormalTextButton", "全选"), "select_all")
         self.select_all.clicked.connect(self.select_all_function)
 
-        self.clear_all = NormalTextButton(
-            QT_TRANSLATE_NOOP("NormalTextButton", "清空"), "clear_all"
-        )
+        self.clear_all = NormalTextButton(QT_TRANSLATE_NOOP("NormalTextButton", "清空"), "clear_all")
         self.clear_all.clicked.connect(self.clear_all_function)
 
         self.then = BaseLabel(QT_TRANSLATE_NOOP("BaseLabel", "之后"))
 
         self.then_combobox = ThenComboBox("after_completion")
         self.then_combobox.setToolTip(
-            QT_TRANSLATE_NOOP(
-                "ThenComboBox", "选择脚本结束后的操作，右键点击并更改选项可永久保存"
-            )
+            QT_TRANSLATE_NOOP("ThenComboBox", "选择脚本结束后的操作，右键点击并更改选项可永久保存")
         )
         self.then_combobox.add_items(set_after_completion_options)
-        self.then_combobox.combo_box.RightClicked.connect(
-            self.then_combobox_right_clicked
-        )
+        self.then_combobox.combo_box.RightClicked.connect(self.then_combobox_right_clicked)
         if cfg.keep_after_completion is False:
             self.then_combobox.set_options(0)
         self.link_start_button = NormalTextButton("Link Start!", "link_start", 0)
         self.link_start_button.clicked.connect(self.start_and_stop_tasks)
         self.link_start_button.button.setMinimumSize(130, 70)
-        scale_factor = (
-            QApplication.primaryScreen().logicalDotsPerInch() / 96
-        )  # Windows 标准 DPI 是 96
+        scale_factor = QApplication.primaryScreen().logicalDotsPerInch() / 96  # Windows 标准 DPI 是 96
         font_size = min(14, int(14 / scale_factor))
         # 创建字体对象并设置大小
         font = self.link_start_button.button.font()  # 获取当前字体
@@ -311,12 +299,7 @@ class FarmingInterfaceLeft(QWidget):
                 mediator.warning.emit(message)
                 return False
 
-        if (
-            cfg.daily_task is False
-            and cfg.get_reward is False
-            and cfg.buy_enkephalin is False
-            and cfg.mirror is False
-        ):
+        if cfg.daily_task is False and cfg.get_reward is False and cfg.buy_enkephalin is False and cfg.mirror is False:
             mediator.tasks_warning.emit()
             return False
 
@@ -423,9 +406,7 @@ class FarmingInterfaceLeft(QWidget):
             duration=1500,
             parent=self.window(),
         )
-        self.then_info_bar.destroyed.connect(
-            lambda: setattr(self, "then_info_bar", None)
-        )
+        self.then_info_bar.destroyed.connect(lambda: setattr(self, "then_info_bar", None))
 
     def create_and_start_script(self):
         try:
@@ -508,17 +489,13 @@ class FarmingInterfaceCenter(QWidget):
 
     def __init_setting(self):
         self.setting_page.setCurrentIndex(cfg.get_value("default_page"))
-        list(toggle_button_group.items())[cfg.get_value("default_page")][1].setChecked(
-            True
-        )
+        list(toggle_button_group.items())[cfg.get_value("default_page")][1].setChecked(True)
 
     def switch_to_page(self, target: str):
         try:
             """切换页面（带越界保护）"""
             page_index = page_name_and_index[target]
-            self.setting_page.setCurrentIndex(
-                page_index
-            )  # 当调用 setCurrentIndex 时，StackedWidget 会自动播放过渡动画
+            self.setting_page.setCurrentIndex(page_index)  # 当调用 setCurrentIndex 时，StackedWidget 会自动播放过渡动画
             cfg.set_value("default_page", page_index)
         except Exception as e:
             log.error(f"【异常】switch_to_page 出错：{type(e).__name__}:{e}")

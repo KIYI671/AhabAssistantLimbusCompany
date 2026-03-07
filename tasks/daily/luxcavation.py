@@ -14,17 +14,13 @@ def EXP_luxcavation():
             continue
         if auto.find_element("battle/teams_assets.png"):
             break
-        if auto.find_element(
-            "home/first_prompt_assets.png", model="clam"
-        ) and auto.find_element("home/back_assets.png", model="normal"):
+        if auto.find_element("home/first_prompt_assets.png", model="clam") and auto.find_element(
+            "home/back_assets.png", model="normal"
+        ):
             auto.click_element("home/back_assets.png")
             continue
-        if auto.find_element(
-            "luxcavation/exp_enter.png", threshold=0.85, take_screenshot=True
-        ):
-            if level := auto.find_element(
-                "luxcavation/exp_enter.png", find_type="image_with_multiple_targets"
-            ):
+        if auto.find_element("luxcavation/exp_enter.png", threshold=0.85, take_screenshot=True):
+            if level := auto.find_element("luxcavation/exp_enter.png", find_type="image_with_multiple_targets"):
                 level = sorted(level, key=lambda x: x[0], reverse=True)
                 for lv in level:
                     auto.mouse_click(lv[0], lv[1])
@@ -32,9 +28,7 @@ def EXP_luxcavation():
                     auto.mouse_to_blank()
                     select_team = False
                     for _ in range(3):
-                        if auto.find_element(
-                            "battle/teams_assets.png", take_screenshot=True
-                        ) or auto.find_element(
+                        if auto.find_element("battle/teams_assets.png", take_screenshot=True) or auto.find_element(
                             "home/first_prompt_assets.png",
                             model="clam",
                             take_screenshot=True,
@@ -45,9 +39,9 @@ def EXP_luxcavation():
                         break
         if auto.click_element("home/luxcavation_assets.png"):
             continue
-        if auto.find_element(
-            "base/renew_confirm_assets.png", model="clam"
-        ) and auto.find_element("home/drive_assets.png", model="normal"):
+        if auto.find_element("base/renew_confirm_assets.png", model="clam") and auto.find_element(
+            "home/drive_assets.png", model="normal"
+        ):
             auto.click_element("base/renew_confirm_assets.png")
             from tasks.base.back_init_menu import back_init_menu
 
@@ -77,15 +71,13 @@ def thread_luxcavation():
             continue
         if auto.find_element("battle/teams_assets.png"):
             break
-        if auto.find_element(
-            "home/first_prompt_assets.png", model="clam"
-        ) and auto.find_element("home/back_assets.png", model="normal"):
+        if auto.find_element("home/first_prompt_assets.png", model="clam") and auto.find_element(
+            "home/back_assets.png", model="normal"
+        ):
             auto.click_element("home/back_assets.png")
             continue
         if auto.click_element("luxcavation/thread_enter_assets.png", threshold=0.78):
-            if pos := auto.find_element(
-                "luxcavation/thread_consume.png", threshold=0.85, take_screenshot=True
-            ):
+            if pos := auto.find_element("luxcavation/thread_consume.png", threshold=0.85, take_screenshot=True):
                 if scroll_bar := auto.find_element("luxcavation/thread_scroll_bar.png"):
                     auto.mouse_drag_down(scroll_bar[0], scroll_bar[1], reverse=2)
                 else:
@@ -102,9 +94,7 @@ def thread_luxcavation():
                         auto.mouse_click(lv[0], lv[1])
                         sleep(1)
                         auto.mouse_to_blank()
-                        if auto.find_element(
-                            "battle/teams_assets.png", take_screenshot=True
-                        ):
+                        if auto.find_element("battle/teams_assets.png", take_screenshot=True):
                             break
                 else:
                     # 处理下方所有关卡未解锁的情况
@@ -135,9 +125,7 @@ def thread_luxcavation():
                         auto.mouse_click(lv[0], lv[1])
                         sleep(1)
                         auto.mouse_to_blank()
-                        if auto.find_element(
-                            "battle/teams_assets.png", take_screenshot=True
-                        ):
+                        if auto.find_element("battle/teams_assets.png", take_screenshot=True):
                             break
 
             continue
@@ -145,9 +133,9 @@ def thread_luxcavation():
             continue
         if auto.click_element("home/luxcavation_assets.png"):
             continue
-        if auto.find_element(
-            "base/renew_confirm_assets.png", model="clam"
-        ) and auto.find_element("home/drive_assets.png", model="normal"):
+        if auto.find_element("base/renew_confirm_assets.png", model="clam") and auto.find_element(
+            "home/drive_assets.png", model="normal"
+        ):
             auto.click_element("base/renew_confirm_assets.png")
             from tasks.base.back_init_menu import back_init_menu
 

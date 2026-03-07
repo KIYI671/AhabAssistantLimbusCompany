@@ -87,9 +87,7 @@ def auto_switch_language_in_game(hwnd: int) -> int:
         return AutoSwitchCon.FINISH
 
     if cfg.language_in_game == "-":
-        msg = QT_TRANSLATE_NOOP(
-            "Logger", "当前游戏语言为 {current_game_lang}, 即将自动切换"
-        )
+        msg = QT_TRANSLATE_NOOP("Logger", "当前游戏语言为 {current_game_lang}, 即将自动切换")
         formatted_msg = msg.format(current_game_lang=output_lang_dict[lang_code])
         log.info(formatted_msg)
     else:
