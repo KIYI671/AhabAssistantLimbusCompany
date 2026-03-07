@@ -414,12 +414,12 @@ Right-click to set as permanent</translation>
     <message>
         <location filename="../app/__init__.py" line="51" />
         <source>邮件+日/周常</source>
-        <translation>Mail + Daily/Weekily</translation>
+        <translation>Mail + Daily/Weekly</translation>
     </message>
     <message>
         <location filename="../app/__init__.py" line="52" />
         <source>日/周常</source>
-        <translation>Daily/Weekily</translation>
+        <translation>Daily/Weekly</translation>
     </message>
     <message>
         <location filename="../app/__init__.py" line="53" />
