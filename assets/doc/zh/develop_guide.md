@@ -43,3 +43,19 @@ python main_dev.py --no-reload
 - **快捷键**：
   - `Ctrl+R`：手动触发重载
   - `Ctrl+C`：退出程序
+
+## 翻译
+
+```powershell
+# 提取可翻译文本到 .ts 文件
+uv run .\scripts\translation_files_build.py 
+# 或者
+python scripts\translation_files_build.py
+
+# 手动编辑翻译
+pyside6-Linguist  .\i18n\myapp_en.ts
+
+# 更编译生成 .qm 文件
+pyside6-lrelease i18n/myapp_en.ts -qm i18n/myapp_en.qm
+
+```
