@@ -51,6 +51,7 @@ theme_pack_list:
   sweep: -5 # 深夜清扫
   Hatred: -5 # 绝望骑士
   Wander: -5 # 提灯、乘客、蜈蚣、黑檀
+  dusk: -5 # BunBun虫子
   compassion: -5 # 明日方舟联动
 
 theme_pack_list_hard:
@@ -145,6 +146,7 @@ theme_pack_list_cn:
   清扫: -5 # 深夜清扫
   绝望: -5 # 绝望骑士
   彷徨: -5 # 提灯、乘客、蜈蚣、黑檀
+  黄昏: -5 # BunBun虫子
   巡礼: -5 # 明日方舟联动
   unknown: -5 # 未汉化的新卡包
 

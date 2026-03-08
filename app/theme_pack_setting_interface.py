@@ -77,6 +77,7 @@ THEME_PACK_NAME_MAP = {
     "sweep": "清扫",
     "Hatred": "绝望",
     "Wander": "彷徨",
+    "dusk": "黄昏",
     "compassion": "巡礼",
 }
 
@@ -186,6 +187,7 @@ THEME_PACK_IMAGE_MAP = {
     "sweep": "Nocturnal Sweeping.png",
     "Hatred": "Hatred and Despair.png",
     "Wander": "Charm,Wander,Doubt.png",
+    "dusk": "The Dusk of Amber.png",
     # 以下主题包暂无对应图片文件
     # "compassion": "The Compassion.png",  # 明日方舟联动/巡礼
 }
