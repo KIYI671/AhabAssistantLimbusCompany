@@ -32,11 +32,11 @@
     <name>AutoDailyView</name>
     <message>
         <source>选择执行的行动</source>
-        <translation type="unfinished"></translation>
+        <translation>Select the action to perform</translation>
     </message>
     <message>
         <source>运行结束后</source>
-        <translation type="unfinished"></translation>
+        <translation>After the run is complete</translation>
     </message>
     <message>
         <source>保存</source>
@@ -225,19 +225,19 @@ Right-click to set as permanent</translation>
     </message>
     <message>
         <source>自动执行日常</source>
-        <translation type="unfinished"></translation>
+        <translation>AutoDaily</translation>
     </message>
     <message>
         <source>自动获取奖励</source>
-        <translation type="unfinished"></translation>
+        <translation>AutoDailyGetReward</translation>
     </message>
     <message>
         <source>自动狂气换体</source>
-        <translation type="unfinished"></translation>
+        <translation>AutoDailyBuyEnkephalin</translation>
     </message>
     <message>
         <source>自动镜牢</source>
-        <translation type="unfinished"></translation>
+        <translation>AutoDailyMirror</translation>
     </message>
     <message>
         <source>退出游戏</source>
@@ -547,7 +547,7 @@ Right-click to set as permanent</translation>
     </message>
     <message>
         <source>请确保LimbusCompany正在运行</source>
-        <translation type="unfinished"></translation>
+        <translation>Please ensure that LimbusCompany is running</translation>
     </message>
 </context>
 <context>
@@ -868,35 +868,35 @@ Right-click to set as permanent</translation>
     </message>
     <message>
         <source>前台模式 (pyautogui)</source>
-        <translation type="unfinished"></translation>
+        <translation>Foreground mode (pyautogui)</translation>
     </message>
     <message>
         <source>后台模式 (默认) (pywin32)</source>
-        <translation type="unfinished"></translation>
+        <translation>Background mode (default) (pywin32)</translation>
     </message>
     <message>
         <source>后台增强 (pywin32+set_window_pos)</source>
-        <translation type="unfinished"></translation>
+        <translation>Background Mode Enhancement(pywin32+set win pos)</translation>
     </message>
     <message>
         <source>操控方式</source>
-        <translation type="unfinished"></translation>
+        <translation>Control method</translation>
     </message>
     <message>
         <source>后台模式，游戏可以在后台运行，但是&lt;font color=red&gt;游戏不能处于最小化状态!!&lt;/font&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>Background mode: The game can run in the background, but &lt;font color=red&gt;the game cannot be minimized!!&lt;/font&gt;</translation>
     </message>
     <message>
         <source>前台模式，游戏必须在显示在最上方</source>
-        <translation type="unfinished"></translation>
+        <translation>In foreground mode, the game must be displayed at the top</translation>
     </message>
     <message>
         <source>基于移动窗口的后台模式，有效规避了后台模式需要移动鼠标的情况，&lt;br/&gt;但是性能和稳定性较差，&lt;font color=red&gt;不推荐长时间无人使用&lt;/font&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>Window-move BG mode. Avoids mouse syncing move.&lt;br/&gt; But has poor stability.&lt;font color=red&gt; Don&apos;t leave it unattended.&lt;/font&gt;</translation>
     </message>
     <message>
         <source>未知的输入模式，发生了错误</source>
-        <translation type="unfinished"></translation>
+        <translation>An error occurred due to an unknown input pattern</translation>
     </message>
 </context>
 <context>
@@ -1017,7 +1017,7 @@ Right-click to set as permanent</translation>
     </message>
     <message>
         <source>设置任务项</source>
-        <translation type="unfinished"></translation>
+        <translation>Set task items</translation>
     </message>
 </context>
 <context>
@@ -1101,7 +1101,7 @@ Right-click to set as permanent</translation>
     </message>
     <message>
         <source>不处理事件</source>
-        <translation type="unfinished"></translation>
+        <translation>Do not handle events</translation>
     </message>
 </context>
 <context>
@@ -1761,7 +1761,7 @@ Right-click to set as permanent</translation>
     <message>
         <source>权重说明: 正数=优先选择(值越大优先级越高), 负数=避免选择, 0=无特殊偏好
 保存时会自动同步其他语言配置权重 (如有)</source>
-        <translation type="unfinished"></translation>
+        <translation>Weight description: Positive=Prefer (higher value=higher priority), Negative=Avoid, 0=No special preference&lt;br/&gt;When saving, the configuration weights for other languages ​​will be automatically synchronized (if any)</translation>
     </message>
 </context>
 <context>
