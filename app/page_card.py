@@ -15,7 +15,6 @@ from qfluentwidgets import FluentIcon as FIF
 from qfluentwidgets import (
     PopUpAniStackedWidget,
     ScrollArea,
-    SegmentedWidget,
     TextBrowser,
     TransparentToolButton,
     isDarkTheme,
@@ -34,6 +33,7 @@ from app.base_combination import (
 from app.base_tools import BaseCheckBox
 from app.common.ui_config import get_theme_aware_text_browser_qss
 from app.language_manager import SUPPORTED_GAME_LANG_NAME, LanguageManager
+from app.widget.custom_segmented_widget import CustomSegmentedWidget
 from module.config import cfg
 from module.logger import log
 
@@ -76,8 +76,9 @@ class PageCard(QFrame):
         self.__init_widget()
 
     def set_pivot(self):
-        self.pivot = SegmentedWidget(self)
-        self.pivot.setFixedHeight(50)
+        self.pivot = CustomSegmentedWidget(self)
+        self.pivot.setFixedHeight(36)
+
         self.pivot.addItem("general", "常规设置")
         self.pivot.addItem("advanced", "高级设置")
         self.pivot.setCurrentItem("general")

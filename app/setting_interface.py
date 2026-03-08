@@ -1,10 +1,28 @@
-from PySide6.QtCore import QT_TRANSLATE_NOOP, Qt, QUrl
+from PySide6.QtCore import QT_TRANSLATE_NOOP, Qt, QTime, QUrl, QPoint, QCoreApplication
 from PySide6.QtGui import QDesktopServices
-from PySide6.QtWidgets import QFileDialog, QWidget
-from qfluentwidgets import ExpandLayout, InfoBarPosition, ScrollArea, Theme, setTheme
+from PySide6.QtWidgets import (
+    QFrame,
+    QHBoxLayout,
+    QVBoxLayout,
+    QFileDialog,
+    QPushButton,
+    QWidget,
+    QSizePolicy,
+)
+from qfluentwidgets import (
+    ExpandLayout,
+    InfoBarPosition,
+    ScrollArea,
+    Theme,
+    isDarkTheme,
+    qconfig,
+    setTheme,
+    setCustomStyleSheet,
+)
 from qfluentwidgets import FluentIcon as FIF
 
 from app import win_input_type_options
+from app.widget.setting_nav import SettingNav
 from app.base_combination import (
     BasePrimaryPushSettingCard,
     BasePushSettingCard,
@@ -20,28 +38,57 @@ from app.base_combination import (
 from app.card.messagebox_custom import BaseInfoBar
 from app.language_manager import SUPPORTED_LANG_NAME, LanguageManager
 from app.theme_pack_setting_interface import ThemePackSettingDialog
+from app.common.ui_config import get_setting_interface_qss
 from module.config import cfg
 from utils.schedule_helper import ScheduleHelper
 
 
-class SettingInterface(ScrollArea):
+class SettingInterface(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent=parent)
         self.__init_widget()
         self.__init_card()
         self.__initLayout()
-        self.set_style_sheet()
+        self.__init_nav()
+
+        self._apply_theme_style()
+        qconfig.themeChanged.connect(self._apply_theme_style)
+
         self.__connect_signal()
-        self.setWidget(self.scroll_widget)
         self.setObjectName("SettingInterface")
 
         LanguageManager().register_component(self)
 
     def __init_widget(self):
+        # main container
+        self.main_layout = QHBoxLayout(self)
+        self.main_layout.setContentsMargins(0, 0, 0, 0)
+        self.main_layout.setSpacing(0)
+
+        # left navigation frame
+        self.setting_nav = SettingNav(self)
+
+        # right scroll area with existing content
+        self.content_scroll = ScrollArea(self)
+        self.content_scroll.setObjectName("contentScroll")
+        self.content_scroll.setWidgetResizable(True)
+        self.content_scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self.content_scroll.enableTransparentBackground()
+
         self.scroll_widget = QWidget()
         self.scroll_widget.setObjectName("scrollWidget")
         self.expand_layout = ExpandLayout(self.scroll_widget)
-        self.setWidgetResizable(True)
+        self.content_scroll.setWidget(self.scroll_widget)
+
+        # assemble
+        self.main_layout.addWidget(self.setting_nav)
+        self.main_layout.addWidget(self.content_scroll)
+        self.main_layout.setStretch(0, 0)
+        self.main_layout.setStretch(1, 1)
+
+        # give nav a fixed width and prevent stretch
+        self.setting_nav.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Expanding)
+        self.content_scroll.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
 
     def __init_card(self):
         self.game_setting_group = BaseSettingCardGroup(
@@ -404,18 +451,55 @@ class SettingInterface(ScrollArea):
         self.expand_layout.addWidget(self.about_group)
         self.expand_layout.addWidget(self.experimental_group)
 
-    def set_style_sheet(self):
-        self.setStyleSheet(
-            """
-                SettingInterface, #scrollWidget {
-                    background-color: transparent;
-                }
-                QScrollArea {
-                    background-color: transparent;
-                    border: none;
-                }
-            """
-        )
+    def __init_nav(self):
+        """初始化左侧导航栏组件"""
+        # ordered navigation items: (key, title, widget)
+        nav_items = [
+            ("game", QT_TRANSLATE_NOOP("Nav", "游戏设置"), self.game_setting_group),
+            (
+                "theme_pack",
+                QT_TRANSLATE_NOOP("Nav", "镜牢主题包"),
+                self.theme_pack_group,
+            ),
+            (
+                "simulator",
+                QT_TRANSLATE_NOOP("Nav", "模拟器设置"),
+                self.simulator_setting_group,
+            ),
+            ("game_path", QT_TRANSLATE_NOOP("Nav", "启动游戏"), self.game_path_group),
+            ("autodaily", QT_TRANSLATE_NOOP("Nav", "定时执行"), self.autodaily_group),
+            ("personal", QT_TRANSLATE_NOOP("Nav", "个性化"), self.personal_group),
+            ("update", QT_TRANSLATE_NOOP("Nav", "更新设置"), self.update_group),
+            ("logs", QT_TRANSLATE_NOOP("Nav", "日志设置"), self.logs_group),
+            ("about", QT_TRANSLATE_NOOP("Nav", "关于"), self.about_group),
+            (
+                "experimental",
+                QT_TRANSLATE_NOOP("Nav", "实验性"),
+                self.experimental_group,
+            ),
+        ]
+
+        self.setting_nav.add_nav_items(nav_items)
+
+        # connect scroll sync
+        self.setting_nav.navClicked.connect(self.__on_nav_clicked)
+        self.content_scroll.verticalScrollBar().valueChanged.connect(self.__on_content_scrolled)
+
+    def __on_nav_clicked(self, key: str, widget):
+        """导航栏点击，滚动到指定内容"""
+        target_y = widget.mapTo(self.scroll_widget, QPoint(0, 0)).y()
+        bar = self.content_scroll.verticalScrollBar()
+        # Offset to prevent the card from sticking exactly to the top edge
+        SCROLL_OFFSET_PX = 8
+        bar.setValue(max(0, target_y - SCROLL_OFFSET_PX))
+
+    def __on_content_scrolled(self, value: int):
+        """内容区域滚动，同步高亮导航栏"""
+        self.setting_nav.process_content_scrolled(value, self.scroll_widget)
+
+    def _apply_theme_style(self, *_):
+        light_qss, dark_qss = get_setting_interface_qss()
+        self.setStyleSheet(dark_qss if isDarkTheme() else light_qss)
 
     def __connect_signal(self):
         self.game_path_card.clicked.connect(self.__onGamePathCardClicked)
@@ -543,6 +627,8 @@ class SettingInterface(ScrollArea):
         dialog.exec()
 
     def retranslateUi(self):
+        self.setting_nav.retranslateUi()
+
         self.game_setting_group.retranslateUi()
         self.game_setting_card.retranslateUi()
         self.auto_hard_mirror_card.retranslateUi()
