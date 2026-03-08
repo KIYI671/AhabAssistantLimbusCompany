@@ -48,7 +48,7 @@ python main_dev.py --no-reload
 
 ```powershell
 # 提取可翻译文本到 .ts 文件
-uv run .\scripts\translation_files_build.py 
+uv run .\scripts\translation_files_build.py
 # 或者
 python scripts\translation_files_build.py
 
@@ -56,6 +56,10 @@ python scripts\translation_files_build.py
 pyside6-Linguist  .\i18n\myapp_en.ts
 
 # 更编译生成 .qm 文件
+uv run .\scripts\translation_files_compile.py
+# 或者
+python scripts\translation_files_compile.py
+# 或者
 pyside6-lrelease i18n/myapp_en.ts -qm i18n/myapp_en.qm
 
 ```
