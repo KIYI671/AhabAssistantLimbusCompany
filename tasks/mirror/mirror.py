@@ -257,47 +257,7 @@ class Mirror:
                     break
                 retry()
                 if self.get_floor_num:
-                    get_floor_bbox = ImageUtils.get_bbox(ImageUtils.load_image("mirror/road_in_mir/get_floor_bbox.png"))
-                    sc = ImageUtils.crop(np.array(auto.screenshot), get_floor_bbox)
-                    sc = cv2.bitwise_not(sc)
-                    mask = cv2.inRange(sc, 220, 255)
-                    for i in range(5):
-                        try:
-                            result = ocr.run(mask)
-                            ocr_result = [result.txts[i] for i in range(len(result.txts))]
-                            ocr_result = "".join(ocr_result)
-                            log.debug(f"对于楼层信息OCR得到：{ocr_result}")
-                            if cfg.language_in_game == "zh_cn" and "第" in ocr_result:
-                                result = ocr_result.split("第")
-                                floor = result[-1][0]
-                                floor = int(floor)
-                                if 0 < floor <= 5:
-                                    self.floor = floor
-                                    self.get_floor_num = False
-                                    break
-                            elif cfg.language_in_game == "en" and "oor" in ocr_result:
-                                result = ocr_result.split("oor")
-                                floor = result[-1][0]
-                                floor = int(floor)
-                                if 0 < floor <= 5:
-                                    self.floor = floor
-                                    self.get_floor_num = False
-                                    break
-                        except:
-                            while auto.take_screenshot() is None:
-                                continue
-                            get_floor_bbox = ImageUtils.get_bbox(
-                                ImageUtils.load_image("mirror/road_in_mir/get_floor_bbox.png")
-                            )
-                            sc = ImageUtils.crop(np.array(auto.screenshot), get_floor_bbox)
-                            mask = cv2.inRange(sc, int(75 - i * 2.5), 255)
-                            continue
-                    if self.floor - 1 == self.mirror_map.floor:
-                        self.mirror_map.next_floor()
-                    elif self.floor == self.mirror_map.floor:
-                        pass
-                    else:
-                        self.mirror_map.refresh_floor(self.floor)
+                    self.get_which_floor()
 
                 if cfg.floor_3_exit and self.floor >= 4:
                     continue
@@ -1370,3 +1330,55 @@ class Mirror:
     @begin_and_finish_time_log(task_name="镜牢商店")
     def in_shop(self):
         self.shop.in_shop(self.floor)
+
+    def get_which_floor(self):
+        def handle_ocr(image):
+            try:
+                result = ocr.run(image)
+                ocr_result = [result.txts[i] for i in range(len(result.txts))]
+                ocr_result = "".join(ocr_result)
+                log.debug(f"对于楼层信息OCR得到：{ocr_result}")
+                if cfg.language_in_game == "zh_cn" and "第" in ocr_result:
+                    result = ocr_result.split("第")
+                    floor = result[-1][0]
+                    floor = int(floor)
+                    if 0 < floor <= 5:
+                        self.floor = floor
+                        self.get_floor_num = False
+                        return True
+                elif cfg.language_in_game == "en" and "oor" in ocr_result:
+                    result = ocr_result.split("oor")
+                    floor = result[-1][0]
+                    floor = int(floor)
+                    if 0 < floor <= 5:
+                        self.floor = floor
+                        self.get_floor_num = False
+                        return True
+            except:
+                pass
+            return False
+
+        this_floor = self.floor
+
+        auto.take_screenshot(gray=False)
+        get_floor_bbox = ImageUtils.get_bbox(ImageUtils.load_image("mirror/road_in_mir/get_floor_bbox.png"))
+        sc = ImageUtils.crop(np.array(auto.screenshot), get_floor_bbox)
+
+        for i in range(5):
+            auto.take_screenshot(gray=False)
+            sc2 = ImageUtils.crop(np.array(auto.screenshot), get_floor_bbox)
+            diff = cv2.absdiff(sc, sc2)
+            diff_gray = cv2.cvtColor(diff, cv2.COLOR_BGR2GRAY)
+            _, img = cv2.threshold(diff_gray, 5, 255, cv2.THRESH_BINARY)
+            img = cv2.resize(img, None, fx=3.0, fy=3.0, interpolation=cv2.INTER_CUBIC)
+            if handle_ocr(img) and self.floor != this_floor:
+                break
+
+        log.debug(f"识别前楼层为{this_floor}，识别后为{self.floor}")
+
+        if self.floor - 1 == self.mirror_map.floor:
+            self.mirror_map.next_floor()
+        elif self.floor == self.mirror_map.floor:
+            pass
+        else:
+            self.mirror_map.refresh_floor(self.floor)
