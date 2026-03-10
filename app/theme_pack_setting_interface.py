@@ -572,7 +572,7 @@ class ThemePackSettingDialog(FramelessDialog):
         # 设置对话框自身背景色
         self.setStyleSheet(f"""
             ThemePackSettingDialog {{
-                background-color: transparent;
+                background-color: {bg_color};
             }}
             QScrollArea > QWidget {{
                 background-color: {bg_color};

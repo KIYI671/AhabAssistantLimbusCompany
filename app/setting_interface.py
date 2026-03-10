@@ -43,7 +43,7 @@ from module.config import cfg
 from utils.schedule_helper import ScheduleHelper
 
 
-class SettingInterface(ScrollArea):
+class SettingInterface(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent=parent)
         self.__init_widget()
