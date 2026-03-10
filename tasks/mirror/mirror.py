@@ -1211,7 +1211,7 @@ class Mirror:
                         min(select_bbox[2] + 100, cfg.set_win_size * 16 / 9),  # 确保右下角 x 坐标不大于 图片宽
                         min(select_bbox[3] + 100, cfg.set_win_size),  # 确保右下角 y 坐标不大于 图片高
                     )
-                if auto.find_text_element(["0/1", "01", "1/1", "11", "1/2", "12"], my_crop=select_bbox):
+                if auto.find_text_element(["0/1", "01", "1/1", "11", "1/2", "12", "/1"], my_crop=select_bbox):
                     for gift in my_list[:1]:
                         auto.mouse_click(gift[0], gift[1])
                         sleep(cfg.mouse_action_interval)
@@ -1223,7 +1223,7 @@ class Mirror:
                     if retry() is False:
                         return False
                     return
-                elif auto.find_text_element(["0/2", "02", "2/2", "22"], my_crop=select_bbox):
+                elif auto.find_text_element(["0/2", "02", "2/2", "22", "/2"], my_crop=select_bbox):
                     for gift in my_list[:2]:
                         auto.mouse_click(gift[0], gift[1])
                         sleep(cfg.mouse_action_interval)
