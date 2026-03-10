@@ -380,8 +380,8 @@ class Shop:
                 for i in range(10):
                     gift_list.append(
                         [
-                            first_gift[0] + 200 * (i % 5) * scale,
-                            first_gift[1] + 200 * (i // 5) * scale,
+                            first_gift[0] + 190 * (i % 5) * scale,
+                            first_gift[1] + 190 * (i // 5) * scale,
                         ]
                     )
             else:

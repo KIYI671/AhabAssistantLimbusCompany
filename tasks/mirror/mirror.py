@@ -1014,36 +1014,21 @@ class Mirror:
             if auto.find_element("mirror/road_in_mir/legend_assets.png"):
                 break
 
-            # 针对不同事件进行处理，优先选???与直接获取的，再选需要判定的，再选后续事件的，最后第一个事项
-            if auto.click_element("event/unknown_event.png"):
-                continue
-            if positions_list := auto.find_element(
-                "event/select_to_gain_ego.png",
-                find_type="image_with_multiple_targets",
-                threshold=0.75,
-            ):
-                positions_list = sorted(positions_list, key=lambda x: (x[1], x[0]))
-                auto.mouse_click(positions_list[0][0], positions_list[0][1])
-                continue
-            if auto.click_element("event/advantage_check.png"):
-                continue
-            if auto.click_element("event/gain_a_ego_depending_on_result.png"):
-                continue
             if event_chance == 0:
                 key_word = "check" if cfg.language_in_game == "en" else "判定"
                 if auto.click_element(key_word, find_type="text", offset=False):
                     event_chance += 5
-            if event_chance > 5:
+            if 3 <= event_chance < 5:
                 auto.click_element("event/select_first_option_assets.png")
                 event_chance -= 1
-            elif event_chance > 0:
+            elif 3 > event_chance > 0:
                 auto.click_element(
                     "event/select_first_option_assets.png",
                     find_type="image_with_multiple_targets",
                     threshold=0.75,
                 )
                 event_chance -= 1
-            else:
+            if event_chance < 0:
                 finishes_bbox = ImageUtils.get_bbox(ImageUtils.load_image("event/continue_assets.png"))
                 if auto.find_text_element(
                     [
@@ -1064,7 +1049,30 @@ class Mirror:
                     )
                     break
                 else:
-                    event_chance = -1
+                    msg = "事件卡死，尝试返回主界面"
+                    log.error(msg)
+                    back_init_menu()
+                    return
+
+            # 针对不同事件进行处理，优先选???与直接获取的，再选需要判定的，再选后续事件的，最后第一个事项
+            if auto.click_element("event/unknown_event.png"):
+                event_chance -= 1
+                continue
+            if positions_list := auto.find_element(
+                "event/select_to_gain_ego.png",
+                find_type="image_with_multiple_targets",
+                threshold=0.75,
+            ):
+                positions_list = sorted(positions_list, key=lambda x: (x[1], x[0]))
+                auto.mouse_click(positions_list[0][0], positions_list[0][1])
+                event_chance -= 1
+                continue
+            if auto.click_element("event/advantage_check.png"):
+                event_chance -= 1
+                continue
+            if auto.click_element("event/gain_a_ego_depending_on_result.png"):
+                event_chance -= 1
+                continue
 
             # 如果需要罪人判定
             if auto.find_element("event/choices_assets.png") and auto.find_element(
@@ -1088,11 +1096,6 @@ class Mirror:
             if auto.click_element("event/skip_assets.png", times=6):
                 continue
 
-            if event_chance < 0:
-                msg = "事件卡死，尝试返回主界面"
-                log.error(msg)
-                back_init_menu()
-                break
             loop_count -= 1
             if loop_count % 3 == 0:
                 log.debug(f"事件处理识别次数剩余{loop_count}次")

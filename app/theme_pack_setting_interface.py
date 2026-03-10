@@ -77,6 +77,7 @@ THEME_PACK_NAME_MAP = {
     "sweep": "清扫",
     "Hatred": "绝望",
     "Wander": "彷徨",
+    "dusk": "黄昏",
     "compassion": "巡礼",
 }
 
@@ -185,8 +186,9 @@ THEME_PACK_IMAGE_MAP = {
     "check": "LCB Reguar Checkup.png",
     "sweep": "Nocturnal Sweeping.png",
     "Hatred": "Hatred and Despair.png",
+    "Wander": "Charm,Wander,Doubt.png",
+    "dusk": "The Dusk of Amber.png",
     # 以下主题包暂无对应图片文件
-    # "Wander": "The Wander.png",  # 灯客蚣檀/彷徨
     # "compassion": "The Compassion.png",  # 明日方舟联动/巡礼
 }
 
@@ -225,10 +227,10 @@ THEME_PACK_HARD_IMAGE_MAP = {
     "poised": "Poised Breathing.png",
     "ending": "The Dream Ending.png",
     "witnessing": "The Surrendered Witnessing.png",
+    "Text": "Textbook.png",
+    "Blade": "Blade and Artwork.png",
+    "Unsever": "The Unsevering.png",
     # 以下主题包暂无对应图片文件
-    # "Text": "The Text.png",  # 教材/卢西奥、火蛾
-    # "Blade": "The Blade.png",  # 刀与作/黑檀、莲、阿尔比娜
-    # "Unsever": "The Unsever.png",  # 割舍/空
     # 轨道线系列（如需支持多条线路，可添加以下映射）
     # "line2": "Line 2.png",
     # "line3": "Line 3.png",
