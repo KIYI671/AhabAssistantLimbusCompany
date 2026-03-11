@@ -444,7 +444,7 @@ class Battle:
                 if infinite_battle:
                     continue
                 break
-            if chance <= (self.INIT_CHANCE // 2 + 1) and auto.find_element("teams/support_assets.png"):
+            if chance <= (self.INIT_CHANCE // 2 + 1) and auto.find_element("teams/identify_assets.png"):
                 if infinite_battle:
                     continue
                 break

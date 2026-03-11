@@ -29,8 +29,8 @@ def team_formation(sinner_team):
     clean_team()
     while auto.take_screenshot() is None:
         continue
-    if reset_team := auto.find_element("teams/support_assets.png"):
-        first_sinner = [reset_team[0] - 1800 * scale, reset_team[1] - 150 * scale]
+    if reset_team := auto.find_element("teams/identify_assets.png"):
+        first_sinner = [reset_team[0] - 1800 * scale, reset_team[1] + 130 * scale]
     else:
         log.error("无法找到罪人编队的起始位置")
         return

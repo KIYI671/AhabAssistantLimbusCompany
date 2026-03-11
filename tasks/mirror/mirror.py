@@ -247,7 +247,7 @@ class Mirror:
                     continue
                 if auto.click_element("mirror/road_in_mir/ego_gift_get_confirm_assets.png"):
                     continue
-                if auto.find_element("teams/support_assets.png"):
+                if auto.find_element("teams/identify_assets.png"):
                     continue
                 if auto.find_element("mirror/shop/shop_coins_assets.png", model="normal"):
                     continue
@@ -283,7 +283,7 @@ class Mirror:
                 continue
 
             # 战斗配队的情况
-            if auto.find_element("teams/support_assets.png"):
+            if auto.find_element("teams/identify_assets.png"):
                 # 如果第一次启动脚本，还没进行编队，就先编队
                 if self.first_battle:
                     team_formation(self.sinner_team)
