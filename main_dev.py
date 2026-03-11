@@ -22,13 +22,13 @@ import threading
 import time
 
 # 解决 Windows DPI 缩放问题
-from ctypes import windll
+from ctypes import windll, c_void_p
 from pathlib import Path
 
 try:
     # 1. 尝试 Win10 1703+ 的最强方案 (Per Monitor V2)
     # -4 对应 DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2
-    windll.user32.SetProcessDpiAwarenessContext(-4)
+    windll.user32.SetProcessDpiAwarenessContext(c_void_p(-4))
 except (AttributeError, OSError):
     try:
         # 2. 尝试 Win8.1+ 的方案 (Per Monitor)
