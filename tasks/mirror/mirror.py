@@ -132,6 +132,12 @@ class Mirror:
                 continue
             if auto.click_element("home/mirror_dungeons_assets.png"):
                 continue
+            if auto.find_element("home/inferno_bus_assets.png") and not auto.find_element(
+                    "home/mirror_dungeons_assets.png"):
+                sleep(1)
+                if not auto.find_element("home/mirror_dungeons_assets.png"):
+                    auto.click_element("home/window_assets.png")
+                    continue
             if auto.find_element("base/renew_confirm_assets.png", model="clam") and auto.find_element(
                 "home/drive_assets.png", model="normal"
             ):
