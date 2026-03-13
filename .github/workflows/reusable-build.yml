@@ -15,6 +15,12 @@ jobs:
       - name: Checkout
         uses: actions/checkout@main
 
+      # 2. 安装 UPX
+      - name: UPX GitHub Action
+        uses: crazy-max/ghaction-upx@v4.0.0
+        with:
+          install-only: true
+
       # 配置 uv 
       - name: Setup UV for Python
         uses: astral-sh/setup-uv@v6
