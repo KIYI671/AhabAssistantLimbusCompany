@@ -409,6 +409,14 @@ class Battle:
             if auto.click_element("event/skip_assets.png", times=6):
                 continue
 
+            # 点击中心以跳过播报员播报加速结算动画
+            width = int(cfg.set_win_size * 16 / 9)
+            height = cfg.set_win_size
+            center_x = width // 2
+            center_y = height // 2
+            auto.mouse_click(center_x, center_y, times=1)
+            sleep(0.15)
+
             # 战斗结束，进入结算页面
             if auto.click_element("battle/battle_finish_confirm_assets.png", click=False) or auto.find_element(
                 "mirror/claim_reward/battle_statistics_assets.png"
