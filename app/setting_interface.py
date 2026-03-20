@@ -1,3 +1,5 @@
+import datetime
+
 from PySide6.QtCore import QT_TRANSLATE_NOOP, Qt, QTime, QUrl, QPoint, QCoreApplication
 from PySide6.QtGui import QDesktopServices
 from PySide6.QtWidgets import (
@@ -133,6 +135,7 @@ class SettingInterface(QWidget):
             content=QT_TRANSLATE_NOOP(
                 "PushSettingCardChance", "第一次运行请手动设定，之后将自动修改"
             ),
+            on_confirm=self._on_hard_mirror_chance_confirm,
         )
         self.win_input_type_card = ComboBoxSettingCard(
             "win_input_type",
@@ -399,6 +402,14 @@ class SettingInterface(QWidget):
             config_name="experimental_auto_lang",
             parent=self.experimental_group,
         )
+
+    def _on_hard_mirror_chance_confirm(self, _: int) -> None:
+        """手动调整困难模式次数后，同步刷新自动切换时间戳。"""
+        now = datetime.datetime.now()
+        cfg.set_value("last_auto_change", now.timestamp())
+        cfg.flush()
+        self.last_auto_hard_mirror_card.config_value = now
+        self.last_auto_hard_mirror_card.contentLabel.setText(now.strftime("%Y-%m-%d %H:%M"))
 
     def __initLayout(self):
         self.game_setting_group.addSettingCard(self.game_setting_card)
