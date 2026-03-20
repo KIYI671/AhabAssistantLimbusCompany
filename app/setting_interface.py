@@ -128,9 +128,11 @@ class SettingInterface(QWidget):
             QT_TRANSLATE_NOOP("PushSettingCardChance", "修改"),
             FIF.UNIT,
             QT_TRANSLATE_NOOP("PushSettingCardChance", "困难模式剩余次数"),
-            3,
-            QT_TRANSLATE_NOOP("PushSettingCardChance", "第一次运行请手动设定，之后将自动修改"),
             config_name="hard_mirror_chance",
+            max_value=3,
+            content=QT_TRANSLATE_NOOP(
+                "PushSettingCardChance", "第一次运行请手动设定，之后将自动修改"
+            ),
         )
         self.win_input_type_card = ComboBoxSettingCard(
             "win_input_type",
@@ -183,18 +185,18 @@ class SettingInterface(QWidget):
             QT_TRANSLATE_NOOP("PushSettingCardChance", "修改"),
             FIF.TRAIN,
             QT_TRANSLATE_NOOP("PushSettingCardChance", "使用的模拟器端口号"),
-            65535,
-            "",
-            "simulator_port",
+            config_name="simulator_port",
+            max_value=65535,
+            content="",
             parent=self.simulator_setting_group,
         )
         self.start_emulator_timeout_chance_card = PushSettingCardChance(
             QT_TRANSLATE_NOOP("PushSettingCardChance", "修改"),
             FIF.TRAIN,
             QT_TRANSLATE_NOOP("PushSettingCardChance", "仅限MUMU模拟器——启动模拟器超时时间(秒)"),
-            3600,
-            "",
-            "start_emulator_timeout",
+            config_name="start_emulator_timeout",
+            max_value=3600,
+            content="",
             parent=self.simulator_setting_group,
         )
 
