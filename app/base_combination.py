@@ -892,9 +892,9 @@ class PushSettingCardChance(BasePushSettingCard):
         text,
         icon: Union[str, QIcon, FluentIconBase],
         title,
+        config_name: str,
         max_value=3,
         content=None,
-        config_name: str = None,
         parent=None,
     ):
         super().__init__(text, icon, title, content, parent)
@@ -910,7 +910,12 @@ class PushSettingCardChance(BasePushSettingCard):
         self.button.clicked.connect(self.__onclicked)
 
     def __onclicked(self):
-        message_box = MessageBoxSpinbox(self.tr(self.title), self.window(), self.max_value)
+        message_box = MessageBoxSpinbox(
+            self.tr(self.title),
+            config_name=self.config_name,
+            parent=self.window(),
+            max_value=self.max_value,
+        )
         if message_box.exec():
             cfg.set_value(f"{self.config_name}", int(message_box.getValue()))
             self.line_text.setText(str(message_box.getValue()))
