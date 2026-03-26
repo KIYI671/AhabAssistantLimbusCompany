@@ -1,5 +1,6 @@
 import base64
 import datetime
+from typing import Callable
 
 import pyperclip
 from PySide6.QtCore import (
@@ -895,11 +896,13 @@ class PushSettingCardChance(BasePushSettingCard):
         config_name: str,
         max_value=3,
         content=None,
+        on_confirm: Callable[[int], None] | None = None,
         parent=None,
     ):
         super().__init__(text, icon, title, content, parent)
         self.config_name = config_name
         self.max_value = max_value
+        self.on_confirm = on_confirm
         self.line_text = LineEdit()
         self.line_text.setAlignment(Qt.AlignCenter)
         self.line_text.setReadOnly(True)
@@ -917,8 +920,11 @@ class PushSettingCardChance(BasePushSettingCard):
             max_value=self.max_value,
         )
         if message_box.exec():
-            cfg.set_value(f"{self.config_name}", int(message_box.getValue()))
-            self.line_text.setText(str(message_box.getValue()))
+            new_value = int(message_box.getValue())
+            cfg.set_value(f"{self.config_name}", new_value)
+            self.line_text.setText(str(new_value))
+            if self.on_confirm:
+                self.on_confirm(new_value)
 
 
 class AutoDailyView(FlyoutViewBase):
