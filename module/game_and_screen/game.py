@@ -1,6 +1,6 @@
 import os
 import webbrowser
-from time import sleep
+from time import sleep, time
 
 import psutil
 
@@ -15,6 +15,8 @@ class Game(metaclass=SingletonMeta):
         self.log = logger
         self.process_name = cfg.game_process_name
         self.game_path_exists = True
+        self.last_check_time = None
+        self.check_in_short_time = 0
 
     def check_game_alive(self):
         for proc in psutil.process_iter(["name"]):
@@ -23,7 +25,7 @@ class Game(metaclass=SingletonMeta):
                 proc_name = proc.info["name"]
                 # 精确匹配进程名（区分大小写，取决于系统）
                 if self.process_name in proc_name:
-                    self.log.info(f"游戏已启动：{self.process_name}，进程ID：{proc.pid}")
+                    self.log.debug(f"游戏已启动：{self.process_name}，进程ID：{proc.pid}")
                     return True
             except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
                 # 忽略已终止、无权限或僵尸进程
@@ -33,7 +35,18 @@ class Game(metaclass=SingletonMeta):
     def start_game(self) -> bool:
         """启动游戏"""
         if self.check_game_alive():
-            return True
+            if self.last_check_time is None or time() - self.last_check_time > 60:
+                self.last_check_time = time()
+                self.check_in_short_time = 0
+            else:
+                self.check_in_short_time += 1
+            if self.check_in_short_time > 5:
+                from tasks.base.retry import kill_game
+
+                kill_game()
+                self.check_in_short_time = 0
+            else:
+                return True
 
         if not os.path.exists(self.game_path):
             self.log.error(f"游戏路径不存在：{self.game_path}，使用steam命令启动...")
