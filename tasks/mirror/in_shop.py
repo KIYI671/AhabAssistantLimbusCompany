@@ -6,7 +6,7 @@ from module.logger import log
 from tasks import all_sinners_name, all_sinners_name_zh, all_systems, system_cn_zh
 from tasks.base.back_init_menu import back_init_menu
 from tasks.base.retry import retry
-from tasks.mirror import fusion_material, must_be_abandoned, must_purchase
+from tasks.mirror import fusion_result, must_be_abandoned, must_purchase
 from utils.image_utils import ImageUtils
 
 
@@ -372,9 +372,18 @@ class Shop:
             fuse = False
             gift_list = []
 
-            gift = auto.find_element("mirror/shop/fuse_markers_assets.png")
+            points = auto.find_element(
+                "mirror/shop/fuse_label.png", find_type="image_with_multiple_targets", threshold=0.9
+            )
+
+            points.sort(key=lambda c: (c[1], c[0]))
+
+            if len(points) >= 1:
+                gift = points[-1]
+            else:
+                return
             if gift:
-                first_gift = [gift[0] + 135 * scale, gift[1] + 200 * scale]
+                first_gift = [gift[0] + 95 * scale, gift[1] + 135 * scale]
                 if self.the_first_line_position is None:
                     self.the_first_line_position = first_gift[1] + 100 * scale
                 for i in range(10):
@@ -669,117 +678,103 @@ class Shop:
         if retry() is False:
             raise self.RestartGame()
 
-    def fuse_system_gifts(self, times):
+    def fuse_system_gifts(self):
         """合成体系饰品"""
-        loop_count = 30
         auto.model = "clam"
-
         log.debug("开始执行体系饰品合成模块")
-        # 获取合成公式
-        system_gifts = fusion_material[self.system]
-        if len(system_gifts) == 2:
-            my_fuse_system_gifts = [system_gifts[0], system_gifts[1]]
-        else:
-            my_fuse_system_gifts = [system_gifts, []]
-        # 标记合成可行性
-        fusion = True
-        fusion_position = {}
-        # 如果无第二合成公式，返回
-        if len(my_fuse_system_gifts[times]) == 0:
-            return
 
-        elif times == 1 and self.fuse_system_gift_2:
-            return
+        # 获取合成结果
+        system_gifts = []
+        for gift in fusion_result:
+            gift_name = gift.split("/")[-1]
+            g = gift_name.split("_")
+            if g[0] == self.system:
+                system_gifts.append(gift)
 
         self.enter_fuse()
 
-        # 如果找到合成素材，记录位置后点击
-        for select_gift in my_fuse_system_gifts[times]:
-            while auto.take_screenshot() is None:
-                continue
-            pos = auto.find_element(f"mirror/shop/fusion_material/{select_gift}")
-            if pos is None:
-                if select_gift not in fusion_position:
-                    fusion_position[select_gift] = None
-            else:
-                if select_gift in fusion_position:
-                    if fusion_position[select_gift] is None:
-                        fusion_position[select_gift] = pos
+        while True:
+            points = auto.find_element(
+                "mirror/shop/fuse_label.png",
+                find_type="image_with_multiple_targets",
+                threshold=0.9,
+                take_screenshot=True,
+            )
+            if len(points) < 2:
+                auto.mouse_click_blank(times=3)
+                return
+
+            points.sort(key=lambda c: (c[1], c[0]))
+
+            dividing_line = points[-1][1]
+
+            fusion = False
+            fusion_gift = None
+            # 如果找到能合成的公式饰品，则合成
+            for gift in system_gifts:
+                if pos := auto.find_element(gift):
+                    if pos[1] > dividing_line:
+                        continue
+                    auto.mouse_click(pos[0], pos[1])
+                    fusion = True
+                    fusion_gift = gift.split("_")[-1]
+                    break
+
+            fusion_pos = []
+            if not fusion:
+                all_system_gift = auto.find_element(
+                    f"mirror/shop/enhance_gifts/{self.system}.png",
+                    find_type="image_with_multiple_targets",
+                    take_screenshot=True,
+                )
+                if len(all_system_gift) > 0:
+                    for g in all_system_gift:
+                        if g[1] < dividing_line:
+                            fusion_pos.append(g)
+                if len(fusion_pos) == 0:
+                    auto.mouse_click_blank(times=3)
+                    return
                 else:
-                    fusion_position[select_gift] = pos
+                    fusion = True
+
+            if len(fusion_pos) > 0 and fusion_gift is None:
+                pos = fusion_pos.pop(0)
                 auto.mouse_click(pos[0], pos[1])
-                auto.click_element("mirror/shop/fuse_ego_gift_assets.png")
 
-        list_block = auto.find_element("mirror/shop/gifts_list_block.png")
-        block = False
-        if list_block is not None:
-            block = True
-            auto.mouse_drag(list_block[0], list_block[1], drag_time=1, dy=500)
-
-        if block:
-            # 如果找到合成素材，如果是无记录位置的，记录位置后点击
-            for select_gift in my_fuse_system_gifts[times]:
-                while auto.take_screenshot() is None:
+            chance = 5
+            while fusion:
+                if auto.take_screenshot() is None:
                     continue
-                pos = auto.find_element(f"mirror/shop/fusion_material/{select_gift}")
-                if pos is not None:
-                    if select_gift in fusion_position:
-                        if fusion_position[select_gift] is None:
-                            fusion_position[select_gift] = pos
-                            auto.mouse_click(pos[0], pos[1])
-                            sleep(0.5)
-                            auto.click_element("mirror/shop/fuse_ego_gift_assets.png")
-                    else:
-                        fusion_position[select_gift] = pos
+
+                if chance < 0:
+                    if len(fusion_pos) > 0:
+                        pos = fusion_pos.pop(0)
                         auto.mouse_click(pos[0], pos[1])
-                        sleep(0.5)
-                        auto.click_element("mirror/shop/fuse_ego_gift_assets.png")
+                        chance = 5
+                    else:
+                        auto.mouse_click_blank(times=3)
+                        return
+                else:
+                    retry()
+                    chance -= 1
 
-        for name in my_fuse_system_gifts[times]:
-            if fusion_position[name] is None:
-                fusion = False
+                auto.mouse_to_blank()
 
-        loop_count = 30
-        auto.model = "clam"
-        while fusion:
-            if auto.take_screenshot() is None:
-                continue
+                if auto.click_element("mirror/road_in_mir/ego_gift_get_confirm_assets.png"):
+                    break
 
-            loop_count -= 1
-            if loop_count < 20:
-                auto.model = "normal"
-            if loop_count < 10:
-                auto.model = "aggressive"
-            if loop_count < 0:
-                log.error("无法合成ego饰品")
-                break
+                if auto.click_element(
+                    "mirror/shop/enhance_and_fuse_and_sell_confirm_assets.png",
+                    model="normal",
+                ):
+                    continue
 
-            auto.mouse_to_blank()
+                if retry() is False:
+                    raise self.RestartGame()
 
-            if auto.click_element("mirror/road_in_mir/ego_gift_get_confirm_assets.png"):
-                break
-
-            if auto.click_element(
-                "mirror/shop/enhance_and_fuse_and_sell_confirm_assets.png",
-                model="normal",
-            ):
-                continue
-
-            if retry() is False:
-                raise self.RestartGame()
-
-        if fusion:
-            msg = f"成功合成{self.system}体系饰品{times + 1}号"
-            if times == 0:
-                self.fuse_system_gift_1 = True
-            else:
-                self.fuse_system_gift_2 = True
-            log.debug(msg)
-        else:
-            msg = f"无法合成{self.system}体系饰品{times + 1}号"
-            log.debug(msg)
-
-        auto.mouse_click_blank(times=3)
+            if fusion:
+                msg = f"成功合成{self.system}体系的公式饰品{fusion_gift if fusion_gift else ''}"
+                log.debug(msg)
 
     def sell_gifts(self):
         scale = cfg.set_win_size / 1440
@@ -955,14 +950,8 @@ class Shop:
             return
         # 合成体系饰品
         if not self.only_aggressive_fuse and not self.do_not_system_fuse:
-            if self.system not in fusion_material:
-                fuse_times = 0
-            else:
-                fuse_times = 2
-            for i in range(fuse_times):
-                log.debug(f"开始执行第{i + 1}次合成体系饰品")
-                self.fuse_system_gifts(i)
-                auto.mouse_click_blank(times=3)
+            self.fuse_system_gifts()
+            auto.mouse_click_blank(times=3)
 
     def heal_sinner(self):
         # 全体治疗
@@ -1389,6 +1378,7 @@ class Shop:
                 if auto.click_element("mirror/shop/leave_shop_confirm_assets.png"):
                     continue
                 if auto.click_element("mirror/shop/leave_assets.png"):
+                    sleep(1)
                     continue
                 if auto.click_element("mirror/shop/heal_sinner/heal_sinner_return_assets.png"):
                     continue
