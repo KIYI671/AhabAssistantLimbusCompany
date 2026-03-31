@@ -1009,14 +1009,18 @@ class Shop:
 
         log.debug("开始执行饰品升级模块")
 
+        my_scale = cfg.set_win_size / 1440
         loop_try_count = 10
         while True:
             # 自动截图
             if auto.take_screenshot() is None:
                 continue
+            if button := auto.click_element("mirror/shop/sort_button_assets.png"):
+                auto.mouse_click(button[0], button[1] + 200 * my_scale)
+                break
             if auto.click_element("mirror/shop/enhance_gifts_assets.png"):
                 sleep(1)
-                break
+                continue
             auto.mouse_click_blank()
             loop_try_count -= 1
             if loop_try_count < 0:  # issue 171
