@@ -1,6 +1,5 @@
 import datetime
 
-from PySide6.QtCore import QT_TRANSLATE_NOOP, Qt, QTime, QUrl, QPoint, QCoreApplication
 from PySide6.QtCore import QT_TRANSLATE_NOOP, QPoint, Qt, QUrl
 from PySide6.QtGui import QDesktopServices
 from PySide6.QtWidgets import (
@@ -129,9 +128,7 @@ class SettingInterface(QWidget):
             QT_TRANSLATE_NOOP("PushSettingCardChance", "困难模式剩余次数"),
             config_name="hard_mirror_chance",
             max_value=3,
-            content=QT_TRANSLATE_NOOP(
-                "PushSettingCardChance", "第一次运行请手动设定，之后将自动修改"
-            ),
+            content=QT_TRANSLATE_NOOP("PushSettingCardChance", "第一次运行请手动设定，之后将自动修改"),
             on_confirm=self._on_hard_mirror_chance_confirm,
         )
         self.win_input_type_card = ComboBoxSettingCard(

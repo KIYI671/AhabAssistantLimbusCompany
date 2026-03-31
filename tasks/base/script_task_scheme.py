@@ -144,6 +144,7 @@ def init_game():
             from module.automation.input_handlers.simulator.simulator_control import (
                 SimulatorControl,
             )
+
             # 启动时先清理旧连接
             SimulatorControl.clean_connect()
             simulator = SimulatorControl()
