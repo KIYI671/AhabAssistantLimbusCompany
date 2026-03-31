@@ -22,7 +22,7 @@ import threading
 import time
 
 # 解决 Windows DPI 缩放问题
-from ctypes import windll, c_void_p
+from ctypes import c_void_p, windll
 from pathlib import Path
 
 try:

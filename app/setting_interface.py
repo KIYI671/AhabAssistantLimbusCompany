@@ -1,13 +1,10 @@
-from PySide6.QtCore import QT_TRANSLATE_NOOP, Qt, QTime, QUrl, QPoint, QCoreApplication
+from PySide6.QtCore import QT_TRANSLATE_NOOP, QPoint, Qt, QUrl
 from PySide6.QtGui import QDesktopServices
 from PySide6.QtWidgets import (
-    QFrame,
-    QHBoxLayout,
-    QVBoxLayout,
     QFileDialog,
-    QPushButton,
-    QWidget,
+    QHBoxLayout,
     QSizePolicy,
+    QWidget,
 )
 from qfluentwidgets import (
     ExpandLayout,
@@ -17,12 +14,10 @@ from qfluentwidgets import (
     isDarkTheme,
     qconfig,
     setTheme,
-    setCustomStyleSheet,
 )
 from qfluentwidgets import FluentIcon as FIF
 
 from app import win_input_type_options
-from app.widget.setting_nav import SettingNav
 from app.base_combination import (
     BasePrimaryPushSettingCard,
     BasePushSettingCard,
@@ -36,9 +31,10 @@ from app.base_combination import (
     SwitchSettingCard,
 )
 from app.card.messagebox_custom import BaseInfoBar
+from app.common.ui_config import get_setting_interface_qss
 from app.language_manager import SUPPORTED_LANG_NAME, LanguageManager
 from app.theme_pack_setting_interface import ThemePackSettingDialog
-from app.common.ui_config import get_setting_interface_qss
+from app.widget.setting_nav import SettingNav
 from module.config import cfg
 from utils.schedule_helper import ScheduleHelper
 

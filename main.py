@@ -4,7 +4,7 @@ import sys
 import threading
 
 # 解决 Windows DPI 缩放问题
-from ctypes import windll, c_void_p
+from ctypes import c_void_p, windll
 
 try:
     # 1. 尝试 Win10 1703+ 的最强方案 (Per Monitor V2)
