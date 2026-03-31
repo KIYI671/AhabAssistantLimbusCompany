@@ -432,7 +432,7 @@ class MessageBoxDate(MessageBox):
 
 
 class MessageBoxSpinbox(MessageBox):
-    def __init__(self, title: str, parent=None, max_value=3):
+    def __init__(self, title: str, config_name: str, parent=None, max_value=3):
         super().__init__(title, "", parent)
 
         self.text = title
@@ -444,9 +444,11 @@ class MessageBoxSpinbox(MessageBox):
         self.cancelButton.setText(self.tr("取消"))
 
         self.box = SpinBox(self)
-        self.box.setValue(int(cfg.hard_mirror_chance))
+        initial_value = cfg.get_value(config_name, 0)
+        max_int = int(max_value)
         self.box.setMinimum(0)
-        self.box.setMaximum(int(max_value))
+        self.box.setMaximum(max_int)
+        self.box.setValue(int(initial_value))
 
         self.textLayout.addWidget(self.box, 0, Qt.AlignTop)
 
