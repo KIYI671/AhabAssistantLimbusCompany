@@ -115,4 +115,5 @@ def restart_game():
     from tasks.base.script_task_scheme import init_game
 
     init_game()
+    sleep(3)
     back_init_menu()
