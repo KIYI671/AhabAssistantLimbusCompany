@@ -129,6 +129,7 @@ fight_to_last_man: False # 战斗直到全灭
 teams_be_select_num: 0 # 被选中的队伍数量
 teams_be_select: [False] # 被选中的队伍
 teams_order: [0] # 队伍的顺序
+mirror_keyboard_navigation: False # 使用键盘进行镜牢寻路
 
 # 一号队伍设置
 team1_setting:

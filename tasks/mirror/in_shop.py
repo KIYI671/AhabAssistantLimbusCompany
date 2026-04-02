@@ -1015,7 +1015,8 @@ class Shop:
             # 自动截图
             if auto.take_screenshot() is None:
                 continue
-            if button := auto.click_element("mirror/shop/sort_button_assets.png"):
+            if button := auto.find_element("mirror/shop/sort_button_assets.png"):
+                auto.mouse_click(button[0], button[1])
                 auto.mouse_click(button[0], button[1] + 200 * my_scale)
                 break
             if auto.click_element("mirror/shop/enhance_gifts_assets.png"):

@@ -43,6 +43,21 @@ class MirrorMap:
             return False
 
     def enter_next_node(self, next_step):
+        if cfg.mirror_keyboard_navigation:
+            log.debug(f"通过键盘按键寻路: {next_step}")
+            if next_step == "U":
+                auto.key_press("up")
+            elif next_step == "D":
+                auto.key_press("down")
+            elif next_step == "M":
+                auto.key_press("right")
+            sleep(0.5)
+            auto.key_press("enter")
+            sleep(1.25)
+            if auto.click_element("mirror/road_in_mir/enter_assets.png", take_screenshot=True):
+                return True
+            return True
+
         if next_position := self._get_next_position(next_step):
             auto.mouse_click(next_position[0], next_position[1])
             sleep(1.25)
