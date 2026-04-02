@@ -59,6 +59,10 @@ key_list = {
     "shift": win32con.VK_SHIFT,
     "ctrl": win32con.VK_CONTROL,
     "alt": win32con.VK_MENU,
+    "up": win32con.VK_UP,
+    "down": win32con.VK_DOWN,
+    "left": win32con.VK_LEFT,
+    "right": win32con.VK_RIGHT,
 }
 
 
