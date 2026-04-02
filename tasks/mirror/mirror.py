@@ -985,15 +985,16 @@ class Mirror:
                 key_word = "check" if cfg.language_in_game == "en" else "判定"
                 if auto.click_element(key_word, find_type="text", offset=False):
                     event_chance += 5
-            if 3 <= event_chance < 5:
+            if 5 <= event_chance < 10:
                 auto.click_element("event/select_first_option_assets.png")
                 event_chance -= 1
-            elif 3 > event_chance > 0:
-                auto.click_element(
-                    "event/select_first_option_assets.png",
-                    find_type="image_with_multiple_targets",
-                    threshold=0.75,
-                )
+            elif 5 > event_chance > 0:
+                if coordinates := auto.find_element(
+                    "event/select_first_option_assets.png", find_type="image_with_multiple_targets", threshold=0.75
+                ):
+                    for coordinate in coordinates:
+                        auto.mouse_click(coordinate[0], coordinate[1])
+                    retry()
                 event_chance -= 1
             if event_chance < 0:
                 finishes_bbox = ImageUtils.get_bbox(ImageUtils.load_image("event/continue_assets.png"))
@@ -1015,6 +1016,12 @@ class Mirror:
                         (finishes_bbox[1] + finishes_bbox[3]) // 2,
                     )
                     break
+                elif coordinates := auto.find_element(
+                    "event/select_first_option_assets.png", find_type="image_with_multiple_targets", threshold=0.75
+                ):
+                    for coordinate in coordinates:
+                        auto.mouse_click(coordinate[0], coordinate[1])
+                    retry()
                 else:
                     msg = "事件卡死，尝试返回主界面"
                     log.error(msg)
