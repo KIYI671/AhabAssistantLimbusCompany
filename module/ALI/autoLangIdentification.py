@@ -26,6 +26,7 @@ class AutoSwitchCon:
 def auto_switch_language_in_game(hwnd: int) -> int:
     """通过句柄获取程序路径以实现识别游戏当前语言
     \n(不过如果在运行时改动了游戏设置就没办法了)
+    使用模拟器时，无法读取本机安装目录下的语言配置，故跳过识别
     ---
 
     Returns:
@@ -34,6 +35,12 @@ def auto_switch_language_in_game(hwnd: int) -> int:
             - 1: 当前语言不同, 但位于支持的语言列表中 (自动切换)
             - 2: 当前语言不同, 且不支持
     """
+    if cfg.simulator:
+        log.info("检测到模拟器，将自动使用英文")
+        if cfg.language_in_game == "-":
+            cfg.set_value("language_in_game", "en")
+        return AutoSwitchCon.FINISH
+
     default_lang = {"kr": "한국어", "jp": "日本語", "Unknown": "未知"}
     output_lang_dict = default_lang
     output_lang_dict.update(SUPPORTED_GAME_LANG_CODE)
