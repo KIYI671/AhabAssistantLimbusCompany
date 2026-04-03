@@ -73,6 +73,7 @@ class Mirror:
         self.start_time = time.time()
         self.first_battle = True  # 判断是否首次进入战斗，如果是则重新配队
         self.hard_switch = cfg.hard_mirror
+        self.use_custom_theme_pack_weight = team_setting["use_custom_theme_pack_weight"]  # 是否启用自定义主题包权重
         # 统计时间
         self.find_road_total_time = 0
         self.battle_total_time = 0
@@ -222,7 +223,7 @@ class Mirror:
             # 选择楼层主题包的情况
             if auto.find_element("mirror/theme_pack/feature_theme_pack_assets.png"):
                 sleep(2)
-                select_theme_pack(self.hard_switch, self.floor)
+                select_theme_pack(self.hard_switch, self.floor, self.team_order, self.use_custom_theme_pack_weight)
                 if self.re_formation_each_floor:
                     self.first_battle = True
                 try:
