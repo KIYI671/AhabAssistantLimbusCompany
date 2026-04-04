@@ -94,8 +94,9 @@ def thread_luxcavation():
                     find_type="image_with_multiple_targets",
                     take_screenshot=True,
                 )
+                scale = cfg.set_win_size / 1440
                 if level:
-                    level = [(x, y) for x, y in level if x >= 700]
+                    level = [(x, y) for x, y in level if x >= 700 * scale]
                 if level:
                     level = sorted(level, key=lambda y: y[1], reverse=True)
                     for lv in level:
@@ -108,7 +109,6 @@ def thread_luxcavation():
                     # 处理下方所有关卡未解锁的情况
                     level = None
                     slide_times = 0
-                    scale = cfg.set_win_size / 1440
                     x = int(1300 * scale)
                     y = int(960 * scale)
                     dy = int(200 * scale)
@@ -121,7 +121,7 @@ def thread_luxcavation():
                             take_screenshot=True,
                         )
                         if level:
-                            level = [(x, y) for x, y in level if x >= 700]
+                            level = [(x, y) for x, y in level if x >= 700 * scale]
                         if level:
                             break
                         slide_times += 1
