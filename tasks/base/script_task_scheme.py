@@ -302,13 +302,6 @@ def script_task() -> None | int:
         if cfg.set_win_size == 720:
             log.warning("当前游戏分辨率为1280*720, 可能会导致识别错误或卡死, 建议设置为更高分辨率")
 
-
-
-
-
-
-
-
     if cfg.language_in_game == "zh_cn" and pic_path[0] != "zh_cn":
         pic_path.insert(0, "zh_cn")
     elif cfg.language_in_game == "en":
@@ -316,6 +309,7 @@ def script_task() -> None | int:
             pic_path.pop(0)
         pic_path.insert(0, "en")
 
+    # 检查主题色
     theme_detected = None
     for loop_idx in range(2):
         if loop_idx == 0:
@@ -329,19 +323,22 @@ def script_task() -> None | int:
 
         auto.take_screenshot()
 
-        if auto.find_element("battle/give_up_assets.png", model="normal") or \
-           auto.find_element("mirror/road_in_mir/to_window_assets.png", model="normal") or \
-           auto.find_element("home/window_assets.png", model="normal"):
+        if (
+            auto.find_element("battle/give_up_assets.png", model="normal")
+            or auto.find_element("mirror/road_in_mir/to_window_assets.png", model="normal")
+            or auto.find_element("home/window_assets.png", model="normal")
+        ):
             log.info("当前主题为: default")
             theme_detected = "default"
             break
 
-
         pic_path.insert(0, "share_dark")
         try:
-            is_dark = auto.find_element("battle/give_up_assets.png", model="normal") or \
-                      auto.find_element("mirror/road_in_mir/to_window_assets.png", model="normal") or \
-                      auto.find_element("home/window_assets.png", model="normal")
+            is_dark = (
+                auto.find_element("battle/give_up_assets.png", model="normal")
+                or auto.find_element("mirror/road_in_mir/to_window_assets.png", model="normal")
+                or auto.find_element("home/window_assets.png", model="normal")
+            )
             if is_dark:
                 log.info("当前主题为: dark")
                 theme_detected = "dark"
@@ -352,7 +349,7 @@ def script_task() -> None | int:
     else:
         log.info("未检测到有效主题，默认判定为: default")
         theme_detected = "default"
-        
+
     if theme_detected == "dark":
         pic_path.clear()
         if cfg.language_in_game == "zh_cn":
@@ -360,9 +357,9 @@ def script_task() -> None | int:
         else:
             pic_path.extend(["en_dark", "en", "share_dark", "share"])
 
+    # 如果是战斗中，先处理战斗
     if cfg.resonate_with_Ahab:
         Resonate_with_Ahab()
-    # 如果是战斗中，先处理战斗
 
     get_reward = None
     if auto.click_element("battle/turn_assets.png", take_screenshot=True):
