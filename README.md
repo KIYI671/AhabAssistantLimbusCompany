@@ -228,6 +228,27 @@ uv run main.py
 git pull
 ```
 
+#### 开发者建议
+
+本项目采用 [ruff formatter](https://docs.astral.sh/ruff/formatter/) 作为代码格式化工具，并通过 pre-commit hook 自动进行格式检查和修正。
+
+```ps1
+# 安装开发依赖
+uv sync --group dev
+
+# 在当前仓库安装 git hook（只需执行一次）
+pre-commit install
+
+# 可选：首次运行全量检查（用于检测代码格式，包含 ruff 格式化）
+pre-commit run --all-files
+```
+
+如需手动格式化全部代码，可执行：
+```ps1
+ruff format .
+```
+
+
 ### 使用 pip (不包含dev工具)
 
 ```ps1
