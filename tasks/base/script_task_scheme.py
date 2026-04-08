@@ -355,9 +355,9 @@ def script_task() -> None | int:
     if theme_detected == "dark":
         pic_path.clear()
         if cfg.language_in_game == "zh_cn":
-            pic_path.extend(["zh_cn_dark", "zh_cn","en_dark", "en", "share_dark", "share"])
+            pic_path.extend(["zh_cn_dark", "en_dark", "share_dark", "zh_cn", "en", "share"])
         else:
-            pic_path.extend(["en_dark", "en", "share_dark", "share"])
+            pic_path.extend(["en_dark", "share_dark", "en", "share"])
 
     # 如果是战斗中，先处理战斗
     if cfg.resonate_with_Ahab:
