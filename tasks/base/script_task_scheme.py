@@ -328,6 +328,7 @@ def script_task() -> None | int:
             or auto.find_element("mirror/road_in_mir/to_window_assets.png")
             or auto.find_element("home/window_assets.png")
         ):
+            auto.key_press("esc")  # 退出设置页面，防止设置页面镜牢识别
             log.info("当前主题为: default")
             theme_detected = "default"
             break
@@ -335,13 +336,13 @@ def script_task() -> None | int:
         pic_path.insert(0, "share_dark")
         auto.clear_img_cache()
         try:
-            is_dark = (
+            if (
                 auto.find_element("battle/give_up_assets.png")
                 or auto.find_element("battle/normal_give_up_assets.png")
                 or auto.find_element("mirror/road_in_mir/to_window_assets.png")
                 or auto.find_element("home/window_assets.png")
-            )
-            if is_dark:
+            ):
+                auto.key_press("esc")  # 退出设置页面，防止设置页面镜牢识别
                 log.info("当前主题为: dark")
                 theme_detected = "dark"
                 break
