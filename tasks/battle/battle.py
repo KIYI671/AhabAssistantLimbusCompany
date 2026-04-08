@@ -200,7 +200,7 @@ class Battle:
 
             if view_status := auto.find_element("battle/view_status_assets.png", model="clam"):
                 my_scale = cfg.set_win_size / 1440
-                auto.click_element(view_status[0] + 100 * my_scale, view_status[1] - 500 * my_scale)
+                auto.mouse_click(view_status[0] + 100 * my_scale, view_status[1] - 500 * my_scale)
                 continue
 
             # 如果正在交战过程
