@@ -37,7 +37,7 @@ class BattleWorker(QThread):
         self.defense_on_turn1 = defense_on_turn1
         self.choice_event_handling = choice_event_handling
         self.initialized = False
-        self.battle = Battle()  # 复用镜牢战斗逻辑
+        self.battle = Battle(is_tool=True)  # 复用镜牢战斗逻辑
         self.background_click = cfg.background_click
 
     def stop(self):
@@ -80,7 +80,6 @@ class BattleWorker(QThread):
 
             if not self.background_click:
                 cfg.set_value("background_click", True)
-            hwnd = screen.handle
             screen.set_win()
         except Exception as e:
             self.error_occurred.emit(f"窗口设置错误: {str(e)}")

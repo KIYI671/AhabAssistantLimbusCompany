@@ -19,7 +19,7 @@ from utils.utils import find_skill3
 
 
 class Battle:
-    def __init__(self):
+    def __init__(self, is_tool: bool = False):
         self.first_battle = False
         self.identify_keyword_turn = True
         self.mouse_click_rate = False
@@ -28,6 +28,8 @@ class Battle:
         self.defense_all_time = False
         self.fail_times = 0
         self.cur_turn = 1
+        self.is_tool = is_tool
+        """是否由小工具初始化"""
 
     @staticmethod
     def to_battle():
@@ -408,14 +410,14 @@ class Battle:
                 continue
             if auto.click_element("event/skip_assets.png", times=6):
                 continue
-
-            # 点击中心以跳过播报员播报加速结算动画
-            width = int(cfg.set_win_size * 16 / 9)
-            height = cfg.set_win_size
-            center_x = width // 2
-            center_y = height // 2
-            auto.mouse_click(center_x, center_y, times=1)
-            sleep(0.15)
+            if not self.is_tool:
+                # 点击中心以跳过播报员播报加速结算动画
+                width = int(cfg.set_win_size * 16 / 9)
+                height = cfg.set_win_size
+                center_x = width // 2
+                center_y = height // 2
+                auto.mouse_click(center_x, center_y, times=1)
+                sleep(0.15)
 
             # 战斗结束，进入结算页面
             if auto.click_element("battle/battle_finish_confirm_assets.png", click=False) or auto.find_element(
@@ -514,7 +516,8 @@ class Battle:
                 pos: list = custom_tune(pos, index, skill_nums, scale)
             skill_positions.append(pos)
 
-    def _chain_battle(self) -> bool:
+    @staticmethod
+    def _chain_battle() -> bool:
         try:
             scale = cfg.set_win_size / 1440
 
