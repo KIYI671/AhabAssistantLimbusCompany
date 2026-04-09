@@ -290,9 +290,9 @@ class Shop:
                 raise self.RestartGame()
 
             my_remaining_money = self._get_cost()
-            if my_remaining_money <= 300:
+            if my_remaining_money >= 300:
                 refresh_keyword = True
-            if my_remaining_money <= 200:
+            if my_remaining_money >= 200:
                 refresh = True
 
             if refresh is False:
