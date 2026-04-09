@@ -1,3 +1,4 @@
+import random
 import re
 import time
 from time import sleep
@@ -412,11 +413,12 @@ class Battle:
                 continue
             if not self.is_tool:
                 # 点击中心以跳过播报员播报加速结算动画
+                random_number = random.randint(-10, 10)
                 width = int(cfg.set_win_size * 16 / 9)
                 height = cfg.set_win_size
                 center_x = width // 2
                 center_y = height // 2
-                auto.mouse_click(center_x, center_y, times=1)
+                auto.mouse_click(center_x - random_number, center_y + random_number, times=1)
                 sleep(0.15)
 
             # 战斗结束，进入结算页面
