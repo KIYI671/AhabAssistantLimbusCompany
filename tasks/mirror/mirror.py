@@ -5,7 +5,7 @@ import cv2
 import numpy as np
 
 from module.automation import auto
-from module.config import cfg
+from module.config import TeamSetting, cfg
 from module.decorator.decorator import begin_and_finish_time_log
 from module.logger import log
 from module.my_error.my_error import (
@@ -43,32 +43,32 @@ def to_log_with_time(msg, elapsed_time):
 
 
 class Mirror:
-    def __init__(self, team_setting: dict, team_num: int):
+    def __init__(self, team_setting: TeamSetting, team_num: int):
         self.logger = log
         self.team_order = team_num
-        self.sinner_team = team_setting["sinner_order"]  # 选择的罪人序列
-        self.team_number = team_setting["team_number"]  # 选择的编队名
+        self.sinner_team = team_setting.sinner_order  # 选择的罪人序列
+        self.team_number = team_setting.team_number  # 选择的编队名
         self.shop = Shop(team_setting)
-        self.system = all_systems[team_setting["team_system"]]  # 选择的体系
-        self.avoid_skill_3 = team_setting["avoid_skill_3"]  # 是否避免使用3技能
+        self.system = all_systems[team_setting.team_system]  # 选择的体系
+        self.avoid_skill_3 = team_setting.avoid_skill_3  # 是否避免使用3技能
         # 自选开局星光
-        self.choose_opening_bonus = team_setting["choose_opening_bonus"]
-        self.opening_bonus_order = team_setting["opening_bonus_order"]
-        self.use_starlight = team_setting["use_starlight"]
+        self.choose_opening_bonus = team_setting.choose_opening_bonus
+        self.opening_bonus_order = team_setting.opening_bonus_order
+        self.use_starlight = team_setting.use_starlight
         # 自选奖励卡优先度
-        self.reward_cards = team_setting["reward_cards"]
-        self.reward_cards_select = team_setting["reward_cards_select"]
+        self.reward_cards = team_setting.reward_cards
+        self.reward_cards_select = team_setting.reward_cards_select
         # 自选开局饰品
-        self.opening_items = team_setting["opening_items"]
-        self.opening_items_select = team_setting["opening_items_select"]
-        self.opening_items_system = team_setting["opening_items_system"]
-        self.re_formation_each_floor = team_setting["re_formation_each_floor"]  # 是否每层重新配队
+        self.opening_items = team_setting.opening_items
+        self.opening_items_select = team_setting.opening_items_select
+        self.opening_items_system = team_setting.opening_items_system
+        self.re_formation_each_floor = team_setting.re_formation_each_floor  # 是否每层重新配队
         # 第二体系
-        self.second_system = team_setting["second_system"]  # 启用第二体系
-        self.second_system_select = team_setting["second_system_select"]  # 选择的第二体系
-        self.second_system_setting = team_setting["second_system_setting"]  # 第二体系策略
+        self.second_system = team_setting.second_system  # 启用第二体系
+        self.second_system_select = team_setting.second_system_select  # 选择的第二体系
+        self.second_system_setting = team_setting.second_system_setting  # 第二体系策略
 
-        self.defense_first_round = team_setting["defense_first_round"]  # 是否第一回合全员防御
+        self.defense_first_round = team_setting.defense_first_round  # 是否第一回合全员防御
 
         self.start_time = time.time()
         self.first_battle = True  # 判断是否首次进入战斗，如果是则重新配队
