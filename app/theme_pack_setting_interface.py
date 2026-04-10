@@ -470,6 +470,7 @@ class ThemePackSettingDialog(FramelessDialog):
         # 配置数据和保存路径
         self.config_data = config_data
         self.save_path = save_path
+        self.is_team_specific = self.save_path != theme_list.theme_pack_list_path
 
         # 保存原始配置的副本，用于关闭时不保存恢复
         self._original_config = copy.deepcopy(self.config_data)
@@ -550,6 +551,11 @@ class ThemePackSettingDialog(FramelessDialog):
         self.reset_button.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         self.reset_button.clicked.connect(self.reset_to_default)
 
+        self.set_to_global_button = PushButton(self.tr("设为全局配置"), self)
+        self.set_to_global_button.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        self.set_to_global_button.clicked.connect(self.set_to_global)
+        self.set_to_global_button.setVisible(self.is_team_specific)
+
         self.set_all_negative_button = PushButton(self.tr("全部设为 -5"), self)
         self.set_all_negative_button.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         self.set_all_negative_button.clicked.connect(self.set_all_weights_negative)
@@ -564,6 +570,7 @@ class ThemePackSettingDialog(FramelessDialog):
 
         self.button_layout.addStretch()
         self.button_layout.addWidget(self.reset_button)
+        self.button_layout.addWidget(self.set_to_global_button)
         self.button_layout.addWidget(self.set_all_negative_button)
         self.button_layout.addWidget(self.save_button)
         self.button_layout.addWidget(self.close_button)
@@ -789,6 +796,37 @@ class ThemePackSettingDialog(FramelessDialog):
                 self.hard_cards[pack_key].update_weight(weight)
 
         # 标记有未保存的修改
+        self._has_unsaved_changes = True
+
+    def set_to_global(self):
+        """将当前配置设置为全局主题包配置（仅内存，不立即保存）。"""
+        if not self.is_team_specific:
+            return
+
+        global_config = theme_list.load_config(theme_list.theme_pack_list_path)
+        if not global_config:
+            return
+
+        self.config_data.clear()
+        self.config_data.update(copy.deepcopy(global_config))
+
+        if self.is_cn:
+            normal_global = global_config.get("theme_pack_list_cn", {})
+            hard_global = global_config.get("theme_pack_list_hard_cn", {})
+        else:
+            normal_global = global_config.get("theme_pack_list", {})
+            hard_global = global_config.get("theme_pack_list_hard", {})
+
+        self.preferred_threshold_spinbox.spin_box.setValue(int(global_config.get("preferred_thresholds", 0)))
+
+        for pack_key, weight in normal_global.items():
+            if pack_key in self.normal_cards:
+                self.normal_cards[pack_key].update_weight(weight)
+
+        for pack_key, weight in hard_global.items():
+            if pack_key in self.hard_cards:
+                self.hard_cards[pack_key].update_weight(weight)
+
         self._has_unsaved_changes = True
 
     def set_all_weights_negative(self):
