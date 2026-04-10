@@ -23,6 +23,7 @@ from qframelesswindow import FramelessDialog, StandardTitleBar
 from ruamel.yaml import YAML
 
 from app.base_tools import BaseSpinBox
+from app.card.messagebox_custom import MessageBoxConfirm
 from module import THEME_PACK_LIST_EXAMPLE_PATH
 from module.config import cfg, theme_list
 
@@ -564,16 +565,11 @@ class ThemePackSettingDialog(FramelessDialog):
         self.save_button.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         self.save_button.clicked.connect(self.save_and_close)
 
-        self.close_button = PushButton(self.tr("关闭"), self)
-        self.close_button.setFocusPolicy(Qt.FocusPolicy.NoFocus)
-        self.close_button.clicked.connect(self.close)
-
         self.button_layout.addStretch()
         self.button_layout.addWidget(self.reset_button)
         self.button_layout.addWidget(self.set_to_global_button)
         self.button_layout.addWidget(self.set_all_negative_button)
         self.button_layout.addWidget(self.save_button)
-        self.button_layout.addWidget(self.close_button)
         self.button_layout.addStretch()
 
     def __init_layout(self):
@@ -848,9 +844,19 @@ class ThemePackSettingDialog(FramelessDialog):
     def closeEvent(self, event):
         """对话框关闭时注销所有组件，防止内存泄漏
 
-        如果用户点击了关闭按钮（而非保存并关闭）且有未保存的修改，
+        如果不是保存并关闭且有未保存的修改，
         则恢复到原始配置，不保存到文件。
         """
+        if not self._is_save_and_close and self._has_unsaved_changes:
+            confirm = MessageBoxConfirm(
+                self.tr("存在未保存修改"),
+                self.tr("关闭后将丢失未保存的修改，是否继续？"),
+                self.window(),
+            )
+            if not confirm.exec():
+                event.ignore()
+                return
+
         # 如果不是保存并关闭，且有未保存的修改，恢复到原始配置
         if not self._is_save_and_close and self._has_unsaved_changes:
             self.config_data.clear()
