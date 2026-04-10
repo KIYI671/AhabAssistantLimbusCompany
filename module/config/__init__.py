@@ -8,6 +8,7 @@ from module import (
     VERSION_PATH,
 )
 from module.config.config import Config, Theme_pack_list
+from module.config.config_typing import ConfigModel, TeamSetting
 
 cfg = Config(VERSION_PATH, EXAMPLE_PATH, CONFIG_PATH)
 
