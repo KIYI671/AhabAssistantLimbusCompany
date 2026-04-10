@@ -323,6 +323,32 @@ class Theme_pack_list(metaclass=SingletonMeta):
         """构建特定队伍的权重配置文件路径"""
         return str(Path(self.theme_pack_weight_path) / f"theme_pack_weight_team_{team_num}.yaml")
 
+    def delete_team_weight_config(self, team_num: int) -> None:
+        """删除指定队伍的自定义主题包权重配置文件。"""
+        if team_num < 1:
+            return
+
+        path = Path(self.build_team_weight_path(team_num))
+        if path.exists():
+            path.unlink()
+
+    def set_team_weight_config_from_team(self, target_team_num: int, source_team_num: int) -> None:
+        """将 source 队伍的自定义主题包权重配置写入到 target 队伍。"""
+        if target_team_num < 1 or source_team_num < 1:
+            return
+        if target_team_num == source_team_num:
+            return
+
+        source_path = Path(self.build_team_weight_path(source_team_num))
+        target_path = Path(self.build_team_weight_path(target_team_num))
+
+        if not source_path.exists():
+            return
+
+        with open(source_path, "r", encoding="utf-8") as file:
+            source_config = self.yaml.load(file) or {}
+        self.save_config(path=str(target_path), config_data=source_config)
+
     def get_effective_theme_pack_list(
         self,
         hard_switch: bool,

@@ -34,7 +34,7 @@ from app.base_tools import BaseCheckBox
 from app.common.ui_config import get_theme_aware_text_browser_qss
 from app.language_manager import SUPPORTED_GAME_LANG_NAME, LanguageManager
 from app.widget.custom_segmented_widget import CustomSegmentedWidget
-from module.config import cfg
+from module.config import cfg, theme_list
 from module.logger import log
 
 from .markdown_it_imgdiv import imgdiv_plugin, render_div_close, render_div_open
@@ -645,6 +645,7 @@ class PageMirror(PageCard):
             teams_order.pop(number - 1)
             cfg.unsaved_set_value("teams_be_select", teams_be_select)
             cfg.unsaved_set_value("teams_order", teams_order)
+            theme_list.delete_team_weight_config(number)
 
             self.refresh_team_setting_card()
             cfg.request_save()
@@ -660,6 +661,8 @@ class PageMirror(PageCard):
                 cfg.unsaved_del_key(f"team{i + 1}_setting")
                 cfg.unsaved_set_value(f"team{i}_remark_name", cfg.get_value(f"team{i + 1}_remark_name"))
                 cfg.unsaved_del_key(f"team{i + 1}_remark_name")
+                theme_list.set_team_weight_config_from_team(i, i + 1)
+                theme_list.delete_team_weight_config(i + 1)
         cfg.request_save()
         self.get_setting()
 
