@@ -606,7 +606,16 @@ class Mirror:
         elapsed_time = end_time - start_time
 
         if all(self.floor_times[i] > 0 for i in range(5)):  # 判断是否完整走了五层
-            team_history = cfg.get_value(f"team{self.team_order}_history", default={})
+            team = cfg.config.teams.get(f"{self.team_order}")
+            if team:
+                team_history = {
+                    "total_mirror_time_hard": team.total_mirror_time_hard,
+                    "mirror_hard_count": team.mirror_hard_count,
+                    "total_mirror_time_normal": team.total_mirror_time_normal,
+                    "mirror_normal_count": team.mirror_normal_count,
+                }
+            else:
+                team_history = {}
 
             def calculate_time(time_list, elapsed_time, count):
                 """计算新的平均时间"""
@@ -639,8 +648,13 @@ class Mirror:
                 )
                 team_total_battle_count += 1
                 team_history["mirror_normal_count"] = team_total_battle_count
-
-            cfg.set_value(f"team{self.team_order}_history", team_history)
+            if team:
+                team.total_mirror_time_hard = team_history.get("total_mirror_time_hard", [0.0, 0.0, 0.0])
+                team.mirror_hard_count = team_history.get("mirror_hard_count", 0)
+                team.total_mirror_time_normal = team_history.get("total_mirror_time_normal", [0.0, 0.0, 0.0])
+                team.mirror_normal_count = team_history.get("mirror_normal_count", 0)
+            else:
+                log.warning(f"无法找到编队{self.team_number}的历史记录，无法更新数据")
             log.debug(team_history)
 
         try:
