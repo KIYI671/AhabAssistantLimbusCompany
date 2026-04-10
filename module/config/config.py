@@ -159,6 +159,9 @@ class Config(metaclass=SingletonMeta):
             with open(path, "r", encoding="utf-8") as file:
                 shutil.copy(path, path.with_suffix(".yaml.bak"))
                 loaded_config: dict = self.yaml.load(file)
+                if loaded_config is None:
+                    log.error("读取到的设置文件为空, 请确认是否因为罕见情况丢失了数据")
+                    loaded_config = ConfigModel().model_dump()
                 if loaded_config.get("save_count", 0) >= 5:
                     shutil.copy(path, path.with_suffix(".yaml.old"))  # 保留5次启动前的配置文件
 
@@ -177,6 +180,7 @@ class Config(metaclass=SingletonMeta):
         except FileNotFoundError:
             self._save_config()
         except Exception as e:
+            log.error(f"配置文件{path}加载错误: {e}", exc_info=True)
             sys.exit(f"配置文件{path}加载错误: {e}")
 
     def _save_config(self) -> None:
