@@ -341,8 +341,11 @@ class TeamSettingCard(QFrame):
         self.cancel_team_setting()
 
     def open_theme_pack_weight_dialog(self):
-        # 尝试加载队伍自定义权重文件
+        # 先确保当前队伍的自定义权重文件已创建
         team_index = int(self.team_num)
+        theme_list.create_team_weight_config(team_index)
+
+        # 尝试加载队伍自定义权重文件
         custom_file_path = theme_list.build_team_weight_path(team_index)
         custom_weight_config = theme_list.load_config(custom_file_path)
         
