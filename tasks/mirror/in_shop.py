@@ -19,10 +19,10 @@ class Shop:
         for system in list(all_systems.values()):
             if system == self.system:
                 continue
-            if hasattr(team_setting, f"system_{system}_select"):
+            if getattr(team_setting, f"system_{system}", False):
                 self.shop_sell_list.append(system)
-        self.fuse_switch = False if team_setting.team_system == 0 else True  # 是否启动合成模式
-        self.fuse_aggressive_switch = True if team_setting.team_system == 2 else False  # 是否启动激进合成模式
+        self.fuse_switch = False if team_setting.shop_strategy == 0 else True  # 是否启动合成模式
+        self.fuse_aggressive_switch = True if team_setting.shop_strategy == 2 else False  # 是否启动激进合成模式
         self.do_not_heal = team_setting.do_not_heal  # 是否不治疗
         self.do_not_buy = team_setting.do_not_buy  # 是否不购买
         self.do_not_fuse = team_setting.do_not_fuse  # 是否不合成

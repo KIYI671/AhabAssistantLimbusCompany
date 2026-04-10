@@ -213,7 +213,6 @@ def Mirror_task():
         useful = False
         hard = bool(cfg.hard_mirror)
         teams_be_select = cfg.get_value("teams_be_select")
-        index = 0
         for index in (i for i, t in enumerate(teams_be_select) if t is True):
             team_setting = cfg.config.teams[f"{index + 1}"]
             if team_setting.fixed_team_use is False:
@@ -230,7 +229,7 @@ def Mirror_task():
 
         teams_order = cfg.teams_order  # 复制一份队伍顺序
         team_num = teams_order.index(1)  # 获取序号1的队伍在队伍顺序中的位置
-        team_setting = cfg.config.teams[f"{index + 1}"]  # 获取序号1的队伍的配置
+        team_setting = cfg.config.teams[f"{team_num + 1}"]  # 获取序号1的队伍的配置
         # 如果该队伍固定了用途，且不用途符合当前情况，将序号1的队伍移动到队伍顺序的最后
         if team_setting.fixed_team_use:
             if (team_setting.fixed_team_use_select == 0 and not cfg.hard_mirror) or (
