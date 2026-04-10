@@ -344,8 +344,8 @@ class TeamSettingCard(QFrame):
         # 尝试加载队伍自定义权重文件
         team_index = int(self.team_num)
         custom_file_path = theme_list.build_team_weight_path(team_index)
-        custom_weight_config = {}
-        theme_list._load_config(custom_file_path, custom_weight_config)
+        custom_weight_config = theme_list.load_config(custom_file_path)
+        
 
         dialog = ThemePackSettingDialog(
             self,

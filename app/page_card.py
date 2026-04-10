@@ -612,6 +612,7 @@ class PageMirror(PageCard):
                 teams_order.append(0)
                 cfg.unsaved_set_value("teams_be_select", teams_be_select)
                 cfg.unsaved_set_value("teams_order", teams_order)
+                theme_list.create_team_weight_config(number)
                 cfg.request_save()
 
     def remove_team_card(self, target: str):

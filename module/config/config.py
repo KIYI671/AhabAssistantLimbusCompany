@@ -351,6 +351,17 @@ class Theme_pack_list(metaclass=SingletonMeta):
             source_config = self.yaml.load(file) or {}
         self.save_config(path=str(target_path), config_data=source_config)
 
+    def create_team_weight_config(self, team_num: int) -> None:
+        """创建指定队伍的自定义主题包权重配置文件（若不存在）。"""
+        if team_num < 1:
+            return
+
+        target_path = Path(self.build_team_weight_path(team_num))
+        if target_path.exists():
+            return
+
+        self.save_config(path=str(target_path), config_data=copy.deepcopy(self.config))
+
     def _sync_team_weight_configs(self, default_config: dict) -> None:
         """初始化时同步全局与已存在的队伍主题包权重配置。"""
         global_loaded_config = self.load_config(self.theme_pack_list_path)
