@@ -442,10 +442,10 @@ class ConfigModel(BaseModel):
     set_mirror_count: int = 1
     """镜牢的次数"""
 
-    hard_mirror: bool = False
+    hard_mirror: int | bool = 0
     """进行困难镜牢"""
 
-    no_weekly_bonuses: bool = False
+    no_weekly_bonuses: int | bool = 0
     """不使用每周加成"""
 
     floor_3_exit: bool = False

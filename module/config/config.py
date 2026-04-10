@@ -202,7 +202,7 @@ class Config(metaclass=SingletonMeta):
     def set_value(self, key: str, value: Any, *, config_obj: Optional[BaseModel | dict] = None) -> None:
         """设置配置项的值并延迟保存"""
         with self._lock:
-            self.unsaved_set_value(key, value, config_obj=config_obj)
+            self.unsaved_set_value(key, value, config_obj=config_obj, stacklevel=3)
 
             # 安排一次延迟保存
             self._schedule_save()
@@ -280,7 +280,9 @@ class Config(metaclass=SingletonMeta):
         except Exception as e:
             sys.exit(f"配置文件{path}加载错误: {e}")
 
-    def unsaved_set_value(self, key: str, value: Any, *, config_obj: Optional[BaseModel | dict] = None) -> None:
+    def unsaved_set_value(
+        self, key: str, value: Any, *, config_obj: Optional[BaseModel | dict] = None, stacklevel: int = 2
+    ) -> None:
         """仅设置配置项的值 不保存"""
         if self.config is None:
             self.just_load_config()
@@ -303,11 +305,11 @@ class Config(metaclass=SingletonMeta):
                     cls = value_obj.__class__.__name__
                 else:
                     cls = "None"
-                log.debug(f"{cls}::{key} change to: {value}", stacklevel=2)
+                log.debug(f"{cls}::{key} change to: {value}", stacklevel=stacklevel)
             else:
-                log.debug(f"{config_obj.__class__.__name__}::{key} change to: {value}", stacklevel=2)
+                log.debug(f"{config_obj.__class__.__name__}::{key} change to: {value}", stacklevel=stacklevel)
         else:
-            log.debug(f"{key} change to: {value}", stacklevel=2)  # 增加设置修改的信息
+            log.debug(f"{key} change to: {value}", stacklevel=stacklevel)  # 增加设置修改的信息
 
     def unsaved_del_key(self, key: str, *, config_obj: Optional[BaseModel | dict] = None) -> None:
         """仅删除配置项 不保存"""
