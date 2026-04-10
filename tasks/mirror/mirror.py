@@ -1,3 +1,4 @@
+import re
 import time
 from time import sleep
 
@@ -1346,46 +1347,82 @@ class Mirror:
         self.shop.in_shop(self.floor)
 
     def get_which_floor(self):
-        def handle_ocr(image):
+        def extract_floor_from_text(ocr_text):
+            normalized_text = ocr_text.replace(" ", "").replace("\n", "").lower()
+            floor = None
+            if cfg.language_in_game == "zh_cn":
+                for pattern in (r"第([1-5])层", r"第([1-5])层?", r"([1-5])层"):
+                    match = re.search(pattern, normalized_text)
+                    if match:
+                        floor = int(match.group(1))
+                        break
+                if floor is None and "第" in normalized_text:
+                    for char in normalized_text[normalized_text.index("第") + 1 :]:
+                        if char in "12345":
+                            floor = int(char)
+                            break
+            else:
+                for pattern in (r"floor([1-5])", r"oor([1-5])", r"([1-5])f"):
+                    match = re.search(pattern, normalized_text)
+                    if match:
+                        floor = int(match.group(1))
+                        break
+                if floor is None:
+                    anchor_index = normalized_text.find("floor")
+                    if anchor_index == -1:
+                        anchor_index = normalized_text.find("oor")
+                    if anchor_index != -1:
+                        for char in normalized_text[anchor_index:]:
+                            if char in "12345":
+                                floor = int(char)
+                                break
+            if floor is None:
+                return None
+            return floor if 0 < floor <= 5 else None
+
+        def handle_ocr(image, stage_name):
+            ocr_result = ""
             try:
                 result = ocr.run(image)
-                ocr_result = [result.txts[i] for i in range(len(result.txts))]
-                ocr_result = "".join(ocr_result)
-                log.debug(f"对于楼层信息OCR得到：{ocr_result}")
-                if cfg.language_in_game == "zh_cn" and "第" in ocr_result:
-                    result = ocr_result.split("第")
-                    floor = result[-1][0]
-                    floor = int(floor)
-                    if 0 < floor <= 5:
-                        self.floor = floor
-                        self.get_floor_num = False
-                        return True
-                elif cfg.language_in_game == "en" and "oor" in ocr_result:
-                    result = ocr_result.split("oor")
-                    floor = result[-1][0]
-                    floor = int(floor)
-                    if 0 < floor <= 5:
-                        self.floor = floor
-                        self.get_floor_num = False
-                        return True
+                if getattr(result, "txts", None):
+                    ocr_result = "".join(result.txts)
+                floor = extract_floor_from_text(ocr_result)
+                if floor is not None:
+                    log.debug(f"对于楼层信息OCR[{stage_name}]得到：{ocr_result}")
+                    self.floor = floor
+                    self.get_floor_num = False
+                    return True, ocr_result
             except:
                 pass
-            return False
+            return False, ocr_result
 
         this_floor = self.floor
 
         auto.take_screenshot(gray=False)
         get_floor_bbox = ImageUtils.get_bbox(ImageUtils.load_image("mirror/road_in_mir/get_floor_bbox.png"))
-        sc = ImageUtils.crop(np.array(auto.screenshot), get_floor_bbox)
+        previous_crop = ImageUtils.crop(np.array(auto.screenshot), get_floor_bbox)
 
         for i in range(5):
             auto.take_screenshot(gray=False)
-            sc2 = ImageUtils.crop(np.array(auto.screenshot), get_floor_bbox)
-            diff = cv2.absdiff(sc, sc2)
+            current_crop = ImageUtils.crop(np.array(auto.screenshot), get_floor_bbox)
+            diff = cv2.absdiff(previous_crop, current_crop)
             diff_gray = cv2.cvtColor(diff, cv2.COLOR_BGR2GRAY)
-            _, img = cv2.threshold(diff_gray, 5, 255, cv2.THRESH_BINARY)
-            img = cv2.resize(img, None, fx=3.0, fy=3.0, interpolation=cv2.INTER_CUBIC)
-            if handle_ocr(img) and self.floor != this_floor:
+            _, binary_img = cv2.threshold(diff_gray, 5, 255, cv2.THRESH_BINARY)
+            current_scaled = cv2.resize(current_crop, None, fx=2.5, fy=2.5, interpolation=cv2.INTER_CUBIC)
+            binary_img = cv2.resize(binary_img, None, fx=3.0, fy=3.0, interpolation=cv2.INTER_CUBIC)
+
+            floor_found = False
+            for stage_name, candidate_image in (
+                ("current", current_crop),
+                ("current_scaled", current_scaled),
+                ("diff_gray", diff_gray),
+                ("binary", binary_img),
+            ):
+                floor_found, _ = handle_ocr(candidate_image, stage_name)
+                if floor_found:
+                    break
+            previous_crop = current_crop
+            if floor_found and self.floor != this_floor:
                 break
 
         log.debug(f"识别前楼层为{this_floor}，识别后为{self.floor}")
