@@ -565,11 +565,16 @@ class ThemePackSettingDialog(FramelessDialog):
         self.save_button.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         self.save_button.clicked.connect(self.save_and_close)
 
+        self.close_button = PushButton(self.tr("关闭"), self)
+        self.close_button.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        self.close_button.clicked.connect(self.close)
+
         self.button_layout.addStretch()
         self.button_layout.addWidget(self.reset_button)
         self.button_layout.addWidget(self.set_to_global_button)
         self.button_layout.addWidget(self.set_all_negative_button)
         self.button_layout.addWidget(self.save_button)
+        self.button_layout.addWidget(self.close_button)
         self.button_layout.addStretch()
 
     def __init_layout(self):
