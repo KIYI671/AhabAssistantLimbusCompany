@@ -25,9 +25,6 @@ from tasks.base.make_enkephalin_module import (
     make_enkephalin_module,
 )
 from tasks.base.retry import kill_game
-from utils import pic_path
-
-
 class ProductionWork(QThread):
     """生产逻辑工作线程，避免阻塞UI"""
 
@@ -47,8 +44,6 @@ class ProductionWork(QThread):
 
     def run(self):
         """工作线程的主循环"""
-        if cfg.language_in_game == "zh_cn" and pic_path[0] != "zh_cn":
-            pic_path.insert(0, "zh_cn")
         while self.production_running:
             # 首先进行游戏初始化
             try:

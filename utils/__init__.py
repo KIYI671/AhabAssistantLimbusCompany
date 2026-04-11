@@ -1,3 +1,3 @@
 from .path_manager import path_manager
 
-pic_path = ["en", "share"]
+pic_path = ["default/en", "default/share"]
