@@ -11,6 +11,7 @@ from PIL.Image import Image
 
 from utils.image_utils import ImageUtils
 from utils.singletonmeta import SingletonMeta
+from utils import path_manager
 
 from ..config import cfg
 from ..logger import log
@@ -507,28 +508,74 @@ class Automation(metaclass=SingletonMeta):
                 if current_percent > 90:
                     log.debug(f"当前系统内存总占用率: {current_percent}%，释放图片缓存")
                     self.clear_img_cache()
+
             if cacheable and target in self.img_cache:
                 bbox = self.img_cache[target]["bbox"]
                 template = self.img_cache[target]["template"]
+                loaded_path = self.img_cache[target].get("loaded_path")
             else:
-                template = ImageUtils.load_image(target)
+                template, loaded_path = ImageUtils.load_image(target, return_path=True)
+                if template is None:
+                    log.debug(f"无法加载图片: {target}", stacklevel=addtional_stack + 3)
+                    return None
                 if "assets" in target:
                     bbox = ImageUtils.get_bbox(template)
                     template = ImageUtils.crop(template, bbox)
                 else:
                     bbox = None
                 if cacheable:
-                    self.img_cache[target] = {"bbox": bbox, "template": template}
+                    self.img_cache[target] = {"bbox": bbox, "template": template, "loaded_path": loaded_path}
             screenshot = np.array(self.screenshot)
             if my_crop:
                 screenshot = ImageUtils.crop(screenshot, my_crop)
             center, matchVal = ImageUtils.match_template(screenshot, template, bbox, model)  # 匹配模板
             log.debug(
-                f"目标图片：{target.replace('./assets/images/', '')}, 相似度：{matchVal:.2f}, 目标位置：{center}",
+                f"目标图片：{target.replace('./assets/images/', '')}, 路径: {loaded_path}, 相似度：{matchVal:.2f}, 目标位置：{center}",
                 stacklevel=addtional_stack + 3,
             )
             if isinstance(matchVal, (int, float)) and not math.isinf(matchVal) and matchVal >= threshold:
                 return center
+            # 
+            # 当前优先命中的图片来自 dark 路径，且本次匹配没有成功时，
+            # 额外尝试一次default的图片。
+            if (
+                path_manager.dynamic_optimization
+                and not path_manager.is_dark_eliminated
+                and loaded_path
+                and path_manager.is_path_dark(loaded_path)
+            ):
+                default_exists, default_path = ImageUtils.check_default_path_exists(target)
+                if default_exists:
+                    default_template = ImageUtils.load_from_specific_path(target, default_path)
+                    if default_template is not None:
+                        if "assets" in target:
+                            default_bbox = ImageUtils.get_bbox(default_template)
+                            default_template = ImageUtils.crop(default_template, default_bbox)
+                        else:
+                            default_bbox = None
+
+                        default_center, default_matchVal = ImageUtils.match_template(
+                            screenshot,
+                            default_template,
+                            default_bbox,
+                            model,
+                        )
+                        log.debug(
+                            f"尝试默认路径图片：{target}, 路径: {default_path}, 相似度：{default_matchVal:.2f}",
+                            stacklevel=addtional_stack + 3,
+                        )
+                        if (
+                            isinstance(default_matchVal, (int, float))
+                            and not math.isinf(default_matchVal)
+                            and default_matchVal >= threshold
+                        ):
+                            # 一旦确认“dark 失败但普通路径成功”，就全局淘汰 dark 路径，
+                            # 避免后续所有图片都重复经历一次 dark 失败 -> 普通成功 的回退过程。
+                            if path_manager.eliminate_dark_paths():
+                                log.info(f"检测到dark路径失败但default路径成功，淘汰所有dark路径，图片: {target}")
+                                # 清空缓存，避免后续继续复用已经缓存的 dark 模板。
+                                self.clear_img_cache()
+                            return default_center
         except Exception as e:
             log.error(f"寻找图片失败:{e}")
         return None

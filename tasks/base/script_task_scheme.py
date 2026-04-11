@@ -44,7 +44,7 @@ from tasks.daily.get_prize import get_mail_prize, get_pass_prize
 from tasks.daily.luxcavation import EXP_luxcavation, thread_luxcavation
 from tasks.mirror.mirror import Mirror
 from tasks.teams.team_formation import select_battle_team
-from utils import pic_path
+from utils import path_manager, pic_path
 from utils.utils import calculate_the_teams, get_day_of_week
 
 
@@ -302,63 +302,9 @@ def script_task() -> None | int:
         if cfg.set_win_size == 720:
             log.warning("当前游戏分辨率为1280*720, 可能会导致识别错误或卡死, 建议设置为更高分辨率")
 
-    pic_path.clear()
-    if cfg.language_in_game == "zh_cn":
-        pic_path.extend(["zh_cn", "en", "share"])
-    elif cfg.language_in_game == "en":
-        pic_path.extend(["en", "share"])
-
-    # 检查主题
-    theme_detected = None
-    for loop_idx in range(2):
-        log.info(f"正在检测主题, 第{loop_idx + 1}次")
-        if loop_idx == 0:
-            for _ in range(3):
-                auto.key_press("esc")
-                sleep(0.5)
-        else:
-            auto.key_press("esc")
-            sleep(0.5)
-
-        auto.clear_img_cache()
-        auto.take_screenshot()
-        if (
-            auto.find_element("battle/give_up_assets.png")
-            or auto.find_element("battle/normal_give_up_assets.png")
-            or auto.find_element("mirror/road_in_mir/to_window_assets.png")
-            or auto.find_element("home/window_assets.png")
-        ):
-            auto.key_press("esc")  # 退出设置页面，防止设置页面镜牢识别
-            log.info("当前主题为: default")
-            theme_detected = "default"
-            break
-
-        pic_path.insert(0, "share_dark")
-        auto.clear_img_cache()
-        try:
-            if (
-                auto.find_element("battle/give_up_assets.png")
-                or auto.find_element("battle/normal_give_up_assets.png")
-                or auto.find_element("mirror/road_in_mir/to_window_assets.png")
-                or auto.find_element("home/window_assets.png")
-            ):
-                auto.key_press("esc")  # 退出设置页面，防止设置页面镜牢识别
-                log.info("当前主题为: dark")
-                theme_detected = "dark"
-                break
-        finally:
-            if "share_dark" in pic_path:
-                pic_path.remove("share_dark")
-    else:
-        log.info("未检测到有效主题，默认判定为: default")
-        theme_detected = "default"
-
-    if theme_detected == "dark":
-        pic_path.clear()
-        if cfg.language_in_game == "zh_cn":
-            pic_path.extend(["zh_cn_dark", "en_dark", "share_dark", "zh_cn", "en", "share"])
-        else:
-            pic_path.extend(["en_dark", "share_dark", "en", "share"])
+    path_manager.initialize_paths(cfg.language_in_game, pic_path_ref=pic_path, config=cfg)
+    auto.clear_img_cache()
+    log.info(f"初始化图片路径: {pic_path}")
 
     # 如果是战斗中，先处理战斗
     if cfg.resonate_with_Ahab:

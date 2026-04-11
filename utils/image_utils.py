@@ -12,58 +12,97 @@ from utils import pic_path
 
 class ImageUtils:
     @staticmethod
-    def load_image(image_path, resize=True):
+    def load_image(image_path, resize=True, return_path=False):
         """
         加载图片，并根据指定区域裁剪图片。
         :param image_path: 图片文件路径。
-        :return: numpy数组，如果图片通道数大于3，则只返回前三个通道。
+        :param resize: 是否根据窗口大小调整图片尺寸。
+        :param return_path: 是否返回实际加载到的路径名。
+        :return: 图片数组；若 return_path=True，则返回 (图片数组, 路径名)。
         """
         try:
             img_path = None
+            selected_path = None
             for path in pic_path:
                 img_path = os.path.join(f"./assets/images/{path}/{image_path}")
                 if os.path.exists(img_path):
+                    selected_path = path
                     break
+            if img_path is None or not os.path.exists(img_path):
+                log.error(f"未找到图片： {image_path} ")
+                return (None, None) if return_path else None
             # 使用上下文管理器打开图片文件，确保文件对象及时关闭
             with Image.open(img_path) as img:
-                # 将图片转换为numpy数组
-                image = np.array(img)
-                # 获取图片的通道数，如果图片为多通道（如RGB）则获取，否则默认为1（如灰度图）
-                channel = image.shape[2] if len(image.shape) > 2 else 1
-                # 如果图片通道数大于3，只保留前三个通道（如RGB）
-                if channel > 3:
-                    image = image[:, :, :3].copy()
-                if resize:
-                    win_size = cfg.set_win_size
-                    # 如果win_size 为2560*1440，则不变，否则将图片缩放到对应的16：9大小
-                    if win_size < 1440:
-                        image = cv2.resize(
-                            image,
-                            None,
-                            fx=win_size / 1440,
-                            fy=win_size / 1440,
-                            interpolation=cv2.INTER_AREA,
-                        )
-                    elif win_size > 1440:
-                        image = cv2.resize(
-                            image,
-                            None,
-                            fx=win_size / 1440,
-                            fy=win_size / 1440,
-                            interpolation=cv2.INTER_LINEAR,
-                        )
-                # 返回处理后的图片数组
-                image = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
+                image = ImageUtils._prepare_loaded_image(np.array(img), resize)
+                if return_path:
+                    return image, selected_path
                 return image
         except FileNotFoundError:
             log.error(f"未找到图片： {image_path} ")
-            return None
+            return (None, None) if return_path else None
         except IOError:
             log.error(f"无法读取图片： {image_path}")
-            return None
+            return (None, None) if return_path else None
         except Exception as e:
             log.error(f"加载图片时发生错误： {e}")
+            return (None, None) if return_path else None
+
+    @staticmethod
+    def check_default_path_exists(image_path):
+        """检查图片在默认路径（非 dark）中是否存在。"""
+        from utils import path_manager
+
+        for path in path_manager.get_active_paths():
+            if path_manager.is_path_dark(path):
+                continue
+            img_path = os.path.join(f"./assets/images/{path}/{image_path}")
+            if os.path.exists(img_path):
+                return True, path
+        return False, None
+
+    @staticmethod
+    def load_from_specific_path(image_path, target_path, resize=True):
+        """从指定路径加载图片。"""
+        img_path = os.path.join(f"./assets/images/{target_path}/{image_path}")
+        if not os.path.exists(img_path):
             return None
+        try:
+            with Image.open(img_path) as img:
+                return ImageUtils._prepare_loaded_image(np.array(img), resize)
+        except Exception as e:
+            log.error(f"从指定路径加载图片失败: {e}")
+            return None
+
+    @staticmethod
+    def _prepare_loaded_image(image, resize):
+        """统一处理磁盘加载出来的模板图片。"""
+        channel = image.shape[2] if len(image.shape) > 2 else 1
+        if channel > 3:
+            image = image[:, :, :3].copy()
+        if resize:
+            win_size = cfg.set_win_size
+# 如果win_size 为2560*1440，则不变，否则将图片缩放到对应的16：9大小
+            if win_size < 1440:
+                image = cv2.resize(
+                    image,
+                    None,
+                    fx=win_size / 1440,
+                    fy=win_size / 1440,
+                    interpolation=cv2.INTER_AREA,
+                )
+            elif win_size > 1440:
+                image = cv2.resize(
+                    image,
+                    None,
+                    fx=win_size / 1440,
+                    fy=win_size / 1440,
+                    interpolation=cv2.INTER_LINEAR,
+                )
+        if len(image.shape) == 2:
+            return image
+        if image.shape[2] == 1:
+            return image[:, :, 0]
+        return cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
 
     @staticmethod
     def image_channel(image):
