@@ -1,6 +1,5 @@
 import sys
 
-from pynput import keyboard
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QTextCursor
 from PySide6.QtWidgets import QApplication, QTextEdit
@@ -25,6 +24,7 @@ from app.page_card import (
 from app.team_setting_card import TeamSettingCard
 from module.automation import auto
 from module.game_and_screen import screen
+from module.hotkey_listener import ExactGlobalHotKeys
 from module.logger import log, ui_log_dispatcher
 from tasks.base.script_task_scheme import my_script_task
 from utils.utils import check_hard_mirror_time
@@ -81,7 +81,7 @@ class FarmingInterface(QWidget):
 
     def _listener_start(self):
         try:
-            self.listener = keyboard.GlobalHotKeys(
+            self.listener = ExactGlobalHotKeys(
                 {
                     cfg.shutdown_hotkey: self.my_stop_shortcut,
                     cfg.pause_hotkey: self.my_pause_and_resume,
