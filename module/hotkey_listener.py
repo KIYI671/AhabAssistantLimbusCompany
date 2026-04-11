@@ -55,8 +55,9 @@ class ExactGlobalHotKeys(keyboard.Listener):
             *args,
             **kwargs,
         )
+        self.daemon = True
 
-    def _on_press(self, key, injected):
+    def _on_press(self, key, injected=False):
         if injected:
             return
 
@@ -66,7 +67,7 @@ class ExactGlobalHotKeys(keyboard.Listener):
         for hotkey in self._hotkeys:
             hotkey.press(canonical_key, pressed_modifiers)
 
-    def _on_release(self, key, injected):
+    def _on_release(self, key, injected=False):
         if injected:
             return
 
