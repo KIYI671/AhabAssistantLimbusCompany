@@ -32,7 +32,7 @@ class TeamSettingCard(QFrame):
         self.__init_layout()
         # self.setStyleSheet("border: 1px solid black;")
 
-        self.team_setting = cfg.config.teams.get(f"{team_num}", TeamSetting())
+        self.team_setting = cfg.config.teams.get(f"{team_num}", TeamSetting()).model_copy(deep=True)
 
         self.read_settings()
         self.refresh_starlight_select()
