@@ -66,6 +66,7 @@ class FarmingInterface(QWidget):
         self.interface_left = FarmingInterfaceLeft()
         self.interface_center = FarmingInterfaceCenter()
         self.interface_right = FarmingInterfaceRight()
+        self.listener = None
         self.hbox_layout_left.addWidget(self.interface_left)
         self.hbox_layout_center.addWidget(self.interface_center)
         self.hbox_layout_right.addWidget(self.interface_right)
@@ -77,9 +78,12 @@ class FarmingInterface(QWidget):
         mediator.hotkey_listener_start_signal.connect(self._listener_start)
 
     def _listener_stop(self):
-        self.listener.stop()
+        if self.listener:
+            self.listener.stop()
+            self.listener = None
 
     def _listener_start(self):
+        self._listener_stop()
         try:
             self.listener = ExactGlobalHotKeys(
                 {
@@ -90,6 +94,7 @@ class FarmingInterface(QWidget):
             )
             self.listener.start()
         except ValueError:
+            self.listener = None
             log.error("快捷键监听启动失败，请确认设置的快捷键格式有效")
 
     def my_stop_shortcut(self):
