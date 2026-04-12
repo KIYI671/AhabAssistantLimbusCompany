@@ -7,7 +7,7 @@ from PIL import Image
 
 from module.config import cfg
 from module.logger import log
-from utils import pic_path
+from utils.path_manager import path_manager
 
 
 class ImageUtils:
@@ -23,7 +23,7 @@ class ImageUtils:
         try:
             img_path = None
             selected_path = None
-            for path in pic_path:
+            for path in path_manager.pic_path:
                 img_path = os.path.join(f"./assets/images/{path}/{image_path}")
                 if os.path.exists(img_path):
                     selected_path = path
@@ -50,9 +50,7 @@ class ImageUtils:
     @staticmethod
     def check_default_path_exists(image_path):
         """检查图片在默认路径（非 dark）中是否存在。"""
-        from utils import path_manager
-
-        for path in path_manager.get_active_paths():
+        for path in path_manager.pic_path:
             if path_manager.is_path_dark(path):
                 continue
             img_path = os.path.join(f"./assets/images/{path}/{image_path}")

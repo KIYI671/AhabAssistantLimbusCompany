@@ -17,7 +17,6 @@ resume_hotkey: "<alt>+r" # 继续快捷键
 announcement: 1715990400 # 公告板时间戳
 
 memory_protection: False # 内存占用保护
-dynamic_path_optimization: True # 是否启用运行时动态路径优化（dark失败后回退default并淘汰dark路径）
 
 background_click: True # 是否使用后台点击
 win_input_type: "background" # 键鼠操控方式

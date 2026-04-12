@@ -9,9 +9,9 @@ import numpy as np
 import psutil
 from PIL.Image import Image
 
+from utils.path_manager import path_manager
 from utils.image_utils import ImageUtils
 from utils.singletonmeta import SingletonMeta
-from utils import path_manager
 
 from ..config import cfg
 from ..logger import log
@@ -535,69 +535,36 @@ class Automation(metaclass=SingletonMeta):
             )
             if isinstance(matchVal, (int, float)) and not math.isinf(matchVal) and matchVal >= threshold:
                 return center
-            if path_manager.dynamic_optimization and loaded_path:
-                for fallback_path in path_manager.get_same_theme_fallback_paths(loaded_path):
-                    fallback_template = ImageUtils.load_from_specific_path(target, fallback_path)
-                    if fallback_template is None:
-                        continue
-                    if "assets" in target:
-                        fallback_bbox = ImageUtils.get_bbox(fallback_template)
-                        fallback_template = ImageUtils.crop(fallback_template, fallback_bbox)
-                    else:
-                        fallback_bbox = None
+            if loaded_path and not path_manager.is_dark_eliminated and path_manager.is_path_dark(loaded_path):
+                default_exists, default_path = ImageUtils.check_default_path_exists(target)
+                if default_exists:
+                    default_template = ImageUtils.load_from_specific_path(target, default_path)
+                    if default_template is not None:
+                        if "assets" in target:
+                            default_bbox = ImageUtils.get_bbox(default_template)
+                            default_template = ImageUtils.crop(default_template, default_bbox)
+                        else:
+                            default_bbox = None
 
-                    fallback_center, fallback_matchVal = ImageUtils.match_template(
-                        screenshot,
-                        fallback_template,
-                        fallback_bbox,
-                        model,
-                    )
-                    log.debug(
-                        f"尝试同主题语言回退图片：{target}, 路径: {fallback_path}, 相似度：{fallback_matchVal:.2f}",
-                        stacklevel=addtional_stack + 3,
-                    )
-                    if (
-                        isinstance(fallback_matchVal, (int, float))
-                        and not math.isinf(fallback_matchVal)
-                        and fallback_matchVal >= threshold
-                    ):
-                        if path_manager.eliminate_path(loaded_path):
-                            log.info(f"检测到路径 {loaded_path} 失败但 {fallback_path} 成功，淘汰路径: {loaded_path}")
-                            self.clear_img_cache()
-                        return fallback_center
-
-                # 当前优先命中的图片来自 dark 路径，且本次匹配没有成功时，
-                # 额外尝试一次 default 的图片。
-                if not path_manager.is_dark_eliminated and path_manager.is_path_dark(loaded_path):
-                    default_exists, default_path = ImageUtils.check_default_path_exists(target)
-                    if default_exists:
-                        default_template = ImageUtils.load_from_specific_path(target, default_path)
-                        if default_template is not None:
-                            if "assets" in target:
-                                default_bbox = ImageUtils.get_bbox(default_template)
-                                default_template = ImageUtils.crop(default_template, default_bbox)
-                            else:
-                                default_bbox = None
-
-                            default_center, default_matchVal = ImageUtils.match_template(
-                                screenshot,
-                                default_template,
-                                default_bbox,
-                                model,
-                            )
-                            log.debug(
-                                f"尝试默认路径图片：{target}, 路径: {default_path}, 相似度：{default_matchVal:.2f}",
-                                stacklevel=addtional_stack + 3,
-                            )
-                            if (
-                                isinstance(default_matchVal, (int, float))
-                                and not math.isinf(default_matchVal)
-                                and default_matchVal >= threshold
-                            ):
-                                if path_manager.eliminate_dark_paths():
-                                    log.info(f"检测到dark路径失败但default路径成功，淘汰所有dark路径，图片: {target}")
-                                    self.clear_img_cache()
-                                return default_center
+                        default_center, default_matchVal = ImageUtils.match_template(
+                            screenshot,
+                            default_template,
+                            default_bbox,
+                            model,
+                        )
+                        log.debug(
+                            f"尝试默认路径图片：{target}, 路径: {default_path}, 相似度：{default_matchVal:.2f}",
+                            stacklevel=addtional_stack + 3,
+                        )
+                        if (
+                            isinstance(default_matchVal, (int, float))
+                            and not math.isinf(default_matchVal)
+                            and default_matchVal >= threshold
+                        ):
+                            if path_manager.eliminate_dark_paths():
+                                log.info(f"检测到dark路径失败但default路径成功，淘汰所有dark路径，图片: {target}")
+                                self.clear_img_cache()
+                            return default_center
         except Exception as e:
             log.error(f"寻找图片失败:{e}")
         return None

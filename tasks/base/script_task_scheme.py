@@ -44,7 +44,7 @@ from tasks.daily.get_prize import get_mail_prize, get_pass_prize
 from tasks.daily.luxcavation import EXP_luxcavation, thread_luxcavation
 from tasks.mirror.mirror import Mirror
 from tasks.teams.team_formation import select_battle_team
-from utils import path_manager, pic_path
+from utils.path_manager import path_manager
 from utils.utils import calculate_the_teams, get_day_of_week
 
 
@@ -302,9 +302,9 @@ def script_task() -> None | int:
         if cfg.set_win_size == 720:
             log.warning("当前游戏分辨率为1280*720, 可能会导致识别错误或卡死, 建议设置为更高分辨率")
 
-    path_manager.initialize_paths(cfg.language_in_game, pic_path_ref=pic_path, config=cfg)
+    path_manager.initialize_paths(cfg.language_in_game)
     auto.clear_img_cache()
-    log.info(f"初始化图片路径: {pic_path}")
+    log.info(f"初始化图片路径: {path_manager.pic_path}")
 
     # 如果是战斗中，先处理战斗
     if cfg.resonate_with_Ahab:
