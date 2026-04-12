@@ -26,6 +26,7 @@ from PySide6.QtWidgets import (
     QGraphicsDropShadowEffect,
     QLabel,
     QPushButton,
+    QWidget,
 )
 from qfluentwidgets import (
     FlyoutViewBase,
@@ -36,6 +37,7 @@ from qfluentwidgets import (
     PopupTeachingTip,
     PrimaryPushButton,
     PrimaryPushSettingCard,
+    PrimaryToolButton,
     ProgressBar,
     PushSettingCard,
     SettingCard,
@@ -43,7 +45,9 @@ from qfluentwidgets import (
     SwitchButton,
     TeachingTipTailPosition,
     TimePicker,
+    ToolButton,
     setCustomStyleSheet,
+    themeColor,
 )
 
 from app.base_tools import *
@@ -54,12 +58,68 @@ from app.card.messagebox_custom import (
     MessageBoxEdit,
     MessageBoxSpinbox,
 )
+from app.common.icons import Icons
 from app.language_manager import LanguageManager
 from module.font_manager import font_manager
 from module.logger import log
 from module.my_error.my_error import settingsTypeError
 from module.update.check_update import check_update
 from utils.utils import decrypt_string, encrypt_string, get_timezone
+
+
+class ToolCheckButton(ToolButton):
+    checked = Signal(bool)
+
+    def _postInit(self):
+        self.clicked.connect(self.on_clicked)
+        self._clicked: bool = False
+        self.setProperty("checked", "false")
+
+    @property
+    def clicked_status(self) -> bool:
+        return self._clicked
+
+    @clicked_status.setter
+    def clicked_status(self, value: bool):
+        self._clicked = value
+        self.setProperty("checked", "true" if value else "false")
+        self.checked.emit(value)
+        self._update_style(value)
+
+    def _update_style(self, checked: bool):
+        if checked:
+            qss = """
+ToolCheckButton {
+background-color: --ThemeColorPrimary;
+}
+ToolCheckButton:hover {
+    background-color: --ThemeColorPrimary;
+}
+"""
+        else:
+            qss = """ToolCheckButton {
+background-color: transparent;
+}"""
+        self.setStyleSheet(qss)
+        setCustomStyleSheet(self, qss, qss)
+
+    def on_clicked(self):
+        self.clicked_status = not self.clicked_status
+
+    def setChecked(self, arg__1: bool) -> None:
+        self.clicked_status = arg__1
+        return super().setChecked(arg__1)
+
+    def isChecked(self) -> bool:
+        return self.clicked_status
+
+    def _drawIcon(self, icon, painter, rect, state=QIcon.Off):
+        if not self.isChecked():
+            return ToolButton._drawIcon(self, icon, painter, rect)
+        if icon == Icons.DOUBLE_ADD:
+            rect = rect.adjusted(-rect.width(), 0, rect.width(), 0)
+            # render 不会渲染区域外的白色 所以手动扩展渲染区域
+        PrimaryToolButton._drawIcon(self, icon, painter, rect, QIcon.On)
 
 
 class CheckBoxWithButton(QFrame):
@@ -96,6 +156,7 @@ class CheckBoxWithLineEdit(QFrame):
         self.setObjectName(config_name)
         self.config_name = config_name
         self.hBoxLayout = QHBoxLayout(self)
+        self.hBoxLayout.setContentsMargins(0, 0, 0, 0)
         self.box = CheckBox(check_box_title, parent=self)
         self.line_edit = LineEdit(self)
         self.line_edit.setMaximumWidth(70)
