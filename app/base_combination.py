@@ -47,7 +47,6 @@ from qfluentwidgets import (
     TimePicker,
     ToolButton,
     setCustomStyleSheet,
-    themeColor,
 )
 
 from app.base_tools import *
@@ -58,7 +57,7 @@ from app.card.messagebox_custom import (
     MessageBoxEdit,
     MessageBoxSpinbox,
 )
-from app.common.icons import Icons
+from app.common.icons import OverflowIcons
 from app.language_manager import LanguageManager
 from module.font_manager import font_manager
 from module.logger import log
@@ -100,7 +99,6 @@ ToolCheckButton:hover {
             qss = """ToolCheckButton {
 background-color: transparent;
 }"""
-        self.setStyleSheet(qss)
         setCustomStyleSheet(self, qss, qss)
 
     def on_clicked(self):
@@ -115,11 +113,14 @@ background-color: transparent;
 
     def _drawIcon(self, icon, painter, rect, state=QIcon.Off):
         if not self.isChecked():
-            return ToolButton._drawIcon(self, icon, painter, rect)
-        if icon == Icons.DOUBLE_ADD:
-            rect = rect.adjusted(-rect.width(), 0, rect.width(), 0)
-            # render 不会渲染区域外的白色 所以手动扩展渲染区域
-        PrimaryToolButton._drawIcon(self, icon, painter, rect, QIcon.On)
+            if isinstance(icon, OverflowIcons):
+                icon.set_reverse(False)
+            return super()._drawIcon(icon, painter, rect)
+        if isinstance(icon, OverflowIcons):
+            icon.set_reverse(True)
+            super()._drawIcon(icon, painter, rect, QIcon.On)
+        else:
+            PrimaryToolButton._drawIcon(self, icon, painter, rect, QIcon.On)
 
 
 class CheckBoxWithButton(QFrame):

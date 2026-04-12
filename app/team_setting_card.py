@@ -20,7 +20,7 @@ from app.base_combination import (
     ToolCheckButton,
 )
 from app.base_tools import BaseCheckBox, BaseComboBox, BaseLabel, BaseSettingLayout
-from app.common.icons import Icons
+from app.common.icons import OverflowIcons
 from app.language_manager import LanguageManager
 from module.config import TeamSetting, cfg
 
@@ -468,7 +468,7 @@ class StarlightCard(QFrame):
         self.level_one_button.setChecked(self.level == 1)
         self.level_one_button.checked.connect(self.__on_level_one_clicked)
         self.level_one_button.setFixedHeight(25)
-        self.level_two_button = ToolCheckButton(Icons.DOUBLE_ADD)
+        self.level_two_button = ToolCheckButton(OverflowIcons.DOUBLE_ADD)
         self.level_two_button.setChecked(self.level == 2)
         self.level_two_button.checked.connect(self.__on_level_two_clicked)
         self.level_two_button.setFixedHeight(25)
