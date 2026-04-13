@@ -37,7 +37,7 @@ def auto_switch_language_in_game(hwnd: int) -> int:
     """
     if cfg.simulator:
         log.info("检测到模拟器，将自动使用英文")
-        if cfg.language_in_game == "-":
+        if cfg.language_in_game != "en":
             cfg.set_value("language_in_game", "en")
         return AutoSwitchCon.FINISH
 
