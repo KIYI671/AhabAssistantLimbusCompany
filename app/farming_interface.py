@@ -1,6 +1,5 @@
 import sys
 
-from pynput import keyboard
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QTextCursor
 from PySide6.QtWidgets import QApplication, QTextEdit
@@ -25,6 +24,7 @@ from app.page_card import (
 from app.team_setting_card import TeamSettingCard
 from module.automation import auto
 from module.game_and_screen import screen
+from module.hotkey_listener import ExactGlobalHotKeys
 from module.logger import log, ui_log_dispatcher
 from tasks.base.script_task_scheme import my_script_task
 from utils.utils import check_hard_mirror_time
@@ -67,6 +67,7 @@ class FarmingInterface(QWidget):
         self.interface_left = FarmingInterfaceLeft()
         self.interface_center = FarmingInterfaceCenter()
         self.interface_right = FarmingInterfaceRight()
+        self.listener = None
         self.hbox_layout_left.addWidget(self.interface_left)
         self.hbox_layout_center.addWidget(self.interface_center)
         self.hbox_layout_right.addWidget(self.interface_right)
@@ -78,11 +79,14 @@ class FarmingInterface(QWidget):
         mediator.hotkey_listener_start_signal.connect(self._listener_start)
 
     def _listener_stop(self):
-        self.listener.stop()
+        if self.listener:
+            self.listener.stop()
+            self.listener = None
 
     def _listener_start(self):
+        self._listener_stop()
         try:
-            self.listener = keyboard.GlobalHotKeys(
+            self.listener = ExactGlobalHotKeys(
                 {
                     cfg.shutdown_hotkey: self.my_stop_shortcut,
                     cfg.pause_hotkey: self.my_pause_and_resume,
@@ -91,6 +95,7 @@ class FarmingInterface(QWidget):
             )
             self.listener.start()
         except ValueError:
+            self.listener = None
             log.error("快捷键监听启动失败，请确认设置的快捷键格式有效")
 
     def my_stop_shortcut(self):
