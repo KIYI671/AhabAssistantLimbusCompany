@@ -1,4 +1,3 @@
-import os
 import platform
 import random
 from datetime import datetime
@@ -6,7 +5,6 @@ from sys import exc_info
 from time import sleep, time
 from traceback import format_exception
 
-import win32process
 from playsound3 import playsound
 from PySide6.QtCore import QT_TRANSLATE_NOOP, QMutex, QThread
 
@@ -22,6 +20,11 @@ from module.config import cfg
 from module.decorator.decorator import begin_and_finish_time_log
 from module.game_and_screen import game_process, screen
 from module.logger import log
+from module.system_actions import (
+    apply_power_keep_awake,
+    execute_after_completion,
+    get_after_completion_config,
+)
 from module.my_error.my_error import (
     backMainWinError,
     cannotOperateGameError,
@@ -370,39 +373,12 @@ def script_task() -> None | int:
         Resonate_with_Ahab()
 
     if platform.system() == "Windows":
-        after_completion = cfg.after_completion
+        actions, power_action = get_after_completion_config()
         try:
-            if after_completion == 1:
-                os.system("rundll32.exe powrprof.dll,SetSuspendState Sleep")
-            elif after_completion == 2:
-                os.system("rundll32.exe powrprof.dll,SetSuspendState Hibernate")
-            elif after_completion == 3:
-                os.system("shutdown /s /t 30")
-            elif after_completion == 4 or after_completion == 6:
-                _, pid = win32process.GetWindowThreadProcessId(screen.handle.hwnd)
-                ret = os.system(f"taskkill /F /PID {pid}")
-                if ret == 0:
-                    log.info("成功关闭 Limbus Company")
-                elif ret == 128:
-                    log.error("错误：进程不存在")
-                elif ret == 1:
-                    log.error("错误：权限不足")
-            elif after_completion == 7:
-                if cfg.simulator_type == 0:
-                    from module.automation.input_handlers.simulator.mumu_control import (
-                        MumuControl,
-                    )
-
-                    MumuControl.connection_device.close_simulator()
-                else:
-                    log.error("错误：暂不支持退出其他模拟器进程")
-
+            if execute_after_completion(actions, power_action):
+                return 0
         except Exception as e:
             log.error(f"脚本结束后的操作失败: {e}")
-
-        finally:
-            if after_completion in [5, 6, 8]:
-                return 0  # 正常退出信号
 
 
 class my_script_task(QThread):
@@ -447,13 +423,19 @@ class my_script_task(QThread):
         self.finished_signal.emit()"""
 
     def _run(self):
+        keep_awake_enabled = bool(getattr(cfg, "experimental_keep_screen_awake", False))
         try:
+            if keep_awake_enabled:
+                apply_power_keep_awake(True)
             ret = script_task()
             if ret == 0:
                 mediator.kill_signal.emit()
-            auto.clear_img_cache()
         except Exception as e:
             log.error(f"出现错误: {e}")
             self.exc_traceback = "".join(format_exception(*exc_info()))
             log.error(self.exc_traceback)
             self.mutex.unlock()
+        finally:
+            if keep_awake_enabled:
+                apply_power_keep_awake(False)
+            auto.clear_img_cache()

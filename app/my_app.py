@@ -48,6 +48,10 @@ from app.tools_interface import ToolsInterface
 from module.config import cfg
 from module.font_manager import font_manager
 from module.logger import log
+from module.system_actions import (
+    POWER_ACTION_NONE,
+    autodaily_exit_to_after_completion_config,
+)
 from module.update.check_update import check_update
 
 
@@ -292,6 +296,8 @@ class MainWindow(FramelessWindow):
         start_flag = False
         exit_flag = False
         exit_type = 0
+        parsed_actions = None
+        parsed_power_action = None
         last_cmd = ""
         # 读取输入参数
         for index, arg in enumerate(argv):
@@ -314,20 +320,10 @@ class MainWindow(FramelessWindow):
                 try:
                     if isinstance(argv[index + 1], str) and argv[index + 1].startswith("autodaily"):
                         exit_task = cfg.get_value(argv[index + 1] + "_task_exit")
-                        if exit_task[4]:
-                            exit_type = 3
-                        elif exit_task[3]:
-                            exit_type = 2
-                        elif exit_task[2]:
-                            exit_type = 1
-                        elif exit_task[0] and exit_task[1]:
-                            exit_type = 6
-                        elif exit_task[1]:
-                            exit_type = 5
-                        elif exit_task[0]:
-                            exit_type = 4
-                        else:
-                            exit_type = 0
+                        actions, power_action = autodaily_exit_to_after_completion_config(exit_task)
+                        parsed_actions = actions
+                        parsed_power_action = power_action
+                        exit_type = 0
                         autodaily_task = cfg.get_value(argv[index + 1] + "_task")
                         if autodaily_task[0]:
                             self.farming_interface.interface_left.daily_task.box.set_check_true()
@@ -347,7 +343,7 @@ class MainWindow(FramelessWindow):
                             self.farming_interface.interface_left.mirror.box.set_check_false()
                     else:
                         exit_type = int(argv[index + 1])
-                        if exit_type < 0 or exit_type > 6:
+                        if exit_type < 0 or exit_type > 8:
                             exit_type = 0
                             log.error(f'命令行参数 --exit 后输入值"{argv[index + 1]}"越界')
                 except (IndexError, ValueError):
@@ -362,7 +358,23 @@ class MainWindow(FramelessWindow):
 
         # 最终执行操作
         if exit_flag:
-            self.farming_interface.interface_left.then_combobox.combo_box.setCurrentIndex(exit_type)
+            if parsed_actions is not None and parsed_power_action is not None:
+                actions, power_action = parsed_actions, parsed_power_action
+            else:
+                # 兼容旧命令行数字参数
+                legacy_map = {
+                    0: ([], POWER_ACTION_NONE),
+                    1: ([], "sleep"),
+                    2: ([], "hibernate"),
+                    3: ([], "shutdown"),
+                    4: (["exit_game"], POWER_ACTION_NONE),
+                    5: (["exit_aalc"], POWER_ACTION_NONE),
+                    6: (["exit_game", "exit_aalc"], POWER_ACTION_NONE),
+                    7: (["exit_emulator"], POWER_ACTION_NONE),
+                    8: (["exit_emulator", "exit_aalc"], POWER_ACTION_NONE),
+                }
+                actions, power_action = legacy_map.get(exit_type, ([], POWER_ACTION_NONE))
+            self.farming_interface.interface_left.after_completion_selector.set_from_external(actions, power_action)
 
         if start_flag:
             log.info("开始通过命令行参数启动程序")
@@ -385,6 +397,10 @@ class MainWindow(FramelessWindow):
             self.titleBar.closeBtn.setHoverColor(Qt.white)
 
     def closeEvent(self, e):
+        try:
+            self.farming_interface.interface_left._apply_keep_awake_if_needed(False)
+        except Exception:
+            pass
         # 保存窗口位置
         cfg.set_value("window_position_x", self.x())
         cfg.set_value("window_position_y", self.y())
