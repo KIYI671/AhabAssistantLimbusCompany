@@ -200,7 +200,7 @@ class AfterCompletionSelector(QFrame):
         self.setToolTip(self.tr(self._tool_tip_text))
 
         if cfg.keep_after_completion is False:
-            self._set_after_completion_config([], POWER_ACTION_NONE, False)
+            self._set_after_completion_config([], POWER_ACTION_NONE, persist=False)
 
         self.edit_button.clicked.connect(self._show_editor)
         self.refresh_from_config()
@@ -281,14 +281,14 @@ class AfterCompletionSelector(QFrame):
 
     def apply_selection(self, actions: list[str], power_action: str, permanent: bool):
         cfg.unsaved_set_value("keep_after_completion", permanent)
-        self._set_after_completion_config(actions, power_action, permanent)
+        self._set_after_completion_config(actions, power_action, persist=permanent)
         self.refresh_from_config()
         self._close_dialog()
 
     def set_from_external(self, actions: list[str], power_action: str):
         # 命令行/定时注入视为一次性设置，不覆盖用户默认偏好
         cfg.unsaved_set_value("keep_after_completion", False)
-        self._set_after_completion_config(actions, power_action, False)
+        self._set_after_completion_config(actions, power_action, persist=False)
         self.refresh_from_config()
         self._close_dialog()
 
