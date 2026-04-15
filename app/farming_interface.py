@@ -42,7 +42,6 @@ from module.system_actions import (
     POWER_ACTION_NONE,
     POWER_ACTION_SHUTDOWN,
     POWER_ACTION_SLEEP,
-    apply_power_keep_awake,
     get_after_completion_config,
     set_after_completion_config,
 )
@@ -393,7 +392,6 @@ class FarmingInterfaceLeft(QWidget):
         self.setObjectName("FarmingInterfaceLeft")
 
         self.my_script = None
-        self.keep_awake_active = False
 
         self.__init_widget()
         self.__init_card()
@@ -510,7 +508,6 @@ class FarmingInterfaceLeft(QWidget):
             self.after_completion_selector._hide_editor()
         except Exception:
             pass
-        self._apply_keep_awake_if_needed(False)
         sys.exit(0)
 
     def check_setting(self):
@@ -595,7 +592,6 @@ class FarmingInterfaceLeft(QWidget):
             # 启动前检查设置，防呆
             if self.check_setting() is False:
                 return
-            self._apply_keep_awake_if_needed(True)
             self.link_start_button.set_text("S t o p !")
             self._disable_setting(self.parent())
             self.create_and_start_script()
@@ -633,7 +629,6 @@ class FarmingInterfaceLeft(QWidget):
             self.stop_script()
             if thread_was_running:
                 auto.clear_img_cache()
-                self._apply_keep_awake_if_needed(False)
             mediator.mirror_bar_kill_signal.emit()
 
     def _disable_setting(self, parent):
@@ -705,15 +700,7 @@ class FarmingInterfaceLeft(QWidget):
             log.debug("正在终止脚本线程...")
             self.my_script.terminate()  # 终止线程
 
-    def _apply_keep_awake_if_needed(self, enable: bool):
-        if not bool(getattr(cfg, "experimental_keep_screen_awake", False)):
-            return
-        if enable and not self.keep_awake_active:
-            apply_power_keep_awake(True)
-            self.keep_awake_active = True
-        elif not enable and self.keep_awake_active:
-            apply_power_keep_awake(False)
-            self.keep_awake_active = False
+
 
     def my_stop_shortcut(self):
         current_text = self.link_start_button.get_text()

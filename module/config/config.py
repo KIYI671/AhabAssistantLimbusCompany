@@ -97,11 +97,37 @@ class Config(metaclass=SingletonMeta):
         if saved_version < 1771413380:
             if self.get_value("set_win_position", True) is True:
                 self.unsaved_set_value("set_win_position", "free")
-        if saved_version < 1771965838:
-            if self.get_value("background_click", True) is True:
-                self.unsaved_set_value("win_input_type", "background")
-            else:
-                self.unsaved_set_value("win_input_type", "foreground")
+        if saved_version < 1772205660:
+            # 迁移旧版结束后动作配置，按字段独立迁移，避免覆盖用户已设置的新字段
+            legacy_value = int(self.get_value("after_completion", 0) or 0)
+            legacy_to_config = {
+                0: ([], "none"),
+                1: ([], "sleep"),
+                2: ([], "hibernate"),
+                3: ([], "shutdown"),
+                4: (["exit_game"], "none"),
+                5: (["exit_aalc"], "none"),
+                6: (["exit_game", "exit_aalc"], "none"),
+                7: (["exit_emulator"], "none"),
+                8: (["exit_emulator", "exit_aalc"], "none"),
+            }
+            legacy_actions, legacy_power = legacy_to_config.get(legacy_value, ([], "none"))
+            migrated = False
+
+            # 仅在 actions 字段缺失或类型错误时补写
+            current_actions = self.get_value("after_completion_actions")
+            if not isinstance(current_actions, list):
+                self.unsaved_set_value("after_completion_actions", legacy_actions)
+                migrated = True
+
+            # 仅在 power_action 字段缺失或类型错误时补写（与 actions 独立判断）
+            current_power = self.get_value("after_completion_power_action")
+            if not isinstance(current_power, str):
+                self.unsaved_set_value("after_completion_power_action", legacy_power)
+                migrated = True
+
+            if migrated:
+                log.info(f"已将旧版结束后操作配置迁移为组合动作（legacy={legacy_value}）")
 
         log.info("配置升级完成")
 

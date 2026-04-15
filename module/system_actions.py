@@ -1,6 +1,7 @@
 import ctypes
 import os
 from collections.abc import Iterable
+from enum import IntFlag
 
 from module.config import cfg
 from module.logger import log
@@ -10,7 +11,14 @@ _ES_CONTINUOUS = 0x80000000
 _ES_SYSTEM_REQUIRED = 0x00000001
 _ES_DISPLAY_REQUIRED = 0x00000002
 
-# 退出类动作（可多选，按顺序执行）
+# 退出类动作（建议使用 IntFlag 管理，当前通过字符串映射以保持配置兼容性）
+class ExitAction(IntFlag):
+    NONE = 0
+    EXIT_GAME = 1
+    EXIT_EMULATOR = 2
+    EXIT_AALC = 4
+
+# 字符串映射常量（保持原有引用）
 ACTION_EXIT_GAME = "exit_game"
 ACTION_EXIT_EMULATOR = "exit_emulator"
 ACTION_EXIT_AALC = "exit_aalc"
@@ -65,29 +73,7 @@ def _normalize_power_action(action: str | None) -> str:
     return POWER_ACTION_NONE
 
 
-def ensure_after_completion_config_migrated() -> None:
-    """
-    兼容旧版 after_completion(int) 到新版组合动作配置。
-    仅在检测到新版配置为空时写入，避免覆盖用户新设置。
-    """
-    current_actions = cfg.get_value("after_completion_actions", None)
-    current_power = cfg.get_value("after_completion_power_action", None)
-    if isinstance(current_actions, list) and isinstance(current_power, str):
-        return
-
-    try:
-        legacy_value = int(cfg.get_value("after_completion", 0) or 0)
-    except Exception:
-        legacy_value = 0
-    actions, power_action = LEGACY_AFTER_COMPLETION_TO_CONFIG.get(legacy_value, ([], POWER_ACTION_NONE))
-    cfg.unsaved_set_value("after_completion_actions", actions)
-    cfg.unsaved_set_value("after_completion_power_action", power_action)
-    cfg.request_save()
-    log.info(f"已将旧版结束后操作配置迁移为组合动作（legacy={legacy_value}）")
-
-
 def get_after_completion_config() -> tuple[list[str], str]:
-    ensure_after_completion_config_migrated()
     actions = _normalize_after_actions(cfg.get_value("after_completion_actions", []))
     power_action = _normalize_power_action(cfg.get_value("after_completion_power_action", POWER_ACTION_NONE))
     return actions, power_action

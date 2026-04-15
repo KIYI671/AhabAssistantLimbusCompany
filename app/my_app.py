@@ -387,10 +387,6 @@ class MainWindow(FramelessWindow):
             self.titleBar.closeBtn.setHoverColor(Qt.white)
 
     def closeEvent(self, e):
-        try:
-            self.farming_interface.interface_left._apply_keep_awake_if_needed(False)
-        except Exception:
-            pass
         # 保存窗口位置
         cfg.set_value("window_position_x", self.x())
         cfg.set_value("window_position_y", self.y())

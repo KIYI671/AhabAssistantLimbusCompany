@@ -410,10 +410,8 @@ class my_script_task(QThread):
         except Exception as e:
             self.exception = e
             self.exc_traceback = "".join(format_exception(type(e), e, e.__traceback__))
-            log.error(f"出现错误: {e}")
+            log.error(self.exc_traceback)
         finally:
-            if self.exc_traceback:
-                log.error(self.exc_traceback)
             self.mutex.unlock()
 
         mediator.finished_signal.emit()
@@ -423,7 +421,7 @@ class my_script_task(QThread):
         self.finished_signal.emit()"""
 
     def _run(self):
-        keep_awake_enabled = bool(getattr(cfg, "experimental_keep_screen_awake", False))
+        keep_awake_enabled = bool(cfg.get_value("experimental_keep_screen_awake", False))
         try:
             if keep_awake_enabled:
                 apply_power_keep_awake(True)
