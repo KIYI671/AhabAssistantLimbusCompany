@@ -552,7 +552,7 @@ class ThemePackSettingDialog(FramelessDialog):
         self.reset_button.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         self.reset_button.clicked.connect(self.reset_to_default)
 
-        self.set_to_global_button = PushButton(self.tr("设为全局配置"), self)
+        self.set_to_global_button = PushButton(self.tr("拉取全局配置"), self)
         self.set_to_global_button.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         self.set_to_global_button.clicked.connect(self.set_to_global)
         self.set_to_global_button.setVisible(self.is_team_specific)
