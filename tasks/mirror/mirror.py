@@ -1416,7 +1416,6 @@ class Mirror:
             for stage_name, candidate_image in (
                 ("current", current_crop),
                 ("current_scaled", current_scaled),
-                ("diff_gray", diff_gray),
                 ("binary", binary_img),
             ):
                 floor_found, _ = handle_ocr(candidate_image, stage_name)
