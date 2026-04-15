@@ -3,6 +3,9 @@ import re
 import subprocess
 import sys
 from enum import Enum
+from interception import auto_capture_devices
+from interception.exceptions import DriverNotFoundError
+import requests
 
 from PySide6.QtCore import (
     QEvent,
@@ -171,6 +174,27 @@ class MainWindow(FramelessWindow):
             self.dev_watermark = DevWatermark(self)
             self.dev_watermark.move(0, 0)
             self.dev_watermark.raise_()
+        
+        try:
+            auto_capture_devices()
+        except DriverNotFoundError:
+            log.error("Interception 驱动未安装!正在尝试自动安装驱动")
+            # 开始自动安装驱动
+            file_name = os.path.join(str(os.environ.get("TEMP")),"install_interception.exe")
+            resp = requests.get("https://hk.gh-proxy.org/https://github.com/oblitum/Interception/releases/download/v1.0.1/Interception.zip") # 从 GhProxy 源下载Interception安装程序
+            if not resp.ok:
+                log.error("Interception 驱动下载失败!")
+            else:
+                log.info("Interception 驱动下载成功!")
+            with open(file_name,"wb") as f:
+                f.write(resp.content)
+            exit_code = subprocess.call([file_name, "/install"])
+            if exit_code == 0:
+                log.info("Interception 驱动安装成功!请重启电脑!")
+            else:
+                log.error("Interception 驱动安装失败!")
+        finally:
+            log.info("Interception 初始化完成!")
 
         self.connect_mediator()
 

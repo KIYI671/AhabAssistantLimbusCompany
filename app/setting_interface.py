@@ -584,6 +584,12 @@ class SettingInterface(QWidget):
                 "基于移动窗口的后台模式，有效规避了后台模式需要移动鼠标的情况，<br/>但是性能和稳定性较差，<font color=red>不推荐长时间无人使用</font>",
             )
             cfg.set_value("background_click", True)
+        elif input_type == "driver":
+            content = QT_TRANSLATE_NOOP(
+                "ComboBoxSettingCard",
+                "驱动点击，有效规避脚本检测，<font color=red>但需安装Interception驱动且不稳定!!</font>(其余与前台模式相同)",
+            )
+            cfg.set_value("background_click", False)
         else:
             content = QT_TRANSLATE_NOOP("ComboBoxSettingCard", "未知的输入模式，发生了错误")
 

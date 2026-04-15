@@ -879,6 +879,10 @@ Right-click to set as permanent</translation>
         <translation>Background Mode Enhancement(pywin32+set win pos)</translation>
     </message>
     <message>
+        <source>驱动点击 (interception-python)</source>
+        <translation>Driver Mode (interception-python)</translation>
+    </message>
+    <message>
         <source>操控方式</source>
         <translation>Control method</translation>
     </message>

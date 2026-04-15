@@ -7,6 +7,8 @@ import win32api
 import win32con
 import win32gui
 from pywintypes import error as PyWinTypesError
+import interception
+from interception.exceptions import DriverNotFoundError
 
 from module.config import cfg
 from utils.singletonmeta import SingletonMeta
@@ -765,3 +767,143 @@ class WindowMoveInput(WinAbstractInput, metaclass=SingletonMeta):
         screen.handle.set_window_pos(*pos)
         self.wait_pause()
         return True
+
+
+class DriverInput(WinAbstractInput, metaclass=SingletonMeta):
+    """基于 `interception-python` 的输入类, 仅支持前台操作"""
+    
+    @overload
+    def pos_offset(self, x: int, y: int) -> tuple[int, int]: ...
+    @overload
+    def pos_offset(self, pos: tuple[int, int]) -> tuple[int, int]: ...
+
+    def pos_offset(self, *args) -> tuple[int, int]:  # type: ignore
+        """根据当前窗口位置偏移点击位置"""
+        if len(args) == 2:
+            x, y = args
+        elif isinstance(args[0], tuple):
+            x, y = args[0]
+        else:
+            raise ValueError("pos_offset 接受两个整数参数或一个包含两个整数的元组")
+        real_x, real_y, _, _ = screen.handle.rect(True)
+        return x + real_x, y + real_y
+
+    def mouse_click(self, x, y, times=1, move_back=False) -> bool:
+        if move_back:
+            current_mouse_position = self.get_mouse_position()
+
+        msg = f"点击位置:({x},{y})"
+        log.debug(msg, stacklevel=2)
+        x, y = self.pos_offset(x, y)
+        for i in range(times):
+            interception.click(x, y)
+            # 多次点击执行很快所以暂停放到循环外
+
+        if move_back and current_mouse_position:
+            self.mouse_move(current_mouse_position)
+
+        self.wait_pause()
+
+        return True
+
+    def mouse_drag_down(self, x, y, reverse=1, move_back=True) -> None:
+        if move_back:
+            current_mouse_position = self.get_mouse_position()
+
+        scale = cfg.set_win_size / 1080
+        x, y = self.pos_offset(x, y)
+        interception.move_to(x, y)
+        interception.mouse_down(button="left")
+        interception.move_to(x, y + int(300 * scale * reverse))
+        sleep(0.4)
+        interception.mouse_up("left")
+
+        if move_back and current_mouse_position:
+            self.mouse_move(current_mouse_position)
+
+    def mouse_drag(self, x, y, drag_time=0.1, dx=0, dy=0, move_back=True) -> None:
+        if move_back:
+            current_mouse_position = self.get_mouse_position()
+        x, y = self.pos_offset(x, y)
+        interception.move_to(x, y)
+        interception.mouse_down("left")
+        interception.move_to(x + dx, y + dy)
+        if drag_time * 0.3 > 0.5:
+            sleep(drag_time * 0.3)
+        else:
+            sleep(0.5)
+        interception.mouse_up("left")
+
+        if move_back and current_mouse_position:
+            self.mouse_move(current_mouse_position)
+
+    def mouse_scroll(self, direction: int = -3) -> bool:
+        if direction <= 0:
+            msg = "鼠标滚动滚轮，远离界面"
+        else:
+            msg = "鼠标滚动滚轮，拉近界面"
+        log.debug(msg, stacklevel=2)
+        if direction >= 0:
+            for _ in range(direction):
+                interception.scroll("up")
+        else:
+            for _ in range(abs(direction)):
+                interception.scroll("down")
+        return True
+
+    def mouse_click_blank(self, coordinate=(1, 1), times=1, move_back=False) -> bool:
+        if move_back:
+            current_mouse_position = self.get_mouse_position()
+
+        msg = "点击（1，1）空白位置"
+        log.debug(msg, stacklevel=2)
+        x = coordinate[0] + random.randint(0, 10)
+        y = coordinate[1] + random.randint(0, 10)
+        x, y = self.pos_offset(x, y)
+        for i in range(times):
+            interception.click(x, y)
+
+        if move_back and current_mouse_position:
+            self.mouse_move(current_mouse_position)
+
+        self.wait_pause()
+        return True
+
+    def mouse_to_blank(self, coordinate=(1, 1), move_back=False) -> None:
+        if move_back:
+            current_mouse_position = self.get_mouse_position()
+
+        msg = "鼠标移动到空白，避免遮挡"
+        log.debug(msg, stacklevel=2)
+        interception.move_to(coordinate[0], coordinate[1])
+
+        if move_back and current_mouse_position:
+            self.mouse_move(current_mouse_position)
+        self.wait_pause()
+
+    def mouse_move(self, coordinate=(1, 1)) -> None:
+        """鼠标移动到指定坐标
+
+        Args:
+            coordinate (tuple): 坐标元组 (x, y)
+        """
+        interception.move_to(coordinate[0], coordinate[1])
+        self.wait_pause()
+
+    def mouse_drag_link(self, position: list, drag_time=0.1, move_back=False) -> None:
+        if move_back:
+            current_mouse_position = self.get_mouse_position()
+
+        x, y = self.pos_offset(position[0][0], position[0][1])
+        interception.move_to(x, y)
+        interception.mouse_down("left")
+        for pos in position:
+            x, y = self.pos_offset(pos[0], pos[1])
+            interception.move_to(x, y)
+        pyautogui.mouseUp()
+
+        if move_back and current_mouse_position:
+            self.mouse_move(current_mouse_position)
+
+    def key_press(self, key):
+        return interception.press(key)

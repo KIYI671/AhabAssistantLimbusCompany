@@ -36,6 +36,7 @@ dependencies = [
     { name = "adbutils" },
     { name = "colorlog" },
     { name = "concurrent-log-handler" },
+    { name = "interception-python" },
     { name = "linkify-it-py" },
     { name = "markdown-it-py" },
     { name = "mdit-py-plugins" },
@@ -47,6 +48,7 @@ dependencies = [
     { name = "playsound3" },
     { name = "psutil" },
     { name = "pyautogui" },
+    { name = "pyclick" },
     { name = "pynput" },
     { name = "pyperclip" },
     { name = "pyside6" },
@@ -72,6 +74,7 @@ requires-dist = [
     { name = "adbutils", specifier = ">=2.10.2" },
     { name = "colorlog", specifier = ">=6.9.0" },
     { name = "concurrent-log-handler", specifier = ">=0.9.28" },
+    { name = "interception-python", specifier = ">=1.13.6" },
     { name = "linkify-it-py" },
     { name = "markdown-it-py" },
     { name = "mdit-py-plugins" },
@@ -83,6 +86,7 @@ requires-dist = [
     { name = "playsound3" },
     { name = "psutil" },
     { name = "pyautogui" },
+    { name = "pyclick", specifier = ">=0.0.2" },
     { name = "pynput" },
     { name = "pyperclip" },
     { name = "pyside6", specifier = ">=6.9.2" },
@@ -278,6 +282,15 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/f1/70/7703c29685631f5a7590aa73f1f1d3fa9a380e654b86af429e0934a32f7d/idna-3.10.tar.gz", hash = "sha256:12f65c9b470abda6dc35cf8e63cc574b1c52b11df2c86030af0ac09b01b13ea9", size = 190490, upload-time = "2024-09-15T18:07:39.745Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/76/c6/c88e154df9c4e1a2a66ccf0005a88dfb2650c1dffb6f5ce603dfbd452ce3/idna-3.10-py3-none-any.whl", hash = "sha256:946d195a0d259cbba61165e88e65941f16e9b36ea6ddb97f00452bae8b1287d3", size = 70442, upload-time = "2024-09-15T18:07:37.964Z" },
+]
+
+[[package]]
+name = "interception-python"
+version = "1.13.6"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/76/af/ade2c411c7e4ef42c1320d83eb8f500064f51f272ec2a05c746670b91864/interception_python-1.13.6.tar.gz", hash = "sha256:bf6a9750e40ca8599daa6c05f88748dd7efe040aea7f1aba258d2789a9930eda", size = 22137, upload-time = "2025-07-15T13:47:28.787Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/1d/b9/609095f4c70d771dab361e50490941fd5cc735ab88c066ed8a60638115b9/interception_python-1.13.6-py3-none-any.whl", hash = "sha256:c14b0047513a7c1728b55e0516cbfbd99b1315a80e1a5aaf408baf8e9f937b3b", size = 22352, upload-time = "2025-07-15T13:47:27.648Z" },
 ]
 
 [[package]]
@@ -629,6 +642,22 @@ dependencies = [
     { name = "pytweening" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/65/ff/cdae0a8c2118a0de74b6cf4cbcdcaf8fd25857e6c3f205ce4b1794b27814/PyAutoGUI-0.9.54.tar.gz", hash = "sha256:dd1d29e8fd118941cb193f74df57e5c6ff8e9253b99c7b04f39cfc69f3ae04b2", size = 61236, upload-time = "2023-05-24T20:11:32.972Z" }
+
+[[package]]
+name = "pyclick"
+version = "0.0.2"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "numpy" },
+    { name = "pyautogui" },
+    { name = "python3-xlib" },
+    { name = "pytweening" },
+    { name = "xlib" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/79/af/10fccae5d26c05dacdf05245453666feac4185eead5f9e0dd4da03f4f3b9/pyclick-0.0.2.tar.gz", hash = "sha256:0d4ef59faae3e313d36305a68e20d404581f54033706005939c7255e439afff1", size = 3977, upload-time = "2018-09-20T22:45:57.305Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/5d/91/75a30b68eaf0dc646093873d1fb464fca75dab7fb41ac2dd85468712af81/pyclick-0.0.2-py3-none-any.whl", hash = "sha256:393c13eb8b54c70552d5e231ad0ef7b81c8ab72cd820fbe42d5f67f3808876af", size = 5156, upload-time = "2018-09-20T22:45:55.813Z" },
+]
 
 [[package]]
 name = "pyclipper"
@@ -3965,4 +3994,16 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/68/43/c81672457002908b8c0f1e4672db1d0b8885c2894c6768fe9b0162af9ee5/winrt_windows_ui_notifications-3.2.1-cp314-cp314-win32.whl", hash = "sha256:00a7579ca0870134c27def1418c259fb18efe5b88aa399de85b4712f1add1b55", size = 157561, upload-time = "2025-09-20T07:19:10.162Z" },
     { url = "https://files.pythonhosted.org/packages/17/d8/910a58698d722120f2401c3bfeb6018361d92f3b2814caae839f54693305/winrt_windows_ui_notifications-3.2.1-cp314-cp314-win_amd64.whl", hash = "sha256:943599c727abf710ae94644b1d521e11857bd568e080e894a8be11aa717e383a", size = 170152, upload-time = "2025-09-20T07:19:11.05Z" },
     { url = "https://files.pythonhosted.org/packages/b5/a3/1db0f2ec28a4eadd0876c0ac3a3d78514027c5afe35737b164e03c98b234/winrt_windows_ui_notifications-3.2.1-cp314-cp314-win_arm64.whl", hash = "sha256:2a496c7e796b537966df7b26753b20bc40c5c1fbe96b3b3051a1debc00b80f07", size = 163245, upload-time = "2025-09-20T07:19:12.352Z" },
+]
+
+[[package]]
+name = "xlib"
+version = "0.21"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "six" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/74/d4/6033a97f96fc7d7bb822dab52e2e3c9532256d7ce033fa9675734941b9ac/xlib-0.21.tar.gz", hash = "sha256:60b7cd5d90f5d5922d9ce27b61589c07d970796558d417461db7b66e366bc401", size = 146776, upload-time = "2018-01-02T09:39:40.149Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/3f/00/321541273b0ed2167b36c82be9baeb0bdc8af1c11c1b01de9436b84b5eaf/xlib-0.21-py2.py3-none-any.whl", hash = "sha256:8eee67dad83ef4b82bbbfa85d51eeb20c79d12b119fe25aa1d27bd602ff82212", size = 123811, upload-time = "2018-01-02T09:39:33.518Z" },
 ]

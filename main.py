@@ -2,6 +2,7 @@ import os
 import socket
 import sys
 import threading
+import interception
 
 # 解决 Windows DPI 缩放问题
 from ctypes import c_void_p, windll

@@ -67,6 +67,11 @@ class Automation(metaclass=SingletonMeta):
 
                 log.debug("使用基于窗口移动的后台点击模块")
                 self.input_handler = WindowMoveInput()
+            elif input_type == "driver":
+                from .input_handlers.input import DriverInput
+                
+                log.debug("使用驱动点击模块")
+                self.input_handler = DriverInput()
         if self.input_handler is None:
             from .input_handlers.input import BackgroundInput
 

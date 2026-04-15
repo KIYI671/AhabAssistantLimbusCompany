@@ -34,6 +34,8 @@ dependencies = [
     "tzdata>=2025.2",
     "adbutils>=2.10.2",
     "windows-toasts>=1.3.1",
+    "interception-python>=1.13.6",
+    "pyclick>=0.0.2",
 ]
 
 [dependency-groups]
