@@ -336,13 +336,13 @@ class Automation(metaclass=SingletonMeta):
                 time.sleep(1)  # 在重试前等待一定时间
         return None
 
-    def find_image_with_multiple_targets(self, target, threshold, addtional_stack) -> List:
+    def find_image_with_multiple_targets(self, target: str, threshold, addtional_stack) -> List:
         """
         在当前截图中查找多个目标图像的位置
         """
         try:
             template = ImageUtils.load_image(target)
-            if "assets" in target:
+            if target.endswith("assets.png"):
                 bbox = ImageUtils.get_bbox(template)
                 template = ImageUtils.crop(template, bbox)
             if template is None:
@@ -489,7 +489,7 @@ class Automation(metaclass=SingletonMeta):
 
     def find_image_element(
         self,
-        target,
+        target: str,
         threshold,
         cacheable=True,
         model="clam",
@@ -512,7 +512,7 @@ class Automation(metaclass=SingletonMeta):
                 template = self.img_cache[target]["template"]
             else:
                 template = ImageUtils.load_image(target)
-                if "assets" in target:
+                if target.endswith("assets.png"):
                     bbox = ImageUtils.get_bbox(template)
                     template = ImageUtils.crop(template, bbox)
                 else:
