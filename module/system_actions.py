@@ -2,7 +2,10 @@ import ctypes
 import os
 from collections.abc import Iterable
 
-import win32process
+try:
+    import win32process
+except ImportError:
+    win32process = None
 
 from module.config import cfg
 from module.logger import log
@@ -179,7 +182,7 @@ def _action_exit_game() -> None:
 
     try:
         hwnd = getattr(screen.handle, "hwnd", 0)
-        if hwnd:
+        if hwnd and win32process is not None:
             _, pid = win32process.GetWindowThreadProcessId(hwnd)
             ret = os.system(f"taskkill /F /PID {pid}")
             if ret == 0:
