@@ -70,46 +70,21 @@ class ToolCheckButton(ToolButton):
     checked = Signal(bool)
 
     def _postInit(self):
-        self.clicked.connect(self.on_clicked)
-        self._clicked: bool = False
-        self.setProperty("checked", "false")
+        self.setCheckable(True)
+        self.toggled.connect(self.checked)
+        self.setChecked(False)
+        self._apply_style()
 
-    @property
-    def clicked_status(self) -> bool:
-        return self._clicked
-
-    @clicked_status.setter
-    def clicked_status(self, value: bool):
-        self._clicked = value
-        self.setProperty("checked", "true" if value else "false")
-        self.checked.emit(value)
-        self._update_style(value)
-
-    def _update_style(self, checked: bool):
-        if checked:
-            qss = """
-ToolCheckButton {
+    def _apply_style(self):
+        qss = """
+ToolCheckButton:checked {
 background-color: --ThemeColorPrimary;
 }
-ToolCheckButton:hover {
+ToolCheckButton:checked:hover {
     background-color: --ThemeColorPrimary;
 }
 """
-        else:
-            qss = """ToolCheckButton {
-background-color: transparent;
-}"""
         setCustomStyleSheet(self, qss, qss)
-
-    def on_clicked(self):
-        self.clicked_status = not self.clicked_status
-
-    def setChecked(self, arg__1: bool) -> None:
-        self.clicked_status = arg__1
-        return super().setChecked(arg__1)
-
-    def isChecked(self) -> bool:
-        return self.clicked_status
 
     def _drawIcon(self, icon, painter, rect, state=QIcon.Off):
         if not self.isChecked():
