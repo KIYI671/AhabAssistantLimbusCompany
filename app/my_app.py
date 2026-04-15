@@ -49,6 +49,7 @@ from module.config import cfg
 from module.font_manager import font_manager
 from module.logger import log
 from module.system_actions import (
+    LEGACY_AFTER_COMPLETION_TO_CONFIG,
     POWER_ACTION_NONE,
     autodaily_exit_to_after_completion_config,
 )
@@ -362,18 +363,7 @@ class MainWindow(FramelessWindow):
                 actions, power_action = parsed_actions, parsed_power_action
             else:
                 # 兼容旧命令行数字参数
-                legacy_map = {
-                    0: ([], POWER_ACTION_NONE),
-                    1: ([], "sleep"),
-                    2: ([], "hibernate"),
-                    3: ([], "shutdown"),
-                    4: (["exit_game"], POWER_ACTION_NONE),
-                    5: (["exit_aalc"], POWER_ACTION_NONE),
-                    6: (["exit_game", "exit_aalc"], POWER_ACTION_NONE),
-                    7: (["exit_emulator"], POWER_ACTION_NONE),
-                    8: (["exit_emulator", "exit_aalc"], POWER_ACTION_NONE),
-                }
-                actions, power_action = legacy_map.get(exit_type, ([], POWER_ACTION_NONE))
+                actions, power_action = LEGACY_AFTER_COMPLETION_TO_CONFIG.get(exit_type, ([], POWER_ACTION_NONE))
             self.farming_interface.interface_left.after_completion_selector.set_from_external(actions, power_action)
 
         if start_flag:

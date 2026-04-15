@@ -2,8 +2,6 @@ import ctypes
 import os
 from collections.abc import Iterable
 
-import win32process
-
 from module.config import cfg
 from module.logger import log
 
@@ -155,6 +153,10 @@ def apply_power_keep_awake(enable: bool) -> None:
 def _action_exit_game() -> None:
     from module.game_and_screen import game_process, screen
 
+    if os.name != "nt":
+        log.info("跳过退出游戏：仅支持 Windows")
+        return
+
     if cfg.simulator:
         if cfg.simulator_type == 0:
             from module.automation.input_handlers.simulator.mumu_control import (
@@ -180,11 +182,16 @@ def _action_exit_game() -> None:
     try:
         hwnd = getattr(screen.handle, "hwnd", 0)
         if hwnd:
-            _, pid = win32process.GetWindowThreadProcessId(hwnd)
-            ret = os.system(f"taskkill /F /PID {pid}")
-            if ret == 0:
-                log.info("已执行：退出游戏")
-                return
+            try:
+                import win32process
+            except ImportError:
+                win32process = None
+            if win32process is not None:
+                _, pid = win32process.GetWindowThreadProcessId(hwnd)
+                ret = os.system(f"taskkill /F /PID {pid}")
+                if ret == 0:
+                    log.info("已执行：退出游戏")
+                    return
         # 兜底：按进程名结束
         ret = os.system(f"taskkill /F /IM {cfg.game_process_name}")
         if ret == 0:

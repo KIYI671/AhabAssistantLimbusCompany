@@ -180,6 +180,9 @@ class AfterCompletionSelector(QFrame):
         self._after_power_text = QT_TRANSLATE_NOOP("AfterCompletionSelector", "后，再{0}")
         self._power_only_text = QT_TRANSLATE_NOOP("AfterCompletionSelector", "执行{0}")
         self._do_nothing_text = QT_TRANSLATE_NOOP("AfterCompletionSelector", "什么也不干")
+        self._tool_tip_text = QT_TRANSLATE_NOOP(
+            "AfterCompletionSelector", "支持组合动作：退出目标后再执行电源动作，可选择仅本次或保存默认"
+        )
 
         self.hbox = QHBoxLayout(self)
         self.hbox.setContentsMargins(0, 0, 0, 0)
@@ -194,12 +197,10 @@ class AfterCompletionSelector(QFrame):
         self.hbox.addWidget(self.edit_button)
         self.setMinimumWidth(280)
         self._editor_dialog = None
-        self.setToolTip(
-            QT_TRANSLATE_NOOP("AfterCompletionSelector", "支持组合动作：退出目标后再执行电源动作，可选择仅本次或保存默认")
-        )
+        self.setToolTip(self.tr(self._tool_tip_text))
 
         if cfg.keep_after_completion is False:
-            set_after_completion_config([], POWER_ACTION_NONE)
+            self._set_after_completion_config([], POWER_ACTION_NONE, persist=False)
 
         self.edit_button.clicked.connect(self._show_editor)
         self.refresh_from_config()
@@ -271,16 +272,23 @@ class AfterCompletionSelector(QFrame):
         self._editor_dialog = dialog
         dialog.show()
 
+    def _set_after_completion_config(self, actions: list[str], power_action: str, persist: bool):
+        if persist:
+            set_after_completion_config(actions, power_action)
+        else:
+            cfg.unsaved_set_value("after_completion_actions", actions)
+            cfg.unsaved_set_value("after_completion_power_action", power_action)
+
     def apply_selection(self, actions: list[str], power_action: str, permanent: bool):
         cfg.unsaved_set_value("keep_after_completion", permanent)
-        set_after_completion_config(actions, power_action)
+        self._set_after_completion_config(actions, power_action, persist=permanent)
         self.refresh_from_config()
         self._close_dialog()
 
     def set_from_external(self, actions: list[str], power_action: str):
         # 命令行/定时注入视为一次性设置，不覆盖用户默认偏好
         cfg.unsaved_set_value("keep_after_completion", False)
-        set_after_completion_config(actions, power_action)
+        self._set_after_completion_config(actions, power_action, persist=False)
         self.refresh_from_config()
         self._close_dialog()
 
@@ -312,8 +320,8 @@ class AfterCompletionSelector(QFrame):
     def retranslateUi(self):
         self.edit_button.setText(self.tr(self._edit_button_text))
         self.refresh_from_config()
-        if self.toolTip():
-            self.setToolTip(self.tr(self.toolTip()))
+        if self._tool_tip_text:
+            self.setToolTip(self.tr(self._tool_tip_text))
 
 
 class FarmingInterface(QWidget):
