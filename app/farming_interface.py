@@ -200,8 +200,7 @@ class AfterCompletionSelector(QFrame):
         self.setToolTip(self.tr(self._tool_tip_text))
 
         if cfg.keep_after_completion is False:
-            cfg.unsaved_set_value("after_completion_actions", [])
-            cfg.unsaved_set_value("after_completion_power_action", POWER_ACTION_NONE)
+            self._set_after_completion_config([], POWER_ACTION_NONE, False)
 
         self.edit_button.clicked.connect(self._show_editor)
         self.refresh_from_config()

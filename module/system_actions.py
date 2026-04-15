@@ -158,6 +158,10 @@ def apply_power_keep_awake(enable: bool) -> None:
 def _action_exit_game() -> None:
     from module.game_and_screen import game_process, screen
 
+    if os.name != "nt":
+        log.info("跳过退出游戏：仅支持 Windows")
+        return
+
     if cfg.simulator:
         if cfg.simulator_type == 0:
             from module.automation.input_handlers.simulator.mumu_control import (
