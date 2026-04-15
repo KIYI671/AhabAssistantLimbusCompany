@@ -2,6 +2,7 @@ import atexit
 import copy
 import sys
 import threading
+from pathlib import Path
 
 from ruamel.yaml import YAML
 
@@ -299,14 +300,123 @@ class Config(metaclass=SingletonMeta):
 
 
 class Theme_pack_list(metaclass=SingletonMeta):
-    def __init__(self, example_path, theme_pack_list_path):
+    def __init__(self, example_path, theme_pack_list_path, theme_pack_weight_path):
         self.yaml = YAML()
-        # 加载默认配置
-        self.config = self._load_default_config(example_path)
+        # 读取默认配置作为同步模板
+        default_config = self._load_default_config(example_path)
         # 获取用户的配置文件路径
         self.theme_pack_list_path = theme_pack_list_path
-        # 加载实际配置，此方法会根据实际配置覆盖默认配置
-        self._load_config()
+        self.theme_pack_weight_path = Path(theme_pack_weight_path)
+        # 先同步全局和队伍配置文件，再从全局配置文件加载 self.config
+        self._sync_team_weight_configs(default_config)
+        loaded_config = self.load_config(self.theme_pack_list_path)
+        self.config = copy.deepcopy(loaded_config) if loaded_config else copy.deepcopy(default_config)
+
+    def build_setting_key(self, hard_switch: bool, language_in_game: str) -> list[str]:
+        """构建配置项键名列表。开启困难模式时同时返回普通和困难键。"""
+        suffix = "_cn" if language_in_game == "zh_cn" else ""
+        normal_key = f"theme_pack_list{suffix}"
+        hard_key = f"theme_pack_list_hard{suffix}"
+        if hard_switch:
+            return [normal_key, hard_key]
+        return [normal_key]
+
+    def build_team_weight_path(self, team_num: int) -> str:
+        """构建特定队伍的权重配置文件路径"""
+        return str(Path(self.theme_pack_weight_path) / f"theme_pack_weight_team_{team_num}.yaml")
+
+    def delete_team_weight_config(self, team_num: int) -> None:
+        """删除指定队伍的自定义主题包权重配置文件。"""
+        if team_num < 1:
+            return
+
+        path = Path(self.build_team_weight_path(team_num))
+        if path.exists():
+            path.unlink()
+
+    def set_team_weight_config_from_team(self, target_team_num: int, source_team_num: int) -> None:
+        """将 source 队伍的自定义主题包权重配置写入到 target 队伍。"""
+        if target_team_num < 1 or source_team_num < 1:
+            return
+        if target_team_num == source_team_num:
+            return
+
+        source_path = Path(self.build_team_weight_path(source_team_num))
+        target_path = Path(self.build_team_weight_path(target_team_num))
+
+        if not source_path.exists():
+            return
+
+        with open(source_path, "r", encoding="utf-8") as file:
+            source_config = self.yaml.load(file) or {}
+        self.save_config(path=str(target_path), config_data=source_config)
+
+    def create_team_weight_config(self, team_num: int) -> None:
+        """创建指定队伍的自定义主题包权重配置文件（若不存在）。"""
+        if team_num < 1:
+            return
+
+        target_path = Path(self.build_team_weight_path(team_num))
+        if target_path.exists():
+            return
+
+        self.save_config(path=str(target_path), config_data=copy.deepcopy(self.config))
+
+    def _sync_team_weight_configs(self, default_config: dict) -> None:
+        """初始化时同步全局与已存在的队伍主题包权重配置。"""
+        global_loaded_config = self.load_config(self.theme_pack_list_path)
+        if global_loaded_config is None:
+            self.save_config(path=self.theme_pack_list_path, config_data=default_config)
+            global_loaded_config = copy.deepcopy(default_config)
+
+        if global_loaded_config:
+            merged_global_config = copy.deepcopy(default_config)
+            self._update_config(merged_global_config, global_loaded_config)
+            if merged_global_config != global_loaded_config:
+                self.save_config(path=self.theme_pack_list_path, config_data=merged_global_config)
+
+        if not self.theme_pack_weight_path.exists():
+            return
+
+        for team_weight_path in sorted(self.theme_pack_weight_path.glob("theme_pack_weight_team_*.yaml"), key=lambda item: item.name):
+            loaded_config = self.load_config(str(team_weight_path))
+            if not loaded_config:
+                continue
+
+            merged_config = copy.deepcopy(default_config)
+            self._update_config(merged_config, loaded_config)
+            if merged_config != loaded_config:
+                self.save_config(path=str(team_weight_path), config_data=merged_config)
+
+    def get_effective_theme_pack_list(
+        self,
+        hard_switch: bool,
+        language_in_game: str,
+        team_num: int,
+        use_custom_theme_pack_weight: bool
+    ) -> tuple[dict]:
+        """获取当前生效的主题包名单，考虑难度、语言、队伍和是否启用自定义权重等因素"""
+        setting_keys = self.build_setting_key(hard_switch, language_in_game)
+        theme_pack_list = {}
+        for key in setting_keys:
+            theme_pack_list.update(self.config.get(key, {}))
+        if not use_custom_theme_pack_weight:
+            log.debug("未启用自定义权重，返回默认主题包名单")
+            return theme_pack_list
+
+        custom_path = self.build_team_weight_path(team_num)
+        loaded_data = self.load_config(custom_path)
+        if loaded_data is None:
+            log.debug(f"自定义文件不存在或读取失败，回退默认配置。path={custom_path}")
+            return theme_pack_list
+
+        effective_list = {}
+        for key in setting_keys:
+            effective_list.update(loaded_data.get(key, self.config.get(key, {})))
+        log.debug(
+            f"已加载自定义权重。path={custom_path}, keys={setting_keys}, count={len(effective_list)}"
+        )
+        return effective_list
 
     def _load_version(self, version_path: str) -> str:
         """加载版本信息"""
@@ -324,17 +434,13 @@ class Theme_pack_list(metaclass=SingletonMeta):
         except FileNotFoundError:
             sys.exit("默认主题包配置文件未找到")
 
-    def _load_config(self, path=None) -> None:
-        """加载用户配置文件，如未找到则保存默认配置"""
-        path = path or self.theme_pack_list_path
+    def load_config(self, path: str):
+        """纯加载函数：从 path 读取并返回配置内容"""
         try:
             with open(path, "r", encoding="utf-8") as file:
-                loaded_config = self.yaml.load(file)
-                if loaded_config:
-                    self._update_config(self.config, loaded_config)
-                    self.save_config()
+                return self.yaml.load(file) or {}
         except FileNotFoundError:
-            self.save_config()
+            return None
         except Exception as e:
             sys.exit(f"配置文件{path}加载错误: {e}")
 
@@ -344,16 +450,23 @@ class Theme_pack_list(metaclass=SingletonMeta):
             return
         for key, value in new_config.items():
             if isinstance(value, dict):
+                if key not in config:
+                    config[key] = {}
                 for k, v in value.items():
                     config[key][k] = v
             else:
                 config[key] = value
         log.debug("主题包名单已更新")
 
-    def save_config(self):
-        """保存到配置文件"""
-        with open(self.theme_pack_list_path, "w", encoding="utf-8") as file:
-            self.yaml.dump(self.config, file)
+    def save_config(self, path, config_data):
+        """保存配置到指定路径，config_data是要保存的配置内容，path是保存路径"""
+        config_data = self.config if config_data is None else config_data
+        
+        # 确保父目录存在,如果不存在则自动创建
+        Path(path).parent.mkdir(parents=True, exist_ok=True)
+        
+        with open(path, "w", encoding="utf-8") as file:
+            self.yaml.dump(config_data, file)
 
     def get_value(self, key, default=None):
         """获取配置项的值，如果是可变对象，则返回其拷贝"""
@@ -365,12 +478,11 @@ class Theme_pack_list(metaclass=SingletonMeta):
 
     def set_value(self, key, value) -> None:
         """设置配置项的值并保存"""
-        self._load_config()
         if isinstance(value, (list, dict, set)):
             self.config[key] = copy.deepcopy(value)
         else:
             self.config[key] = value
-        self.save_config()
+        self.save_config(path=self.theme_pack_list_path, config_data=self.config)
 
     def __getattr__(self, attr: str):
         """允许通过属性访问配置项的值"""

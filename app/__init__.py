@@ -207,6 +207,7 @@ all_checkbox_config_name = [
     "second_system",
     "skill_replacement",
     "ignore_shop",
+    "use_custom_theme_pack_weight",
 ]
 
 win_input_type_options = {

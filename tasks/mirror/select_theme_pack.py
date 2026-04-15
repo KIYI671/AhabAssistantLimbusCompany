@@ -10,17 +10,16 @@ from utils.image_utils import ImageUtils
 
 @begin_and_finish_time_log(task_name="选择镜牢主题包")
 # 选择镜牢主题包
-def select_theme_pack(hard_switch=False, floor=None):
+def select_theme_pack(hard_switch=False, floor=None, team_num=None, use_custom_theme_pack_weight=False):
     loop_count = 30
     auto.model = "clam"
     scale = cfg.set_win_size / 1080
-    theme_pack_list = theme_list.get_value("theme_pack_list")
-    if hard_switch:
-        theme_pack_list.update(theme_list.get_value("theme_pack_list_hard"))
-    if cfg.language_in_game == "zh_cn":
-        theme_pack_list.update(theme_list.get_value("theme_pack_list_cn"))
-        if hard_switch:
-            theme_pack_list.update(theme_list.get_value("theme_pack_list_hard_cn"))
+    theme_pack_list = theme_list.get_effective_theme_pack_list(
+        hard_switch,
+        cfg.language_in_game,
+        team_num,
+        use_custom_theme_pack_weight,
+    )
     refresh_times = 3
     difficulty = None
     if auto.find_element("mirror/road_in_mir/legend_assets.png", take_screenshot=True):

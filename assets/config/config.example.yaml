@@ -186,6 +186,7 @@ team1_setting:
   skill_replacement_select: 0 # 技能替换设置
   skill_replacement_mode: 0 # 技能替换模式
   ignore_shop: [0, 0, 0, 0, 0] # 忽略商店楼层
+  use_custom_theme_pack_weight: False # 使用队伍自定义主题包权重
 team1_remark_name: # 队伍备注名
 team1_history:
   total_mirror_time_hard: [] # 困难镜牢总用时
