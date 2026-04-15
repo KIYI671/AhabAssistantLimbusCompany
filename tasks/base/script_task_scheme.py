@@ -409,10 +409,10 @@ class my_script_task(QThread):
             self.exception = e
         except Exception as e:
             self.exception = e
+            self.exc_traceback = "".join(format_exception(type(e), e, e.__traceback__))
             log.error(f"出现错误: {e}")
         finally:
-            if self.exc_traceback != "":
-                self.exc_traceback = "".join(format_exception(*exc_info()))
+            if self.exc_traceback:
                 log.error(self.exc_traceback)
             self.mutex.unlock()
 
