@@ -18,6 +18,8 @@ class Mediator(QObject):
     warning = Signal(str)
     finished_signal = Signal()
     kill_signal = Signal()
+    # 任务线程通过信号请求主窗口抢回前台，避免跨层直接操作 UI。
+    request_focus = Signal()
     mirror_signal = Signal(int, int)  # 运行的当前次数和总次数
     mirror_bar_kill_signal = Signal()
     hotkey_listener_stop_signal = Signal()

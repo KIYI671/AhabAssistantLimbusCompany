@@ -1,9 +1,7 @@
 import platform
 import random
 from datetime import datetime
-from sys import exc_info
 from time import sleep, time
-from traceback import format_exception
 
 from playsound3 import playsound
 from PySide6.QtCore import QT_TRANSLATE_NOOP, QMutex, QThread
@@ -98,10 +96,7 @@ def onetime_mir_process(team_setting, team_num: int):
         else:
             return False
     except Exception as e:
-        msg = f"镜牢行动出错: {e}"
-        exc_traceback = "".join(format_exception(*exc_info()))
-        msg += f"\n调用栈信息:\n{exc_traceback}"
-        log.error(msg)
+        log.exception(f"镜牢行动出错: {e}")
         return False
 
 
@@ -345,7 +340,8 @@ def script_task() -> None | int:
         task()
 
     if cfg.set_reduce_miscontact and not cfg.simulator:
-        screen.reset_win()
+        # 任务已结束，这里只恢复游戏窗口样式，避免把前台重新切回游戏。
+        screen.reset_win(activate=False)
     if cfg.simulator:
         if cfg.simulator_type == 0:
             from module.automation.input_handlers.simulator.mumu_control import (
@@ -377,15 +373,14 @@ def script_task() -> None | int:
         try:
             if execute_after_completion(actions, power_action):
                 return 0
-        except Exception as e:
-            log.error(f"脚本结束后的操作失败: {e}")
+        except Exception:
+            log.exception("脚本结束后的操作失败")
 
 
 class my_script_task(QThread):
     def __init__(self):
         # 初始化，构造函数
         super().__init__()
-        self.exc_traceback = ""
         self.mutex = QMutex()
 
     def run(self):
@@ -409,8 +404,7 @@ class my_script_task(QThread):
             self.exception = e
         except Exception as e:
             self.exception = e
-            self.exc_traceback = "".join(format_exception(type(e), e, e.__traceback__))
-            log.error(self.exc_traceback)
+            log.exception("脚本线程执行失败")
         finally:
             self.mutex.unlock()
 
@@ -430,5 +424,8 @@ class my_script_task(QThread):
                 mediator.kill_signal.emit()
         finally:
             if keep_awake_enabled:
+                # 先切回 AALC 再释放线程级防息屏，避免游戏仍持有前台时继续阻止息屏。
+                mediator.request_focus.emit()
+                self.msleep(800)  # 覆盖 WinRT toast 异步归还焦点（延迟约 600ms），再释放防息屏
                 apply_power_keep_awake(False)
             auto.clear_img_cache()

@@ -30,10 +30,7 @@ from app.page_card import (
 )
 from app.team_setting_card import TeamSettingCard
 from module.automation import auto
-from module.game_and_screen import screen
-from module.hotkey_listener import ExactGlobalHotKeys
-from module.logger import log, ui_log_dispatcher
-from module.system_actions import (
+from module.after_completion_types import (
     ACTION_EXIT_AALC,
     ACTION_EXIT_EMULATOR,
     ACTION_EXIT_GAME,
@@ -42,6 +39,12 @@ from module.system_actions import (
     POWER_ACTION_NONE,
     POWER_ACTION_SHUTDOWN,
     POWER_ACTION_SLEEP,
+    normalize_after_completion_config,
+)
+from module.game_and_screen import screen
+from module.hotkey_listener import ExactGlobalHotKeys
+from module.logger import log, ui_log_dispatcher
+from module.system_actions import (
     get_after_completion_config,
     set_after_completion_config,
 )
@@ -198,7 +201,7 @@ class AfterCompletionSelector(QFrame):
         self._editor_dialog = None
         self.setToolTip(self.tr(self._tool_tip_text))
 
-        if cfg.keep_after_completion is False:
+        if cfg.get_value("keep_after_completion", False) is False:
             self._set_after_completion_config([], POWER_ACTION_NONE, persist=False)
 
         self.edit_button.clicked.connect(self._show_editor)
@@ -226,7 +229,7 @@ class AfterCompletionSelector(QFrame):
             else:
                 display_text = self.tr(self._do_nothing_text)
 
-        mode = self.tr(self._saved_text if cfg.keep_after_completion else self._once_text)
+        mode = self.tr(self._saved_text if cfg.get_value("keep_after_completion", False) else self._once_text)
         full_text = f"{display_text}（{mode}）"
 
         # 动作较多时用换行压缩宽度，完整内容通过悬浮提示查看
@@ -272,11 +275,13 @@ class AfterCompletionSelector(QFrame):
         dialog.show()
 
     def _set_after_completion_config(self, actions: list[str], power_action: str, persist: bool):
+        # UI 层统一先规范化一次，避免一次性设置把脏值写入配置。
+        normalized_actions, normalized_power = normalize_after_completion_config(actions, power_action)
         if persist:
-            set_after_completion_config(actions, power_action)
+            set_after_completion_config(normalized_actions, normalized_power)
         else:
-            cfg.unsaved_set_value("after_completion_actions", actions)
-            cfg.unsaved_set_value("after_completion_power_action", power_action)
+            cfg.unsaved_set_value("after_completion_actions", normalized_actions)
+            cfg.unsaved_set_value("after_completion_power_action", normalized_power)
 
     def apply_selection(self, actions: list[str], power_action: str, permanent: bool):
         cfg.unsaved_set_value("keep_after_completion", permanent)
@@ -597,7 +602,8 @@ class FarmingInterfaceLeft(QWidget):
             self.create_and_start_script()
         else:
             if cfg.set_reduce_miscontact and cfg.simulator is False:
-                screen.reset_win()
+                # 手动停止时仍需恢复游戏窗口，但这里不再要求抢前台。
+                screen.reset_win(activate=False)
             else:
                 if cfg.simulator_type == 0:
                     from module.automation.input_handlers.simulator.mumu_control import (
@@ -630,6 +636,14 @@ class FarmingInterfaceLeft(QWidget):
             if thread_was_running:
                 auto.clear_img_cache()
             mediator.mirror_bar_kill_signal.emit()
+
+    def _on_script_finished(self):
+        # 自然结束只做 UI 收尾；不要复用“手动停止”入口，否则会重复触发窗口清理。
+        log.debug("脚本自然结束，执行 UI 收尾，不再重复重置游戏窗口")
+        self.link_start_button.set_text("Link Start!")
+        self._enable_setting(self.parent())
+        mediator.refresh_teams_order.emit()
+        mediator.mirror_bar_kill_signal.emit()
 
     def _disable_setting(self, parent):
         for child in parent.children():
@@ -691,7 +705,6 @@ class FarmingInterfaceLeft(QWidget):
             self.my_script.start()
         except Exception as e:
             log.error(f"启动脚本失败: {e}")
-            self._apply_keep_awake_if_needed(False)
             self.link_start_button.set_text("Link Start!")
             self._enable_setting(self.parent())
 
@@ -699,8 +712,6 @@ class FarmingInterfaceLeft(QWidget):
         if self.my_script and self.my_script.isRunning():
             log.debug("正在终止脚本线程...")
             self.my_script.terminate()  # 终止线程
-
-
 
     def my_stop_shortcut(self):
         current_text = self.link_start_button.get_text()
@@ -711,7 +722,8 @@ class FarmingInterfaceLeft(QWidget):
         # 连接所有可能信号
         mediator.link_start.connect(self.my_stop_shortcut)
         mediator.kill_signal.connect(self.stop_AALC)
-        mediator.finished_signal.connect(self.start_and_stop_tasks)
+        # finished_signal 表示线程自然结束，不应再走开始/停止按钮的副作用逻辑。
+        mediator.finished_signal.connect(self._on_script_finished)
 
     def retranslateUi(self):
         self.set_windows.retranslateUi()

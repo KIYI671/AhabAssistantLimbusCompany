@@ -5,6 +5,12 @@ import threading
 
 from ruamel.yaml import YAML
 
+from module.after_completion_types import (
+    LEGACY_AFTER_COMPLETION_TO_CONFIG,
+    POWER_ACTION_NONE,
+    serialize_after_actions,
+    serialize_power_action,
+)
 from module.logger import log
 from utils.singletonmeta import SingletonMeta
 
@@ -97,33 +103,31 @@ class Config(metaclass=SingletonMeta):
         if saved_version < 1771413380:
             if self.get_value("set_win_position", True) is True:
                 self.unsaved_set_value("set_win_position", "free")
+        if saved_version < 1771965838:
+            if self.get_value("background_click", True) is True:
+                self.unsaved_set_value("win_input_type", "background")
+            else:
+                self.unsaved_set_value("win_input_type", "foreground")
         if saved_version < 1772205660:
             # 迁移旧版结束后动作配置，按字段独立迁移，避免覆盖用户已设置的新字段
+            # 映射表统一由 module.after_completion_types 维护；config 层只负责迁移与落盘。
             legacy_value = int(self.get_value("after_completion", 0) or 0)
-            legacy_to_config = {
-                0: ([], "none"),
-                1: ([], "sleep"),
-                2: ([], "hibernate"),
-                3: ([], "shutdown"),
-                4: (["exit_game"], "none"),
-                5: (["exit_aalc"], "none"),
-                6: (["exit_game", "exit_aalc"], "none"),
-                7: (["exit_emulator"], "none"),
-                8: (["exit_emulator", "exit_aalc"], "none"),
-            }
-            legacy_actions, legacy_power = legacy_to_config.get(legacy_value, ([], "none"))
+            legacy_actions, legacy_power = LEGACY_AFTER_COMPLETION_TO_CONFIG.get(
+                legacy_value, ((), POWER_ACTION_NONE)
+            )
             migrated = False
 
             # 仅在 actions 字段缺失或类型错误时补写
             current_actions = self.get_value("after_completion_actions")
             if not isinstance(current_actions, list):
-                self.unsaved_set_value("after_completion_actions", legacy_actions)
+                # 配置文件保持字符串协议，不直接持久化内部 Enum。
+                self.unsaved_set_value("after_completion_actions", serialize_after_actions(legacy_actions))
                 migrated = True
 
             # 仅在 power_action 字段缺失或类型错误时补写（与 actions 独立判断）
             current_power = self.get_value("after_completion_power_action")
             if not isinstance(current_power, str):
-                self.unsaved_set_value("after_completion_power_action", legacy_power)
+                self.unsaved_set_value("after_completion_power_action", serialize_power_action(legacy_power))
                 migrated = True
 
             if migrated:
