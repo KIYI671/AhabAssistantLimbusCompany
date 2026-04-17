@@ -12,139 +12,91 @@ from ..config import cfg
 from ..logger import log
 
 
-class AutoSwitchCon:
-    "自动切换语言的返回值表达类"
 
-    FINISH: int = 0
-    "语言相同"
-    CHANGED: int = 1
-    "语言不同并自动切换"
-    FAILED: int = 2
-    "语言切换失败, 可能是不支持的语言"
+def auto_switch_language_in_game(hwnd: int) -> None:
+    """通过句柄获取程序路径识别游戏当前语言
+    若lang_code 最终为default，说明没有识别到可用语言，采用用户设置的语言
+    """
+    log.debug(f"开始自动检测游戏语言: hwnd={hwnd}, current_cfg_language={cfg.language_in_game}, simulator={cfg.simulator}")
+
+    # 模拟器强制使用英文
+    if cfg.simulator:
+        cfg.set_value("language_in_game", "en")
+        log.info(f"模拟器语言强制设置为：{cfg.language_in_game}")
+        return
+
+    # 获取自定义语言
+    lang_code = get_game_lang_from_config(hwnd)
+
+    # 没有自定义语言，那么获取游戏设置的语言
+    if lang_code == "default":
+        lang_code = get_game_config_from_registry()
+        log.debug(f"自动检测语言: resolved_default_lang_code={lang_code}")
+
+    # 语言和设置相同
+    if lang_code == cfg.language_in_game or lang_code == "default":
+        log.info(f"语言设置为：{cfg.language_in_game}")
+        return
+    elif lang_code in SUPPORTED_GAME_LANG_CODE:
+        cfg.set_value("language_in_game", lang_code)
+        log.info(f"语言自动识别为：{lang_code}")
+        return
+    else:
+        log.info(f"不支持语言: {lang_code}")
+    
 
 
-def auto_switch_language_in_game(hwnd: int) -> int:
-    """通过句柄获取程序路径以实现识别游戏当前语言
-    \n(不过如果在运行时改动了游戏设置就没办法了)
-    使用模拟器时，无法读取本机安装目录下的语言配置，故跳过识别
-    ---
+
+def get_game_lang_from_config(hwnd: int) -> str:
+    """根据窗口句柄读取游戏目录下的语言配置并返回语言代码。
 
     Returns:
-        int: 从0-2三种情况 可以查看AutoSwitchCon类
-            - 0: 当前语言相同
-            - 1: 当前语言不同, 但位于支持的语言列表中 (自动切换)
-            - 2: 当前语言不同, 且不支持
+        - "default": 配置文件不存在，或 lang 字段为 "-"
+        - "zh_cn": 配置文件中的 "LLC_zh-CN" 会被映射为项目内部语言代码
+        - 其他语言代码: 直接返回配置文件中的 lang 值
     """
-    if cfg.simulator:
-        log.info("检测到模拟器，将自动使用英文")
-        cfg.set_value("language_in_game", "en")
-        return AutoSwitchCon.FINISH
-
-    default_lang = {"kr": "한국어", "jp": "日本語", "Unknown": "未知"}
-    output_lang_dict = default_lang
-    output_lang_dict.update(SUPPORTED_GAME_LANG_CODE)
     path = None
     try:
-        # 获取窗口的进程ID
         _, pid = win32process.GetWindowThreadProcessId(hwnd)
-
-        # 通过psutil获取进程信息
         process = psutil.Process(pid)
-
-        # 返回进程的可执行文件路径
         path = Path(process.exe())
     except Exception as e:
         log.error(f"获取路径时出错: {e}")
 
     if path is None:
         raise ValueError("未获取到程序路径")
+
     json_path = path.parent / "LimbusCompany_Data" / "Lang" / "config.json"
-    lang_code = None
-
     log.debug(f"游戏设置路径: {json_path}")
-
     try:
-        with open(json_path, "r") as f:
-            content = f.read()
-        json_content: dict = json.loads(content)
+        with open(json_path, "r", encoding="utf-8") as f:
+            json_content: dict = json.load(f)
         log.debug(f"读取语言配置文件内容: {json_content}")
-        lang_code = json_content.get("lang", "Unknown")
+        lang_code = json_content.get("lang")
     except FileNotFoundError:
         log.debug(f"未找到语言配置文件: {json_path}")
-        lang_code = "-"
+        return "default"
     except Exception as e:
         log.debug(f"{type(e).__name__}, 读取语言配置文件时出错: {e}")
-        lang_code = "Unknown"
+        raise
 
-    lang_dict = {"-": "default", "LLC_zh-CN": "zh_cn"}
-    if lang_code in lang_dict:
-        lang_code = lang_dict[lang_code]
-    else:
-        lang_code = "Unknown"
-
-    if lang_code == "default":
-        #  lang_list = ["한국어", "English", "日本語", "Unknown"]
-        lang_list = ["kr", "en", "jp", "Unknown"]
-        game_config = get_game_config_from_registry()
-        lang_index = game_config.get("_language", 3)
-        lang_code = lang_list[lang_index]
-
-    if lang_code == cfg.language_in_game:
-        return AutoSwitchCon.FINISH
-
-    if cfg.language_in_game == "-":
-        msg = QT_TRANSLATE_NOOP("Logger", "当前游戏语言为 {current_game_lang}, 即将自动切换")
-        formatted_msg = msg.format(current_game_lang=output_lang_dict[lang_code])
-        log.info(formatted_msg)
-    else:
-        msg = QT_TRANSLATE_NOOP(
-            "Logger",
-            "当前游戏语言为 {current_game_lang}, 但是被错误设置成了 {setting_game_lang}",
-        )
-        formatted_msg = msg.format(
-            current_game_lang=output_lang_dict[lang_code],
-            setting_game_lang=output_lang_dict[cfg.language_in_game],
-        )
-        log.info(formatted_msg)
-    if lang_code in SUPPORTED_GAME_LANG_CODE:
-        cfg.set_value("language_in_game", lang_code)
-        return AutoSwitchCon.CHANGED
-    msg = QT_TRANSLATE_NOOP("Logger", "自动切换失败, 不支持的游戏语言")
-    log.info(msg)
-    return AutoSwitchCon.FAILED
+    return {"-": "default", "LLC_zh-CN": "zh_cn"}.get(lang_code, lang_code)
 
 
-def get_game_config_from_registry() -> dict:
-    """从注册表获取当前游戏设置
-    Returns:
-        dict: 游戏设置的字典, 如果读取失败则返回空字典
-    """
-    root = winreg.HKEY_CURRENT_USER
-    sub_key = r"Software\ProjectMoon\LimbusCompany"
-    value_name = "LocalSave.LocalGameOptionData_h467498167"
-
+def get_raw_game_config_from_registry() -> dict:
+    """从注册表读取原始游戏配置字典。"""
     try:
-        # 打开注册表键
-
-        with winreg.OpenKey(root, sub_key, 0, winreg.KEY_READ) as key:
-            # 读取二进制数据
-            raw_data, reg_type = winreg.QueryValueEx(key, value_name)
-
-            # 验证数据类型
+        with winreg.OpenKey(winreg.HKEY_CURRENT_USER, r"Software\ProjectMoon\LimbusCompany", 0, winreg.KEY_READ) as key:
+            raw_data, reg_type = winreg.QueryValueEx(key, "LocalSave.LocalGameOptionData_h467498167")
             if reg_type != winreg.REG_BINARY:
                 log.debug(f"错误：值项类型为 {reg_type}，预期应为 REG_BINARY")
                 return {}
-
-            # 去除末尾的 NULL 字节并解码为字符串
-            json_str = raw_data.rstrip(b"\x00").decode("utf-8")
-
-            # 解析 JSON 数据
-            config_data: dict = json.loads(json_str)
-
+            config_data: dict = json.loads(raw_data.rstrip(b"\x00").decode("utf-8"))
+            log.debug(f"从注册表读取游戏配置成功: keys={list(config_data.keys())}")
             return config_data
 
     except FileNotFoundError:
-        log.debug(f"注册表路径不存在: HKEY_CURRENT_USER\\{sub_key}")
+        log.debug(r"注册表路径不存在: HKEY_CURRENT_USER\Software\ProjectMoon\LimbusCompany")
         return {}
     except PermissionError:
         log.debug("读取注册表时权限不足，请以管理员身份运行程序")
@@ -152,3 +104,14 @@ def get_game_config_from_registry() -> dict:
     except Exception as e:
         log.debug(f"处理数据时出错: {str(e)}")
         return {}
+
+
+def get_game_config_from_registry() -> str:
+    """从注册表读取游戏语言，返回 kr/en/jp。"""
+    lang_list = ["kr", "en", "jp"]
+    try:
+        lang_index = get_raw_game_config_from_registry().get("_language")
+    except Exception as e:
+        log.error(f"获取游戏语言时出错: {e}")
+        return "default"
+    return lang_list[lang_index]
