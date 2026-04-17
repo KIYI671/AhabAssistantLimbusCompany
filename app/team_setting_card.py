@@ -19,7 +19,9 @@ from app.base_combination import (
 )
 from app.base_tools import BaseCheckBox, BaseComboBox, BaseLabel, BaseSettingLayout
 from app.language_manager import LanguageManager
-from module.config import cfg
+from module.config import cfg, theme_list
+
+from app.theme_pack_setting_interface import ThemePackSettingDialog
 
 
 class TeamSettingCard(QFrame):
@@ -223,6 +225,7 @@ class TeamSettingCard(QFrame):
 
         self.customize_settings_module = CustomizeSettingsModule()
         self.customize_info_module = CustomizeInfoModule(self.team_num)
+        self.customize_settings_module.select_theme_pack_weight_button.clicked.connect(self.open_theme_pack_weight_dialog)
 
         self.cancel_button = PushButton(self.tr("取消"))
         self.cancel_button.clicked.connect(self.cancel_team_setting)
@@ -336,6 +339,23 @@ class TeamSettingCard(QFrame):
     def save_team_setting(self):
         cfg.set_value(f"team{self.team_num}_setting", self.team_setting)
         self.cancel_team_setting()
+
+    def open_theme_pack_weight_dialog(self):
+        # 先确保当前队伍的自定义权重文件已创建
+        team_index = int(self.team_num)
+        theme_list.create_team_weight_config(team_index)
+
+        # 尝试加载队伍自定义权重文件
+        custom_file_path = theme_list.build_team_weight_path(team_index)
+        custom_weight_config = theme_list.load_config(custom_file_path)
+        
+
+        dialog = ThemePackSettingDialog(
+            self,
+            config_data=custom_weight_config,
+            save_path=custom_file_path,
+        )
+        dialog.exec()
 
     def refresh_starlight_order(self):
         opening_bonus_order = self.team_setting["opening_bonus_order"]
@@ -496,6 +516,8 @@ class CustomizeSettingsModule(QFrame):
         self.seventh_line = QHBoxLayout(self.seventh_line_widget)
         self.eighth_line_widget = QWidget()
         self.eighth_line = QHBoxLayout(self.eighth_line_widget)
+        self.ninth_line_widget = QWidget()
+        self.ninth_line = QHBoxLayout(self.ninth_line_widget)
         self.floor_shop = QHBoxLayout()
 
     def __init_card(self):
@@ -653,6 +675,13 @@ class CustomizeSettingsModule(QFrame):
         self.floor_shop_4 = BaseCheckBox("ignore_shop_4", None, QT_TRANSLATE_NOOP("BaseCheckBox", "第四层"))
         self.floor_shop_5 = BaseCheckBox("ignore_shop_5", None, QT_TRANSLATE_NOOP("BaseCheckBox", "第五层"))
 
+        self.use_custom_theme_pack_weight = BaseCheckBox(
+            "use_custom_theme_pack_weight",
+            None,
+            QT_TRANSLATE_NOOP("BaseCheckBox", "使用自定义主题包权重"),
+        )
+        self.select_theme_pack_weight_button = PushButton(self.tr("权重选择"))
+
     def __init_layout(self):
         self.first_line.addWidget(self.do_not_heal)
         self.first_line.addWidget(self.do_not_buy)
@@ -713,6 +742,10 @@ class CustomizeSettingsModule(QFrame):
         self.floor_shop.addWidget(self.floor_shop_5)
         self.eighth_line.addLayout(self.floor_shop, Qt.AlignLeft)
 
+        self.ninth_line.addWidget(self.use_custom_theme_pack_weight)
+        self.ninth_line.addWidget(self.select_theme_pack_weight_button)
+        self.ninth_line.addStretch()
+
         self.main_layout.addWidget(self.first_line_widget)
         self.main_layout.addWidget(self.second_line_widget)
         self.main_layout.addWidget(self.third_line_widget)
@@ -724,6 +757,7 @@ class CustomizeSettingsModule(QFrame):
         self.main_layout.addWidget(self.second_system_widget)
         self.main_layout.addWidget(self.seventh_line_widget)
         self.main_layout.addWidget(self.eighth_line_widget)
+        self.main_layout.addWidget(self.ninth_line_widget)
 
     def retranslateUi(self):
         self.do_not_heal.retranslateUi()
@@ -762,6 +796,8 @@ class CustomizeSettingsModule(QFrame):
         self.second_system_power_up.retranslateUi()
         self.skill_replacement.retranslateUi()
         self.ignore_shop.retranslateUi()
+        self.use_custom_theme_pack_weight.retranslateUi()
+        self.select_theme_pack_weight_button.setText(self.tr("权重选择"))
 
 
 class CustomizeInfoModule(QFrame):

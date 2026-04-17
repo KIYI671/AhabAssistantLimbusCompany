@@ -384,11 +384,21 @@ def script_task() -> None | int:
                     log.error("错误：进程不存在")
                 elif ret == 1:
                     log.error("错误：权限不足")
+            elif after_completion == 7:
+                if cfg.simulator_type == 0:
+                    from module.automation.input_handlers.simulator.mumu_control import (
+                        MumuControl,
+                    )
+
+                    MumuControl.connection_device.close_simulator()
+                else:
+                    log.error("错误：暂不支持退出其他模拟器进程")
+
         except Exception as e:
             log.error(f"脚本结束后的操作失败: {e}")
 
         finally:
-            if after_completion == 5 or after_completion == 6:
+            if after_completion in [5, 6, 8]:
                 return 0  # 正常退出信号
 
 

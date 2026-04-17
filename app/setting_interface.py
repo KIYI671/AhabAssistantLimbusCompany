@@ -37,7 +37,7 @@ from app.common.ui_config import get_setting_interface_qss
 from app.language_manager import SUPPORTED_LANG_NAME, LanguageManager
 from app.theme_pack_setting_interface import ThemePackSettingDialog
 from app.widget.setting_nav import SettingNav
-from module.config import cfg
+from module.config import cfg, theme_list
 from utils.schedule_helper import ScheduleHelper
 
 
@@ -630,7 +630,11 @@ class SettingInterface(QWidget):
 
     def __onThemePackCardClicked(self):
         """打开主题包权重配置对话框"""
-        dialog = ThemePackSettingDialog(self)
+        dialog = ThemePackSettingDialog(
+            self,
+            config_data=theme_list.config,
+            save_path=theme_list.theme_pack_list_path,
+        )
         dialog.exec()
 
     def retranslateUi(self):

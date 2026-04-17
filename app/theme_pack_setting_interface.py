@@ -23,6 +23,7 @@ from qframelesswindow import FramelessDialog, StandardTitleBar
 from ruamel.yaml import YAML
 
 from app.base_tools import BaseSpinBox
+from app.card.messagebox_custom import MessageBoxConfirm
 from module import THEME_PACK_LIST_EXAMPLE_PATH
 from module.config import cfg, theme_list
 
@@ -440,7 +441,7 @@ class ThemePackCard(QFrame):
 class ThemePackSettingDialog(FramelessDialog):
     """主题包权重设置对话框"""
 
-    def __init__(self, parent=None):
+    def __init__(self, parent, config_data, save_path):
         super().__init__(parent)
         self.setObjectName("ThemePackSettingDialog")
         self.setWindowTitle(self.tr("主题包权重配置"))
@@ -467,8 +468,13 @@ class ThemePackSettingDialog(FramelessDialog):
         # 标记是否是保存并关闭
         self._is_save_and_close = False
 
+        # 配置数据和保存路径
+        self.config_data = config_data
+        self.save_path = save_path
+        self.is_team_specific = self.save_path != theme_list.theme_pack_list_path
+
         # 保存原始配置的副本，用于关闭时不保存恢复
-        self._original_config = copy.deepcopy(theme_list.config)
+        self._original_config = copy.deepcopy(self.config_data)
 
         self.__init_widget()
         self.__init_layout()
@@ -496,11 +502,31 @@ class ThemePackSettingDialog(FramelessDialog):
         # 说明标签
         self.info_label = BodyLabel(
             self.tr(
-                "权重说明: 正数=优先选择(值越大优先级越高), 负数=避免选择, 0=无特殊偏好\n保存时会自动同步其他语言配置权重 (如有)"
+                "权重说明: 正数=优先选择(值越大优先级越高), 负数=避免选择, 0=无特殊偏好\n"
+                "优选阈值说明: 当主题包权重大于或等于优选阈值时，会被优先选中\n"
+                "保存时会自动同步其他语言配置权重 (如有)"
             ),
             self,
         )
         self.info_label.setAlignment(Qt.AlignCenter)
+
+        # 优选阈值设置
+        self.threshold_widget = QWidget(self)
+        self.threshold_layout = QHBoxLayout(self.threshold_widget)
+        self.threshold_layout.setContentsMargins(0, 0, 0, 0)
+        self.threshold_layout.setSpacing(8)
+
+        self.threshold_label = BodyLabel(self.tr("优选阈值"), self.threshold_widget)
+        self.preferred_threshold_spinbox = BaseSpinBox(None, parent=self.threshold_widget, min_value=-10, min_step=1)
+        self.preferred_threshold_spinbox.spin_box.setRange(-10, 10)
+        self.preferred_threshold_spinbox.spin_box.setAlignment(Qt.AlignCenter)
+        self.preferred_threshold_spinbox.spin_box.setValue(int(self.config_data.get("preferred_thresholds", 0)))
+        self.preferred_threshold_spinbox.spin_box.valueChanged.connect(self._on_preferred_threshold_changed)
+
+        self.threshold_layout.addStretch()
+        self.threshold_layout.addWidget(self.threshold_label)
+        self.threshold_layout.addWidget(self.preferred_threshold_spinbox)
+        self.threshold_layout.addStretch()
 
         # 普通模式分组
         self.normal_group_label = SubtitleLabel(self.tr("普通模式主题包"), self)
@@ -526,6 +552,15 @@ class ThemePackSettingDialog(FramelessDialog):
         self.reset_button.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         self.reset_button.clicked.connect(self.reset_to_default)
 
+        self.set_to_global_button = PushButton(self.tr("拉取全局配置"), self)
+        self.set_to_global_button.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        self.set_to_global_button.clicked.connect(self.set_to_global)
+        self.set_to_global_button.setVisible(self.is_team_specific)
+
+        self.set_all_negative_button = PushButton(self.tr("全部设为 -5"), self)
+        self.set_all_negative_button.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        self.set_all_negative_button.clicked.connect(self.set_all_weights_negative)
+
         self.save_button = PrimaryPushButton(self.tr("保存并关闭"), self)
         self.save_button.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         self.save_button.clicked.connect(self.save_and_close)
@@ -536,6 +571,8 @@ class ThemePackSettingDialog(FramelessDialog):
 
         self.button_layout.addStretch()
         self.button_layout.addWidget(self.reset_button)
+        self.button_layout.addWidget(self.set_to_global_button)
+        self.button_layout.addWidget(self.set_all_negative_button)
         self.button_layout.addWidget(self.save_button)
         self.button_layout.addWidget(self.close_button)
         self.button_layout.addStretch()
@@ -544,6 +581,7 @@ class ThemePackSettingDialog(FramelessDialog):
         # 将组件添加到滚动布局
         self.scroll_layout.addWidget(self.title_label)
         self.scroll_layout.addWidget(self.info_label)
+        self.scroll_layout.addWidget(self.threshold_widget)
         self.scroll_layout.addSpacing(10)
         self.scroll_layout.addWidget(self.normal_group_label)
         self.scroll_layout.addWidget(self.normal_grid_widget)
@@ -615,12 +653,12 @@ class ThemePackSettingDialog(FramelessDialog):
         # 根据语言参数决定加载哪种配置
         if self.is_cn:
             # 中文界面，加载中文配置
-            normal_packs = theme_list.get_value("theme_pack_list_cn", {})
-            hard_packs = theme_list.get_value("theme_pack_list_hard_cn", {})
+            normal_packs = self.config_data.get("theme_pack_list_cn", {})
+            hard_packs = self.config_data.get("theme_pack_list_hard_cn", {})
         else:
             # 英文界面，加载英文配置
-            normal_packs = theme_list.get_value("theme_pack_list", {})
-            hard_packs = theme_list.get_value("theme_pack_list_hard", {})
+            normal_packs = self.config_data.get("theme_pack_list", {})
+            hard_packs = self.config_data.get("theme_pack_list_hard", {})
 
         col_count = 5  # 每行5个卡片
 
@@ -676,11 +714,11 @@ class ThemePackSettingDialog(FramelessDialog):
 
         # 同时更新两套配置
         # 1. 更新英文配置
-        en_config = theme_list.get_value(en_config_key, {})
+        en_config = copy.deepcopy(self.config_data.get(en_config_key, {}))
         en_config = {str(k): v for k, v in en_config.items()}
 
         # 2. 更新中文配置
-        cn_config = theme_list.get_value(cn_config_key, {})
+        cn_config = copy.deepcopy(self.config_data.get(cn_config_key, {}))
         cn_config = {str(k): v for k, v in cn_config.items()}
 
         if self.is_cn:
@@ -716,10 +754,15 @@ class ThemePackSettingDialog(FramelessDialog):
                         cn_config[alt_name] = weight
 
         # 只更新内存中的配置，不保存到文件
-        theme_list.config[en_config_key] = copy.deepcopy(en_config)
-        theme_list.config[cn_config_key] = copy.deepcopy(cn_config)
+        self.config_data[en_config_key] = copy.deepcopy(en_config)
+        self.config_data[cn_config_key] = copy.deepcopy(cn_config)
 
         # 标记有未保存的修改
+        self._has_unsaved_changes = True
+
+    def _on_preferred_threshold_changed(self, value: int):
+        """处理优选阈值变化，只更新内存中的配置，不保存到文件"""
+        self.config_data["preferred_thresholds"] = int(value)
         self._has_unsaved_changes = True
 
     def reset_to_default(self):
@@ -730,7 +773,8 @@ class ThemePackSettingDialog(FramelessDialog):
             example_config = yaml.load(f) or {}
 
         # 用示例配置替换内存中的配置，但不保存到文件
-        theme_list.config = copy.deepcopy(example_config)
+        self.config_data.clear()
+        self.config_data.update(copy.deepcopy(example_config))
 
         # 根据当前语言更新界面显示
         if self.is_cn:
@@ -739,6 +783,8 @@ class ThemePackSettingDialog(FramelessDialog):
         else:
             normal_default = example_config.get("theme_pack_list", {})
             hard_default = example_config.get("theme_pack_list_hard", {})
+
+        self.preferred_threshold_spinbox.spin_box.setValue(int(example_config.get("preferred_thresholds", 0)))
 
         # 重置普通模式显示
         for pack_key, weight in normal_default.items():
@@ -753,10 +799,49 @@ class ThemePackSettingDialog(FramelessDialog):
         # 标记有未保存的修改
         self._has_unsaved_changes = True
 
+    def set_to_global(self):
+        """将当前配置设置为全局主题包配置（仅内存，不立即保存）。"""
+        if not self.is_team_specific:
+            return
+
+        global_config = theme_list.load_config(theme_list.theme_pack_list_path)
+        if not global_config:
+            return
+
+        self.config_data.clear()
+        self.config_data.update(copy.deepcopy(global_config))
+
+        if self.is_cn:
+            normal_global = global_config.get("theme_pack_list_cn", {})
+            hard_global = global_config.get("theme_pack_list_hard_cn", {})
+        else:
+            normal_global = global_config.get("theme_pack_list", {})
+            hard_global = global_config.get("theme_pack_list_hard", {})
+
+        self.preferred_threshold_spinbox.spin_box.setValue(int(global_config.get("preferred_thresholds", 0)))
+
+        for pack_key, weight in normal_global.items():
+            if pack_key in self.normal_cards:
+                self.normal_cards[pack_key].update_weight(weight)
+
+        for pack_key, weight in hard_global.items():
+            if pack_key in self.hard_cards:
+                self.hard_cards[pack_key].update_weight(weight)
+
+        self._has_unsaved_changes = True
+
+    def set_all_weights_negative(self):
+        """将当前显示的所有主题包权重批量设置为 -5"""
+        for card in list(self.normal_cards.values()) + list(self.hard_cards.values()):
+            card.update_weight(-5)
+        self._has_unsaved_changes = True
+
     def save_and_close(self):
         """保存配置到文件并关闭对话框"""
-        # 保存配置到文件
-        theme_list.save_config()
+        # save_path 必须提供
+        if not self.save_path:
+            return
+        theme_list.save_config(path=self.save_path, config_data=self.config_data)
         self._has_unsaved_changes = False
         self._is_save_and_close = True  # 标记是保存并关闭
         self.close()
@@ -764,12 +849,23 @@ class ThemePackSettingDialog(FramelessDialog):
     def closeEvent(self, event):
         """对话框关闭时注销所有组件，防止内存泄漏
 
-        如果用户点击了关闭按钮（而非保存并关闭）且有未保存的修改，
+        如果不是保存并关闭且有未保存的修改，
         则恢复到原始配置，不保存到文件。
         """
+        if not self._is_save_and_close and self._has_unsaved_changes:
+            confirm = MessageBoxConfirm(
+                self.tr("存在未保存修改"),
+                self.tr("关闭后将丢失未保存的修改，是否继续？"),
+                self.window(),
+            )
+            if not confirm.exec():
+                event.ignore()
+                return
+
         # 如果不是保存并关闭，且有未保存的修改，恢复到原始配置
         if not self._is_save_and_close and self._has_unsaved_changes:
-            theme_list.config = self._original_config
+            self.config_data.clear()
+            self.config_data.update(copy.deepcopy(self._original_config))
 
         # 先断开所有信号连接，防止在清理过程中触发信号
         for card in self.normal_cards.values():

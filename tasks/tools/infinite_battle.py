@@ -1,4 +1,3 @@
-from pynput import keyboard
 from PySide6.QtCore import Qt, QThread, Signal
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import (
@@ -13,6 +12,7 @@ from PySide6.QtWidgets import (
 from module.automation import auto
 from module.config import cfg
 from module.game_and_screen import screen
+from module.hotkey_listener import ExactGlobalHotKeys
 from module.logger import log
 from tasks.battle.battle import Battle
 class BattleWorker(QThread):
@@ -34,7 +34,7 @@ class BattleWorker(QThread):
         self.defense_on_turn1 = defense_on_turn1
         self.choice_event_handling = choice_event_handling
         self.initialized = False
-        self.battle = Battle()  # 复用镜牢战斗逻辑
+        self.battle = Battle(is_tool=True)  # 复用镜牢战斗逻辑
         self.background_click = cfg.background_click
 
     def stop(self):
@@ -71,7 +71,6 @@ class BattleWorker(QThread):
 
             if not self.background_click:
                 cfg.set_value("background_click", True)
-            hwnd = screen.handle
             screen.set_win()
         except Exception as e:
             self.error_occurred.emit(f"窗口设置错误: {str(e)}")
@@ -90,15 +89,17 @@ class InfiniteBattles(QWidget):
 
         # 启动快捷键监听
         try:
-            self.listener = keyboard.GlobalHotKeys(
+            self.listener = ExactGlobalHotKeys(
                 {
                     cfg.shutdown_hotkey: self._on_stop_shortcut,
                 }
             )
         except ValueError:
             log.error("快捷键监听启动失败，请确认设置的快捷键格式有效")
+            self.listener = None
 
-        self.listener.start()
+        if self.listener:
+            self.listener.start()
 
     def setup_ui(self):
         """配置窗口的基本属性和界面元素。"""

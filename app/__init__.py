@@ -60,6 +60,8 @@ set_after_completion_options = {
     QT_TRANSLATE_NOOP("BaseComboBox", "退出游戏"): 4,
     QT_TRANSLATE_NOOP("BaseComboBox", "退出AALC"): 5,
     QT_TRANSLATE_NOOP("BaseComboBox", "退出AALC和游戏"): 6,
+    QT_TRANSLATE_NOOP("BaseComboBox", "退出MUMU模拟器"): 7,
+    QT_TRANSLATE_NOOP("BaseComboBox", "退出AALC和MUMU模拟器"): 8,
 }
 all_teams = {f"Team{i}": i for i in range(1, 21)}
 all_systems = {
@@ -205,6 +207,7 @@ all_checkbox_config_name = [
     "second_system",
     "skill_replacement",
     "ignore_shop",
+    "use_custom_theme_pack_weight",
 ]
 
 win_input_type_options = {

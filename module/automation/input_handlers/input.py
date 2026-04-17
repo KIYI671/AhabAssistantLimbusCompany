@@ -224,6 +224,9 @@ class BackgroundInput(WinAbstractInput, metaclass=SingletonMeta):
     \n 除了不支持滚轮事件, 其余同 `Input` 类
     """
 
+    use_post_message = True
+    """控制所有输入事件是否使用`PostMessage"""
+
     def mouse_to_blank(self, coordinate=(1, 1), move_back=True) -> None:
         """鼠标移动到空白位置，避免遮挡（然而为了避免影响用户操作，这个暂时没用）
         Args:
@@ -397,14 +400,11 @@ class BackgroundInput(WinAbstractInput, metaclass=SingletonMeta):
                 screen.handle.restore()
                 sleep(0.5)
 
-            # 设置窗口的输入状态
-            win32gui.EnableWindow(hwnd, True)
-
             # 发送激活消息（但不改变Z序）
-            win32gui.SendMessage(hwnd, win32con.WM_ACTIVATE, win32con.WA_ACTIVE, 0)
-
-            # 设置焦点状态
-            win32gui.SendMessage(hwnd, win32con.WM_SETFOCUS, 0, 0)
+            if self.use_post_message:
+                win32api.PostMessage(hwnd, win32con.WM_ACTIVATE, win32con.WA_ACTIVE, 0)
+            else:
+                win32gui.SendMessage(hwnd, win32con.WM_ACTIVATE, win32con.WA_ACTIVE, 0)
         else:
             log.error("未初始化hwnd")
 
@@ -418,7 +418,10 @@ class BackgroundInput(WinAbstractInput, metaclass=SingletonMeta):
         y = int(y)
         hwnd = screen.handle.hwnd
         long_positon = win32api.MAKELONG(x, y)
-        win32api.SendMessage(hwnd, win32con.WM_LBUTTONDOWN, 0, long_positon)
+        if self.use_post_message:
+            win32api.PostMessage(hwnd, win32con.WM_LBUTTONDOWN, 0, long_positon)
+        else:
+            win32api.SendMessage(hwnd, win32con.WM_LBUTTONDOWN, 0, long_positon)
         sleep(0.01)
 
     def mouse_up(self, x, y):
@@ -431,7 +434,10 @@ class BackgroundInput(WinAbstractInput, metaclass=SingletonMeta):
         y = int(y)
         hwnd = screen.handle.hwnd
         long_positon = win32api.MAKELONG(x, y)
-        win32api.SendMessage(hwnd, win32con.WM_LBUTTONUP, 0, long_positon)
+        if self.use_post_message:
+            win32api.PostMessage(hwnd, win32con.WM_LBUTTONUP, 0, long_positon)
+        else:
+            win32api.SendMessage(hwnd, win32con.WM_LBUTTONUP, 0, long_positon)
         sleep(0.01)
 
     def set_mouse_pos(self, x, y, duration: float = 0):
@@ -455,7 +461,10 @@ class BackgroundInput(WinAbstractInput, metaclass=SingletonMeta):
         """
         hwnd = screen.handle.hwnd
         lparam = 0x00000001  # 重复次数为1
-        win32api.SendMessage(hwnd, win32con.WM_KEYDOWN, key_list[key.lower()], lparam)
+        if self.use_post_message:
+            win32api.PostMessage(hwnd, win32con.WM_KEYDOWN, key_list[key.lower()], lparam)
+        else:
+            win32api.SendMessage(hwnd, win32con.WM_KEYDOWN, key_list[key.lower()], lparam)
 
     def key_up(self, key: str):
         """键盘按键抬起
@@ -464,7 +473,10 @@ class BackgroundInput(WinAbstractInput, metaclass=SingletonMeta):
         """
         hwnd = screen.handle.hwnd
         lparam = 0xC0000001  # 转换状态为1（按键释放）
-        win32api.SendMessage(hwnd, win32con.WM_KEYUP, key_list[key.lower()], lparam)
+        if self.use_post_message:
+            win32api.PostMessage(hwnd, win32con.WM_KEYUP, key_list[key.lower()], lparam)
+        else:
+            win32api.SendMessage(hwnd, win32con.WM_KEYUP, key_list[key.lower()], lparam)
 
     def key_press(self, key):
         """一次键盘按键操作
@@ -525,7 +537,10 @@ class BackgroundInput(WinAbstractInput, metaclass=SingletonMeta):
 
 
 class WindowMoveInput(WinAbstractInput, metaclass=SingletonMeta):
-    """"""
+    """基于移动窗口位置改变光标相对位置的输入方式"""
+
+    use_post_message = True
+    """控制所有输入事件是否使用`PostMessage"""
 
     def mouse_to_blank(self, coordinate=(1, 1), move_back=False) -> None:
         # FIXME: 移动窗口来防止遮蔽不是一个好选择
@@ -662,7 +677,10 @@ class WindowMoveInput(WinAbstractInput, metaclass=SingletonMeta):
                 sleep(0.5)
 
             # 发送激活消息（但不改变Z序）
-            win32gui.SendMessage(hwnd, win32con.WM_ACTIVATE, win32con.WA_ACTIVE, 0)
+            if self.use_post_message:
+                win32api.PostMessage(hwnd, win32con.WM_ACTIVATE, win32con.WA_ACTIVE, 0)
+            else:
+                win32gui.SendMessage(hwnd, win32con.WM_ACTIVATE, win32con.WA_ACTIVE, 0)
         else:
             log.error("未初始化hwnd")
 
@@ -673,7 +691,10 @@ class WindowMoveInput(WinAbstractInput, metaclass=SingletonMeta):
         """
         hwnd = screen.handle.hwnd
         lparam = 0x00000001  # 重复次数为1
-        win32api.SendMessage(hwnd, win32con.WM_KEYDOWN, key_list[key.lower()], lparam)
+        if self.use_post_message:
+            win32api.PostMessage(hwnd, win32con.WM_KEYDOWN, key_list[key.lower()], lparam)
+        else:
+            win32api.SendMessage(hwnd, win32con.WM_KEYDOWN, key_list[key.lower()], lparam)
 
     def key_up(self, key: str):
         """键盘按键抬起
@@ -682,7 +703,10 @@ class WindowMoveInput(WinAbstractInput, metaclass=SingletonMeta):
         """
         hwnd = screen.handle.hwnd
         lparam = 0xC0000001  # 转换状态为1（按键释放）
-        win32api.SendMessage(hwnd, win32con.WM_KEYUP, key_list[key.lower()], lparam)
+        if self.use_post_message:
+            win32api.PostMessage(hwnd, win32con.WM_KEYUP, key_list[key.lower()], lparam)
+        else:
+            win32api.SendMessage(hwnd, win32con.WM_KEYUP, key_list[key.lower()], lparam)
 
     def key_press(self, key):
         """一次键盘按键操作
@@ -703,7 +727,10 @@ class WindowMoveInput(WinAbstractInput, metaclass=SingletonMeta):
         y = int(y)
         hwnd = screen.handle.hwnd
         long_positon = win32api.MAKELONG(x, y)
-        win32api.SendMessage(hwnd, win32con.WM_LBUTTONDOWN, 0, long_positon)
+        if self.use_post_message:
+            win32api.PostMessage(hwnd, win32con.WM_LBUTTONDOWN, 0, long_positon)
+        else:
+            win32api.SendMessage(hwnd, win32con.WM_LBUTTONDOWN, 0, long_positon)
         sleep(0.01)
 
     def mouse_up(self, x, y):
@@ -716,7 +743,10 @@ class WindowMoveInput(WinAbstractInput, metaclass=SingletonMeta):
         y = int(y)
         hwnd = screen.handle.hwnd
         long_positon = win32api.MAKELONG(x, y)
-        win32api.SendMessage(hwnd, win32con.WM_LBUTTONUP, 0, long_positon)
+        if self.use_post_message:
+            win32api.PostMessage(hwnd, win32con.WM_LBUTTONUP, 0, long_positon)
+        else:
+            win32api.SendMessage(hwnd, win32con.WM_LBUTTONUP, 0, long_positon)
         sleep(0.01)
 
     def mouse_click(self, x, y, times=1, move_back=False) -> bool:
