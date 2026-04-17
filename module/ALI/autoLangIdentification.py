@@ -4,7 +4,6 @@ from pathlib import Path
 
 import psutil
 import win32process
-from PySide6.QtCore import QT_TRANSLATE_NOOP
 
 from app.language_manager import SUPPORTED_GAME_LANG_CODE
 
@@ -53,7 +52,9 @@ def get_game_lang_from_config(hwnd: int) -> str:
     Returns:
         - "default": 配置文件不存在，或 lang 字段为 "-"
         - "zh_cn": 配置文件中的 "LLC_zh-CN" 会被映射为项目内部语言代码
-        - 其他语言代码: 直接返回配置文件中的 lang 值
+        - "en": 配置文件中的英文代码
+    Raises:
+        ValueError: 检测到未支持的语言代码
     """
     path = None
     try:
@@ -79,8 +80,10 @@ def get_game_lang_from_config(hwnd: int) -> str:
     except Exception as e:
         log.debug(f"{type(e).__name__}, 读取语言配置文件时出错: {e}")
         raise
-
-    return {"-": "default", "LLC_zh-CN": "zh_cn"}.get(lang_code, lang_code)
+    normalized_lang_code = {"-": "default", "LLC_zh-CN": "zh_cn"}.get(lang_code, lang_code)
+    if normalized_lang_code in {"default", "zh_cn", "en"}:
+        return normalized_lang_code
+    raise ValueError(f"检测到未支持的游戏语言代码: {normalized_lang_code}")
 
 
 def get_raw_game_config_from_registry() -> dict:
@@ -107,11 +110,10 @@ def get_raw_game_config_from_registry() -> dict:
 
 
 def get_game_config_from_registry() -> str:
-    """从注册表读取游戏语言，返回 kr/en/jp。"""
-    lang_list = ["kr", "en", "jp"]
-    try:
-        lang_index = get_raw_game_config_from_registry().get("_language")
-    except Exception as e:
-        log.error(f"获取游戏语言时出错: {e}")
-        return "default"
-    return lang_list[lang_index]
+    """从注册表读取游戏语言，仅接受英语配置。"""
+    lang_index = get_raw_game_config_from_registry().get("_language")
+    if lang_index not in {0, 1, 2}:
+        raise ValueError(f"注册表中的语言索引无效: {lang_index}")
+    if lang_index != 1:
+        raise ValueError(f"检测到非英语游戏语言索引: {lang_index}")
+    return "en"
