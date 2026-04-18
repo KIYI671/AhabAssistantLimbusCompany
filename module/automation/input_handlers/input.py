@@ -3,6 +3,13 @@ from time import sleep, time
 import time
 from typing import overload
 
+import zipfile
+import os
+import subprocess
+import requests
+import pyuac
+import shutil
+
 import pyautogui
 import win32api
 import win32con
@@ -772,6 +779,37 @@ class WindowMoveInput(WinAbstractInput, metaclass=SingletonMeta):
 
 class DriverInput(WinAbstractInput, metaclass=SingletonMeta):
     """基于 `interception-python` 的输入类, 仅支持前台操作"""
+    
+    def __init__(self):
+        # Interception初始化
+        input_type = cfg.win_input_type
+        if input_type == "driver" and pyuac.isUserAdmin():
+            try:
+                interception.auto_capture_devices()
+            except DriverNotFoundError:
+                log.error("Interception 驱动未安装!正在尝试自动安装驱动")
+                # 开始自动安装驱动
+                file_name = os.path.join(str(os.environ.get("TEMP")),"interception.zip")
+                tg_file_name = "./interception/Interception/command line installer/install-interception.exe"
+                resp = requests.get("https://hk.gh-proxy.org/https://github.com/oblitum/Interception/releases/download/v1.0.1/Interception.zip") # 从 GhProxy 源下载Interception安装程序
+                if not resp.ok:
+                    log.error("Interception 驱动下载失败!")
+                else:
+                    log.info("Interception 驱动下载成功!")
+                with open(file_name,"wb") as f:
+                    f.write(resp.content)
+                # 解压命令行安装器
+                with zipfile.ZipFile(file_name, 'r') as zf:
+                    zf.extractall("./interception")
+                    log.info("解压成功")
+                exit_code = subprocess.call([tg_file_name, "/install"])
+                if exit_code == 0:
+                    shutil.rmtree("./interception")
+                    log.info("Interception 驱动安装成功!请重启电脑!")
+                else:
+                    log.error("Interception 驱动安装失败!")
+            finally:
+                log.info("Interception 初始化完成!")
     
     @overload
     def pos_offset(self, x: int, y: int) -> tuple[int, int]: ...
