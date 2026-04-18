@@ -272,7 +272,7 @@ class Battle:
                     sc = cv2.inRange(sc, 50, 255)
                     result = ocr.run(sc)
                     ocr_result = [result.txts[i] for i in range(len(result.txts))]
-                    ocr_result = "".join(ocr_result)
+                    ocr_result = "".join(ocr_result).lower()
                 except:
                     ocr_result = ""
                 if "turn" in ocr_result:
@@ -327,7 +327,7 @@ class Battle:
                     sc = cv2.inRange(sc, 50, 255)
                     result = ocr.run(sc)
                     ocr_result = [result.txts[i] for i in range(len(result.txts))]
-                    ocr_result = "".join(ocr_result)
+                    ocr_result = "".join(ocr_result).lower()
                 except:
                     ocr_result = ""
                 if (
