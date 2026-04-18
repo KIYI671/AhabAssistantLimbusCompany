@@ -4,7 +4,6 @@ from collections.abc import Callable
 
 from pynput import keyboard
 
-
 _MODIFIER_KEYS = {
     keyboard.Key.alt,
     keyboard.Key.alt_gr,
@@ -45,10 +44,7 @@ class _ExactHotKey:
 class ExactGlobalHotKeys(keyboard.Listener):
     def __init__(self, hotkeys: dict[str, Callable[[], None]], *args, **kwargs):
         self._pressed_keys: set[keyboard.Key | keyboard.KeyCode] = set()
-        self._hotkeys = [
-            _ExactHotKey(keyboard.HotKey.parse(hotkey), callback)
-            for hotkey, callback in hotkeys.items()
-        ]
+        self._hotkeys = [_ExactHotKey(keyboard.HotKey.parse(hotkey), callback) for hotkey, callback in hotkeys.items()]
         super().__init__(
             on_press=self._on_press,
             on_release=self._on_release,

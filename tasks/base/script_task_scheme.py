@@ -44,7 +44,7 @@ from tasks.daily.get_prize import get_mail_prize, get_pass_prize
 from tasks.daily.luxcavation import EXP_luxcavation, thread_luxcavation
 from tasks.mirror.mirror import Mirror
 from tasks.teams.team_formation import select_battle_team
-from utils import pic_path
+from utils.path_manager import path_manager
 from utils.utils import calculate_the_teams, get_day_of_week
 
 
@@ -295,6 +295,10 @@ def script_task() -> None | int:
         log.error(f"自动切换语言出错: {e}，使用英语尝试")
         cfg.set_value("language_in_game", "en")
 
+    if cfg.simulator and cfg.language_in_game != "en":
+        log.info("模拟器模式下强制使用英文图片与文本识别")
+        cfg.set_value("language_in_game", "en")
+
     if not cfg.simulator:
         # 低渲染比例发出警告
         if get_game_config_from_registry().get("_renderingScale", -1) == 2:
@@ -302,21 +306,14 @@ def script_task() -> None | int:
         if cfg.set_win_size == 720:
             log.warning("当前游戏分辨率为1280*720, 可能会导致识别错误或卡死, 建议设置为更高分辨率")
 
-        # 非默认ui发出警告
-        if get_game_config_from_registry().get("_duiTheme", -1) != 0:
-            log.warning("当前游戏UI为非亮色UI, 可能会导致识别错误, 建议设置为亮色(基础)UI")
-
-    if cfg.language_in_game == "zh_cn" and pic_path[0] != "zh_cn":
-        pic_path.insert(0, "zh_cn")
-    elif cfg.language_in_game == "en":
-        while pic_path[0] != "share":
-            pic_path.pop(0)
-        pic_path.insert(0, "en")
+    path_manager.initialize_paths(cfg.language_in_game)
+    auto.clear_img_cache()
+    log.info(f"初始化图片路径: {path_manager.pic_path}")
 
     if cfg.resonate_with_Ahab:
         Resonate_with_Ahab()
-    # 如果是战斗中，先处理战斗
 
+    # 如果是战斗中，先处理战斗
     get_reward = None
     if auto.click_element("battle/turn_assets.png", take_screenshot=True):
         get_reward = battle.fight()

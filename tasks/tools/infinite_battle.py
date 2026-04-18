@@ -15,7 +15,7 @@ from module.game_and_screen import screen
 from module.hotkey_listener import ExactGlobalHotKeys
 from module.logger import log
 from tasks.battle.battle import Battle
-from utils import pic_path
+from utils.path_manager import path_manager
 
 
 class BattleWorker(QThread):
@@ -55,12 +55,9 @@ class BattleWorker(QThread):
 
                 init_game()
                 self._set_win()
-                if cfg.language_in_game == "zh_cn" and pic_path[0] != "zh_cn":
-                    pic_path.insert(0, "zh_cn")
-                elif cfg.language_in_game == "en":
-                    while pic_path[0] != "share":
-                        pic_path.pop(0)
-                    pic_path.insert(0, "en")
+                path_manager.initialize_paths(cfg.language_in_game)
+                auto.clear_img_cache()
+                log.info(f"初始化图片路径: {path_manager.pic_path}")
                 self.initialized = True
                 self.initialization_complete.emit()
             except Exception as e:
