@@ -378,7 +378,9 @@ class Theme_pack_list(metaclass=SingletonMeta):
         if not self.theme_pack_weight_path.exists():
             return
 
-        for team_weight_path in sorted(self.theme_pack_weight_path.glob("theme_pack_weight_team_*.yaml"), key=lambda item: item.name):
+        for team_weight_path in sorted(
+            self.theme_pack_weight_path.glob("theme_pack_weight_team_*.yaml"), key=lambda item: item.name
+        ):
             loaded_config = self.load_config(str(team_weight_path))
             if not loaded_config:
                 continue
@@ -389,11 +391,7 @@ class Theme_pack_list(metaclass=SingletonMeta):
                 self.save_config(path=str(team_weight_path), config_data=merged_config)
 
     def get_effective_theme_pack_list(
-        self,
-        hard_switch: bool,
-        language_in_game: str,
-        team_num: int,
-        use_custom_theme_pack_weight: bool
+        self, hard_switch: bool, language_in_game: str, team_num: int, use_custom_theme_pack_weight: bool
     ) -> tuple[dict]:
         """获取当前生效的主题包名单，考虑难度、语言、队伍和是否启用自定义权重等因素"""
         setting_keys = self.build_setting_key(hard_switch, language_in_game)
@@ -413,9 +411,7 @@ class Theme_pack_list(metaclass=SingletonMeta):
         effective_list = {}
         for key in setting_keys:
             effective_list.update(loaded_data.get(key, self.config.get(key, {})))
-        log.debug(
-            f"已加载自定义权重。path={custom_path}, keys={setting_keys}, count={len(effective_list)}"
-        )
+        log.debug(f"已加载自定义权重。path={custom_path}, keys={setting_keys}, count={len(effective_list)}")
         return effective_list
 
     def _load_version(self, version_path: str) -> str:
@@ -461,10 +457,10 @@ class Theme_pack_list(metaclass=SingletonMeta):
     def save_config(self, path, config_data):
         """保存配置到指定路径，config_data是要保存的配置内容，path是保存路径"""
         config_data = self.config if config_data is None else config_data
-        
+
         # 确保父目录存在,如果不存在则自动创建
         Path(path).parent.mkdir(parents=True, exist_ok=True)
-        
+
         with open(path, "w", encoding="utf-8") as file:
             self.yaml.dump(config_data, file)
 

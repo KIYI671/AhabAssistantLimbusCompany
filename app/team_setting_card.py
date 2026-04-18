@@ -19,9 +19,8 @@ from app.base_combination import (
 )
 from app.base_tools import BaseCheckBox, BaseComboBox, BaseLabel, BaseSettingLayout
 from app.language_manager import LanguageManager
-from module.config import cfg, theme_list
-
 from app.theme_pack_setting_interface import ThemePackSettingDialog
+from module.config import cfg, theme_list
 
 
 class TeamSettingCard(QFrame):
@@ -225,7 +224,9 @@ class TeamSettingCard(QFrame):
 
         self.customize_settings_module = CustomizeSettingsModule()
         self.customize_info_module = CustomizeInfoModule(self.team_num)
-        self.customize_settings_module.select_theme_pack_weight_button.clicked.connect(self.open_theme_pack_weight_dialog)
+        self.customize_settings_module.select_theme_pack_weight_button.clicked.connect(
+            self.open_theme_pack_weight_dialog
+        )
 
         self.cancel_button = PushButton(self.tr("取消"))
         self.cancel_button.clicked.connect(self.cancel_team_setting)
@@ -348,7 +349,6 @@ class TeamSettingCard(QFrame):
         # 尝试加载队伍自定义权重文件
         custom_file_path = theme_list.build_team_weight_path(team_index)
         custom_weight_config = theme_list.load_config(custom_file_path)
-        
 
         dialog = ThemePackSettingDialog(
             self,

@@ -9,8 +9,8 @@ import numpy as np
 import psutil
 from PIL.Image import Image
 
-from utils.path_manager import path_manager
 from utils.image_utils import ImageUtils
+from utils.path_manager import path_manager
 from utils.singletonmeta import SingletonMeta
 
 from ..config import cfg
