@@ -310,10 +310,10 @@ def script_task() -> None | int:
     auto.clear_img_cache()
     log.info(f"初始化图片路径: {path_manager.pic_path}")
 
-    # 如果是战斗中，先处理战斗
     if cfg.resonate_with_Ahab:
         Resonate_with_Ahab()
 
+    # 如果是战斗中，先处理战斗
     get_reward = None
     if auto.click_element("battle/turn_assets.png", take_screenshot=True):
         get_reward = battle.fight()
