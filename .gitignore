@@ -33,3 +33,6 @@ __main_dev_temp__.py
 # 其他
 MaaFramework
 .worktrees
+
+# Interception 驱动（运行时下载）
+interception

@@ -1,5 +1,6 @@
 import random
 from time import sleep, time
+import time
 from typing import overload
 
 import pyautogui
@@ -812,10 +813,22 @@ class DriverInput(WinAbstractInput, metaclass=SingletonMeta):
 
         scale = cfg.set_win_size / 1080
         x, y = self.pos_offset(x, y)
+        target_x = x
+        target_y = y + int(300 * scale * reverse)
         interception.move_to(x, y)
         interception.mouse_down(button="left")
-        interception.move_to(x, y + int(300 * scale * reverse))
-        sleep(0.4)
+        
+        start_time = time.perf_counter()
+        duration = 0.4
+        elapsed = 0.0
+        while elapsed < duration:
+            progress = elapsed / duration
+            current_y = int(y + (target_y - y) * progress)
+            interception.move_to(x, current_y)
+            time.sleep(1/120)
+            elapsed = time.perf_counter() - start_time
+        interception.move_to(target_x, target_y)
+        
         interception.mouse_up("left")
 
         if move_back and current_mouse_position:
@@ -825,13 +838,29 @@ class DriverInput(WinAbstractInput, metaclass=SingletonMeta):
         if move_back:
             current_mouse_position = self.get_mouse_position()
         x, y = self.pos_offset(x, y)
+        
+        # 移动到起点并按下左键
         interception.move_to(x, y)
         interception.mouse_down("left")
-        interception.move_to(x + dx, y + dy)
-        if drag_time * 0.3 > 0.5:
-            sleep(drag_time * 0.3)
-        else:
-            sleep(0.5)
+        
+        # 平滑拖动到终点
+        target_x = x + dx
+        target_y = y + dy
+        start_time = time.perf_counter()
+        elapsed = 0.0
+        while elapsed < drag_time:
+            progress = elapsed / drag_time
+            current_x = int(x + (target_x - x) * progress)
+            current_y = int(y + (target_y - y) * progress)
+            interception.move_to(current_x, current_y)
+            time.sleep(1/120)
+            elapsed = time.perf_counter() - start_time
+        interception.move_to(target_x, target_y)
+        
+        # 等待按住停留时间（与 pyautogui 版本一致）
+        sleep_time = drag_time * 0.3 if drag_time * 0.3 > 0.5 else 0.5
+        time.sleep(sleep_time)
+        
         interception.mouse_up("left")
 
         if move_back and current_mouse_position:
