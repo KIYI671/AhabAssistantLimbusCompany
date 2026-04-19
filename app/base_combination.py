@@ -26,6 +26,7 @@ from PySide6.QtWidgets import (
     QGraphicsDropShadowEffect,
     QLabel,
     QPushButton,
+    QWidget,
 )
 from qfluentwidgets import (
     FlyoutViewBase,
@@ -36,6 +37,7 @@ from qfluentwidgets import (
     PopupTeachingTip,
     PrimaryPushButton,
     PrimaryPushSettingCard,
+    PrimaryToolButton,
     ProgressBar,
     PushSettingCard,
     SettingCard,
@@ -43,6 +45,7 @@ from qfluentwidgets import (
     SwitchButton,
     TeachingTipTailPosition,
     TimePicker,
+    ToolButton,
     setCustomStyleSheet,
 )
 
@@ -54,12 +57,45 @@ from app.card.messagebox_custom import (
     MessageBoxEdit,
     MessageBoxSpinbox,
 )
+from app.common.icons import OverflowIcons
 from app.language_manager import LanguageManager
 from module.font_manager import font_manager
 from module.logger import log
 from module.my_error.my_error import settingsTypeError
 from module.update.check_update import check_update
 from utils.utils import decrypt_string, encrypt_string, get_timezone
+
+
+class ToolCheckButton(ToolButton):
+    checked = Signal(bool)
+
+    def _postInit(self):
+        self.setCheckable(True)
+        self.toggled.connect(self.checked)
+        self.setChecked(False)
+        self._apply_style()
+
+    def _apply_style(self):
+        qss = """
+ToolCheckButton:checked {
+background-color: --ThemeColorPrimary;
+}
+ToolCheckButton:checked:hover {
+    background-color: --ThemeColorPrimary;
+}
+"""
+        setCustomStyleSheet(self, qss, qss)
+
+    def _drawIcon(self, icon, painter, rect, state=QIcon.Off):
+        if not self.isChecked():
+            if isinstance(icon, OverflowIcons):
+                icon.set_reverse(False)
+            return super()._drawIcon(icon, painter, rect)
+        if isinstance(icon, OverflowIcons):
+            icon.set_reverse(True)
+            super()._drawIcon(icon, painter, rect, QIcon.On)
+        else:
+            PrimaryToolButton._drawIcon(self, icon, painter, rect, QIcon.On)
 
 
 class CheckBoxWithButton(QFrame):
@@ -96,6 +132,7 @@ class CheckBoxWithLineEdit(QFrame):
         self.setObjectName(config_name)
         self.config_name = config_name
         self.hBoxLayout = QHBoxLayout(self)
+        self.hBoxLayout.setContentsMargins(0, 0, 0, 0)
         self.box = CheckBox(check_box_title, parent=self)
         self.line_edit = LineEdit(self)
         self.line_edit.setMaximumWidth(70)
@@ -242,7 +279,7 @@ class MirrorSpinBox(QFrame):
 class MirrorTeamCombination(QFrame):
     def __init__(
         self,
-        team_number,
+        team_number: int,
         check_box_name,
         check_box_title,
         check_box_icon: Union[str, QIcon, FluentIconBase, None],
@@ -286,11 +323,11 @@ class MirrorTeamCombination(QFrame):
         self.refresh_remark_name()
 
     def copy_team_settings(self):
-        setting = str(cfg.get_value(f"team{self.team_number}_setting"))
+        setting = cfg.config.teams[f"{self.team_number}"].model_dump_json()
         setting = "||AALC_TEAM_SETTING||" + setting  # 添加标识符
         setting = base64.b64encode(setting.encode("utf-8")).decode("utf-8")
         pyperclip.copy(setting)
-        bar = BaseInfoBar.success(
+        BaseInfoBar.success(
             title=QT_TRANSLATE_NOOP("BaseInfoBar", "已复制到剪切板"),
             content="",
             orient=Qt.Horizontal,
@@ -308,7 +345,7 @@ class MirrorTeamCombination(QFrame):
                 raise settingsTypeError("不是有效的AALC设置")
             setting = setting.replace("||AALC_TEAM_SETTING||", "", 1)
         except settingsTypeError:
-            bar = BaseInfoBar.error(
+            BaseInfoBar.error(
                 title=QT_TRANSLATE_NOOP("BaseInfoBar", "该设置不属于 AALC"),
                 content="",
                 orient=Qt.Horizontal,
@@ -319,7 +356,7 @@ class MirrorTeamCombination(QFrame):
             )
             return
         except Exception:
-            bar = BaseInfoBar.error(
+            BaseInfoBar.error(
                 title=QT_TRANSLATE_NOOP("BaseInfoBar", "不是有效的 AALC 设置"),
                 content="",
                 orient=Qt.Horizontal,
@@ -331,15 +368,25 @@ class MirrorTeamCombination(QFrame):
             return
 
         data: dict = cfg.yaml.load(setting)
-        from copy import deepcopy
+        from module.config import TeamSetting
 
-        from app import team_setting_template
+        try:
+            team_config = TeamSetting(**data)
+        except Exception:
+            BaseInfoBar.error(
+                title=QT_TRANSLATE_NOOP("BaseInfoBar", "导入数据失败，可能是因为设置版本过旧或过新"),
+                content="",
+                orient=Qt.Horizontal,
+                isClosable=True,
+                position=InfoBarPosition.TOP,
+                duration=500,
+                parent=self.parent().parent(),
+            )
+            return
 
-        default_config = deepcopy(team_setting_template)
-        cfg._update_config(default_config, data)
-
-        cfg.set_value(f"team{self.team_number}_setting", default_config)
-        bar = BaseInfoBar.success(
+        cfg.config.teams[f"{self.team_number}"] = team_config
+        cfg.save()
+        BaseInfoBar.success(
             title=QT_TRANSLATE_NOOP("BaseInfoBar", "已粘贴设置"),
             content="",
             orient=Qt.Horizontal,
@@ -350,17 +397,19 @@ class MirrorTeamCombination(QFrame):
         )
 
     def remark_name_changed(self, text):
-        cfg.set_value(f"team{self.team_number}_remark_name", text)
+        cfg.config.teams[f"{self.team_number}"].remark_name = text
+        cfg.save()
 
     def edit_button_clicked(self):
-        name = cfg.get_value(f"team{self.team_number}_remark_name")
+        name = cfg.config.teams[f"{self.team_number}"].remark_name
         if name is None:
             name = ""
         message_box = MessageBoxEdit(QT_TRANSLATE_NOOP("MessageBoxEdit", "设置备注名"), name, self.window())
         self.retranslateTempUi(message_box)
         if message_box.exec():
             new_name = str(message_box.getText())
-            cfg.set_value(f"team{self.team_number}_remark_name", new_name)
+            cfg.config.teams[f"{self.team_number}"].remark_name = new_name
+            cfg.save()
             self.remark_name.setText(new_name)
 
     def delete_button_clicked(self):
@@ -369,8 +418,9 @@ class MirrorTeamCombination(QFrame):
             mediator.delete_team_setting.emit(f"team_{self.team_number}")
 
     def refresh_remark_name(self):
-        name = cfg.get_value(f"team{self.team_number}_remark_name")
+        name = cfg.config.teams.get(f"{self.team_number}", None)
         if name is not None:
+            name = name.remark_name
             self.remark_name.setText(name)
 
     def retranslateUi(self):

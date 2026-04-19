@@ -1,7 +1,7 @@
 from time import sleep
 
 from module.automation import auto
-from module.config import cfg
+from module.config import TeamSetting, cfg
 from module.logger import log
 from tasks import all_sinners_name, all_sinners_name_zh, all_systems, system_cn_zh
 from tasks.base.back_init_menu import back_init_menu
@@ -11,45 +11,45 @@ from utils.image_utils import ImageUtils
 
 
 class Shop:
-    def __init__(self, team_setting: dict):
-        self.system = all_systems[team_setting["team_system"]]  # 队伍体系
-        self.sinner_team = team_setting["sinner_order"]  # 选择的罪人序列
+    def __init__(self, team_setting: TeamSetting):
+        self.system = all_systems[team_setting.team_system]  # 队伍体系
+        self.sinner_team = team_setting.sinner_order  # 选择的罪人序列
         # 获取舍弃的饰品体系列表
         self.shop_sell_list = []
         for system in list(all_systems.values()):
             if system == self.system:
                 continue
-            if team_setting[f"system_{system}"]:
+            if getattr(team_setting, f"system_{system}", False):
                 self.shop_sell_list.append(system)
-        self.fuse_switch = False if team_setting["shop_strategy"] == 0 else True  # 是否启动合成模式
-        self.fuse_aggressive_switch = True if team_setting["shop_strategy"] == 2 else False  # 是否启动激进合成模式
-        self.do_not_heal = team_setting["do_not_heal"]  # 是否不治疗
-        self.do_not_buy = team_setting["do_not_buy"]  # 是否不购买
-        self.do_not_fuse = team_setting["do_not_fuse"]  # 是否不合成
-        self.do_not_sell = team_setting["do_not_sell"]  # 是否不出售
-        self.do_not_enhance = team_setting["do_not_enhance"]  # 是否不升级
-        self.aggressive_save_systems = team_setting["aggressive_save_systems"]  # 激进合成期间保护本体系饰品
-        self.only_aggressive_fuse = team_setting["only_aggressive_fuse"]  # 是否只进行激进合成，不进行其他合成
-        self.do_not_system_fuse = team_setting["do_not_system_fuse"]  # 是否不进行体系饰品合成
-        self.only_system_fuse = team_setting["only_system_fuse"]  # 是否只进行体系饰品合成
+        self.fuse_switch = False if team_setting.shop_strategy == 0 else True  # 是否启动合成模式
+        self.fuse_aggressive_switch = True if team_setting.shop_strategy == 2 else False  # 是否启动激进合成模式
+        self.do_not_heal = team_setting.do_not_heal  # 是否不治疗
+        self.do_not_buy = team_setting.do_not_buy  # 是否不购买
+        self.do_not_fuse = team_setting.do_not_fuse  # 是否不合成
+        self.do_not_sell = team_setting.do_not_sell  # 是否不出售
+        self.do_not_enhance = team_setting.do_not_enhance  # 是否不升级
+        self.aggressive_save_systems = team_setting.aggressive_save_systems  # 激进合成期间保护本体系饰品
+        self.only_aggressive_fuse = team_setting.only_aggressive_fuse  # 是否只进行激进合成，不进行其他合成
+        self.do_not_system_fuse = team_setting.do_not_system_fuse  # 是否不进行体系饰品合成
+        self.only_system_fuse = team_setting.only_system_fuse  # 是否只进行体系饰品合成
         # 是否在合成四级后改变行动策略
-        self.after_level_IV = team_setting["after_level_IV"]
-        self.after_level_IV_select = team_setting["after_level_IV_select"]
+        self.after_level_IV = team_setting.after_level_IV
+        self.after_level_IV_select = team_setting.after_level_IV_select
         # 是否自定义商店购物策略
-        self.shopping_strategy = team_setting["shopping_strategy"]
-        self.shopping_strategy_select = team_setting["shopping_strategy_select"]
+        self.shopping_strategy = team_setting.shopping_strategy
+        self.shopping_strategy_select = team_setting.shopping_strategy_select
         # 是否启用第二体系
-        self.second_system = team_setting["second_system"]
-        self.second_system_select = all_systems[team_setting["second_system_select"]]
-        self.second_system_setting = team_setting["second_system_setting"]
-        self.second_system_action = team_setting["second_system_action"]
+        self.second_system = team_setting.second_system
+        self.second_system_select = all_systems[team_setting.second_system_select]
+        self.second_system_setting = team_setting.second_system_setting
+        self.second_system_action = team_setting.second_system_action
         # 技能替换
-        self.skill_replacement = team_setting["skill_replacement"]
-        self.skill_replacement_select = team_setting["skill_replacement_select"]
-        self.skill_replacement_mode = team_setting["skill_replacement_mode"]
-        self.ignore_shop = team_setting["ignore_shop"]  # 忽略的商店楼层
+        self.skill_replacement = team_setting.skill_replacement
+        self.skill_replacement_select = team_setting.skill_replacement_select
+        self.skill_replacement_mode = team_setting.skill_replacement_mode
+        self.ignore_shop = team_setting.ignore_shop  # 忽略的商店楼层
 
-        self.aggressive_also_enhance = team_setting["aggressive_also_enhance"]  # 激进合成期间也升级饰品
+        self.aggressive_also_enhance = team_setting.aggressive_also_enhance  # 激进合成期间也升级饰品
 
         self.fuse_IV = False
         self.fuse_second_IV = False

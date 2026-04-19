@@ -176,8 +176,6 @@ class MainWindow(FramelessWindow):
 
         self.show()
 
-        self.check_mirror_setting()
-
         # 开发模式下不检查更新
         if os.environ.get("AALC_DEV_MODE") != "1" and getattr(sys, "frozen", False):
             check_update(self, flag=True)
@@ -458,7 +456,7 @@ class MainWindow(FramelessWindow):
                 self.addSubInterface(TeamSettingCard(num), "team_setting", self.tr("队伍设置"))
                 QTimer.singleShot(0, lambda: self.pivot.setCurrentItem("team_setting"))
         except Exception as e:
-            log.error(f"【异常】switch_to_page 出错：{type(e).__name__}:{e}")
+            log.error(f"【异常】switch_to_page 出错：{type(e).__name__}:{e}", exc_info=True)
 
     def close_setting_page(self):
         try:
@@ -517,22 +515,6 @@ class MainWindow(FramelessWindow):
         x = self.width() - 100
         y = self.height() - 100
         self.progress_ring.move(x, y)
-
-    def check_mirror_setting(self):
-        for team_num in range(1, 21):
-            if not cfg.get_value(f"team{team_num}_setting"):
-                return
-            config_team_setting = cfg.get_value(f"team{team_num}_setting")
-            import copy
-
-            from app import team_setting_template
-
-            team_setting = copy.deepcopy(team_setting_template)
-            # 用配置中的值覆盖模板的同名key（仅处理模板中存在的key）
-            for key, value in config_team_setting.items():
-                if key in team_setting:  # 忽略模板中已删除的key
-                    team_setting[key] = value
-            cfg.set_value(f"team{team_num}_setting", team_setting)
 
     def set_progress_ring(self, value: int):
         self.progress_ring.show()

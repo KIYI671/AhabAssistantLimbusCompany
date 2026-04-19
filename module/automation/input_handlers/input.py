@@ -420,9 +420,10 @@ class BackgroundInput(WinAbstractInput, metaclass=SingletonMeta):
         long_positon = win32api.MAKELONG(x, y)
         if self.use_post_message:
             win32api.PostMessage(hwnd, win32con.WM_LBUTTONDOWN, 0, long_positon)
+            sleep(0.02)
         else:
             win32api.SendMessage(hwnd, win32con.WM_LBUTTONDOWN, 0, long_positon)
-        sleep(0.01)
+            sleep(0.01)
 
     def mouse_up(self, x, y):
         """鼠标左键抬起
@@ -436,9 +437,10 @@ class BackgroundInput(WinAbstractInput, metaclass=SingletonMeta):
         long_positon = win32api.MAKELONG(x, y)
         if self.use_post_message:
             win32api.PostMessage(hwnd, win32con.WM_LBUTTONUP, 0, long_positon)
+            sleep(0.02)
         else:
             win32api.SendMessage(hwnd, win32con.WM_LBUTTONUP, 0, long_positon)
-        sleep(0.01)
+            sleep(0.01)
 
     def set_mouse_pos(self, x, y, duration: float = 0):
         """移动光标位置
@@ -729,9 +731,10 @@ class WindowMoveInput(WinAbstractInput, metaclass=SingletonMeta):
         long_positon = win32api.MAKELONG(x, y)
         if self.use_post_message:
             win32api.PostMessage(hwnd, win32con.WM_LBUTTONDOWN, 0, long_positon)
+            sleep(0.02)
         else:
             win32api.SendMessage(hwnd, win32con.WM_LBUTTONDOWN, 0, long_positon)
-        sleep(0.01)
+            sleep(0.01)
 
     def mouse_up(self, x, y):
         """鼠标左键抬起
@@ -745,9 +748,10 @@ class WindowMoveInput(WinAbstractInput, metaclass=SingletonMeta):
         long_positon = win32api.MAKELONG(x, y)
         if self.use_post_message:
             win32api.PostMessage(hwnd, win32con.WM_LBUTTONUP, 0, long_positon)
+            sleep(0.02)
         else:
             win32api.SendMessage(hwnd, win32con.WM_LBUTTONUP, 0, long_positon)
-        sleep(0.01)
+            sleep(0.01)
 
     def mouse_click(self, x, y, times=1, move_back=False) -> bool:
         msg = f"点击位置:({x},{y})"

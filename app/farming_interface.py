@@ -28,6 +28,7 @@ from module.hotkey_listener import ExactGlobalHotKeys
 from module.logger import log, ui_log_dispatcher
 from tasks.base.script_task_scheme import my_script_task
 from utils.utils import check_hard_mirror_time
+from module.config import cfg, TeamSetting
 
 
 class ThenComboBox(BaseComboBox):
@@ -275,8 +276,8 @@ class FarmingInterfaceLeft(QWidget):
             # 检测是否有未配置角色选择的队伍
             teams_be_select = cfg.get_value("teams_be_select")
             for index in (i for i, t in enumerate(teams_be_select) if t is True):
-                team_setting = cfg.get_value(f"team{index + 1}_setting")
-                if team_setting["sinners_be_select"] == 0:
+                team_setting: TeamSetting = cfg.config.teams[f"{index + 1}"]
+                if team_setting.sinners_be_select == 0:
                     message = self.tr("存在未配置角色选择的队伍：TEAM_{0}")
                     mediator.warning.emit(message.format(index + 1))
                     return False
@@ -286,14 +287,14 @@ class FarmingInterfaceLeft(QWidget):
             hard = bool(cfg.hard_mirror)
             teams_be_select = cfg.get_value("teams_be_select")
             for index in (i for i, t in enumerate(teams_be_select) if t is True):
-                team_setting = cfg.get_value(f"team{index + 1}_setting")
-                if team_setting["fixed_team_use"] is False:
+                team_setting: TeamSetting = cfg.config.teams[f"{index + 1}"]
+                if team_setting.fixed_team_use is False:
                     useful = True
                     break
-                if team_setting["fixed_team_use_select"] == 1 and hard is False:
+                if team_setting.fixed_team_use_select == 1 and hard is False:
                     useful = True
                     break
-                if team_setting["fixed_team_use_select"] == 0 and hard is True:
+                if team_setting.fixed_team_use_select == 0 and hard is True:
                     useful = True
                     break
             if useful is False:

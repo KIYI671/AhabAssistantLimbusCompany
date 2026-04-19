@@ -18,7 +18,7 @@ from module.ALI import (
     get_game_config_from_registry,
 )
 from module.automation import auto
-from module.config import cfg
+from module.config import TeamSetting, cfg
 from module.decorator.decorator import begin_and_finish_time_log
 from module.game_and_screen import game_process, screen
 from module.logger import log
@@ -82,7 +82,7 @@ def onetime_thread_process():
 
 @begin_and_finish_time_log(task_name="一次镜牢")
 # 一次镜牢的过程
-def onetime_mir_process(team_setting, team_num: int):
+def onetime_mir_process(team_setting: TeamSetting, team_num: int):
     # 进行一次镜牢
     try:
         mirror_adventure = Mirror(team_setting, team_num)
@@ -214,14 +214,14 @@ def Mirror_task():
         hard = bool(cfg.hard_mirror)
         teams_be_select = cfg.get_value("teams_be_select")
         for index in (i for i, t in enumerate(teams_be_select) if t is True):
-            team_setting = cfg.get_value(f"team{index + 1}_setting")
-            if team_setting["fixed_team_use"] is False:
+            team_setting = cfg.config.teams[f"{index + 1}"]
+            if team_setting.fixed_team_use is False:
                 useful = True
                 break
-            if team_setting["fixed_team_use_select"] == 1 and hard is False:
+            if team_setting.fixed_team_use_select == 1 and hard is False:
                 useful = True
                 break
-            if team_setting["fixed_team_use_select"] == 0 and hard is True:
+            if team_setting.fixed_team_use_select == 0 and hard is True:
                 useful = True
                 break
         if useful is False:
@@ -229,11 +229,11 @@ def Mirror_task():
 
         teams_order = cfg.teams_order  # 复制一份队伍顺序
         team_num = teams_order.index(1)  # 获取序号1的队伍在队伍顺序中的位置
-        team_setting = cfg.get_value(f"team{team_num + 1}_setting")  # 获取序号1的队伍的配置
+        team_setting = cfg.config.teams[f"{team_num + 1}"]  # 获取序号1的队伍的配置
         # 如果该队伍固定了用途，且不用途符合当前情况，将序号1的队伍移动到队伍顺序的最后
-        if "fixed_team_use" in team_setting and team_setting["fixed_team_use"]:
-            if (team_setting["fixed_team_use_select"] == 0 and not cfg.hard_mirror) or (
-                team_setting["fixed_team_use_select"] == 1 and cfg.hard_mirror
+        if team_setting.fixed_team_use:
+            if (team_setting.fixed_team_use_select == 0 and not cfg.hard_mirror) or (
+                team_setting.fixed_team_use_select == 1 and cfg.hard_mirror
             ):
                 for index, value in enumerate(teams_order):
                     if value == 0:

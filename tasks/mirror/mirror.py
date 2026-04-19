@@ -6,7 +6,7 @@ import cv2
 import numpy as np
 
 from module.automation import auto
-from module.config import cfg
+from module.config import TeamSetting, cfg
 from module.decorator.decorator import begin_and_finish_time_log
 from module.logger import log
 from module.my_error.my_error import (
@@ -44,32 +44,33 @@ def to_log_with_time(msg, elapsed_time):
 
 
 class Mirror:
-    def __init__(self, team_setting: dict, team_num: int):
+    def __init__(self, team_setting: TeamSetting, team_num: int):
         self.logger = log
         self.team_order = team_num
-        self.sinner_team = team_setting["sinner_order"]  # 选择的罪人序列
-        self.team_number = team_setting["team_number"]  # 选择的编队名
+        self.sinner_team = team_setting.sinner_order  # 选择的罪人序列
+        self.team_number = team_setting.team_number  # 选择的编队名
         self.shop = Shop(team_setting)
-        self.system = all_systems[team_setting["team_system"]]  # 选择的体系
-        self.avoid_skill_3 = team_setting["avoid_skill_3"]  # 是否避免使用3技能
+        self.system = all_systems[team_setting.team_system]  # 选择的体系
+        self.avoid_skill_3 = team_setting.avoid_skill_3  # 是否避免使用3技能
         # 自选开局星光
-        self.choose_opening_bonus = team_setting["choose_opening_bonus"]
-        self.opening_bonus_order = team_setting["opening_bonus_order"]
-        self.use_starlight = team_setting["use_starlight"]
+        self.choose_opening_bonus = team_setting.choose_opening_bonus
+        self.opening_bonus_order = team_setting.opening_bonus_order
+        self.opening_bonus_level = team_setting.opening_bonus_level
+        self.use_starlight = team_setting.use_starlight
         # 自选奖励卡优先度
-        self.reward_cards = team_setting["reward_cards"]
-        self.reward_cards_select = team_setting["reward_cards_select"]
+        self.reward_cards = team_setting.reward_cards
+        self.reward_cards_select = team_setting.reward_cards_select
         # 自选开局饰品
-        self.opening_items = team_setting["opening_items"]
-        self.opening_items_select = team_setting["opening_items_select"]
-        self.opening_items_system = team_setting["opening_items_system"]
-        self.re_formation_each_floor = team_setting["re_formation_each_floor"]  # 是否每层重新配队
+        self.opening_items = team_setting.opening_items
+        self.opening_items_select = team_setting.opening_items_select
+        self.opening_items_system = team_setting.opening_items_system
+        self.re_formation_each_floor = team_setting.re_formation_each_floor  # 是否每层重新配队
         # 第二体系
-        self.second_system = team_setting["second_system"]  # 启用第二体系
-        self.second_system_select = team_setting["second_system_select"]  # 选择的第二体系
-        self.second_system_setting = team_setting["second_system_setting"]  # 第二体系策略
+        self.second_system = team_setting.second_system  # 启用第二体系
+        self.second_system_select = team_setting.second_system_select  # 选择的第二体系
+        self.second_system_setting = team_setting.second_system_setting  # 第二体系策略
 
-        self.defense_first_round = team_setting["defense_first_round"]  # 是否第一回合全员防御
+        self.defense_first_round = team_setting.defense_first_round  # 是否第一回合全员防御
 
         self.start_time = time.time()
         self.first_battle = True  # 判断是否首次进入战斗，如果是则重新配队
@@ -608,7 +609,16 @@ class Mirror:
         elapsed_time = end_time - start_time
 
         if all(self.floor_times[i] > 0 for i in range(5)):  # 判断是否完整走了五层
-            team_history = cfg.get_value(f"team{self.team_order}_history", default={})
+            team = cfg.config.teams.get(f"{self.team_order}")
+            if team:
+                team_history = {
+                    "total_mirror_time_hard": team.total_mirror_time_hard,
+                    "mirror_hard_count": team.mirror_hard_count,
+                    "total_mirror_time_normal": team.total_mirror_time_normal,
+                    "mirror_normal_count": team.mirror_normal_count,
+                }
+            else:
+                team_history = {}
 
             def calculate_time(time_list, elapsed_time, count):
                 """计算新的平均时间"""
@@ -641,8 +651,13 @@ class Mirror:
                 )
                 team_total_battle_count += 1
                 team_history["mirror_normal_count"] = team_total_battle_count
-
-            cfg.set_value(f"team{self.team_order}_history", team_history)
+            if team:
+                team.total_mirror_time_hard = team_history.get("total_mirror_time_hard", [0.0, 0.0, 0.0])
+                team.mirror_hard_count = team_history.get("mirror_hard_count", 0)
+                team.total_mirror_time_normal = team_history.get("total_mirror_time_normal", [0.0, 0.0, 0.0])
+                team.mirror_normal_count = team_history.get("mirror_normal_count", 0)
+            else:
+                log.warning(f"无法找到编队{self.team_number}的历史记录，无法更新数据")
             log.debug(team_history)
 
         try:
@@ -686,6 +701,9 @@ class Mirror:
         coins = auto.find_element("mirror/road_to_mir/dreaming_star/coins_assets.png", threshold=0.9)
         scale = cfg.set_win_size / 1440
         first_starlight = [coins[0] - 1800 * scale, coins[1] + 300 * scale]
+        first_single_plus = (first_starlight[0] - 80 * scale, first_starlight[1] + 320 * scale)
+        double_plus_offset = 80 * scale * 2
+        star_card_size = (400 * scale, 480 * scale)
 
         loop_count = 30
         auto.model = "clam"
@@ -714,23 +732,70 @@ class Mirror:
 
             if not self.choose_opening_bonus:
                 for i in range(4):
-                    auto.mouse_click(first_starlight[0] + 400 * i * scale, first_starlight[1])
+                    auto.mouse_click(first_starlight[0] + star_card_size[0] * i, first_starlight[1])
                     sleep(cfg.mouse_action_interval)
             else:
+                click_list = []
+                level_one_count = 0
+                level_two_count = 0
                 for i in range(1, 11):
                     if i in self.opening_bonus_order:
                         index = self.opening_bonus_order.index(i)
+                        click_list.append(index)
+                        if self.opening_bonus_level[index] == 1:
+                            level_one_count += 1
+                        elif self.opening_bonus_level[index] == 2:
+                            level_two_count += 1
+                if len(click_list) == level_one_count:
+                    all_click_level = 1
+                elif len(click_list) == level_two_count:
+                    all_click_level = 2
+                else:
+                    all_click_level = 0
+                if not (len(click_list) == 10 and auto.click_element("mirror/road_to_mir/select_all_stars_assets.png")):
+                    for index in click_list:
                         if index <= 4:
                             auto.mouse_click(
-                                first_starlight[0] + 400 * index * scale,
+                                first_starlight[0] + star_card_size[0] * index,
                                 first_starlight[1],
                             )
                         else:
                             auto.mouse_click(
-                                first_starlight[0] + 400 * (index - 5) * scale,
-                                first_starlight[1] + 450 * scale,
+                                first_starlight[0] + star_card_size[0] * (index - 5),
+                                first_starlight[1] + star_card_size[1],
                             )
                         sleep(cfg.mouse_action_interval)
+                if all_click_level == 1 and auto.click_element(
+                    "mirror/road_to_mir/dreaming_star/level_one_bonus_assets.png"
+                ):
+                    pass
+
+                elif all_click_level == 2 and auto.click_element(
+                    "mirror/road_to_mir/dreaming_star/level_two_bonus_assets.png"
+                ):
+                    pass
+                else:
+                    for index in click_list:
+                        if self.opening_bonus_level[index]:
+                            if index <= 4:
+                                if self.opening_bonus_level[index] == 2:
+                                    x = first_single_plus[0] + double_plus_offset + star_card_size[0] * index
+                                else:
+                                    x = first_single_plus[0] + star_card_size[0] * index
+                                auto.mouse_click(
+                                    x,
+                                    first_single_plus[1],
+                                )
+                            else:
+                                if self.opening_bonus_level[index] == 2:
+                                    x = first_single_plus[0] + double_plus_offset + star_card_size[0] * (index - 5)
+                                else:
+                                    x = first_single_plus[0] + star_card_size[0] * (index - 5)
+                                auto.mouse_click(
+                                    x,
+                                    first_single_plus[1] + star_card_size[1],
+                                )
+                            sleep(cfg.mouse_action_interval)
 
             if auto.click_element("mirror/road_to_mir/dreaming_star/dreaming_star_enter_assets.png"):
                 sleep(0.5)
