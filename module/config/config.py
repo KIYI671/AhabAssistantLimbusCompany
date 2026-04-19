@@ -202,7 +202,10 @@ class Config(metaclass=SingletonMeta):
         if config_obj is not None:
             value = getattr(config_obj, key, default)
         else:
-            value = getattr(self.config, key, default)
+            try:
+                value = getattr(self.config, key, default)
+            except:
+                value = default
         return value
 
     def set_value(self, key: str, value: Any, *, config_obj: Optional[BaseModel | dict] = None) -> None:

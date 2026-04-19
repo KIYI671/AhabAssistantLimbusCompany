@@ -171,6 +171,9 @@ class TeamSetting(BaseModel):
     remark_name: Optional[str] = None
     """队伍备注名"""
 
+    use_custom_theme_pack_weight: bool = False
+    """启用队伍自定义主题包权重"""
+
     total_mirror_time_hard: List[float] = [0.0, 0.0, 0.0]
     """困难镜牢总用时"""
 
