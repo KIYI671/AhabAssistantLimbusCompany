@@ -26,6 +26,7 @@ from PySide6.QtWidgets import (
     QGraphicsDropShadowEffect,
     QLabel,
     QPushButton,
+    QWidget,
 )
 from qfluentwidgets import (
     FlyoutViewBase,
@@ -36,6 +37,7 @@ from qfluentwidgets import (
     PopupTeachingTip,
     PrimaryPushButton,
     PrimaryPushSettingCard,
+    PrimaryToolButton,
     ProgressBar,
     PushSettingCard,
     SettingCard,
@@ -43,6 +45,7 @@ from qfluentwidgets import (
     SwitchButton,
     TeachingTipTailPosition,
     TimePicker,
+    ToolButton,
     setCustomStyleSheet,
 )
 
@@ -54,12 +57,45 @@ from app.card.messagebox_custom import (
     MessageBoxEdit,
     MessageBoxSpinbox,
 )
+from app.common.icons import OverflowIcons
 from app.language_manager import LanguageManager
 from module.font_manager import font_manager
 from module.logger import log
 from module.my_error.my_error import settingsTypeError
 from module.update.check_update import check_update
 from utils.utils import decrypt_string, encrypt_string, get_timezone
+
+
+class ToolCheckButton(ToolButton):
+    checked = Signal(bool)
+
+    def _postInit(self):
+        self.setCheckable(True)
+        self.toggled.connect(self.checked)
+        self.setChecked(False)
+        self._apply_style()
+
+    def _apply_style(self):
+        qss = """
+ToolCheckButton:checked {
+background-color: --ThemeColorPrimary;
+}
+ToolCheckButton:checked:hover {
+    background-color: --ThemeColorPrimary;
+}
+"""
+        setCustomStyleSheet(self, qss, qss)
+
+    def _drawIcon(self, icon, painter, rect, state=QIcon.Off):
+        if not self.isChecked():
+            if isinstance(icon, OverflowIcons):
+                icon.set_reverse(False)
+            return super()._drawIcon(icon, painter, rect)
+        if isinstance(icon, OverflowIcons):
+            icon.set_reverse(True)
+            super()._drawIcon(icon, painter, rect, QIcon.On)
+        else:
+            PrimaryToolButton._drawIcon(self, icon, painter, rect, QIcon.On)
 
 
 class CheckBoxWithButton(QFrame):
@@ -96,6 +132,7 @@ class CheckBoxWithLineEdit(QFrame):
         self.setObjectName(config_name)
         self.config_name = config_name
         self.hBoxLayout = QHBoxLayout(self)
+        self.hBoxLayout.setContentsMargins(0, 0, 0, 0)
         self.box = CheckBox(check_box_title, parent=self)
         self.line_edit = LineEdit(self)
         self.line_edit.setMaximumWidth(70)

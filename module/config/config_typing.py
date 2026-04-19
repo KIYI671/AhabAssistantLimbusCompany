@@ -120,6 +120,9 @@ class TeamSetting(BaseModel):
     opening_bonus_order: List[int] = [0] * 10
     """启用的开局加成顺序"""
 
+    opening_bonus_level: List[int] = [0] * 10
+    """启用的开局加成等级"""
+
     after_level_IV: bool = False
     """自定义合成四级后的操作"""
 
