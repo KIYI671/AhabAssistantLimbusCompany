@@ -20,7 +20,7 @@ from app.base_combination import (
 from app.base_tools import BaseCheckBox, BaseComboBox, BaseLabel, BaseSettingLayout
 from app.language_manager import LanguageManager
 from app.theme_pack_setting_interface import ThemePackSettingDialog
-from module.config import cfg, theme_list
+from module.config import cfg, theme_list, TeamSetting
 
 
 class TeamSettingCard(QFrame):
@@ -33,18 +33,7 @@ class TeamSettingCard(QFrame):
         self.__init_layout()
         # self.setStyleSheet("border: 1px solid black;")
 
-        if cfg.get_value(f"team{team_num}_setting"):
-            config_team_setting = cfg.get_value(f"team{team_num}_setting")
-            import copy
-
-            self.team_setting = copy.deepcopy(team_setting_template)
-            # 用配置中的值覆盖模板的同名key（仅处理模板中存在的key）
-            for key, value in config_team_setting.items():
-                if key in self.team_setting:  # 忽略模板中已删除的key
-                    self.team_setting[key] = value
-        else:
-            self.team_setting = dict(team_setting_template)
-        self.dict_keys = list(team_setting_template.keys())
+        self.team_setting = cfg.config.teams.get(f"{team_num}", TeamSetting()).model_copy(deep=True)
 
         self.read_settings()
         self.refresh_starlight_select()
@@ -296,49 +285,49 @@ class TeamSettingCard(QFrame):
     def setting_team(self, data_dict: dict):
         keys = list(data_dict.keys())[0]
         values = list(data_dict.values())[0]
-        if keys in self.dict_keys:
-            self.team_setting[keys] = values
+        if hasattr(self.team_setting, f"{keys}"):
+            setattr(self.team_setting, keys, values)
             if keys == "team_system":
                 self.foolproof(values)
         elif keys in all_sinners_name:
             sinner_index = all_sinners_name.index(keys)
             if values:
-                self.team_setting["sinners_be_select"] += 1
-                self.team_setting["chosen_sinners"][sinner_index] = 1
-                self.team_setting["sinner_order"][sinner_index] = self.team_setting["sinners_be_select"]
+                self.team_setting.sinners_be_select += 1
+                self.team_setting.chosen_sinners[sinner_index] = 1
+                self.team_setting.sinner_order[sinner_index] = self.team_setting.sinners_be_select
             else:
-                order = self.team_setting["sinner_order"][sinner_index]
-                self.team_setting["sinners_be_select"] -= 1
-                self.team_setting["chosen_sinners"][sinner_index] = 0
+                order = self.team_setting.sinner_order[sinner_index]
+                self.team_setting.sinners_be_select -= 1
+                self.team_setting.chosen_sinners[sinner_index] = 0
                 for i in range(12):
-                    if self.team_setting["sinner_order"][i] > order:
-                        self.team_setting["sinner_order"][i] -= 1
-                self.team_setting["sinner_order"][sinner_index] = 0
+                    if self.team_setting.sinner_order[i] > order:
+                        self.team_setting.sinner_order[i] -= 1
+                self.team_setting.sinner_order[sinner_index] = 0
             self.refresh_sinner_order()
         elif "starlight_" in keys:
             starlight_index = int(keys.split("_")[-1]) - 1
             if values:
-                self.team_setting["opening_bonus_select"] += 1
-                self.team_setting["opening_bonus"][starlight_index] = 1
-                self.team_setting["opening_bonus_order"][starlight_index] = self.team_setting["opening_bonus_select"]
+                self.team_setting.opening_bonus_select += 1
+                self.team_setting.opening_bonus[starlight_index] = 1
+                self.team_setting.opening_bonus_order[starlight_index] = self.team_setting.opening_bonus_select
             else:
-                order = self.team_setting["opening_bonus_order"][starlight_index]
-                self.team_setting["opening_bonus_select"] -= 1
-                self.team_setting["opening_bonus"][starlight_index] = 0
+                order = self.team_setting.opening_bonus_order[starlight_index]
+                self.team_setting.opening_bonus_select -= 1
+                self.team_setting.opening_bonus[starlight_index] = 0
                 for i in range(10):
-                    if self.team_setting["opening_bonus_order"][i] > order:
-                        self.team_setting["opening_bonus_order"][i] -= 1
-                self.team_setting["opening_bonus_order"][starlight_index] = 0
+                    if self.team_setting.opening_bonus_order[i] > order:
+                        self.team_setting.opening_bonus_order[i] -= 1
+                self.team_setting.opening_bonus_order[starlight_index] = 0
             self.refresh_starlight_order()
         elif keys in second_system_mode:
             mode_index = second_system_mode.index(keys)
-            self.team_setting["second_system_action"][mode_index] = values
+            self.team_setting.second_system_action[mode_index] = values
         elif "ignore_shop_" in keys:
             shop_index = int(keys.split("_")[-1]) - 1
-            self.team_setting["ignore_shop"][shop_index] = values
+            self.team_setting.ignore_shop[shop_index] = values
 
     def save_team_setting(self):
-        cfg.set_value(f"team{self.team_num}_setting", self.team_setting)
+        cfg.set_value(f"{self.team_num}", self.team_setting, config_obj=cfg.config.teams)
         self.cancel_team_setting()
 
     def open_theme_pack_weight_dialog(self):
@@ -358,17 +347,17 @@ class TeamSettingCard(QFrame):
         dialog.exec()
 
     def refresh_starlight_order(self):
-        opening_bonus_order = self.team_setting["opening_bonus_order"]
-        for i in range(1, 11):
-            starlight = self.findChild(CheckBoxWithLineEdit, f"starlight_{i}")
+        opening_bonus_order = self.team_setting.opening_bonus_order
+        for index, order in enumerate(opening_bonus_order):
+            starlight = self.findChild(CheckBoxWithLineEdit, f"starlight_{index + 1}")
             if starlight is not None:
-                if opening_bonus_order[i - 1] != 0:
-                    starlight.set_text(str(opening_bonus_order[i - 1]))
+                if order != 0:
+                    starlight.set_text(str(order))
                 else:
                     starlight.set_text("")
 
     def refresh_starlight_select(self):
-        opening_bonus = self.team_setting["opening_bonus"]
+        opening_bonus = self.team_setting.opening_bonus
         for i in range(1, 11):
             starlight = self.findChild(CheckBoxWithLineEdit, f"starlight_{i}")
             if starlight is not None:
@@ -380,7 +369,7 @@ class TeamSettingCard(QFrame):
         self.refresh_starlight_order()
 
     def refresh_sinner_order(self):
-        sinner_order = self.team_setting["sinner_order"]
+        sinner_order = self.team_setting.sinner_order
         for i in range(12):
             sinner = self.findChild(SinnerSelect, all_sinners_name[i])
             if sinner is not None:
@@ -390,7 +379,7 @@ class TeamSettingCard(QFrame):
                     sinner.set_text("")
 
     def read_settings(self):
-        chosen_sinners = self.team_setting["chosen_sinners"]
+        chosen_sinners = self.team_setting.chosen_sinners
         for i in range(12):
             sinner = self.findChild(SinnerSelect, all_sinners_name[i])
             if sinner is not None:
@@ -401,8 +390,8 @@ class TeamSettingCard(QFrame):
 
         self.refresh_sinner_order()
 
-        second_system_action = self.team_setting["second_system_action"]
-        ignore_shop = self.team_setting["ignore_shop"]
+        second_system_action = self.team_setting.second_system_action
+        ignore_shop = self.team_setting.ignore_shop
         for i in range(4):
             if second_system_action[i]:
                 self.findChild(BaseCheckBox, second_system_mode[i]).set_checked(True)
@@ -413,16 +402,16 @@ class TeamSettingCard(QFrame):
 
         for checkbox in all_checkbox_config_name:
             if self.findChild(BaseCheckBox, checkbox):
-                self.findChild(BaseCheckBox, checkbox).set_checked(self.team_setting[checkbox])
+                self.findChild(BaseCheckBox, checkbox).set_checked(getattr(self.team_setting, checkbox))
 
         for combobox in all_combobox_config_name:
             if self.findChild(BaseComboBox, combobox):
                 if combobox == "team_number":
-                    self.findChild(BaseComboBox, combobox).set_options(self.team_setting[combobox] - 1)
+                    self.findChild(BaseComboBox, combobox).set_options(getattr(self.team_setting, combobox) - 1)
                 else:
-                    self.findChild(BaseComboBox, combobox).set_options(self.team_setting[combobox])
+                    self.findChild(BaseComboBox, combobox).set_options(getattr(self.team_setting, combobox))
                     if combobox == "team_system":
-                        self.foolproof(self.team_setting[combobox])
+                        self.foolproof(getattr(self.team_setting, combobox))
 
     def foolproof(self, team_system):
         for checkbox in all_checkbox_config_name:
@@ -433,7 +422,7 @@ class TeamSettingCard(QFrame):
         if check_box:
             check_box.set_checked(False)
             check_box.set_box_enabled(False)
-            self.team_setting[f"system_{all_systems_name[team_system]}"] = False
+            setattr(self.team_setting, f"system_{all_systems_name[team_system]}", False)
 
     def cancel_team_setting(self):
         mediator.close_setting.emit()
@@ -864,13 +853,14 @@ class CustomizeInfoModule(QFrame):
     def retranslateUi(self):
         pass
 
-    def get_info(self, team_num):
+    def get_info(self, team_num: int):
         return_dict = {}
-        if config_team_history := cfg.get_value(f"team{team_num}_history"):
-            team_total_mirror_time_hard = config_team_history.get("total_mirror_time_hard", [0.0, 0.0, 0.0])
-            team_total_mirror_hard_count = config_team_history.get("mirror_hard_count", 0)
-            team_total_mirror_time_normal = config_team_history.get("total_mirror_time_normal", [0.0, 0.0, 0.0])
-            team_total_mirror_normal_count = config_team_history.get("mirror_normal_count", 0)
+        team = cfg.config.teams.get(f"{team_num}")
+        if team:
+            team_total_mirror_time_hard = team.total_mirror_time_hard
+            team_total_mirror_hard_count = team.mirror_hard_count
+            team_total_mirror_time_normal = team.total_mirror_time_normal
+            team_total_mirror_normal_count = team.mirror_normal_count
 
             return_dict["total_count"] = team_total_mirror_hard_count + team_total_mirror_normal_count
             return_dict["hard_count"] = team_total_mirror_hard_count
@@ -896,13 +886,12 @@ class CustomizeInfoModule(QFrame):
         return return_dict
 
     def clear_data(self):
-        if cfg.get_value(f"team{self.team_num}_history"):
-            config_team_history = cfg.get_value(f"team{self.team_num}_history")
-            config_team_history["total_mirror_time_hard"] = [0.0, 0.0, 0.0]
-            config_team_history["mirror_hard_count"] = 0
-            config_team_history["total_mirror_time_normal"] = [0.0, 0.0, 0.0]
-            config_team_history["mirror_normal_count"] = 0
-            cfg.set_value(f"team{self.team_num}_history", config_team_history)
+        if team := cfg.config.teams.get(f"{self.team_num}"):
+            team.total_mirror_time_hard = [0.0, 0.0, 0.0]
+            team.mirror_hard_count = 0
+            team.total_mirror_time_normal = [0.0, 0.0, 0.0]
+            team.mirror_normal_count = 0
+            cfg.save()
         self.fresh_data()
 
     def update_data(self):

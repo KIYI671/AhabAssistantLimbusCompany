@@ -201,7 +201,7 @@ The AALC project could not have been possible without the help of the following 
 | March7thAssistant                     | [March7thAssistant](https://github.com/moesnow/March7thAssistant)                 | Learned quite a bit from the big guy here                                                                                                   |
 | BAAS                                  | [blue_archive_auto_script](https://github.com/pur1fying/blue_archive_auto_script) | I learned the simulator-related code from the big guy here                                                                                  |
 
-The file [ChineseFont.ttf](./assets/app/fonts/ChineseFont.ttf) is sourced from [LocalizeLimbusCompany](https://github.com/LocalizeLimbusCompany/LocalizeLimbusCompany). This portion of the code adheres to the **CC BY-NC-SA 4.0** license. Copyright belongs to LocalizeLimbusCompany.
+The file [ChineseFont.ttf](./assets/app/fonts/ChineseFont.ttf) is sourced from [Sarasa-Gothic](https://github.com/be5invis/Sarasa-Gothic), This portion of the code adheres to the **SIL Open Font License** license.
 
 ### Uniform acknowledgements
 

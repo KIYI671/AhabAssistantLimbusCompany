@@ -120,7 +120,6 @@ skill_replacement_mode = {"1→3": 0, "2→3": 1, "1→2": 2}
 
 blank_team_setting = {}
 
-team_setting_template = cfg._load_default_config().get("team1_setting", {})
 
 all_sinners_name = [
     "YiSang",

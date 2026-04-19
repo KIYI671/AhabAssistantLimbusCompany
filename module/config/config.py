@@ -1,13 +1,18 @@
 import atexit
 import copy
+import shutil
 import sys
 import threading
 from pathlib import Path
+from typing import Any, Optional
 
+from pydantic import BaseModel
 from ruamel.yaml import YAML
 
 from module.logger import log
 from utils.singletonmeta import SingletonMeta
+
+from .config_typing import ConfigModel, TeamSetting
 
 
 class Config(metaclass=SingletonMeta):
@@ -26,16 +31,19 @@ class Config(metaclass=SingletonMeta):
         # 加载版本信息
         self.version = self._load_version(version_path)
         # 加载默认配置
-        self.config = self._load_default_config(example_path)
+        self.config = ConfigModel()
         # 获取用户的配置文件路径
-        self.config_path = config_path
+        self.config_path = Path(config_path)
+        # 保存含有注释的yaml文件的路径
+        self.example_path = Path(example_path)
+
         # 加载实际配置，此方法会根据实际配置覆盖默认配置
         self._load_config()
         log.debug(f"配置文件已加载，版本号：{self.version}, 配置版本: {self.get_value('config_version', '未知')}")
         # 进程退出前确保落盘
         atexit.register(self.flush)
 
-    def _old_version_cfg_upgrade(self, saved_version: int):
+    def _old_version_cfg_upgrade(self, saved_version: int, loaded_config: dict) -> None:
         """旧版本配置升级处理
 
         本身不进行保存文件操作
@@ -76,7 +84,7 @@ class Config(metaclass=SingletonMeta):
                 if team_num > 0:
                     for i in range(1, team_num + 1):
                         history_key = f"team{i}_history"
-                        history = self.get_value(history_key, {})
+                        history = loaded_config.get(history_key, {})
                         if not history:
                             continue
                         hard_time = history.get("total_mirror_time_hard", [])
@@ -90,19 +98,32 @@ class Config(metaclass=SingletonMeta):
                         history["mirror_hard_count"] = hard_count
                         history["total_mirror_time_normal"] = normal_time
                         history["mirror_normal_count"] = normal_count
-                        self.unsaved_set_value(history_key, history)
+                        loaded_config[history_key] = history
             except Exception as e:
                 log.error(f"镜牢历史数据格式转换失败，错误信息：{e}")
 
         # 旧配置类型转换
         if saved_version < 1771413380:
             if self.get_value("set_win_position", True) is True:
-                self.unsaved_set_value("set_win_position", "free")
+                loaded_config["set_win_position"] = "free"
         if saved_version < 1771965838:
             if self.get_value("background_click", True) is True:
-                self.unsaved_set_value("win_input_type", "background")
+                loaded_config["win_input_type"] = "background"
             else:
-                self.unsaved_set_value("win_input_type", "foreground")
+                loaded_config["win_input_type"] = "foreground"
+        if saved_version < 1775826004:
+            teams: dict[str, dict] = {}
+            for i in range(1, 21):
+                settings: dict | None = loaded_config.get(f"team{i}_setting", None)
+                if settings is None:
+                    continue
+                remark_name: str | None = loaded_config.get(f"team{i}_remark_name", None)
+                history: dict = loaded_config.get(f"team{i}_history", {})
+
+                settings.update(history)
+                settings["remark_name"] = remark_name
+                teams[f"{i}"] = TeamSetting(**settings).model_dump()
+            loaded_config["teams"] = teams
 
         log.info("配置升级完成")
 
@@ -114,84 +135,78 @@ class Config(metaclass=SingletonMeta):
         except FileNotFoundError:
             sys.exit("版本文件未找到")
 
-    def _load_default_config(self, example_path: str = "") -> dict:
+    def _load_default_config(self, example_path: str | Path | None = None) -> dict:
         """加载默认配置信息"""
-        if example_path == "":
+        if example_path is None:
             example_path = self.example_path
         else:
-            self.example_path = example_path
+            self.example_path = Path(example_path)
         try:
             with open(example_path, "r", encoding="utf-8") as file:
                 return self.yaml.load(file) or {}
         except FileNotFoundError:
             sys.exit("默认配置文件未找到")
 
-    def _load_config(self, path=None) -> None:
+    def _load_config(self, path: str | Path | None = None) -> None:
         """加载用户配置文件，如未找到则保存默认配置"""
+        if isinstance(path, str):
+            path = Path(path)
         path = path or self.config_path
         try:
+            if not path.exists():
+                self._save_config()
+                return
             with open(path, "r", encoding="utf-8") as file:
-                loaded_config = self.yaml.load(file)
+                shutil.copy(path, path.with_suffix(".yaml.bak"))
+                loaded_config: dict = self.yaml.load(file)
+                if loaded_config is None:
+                    log.error("读取到的设置文件为空, 请确认是否因为罕见情况丢失了数据")
+                    loaded_config = ConfigModel().model_dump()
+                if loaded_config.get("save_count", 0) >= 5:
+                    shutil.copy(path, path.with_suffix(".yaml.old"))  # 保留5次启动前的配置文件
 
-                if loaded_config:
-                    if loaded_config.get("config_version", 0) < self.get_value("config_version", 0):
-                        old_flag = True
-                    else:
-                        old_flag = False
-                    self._update_config(self.config, loaded_config)
-                    if old_flag:
-                        saved_version = loaded_config.get("config_version", 0)
-                        self.unsaved_set_value(
-                            "config_version",
-                            self._load_default_config().get("config_version", 0),
-                        )
-                        self._old_version_cfg_upgrade(saved_version)
-                    self._save_config()
+                if loaded_config.get("config_version", 0) < self.config.config_version:
+                    saved_version = loaded_config.get("config_version", 0)
+                    loaded_config["config_version"] = self.config.config_version
+                    self._old_version_cfg_upgrade(saved_version, loaded_config)
+                # 使用更新后的配置初始化 Config 对象
+                self.config = ConfigModel(**loaded_config)
+                # 成功加载后保存当前文件为备份
+                shutil.copy(path, path.with_suffix(".yaml.backup"))
+                self.config.save_count += 1
+                if self.config.save_count > 5:
+                    self.config.save_count = 0
+                self._save_config()
         except FileNotFoundError:
             self._save_config()
         except Exception as e:
+            log.error(f"配置文件{path}加载错误: {e}", exc_info=True)
             sys.exit(f"配置文件{path}加载错误: {e}")
-
-    def _update_config(self, config: dict, new_config: dict) -> None:
-        """递归更新配置信息"""
-        for key, value in new_config.items():
-            if key in config:
-                if isinstance(config[key], dict) and isinstance(value, dict):
-                    self._update_config(config[key], value)
-                else:
-                    config[key] = value
-            elif any(sub in key for sub in ("_setting", "_remark_name", "_history")):
-                config[key] = value
 
     def _save_config(self) -> None:
         """保存到配置文件（立即写盘）"""
         # 拷贝快照后在锁外写盘，避免长时间持锁
         with self._lock:
-            snapshot = copy.deepcopy(self.config)
-            path = self.config_path
-        y = YAML()
-        with open(path, "w", encoding="utf-8") as file:
-            y.dump(snapshot, file)
+            snapshot = self.config.model_dump()
+        example_yaml = self._load_default_config()
+        # 从快照更新到yaml对象，保持注释不变
+        example_yaml.update(snapshot)
 
-    def get_value(self, key, default=None):
-        """获取配置项的值，如果是可变对象，则返回其拷贝"""
-        value = self.config.get(key, default)
-        # 如果是可变对象，则返回其拷贝
-        if isinstance(value, (list, dict, set)):
-            return copy.deepcopy(value)  # 使用深拷贝确保嵌套对象安全
+        with open(self.config_path, "w", encoding="utf-8") as file:
+            self.yaml.dump(example_yaml, file)
+
+    def get_value(self, key: str, default: Any = None, *, config_obj: Optional[BaseModel] = None) -> Any:
+        """获取配置项的值, 如果是可变对象，则返回其指针"""
+        if config_obj is not None:
+            value = getattr(config_obj, key, default)
+        else:
+            value = getattr(self.config, key, default)
         return value
 
-    def set_value(self, key, value):
+    def set_value(self, key: str, value: Any, *, config_obj: Optional[BaseModel | dict] = None) -> None:
         """设置配置项的值并延迟保存"""
         with self._lock:
-            if isinstance(value, (list, dict, set)):
-                self.config[key] = copy.deepcopy(value)
-            else:
-                self.config[key] = value
-
-            # 防止 cdk 泄露
-            masked_value = "已加密" if key == "mirrorchyan_cdk" else value
-            log.debug(f"{key} change to: {masked_value}", stacklevel=2)  # 增加设置修改的信息
+            self.unsaved_set_value(key, value, config_obj=config_obj, stacklevel=3)
 
             # 安排一次延迟保存
             self._schedule_save()
@@ -210,9 +225,16 @@ class Config(metaclass=SingletonMeta):
             self._save_timer.daemon = True
             self._save_timer.start()
 
-    def request_save(self) -> None:
-        """公开方法：请求一次延迟保存（不阻塞当前线程）。"""
-        self._schedule_save()
+    def save(self, instant: bool = False) -> None:
+        """公开方法：请求一次保存
+
+        Args:
+            instant (bool): 是否立即保存（跳过延迟机制, 但会阻塞线程）
+        """
+        if instant:
+            self._save_config()
+        else:
+            self._schedule_save()
 
     def _flush_save(self) -> None:
         """定时器回调：触发一次后台写盘信号。"""
@@ -249,54 +271,84 @@ class Config(metaclass=SingletonMeta):
             # 等待下一次
             self._writer_event.clear()
 
-    def just_load_config(self, path=None) -> None:
+    def just_load_config(self, path: Optional[Path | str] = None) -> None:
         """仅加载配置文件，不保存"""
         path = path or self.config_path
         try:
             with open(path, "r", encoding="utf-8") as file:
                 loaded_config = self.yaml.load(file)
             if loaded_config:
-                self._update_config(self.config, loaded_config)
+                self.config = ConfigModel(**loaded_config)
         except FileNotFoundError:
             self._schedule_save()
         except Exception as e:
             sys.exit(f"配置文件{path}加载错误: {e}")
 
-    def unsaved_set_value(self, key, value) -> None:
+    def unsaved_set_value(
+        self, key: str, value: Any, *, config_obj: Optional[BaseModel | dict] = None, stacklevel: int = 2
+    ) -> None:
         """仅设置配置项的值 不保存"""
         if self.config is None:
             self.just_load_config()
         if isinstance(value, (list, dict, set)):
-            self.config[key] = copy.deepcopy(value)
+            value = copy.deepcopy(value)
+        if isinstance(config_obj, BaseModel):
+            setattr(config_obj, key, value)
+        elif isinstance(config_obj, dict):
+            config_obj[key] = value
         else:
-            self.config[key] = value
+            setattr(self.config, key, value)
 
         # 防止 cdk 泄露
         if key == "mirrorchyan_cdk":
             value = "已加密"
+        if config_obj:
+            if isinstance(config_obj, dict):
+                value_obj: BaseModel | None | Any = config_obj.get(key, None)
+                if isinstance(value_obj, BaseModel):
+                    cls = value_obj.__class__.__name__
+                else:
+                    cls = "None"
+                log.debug(f"{cls}::{key} change to: {value}", stacklevel=stacklevel)
+            else:
+                log.debug(f"{config_obj.__class__.__name__}::{key} change to: {value}", stacklevel=stacklevel)
+        else:
+            log.debug(f"{key} change to: {value}", stacklevel=stacklevel)  # 增加设置修改的信息
 
-        log.debug(f"{key} change to: {value}", stacklevel=2)  # 增加设置修改的信息
-
-    def unsaved_del_key(self, key) -> None:
+    def unsaved_del_key(self, key: str, *, config_obj: Optional[BaseModel | dict] = None) -> None:
         """仅删除配置项 不保存"""
         if self.config is None:
             self.just_load_config()
-        self.config.pop(key, None)
+        if isinstance(config_obj, BaseModel):
+            delattr(config_obj, key)
+        elif isinstance(config_obj, dict):
+            if key in config_obj:
+                del config_obj[key]
+        else:
+            delattr(self.config, key)
 
-    def del_key(self, key) -> None:
+    def del_key(self, key: str, *, config_obj: Optional[BaseModel | dict] = None) -> None:
         """删除配置项并保存"""
-        self._load_config()
-        self.config.pop(key, None)
+        self.unsaved_del_key(key, config_obj=config_obj)
         self._schedule_save()
 
-    def __getattr__(self, attr: str):
+    def __getitem__(self, key: str):
+        """通过键名访问配置项的值"""
+        if not hasattr(self.config, key):
+            raise KeyError(f"配置项 '{key}' 不存在")
+        return self.get_value(key)
+
+    def __setitem__(self, key: str, value: Any):
+        """通过键名设置配置项的值
+
+        **注意该方法不请求保存**"""
+        self.unsaved_set_value(key, value)
+
+    def __getattr__(self, name):
         """允许通过属性访问配置项的值"""
-        if attr in self.config:
-            value = self.config[attr]
-            if isinstance(value, (list, dict, set)):
-                return copy.deepcopy(value)
-            return value
-        raise AttributeError(f"'{type(self).__name__}' 对象没有属性 ‘{attr}'")
+        if hasattr(self.config, name):
+            return self.get_value(name)
+        raise AttributeError(f"'{type(self).__name__}' 对象没有属性 ‘{name}'")
 
 
 class Theme_pack_list(metaclass=SingletonMeta):
@@ -479,6 +531,14 @@ class Theme_pack_list(metaclass=SingletonMeta):
         else:
             self.config[key] = value
         self.save_config(path=self.theme_pack_list_path, config_data=self.config)
+
+    def __getitem__(self, key: str):
+        """通过键名访问配置项的值"""
+        return self.get_value(key)
+
+    def __setitem__(self, key: str, value: Any):
+        """通过键名设置配置项的值"""
+        self.set_value(key, value)
 
     def __getattr__(self, attr: str):
         """允许通过属性访问配置项的值"""

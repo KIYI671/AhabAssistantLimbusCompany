@@ -34,7 +34,7 @@ from app.base_tools import BaseCheckBox
 from app.common.ui_config import get_theme_aware_text_browser_qss
 from app.language_manager import SUPPORTED_GAME_LANG_NAME, LanguageManager
 from app.widget.custom_segmented_widget import CustomSegmentedWidget
-from module.config import cfg, theme_list
+from module.config import cfg, TeamSetting, theme_list
 from module.logger import log
 
 from .markdown_it_imgdiv import imgdiv_plugin, render_div_close, render_div_open
@@ -574,8 +574,7 @@ class PageMirror(PageCard):
             for i in range(1, 21):
                 if self.findChild(MirrorTeamCombination, f"team_{i}") is not None:
                     self.remove_team_card(f"team_{i}")
-            for i in range(1, 21):
-                if cfg.get_value(f"team{i}_setting") is not None:
+                if cfg.config.teams.get(f"{i}", None) is not None:
                     self.vbox_general.insertWidget(
                         self.vbox_general.count() - 1,
                         MirrorTeamCombination(i, f"the_team_{i}", f"编队{i}", None, f"team{i}_setting"),
@@ -603,17 +602,12 @@ class PageMirror(PageCard):
             finally:
                 self.page_general.setUpdatesEnabled(True)
 
-            if cfg.get_value(f"team{number}_setting") is None:
-                cfg.unsaved_set_value(f"team{number}_setting", dict(team_setting_template))
-                cfg.unsaved_set_value(f"team{number}_remark_name", None)
-                teams_be_select = cfg.get_value("teams_be_select")
-                teams_be_select.append(False)
-                teams_order = cfg.get_value("teams_order")
-                teams_order.append(0)
-                cfg.unsaved_set_value("teams_be_select", teams_be_select)
-                cfg.unsaved_set_value("teams_order", teams_order)
+            if cfg.config.teams.get(f"{number}", None) is None:
+                cfg.config.teams[f"{number}"] = TeamSetting()
+                cfg.config.teams_be_select.append(False)
+                cfg.config.teams_order.append(0)
                 theme_list.create_team_weight_config(number)
-                cfg.request_save()
+                cfg.save()
 
     def remove_team_card(self, target: str):
         try:
@@ -637,39 +631,38 @@ class PageMirror(PageCard):
             self.remove_team_card(target)
 
             number = int(target.split("_")[-1])
-            cfg.unsaved_del_key(f"team{number}_setting")
-            cfg.unsaved_del_key(f"team{number}_remark_name")
+            cfg.config.teams.pop(f"{number}", None)
 
-            teams_be_select = cfg.get_value("teams_be_select")
-            teams_be_select.pop(number - 1)
-            teams_order = cfg.get_value("teams_order")
-            teams_order.pop(number - 1)
-            cfg.unsaved_set_value("teams_be_select", teams_be_select)
-            cfg.unsaved_set_value("teams_order", teams_order)
+            cfg.config.teams_be_select.pop(number - 1)
+            cfg.config.teams_order.pop(number - 1)
             theme_list.delete_team_weight_config(number)
 
             self.refresh_team_setting_card()
-            cfg.request_save()
+            cfg.save()
 
             self.retranslateUi()
         except Exception as e:
             log.error(f"delete_team 出错：{e}")
 
     def refresh_team_setting_card(self):
-        for i in range(1, 21):
-            if cfg.get_value(f"team{i}_setting") is None and cfg.get_value(f"team{i + 1}_setting") is not None:
-                cfg.unsaved_set_value(f"team{i}_setting", cfg.get_value(f"team{i + 1}_setting"))
-                cfg.unsaved_del_key(f"team{i + 1}_setting")
-                cfg.unsaved_set_value(f"team{i}_remark_name", cfg.get_value(f"team{i + 1}_remark_name"))
-                cfg.unsaved_del_key(f"team{i + 1}_remark_name")
-                theme_list.set_team_weight_config_from_team(i, i + 1)
-                theme_list.delete_team_weight_config(i + 1)
-        cfg.request_save()
+        save_index = 1
+        sorted_indexes = sorted(cfg.config.teams.copy(), key=lambda k: int(k))
+        for index in sorted_indexes:
+            if int(index) == save_index:
+                save_index += 1
+                continue
+            cfg.config.teams[f"{save_index}"] = cfg.config.teams[f"{index}"]
+            del cfg.config.teams[f"{index}"]
+            theme_list.set_team_weight_config_from_team(i, i + 1)
+            theme_list.delete_team_weight_config(i + 1)
+            save_index += 1
+
+        cfg.save()
         self.get_setting()
 
     def refresh(self):
         mirror_teams = self.findChildren(MirrorTeamCombination)
-        teams_order = cfg.get_value("teams_order")
+        teams_order = cfg.config.teams_order
         for team in mirror_teams:
             number = team.team_number
             if teams_order[number - 1] != 0:
