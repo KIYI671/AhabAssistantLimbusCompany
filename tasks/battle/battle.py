@@ -33,7 +33,7 @@ class Battle:
         """是否由小工具初始化"""
 
     @staticmethod
-    def to_battle():
+    def to_battle(deal_with_spills: bool = True):
         loop_count = 15
         auto.model = "clam"
         click = False
@@ -46,9 +46,10 @@ class Battle:
                 or auto.find_element("battle/chaim_to_battle_assets.png")
             ):
                 click = False
-                from tasks.teams.team_formation import deal_with_spills
+                if deal_with_spills:
+                    from tasks.teams.team_formation import deal_with_spills
 
-                deal_with_spills()
+                    deal_with_spills()
             if auto.click_element("battle/normal_to_battle_assets.png"):
                 click = True
                 sleep(2)
@@ -153,6 +154,7 @@ class Battle:
         defense_all_time=False,
         defense_on_turn1=False,
         choice_event_handling=True,
+        deal_with_spills_in_battle=True,
     ):
         chance = self.INIT_CHANCE
         waiting = self._update_wait_time()
@@ -401,16 +403,20 @@ class Battle:
                     else:
                         event_chance = -1
 
-            if auto.find_element("event/perform_the_check_feature_assets.png"):
+            if (
+                choice_event_handling
+                and auto.find_element("event/perform_the_check_feature_assets.png")
+            ):
                 event_handling.decision_event_handling()
-            if auto.click_element("event/continue_assets.png"):
-                continue
-            if auto.click_element("event/proceed_assets.png"):
-                continue
-            if auto.click_element("event/commence_assets.png"):
-                continue
-            if auto.click_element("event/skip_assets.png", times=6):
-                continue
+            if choice_event_handling:
+                if auto.click_element("event/continue_assets.png"):
+                    continue
+                if auto.click_element("event/proceed_assets.png"):
+                    continue
+                if auto.click_element("event/commence_assets.png"):
+                    continue
+                if auto.click_element("event/skip_assets.png", times=6):
+                    continue
             if not self.is_tool:
                 # 点击中心以跳过播报员播报加速结算动画
                 random_number = random.randint(-10, 10)
