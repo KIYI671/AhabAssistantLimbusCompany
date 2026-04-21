@@ -107,10 +107,7 @@ class AfterCompletionActionEditor(FlyoutViewBase):
         self.button_row.addWidget(self.button_save)
         self.vbox.addLayout(self.button_row)
 
-        self.box_exit_game.setChecked(ACTION_EXIT_GAME in actions)
-        self.box_exit_emulator.setChecked(ACTION_EXIT_EMULATOR in actions)
-        self.box_exit_aalc.setChecked(ACTION_EXIT_AALC in actions)
-        self._set_power_combo(power_action)
+        self.set_state(actions, power_action)
 
         self.button_apply.clicked.connect(lambda: self._apply(False))
         self.button_save.clicked.connect(lambda: self._apply(True))
@@ -199,13 +196,11 @@ class AfterCompletionSelector(QFrame):
         self.hbox.addWidget(self.edit_button)
         self.setMinimumWidth(280)
         self._editor_dialog = None
-        self.setToolTip(self.tr(self._tool_tip_text))
 
         if cfg.get_value("keep_after_completion", False) is False:
             self._set_after_completion_config([], POWER_ACTION_NONE, persist=False)
 
         self.edit_button.clicked.connect(self._show_editor)
-        self.refresh_from_config()
         self.retranslateUi()
 
     def _summary_text(self, actions: list[str], power_action: str) -> tuple[str, str]:
