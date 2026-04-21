@@ -272,6 +272,7 @@ class BackgroundInput(WinAbstractInput, metaclass=SingletonMeta):
             self.set_mouse_pos(x, y)
             self.set_active()
             self.mouse_down(x, y)
+            sleep(0.03)
             self.mouse_up(x, y)
             # 多次点击执行很快所以暂停放到循环外
 
@@ -298,8 +299,9 @@ class BackgroundInput(WinAbstractInput, metaclass=SingletonMeta):
         self.set_active()
         self.set_mouse_pos(x, y)
         self.mouse_down(x, y)
-        self.set_mouse_pos(x, y + int(300 * scale * reverse), duration=0.4)
-        self.mouse_up(x, y)
+        end_y = y + int(300 * scale * reverse)
+        self.set_mouse_pos(x, end_y, duration=0.4)
+        self.mouse_up(x, end_y)
 
         if move_back and current_mouse_position:
             self.mouse_move(current_mouse_position)
@@ -324,7 +326,7 @@ class BackgroundInput(WinAbstractInput, metaclass=SingletonMeta):
             sleep(drag_time * 0.3)
         else:
             sleep(0.5)
-        self.mouse_up(x, y)
+        self.mouse_up(x + dx, y + dy)
 
         if move_back and current_mouse_position:
             self.mouse_move(current_mouse_position)
@@ -361,6 +363,7 @@ class BackgroundInput(WinAbstractInput, metaclass=SingletonMeta):
             self.set_mouse_pos(x, y)
             self.set_active()
             self.mouse_down(x, y)
+            sleep(0.03)
             self.mouse_up(x, y)
 
         if move_back and current_mouse_position:
@@ -560,7 +563,7 @@ class WindowMoveInput(WinAbstractInput, metaclass=SingletonMeta):
             sleep(drag_time * 0.3)
         else:
             sleep(0.5)
-        self.mouse_up(x, y)
+        self.mouse_up(x + dx, y + dy)
         screen.handle.set_window_pos(*pos)
 
     def mouse_drag_down(self, x, y, reverse=1, move_back=True) -> None:
@@ -568,8 +571,9 @@ class WindowMoveInput(WinAbstractInput, metaclass=SingletonMeta):
         self.set_active()
         pos = self._set_window_pos(x, y)
         self.mouse_down(x, y)
-        self._window_move_to(x, y + int(500 * scale * reverse), duration=0.6)
-        self.mouse_up(x, y)
+        end_y = y + int(500 * scale * reverse)
+        self._window_move_to(x, end_y, duration=0.6)
+        self.mouse_up(x, end_y)
 
         screen.handle.set_window_pos(*pos)
 

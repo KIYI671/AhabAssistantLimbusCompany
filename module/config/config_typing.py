@@ -208,8 +208,11 @@ class ConfigModel(BaseModel):
     language_in_game: str = "en"
     """游戏语言"""
 
-    after_completion: int = 0
-    """脚本结束后的操作"""
+    after_completion_actions: List[str] = []
+    """脚本结束后的前置动作（可多选）：exit_game/exit_emulator/exit_aalc"""
+
+    after_completion_power_action: str = "none"
+    """脚本结束后的最终动作（单选）：none/sleep/hibernate/lock/shutdown"""
 
     keep_after_completion: bool = False
     """是否保持脚本结束后的操作"""

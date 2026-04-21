@@ -9,6 +9,12 @@ from typing import Any, Optional
 from pydantic import BaseModel
 from ruamel.yaml import YAML
 
+from module.after_completion_types import (
+    LEGACY_AFTER_COMPLETION_TO_CONFIG,
+    POWER_ACTION_NONE,
+    serialize_after_actions,
+    serialize_power_action,
+)
 from module.logger import log
 from utils.singletonmeta import SingletonMeta
 
@@ -111,6 +117,30 @@ class Config(metaclass=SingletonMeta):
                 loaded_config["win_input_type"] = "background"
             else:
                 loaded_config["win_input_type"] = "foreground"
+        if saved_version < 1772205660:
+            # 迁移旧版结束后动作配置，按字段独立迁移，避免覆盖用户已设置的新字段
+            # 映射表统一由 module.after_completion_types 维护；config 层只负责迁移与落盘。
+            legacy_value = int(self.get_value("after_completion", 0) or 0)
+            legacy_actions, legacy_power = LEGACY_AFTER_COMPLETION_TO_CONFIG.get(
+                legacy_value, ((), POWER_ACTION_NONE)
+            )
+            migrated = False
+
+            # 仅在 actions 字段缺失或类型错误时补写
+            current_actions = self.get_value("after_completion_actions")
+            if not isinstance(current_actions, list):
+                # 配置文件保持字符串协议，不直接持久化内部 Enum。
+                loaded_config["after_completion_actions"]=serialize_after_actions(legacy_actions)
+                migrated = True
+
+            # 仅在 power_action 字段缺失或类型错误时补写（与 actions 独立判断）
+            current_power = self.get_value("after_completion_power_action")
+            if not isinstance(current_power, str):
+                loaded_config["after_completion_power_action"] = serialize_power_action(legacy_power)
+                migrated = True
+
+            if migrated:
+                log.info(f"已将旧版结束后操作配置迁移为组合动作（legacy={legacy_value}）")
         if saved_version < 1775826004:
             teams: dict[str, dict] = {}
             for i in range(1, 21):

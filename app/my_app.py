@@ -1,3 +1,4 @@
+import ctypes
 import os
 import re
 import subprocess
@@ -46,9 +47,20 @@ from app.setting_interface import SettingInterface
 from app.team_setting_card import TeamSettingCard
 from app.tools_interface import ToolsInterface
 from module.config import cfg
+from module.after_completion_types import (
+    LEGACY_AFTER_COMPLETION_TO_CONFIG,
+    POWER_ACTION_NONE,
+    normalize_after_completion_config,
+)
 from module.font_manager import font_manager
 from module.logger import log
+from module.system_actions import (
+    autodaily_exit_to_after_completion_config,
+)
 from module.update.check_update import check_update
+
+# WinRT toast / Win32 焦点切换存在异步回跳，这里保留一次延迟补偿。
+_FOREGROUND_RETRY_DELAY_MS = 600
 
 
 class Language(Enum):
@@ -290,6 +302,8 @@ class MainWindow(FramelessWindow):
         start_flag = False
         exit_flag = False
         exit_type = 0
+        parsed_actions = None
+        parsed_power_action = None
         last_cmd = ""
         # 读取输入参数
         for index, arg in enumerate(argv):
@@ -312,20 +326,10 @@ class MainWindow(FramelessWindow):
                 try:
                     if isinstance(argv[index + 1], str) and argv[index + 1].startswith("autodaily"):
                         exit_task = cfg.get_value(argv[index + 1] + "_task_exit")
-                        if exit_task[4]:
-                            exit_type = 3
-                        elif exit_task[3]:
-                            exit_type = 2
-                        elif exit_task[2]:
-                            exit_type = 1
-                        elif exit_task[0] and exit_task[1]:
-                            exit_type = 6
-                        elif exit_task[1]:
-                            exit_type = 5
-                        elif exit_task[0]:
-                            exit_type = 4
-                        else:
-                            exit_type = 0
+                        actions, power_action = autodaily_exit_to_after_completion_config(exit_task)
+                        parsed_actions = actions
+                        parsed_power_action = power_action
+                        exit_type = 0
                         autodaily_task = cfg.get_value(argv[index + 1] + "_task")
                         if autodaily_task[0]:
                             self.farming_interface.interface_left.daily_task.box.set_check_true()
@@ -345,7 +349,7 @@ class MainWindow(FramelessWindow):
                             self.farming_interface.interface_left.mirror.box.set_check_false()
                     else:
                         exit_type = int(argv[index + 1])
-                        if exit_type < 0 or exit_type > 6:
+                        if exit_type < 0 or exit_type > 8:
                             exit_type = 0
                             log.error(f'命令行参数 --exit 后输入值"{argv[index + 1]}"越界')
                 except (IndexError, ValueError):
@@ -360,7 +364,14 @@ class MainWindow(FramelessWindow):
 
         # 最终执行操作
         if exit_flag:
-            self.farming_interface.interface_left.then_combobox.combo_box.setCurrentIndex(exit_type)
+            if parsed_actions is not None and parsed_power_action is not None:
+                actions, power_action = parsed_actions, parsed_power_action
+            else:
+                # 兼容旧命令行数字参数
+                actions, power_action = normalize_after_completion_config(
+                    *LEGACY_AFTER_COMPLETION_TO_CONFIG.get(exit_type, ((), POWER_ACTION_NONE))
+                )
+            self.farming_interface.interface_left.after_completion_selector.set_from_external(actions, power_action)
 
         if start_flag:
             log.info("开始通过命令行参数启动程序")
@@ -506,6 +517,47 @@ class MainWindow(FramelessWindow):
         mediator.update_progress.connect(self.set_progress_ring)
         mediator.download_complete.connect(self.download_and_install)
         mediator.warning.connect(self.show_warning)
+        # 由任务线程发起请求、由主窗口执行前台切换，避免执行层直接耦合 UI。
+        mediator.request_focus.connect(self._force_foreground)
+
+    def _force_foreground(self) -> None:
+        """强制将 AALC 主窗口拉至前台，绕过 Windows 焦点保护。
+        执行两次（立即 + 延迟补偿），覆盖 WinRT toast 通知在异步阶段归还焦点的行为。
+        """
+        self._do_force_foreground()
+        QTimer.singleShot(_FOREGROUND_RETRY_DELAY_MS, self._do_force_foreground)
+
+    def _do_force_foreground(self) -> None:
+        if os.name != "nt":
+            return
+        if not self.isVisible():
+            self.showNormal()
+        hwnd = int(self.winId())
+        user32 = ctypes.windll.user32
+        kernel32 = ctypes.windll.kernel32
+        hwnd_fg = user32.GetForegroundWindow()
+        if hwnd_fg == 0:
+            log.debug("未获取到当前前台窗口，跳过本次焦点切换")
+            return
+        if hwnd_fg == hwnd:
+            return
+        thread_fg = user32.GetWindowThreadProcessId(hwnd_fg, None)
+        if thread_fg == 0:
+            log.debug("未获取到前台线程，跳过本次焦点切换")
+            return
+        thread_cur = kernel32.GetCurrentThreadId()
+        attached = thread_fg != thread_cur
+        if attached:
+            # 借用当前前台线程的输入队列权限，降低 SetForegroundWindow 被系统忽略的概率。
+            user32.AttachThreadInput(thread_fg, thread_cur, True)
+        try:
+            user32.BringWindowToTop(hwnd)
+            user32.SetForegroundWindow(hwnd)
+        finally:
+            if attached:
+                user32.AttachThreadInput(thread_fg, thread_cur, False)
+        self.raise_()
+        self.activateWindow()
 
     def set_ring(self):
         self.progress_ring.raise_()  # 保持最上层显示
