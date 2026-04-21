@@ -69,7 +69,6 @@ class BattleWorker(QThread):
             defense_on_turn1=self.defense_on_turn1,
             defense_all_time=self.defense,
             choice_event_handling=self.choice_event_handling,
-            deal_with_spills_in_battle=False,
         )
 
     def _set_win(self):

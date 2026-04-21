@@ -154,7 +154,6 @@ class Battle:
         defense_all_time=False,
         defense_on_turn1=False,
         choice_event_handling=True,
-        deal_with_spills_in_battle=True,
     ):
         chance = self.INIT_CHANCE
         waiting = self._update_wait_time()
