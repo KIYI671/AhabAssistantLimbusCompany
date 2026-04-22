@@ -428,7 +428,7 @@ class BaseComboBox(BaseLayout):
         self.combo_box.currentIndexChanged.disconnect(self.on_change)
         self.combo_box.addItems(items)
         self.items = items
-        if cfg.get_value(self.config_name):
+        if cfg.get_value(self.config_name) is not None:
             for i in range(self.combo_box.count()):
                 if list(items.items())[i][1] == cfg.get_value(self.config_name):
                     self.combo_box.setCurrentIndex(i)
