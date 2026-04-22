@@ -33,7 +33,7 @@ class Battle:
         """是否由小工具初始化"""
 
     @staticmethod
-    def to_battle(deal_with_spills: bool = True):
+    def to_battle():
         loop_count = 15
         auto.model = "clam"
         click = False
@@ -46,10 +46,9 @@ class Battle:
                 or auto.find_element("battle/chaim_to_battle_assets.png")
             ):
                 click = False
-                if deal_with_spills:
-                    from tasks.teams.team_formation import deal_with_spills
+                from tasks.teams.team_formation import deal_with_spills
 
-                    deal_with_spills()
+                deal_with_spills()
             if auto.click_element("battle/normal_to_battle_assets.png"):
                 click = True
                 sleep(2)
