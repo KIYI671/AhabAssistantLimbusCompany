@@ -1,12 +1,8 @@
-import os
 import platform
 import random
 from datetime import datetime
-from sys import exc_info
 from time import sleep, time
-from traceback import format_exception
 
-import win32process
 from playsound3 import playsound
 from PySide6.QtCore import QT_TRANSLATE_NOOP, QMutex, QThread
 
@@ -22,6 +18,11 @@ from module.config import TeamSetting, cfg
 from module.decorator.decorator import begin_and_finish_time_log
 from module.game_and_screen import game_process, screen
 from module.logger import log
+from module.system_actions import (
+    apply_power_keep_awake,
+    execute_after_completion,
+    get_after_completion_config,
+)
 from module.my_error.my_error import (
     backMainWinError,
     cannotOperateGameError,
@@ -95,10 +96,7 @@ def onetime_mir_process(team_setting: TeamSetting, team_num: int):
         else:
             return False
     except Exception as e:
-        msg = f"镜牢行动出错: {e}"
-        exc_traceback = "".join(format_exception(*exc_info()))
-        msg += f"\n调用栈信息:\n{exc_traceback}"
-        log.error(msg)
+        log.exception(f"镜牢行动出错: {e}")
         return False
 
 
@@ -339,7 +337,8 @@ def script_task() -> None | int:
         task()
 
     if cfg.set_reduce_miscontact and not cfg.simulator:
-        screen.reset_win()
+        # 任务已结束，这里只恢复游戏窗口样式，避免把前台重新切回游戏。
+        screen.reset_win(activate=False)
     if cfg.simulator:
         if cfg.simulator_type == 0:
             from module.automation.input_handlers.simulator.mumu_control import (
@@ -367,46 +366,18 @@ def script_task() -> None | int:
         Resonate_with_Ahab()
 
     if platform.system() == "Windows":
-        after_completion = cfg.after_completion
+        actions, power_action = get_after_completion_config()
         try:
-            if after_completion == 1:
-                os.system("rundll32.exe powrprof.dll,SetSuspendState Sleep")
-            elif after_completion == 2:
-                os.system("rundll32.exe powrprof.dll,SetSuspendState Hibernate")
-            elif after_completion == 3:
-                os.system("shutdown /s /t 30")
-            elif after_completion == 4 or after_completion == 6:
-                _, pid = win32process.GetWindowThreadProcessId(screen.handle.hwnd)
-                ret = os.system(f"taskkill /F /PID {pid}")
-                if ret == 0:
-                    log.info("成功关闭 Limbus Company")
-                elif ret == 128:
-                    log.error("错误：进程不存在")
-                elif ret == 1:
-                    log.error("错误：权限不足")
-            elif after_completion == 7:
-                if cfg.simulator_type == 0:
-                    from module.automation.input_handlers.simulator.mumu_control import (
-                        MumuControl,
-                    )
-
-                    MumuControl.connection_device.close_simulator()
-                else:
-                    log.error("错误：暂不支持退出其他模拟器进程")
-
-        except Exception as e:
-            log.error(f"脚本结束后的操作失败: {e}")
-
-        finally:
-            if after_completion in [5, 6, 8]:
-                return 0  # 正常退出信号
+            if execute_after_completion(actions, power_action):
+                return 0
+        except Exception:
+            log.exception("脚本结束后的操作失败")
 
 
 class my_script_task(QThread):
     def __init__(self):
         # 初始化，构造函数
         super().__init__()
-        self.exc_traceback = ""
         self.mutex = QMutex()
 
     def run(self):
@@ -430,11 +401,8 @@ class my_script_task(QThread):
             self.exception = e
         except Exception as e:
             self.exception = e
-            log.error(f"出现错误: {e}")
+            log.exception("脚本线程执行失败")
         finally:
-            if self.exc_traceback != "":
-                self.exc_traceback = "".join(format_exception(*exc_info()))
-                log.error(self.exc_traceback)
             self.mutex.unlock()
 
         mediator.finished_signal.emit()
@@ -444,13 +412,17 @@ class my_script_task(QThread):
         self.finished_signal.emit()"""
 
     def _run(self):
+        keep_awake_enabled = bool(cfg.get_value("experimental_keep_screen_awake", False))
         try:
+            if keep_awake_enabled:
+                apply_power_keep_awake(True)
             ret = script_task()
             if ret == 0:
                 mediator.kill_signal.emit()
+        finally:
+            if keep_awake_enabled:
+                # 先切回 AALC 再释放线程级防息屏，避免游戏仍持有前台时继续阻止息屏。
+                mediator.request_focus.emit()
+                self.msleep(800)  # 覆盖 WinRT toast 异步归还焦点（延迟约 600ms），再释放防息屏
+                apply_power_keep_awake(False)
             auto.clear_img_cache()
-        except Exception as e:
-            log.error(f"出现错误: {e}")
-            self.exc_traceback = "".join(format_exception(*exc_info()))
-            log.error(self.exc_traceback)
-            self.mutex.unlock()
