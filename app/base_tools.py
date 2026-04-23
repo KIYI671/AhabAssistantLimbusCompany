@@ -428,18 +428,22 @@ class BaseComboBox(BaseLayout):
         self.combo_box.currentIndexChanged.disconnect(self.on_change)
         self.combo_box.addItems(items)
         self.items = items
-        if cfg.get_value(self.config_name):
-            for i in range(self.combo_box.count()):
-                if list(items.items())[i][1] == cfg.get_value(self.config_name):
+        saved_value = cfg.get_value(self.config_name)
+        if saved_value is not None:
+            items_list = list(items.items())
+            for i, (_, value) in enumerate(items_list):
+                if value == saved_value:
                     self.combo_box.setCurrentIndex(i)
+                    break
         self.combo_box.currentIndexChanged.connect(self.on_change)
 
     def on_change(self, index):
+        items_list = list(self.items.items())
+        value = items_list[index][1]
         if cfg.get_value(self.config_name) is not None:
-            cfg.set_value(self.config_name, list(self.items.items())[index][1])
+            cfg.set_value(self.config_name, value)
         else:
-            data_dict = {self.config_name: list(self.items.items())[index][1]}
-            self.send_switch_signal(data_dict)
+            self.send_switch_signal({self.config_name: value})
 
     def set_options(self, index):
         self.combo_box.setCurrentIndex(index)
