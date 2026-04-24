@@ -75,7 +75,7 @@ class Mirror:
         self.start_time = time.time()
         self.first_battle = True  # 判断是否首次进入战斗，如果是则重新配队
         self.hard_switch = cfg.hard_mirror
-        self.use_custom_theme_pack_weight = team_setting["use_custom_theme_pack_weight"]  # 是否启用自定义主题包权重
+        self.use_custom_theme_pack_weight = team_setting.use_custom_theme_pack_weight  # 是否启用自定义主题包权重
         # 统计时间
         self.find_road_total_time = 0
         self.battle_total_time = 0
