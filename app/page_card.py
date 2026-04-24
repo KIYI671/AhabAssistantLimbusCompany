@@ -201,7 +201,8 @@ class PageDailyTask(PageCard):
             "use_continuous_combat_select",
             tips=QT_TRANSLATE_NOOP("BaseCheckBox", "勾选后将使用连续作战模式，设置的值为最大连续作战场次"),
         )
-        self.coutinuous_combat.combo_box.setFixedWidth(150)
+        self.coutinuous_combat.box.setFixedWidth(200)
+        self.coutinuous_combat.combo_box.setFixedWidth(100)
         self.coutinuous_combat.add_items(coutinuous_times)
 
         self.targeted_teaming_EXP = BaseCheckBox(
