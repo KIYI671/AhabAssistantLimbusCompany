@@ -182,7 +182,7 @@ def Daily_task_wrapper(get_reward=None):
         thread_times = cfg.set_thread_count
         if get_reward and get_reward == "thread":
             thread_times -= 1
-        if cfg.config.use_coutinuous_combat:
+        if cfg.config.use_continuous_combat:
             # 目前连战最多一次10把
             once_combat_count = 0
             last_combat_count = 0

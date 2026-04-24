@@ -92,7 +92,7 @@ daily_task: False # 是否进行日常本
 set_EXP_count: 1 # 设置经验本的次数
 set_thread_count: 3 # 设置纽本的次数
 daily_teams: 1 # 设置日常本使用的队伍
-use_coutinuous_combat: False # 是否使用连续作战
+use_continuous_combat: False # 是否使用连续作战
 targeted_teaming_EXP: False
 EXP_day_1_2: 1
 EXP_day_3_4: 1

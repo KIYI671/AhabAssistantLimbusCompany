@@ -195,7 +195,7 @@ class PageDailyTask(PageCard):
         )
 
         self.coutinuous_combat = BaseCheckBox(
-            "use_coutinuous_combat",
+            "use_continuous_combat",
             QT_TRANSLATE_NOOP("BaseCheckBox", "使用连续作战"),
             QT_TRANSLATE_NOOP("BaseCheckBox", "使用连续作战"),
             tips=QT_TRANSLATE_NOOP("BaseCheckBox", "勾选后将使用连续作战模式，请确保能打过连续最多10把"),
