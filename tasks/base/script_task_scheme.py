@@ -194,10 +194,7 @@ def Daily_task_wrapper(get_reward=None):
                 last_combat_count = exp_times
                 total_count = 0
             for _ in range(total_count):
-                if once_combat_count > 1:
-                    onetime_EXP_process(once_combat_count)
-                else:
-                    onetime_EXP_process()
+                onetime_EXP_process(once_combat_count)
             if last_combat_count > 0:
                 onetime_EXP_process(last_combat_count)
 
@@ -211,10 +208,7 @@ def Daily_task_wrapper(get_reward=None):
                 last_combat_count = thread_times
                 total_count = 0
             for _ in range(total_count):
-                if once_combat_count > 1:
-                    onetime_thread_process(once_combat_count)
-                else:
-                    onetime_thread_process()
+                onetime_thread_process(once_combat_count)
             if last_combat_count > 0:
                 onetime_thread_process(last_combat_count)
         else:
