@@ -409,6 +409,9 @@ class ConfigModel(BaseModel):
     use_continuous_combat: bool = False
     """是否使用连续作战"""
 
+    use_continuous_combat_select: int =0
+    """一场连续作战的最大次数"""
+
     thread_day_1: int = 1
     """周一纽本队伍"""
 

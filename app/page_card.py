@@ -28,7 +28,7 @@ from app.base_combination import (
     LabelWithSpinBox,
     MirrorSpinBox,
     MirrorTeamCombination,
-    TextProgressBar,
+    TextProgressBar, CheckBoxWithComboBox,
 )
 from app.base_tools import BaseCheckBox
 from app.common.ui_config import get_theme_aware_text_browser_qss
@@ -194,12 +194,15 @@ class PageDailyTask(PageCard):
             QT_TRANSLATE_NOOP("LabelWithComboBox", "使用编队"), "daily_teams", all_teams
         )
 
-        self.coutinuous_combat = BaseCheckBox(
+        self.coutinuous_combat = CheckBoxWithComboBox(
             "use_continuous_combat",
-            QT_TRANSLATE_NOOP("BaseCheckBox", "使用连续作战"),
-            QT_TRANSLATE_NOOP("BaseCheckBox", "使用连续作战"),
-            tips=QT_TRANSLATE_NOOP("BaseCheckBox", "勾选后将使用连续作战模式，请确保能打过连续最多10把"),
+            QT_TRANSLATE_NOOP("CheckBoxWithComboBox", "使用连续作战"),
+            None,
+            "use_continuous_combat_select",
+            tips=QT_TRANSLATE_NOOP("BaseCheckBox", "勾选后将使用连续作战模式，设置的值为最大连续作战场次"),
         )
+        self.coutinuous_combat.combo_box.setFixedWidth(150)
+        self.coutinuous_combat.add_items(coutinuous_times)
 
         self.targeted_teaming_EXP = BaseCheckBox(
             "targeted_teaming_EXP",

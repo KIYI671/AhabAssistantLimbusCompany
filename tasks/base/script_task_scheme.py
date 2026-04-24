@@ -183,13 +183,14 @@ def Daily_task_wrapper(get_reward=None):
         if get_reward and get_reward == "thread":
             thread_times -= 1
         if cfg.config.use_continuous_combat:
+            max_times = cfg.use_continuous_combat_select
             # 目前连战最多一次10把
             once_combat_count = 0
             last_combat_count = 0
-            if exp_times > 10:
-                once_combat_count = 10
-                total_count = exp_times // 10
-                last_combat_count = exp_times % 10
+            if exp_times > max_times:
+                once_combat_count = max_times
+                total_count = exp_times // max_times
+                last_combat_count = exp_times % max_times
             else:
                 last_combat_count = exp_times
                 total_count = 0
@@ -200,10 +201,10 @@ def Daily_task_wrapper(get_reward=None):
 
             once_combat_count = 0
             last_combat_count = 0
-            if thread_times > 10:
-                once_combat_count = 10
-                total_count = thread_times // 10
-                last_combat_count = thread_times % 10
+            if thread_times > max_times:
+                once_combat_count = max_times
+                total_count = thread_times // max_times
+                last_combat_count = thread_times % max_times
             else:
                 last_combat_count = thread_times
                 total_count = 0
