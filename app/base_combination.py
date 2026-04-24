@@ -168,6 +168,7 @@ class CheckBoxWithComboBox(QFrame):
         check_box_icon: Union[str, QIcon, FluentIconBase, None],
         combo_box_name,
         combo_box_width=None,
+        tips = None,
         parent=None,
     ):
         super().__init__(parent)
@@ -175,7 +176,7 @@ class CheckBoxWithComboBox(QFrame):
         self.additional_combo_box = None
         self.hBoxLayout = QHBoxLayout(self)
         self.box_text = check_box_title
-        self.box = BaseCheckBox(check_box_name, check_box_icon, check_box_title, parent=self, center=False)
+        self.box = BaseCheckBox(check_box_name, check_box_icon, check_box_title, parent=self, center=False,tips=tips)
         self.box.setFixedWidth(150)
         self.combo_box = BaseComboBox(combo_box_name, combo_box_width)
         self.combo_box.setFixedWidth(300)

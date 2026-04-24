@@ -28,7 +28,7 @@ from app.base_combination import (
     LabelWithSpinBox,
     MirrorSpinBox,
     MirrorTeamCombination,
-    TextProgressBar,
+    TextProgressBar, CheckBoxWithComboBox,
 )
 from app.base_tools import BaseCheckBox
 from app.common.ui_config import get_theme_aware_text_browser_qss
@@ -194,6 +194,16 @@ class PageDailyTask(PageCard):
             QT_TRANSLATE_NOOP("LabelWithComboBox", "使用编队"), "daily_teams", all_teams
         )
 
+        self.coutinuous_combat = CheckBoxWithComboBox(
+            "use_continuous_combat",
+            QT_TRANSLATE_NOOP("CheckBoxWithComboBox", "使用连续作战"),
+            None,
+            "use_continuous_combat_select",
+            tips=QT_TRANSLATE_NOOP("BaseCheckBox", "勾选后将使用连续作战模式，设置的值为最大连续作战场次"),
+        )
+        self.coutinuous_combat.combo_box.setFixedWidth(150)
+        self.coutinuous_combat.add_items(coutinuous_times)
+
         self.targeted_teaming_EXP = BaseCheckBox(
             "targeted_teaming_EXP",
             None,
@@ -262,6 +272,7 @@ class PageDailyTask(PageCard):
         self.vbox_general.addWidget(self.EXP_count)
         self.vbox_general.addWidget(self.thread_count)
         self.vbox_general.addWidget(self.team_select)
+        self.vbox_general.addWidget(self.coutinuous_combat)
 
         self.vbox_advanced.addWidget(self.targeted_teaming_EXP)
         self.vbox_advanced.addWidget(self.EXP_day_1_2)
@@ -282,6 +293,7 @@ class PageDailyTask(PageCard):
         self.EXP_count.retranslateUi()
         self.thread_count.retranslateUi()
         self.team_select.retranslateUi()
+        self.coutinuous_combat.retranslateUi()
         self.targeted_teaming_EXP.retranslateUi()
         self.targeted_teaming_thread.retranslateUi()
 

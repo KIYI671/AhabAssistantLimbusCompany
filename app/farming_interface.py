@@ -13,13 +13,16 @@ from qfluentwidgets import (
     PrimaryPushButton,
     PushButton,
     TextEdit,
+    ToolTipFilter,
+    ToolTipPosition,
     TransparentToolButton,
+    qconfig,
     setCustomStyleSheet,
 )
 
 from app.base_combination import *
 from app.base_tools import *
-from app.common.ui_config import get_log_text_edit_qss
+from app.common.ui_config import get_log_text_edit_qss, set_border_style
 from app.language_manager import LanguageManager
 from app.page_card import (
     PageDailyTask,
@@ -29,7 +32,6 @@ from app.page_card import (
     PageSetWindows,
 )
 from app.team_setting_card import TeamSettingCard
-from module.automation import auto
 from module.after_completion_types import (
     ACTION_EXIT_AALC,
     ACTION_EXIT_EMULATOR,
@@ -41,6 +43,8 @@ from module.after_completion_types import (
     POWER_ACTION_SLEEP,
     normalize_after_completion_config,
 )
+from module.automation import auto
+from module.config import TeamSetting, cfg
 from module.game_and_screen import screen
 from module.hotkey_listener import ExactGlobalHotKeys
 from module.logger import log, ui_log_dispatcher
@@ -50,7 +54,6 @@ from module.system_actions import (
 )
 from tasks.base.script_task_scheme import my_script_task
 from utils.utils import check_hard_mirror_time
-from module.config import cfg, TeamSetting
 
 
 class AfterCompletionActionEditor(FlyoutViewBase):
@@ -185,7 +188,7 @@ class AfterCompletionSelector(QFrame):
         )
 
         self.hbox = QHBoxLayout(self)
-        self.hbox.setContentsMargins(0, 0, 0, 0)
+        self.hbox.setContentsMargins(10, 5, 10, 5)
         self.hbox.setSpacing(8)
 
         self.summary = BodyLabel("", self)
@@ -201,8 +204,17 @@ class AfterCompletionSelector(QFrame):
         if cfg.get_value("keep_after_completion", False) is False:
             self._set_after_completion_config([], POWER_ACTION_NONE, persist=False)
 
+        self.edit_button.installEventFilter(ToolTipFilter(self))
+        self.summary.installEventFilter(ToolTipFilter(self.summary, position=ToolTipPosition.BOTTOM))
+
         self.edit_button.clicked.connect(self._show_editor)
+        self.apply_style()
         self.retranslateUi()
+
+        qconfig.themeChangedFinished.connect(self.apply_style)
+
+    def apply_style(self):
+        set_border_style(self)
 
     def _summary_text(self, actions: list[str], power_action: str) -> tuple[str, str]:
         exit_names = [self.tr(self._action_text[action]) for action in actions if action in self._action_text]
@@ -232,8 +244,7 @@ class AfterCompletionSelector(QFrame):
         if len(exit_targets) >= 3 and power_action != POWER_ACTION_NONE:
             exit_text = self.tr(self._joiner_text).join(exit_targets)
             display_text = (
-                f"{self.tr(self._exit_prefix_text)}{exit_text}\n"
-                f"{self.tr(self._after_power_text).format(power_text)}"
+                f"{self.tr(self._exit_prefix_text)}{exit_text}\n{self.tr(self._after_power_text).format(power_text)}"
             )
 
         return display_text, full_text
@@ -252,7 +263,7 @@ class AfterCompletionSelector(QFrame):
         dialog.setWindowModality(Qt.WindowModality.WindowModal)
         dialog.setAttribute(Qt.WA_DeleteOnClose, True)
         dialog_layout = QVBoxLayout(dialog)
-        dialog_layout.setContentsMargins(12, 12, 12, 12)
+        dialog_layout.setContentsMargins(0, 0, 0, 0)
         editor = AfterCompletionActionEditor(
             actions,
             power_action,

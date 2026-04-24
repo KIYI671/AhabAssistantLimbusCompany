@@ -401,16 +401,20 @@ class Battle:
                     else:
                         event_chance = -1
 
-            if auto.find_element("event/perform_the_check_feature_assets.png"):
+            if (
+                choice_event_handling
+                and auto.find_element("event/perform_the_check_feature_assets.png")
+            ):
                 event_handling.decision_event_handling()
-            if auto.click_element("event/continue_assets.png"):
-                continue
-            if auto.click_element("event/proceed_assets.png"):
-                continue
-            if auto.click_element("event/commence_assets.png"):
-                continue
-            if auto.click_element("event/skip_assets.png", times=6):
-                continue
+            if choice_event_handling:
+                if auto.click_element("event/continue_assets.png"):
+                    continue
+                if auto.click_element("event/proceed_assets.png"):
+                    continue
+                if auto.click_element("event/commence_assets.png"):
+                    continue
+                if auto.click_element("event/skip_assets.png", times=6):
+                    continue
             if not self.is_tool:
                 # 点击中心以跳过播报员播报加速结算动画
                 random_number = random.randint(-10, 10)
