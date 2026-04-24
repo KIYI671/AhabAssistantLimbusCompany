@@ -194,6 +194,13 @@ class PageDailyTask(PageCard):
             QT_TRANSLATE_NOOP("LabelWithComboBox", "使用编队"), "daily_teams", all_teams
         )
 
+        self.coutinuous_combat = BaseCheckBox(
+            "use_coutinuous_combat",
+            QT_TRANSLATE_NOOP("BaseCheckBox", "使用连续作战"),
+            QT_TRANSLATE_NOOP("BaseCheckBox", "使用连续作战"),
+            tips=QT_TRANSLATE_NOOP("BaseCheckBox", "勾选后将使用连续作战模式，请确保能打过连续最多10把"),
+        )
+
         self.targeted_teaming_EXP = BaseCheckBox(
             "targeted_teaming_EXP",
             None,
@@ -262,6 +269,7 @@ class PageDailyTask(PageCard):
         self.vbox_general.addWidget(self.EXP_count)
         self.vbox_general.addWidget(self.thread_count)
         self.vbox_general.addWidget(self.team_select)
+        self.vbox_general.addWidget(self.coutinuous_combat)
 
         self.vbox_advanced.addWidget(self.targeted_teaming_EXP)
         self.vbox_advanced.addWidget(self.EXP_day_1_2)
@@ -282,6 +290,7 @@ class PageDailyTask(PageCard):
         self.EXP_count.retranslateUi()
         self.thread_count.retranslateUi()
         self.team_select.retranslateUi()
+        self.coutinuous_combat.retranslateUi()
         self.targeted_teaming_EXP.retranslateUi()
         self.targeted_teaming_thread.retranslateUi()
 
