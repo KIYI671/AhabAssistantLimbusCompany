@@ -435,7 +435,7 @@ class my_script_task(QThread):
         finally:
             self.mutex.unlock()
 
-        mediator.finished_signal.emit()
+        mediator.script_finished.emit()
 
     """def stop(self):
         self.running=False
