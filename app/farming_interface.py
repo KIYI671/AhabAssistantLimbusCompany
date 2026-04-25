@@ -729,8 +729,9 @@ class FarmingInterfaceLeft(QWidget):
         # 连接所有可能信号
         mediator.link_start.connect(self.my_stop_shortcut)
         mediator.kill_signal.connect(self.stop_AALC)
-        # finished_signal 表示线程自然结束，不应再走开始/停止按钮的副作用逻辑。
-        mediator.finished_signal.connect(self._on_script_finished)
+        # finished_signal 目前用于命令行延迟触发开始/停止按钮逻辑。
+        mediator.finished_signal.connect(self.start_and_stop_tasks)
+        mediator.script_finished.connect(self._on_script_finished)
 
     def retranslateUi(self):
         self.set_windows.retranslateUi()

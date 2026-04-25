@@ -1111,6 +1111,13 @@ class AutoDailyView(FlyoutViewBase):
             self.exit_setting = list(self.exit_setting) + [False] * (6 - len(self.exit_setting))
         cfg.set_value(self.config_name + "_task", self.setting)
         cfg.set_value(self.config_name + "_task_exit", self.exit_setting)
+        # 关闭弹出窗
+        parent_card = self.__search_parent_class("DailySettingCard")
+        if parent_card is not None and hasattr(parent_card, "_popup"):
+            try:
+                parent_card._popup.close()
+            except Exception:
+                pass
 
     def __search_parent_class(self, class_name="DailySettingCard"):
         current = self.parentWidget()
@@ -1174,7 +1181,7 @@ class DailySettingCard(SwitchSettingCard):
         self.retranslateUi()
 
     def __show_view(self):
-        PopupTeachingTip.make(
+        self._popup = PopupTeachingTip.make(
             target=self.button,
             view=AutoDailyView(self),
             tailPosition=TeachingTipTailPosition.RIGHT,
