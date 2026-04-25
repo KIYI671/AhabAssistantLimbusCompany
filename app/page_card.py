@@ -24,17 +24,18 @@ from qfluentwidgets import (
 
 from app import *
 from app.base_combination import (
+    CheckBoxWithComboBox,
     LabelWithComboBox,
     LabelWithSpinBox,
     MirrorSpinBox,
     MirrorTeamCombination,
-    TextProgressBar, CheckBoxWithComboBox,
+    TextProgressBar,
 )
 from app.base_tools import BaseCheckBox
 from app.common.ui_config import get_theme_aware_text_browser_qss
 from app.language_manager import SUPPORTED_GAME_LANG_NAME, LanguageManager
 from app.widget.custom_segmented_widget import CustomSegmentedWidget
-from module.config import cfg, TeamSetting, theme_list
+from module.config import TeamSetting, cfg, theme_list
 from module.logger import log
 
 from .markdown_it_imgdiv import imgdiv_plugin, render_div_close, render_div_open
@@ -148,6 +149,22 @@ class PageSetWindows(PageCard):
             "mouse_action_interval",
             double=True,
         )
+        self.mouse_down_duration = LabelWithSpinBox(
+            QT_TRANSLATE_NOOP("LabelWithSpinBox", "鼠标按下持续时间"),
+            "mouse_down_duration",
+            double=True,
+            tips=QT_TRANSLATE_NOOP(
+                "LabelWithSpinBox", "仅在使用异步方法进行鼠标输入时生效，单位为秒，每次鼠标按下都会增加对应的延迟"
+            ),
+        )
+        self.use_post_message = LabelWithComboBox(
+            QT_TRANSLATE_NOOP("LabelWithComboBox", "使用异步方法进行键鼠输入"),
+            "use_post_message",
+            {
+                QT_TRANSLATE_NOOP("BaseComboBox", "是 (默认)"): True,
+                QT_TRANSLATE_NOOP("BaseComboBox", "否"): False,
+            },
+        )
 
     def __init_layout(self):
         self.vbox_general.addWidget(self.win_size)
@@ -157,6 +174,8 @@ class PageSetWindows(PageCard):
 
         self.vbox_advanced.addWidget(self.screenshot_interval)
         self.vbox_advanced.addWidget(self.mouse_action_interval)
+        self.vbox_advanced.addWidget(self.mouse_down_duration)
+        self.vbox_advanced.addWidget(self.use_post_message)
 
     def retranslateUi(self):
         self.win_size.retranslateUi()
@@ -165,6 +184,8 @@ class PageSetWindows(PageCard):
         self.language_in_game.retranslateUi()
         self.screenshot_interval.retranslateUi()
         self.mouse_action_interval.retranslateUi()
+        self.mouse_down_duration.retranslateUi()
+        self.use_post_message.retranslateUi()
 
         super().retranslateUi()
 
