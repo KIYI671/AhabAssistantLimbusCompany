@@ -119,6 +119,26 @@ skill_replacement_sinner = {
 }
 skill_replacement_mode = {"1→3": 0, "2→3": 1, "1→2": 2}
 
+refresh_count_options = {
+    "0": 0,
+    "1": 1,
+    "2": 2,
+    "3": 3,
+    "4": 4,
+    "5": 5,
+}
+
+reserve_upgrade_funds_options = {
+    "0": 0,
+    "200": 200,
+    "300": 300,
+    "400": 400,
+    "500": 500,
+    "600": 600,
+    "800": 800,
+    "1000": 1000,
+}
+
 blank_team_setting = {}
 
 
@@ -171,6 +191,9 @@ all_combobox_config_name = [
     "second_system_setting",
     "skill_replacement_select",
     "skill_replacement_mode",
+    "max_keyword_refresh",
+    "max_normal_refresh",
+    "reserve_upgrade_funds",
 ]
 
 all_checkbox_config_name = [

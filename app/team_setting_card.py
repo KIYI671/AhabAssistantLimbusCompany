@@ -573,6 +573,8 @@ class CustomizeSettingsModule(QFrame):
         self.eighth_line = QHBoxLayout(self.eighth_line_widget)
         self.ninth_line_widget = QWidget()
         self.ninth_line = QHBoxLayout(self.ninth_line_widget)
+        self.tenth_line_widget = QWidget()
+        self.tenth_line = QHBoxLayout(self.tenth_line_widget)
         self.floor_shop = QHBoxLayout()
 
     def __init_card(self):
@@ -730,6 +732,22 @@ class CustomizeSettingsModule(QFrame):
         self.floor_shop_4 = BaseCheckBox("ignore_shop_4", None, QT_TRANSLATE_NOOP("BaseCheckBox", "第四层"))
         self.floor_shop_5 = BaseCheckBox("ignore_shop_5", None, QT_TRANSLATE_NOOP("BaseCheckBox", "第五层"))
 
+        self.max_keyword_refresh = LabelWithComboBox(
+            QT_TRANSLATE_NOOP("LabelWithComboBox", "定向刷新上限"),
+            "max_keyword_refresh",
+            refresh_count_options,
+        )
+        self.max_normal_refresh = LabelWithComboBox(
+            QT_TRANSLATE_NOOP("LabelWithComboBox", "普通刷新上限"),
+            "max_normal_refresh",
+            refresh_count_options,
+        )
+        self.reserve_upgrade_funds = LabelWithComboBox(
+            QT_TRANSLATE_NOOP("LabelWithComboBox", "保留升级资金"),
+            "reserve_upgrade_funds",
+            reserve_upgrade_funds_options,
+        )
+
         self.use_custom_theme_pack_weight = BaseCheckBox(
             "use_custom_theme_pack_weight",
             None,
@@ -801,6 +819,10 @@ class CustomizeSettingsModule(QFrame):
         self.ninth_line.addWidget(self.select_theme_pack_weight_button)
         self.ninth_line.addStretch()
 
+        self.tenth_line.addWidget(self.max_keyword_refresh)
+        self.tenth_line.addWidget(self.max_normal_refresh)
+        self.tenth_line.addWidget(self.reserve_upgrade_funds)
+
         self.main_layout.addWidget(self.first_line_widget)
         self.main_layout.addWidget(self.second_line_widget)
         self.main_layout.addWidget(self.third_line_widget)
@@ -813,6 +835,7 @@ class CustomizeSettingsModule(QFrame):
         self.main_layout.addWidget(self.seventh_line_widget)
         self.main_layout.addWidget(self.eighth_line_widget)
         self.main_layout.addWidget(self.ninth_line_widget)
+        self.main_layout.addWidget(self.tenth_line_widget)
 
     def retranslateUi(self):
         self.do_not_heal.retranslateUi()
@@ -851,6 +874,9 @@ class CustomizeSettingsModule(QFrame):
         self.second_system_power_up.retranslateUi()
         self.skill_replacement.retranslateUi()
         self.ignore_shop.retranslateUi()
+        self.max_keyword_refresh.retranslateUi()
+        self.max_normal_refresh.retranslateUi()
+        self.reserve_upgrade_funds.retranslateUi()
         self.use_custom_theme_pack_weight.retranslateUi()
         self.select_theme_pack_weight_button.setText(self.tr("权重选择"))
 
