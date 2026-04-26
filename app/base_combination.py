@@ -206,7 +206,7 @@ class CheckBoxWithComboBox(QFrame):
 
 
 class LabelWithComboBox(QFrame):
-    def __init__(self, label_text, config_name, items, vbox=True, parent=None):
+    def __init__(self, label_text, config_name, items, vbox=True, parent=None,tips: str | None = None,):
         super().__init__(parent)
         self.setObjectName(config_name)
 
@@ -228,6 +228,10 @@ class LabelWithComboBox(QFrame):
         self.layout_.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.setMaximumHeight(80)
         self.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Fixed)
+
+        if tips:
+            self.setToolTip(tips)
+            self.installEventFilter(ToolTipFilter(self))
 
     def add_items(self, items):
         self.combo_box.add_items(items)

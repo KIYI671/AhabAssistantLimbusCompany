@@ -328,7 +328,7 @@ class ConfigModel(BaseModel):
     mouse_down_duration: float = 0.1
     """鼠标按下持续时间"""
 
-    use_post_message: bool = True
+    use_post_message: bool = False
     """是否使用PostMessage进行输入"""
 
     resonate_with_Ahab: bool = False
