@@ -737,19 +737,16 @@ class CustomizeSettingsModule(QFrame):
             "max_keyword_refresh",
             refresh_count_options,
         )
-        self.max_keyword_refresh.setToolTip("每次商店访问时定向刷新商品的次数上限，每刷新一次消耗300金币")
         self.max_normal_refresh = LabelWithComboBox(
             QT_TRANSLATE_NOOP("LabelWithComboBox", "普通刷新上限"),
             "max_normal_refresh",
             refresh_count_options,
         )
-        self.max_normal_refresh.setToolTip("每次商店访问时普通刷新商品的次数上限，每刷新一次消耗200金币")
         self.reserve_upgrade_funds = LabelWithComboBox(
             QT_TRANSLATE_NOOP("LabelWithComboBox", "保留升级资金"),
             "reserve_upgrade_funds",
             reserve_upgrade_funds_options,
         )
-        self.reserve_upgrade_funds.setToolTip("刷新商店时保留的最低金币数量，确保有足够资金进行饰品升级")
 
         self.use_custom_theme_pack_weight = BaseCheckBox(
             "use_custom_theme_pack_weight",
@@ -883,6 +880,10 @@ class CustomizeSettingsModule(QFrame):
         self.reserve_upgrade_funds.retranslateUi()
         self.use_custom_theme_pack_weight.retranslateUi()
         self.select_theme_pack_weight_button.setText(self.tr("权重选择"))
+
+        self.max_keyword_refresh.setToolTip(self.tr("每次商店访问时定向刷新商品的次数上限"))
+        self.max_normal_refresh.setToolTip(self.tr("每次商店访问时普通刷新商品的次数上限"))
+        self.reserve_upgrade_funds.setToolTip(self.tr("刷新商店时保留的最低金币数量，确保有足够资金进行饰品升级"))
 
 
 class CustomizeInfoModule(QFrame):
