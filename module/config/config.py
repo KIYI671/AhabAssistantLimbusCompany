@@ -148,7 +148,7 @@ class Config(metaclass=SingletonMeta):
                 if settings is None:
                     continue
                 remark_name: str | None = loaded_config.get(f"team{i}_remark_name", None)
-                history: dict = loaded_config.get(f"team{i}_history", {})
+                history: dict = loaded_config.get(f"team{i}_history", {}) or {}
 
                 settings.update(history)
                 settings["remark_name"] = remark_name
