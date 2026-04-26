@@ -184,34 +184,45 @@ def Daily_task_wrapper(get_reward=None):
             thread_times -= 1
         if cfg.config.use_continuous_combat:
             max_times = cfg.use_continuous_combat_select
-            # 目前连战最多一次10把
-            once_combat_count = 0
-            last_combat_count = 0
-            if exp_times > max_times:
-                once_combat_count = max_times
-                total_count = exp_times // max_times
-                last_combat_count = exp_times % max_times
-            else:
-                last_combat_count = exp_times
-                total_count = 0
-            for _ in range(total_count):
-                onetime_EXP_process(once_combat_count)
-            if last_combat_count > 0:
-                onetime_EXP_process(last_combat_count)
+            if max_times > 0:
+                once_combat_count = 0
+                last_combat_count = 0
+                if exp_times > max_times:
+                    once_combat_count = max_times
+                    total_count = exp_times // max_times
+                    last_combat_count = exp_times % max_times
+                else:
+                    last_combat_count = exp_times
+                    total_count = 0
+                for _ in range(total_count):
+                    auto.ensure_not_stopped()
+                    onetime_EXP_process(once_combat_count)
+                if last_combat_count > 0:
+                    auto.ensure_not_stopped()
+                    onetime_EXP_process(last_combat_count)
 
-            once_combat_count = 0
-            last_combat_count = 0
-            if thread_times > max_times:
-                once_combat_count = max_times
-                total_count = thread_times // max_times
-                last_combat_count = thread_times % max_times
+                once_combat_count = 0
+                last_combat_count = 0
+                if thread_times > max_times:
+                    once_combat_count = max_times
+                    total_count = thread_times // max_times
+                    last_combat_count = thread_times % max_times
+                else:
+                    last_combat_count = thread_times
+                    total_count = 0
+                for _ in range(total_count):
+                    auto.ensure_not_stopped()
+                    onetime_thread_process(once_combat_count)
+                if last_combat_count > 0:
+                    auto.ensure_not_stopped()
+                    onetime_thread_process(last_combat_count)
             else:
-                last_combat_count = thread_times
-                total_count = 0
-            for _ in range(total_count):
-                onetime_thread_process(once_combat_count)
-            if last_combat_count > 0:
-                onetime_thread_process(last_combat_count)
+                for i in range(exp_times):
+                    auto.ensure_not_stopped()
+                    onetime_EXP_process()
+                for i in range(thread_times):
+                    auto.ensure_not_stopped()
+                    onetime_thread_process()
         else:
             for i in range(exp_times):
                 onetime_EXP_process()
