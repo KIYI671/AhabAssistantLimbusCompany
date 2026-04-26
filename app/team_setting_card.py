@@ -822,6 +822,7 @@ class CustomizeSettingsModule(QFrame):
         self.tenth_line.addWidget(self.max_keyword_refresh)
         self.tenth_line.addWidget(self.max_normal_refresh)
         self.tenth_line.addWidget(self.reserve_upgrade_funds)
+        self.tenth_line.addStretch()
 
         self.main_layout.addWidget(self.first_line_widget)
         self.main_layout.addWidget(self.second_line_widget)
