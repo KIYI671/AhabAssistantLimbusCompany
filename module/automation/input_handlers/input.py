@@ -73,6 +73,10 @@ class WinAbstractInput(AbstractInput):
     Tips: 有特殊需求写在对应方法描述中
     """
 
+    def __init__(self) -> None:
+        super().__init__()
+        self.use_post_message = cfg.config.use_post_message
+
     def get_mouse_position(self) -> tuple[int, int]:
         """获取鼠标当前位置
 
@@ -223,9 +227,6 @@ class BackgroundInput(WinAbstractInput, metaclass=SingletonMeta):
     """基于 `pywin32` 的输入类, 支持后台操作
     \n 除了不支持滚轮事件, 其余同 `Input` 类
     """
-
-    use_post_message = True
-    """控制所有输入事件是否使用`PostMessage"""
 
     def mouse_to_blank(self, coordinate=(1, 1), move_back=True) -> None:
         """鼠标移动到空白位置，避免遮挡（然而为了避免影响用户操作，这个暂时没用）
@@ -423,7 +424,7 @@ class BackgroundInput(WinAbstractInput, metaclass=SingletonMeta):
         long_positon = win32api.MAKELONG(x, y)
         if self.use_post_message:
             win32api.PostMessage(hwnd, win32con.WM_LBUTTONDOWN, 0, long_positon)
-            sleep(0.02)
+            sleep(0.02 + cfg.config.mouse_down_duration)
         else:
             win32api.SendMessage(hwnd, win32con.WM_LBUTTONDOWN, 0, long_positon)
             sleep(0.01)
@@ -543,9 +544,6 @@ class BackgroundInput(WinAbstractInput, metaclass=SingletonMeta):
 
 class WindowMoveInput(WinAbstractInput, metaclass=SingletonMeta):
     """基于移动窗口位置改变光标相对位置的输入方式"""
-
-    use_post_message = True
-    """控制所有输入事件是否使用`PostMessage"""
 
     def mouse_to_blank(self, coordinate=(1, 1), move_back=False) -> None:
         # FIXME: 移动窗口来防止遮蔽不是一个好选择
@@ -735,7 +733,7 @@ class WindowMoveInput(WinAbstractInput, metaclass=SingletonMeta):
         long_positon = win32api.MAKELONG(x, y)
         if self.use_post_message:
             win32api.PostMessage(hwnd, win32con.WM_LBUTTONDOWN, 0, long_positon)
-            sleep(0.02)
+            sleep(0.02 + cfg.config.mouse_down_duration)
         else:
             win32api.SendMessage(hwnd, win32con.WM_LBUTTONDOWN, 0, long_positon)
             sleep(0.01)

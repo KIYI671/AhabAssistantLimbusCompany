@@ -168,7 +168,7 @@ class CheckBoxWithComboBox(QFrame):
         check_box_icon: Union[str, QIcon, FluentIconBase, None],
         combo_box_name,
         combo_box_width=None,
-        tips = None,
+        tips=None,
         parent=None,
     ):
         super().__init__(parent)
@@ -176,7 +176,7 @@ class CheckBoxWithComboBox(QFrame):
         self.additional_combo_box = None
         self.hBoxLayout = QHBoxLayout(self)
         self.box_text = check_box_title
-        self.box = BaseCheckBox(check_box_name, check_box_icon, check_box_title, parent=self, center=False,tips=tips)
+        self.box = BaseCheckBox(check_box_name, check_box_icon, check_box_title, parent=self, center=False, tips=tips)
         self.box.setFixedWidth(150)
         self.combo_box = BaseComboBox(combo_box_name, combo_box_width)
         self.combo_box.setFixedWidth(300)
@@ -206,7 +206,7 @@ class CheckBoxWithComboBox(QFrame):
 
 
 class LabelWithComboBox(QFrame):
-    def __init__(self, label_text, config_name, items, vbox=True, parent=None):
+    def __init__(self, label_text, config_name, items, vbox=True, parent=None,tips: str | None = None,):
         super().__init__(parent)
         self.setObjectName(config_name)
 
@@ -229,6 +229,10 @@ class LabelWithComboBox(QFrame):
         self.setMaximumHeight(80)
         self.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Fixed)
 
+        if tips:
+            self.setToolTip(tips)
+            self.installEventFilter(ToolTipFilter(self))
+
     def add_items(self, items):
         self.combo_box.add_items(items)
 
@@ -246,9 +250,11 @@ class LabelWithSpinBox(QFrame):
         double=False,
         min_value=0.1,
         min_step=0.01,
+        tips: str | None = None,
     ):
         super().__init__(parent)
         self.vbox_layout = QVBoxLayout(self)
+        self.tips = tips
         self.text = label_text
         self.label = BaseLabel(label_text)
         self.box = BaseSpinBox(box_name, double=double, min_value=min_value, min_step=min_step)
@@ -258,8 +264,14 @@ class LabelWithSpinBox(QFrame):
         self.setMaximumHeight(100)
         self.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Fixed)
 
+        if tips:
+            self.setToolTip(tips)
+            self.installEventFilter(ToolTipFilter(self))
+
     def retranslateUi(self):
         self.label.label.setText(self.tr(self.text))
+        if self.tips:
+            self.setToolTip(self.tr(self.tips))
 
 
 class MirrorSpinBox(QFrame):
