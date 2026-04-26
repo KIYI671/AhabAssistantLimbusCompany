@@ -128,17 +128,6 @@ refresh_count_options = {
     "5": 5,
 }
 
-reserve_upgrade_funds_options = {
-    "0": 0,
-    "200": 200,
-    "300": 300,
-    "400": 400,
-    "500": 500,
-    "600": 600,
-    "800": 800,
-    "1000": 1000,
-}
-
 blank_team_setting = {}
 
 
@@ -193,7 +182,6 @@ all_combobox_config_name = [
     "skill_replacement_mode",
     "max_keyword_refresh",
     "max_normal_refresh",
-    "reserve_upgrade_funds",
 ]
 
 all_checkbox_config_name = [

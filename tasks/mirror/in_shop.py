@@ -49,7 +49,6 @@ class Shop:
         self.skill_replacement_mode = team_setting.skill_replacement_mode
         self.max_keyword_refresh = team_setting.max_keyword_refresh
         self.max_normal_refresh = team_setting.max_normal_refresh
-        self.reserve_upgrade_funds = team_setting.reserve_upgrade_funds
         self.ignore_shop = team_setting.ignore_shop  # 忽略的商店楼层
 
         self.aggressive_also_enhance = team_setting.aggressive_also_enhance  # 激进合成期间也升级饰品
@@ -294,36 +293,36 @@ class Shop:
 
             my_remaining_money = self._get_cost()
 
-            if keyword_refresh_count < self.max_keyword_refresh:
-                if my_remaining_money < 0 or my_remaining_money - self.reserve_upgrade_funds >= 300:
-                    auto.mouse_click_blank(times=3)
-                    if auto.click_element("mirror/shop/refresh_keyword_assets.png"):
-                        sleep(1)
-                        auto.click_element(
-                            f"mirror/shop/keyword/keyword_{self.system}.png",
-                            take_screenshot=True,
-                        )
-                        auto.click_element("mirror/shop/refresh_keyword_confirm_assets.png")
-                        keyword_refresh_count += 1
-                        auto.mouse_click_blank()
-                        sleep(3)
-                        if retry() is False:
-                            raise self.RestartGame()
-                        if self.skill_replacement and self.replacement < 3:
-                            self.replacement_skill()
-                        continue
+            if my_remaining_money < 0:
+                log.warning("无法读取剩余金钱，跳过本次刷新")
+            elif keyword_refresh_count < self.max_keyword_refresh and my_remaining_money >= 300:
+                auto.mouse_click_blank(times=3)
+                if auto.click_element("mirror/shop/refresh_keyword_assets.png"):
+                    sleep(1)
+                    auto.click_element(
+                        f"mirror/shop/keyword/keyword_{self.system}.png",
+                        take_screenshot=True,
+                    )
+                    auto.click_element("mirror/shop/refresh_keyword_confirm_assets.png")
+                    keyword_refresh_count += 1
+                    auto.mouse_click_blank()
+                    sleep(3)
+                    if retry() is False:
+                        raise self.RestartGame()
+                    if self.skill_replacement and self.replacement < 3:
+                        self.replacement_skill()
+                    continue
 
-            if normal_refresh_count < self.max_normal_refresh:
-                if my_remaining_money < 0 or my_remaining_money - self.reserve_upgrade_funds >= 200:
-                    auto.mouse_click_blank(times=3)
-                    if auto.click_element("mirror/shop/refresh_assets.png"):
-                        normal_refresh_count += 1
-                        sleep(3)
-                        if retry() is False:
-                            raise self.RestartGame()
-                        if self.skill_replacement and self.replacement < 3:
-                            self.replacement_skill()
-                        continue
+            if normal_refresh_count < self.max_normal_refresh and my_remaining_money >= 200:
+                auto.mouse_click_blank(times=3)
+                if auto.click_element("mirror/shop/refresh_assets.png"):
+                    normal_refresh_count += 1
+                    sleep(3)
+                    if retry() is False:
+                        raise self.RestartGame()
+                    if self.skill_replacement and self.replacement < 3:
+                        self.replacement_skill()
+                    continue
 
             break
 

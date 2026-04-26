@@ -1455,11 +1455,6 @@ Right-click to set as permanent</translation>
         <source>每次商店访问时普通刷新商品的次数上限</source>
         <translation>Maximum number of normal refreshes per shop visit</translation>
     </message>
-    <message>
-        <location filename="../app/team_setting_card.py" line="888"/>
-        <source>刷新商店时保留的最低金币数量，确保有足够资金进行饰品升级</source>
-        <translation>Minimum gold reserve when refreshing the shop, ensuring enough funds for gift upgrades</translation>
-    </message>
 </context>
 <context>
     <name>DailySettingCard</name>
@@ -1724,11 +1719,6 @@ Right-click to set as permanent</translation>
         <location filename="../app/team_setting_card.py" line="741"/>
         <source>普通刷新上限</source>
         <translation>Normal Refresh Limit</translation>
-    </message>
-    <message>
-        <location filename="../app/team_setting_card.py" line="746"/>
-        <source>保留升级资金</source>
-        <translation>Reserve for Upgrades</translation>
     </message>
 </context>
 <context>

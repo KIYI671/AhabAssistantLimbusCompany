@@ -174,9 +174,6 @@ class TeamSetting(BaseModel):
     max_normal_refresh: int = 2
     """每次商店普通刷新最大次数"""
 
-    reserve_upgrade_funds: int = 500
-    """保留最低升级资金"""
-
     remark_name: Optional[str] = None
     """队伍备注名"""
 
