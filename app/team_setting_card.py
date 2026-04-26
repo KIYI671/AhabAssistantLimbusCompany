@@ -737,16 +737,19 @@ class CustomizeSettingsModule(QFrame):
             "max_keyword_refresh",
             refresh_count_options,
         )
+        self.max_keyword_refresh.setToolTip("每次商店访问时定向刷新商品的次数上限，每刷新一次消耗300金币")
         self.max_normal_refresh = LabelWithComboBox(
             QT_TRANSLATE_NOOP("LabelWithComboBox", "普通刷新上限"),
             "max_normal_refresh",
             refresh_count_options,
         )
+        self.max_normal_refresh.setToolTip("每次商店访问时普通刷新商品的次数上限，每刷新一次消耗200金币")
         self.reserve_upgrade_funds = LabelWithComboBox(
             QT_TRANSLATE_NOOP("LabelWithComboBox", "保留升级资金"),
             "reserve_upgrade_funds",
             reserve_upgrade_funds_options,
         )
+        self.reserve_upgrade_funds.setToolTip("刷新商店时保留的最低金币数量，确保有足够资金进行饰品升级")
 
         self.use_custom_theme_pack_weight = BaseCheckBox(
             "use_custom_theme_pack_weight",
@@ -815,13 +818,13 @@ class CustomizeSettingsModule(QFrame):
         self.floor_shop.addWidget(self.floor_shop_5)
         self.eighth_line.addLayout(self.floor_shop, Qt.AlignLeft)
 
-        self.ninth_line.addWidget(self.use_custom_theme_pack_weight)
-        self.ninth_line.addWidget(self.select_theme_pack_weight_button)
+        self.ninth_line.addWidget(self.max_keyword_refresh)
+        self.ninth_line.addWidget(self.max_normal_refresh)
+        self.ninth_line.addWidget(self.reserve_upgrade_funds)
         self.ninth_line.addStretch()
 
-        self.tenth_line.addWidget(self.max_keyword_refresh)
-        self.tenth_line.addWidget(self.max_normal_refresh)
-        self.tenth_line.addWidget(self.reserve_upgrade_funds)
+        self.tenth_line.addWidget(self.use_custom_theme_pack_weight)
+        self.tenth_line.addWidget(self.select_theme_pack_weight_button)
         self.tenth_line.addStretch()
 
         self.main_layout.addWidget(self.first_line_widget)
