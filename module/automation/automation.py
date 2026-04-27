@@ -562,7 +562,7 @@ class Automation(metaclass=SingletonMeta):
                             and default_matchVal >= threshold
                         ):
                             if path_manager.eliminate_dark_paths():
-                                log.info(f"检测到dark路径失败但default路径成功，淘汰所有dark路径，图片: {target}")
+                                log.debug(f"检测到dark路径失败但default路径成功，淘汰所有dark路径，图片: {target}")
                                 self.clear_img_cache()
                             return default_center
         except Exception as e:

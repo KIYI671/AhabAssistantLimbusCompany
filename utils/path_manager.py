@@ -30,7 +30,7 @@ class PathManager(metaclass=SingletonMeta):
             self.active_paths = ["dark/en", "dark/share", "default/en", "default/share"]
         self.is_dark_eliminated = False
 
-        log.info(f"路径管理器初始化完成，语言: {language}, 路径: {self.active_paths}")
+        log.debug(f"路径管理器初始化完成，语言: {language}, 路径: {self.active_paths}")
 
     def eliminate_dark_paths(self) -> bool:
         """淘汰所有 dark 路径。"""
@@ -43,7 +43,7 @@ class PathManager(metaclass=SingletonMeta):
 
         self.active_paths = new_active_paths
         self.is_dark_eliminated = True
-        log.info(f"淘汰所有dark路径，当前路径: {self.active_paths}")
+        log.debug(f"淘汰所有dark路径，当前路径: {self.active_paths}")
         return True
 
     @staticmethod
