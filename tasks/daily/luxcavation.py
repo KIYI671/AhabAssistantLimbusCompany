@@ -29,17 +29,21 @@ def EXP_luxcavation(combat_count: int = 1):
                         sleep(0.1)
                         if slide_bar := auto.find_element("luxcavation/continuous_combat.png", take_screenshot=True):
                             auto.mouse_drag(slide_bar[0], slide_bar[1], dx=30 * scale * (combat_count - 1))
-                    auto.mouse_click(lv[0], lv[1])
-                    sleep(1)
-                    auto.mouse_to_blank()
+
                     select_team = False
                     for _ in range(3):
-                        if auto.find_element("battle/teams_assets.png", take_screenshot=True) or auto.find_element(
-                            "home/first_prompt_assets.png",
-                            model="clam",
-                            take_screenshot=True,
-                        ):
-                            select_team = True
+                        auto.mouse_click(lv[0], lv[1])
+                        sleep(1)
+                        auto.mouse_to_blank()
+                        for _ in range(3):
+                            if auto.find_element("battle/teams_assets.png", take_screenshot=True) or auto.find_element(
+                                "home/first_prompt_assets.png",
+                                model="clam",
+                                take_screenshot=True,
+                            ):
+                                select_team = True
+                                break
+                        if select_team:
                             break
                     if select_team:
                         break
@@ -115,10 +119,24 @@ def thread_luxcavation(combat_count: int = 1):
                         ):
                             auto.mouse_drag(slide_bar[0], slide_bar[1], dx=32 * scale * (combat_count - 1))
                     for lv in level:
-                        auto.mouse_click(lv[0], lv[1])
-                        sleep(1)
-                        auto.mouse_to_blank()
-                        if auto.find_element("battle/teams_assets.png", take_screenshot=True):
+                        select_team = False
+                        for _ in range(3):
+                            auto.mouse_click(lv[0], lv[1])
+                            sleep(1)
+                            auto.mouse_to_blank()
+                            for _ in range(3):
+                                if auto.find_element(
+                                    "battle/teams_assets.png", take_screenshot=True
+                                ) or auto.find_element(
+                                    "home/first_prompt_assets.png",
+                                    model="clam",
+                                    take_screenshot=True,
+                                ):
+                                    select_team = True
+                                    break
+                            if select_team:
+                                break
+                        if select_team:
                             break
                 else:
                     # 处理下方所有关卡未解锁的情况
