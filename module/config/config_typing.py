@@ -168,10 +168,10 @@ class TeamSetting(BaseModel):
     ignore_shop: List[int] = [0] * 5
     """忽略商店楼层"""
 
-    max_keyword_refresh: int = 2
+    max_keyword_refresh: int = 1
     """每次商店定向刷新最大次数"""
 
-    max_normal_refresh: int = 2
+    max_normal_refresh: int = 1
     """每次商店普通刷新最大次数"""
 
     remark_name: Optional[str] = None
