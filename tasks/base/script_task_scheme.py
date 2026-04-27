@@ -59,7 +59,7 @@ def onetime_EXP_process(combat_count: int = 1):
     select_battle_team(team)
     if battle.to_battle() is False:
         return False
-    battle.fight()
+    battle.fight(combat_count=combat_count)
     back_init_menu()
     make_enkephalin_module()
 
