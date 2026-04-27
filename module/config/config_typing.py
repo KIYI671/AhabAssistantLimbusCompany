@@ -1,6 +1,6 @@
 from typing import List, Optional
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict, field_validator
 
 
 class TeamSetting(BaseModel):
@@ -415,7 +415,7 @@ class ConfigModel(BaseModel):
     use_continuous_combat: bool = False
     """是否使用连续作战"""
 
-    use_continuous_combat_select: int = 0
+    use_continuous_combat_select: int = 1
     """一场连续作战的最大次数"""
 
     thread_day_1: int = 1
@@ -510,3 +510,10 @@ class ConfigModel(BaseModel):
 
     teams: dict[str, TeamSetting] = {"1": TeamSetting()}
     """队伍设置"""
+
+    @field_validator("use_continuous_combat_select")
+    @classmethod
+    def _coerce_continuous_combat_select(cls, v: int) -> int:
+        if v < 1:
+            return 1
+        return v

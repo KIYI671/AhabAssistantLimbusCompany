@@ -172,6 +172,31 @@ def Resonate_with_Ahab():
     playsound(f"assets/audio/This_is_all_your_fault_{random_number}.mp3", block=False)
 
 
+def _batch_combat(process_fn, times, max_times):
+    """按 max_times 分批执行战斗"""
+    if times <= 0:
+        return
+    if times > max_times:
+        once = max_times
+        total = times // max_times
+        last = times % max_times
+    else:
+        once = times
+        total = 0
+        last = times
+    for _ in range(total):
+        process_fn(once)
+    if last > 0:
+        process_fn(last)
+
+
+def _single_combat_run(exp_times, thread_times):
+    for _ in range(exp_times):
+        onetime_EXP_process()
+    for _ in range(thread_times):
+        onetime_thread_process()
+
+
 def Daily_task_wrapper(get_reward=None):
     def wrapper():
         back_init_menu()
@@ -182,41 +207,12 @@ def Daily_task_wrapper(get_reward=None):
         thread_times = cfg.set_thread_count
         if get_reward and get_reward == "thread":
             thread_times -= 1
-        if cfg.config.use_continuous_combat:
+        if cfg.config.use_continuous_combat and cfg.use_continuous_combat_select > 0:
             max_times = cfg.use_continuous_combat_select
-            # 目前连战最多一次10把
-            once_combat_count = 0
-            last_combat_count = 0
-            if exp_times > max_times:
-                once_combat_count = max_times
-                total_count = exp_times // max_times
-                last_combat_count = exp_times % max_times
-            else:
-                last_combat_count = exp_times
-                total_count = 0
-            for _ in range(total_count):
-                onetime_EXP_process(once_combat_count)
-            if last_combat_count > 0:
-                onetime_EXP_process(last_combat_count)
-
-            once_combat_count = 0
-            last_combat_count = 0
-            if thread_times > max_times:
-                once_combat_count = max_times
-                total_count = thread_times // max_times
-                last_combat_count = thread_times % max_times
-            else:
-                last_combat_count = thread_times
-                total_count = 0
-            for _ in range(total_count):
-                onetime_thread_process(once_combat_count)
-            if last_combat_count > 0:
-                onetime_thread_process(last_combat_count)
+            _batch_combat(onetime_EXP_process, exp_times, max_times)
+            _batch_combat(onetime_thread_process, thread_times, max_times)
         else:
-            for i in range(exp_times):
-                onetime_EXP_process()
-            for i in range(thread_times):
-                onetime_thread_process()
+            _single_combat_run(exp_times, thread_times)
 
     return wrapper
 
