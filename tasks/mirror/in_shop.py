@@ -47,6 +47,8 @@ class Shop:
         self.skill_replacement = team_setting.skill_replacement
         self.skill_replacement_select = team_setting.skill_replacement_select
         self.skill_replacement_mode = team_setting.skill_replacement_mode
+        self.max_keyword_refresh = team_setting.max_keyword_refresh
+        self.max_normal_refresh = team_setting.max_normal_refresh
         self.ignore_shop = team_setting.ignore_shop  # 忽略的商店楼层
 
         self.aggressive_also_enhance = team_setting.aggressive_also_enhance  # 激进合成期间也升级饰品
@@ -137,8 +139,8 @@ class Shop:
             return new_points
 
         log.debug("开始执行饰品购买模块")
-        refresh = False
-        refresh_keyword = False
+        keyword_refresh_count = 0
+        normal_refresh_count = 0
         complete_count = 0
         while True:
             # 自动截图
@@ -290,23 +292,10 @@ class Shop:
                 raise self.RestartGame()
 
             my_remaining_money = self._get_cost()
-            if my_remaining_money >= 300:
-                refresh_keyword = True
-            if my_remaining_money >= 200:
-                refresh = True
 
-            if refresh is False:
-                auto.mouse_click_blank(times=3)
-                if auto.click_element("mirror/shop/refresh_assets.png"):
-                    refresh = True
-                    sleep(3)
-                    if retry() is False:
-                        raise self.RestartGame()
-                    if self.skill_replacement and self.replacement < 3:
-                        self.replacement_skill()
-                    continue
-
-            if refresh_keyword is False:
+            if my_remaining_money < 0:
+                log.warning("无法读取剩余金钱，跳过本次刷新")
+            elif keyword_refresh_count < self.max_keyword_refresh and my_remaining_money >= 300:
                 auto.mouse_click_blank(times=3)
                 if auto.click_element("mirror/shop/refresh_keyword_assets.png"):
                     sleep(1)
@@ -315,8 +304,19 @@ class Shop:
                         take_screenshot=True,
                     )
                     auto.click_element("mirror/shop/refresh_keyword_confirm_assets.png")
-                    refresh_keyword = True
+                    keyword_refresh_count += 1
                     auto.mouse_click_blank()
+                    sleep(3)
+                    if retry() is False:
+                        raise self.RestartGame()
+                    if self.skill_replacement and self.replacement < 3:
+                        self.replacement_skill()
+                    continue
+
+            if normal_refresh_count < self.max_normal_refresh and my_remaining_money >= 200:
+                auto.mouse_click_blank(times=3)
+                if auto.click_element("mirror/shop/refresh_assets.png"):
+                    normal_refresh_count += 1
                     sleep(3)
                     if retry() is False:
                         raise self.RestartGame()
@@ -987,12 +987,12 @@ class Shop:
 
             if loop_count < 5:
                 money = self._get_cost(in_heal=True)
-                try:
-                    if money < 100:
-                        log.debug("金币不足，无法治疗罪人")
-                        break
-                except:
+                if money < 0:
+                    log.warning("无法读取剩余金钱，跳过治疗")
                     continue
+                if money < 100:
+                    log.debug("金币不足，无法治疗罪人")
+                    break
 
             if auto.click_element("mirror/shop/heal_sinner/heal_sinner_assets.png"):
                 continue
@@ -1033,7 +1033,6 @@ class Shop:
                 log.error("不应该发生这样的问题，请提交issue")
                 return False
 
-        list_block = False
         loop_count = 30
         auto.model = "clam"
         system_level_IV = False

@@ -119,6 +119,15 @@ skill_replacement_sinner = {
 }
 skill_replacement_mode = {"1→3": 0, "2→3": 1, "1→2": 2}
 
+refresh_count_options = {
+    "0": 0,
+    "1": 1,
+    "2": 2,
+    "3": 3,
+    "4": 4,
+    "5": 5,
+}
+
 blank_team_setting = {}
 
 
@@ -171,6 +180,8 @@ all_combobox_config_name = [
     "second_system_setting",
     "skill_replacement_select",
     "skill_replacement_mode",
+    "max_keyword_refresh",
+    "max_normal_refresh",
 ]
 
 all_checkbox_config_name = [

@@ -1451,6 +1451,16 @@ Right-click to set as permanent</translation>
         <source>权重选择</source>
         <translation>Weight Selection</translation>
     </message>
+    <message>
+        <location filename="../app/team_setting_card.py" line="886"/>
+        <source>每次商店访问时定向刷新商品的次数上限</source>
+        <translation>Maximum number of keyword-targeted refreshes per shop visit</translation>
+    </message>
+    <message>
+        <location filename="../app/team_setting_card.py" line="887"/>
+        <source>每次商店访问时普通刷新商品的次数上限</source>
+        <translation>Maximum number of normal refreshes per shop visit</translation>
+    </message>
 </context>
 <context>
     <name>DailySettingCard</name>
@@ -1728,6 +1738,16 @@ Right-click to set as permanent</translation>
         <location filename="../app/page_card.py" line="209"/>
         <source>纽本次数</source>
         <translation>Thread count</translation>
+    </message>
+    <message>
+        <location filename="../app/team_setting_card.py" line="736"/>
+        <source>定向刷新上限</source>
+        <translation>Keyword Refresh Limit</translation>
+    </message>
+    <message>
+        <location filename="../app/team_setting_card.py" line="741"/>
+        <source>普通刷新上限</source>
+        <translation>Normal Refresh Limit</translation>
     </message>
 </context>
 <context>
