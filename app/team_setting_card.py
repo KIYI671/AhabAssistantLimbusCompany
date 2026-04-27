@@ -8,7 +8,7 @@ from PySide6.QtWidgets import (
     QVBoxLayout,
     QWidget,
 )
-from qfluentwidgets import ExpandSettingCard, PrimaryPushButton, PushButton, ScrollArea, ToolButton, setCustomStyleSheet
+from qfluentwidgets import ExpandSettingCard, PrimaryPushButton, PushButton, ScrollArea
 from qfluentwidgets import FluentIcon as FIF
 
 from app import *
@@ -23,7 +23,7 @@ from app.base_tools import BaseCheckBox, BaseComboBox, BaseLabel, BaseSettingLay
 from app.common.icons import OverflowIcons
 from app.language_manager import LanguageManager
 from app.theme_pack_setting_interface import ThemePackSettingDialog
-from module.config import cfg, theme_list, TeamSetting
+from module.config import TeamSetting, cfg, theme_list
 
 
 class TeamSettingCard(QFrame):

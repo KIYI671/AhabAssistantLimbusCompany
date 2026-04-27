@@ -2,6 +2,7 @@ import platform
 import random
 from datetime import datetime
 from time import sleep, time
+
 from playsound3 import playsound
 from PySide6.QtCore import QT_TRANSLATE_NOOP, QMutex, QThread
 
@@ -17,11 +18,6 @@ from module.config import TeamSetting, cfg
 from module.decorator.decorator import begin_and_finish_time_log
 from module.game_and_screen import game_process, screen
 from module.logger import log
-from module.system_actions import (
-    apply_power_keep_awake,
-    execute_after_completion,
-    get_after_completion_config,
-)
 from module.my_error.my_error import (
     backMainWinError,
     cannotOperateGameError,
@@ -33,6 +29,11 @@ from module.my_error.my_error import (
     withOutAdminError,
     withOutGameWinError,
     withOutPicError,
+)
+from module.system_actions import (
+    apply_power_keep_awake,
+    execute_after_completion,
+    get_after_completion_config,
 )
 from tasks.base.back_init_menu import back_init_menu
 from tasks.base.make_enkephalin_module import (

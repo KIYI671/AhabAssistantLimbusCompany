@@ -46,12 +46,12 @@ from app.page_card import MarkdownViewer
 from app.setting_interface import SettingInterface
 from app.team_setting_card import TeamSettingCard
 from app.tools_interface import ToolsInterface
-from module.config import cfg
 from module.after_completion_types import (
     LEGACY_AFTER_COMPLETION_TO_CONFIG,
     POWER_ACTION_NONE,
     normalize_after_completion_config,
 )
+from module.config import cfg
 from module.font_manager import font_manager
 from module.logger import log
 from module.system_actions import (

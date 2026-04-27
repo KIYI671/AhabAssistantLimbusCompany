@@ -160,11 +160,8 @@ class PageSetWindows(PageCard):
         self.use_post_message = LabelWithComboBox(
             QT_TRANSLATE_NOOP("LabelWithComboBox", "使用异步方法进行键鼠输入"),
             "use_post_message",
-            {
-                QT_TRANSLATE_NOOP("BaseComboBox", "否 (默认)"): False,
-                QT_TRANSLATE_NOOP("BaseComboBox", "是"): True
-            },
-            tips=QT_TRANSLATE_NOOP("LabelWithComboBox","提高点击速度，但是对硬件与网络有一定需求，否则可能出现漏点")
+            {QT_TRANSLATE_NOOP("BaseComboBox", "否 (默认)"): False, QT_TRANSLATE_NOOP("BaseComboBox", "是"): True},
+            tips=QT_TRANSLATE_NOOP("LabelWithComboBox", "提高点击速度，但是对硬件与网络有一定需求，否则可能出现漏点"),
         )
 
     def __init_layout(self):

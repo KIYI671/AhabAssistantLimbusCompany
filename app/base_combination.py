@@ -206,7 +206,15 @@ class CheckBoxWithComboBox(QFrame):
 
 
 class LabelWithComboBox(QFrame):
-    def __init__(self, label_text, config_name, items, vbox=True, parent=None,tips: str | None = None,):
+    def __init__(
+        self,
+        label_text,
+        config_name,
+        items,
+        vbox=True,
+        parent=None,
+        tips: str | None = None,
+    ):
         super().__init__(parent)
         self.setObjectName(config_name)
 

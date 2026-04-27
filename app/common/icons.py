@@ -1,5 +1,6 @@
-from qfluentwidgets import FluentIconBase, FluentIcon, Theme, getIconColor, isDarkTheme
 from enum import Enum
+
+from qfluentwidgets import FluentIconBase, Theme, getIconColor, isDarkTheme
 
 
 class OverflowIcons(FluentIconBase, Enum):

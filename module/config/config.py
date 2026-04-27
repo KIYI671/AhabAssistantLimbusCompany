@@ -121,16 +121,14 @@ class Config(metaclass=SingletonMeta):
             # 迁移旧版结束后动作配置，按字段独立迁移，避免覆盖用户已设置的新字段
             # 映射表统一由 module.after_completion_types 维护；config 层只负责迁移与落盘。
             legacy_value = int(self.get_value("after_completion", 0) or 0)
-            legacy_actions, legacy_power = LEGACY_AFTER_COMPLETION_TO_CONFIG.get(
-                legacy_value, ((), POWER_ACTION_NONE)
-            )
+            legacy_actions, legacy_power = LEGACY_AFTER_COMPLETION_TO_CONFIG.get(legacy_value, ((), POWER_ACTION_NONE))
             migrated = False
 
             # 仅在 actions 字段缺失或类型错误时补写
             current_actions = self.get_value("after_completion_actions")
             if not isinstance(current_actions, list):
                 # 配置文件保持字符串协议，不直接持久化内部 Enum。
-                loaded_config["after_completion_actions"]=serialize_after_actions(legacy_actions)
+                loaded_config["after_completion_actions"] = serialize_after_actions(legacy_actions)
                 migrated = True
 
             # 仅在 power_action 字段缺失或类型错误时补写（与 actions 独立判断）

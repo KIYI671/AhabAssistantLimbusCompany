@@ -407,7 +407,6 @@ class SettingInterface(QWidget):
             parent=self.experimental_group,
         )
 
-
     def _on_hard_mirror_chance_confirm(self, _: int) -> None:
         """手动调整困难模式次数后，同步刷新自动切换时间戳。"""
         now = datetime.datetime.now()
@@ -458,7 +457,6 @@ class SettingInterface(QWidget):
 
         self.experimental_group.addSettingCard(self.auto_lang_card)
         self.experimental_group.addSettingCard(self.keep_screen_awake_card)
-
 
         self.expand_layout.addWidget(self.game_setting_group)
         self.expand_layout.addWidget(self.theme_pack_group)
@@ -695,7 +693,6 @@ class SettingInterface(QWidget):
         self.experimental_group.retranslateUi()
         self.auto_lang_card.retranslateUi()
         self.keep_screen_awake_card.retranslateUi()
-
 
     def __onThemeCardChanged(self):
         theme_mode = cfg.get_value("theme_mode")

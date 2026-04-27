@@ -402,10 +402,7 @@ class Battle:
                     else:
                         event_chance = -1
 
-            if (
-                choice_event_handling
-                and auto.find_element("event/perform_the_check_feature_assets.png")
-            ):
+            if choice_event_handling and auto.find_element("event/perform_the_check_feature_assets.png"):
                 event_handling.decision_event_handling()
             if choice_event_handling:
                 if auto.click_element("event/continue_assets.png"):
