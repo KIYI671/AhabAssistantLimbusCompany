@@ -2254,6 +2254,16 @@ Right-click to set as permanent</translation>
         <source>任务运行中阻止系统休眠与锁屏；任务结束、停止或异常退出后会自动恢复系统默认策略</source>
         <translation>Prevented from entering sleep mode or locking the screen for running</translation>
     </message>
+    <message>
+        <location filename="../app/setting_interface.py" line="409"/>
+        <source>模拟器已安装零协汉化</source>
+        <translation>Simulator has Chinese patch installed</translation>
+    </message>
+    <message>
+        <location filename="../app/setting_interface.py" line="413"/>
+        <source>开启后不强制英语，也许能够在零协汉化的模拟器版上运行，&lt;font color=red&gt;不做稳定性保证&lt;/font&gt;</source>
+        <translation>Disables forced English; may work with Chinese-patched simulator, &lt;font color=red&gt;no stability guarantee&lt;/font&gt;</translation>
+    </message>
 </context>
 <context>
     <name>TeamSettingCard</name>
