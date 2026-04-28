@@ -47,7 +47,7 @@ def restart_adb():
     # adbutils 没有专门的 start_server 方法，
     # 因为当你尝试获取 server 版本或设备列表时，如果服务没启动，它会自动尝试启动。
     # 所以，调用一下 server_version() 是最标准的“唤醒/检查”操作。
-    print(f"ADB Server version: {adbutils.adb.server_version()}")
+    log.debug(f"ADB Server version: {adbutils.adb.server_version()}")
 
 
 def is_device_connected(device_id):
