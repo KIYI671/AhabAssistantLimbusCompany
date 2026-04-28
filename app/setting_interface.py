@@ -411,7 +411,7 @@ class SettingInterface(QWidget):
             QT_TRANSLATE_NOOP("SwitchSettingCard", "模拟器已安装零协汉化"),
             QT_TRANSLATE_NOOP(
                 "SwitchSettingCard",
-                "开启后不强制英语，也许能够在零协汉化的模拟器版上运行，不做稳定性保证",
+                "开启后不强制英语，也许能够在零协汉化的模拟器版上运行，<font color=red>不做稳定性保证</font>",
             ),
             config_name="experimental_simulator_chinese_patch",
             parent=self.experimental_group,

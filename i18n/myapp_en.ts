@@ -2261,8 +2261,8 @@ Right-click to set as permanent</translation>
     </message>
     <message>
         <location filename="../app/setting_interface.py" line="413"/>
-        <source>开启后不强制英语，也许能够在零协汉化的模拟器版上运行，不做稳定性保证</source>
-        <translation>Disables forced English; may work with Chinese-patched simulator, no stability guarantee</translation>
+        <source>开启后不强制英语，也许能够在零协汉化的模拟器版上运行，&lt;font color=red&gt;不做稳定性保证&lt;/font&gt;</source>
+        <translation>Disables forced English; may work with Chinese-patched simulator, &lt;font color=red&gt;no stability guarantee&lt;/font&gt;</translation>
     </message>
 </context>
 <context>

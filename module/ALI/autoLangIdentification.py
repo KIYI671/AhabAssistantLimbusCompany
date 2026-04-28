@@ -21,6 +21,8 @@ class AutoSwitchCon:
     "语言不同并自动切换"
     FAILED: int = 2
     "语言切换失败, 可能是不支持的语言"
+    SKIPPED: int = 3
+    "有意跳过语言识别（如模拟器汉化模式）"
 
 
 def auto_switch_language_in_game(hwnd: int) -> int:
@@ -30,15 +32,16 @@ def auto_switch_language_in_game(hwnd: int) -> int:
     ---
 
     Returns:
-        int: 从0-2三种情况 可以查看AutoSwitchCon类
-            - 0: 当前语言相同
-            - 1: 当前语言不同, 但位于支持的语言列表中 (自动切换)
-            - 2: 当前语言不同, 且不支持
+        int: 返回值对应 AutoSwitchCon 中的枚举
+            - 0 (FINISH): 当前语言相同
+            - 1 (CHANGED): 当前语言不同但已自动切换
+            - 2 (FAILED): 语言切换失败（不支持的语言）
+            - 3 (SKIPPED): 有意跳过语言识别（如模拟器汉化模式）
     """
     if cfg.simulator:
         if cfg.experimental_simulator_chinese_patch:
             log.info("检测到模拟器且已开启零协汉化模式，跳过强制英文")
-            return AutoSwitchCon.FINISH
+            return AutoSwitchCon.SKIPPED
         log.info("检测到模拟器，将自动使用英文")
         cfg.set_value("language_in_game", "en")
         return AutoSwitchCon.FINISH
