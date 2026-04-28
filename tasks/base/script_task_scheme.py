@@ -366,13 +366,6 @@ def script_task() -> None | int:
     if cfg.set_reduce_miscontact and not cfg.simulator:
         # 任务已结束，这里只恢复游戏窗口样式，避免把前台重新切回游戏。
         screen.reset_win(activate=False)
-    if cfg.simulator:
-        if cfg.simulator_type == 0:
-            from module.automation.input_handlers.simulator.mumu_control import (
-                MumuControl,
-            )
-
-            MumuControl.clean_connect()
 
     log.info("脚本任务已经完成")
     QT_TRANSLATE_NOOP("WindowsToast", "AALC 运行结束")
@@ -392,13 +385,24 @@ def script_task() -> None | int:
     if cfg.resonate_with_Ahab:
         Resonate_with_Ahab()
 
+    should_exit_aalc = False
     if platform.system() == "Windows":
         actions, power_action = get_after_completion_config()
         try:
-            if execute_after_completion(actions, power_action):
-                return 0
+            should_exit_aalc = execute_after_completion(actions, power_action)
         except Exception:
             log.exception("脚本结束后的操作失败")
+
+    if cfg.simulator:
+        if cfg.simulator_type == 0:
+            from module.automation.input_handlers.simulator.mumu_control import (
+                MumuControl,
+            )
+
+            MumuControl.clean_connect()
+
+    if should_exit_aalc:
+        return 0
 
 
 class my_script_task(QThread):
