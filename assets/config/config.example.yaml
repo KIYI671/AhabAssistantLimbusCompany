@@ -62,6 +62,7 @@ resonate_with_Ahab: False # 是否播放亚哈语录
 # 实验性功能
 experimental_auto_lang: True # 是否自动修改语言
 experimental_keep_screen_awake: False # 运行期间阻止系统与显示器休眠，任务结束自动恢复
+experimental_simulator_chinese_patch: False # 模拟器已安装零协汉化：开启后不强制英文，不做稳定性保证
 
 
 

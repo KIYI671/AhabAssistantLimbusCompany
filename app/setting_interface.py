@@ -406,6 +406,16 @@ class SettingInterface(QWidget):
             config_name="experimental_keep_screen_awake",
             parent=self.experimental_group,
         )
+        self.simulator_chinese_patch_card = SwitchSettingCard(
+            FIF.LANGUAGE,
+            QT_TRANSLATE_NOOP("SwitchSettingCard", "模拟器已安装零协汉化"),
+            QT_TRANSLATE_NOOP(
+                "SwitchSettingCard",
+                "开启后不强制英语，也许能够在零协汉化的模拟器版上运行，不做稳定性保证",
+            ),
+            config_name="experimental_simulator_chinese_patch",
+            parent=self.experimental_group,
+        )
 
     def _on_hard_mirror_chance_confirm(self, _: int) -> None:
         """手动调整困难模式次数后，同步刷新自动切换时间戳。"""
@@ -457,6 +467,7 @@ class SettingInterface(QWidget):
 
         self.experimental_group.addSettingCard(self.auto_lang_card)
         self.experimental_group.addSettingCard(self.keep_screen_awake_card)
+        self.experimental_group.addSettingCard(self.simulator_chinese_patch_card)
 
         self.expand_layout.addWidget(self.game_setting_group)
         self.expand_layout.addWidget(self.theme_pack_group)
@@ -693,6 +704,7 @@ class SettingInterface(QWidget):
         self.experimental_group.retranslateUi()
         self.auto_lang_card.retranslateUi()
         self.keep_screen_awake_card.retranslateUi()
+        self.simulator_chinese_patch_card.retranslateUi()
 
     def __onThemeCardChanged(self):
         theme_mode = cfg.get_value("theme_mode")

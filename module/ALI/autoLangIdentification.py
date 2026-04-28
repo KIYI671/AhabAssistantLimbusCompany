@@ -36,6 +36,9 @@ def auto_switch_language_in_game(hwnd: int) -> int:
             - 2: 当前语言不同, 且不支持
     """
     if cfg.simulator:
+        if cfg.experimental_simulator_chinese_patch:
+            log.info("检测到模拟器且已开启零协汉化模式，跳过强制英文")
+            return AutoSwitchCon.FINISH
         log.info("检测到模拟器，将自动使用英文")
         cfg.set_value("language_in_game", "en")
         return AutoSwitchCon.FINISH

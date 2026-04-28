@@ -320,7 +320,7 @@ def script_task() -> None | int:
         log.error(f"自动切换语言出错: {e}，使用英语尝试")
         cfg.set_value("language_in_game", "en")
 
-    if cfg.simulator and cfg.language_in_game != "en":
+    if cfg.simulator and not cfg.experimental_simulator_chinese_patch and cfg.language_in_game != "en":
         log.info("模拟器模式下强制使用英文图片与文本识别")
         cfg.set_value("language_in_game", "en")
 
