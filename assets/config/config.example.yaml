@@ -6,7 +6,7 @@ game_process_name: LimbusCompany.exe # 游戏进程名。
 
 game_path: C:\Program Files (x86)\Steam\steamapps\common\Limbus Company\LimbusCompany.exe # 游戏启动路径。
 
-language_in_game: en # 游戏语言
+language_in_game: en # 运行期游戏语言状态，由图片路径匹配结果同步
 after_completion: 0 # 脚本结束后的操作
 keep_after_completion: False # 是否保持脚本结束后的操作
 language_in_program: "" # 程序语言
@@ -60,7 +60,6 @@ use_post_message: False # 是否使用PostMessage进行输入
 resonate_with_Ahab: False # 是否播放亚哈语录
 
 # 实验性功能
-experimental_auto_lang: True # 是否自动修改语言
 experimental_keep_screen_awake: False # 运行期间阻止系统与显示器休眠，任务结束自动恢复
 
 

@@ -59,6 +59,21 @@ class ImageUtils:
         return False, None
 
     @staticmethod
+    def check_english_path_exists(image_path, current_path):
+        """检查当前中文路径对应的英文路径中是否存在图片。"""
+        if not current_path or not path_manager.is_path_zh_cn(current_path):
+            return False, None
+
+        english_path = current_path.removesuffix("/zh_cn") + "/en"
+        if english_path not in path_manager.pic_path:
+            return False, None
+
+        img_path = os.path.join(f"./assets/images/{english_path}/{image_path}")
+        if os.path.exists(img_path):
+            return True, english_path
+        return False, None
+
+    @staticmethod
     def load_from_specific_path(image_path, target_path, resize=True):
         """从指定路径加载图片。"""
         img_path = os.path.join(f"./assets/images/{target_path}/{image_path}")

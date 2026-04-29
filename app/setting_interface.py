@@ -389,13 +389,6 @@ class SettingInterface(QWidget):
             QT_TRANSLATE_NOOP("BaseSettingCardGroup", "实验性内容"), self.scroll_widget
         )
 
-        self.auto_lang_card = SwitchSettingCard(
-            FIF.DEVELOPER_TOOLS,
-            QT_TRANSLATE_NOOP("SwitchSettingCard", "自动检测并切换游戏语言"),
-            "",
-            config_name="experimental_auto_lang",
-            parent=self.experimental_group,
-        )
         self.keep_screen_awake_card = SwitchSettingCard(
             FIF.VIEW,
             QT_TRANSLATE_NOOP("SwitchSettingCard", "运行时保持屏幕唤醒"),
@@ -455,7 +448,6 @@ class SettingInterface(QWidget):
         self.about_group.addSettingCard(self.discord_group_card)
         self.about_group.addSettingCard(self.feedback_card)
 
-        self.experimental_group.addSettingCard(self.auto_lang_card)
         self.experimental_group.addSettingCard(self.keep_screen_awake_card)
 
         self.expand_layout.addWidget(self.game_setting_group)
@@ -526,7 +518,6 @@ class SettingInterface(QWidget):
         self.theme_pack_card.clicked.connect(self.__onThemePackCardClicked)
 
         self.zoom_card.valueChanged.connect(self.__onZoomCardValueChanged)
-        self.auto_lang_card.switchButton.checkedChanged.connect(self.__onAutoLangCardChecked)
         self.win_input_type_card.valueChanged.connect(self.__onWinInputTypeChanged)
         self.__onWinInputTypeChanged()
         self.autostart_card.switchButton.checkedChanged.connect(self.__onAutostartCardChanged)
@@ -621,21 +612,6 @@ class SettingInterface(QWidget):
         else:
             helper.unregister_task(TASK_NAME)
 
-    def __onAutoLangCardChecked(self, Checked):
-        bar = BaseInfoBar.success(
-            title=QT_TRANSLATE_NOOP("BaseInfoBar", "更改将在重新启动后生效"),
-            content="",
-            orient=Qt.Horizontal,
-            isClosable=True,
-            position=InfoBarPosition.BOTTOM_RIGHT,
-            duration=5000,
-            parent=self,
-        )
-        if Checked:
-            cfg.set_value("language_in_game", "-")
-        else:
-            cfg.set_value("language_in_game", "en")
-
     def __openUrl(self, url):
         return lambda: QDesktopServices.openUrl(QUrl(url))
 
@@ -691,7 +667,6 @@ class SettingInterface(QWidget):
         self.discord_group_card.retranslateUi()
         self.feedback_card.retranslateUi()
         self.experimental_group.retranslateUi()
-        self.auto_lang_card.retranslateUi()
         self.keep_screen_awake_card.retranslateUi()
 
     def __onThemeCardChanged(self):

@@ -33,7 +33,7 @@ from app.base_combination import (
 )
 from app.base_tools import BaseCheckBox
 from app.common.ui_config import get_theme_aware_text_browser_qss
-from app.language_manager import SUPPORTED_GAME_LANG_NAME, LanguageManager
+from app.language_manager import LanguageManager
 from app.widget.custom_segmented_widget import CustomSegmentedWidget
 from module.config import TeamSetting, cfg, theme_list
 from module.logger import log
@@ -123,22 +123,6 @@ class PageSetWindows(PageCard):
             "set_reduce_miscontact",
             set_reduce_miscontact_options,
         )
-        if cfg.experimental_auto_lang:
-            self.language_in_game = LabelWithComboBox(
-                QT_TRANSLATE_NOOP("LabelWithComboBox", "游戏使用语言"),
-                "language_in_game",
-                SUPPORTED_GAME_LANG_NAME,
-            )
-
-        else:
-            temp_dict = SUPPORTED_GAME_LANG_NAME
-            temp_dict.pop("(实验性功能) 自动识别")
-            self.language_in_game = LabelWithComboBox(
-                QT_TRANSLATE_NOOP("LabelWithComboBox", "游戏使用语言"),
-                "language_in_game",
-                temp_dict,
-            )
-
         self.screenshot_interval = LabelWithSpinBox(
             QT_TRANSLATE_NOOP("LabelWithSpinBox", "截图间隔"),
             "screenshot_interval",
@@ -168,7 +152,6 @@ class PageSetWindows(PageCard):
         self.vbox_general.addWidget(self.win_size)
         self.vbox_general.addWidget(self.win_position)
         self.vbox_general.addWidget(self.recovery_window)
-        self.vbox_general.addWidget(self.language_in_game)
 
         self.vbox_advanced.addWidget(self.screenshot_interval)
         self.vbox_advanced.addWidget(self.mouse_action_interval)
@@ -179,7 +162,6 @@ class PageSetWindows(PageCard):
         self.win_size.retranslateUi()
         self.win_position.retranslateUi()
         self.recovery_window.retranslateUi()
-        self.language_in_game.retranslateUi()
         self.screenshot_interval.retranslateUi()
         self.mouse_action_interval.retranslateUi()
         self.mouse_down_duration.retranslateUi()

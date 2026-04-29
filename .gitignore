@@ -3,6 +3,7 @@
 .venv
 .vscode
 .agent
+.agents
 .idea
 .claude
 
