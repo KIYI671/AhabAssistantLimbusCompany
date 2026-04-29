@@ -9,8 +9,8 @@ import numpy as np
 import psutil
 from PIL.Image import Image
 
-from utils.path_manager import path_manager
 from utils.image_utils import ImageUtils
+from utils.path_manager import path_manager
 from utils.singletonmeta import SingletonMeta
 
 from ..config import cfg
@@ -337,13 +337,13 @@ class Automation(metaclass=SingletonMeta):
                 time.sleep(1)  # 在重试前等待一定时间
         return None
 
-    def find_image_with_multiple_targets(self, target, threshold, addtional_stack) -> List:
+    def find_image_with_multiple_targets(self, target: str, threshold, addtional_stack) -> List:
         """
         在当前截图中查找多个目标图像的位置
         """
         try:
             template = ImageUtils.load_image(target)
-            if "assets" in target:
+            if target.endswith("assets.png"):
                 bbox = ImageUtils.get_bbox(template)
                 template = ImageUtils.crop(template, bbox)
             if template is None:
@@ -490,7 +490,7 @@ class Automation(metaclass=SingletonMeta):
 
     def find_image_element(
         self,
-        target,
+        target: str,
         threshold,
         cacheable=True,
         model="clam",
@@ -518,7 +518,7 @@ class Automation(metaclass=SingletonMeta):
                 if template is None:
                     log.debug(f"无法加载图片: {target}", stacklevel=addtional_stack + 3)
                     return None
-                if "assets" in target:
+                if target.endswith("assets.png"):
                     bbox = ImageUtils.get_bbox(template)
                     template = ImageUtils.crop(template, bbox)
                 else:
@@ -540,7 +540,7 @@ class Automation(metaclass=SingletonMeta):
                 if default_exists:
                     default_template = ImageUtils.load_from_specific_path(target, default_path)
                     if default_template is not None:
-                        if "assets" in target:
+                        if target.endswith("assets.png"):
                             default_bbox = ImageUtils.get_bbox(default_template)
                             default_template = ImageUtils.crop(default_template, default_bbox)
                         else:
@@ -562,7 +562,7 @@ class Automation(metaclass=SingletonMeta):
                             and default_matchVal >= threshold
                         ):
                             if path_manager.eliminate_dark_paths():
-                                log.info(f"检测到dark路径失败但default路径成功，淘汰所有dark路径，图片: {target}")
+                                log.debug(f"检测到dark路径失败但default路径成功，淘汰所有dark路径，图片: {target}")
                                 self.clear_img_cache()
                             return default_center
         except Exception as e:

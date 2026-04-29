@@ -26,6 +26,7 @@ from PySide6.QtWidgets import (
     QGraphicsDropShadowEffect,
     QLabel,
     QPushButton,
+    QWidget,
 )
 from qfluentwidgets import (
     FlyoutViewBase,
@@ -36,6 +37,7 @@ from qfluentwidgets import (
     PopupTeachingTip,
     PrimaryPushButton,
     PrimaryPushSettingCard,
+    PrimaryToolButton,
     ProgressBar,
     PushSettingCard,
     SettingCard,
@@ -43,6 +45,7 @@ from qfluentwidgets import (
     SwitchButton,
     TeachingTipTailPosition,
     TimePicker,
+    ToolButton,
     setCustomStyleSheet,
 )
 
@@ -54,12 +57,45 @@ from app.card.messagebox_custom import (
     MessageBoxEdit,
     MessageBoxSpinbox,
 )
+from app.common.icons import OverflowIcons
 from app.language_manager import LanguageManager
 from module.font_manager import font_manager
 from module.logger import log
 from module.my_error.my_error import settingsTypeError
 from module.update.check_update import check_update
 from utils.utils import decrypt_string, encrypt_string, get_timezone
+
+
+class ToolCheckButton(ToolButton):
+    checked = Signal(bool)
+
+    def _postInit(self):
+        self.setCheckable(True)
+        self.toggled.connect(self.checked)
+        self.setChecked(False)
+        self._apply_style()
+
+    def _apply_style(self):
+        qss = """
+ToolCheckButton:checked {
+background-color: --ThemeColorPrimary;
+}
+ToolCheckButton:checked:hover {
+    background-color: --ThemeColorPrimary;
+}
+"""
+        setCustomStyleSheet(self, qss, qss)
+
+    def _drawIcon(self, icon, painter, rect, state=QIcon.Off):
+        if not self.isChecked():
+            if isinstance(icon, OverflowIcons):
+                icon.set_reverse(False)
+            return super()._drawIcon(icon, painter, rect)
+        if isinstance(icon, OverflowIcons):
+            icon.set_reverse(True)
+            super()._drawIcon(icon, painter, rect, QIcon.On)
+        else:
+            PrimaryToolButton._drawIcon(self, icon, painter, rect, QIcon.On)
 
 
 class CheckBoxWithButton(QFrame):
@@ -96,6 +132,7 @@ class CheckBoxWithLineEdit(QFrame):
         self.setObjectName(config_name)
         self.config_name = config_name
         self.hBoxLayout = QHBoxLayout(self)
+        self.hBoxLayout.setContentsMargins(0, 0, 0, 0)
         self.box = CheckBox(check_box_title, parent=self)
         self.line_edit = LineEdit(self)
         self.line_edit.setMaximumWidth(70)
@@ -131,6 +168,7 @@ class CheckBoxWithComboBox(QFrame):
         check_box_icon: Union[str, QIcon, FluentIconBase, None],
         combo_box_name,
         combo_box_width=None,
+        tips=None,
         parent=None,
     ):
         super().__init__(parent)
@@ -138,7 +176,7 @@ class CheckBoxWithComboBox(QFrame):
         self.additional_combo_box = None
         self.hBoxLayout = QHBoxLayout(self)
         self.box_text = check_box_title
-        self.box = BaseCheckBox(check_box_name, check_box_icon, check_box_title, parent=self, center=False)
+        self.box = BaseCheckBox(check_box_name, check_box_icon, check_box_title, parent=self, center=False, tips=tips)
         self.box.setFixedWidth(150)
         self.combo_box = BaseComboBox(combo_box_name, combo_box_width)
         self.combo_box.setFixedWidth(300)
@@ -168,7 +206,15 @@ class CheckBoxWithComboBox(QFrame):
 
 
 class LabelWithComboBox(QFrame):
-    def __init__(self, label_text, config_name, items, vbox=True, parent=None):
+    def __init__(
+        self,
+        label_text,
+        config_name,
+        items,
+        vbox=True,
+        parent=None,
+        tips: str | None = None,
+    ):
         super().__init__(parent)
         self.setObjectName(config_name)
 
@@ -191,6 +237,10 @@ class LabelWithComboBox(QFrame):
         self.setMaximumHeight(80)
         self.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Fixed)
 
+        if tips:
+            self.setToolTip(tips)
+            self.installEventFilter(ToolTipFilter(self))
+
     def add_items(self, items):
         self.combo_box.add_items(items)
 
@@ -208,9 +258,11 @@ class LabelWithSpinBox(QFrame):
         double=False,
         min_value=0.1,
         min_step=0.01,
+        tips: str | None = None,
     ):
         super().__init__(parent)
         self.vbox_layout = QVBoxLayout(self)
+        self.tips = tips
         self.text = label_text
         self.label = BaseLabel(label_text)
         self.box = BaseSpinBox(box_name, double=double, min_value=min_value, min_step=min_step)
@@ -220,8 +272,14 @@ class LabelWithSpinBox(QFrame):
         self.setMaximumHeight(100)
         self.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Fixed)
 
+        if tips:
+            self.setToolTip(tips)
+            self.installEventFilter(ToolTipFilter(self))
+
     def retranslateUi(self):
         self.label.label.setText(self.tr(self.text))
+        if self.tips:
+            self.setToolTip(self.tr(self.tips))
 
 
 class MirrorSpinBox(QFrame):
@@ -242,7 +300,7 @@ class MirrorSpinBox(QFrame):
 class MirrorTeamCombination(QFrame):
     def __init__(
         self,
-        team_number,
+        team_number: int,
         check_box_name,
         check_box_title,
         check_box_icon: Union[str, QIcon, FluentIconBase, None],
@@ -286,11 +344,11 @@ class MirrorTeamCombination(QFrame):
         self.refresh_remark_name()
 
     def copy_team_settings(self):
-        setting = str(cfg.get_value(f"team{self.team_number}_setting"))
+        setting = cfg.config.teams[f"{self.team_number}"].model_dump_json()
         setting = "||AALC_TEAM_SETTING||" + setting  # 添加标识符
         setting = base64.b64encode(setting.encode("utf-8")).decode("utf-8")
         pyperclip.copy(setting)
-        bar = BaseInfoBar.success(
+        BaseInfoBar.success(
             title=QT_TRANSLATE_NOOP("BaseInfoBar", "已复制到剪切板"),
             content="",
             orient=Qt.Horizontal,
@@ -308,7 +366,7 @@ class MirrorTeamCombination(QFrame):
                 raise settingsTypeError("不是有效的AALC设置")
             setting = setting.replace("||AALC_TEAM_SETTING||", "", 1)
         except settingsTypeError:
-            bar = BaseInfoBar.error(
+            BaseInfoBar.error(
                 title=QT_TRANSLATE_NOOP("BaseInfoBar", "该设置不属于 AALC"),
                 content="",
                 orient=Qt.Horizontal,
@@ -319,7 +377,7 @@ class MirrorTeamCombination(QFrame):
             )
             return
         except Exception:
-            bar = BaseInfoBar.error(
+            BaseInfoBar.error(
                 title=QT_TRANSLATE_NOOP("BaseInfoBar", "不是有效的 AALC 设置"),
                 content="",
                 orient=Qt.Horizontal,
@@ -331,15 +389,25 @@ class MirrorTeamCombination(QFrame):
             return
 
         data: dict = cfg.yaml.load(setting)
-        from copy import deepcopy
+        from module.config import TeamSetting
 
-        from app import team_setting_template
+        try:
+            team_config = TeamSetting(**data)
+        except Exception:
+            BaseInfoBar.error(
+                title=QT_TRANSLATE_NOOP("BaseInfoBar", "导入数据失败，可能是因为设置版本过旧或过新"),
+                content="",
+                orient=Qt.Horizontal,
+                isClosable=True,
+                position=InfoBarPosition.TOP,
+                duration=500,
+                parent=self.parent().parent(),
+            )
+            return
 
-        default_config = deepcopy(team_setting_template)
-        cfg._update_config(default_config, data)
-
-        cfg.set_value(f"team{self.team_number}_setting", default_config)
-        bar = BaseInfoBar.success(
+        cfg.config.teams[f"{self.team_number}"] = team_config
+        cfg.save()
+        BaseInfoBar.success(
             title=QT_TRANSLATE_NOOP("BaseInfoBar", "已粘贴设置"),
             content="",
             orient=Qt.Horizontal,
@@ -350,17 +418,19 @@ class MirrorTeamCombination(QFrame):
         )
 
     def remark_name_changed(self, text):
-        cfg.set_value(f"team{self.team_number}_remark_name", text)
+        cfg.config.teams[f"{self.team_number}"].remark_name = text
+        cfg.save()
 
     def edit_button_clicked(self):
-        name = cfg.get_value(f"team{self.team_number}_remark_name")
+        name = cfg.config.teams[f"{self.team_number}"].remark_name
         if name is None:
             name = ""
         message_box = MessageBoxEdit(QT_TRANSLATE_NOOP("MessageBoxEdit", "设置备注名"), name, self.window())
         self.retranslateTempUi(message_box)
         if message_box.exec():
             new_name = str(message_box.getText())
-            cfg.set_value(f"team{self.team_number}_remark_name", new_name)
+            cfg.config.teams[f"{self.team_number}"].remark_name = new_name
+            cfg.save()
             self.remark_name.setText(new_name)
 
     def delete_button_clicked(self):
@@ -369,8 +439,9 @@ class MirrorTeamCombination(QFrame):
             mediator.delete_team_setting.emit(f"team_{self.team_number}")
 
     def refresh_remark_name(self):
-        name = cfg.get_value(f"team{self.team_number}_remark_name")
+        name = cfg.config.teams.get(f"{self.team_number}", None)
         if name is not None:
+            name = name.remark_name
             self.remark_name.setText(name)
 
     def retranslateUi(self):
@@ -970,17 +1041,20 @@ class AutoDailyView(FlyoutViewBase):
             "autodaily_sleep",
             "autodaily_hibernate",
             "autodaily_shutdown",
+            "autodaily_lock",
         ]
         self.box_exit_game = BaseCheckBox("autodaily_exit_game", None, QT_TRANSLATE_NOOP("BaseCheckBox", "退出游戏"))
         self.box_exit_aalc = BaseCheckBox("autodaily_exit_aalc", None, QT_TRANSLATE_NOOP("BaseCheckBox", "退出AALC"))
         self.box_sleep = BaseCheckBox("autodaily_sleep", None, QT_TRANSLATE_NOOP("BaseCheckBox", "睡眠"))
         self.box_hibernate = BaseCheckBox("autodaily_hibernate", None, QT_TRANSLATE_NOOP("BaseCheckBox", "休眠"))
         self.box_shutdown = BaseCheckBox("autodaily_shutdown", None, QT_TRANSLATE_NOOP("BaseCheckBox", "关机"))
+        self.box_lock = BaseCheckBox("autodaily_lock", None, QT_TRANSLATE_NOOP("BaseCheckBox", "锁屏"))
         self.line_2.addWidget(self.box_exit_game)
         self.line_2.addWidget(self.box_exit_aalc)
         self.line_2.addWidget(self.box_sleep)
         self.line_2.addWidget(self.box_hibernate)
         self.line_2.addWidget(self.box_shutdown)
+        self.line_2.addWidget(self.box_lock)
 
         self.line_3_box = QWidget(self)
         self.line_3 = QHBoxLayout(self.line_3_box)
@@ -990,7 +1064,7 @@ class AutoDailyView(FlyoutViewBase):
 
         self.line_3.addWidget(self.save_button)
 
-        self.checkboxes = [self.box_sleep, self.box_hibernate, self.box_shutdown]
+        self.checkboxes = [self.box_sleep, self.box_hibernate, self.box_shutdown, self.box_lock]
         for cb in self.checkboxes:
             cb.check_box.clicked.connect(self.__on_checkbox_clicked)
 
@@ -1013,6 +1087,8 @@ class AutoDailyView(FlyoutViewBase):
             self.config_name = self.__search_parent_class().config_name
         self.setting = cfg.get_value(self.config_name + "_task")
         self.exit_setting = cfg.get_value(self.config_name + "_task_exit")
+        if len(self.exit_setting) < 6:
+            self.exit_setting = list(self.exit_setting) + [False] * (6 - len(self.exit_setting))
 
         task = [
             self.box_daily,
@@ -1028,6 +1104,7 @@ class AutoDailyView(FlyoutViewBase):
             self.box_sleep,
             self.box_hibernate,
             self.box_shutdown,
+            self.box_lock,
         ]
         for i in range(len(exit_task)):
             exit_task[i].set_checked(self.exit_setting[i])
@@ -1050,8 +1127,17 @@ class AutoDailyView(FlyoutViewBase):
             self.exit_setting[index] = not self.exit_setting[index]
 
     def __save(self):
+        if len(self.exit_setting) < 6:
+            self.exit_setting = list(self.exit_setting) + [False] * (6 - len(self.exit_setting))
         cfg.set_value(self.config_name + "_task", self.setting)
         cfg.set_value(self.config_name + "_task_exit", self.exit_setting)
+        # 关闭弹出窗
+        parent_card = self.__search_parent_class("DailySettingCard")
+        if parent_card is not None and hasattr(parent_card, "_popup"):
+            try:
+                parent_card._popup.close()
+            except Exception:
+                pass
 
     def __search_parent_class(self, class_name="DailySettingCard"):
         current = self.parentWidget()
@@ -1075,6 +1161,7 @@ class AutoDailyView(FlyoutViewBase):
         self.box_sleep.retranslateUi()
         self.box_hibernate.retranslateUi()
         self.box_shutdown.retranslateUi()
+        self.box_lock.retranslateUi()
 
 
 class DailySettingCard(SwitchSettingCard):
@@ -1114,7 +1201,7 @@ class DailySettingCard(SwitchSettingCard):
         self.retranslateUi()
 
     def __show_view(self):
-        PopupTeachingTip.make(
+        self._popup = PopupTeachingTip.make(
             target=self.button,
             view=AutoDailyView(self),
             tailPosition=TeachingTipTailPosition.RIGHT,

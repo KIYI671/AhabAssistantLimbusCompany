@@ -1,12 +1,8 @@
-import os
 import platform
 import random
 from datetime import datetime
-from sys import exc_info
 from time import sleep, time
-from traceback import format_exception
 
-import win32process
 from playsound3 import playsound
 from PySide6.QtCore import QT_TRANSLATE_NOOP, QMutex, QThread
 
@@ -18,7 +14,7 @@ from module.ALI import (
     get_raw_game_config_from_registry,
 )
 from module.automation import auto
-from module.config import cfg
+from module.config import TeamSetting, cfg
 from module.decorator.decorator import begin_and_finish_time_log
 from module.game_and_screen import game_process, screen
 from module.logger import log
@@ -33,6 +29,11 @@ from module.my_error.my_error import (
     withOutAdminError,
     withOutGameWinError,
     withOutPicError,
+)
+from module.system_actions import (
+    apply_power_keep_awake,
+    execute_after_completion,
+    get_after_completion_config,
 )
 from tasks.base.back_init_menu import back_init_menu
 from tasks.base.make_enkephalin_module import (
@@ -50,28 +51,28 @@ from utils.utils import calculate_the_teams, get_day_of_week
 
 @begin_and_finish_time_log(task_name="一次经验本")
 # 一次经验本的过程
-def onetime_EXP_process():
+def onetime_EXP_process(combat_count: int = 1):
     if cfg.targeted_teaming_EXP:
         team = cfg.get_value(f"EXP_day_{calculate_the_teams()}")
     else:
         team = cfg.daily_teams
-    EXP_luxcavation()
+    EXP_luxcavation(combat_count)
     select_battle_team(team)
     if battle.to_battle() is False:
         return False
-    battle.fight()
+    battle.fight(combat_count=combat_count)
     back_init_menu()
     make_enkephalin_module()
 
 
 @begin_and_finish_time_log(task_name="一次纽本")
 # 一次纽本的过程
-def onetime_thread_process():
+def onetime_thread_process(combat_count: int = 1):
     if cfg.targeted_teaming_thread:
         team = cfg.get_value(f"thread_day_{get_day_of_week()}")
     else:
         team = cfg.daily_teams
-    thread_luxcavation()
+    thread_luxcavation(combat_count)
     select_battle_team(team)
     if battle.to_battle() is False:
         return False
@@ -82,7 +83,7 @@ def onetime_thread_process():
 
 @begin_and_finish_time_log(task_name="一次镜牢")
 # 一次镜牢的过程
-def onetime_mir_process(team_setting, team_num: int):
+def onetime_mir_process(team_setting: TeamSetting, team_num: int):
     # 进行一次镜牢
     try:
         mirror_adventure = Mirror(team_setting, team_num)
@@ -95,10 +96,7 @@ def onetime_mir_process(team_setting, team_num: int):
         else:
             return False
     except Exception as e:
-        msg = f"镜牢行动出错: {e}"
-        exc_traceback = "".join(format_exception(*exc_info()))
-        msg += f"\n调用栈信息:\n{exc_traceback}"
-        log.error(msg)
+        log.exception(f"镜牢行动出错: {e}")
         return False
 
 
@@ -175,6 +173,31 @@ def Resonate_with_Ahab():
     playsound(f"assets/audio/This_is_all_your_fault_{random_number}.mp3", block=False)
 
 
+def _batch_combat(process_fn, times, max_times):
+    """按 max_times 分批执行战斗"""
+    if times <= 0:
+        return
+    if times > max_times:
+        once = max_times
+        total = times // max_times
+        last = times % max_times
+    else:
+        once = times
+        total = 0
+        last = times
+    for _ in range(total):
+        process_fn(once)
+    if last > 0:
+        process_fn(last)
+
+
+def _single_combat_run(exp_times, thread_times):
+    for _ in range(exp_times):
+        onetime_EXP_process()
+    for _ in range(thread_times):
+        onetime_thread_process()
+
+
 def Daily_task_wrapper(get_reward=None):
     def wrapper():
         back_init_menu()
@@ -185,10 +208,12 @@ def Daily_task_wrapper(get_reward=None):
         thread_times = cfg.set_thread_count
         if get_reward and get_reward == "thread":
             thread_times -= 1
-        for i in range(exp_times):
-            onetime_EXP_process()
-        for i in range(thread_times):
-            onetime_thread_process()
+        if cfg.config.use_continuous_combat and cfg.use_continuous_combat_select > 0:
+            max_times = cfg.use_continuous_combat_select
+            _batch_combat(onetime_EXP_process, exp_times, max_times)
+            _batch_combat(onetime_thread_process, thread_times, max_times)
+        else:
+            _single_combat_run(exp_times, thread_times)
 
     return wrapper
 
@@ -214,14 +239,14 @@ def Mirror_task():
         hard = bool(cfg.hard_mirror)
         teams_be_select = cfg.get_value("teams_be_select")
         for index in (i for i, t in enumerate(teams_be_select) if t is True):
-            team_setting = cfg.get_value(f"team{index + 1}_setting")
-            if team_setting["fixed_team_use"] is False:
+            team_setting = cfg.config.teams[f"{index + 1}"]
+            if team_setting.fixed_team_use is False:
                 useful = True
                 break
-            if team_setting["fixed_team_use_select"] == 1 and hard is False:
+            if team_setting.fixed_team_use_select == 1 and hard is False:
                 useful = True
                 break
-            if team_setting["fixed_team_use_select"] == 0 and hard is True:
+            if team_setting.fixed_team_use_select == 0 and hard is True:
                 useful = True
                 break
         if useful is False:
@@ -229,11 +254,11 @@ def Mirror_task():
 
         teams_order = cfg.teams_order  # 复制一份队伍顺序
         team_num = teams_order.index(1)  # 获取序号1的队伍在队伍顺序中的位置
-        team_setting = cfg.get_value(f"team{team_num + 1}_setting")  # 获取序号1的队伍的配置
+        team_setting = cfg.config.teams[f"{team_num + 1}"]  # 获取序号1的队伍的配置
         # 如果该队伍固定了用途，且不用途符合当前情况，将序号1的队伍移动到队伍顺序的最后
-        if "fixed_team_use" in team_setting and team_setting["fixed_team_use"]:
-            if (team_setting["fixed_team_use_select"] == 0 and not cfg.hard_mirror) or (
-                team_setting["fixed_team_use_select"] == 1 and cfg.hard_mirror
+        if team_setting.fixed_team_use:
+            if (team_setting.fixed_team_use_select == 0 and not cfg.hard_mirror) or (
+                team_setting.fixed_team_use_select == 1 and cfg.hard_mirror
             ):
                 for index, value in enumerate(teams_order):
                     if value == 0:
@@ -292,12 +317,12 @@ def script_task() -> None | int:
 
     path_manager.initialize_paths(cfg.language_in_game)
     auto.clear_img_cache()
-    log.info(f"初始化图片路径: {path_manager.pic_path}")
+    log.debug(f"初始化图片路径: {path_manager.pic_path}")
 
-    # 如果是战斗中，先处理战斗
     if cfg.resonate_with_Ahab:
         Resonate_with_Ahab()
 
+    # 如果是战斗中，先处理战斗
     get_reward = None
     if auto.click_element("battle/turn_assets.png", take_screenshot=True):
         get_reward = battle.fight()
@@ -323,14 +348,8 @@ def script_task() -> None | int:
         task()
 
     if cfg.set_reduce_miscontact and not cfg.simulator:
-        screen.reset_win()
-    if cfg.simulator:
-        if cfg.simulator_type == 0:
-            from module.automation.input_handlers.simulator.mumu_control import (
-                MumuControl,
-            )
-
-            MumuControl.clean_connect()
+        # 任务已结束，这里只恢复游戏窗口样式，避免把前台重新切回游戏。
+        screen.reset_win(activate=False)
 
     log.info("脚本任务已经完成")
     QT_TRANSLATE_NOOP("WindowsToast", "AALC 运行结束")
@@ -350,47 +369,30 @@ def script_task() -> None | int:
     if cfg.resonate_with_Ahab:
         Resonate_with_Ahab()
 
+    should_exit_aalc = False
     if platform.system() == "Windows":
-        after_completion = cfg.after_completion
+        actions, power_action = get_after_completion_config()
         try:
-            if after_completion == 1:
-                os.system("rundll32.exe powrprof.dll,SetSuspendState Sleep")
-            elif after_completion == 2:
-                os.system("rundll32.exe powrprof.dll,SetSuspendState Hibernate")
-            elif after_completion == 3:
-                os.system("shutdown /s /t 30")
-            elif after_completion == 4 or after_completion == 6:
-                _, pid = win32process.GetWindowThreadProcessId(screen.handle.hwnd)
-                ret = os.system(f"taskkill /F /PID {pid}")
-                if ret == 0:
-                    log.info("成功关闭 Limbus Company")
-                elif ret == 128:
-                    log.error("错误：进程不存在")
-                elif ret == 1:
-                    log.error("错误：权限不足")
-            elif after_completion == 7:
-                if cfg.simulator_type == 0:
-                    from module.automation.input_handlers.simulator.mumu_control import (
-                        MumuControl,
-                    )
+            should_exit_aalc = execute_after_completion(actions, power_action)
+        except Exception:
+            log.exception("脚本结束后的操作失败")
 
-                    MumuControl.connection_device.close_simulator()
-                else:
-                    log.error("错误：暂不支持退出其他模拟器进程")
+    if cfg.simulator:
+        if cfg.simulator_type == 0:
+            from module.automation.input_handlers.simulator.mumu_control import (
+                MumuControl,
+            )
 
-        except Exception as e:
-            log.error(f"脚本结束后的操作失败: {e}")
+            MumuControl.clean_connect()
 
-        finally:
-            if after_completion in [5, 6, 8]:
-                return 0  # 正常退出信号
+    if should_exit_aalc:
+        return 0
 
 
 class my_script_task(QThread):
     def __init__(self):
         # 初始化，构造函数
         super().__init__()
-        self.exc_traceback = ""
         self.mutex = QMutex()
 
     def run(self):
@@ -414,27 +416,28 @@ class my_script_task(QThread):
             self.exception = e
         except Exception as e:
             self.exception = e
-            log.error(f"出现错误: {e}")
+            log.exception("脚本线程执行失败")
         finally:
-            if self.exc_traceback != "":
-                self.exc_traceback = "".join(format_exception(*exc_info()))
-                log.error(self.exc_traceback)
             self.mutex.unlock()
 
-        mediator.finished_signal.emit()
+        mediator.script_finished.emit()
 
     """def stop(self):
         self.running=False
         self.finished_signal.emit()"""
 
     def _run(self):
+        keep_awake_enabled = bool(cfg.get_value("experimental_keep_screen_awake", False))
         try:
+            if keep_awake_enabled:
+                apply_power_keep_awake(True)
             ret = script_task()
             if ret == 0:
                 mediator.kill_signal.emit()
+        finally:
+            if keep_awake_enabled:
+                # 先切回 AALC 再释放线程级防息屏，避免游戏仍持有前台时继续阻止息屏。
+                mediator.request_focus.emit()
+                self.msleep(800)  # 覆盖 WinRT toast 异步归还焦点（延迟约 600ms），再释放防息屏
+                apply_power_keep_awake(False)
             auto.clear_img_cache()
-        except Exception as e:
-            log.error(f"出现错误: {e}")
-            self.exc_traceback = "".join(format_exception(*exc_info()))
-            log.error(self.exc_traceback)
-            self.mutex.unlock()

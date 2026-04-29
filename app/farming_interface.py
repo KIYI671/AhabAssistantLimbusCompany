@@ -1,18 +1,28 @@
 import sys
+from typing import Callable
 
-from PySide6.QtCore import Qt
+from PySide6.QtCore import QT_TRANSLATE_NOOP, Qt
 from PySide6.QtGui import QTextCursor
-from PySide6.QtWidgets import QApplication, QTextEdit
+from PySide6.QtWidgets import QApplication, QDialog, QTextEdit
 from qfluentwidgets import (
+    BodyLabel,
+    CheckBox,
+    ComboBox,
+    FlyoutViewBase,
     PopUpAniStackedWidget,
+    PrimaryPushButton,
+    PushButton,
     TextEdit,
+    ToolTipFilter,
+    ToolTipPosition,
     TransparentToolButton,
+    qconfig,
     setCustomStyleSheet,
 )
 
 from app.base_combination import *
 from app.base_tools import *
-from app.common.ui_config import get_log_text_edit_qss
+from app.common.ui_config import get_log_text_edit_qss, set_border_style
 from app.language_manager import LanguageManager
 from app.page_card import (
     PageDailyTask,
@@ -22,27 +32,307 @@ from app.page_card import (
     PageSetWindows,
 )
 from app.team_setting_card import TeamSettingCard
+from module.after_completion_types import (
+    ACTION_EXIT_AALC,
+    ACTION_EXIT_EMULATOR,
+    ACTION_EXIT_GAME,
+    POWER_ACTION_HIBERNATE,
+    POWER_ACTION_LOCK,
+    POWER_ACTION_NONE,
+    POWER_ACTION_SHUTDOWN,
+    POWER_ACTION_SLEEP,
+    normalize_after_completion_config,
+)
 from module.automation import auto
+from module.config import TeamSetting, cfg
 from module.game_and_screen import screen
 from module.hotkey_listener import ExactGlobalHotKeys
 from module.logger import log, ui_log_dispatcher
+from module.system_actions import (
+    get_after_completion_config,
+    set_after_completion_config,
+)
 from tasks.base.script_task_scheme import my_script_task
 from utils.utils import check_hard_mirror_time
 
 
-class ThenComboBox(BaseComboBox):
-    """添加右键永久保存, 不泛用"""
+class AfterCompletionActionEditor(FlyoutViewBase):
+    def __init__(
+        self,
+        actions: list[str],
+        power_action: str,
+        on_apply: Callable[[list[str], str, bool], None],
+        parent=None,
+    ):
+        super().__init__(parent)
+        self._on_apply = on_apply
+        self._action_text = {
+            ACTION_EXIT_GAME: QT_TRANSLATE_NOOP("AfterCompletionActionEditor", "退出游戏"),
+            ACTION_EXIT_EMULATOR: QT_TRANSLATE_NOOP("AfterCompletionActionEditor", "退出模拟器"),
+            ACTION_EXIT_AALC: QT_TRANSLATE_NOOP("AfterCompletionActionEditor", "退出AALC"),
+        }
+        self._power_items = [
+            (QT_TRANSLATE_NOOP("AfterCompletionActionEditor", "无"), POWER_ACTION_NONE),
+            (QT_TRANSLATE_NOOP("AfterCompletionActionEditor", "睡眠"), POWER_ACTION_SLEEP),
+            (QT_TRANSLATE_NOOP("AfterCompletionActionEditor", "休眠"), POWER_ACTION_HIBERNATE),
+            (QT_TRANSLATE_NOOP("AfterCompletionActionEditor", "锁屏"), POWER_ACTION_LOCK),
+            (QT_TRANSLATE_NOOP("AfterCompletionActionEditor", "关机"), POWER_ACTION_SHUTDOWN),
+        ]
+        self._title_actions = QT_TRANSLATE_NOOP("AfterCompletionActionEditor", "前置动作（可多选）")
+        self._title_power = QT_TRANSLATE_NOOP("AfterCompletionActionEditor", "最终动作（单选）")
+        self._button_apply_once = QT_TRANSLATE_NOOP("AfterCompletionActionEditor", "仅本次生效")
+        self._button_save_default = QT_TRANSLATE_NOOP("AfterCompletionActionEditor", "保存为默认")
 
-    def __init__(self, config_name, combo_box_width=None, parent=None):
-        super().__init__(config_name, combo_box_width, tool_tip_delay=600, parent=parent)
+        self.vbox = QVBoxLayout(self)
+        self.vbox.setSpacing(10)
+        self.vbox.setContentsMargins(18, 14, 18, 14)
 
-    def on_change(self, index):
-        if cfg.get_value(self.config_name) is not None:
-            cfg.unsaved_set_value("keep_after_completion", self.combo_box.right_clicked)
-            cfg.set_value(self.config_name, list(self.items.items())[index][1])
+        self.label_actions = BodyLabel(self._title_actions)
+        self.vbox.addWidget(self.label_actions)
+
+        self.box_exit_game = CheckBox(self._action_text[ACTION_EXIT_GAME], self)
+        self.box_exit_emulator = CheckBox(self._action_text[ACTION_EXIT_EMULATOR], self)
+        self.box_exit_aalc = CheckBox(self._action_text[ACTION_EXIT_AALC], self)
+        self.vbox.addWidget(self.box_exit_game)
+        self.vbox.addWidget(self.box_exit_emulator)
+        self.vbox.addWidget(self.box_exit_aalc)
+
+        self.label_power = BodyLabel(self._title_power)
+        self.vbox.addWidget(self.label_power)
+
+        self.power_combo = ComboBox(self)
+        self.power_combo.addItems([self.tr(text) for text, _ in self._power_items])
+        self.vbox.addWidget(self.power_combo)
+
+        self.button_row = QHBoxLayout()
+        self.button_apply = PushButton(self._button_apply_once, self)
+        self.button_save = PrimaryPushButton(self._button_save_default, self)
+        self.button_row.addWidget(self.button_apply)
+        self.button_row.addWidget(self.button_save)
+        self.vbox.addLayout(self.button_row)
+
+        self.set_state(actions, power_action)
+
+        self.button_apply.clicked.connect(lambda: self._apply(False))
+        self.button_save.clicked.connect(lambda: self._apply(True))
+        self.retranslateUi()
+
+    def set_state(self, actions: list[str], power_action: str) -> None:
+        self.box_exit_game.setChecked(ACTION_EXIT_GAME in actions)
+        self.box_exit_emulator.setChecked(ACTION_EXIT_EMULATOR in actions)
+        self.box_exit_aalc.setChecked(ACTION_EXIT_AALC in actions)
+        self._set_power_combo(power_action)
+
+    def _set_power_combo(self, power_action: str) -> None:
+        for index, (_, value) in enumerate(self._power_items):
+            if value == power_action:
+                self.power_combo.setCurrentIndex(index)
+                return
+        self.power_combo.setCurrentIndex(0)
+
+    def _collect_actions(self) -> list[str]:
+        actions: list[str] = []
+        if self.box_exit_game.isChecked():
+            actions.append(ACTION_EXIT_GAME)
+        if self.box_exit_emulator.isChecked():
+            actions.append(ACTION_EXIT_EMULATOR)
+        if self.box_exit_aalc.isChecked():
+            actions.append(ACTION_EXIT_AALC)
+        return actions
+
+    def _collect_power_action(self) -> str:
+        idx = max(0, self.power_combo.currentIndex())
+        return self._power_items[idx][1]
+
+    def _apply(self, permanent: bool) -> None:
+        self._on_apply(self._collect_actions(), self._collect_power_action(), permanent)
+
+    def retranslateUi(self):
+        self.label_actions.setText(self.tr(self._title_actions))
+        self.label_power.setText(self.tr(self._title_power))
+        self.box_exit_game.setText(self.tr(self._action_text[ACTION_EXIT_GAME]))
+        self.box_exit_emulator.setText(self.tr(self._action_text[ACTION_EXIT_EMULATOR]))
+        self.box_exit_aalc.setText(self.tr(self._action_text[ACTION_EXIT_AALC]))
+        for index, (text, _) in enumerate(self._power_items):
+            self.power_combo.setItemText(index, self.tr(text))
+        self.button_apply.setText(self.tr(self._button_apply_once))
+        self.button_save.setText(self.tr(self._button_save_default))
+
+
+class AfterCompletionSelector(QFrame):
+    def __init__(self, parent=None):
+        super().__init__(parent=parent)
+        self._none_text = QT_TRANSLATE_NOOP("AfterCompletionSelector", "无")
+        self._action_text = {
+            ACTION_EXIT_GAME: QT_TRANSLATE_NOOP("AfterCompletionSelector", "退出游戏"),
+            ACTION_EXIT_EMULATOR: QT_TRANSLATE_NOOP("AfterCompletionSelector", "退出模拟器"),
+            ACTION_EXIT_AALC: QT_TRANSLATE_NOOP("AfterCompletionSelector", "退出AALC"),
+        }
+        self._power_text = {
+            POWER_ACTION_NONE: QT_TRANSLATE_NOOP("AfterCompletionSelector", "无"),
+            POWER_ACTION_SLEEP: QT_TRANSLATE_NOOP("AfterCompletionSelector", "睡眠"),
+            POWER_ACTION_HIBERNATE: QT_TRANSLATE_NOOP("AfterCompletionSelector", "休眠"),
+            POWER_ACTION_LOCK: QT_TRANSLATE_NOOP("AfterCompletionSelector", "锁屏"),
+            POWER_ACTION_SHUTDOWN: QT_TRANSLATE_NOOP("AfterCompletionSelector", "关机"),
+        }
+        self._edit_button_text = QT_TRANSLATE_NOOP("AfterCompletionSelector", "编辑")
+        self._saved_text = QT_TRANSLATE_NOOP("AfterCompletionSelector", "默认")
+        self._once_text = QT_TRANSLATE_NOOP("AfterCompletionSelector", "本次")
+        self._exit_prefix_text = QT_TRANSLATE_NOOP("AfterCompletionSelector", "退出")
+        self._joiner_text = QT_TRANSLATE_NOOP("AfterCompletionSelector", "与")
+        self._after_power_text = QT_TRANSLATE_NOOP("AfterCompletionSelector", "后，再{0}")
+        self._power_only_text = QT_TRANSLATE_NOOP("AfterCompletionSelector", "执行{0}")
+        self._do_nothing_text = QT_TRANSLATE_NOOP("AfterCompletionSelector", "什么也不干")
+        self._tool_tip_text = QT_TRANSLATE_NOOP(
+            "AfterCompletionSelector", "支持组合动作：退出目标后再执行电源动作，可选择仅本次或保存默认"
+        )
+
+        self.hbox = QHBoxLayout(self)
+        self.hbox.setContentsMargins(10, 5, 10, 5)
+        self.hbox.setSpacing(8)
+
+        self.summary = BodyLabel("", self)
+        self.summary.setWordWrap(True)
+        self.edit_button = PushButton(self._edit_button_text, self)
+        self.edit_button.setFixedWidth(72)
+
+        self.hbox.addWidget(self.summary, stretch=1)
+        self.hbox.addWidget(self.edit_button)
+        self.setMinimumWidth(280)
+        self._editor_dialog = None
+
+        if cfg.get_value("keep_after_completion", False) is False:
+            self._set_after_completion_config([], POWER_ACTION_NONE, persist=False)
+
+        self.edit_button.installEventFilter(ToolTipFilter(self))
+        self.summary.installEventFilter(ToolTipFilter(self.summary, position=ToolTipPosition.BOTTOM))
+
+        self.edit_button.clicked.connect(self._show_editor)
+        self.apply_style()
+        self.retranslateUi()
+
+        qconfig.themeChangedFinished.connect(self.apply_style)
+
+    def apply_style(self):
+        set_border_style(self)
+
+    def _summary_text(self, actions: list[str], power_action: str) -> tuple[str, str]:
+        exit_names = [self.tr(self._action_text[action]) for action in actions if action in self._action_text]
+        exit_targets = [
+            name[len(self.tr(self._exit_prefix_text)) :] if name.startswith(self.tr(self._exit_prefix_text)) else name
+            for name in exit_names
+        ]
+        power_text = self.tr(self._power_text.get(power_action, self._none_text))
+
+        if exit_targets:
+            exit_text = self.tr(self._joiner_text).join(exit_targets)
+            exit_clause = f"{self.tr(self._exit_prefix_text)}{exit_text}"
+            if power_action != POWER_ACTION_NONE:
+                display_text = f"{exit_clause}{self.tr(self._after_power_text).format(power_text)}"
+            else:
+                display_text = exit_clause
         else:
-            data_dict = {self.config_name: list(self.items.items())[index][1]}
-            self.send_switch_signal(data_dict)
+            if power_action != POWER_ACTION_NONE:
+                display_text = self.tr(self._power_only_text).format(power_text)
+            else:
+                display_text = self.tr(self._do_nothing_text)
+
+        mode = self.tr(self._saved_text if cfg.get_value("keep_after_completion", False) else self._once_text)
+        full_text = f"{display_text}（{mode}）"
+
+        # 动作较多时用换行压缩宽度，完整内容通过悬浮提示查看
+        if len(exit_targets) >= 3 and power_action != POWER_ACTION_NONE:
+            exit_text = self.tr(self._joiner_text).join(exit_targets)
+            display_text = (
+                f"{self.tr(self._exit_prefix_text)}{exit_text}\n{self.tr(self._after_power_text).format(power_text)}"
+            )
+
+        return display_text, full_text
+
+    def _show_editor(self):
+        if self._editor_dialog is not None and self._editor_dialog.isVisible():
+            self._editor_dialog.raise_()
+            self._editor_dialog.activateWindow()
+            return
+
+        # 先刷新摘要，确保界面展示与配置一致
+        self.refresh_from_config()
+        actions, power_action = get_after_completion_config()
+        dialog = QDialog(self.window())
+        dialog.setWindowTitle(self.tr("结束后操作"))
+        dialog.setWindowModality(Qt.WindowModality.WindowModal)
+        dialog.setAttribute(Qt.WA_DeleteOnClose, True)
+        dialog_layout = QVBoxLayout(dialog)
+        dialog_layout.setContentsMargins(0, 0, 0, 0)
+        editor = AfterCompletionActionEditor(
+            actions,
+            power_action,
+            lambda selected_actions, selected_power, permanent: self._apply_from_dialog(
+                selected_actions,
+                selected_power,
+                permanent,
+                dialog,
+            ),
+            dialog,
+        )
+        dialog_layout.addWidget(editor)
+        dialog.resize(360, 280)
+        dialog.finished.connect(lambda _: setattr(self, "_editor_dialog", None))
+        self._editor_dialog = dialog
+        dialog.show()
+
+    def _set_after_completion_config(self, actions: list[str], power_action: str, persist: bool):
+        # UI 层统一先规范化一次，避免一次性设置把脏值写入配置。
+        normalized_actions, normalized_power = normalize_after_completion_config(actions, power_action)
+        if persist:
+            set_after_completion_config(normalized_actions, normalized_power)
+        else:
+            cfg.unsaved_set_value("after_completion_actions", normalized_actions)
+            cfg.unsaved_set_value("after_completion_power_action", normalized_power)
+
+    def apply_selection(self, actions: list[str], power_action: str, permanent: bool):
+        cfg.unsaved_set_value("keep_after_completion", permanent)
+        self._set_after_completion_config(actions, power_action, persist=permanent)
+        self.refresh_from_config()
+        self._close_dialog()
+
+    def set_from_external(self, actions: list[str], power_action: str):
+        # 命令行/定时注入视为一次性设置，不覆盖用户默认偏好
+        cfg.unsaved_set_value("keep_after_completion", False)
+        self._set_after_completion_config(actions, power_action, persist=False)
+        self.refresh_from_config()
+        self._close_dialog()
+
+    def _apply_from_dialog(self, actions: list[str], power_action: str, permanent: bool, dialog: QDialog):
+        self.apply_selection(actions, power_action, permanent)
+        try:
+            dialog.close()
+        except Exception:
+            pass
+
+    def _close_dialog(self):
+        if self._editor_dialog is not None:
+            try:
+                self._editor_dialog.close()
+            except Exception:
+                pass
+            self._editor_dialog = None
+
+    def _hide_editor(self):
+        # 兼容外部调用
+        self._close_dialog()
+
+    def refresh_from_config(self):
+        actions, power_action = get_after_completion_config()
+        summary_text, full_text = self._summary_text(actions, power_action)
+        self.summary.setText(summary_text)
+        self.summary.setToolTip(full_text)
+
+    def retranslateUi(self):
+        self.edit_button.setText(self.tr(self._edit_button_text))
+        self.refresh_from_config()
+        if self._tool_tip_text:
+            self.setToolTip(self.tr(self._tool_tip_text))
 
 
 class FarmingInterface(QWidget):
@@ -103,6 +393,9 @@ class FarmingInterface(QWidget):
     def my_pause_and_resume(self):
         auto.set_pause()
 
+    def resizeEvent(self, event):
+        super().resizeEvent(event)
+
 
 class FarmingInterfaceLeft(QWidget):
     def __init__(self, parent=None):
@@ -111,7 +404,6 @@ class FarmingInterfaceLeft(QWidget):
         self.setObjectName("FarmingInterfaceLeft")
 
         self.my_script = None
-        self.then_info_bar = None
 
         self.__init_widget()
         self.__init_card()
@@ -181,14 +473,7 @@ class FarmingInterfaceLeft(QWidget):
 
         self.then = BaseLabel(QT_TRANSLATE_NOOP("BaseLabel", "之后"))
 
-        self.then_combobox = ThenComboBox("after_completion")
-        self.then_combobox.setToolTip(
-            QT_TRANSLATE_NOOP("ThenComboBox", "选择脚本结束后的操作，右键点击并更改选项可永久保存")
-        )
-        self.then_combobox.add_items(set_after_completion_options)
-        self.then_combobox.combo_box.RightClicked.connect(self.then_combobox_right_clicked)
-        if cfg.keep_after_completion is False:
-            self.then_combobox.set_options(0)
+        self.after_completion_selector = AfterCompletionSelector(self)
         self.link_start_button = NormalTextButton("Link Start!", "link_start", 0)
         self.link_start_button.clicked.connect(self.start_and_stop_tasks)
         self.link_start_button.button.setMinimumSize(130, 70)
@@ -216,7 +501,7 @@ class FarmingInterfaceLeft(QWidget):
 
         self.hbox_layout.addWidget(self.setting_box)
         self.hbox_layout.addWidget(self.then)
-        self.hbox_layout.addWidget(self.then_combobox)
+        self.hbox_layout.addWidget(self.after_completion_selector)
         self.hbox_layout.addWidget(self.link_start_button)
 
     @staticmethod
@@ -231,6 +516,10 @@ class FarmingInterfaceLeft(QWidget):
 
     def stop_AALC(self):
         log.debug("即将关闭AALC")
+        try:
+            self.after_completion_selector._hide_editor()
+        except Exception:
+            pass
         sys.exit(0)
 
     def check_setting(self):
@@ -275,8 +564,8 @@ class FarmingInterfaceLeft(QWidget):
             # 检测是否有未配置角色选择的队伍
             teams_be_select = cfg.get_value("teams_be_select")
             for index in (i for i, t in enumerate(teams_be_select) if t is True):
-                team_setting = cfg.get_value(f"team{index + 1}_setting")
-                if team_setting["sinners_be_select"] == 0:
+                team_setting: TeamSetting = cfg.config.teams[f"{index + 1}"]
+                if team_setting.sinners_be_select == 0:
                     message = self.tr("存在未配置角色选择的队伍：TEAM_{0}")
                     mediator.warning.emit(message.format(index + 1))
                     return False
@@ -286,14 +575,14 @@ class FarmingInterfaceLeft(QWidget):
             hard = bool(cfg.hard_mirror)
             teams_be_select = cfg.get_value("teams_be_select")
             for index in (i for i, t in enumerate(teams_be_select) if t is True):
-                team_setting = cfg.get_value(f"team{index + 1}_setting")
-                if team_setting["fixed_team_use"] is False:
+                team_setting: TeamSetting = cfg.config.teams[f"{index + 1}"]
+                if team_setting.fixed_team_use is False:
                     useful = True
                     break
-                if team_setting["fixed_team_use_select"] == 1 and hard is False:
+                if team_setting.fixed_team_use_select == 1 and hard is False:
                     useful = True
                     break
-                if team_setting["fixed_team_use_select"] == 0 and hard is True:
+                if team_setting.fixed_team_use_select == 0 and hard is True:
                     useful = True
                     break
             if useful is False:
@@ -320,7 +609,8 @@ class FarmingInterfaceLeft(QWidget):
             self.create_and_start_script()
         else:
             if cfg.set_reduce_miscontact and cfg.simulator is False:
-                screen.reset_win()
+                # 手动停止时仍需恢复游戏窗口，但这里不再要求抢前台。
+                screen.reset_win(activate=False)
             else:
                 if cfg.simulator_type == 0:
                     from module.automation.input_handlers.simulator.mumu_control import (
@@ -331,7 +621,7 @@ class FarmingInterfaceLeft(QWidget):
                         try:
                             MumuControl.clean_connect()
                             break
-                        except:
+                        except Exception:
                             continue
                 else:
                     from module.automation.input_handlers.simulator.simulator_control import (
@@ -342,14 +632,25 @@ class FarmingInterfaceLeft(QWidget):
                         try:
                             SimulatorControl.clean_connect()
                             break
-                        except:
+                        except Exception:
                             continue
             self.link_start_button.set_text("Link Start!")
             self._enable_setting(self.parent())
             mediator.refresh_teams_order.emit()
+            # 检查线程是否仍在运行，如果仍在运行则执行清理，否则跳过（因为脚本已自行清理）
+            thread_was_running = self.my_script is not None and self.my_script.isRunning()
             self.stop_script()
-            auto.clear_img_cache()
+            if thread_was_running:
+                auto.clear_img_cache()
             mediator.mirror_bar_kill_signal.emit()
+
+    def _on_script_finished(self):
+        # 自然结束只做 UI 收尾；不要复用“手动停止”入口，否则会重复触发窗口清理。
+        log.debug("脚本自然结束，执行 UI 收尾，不再重复重置游戏窗口")
+        self.link_start_button.set_text("Link Start!")
+        self._enable_setting(self.parent())
+        mediator.refresh_teams_order.emit()
+        mediator.mirror_bar_kill_signal.emit()
 
     def _disable_setting(self, parent):
         for child in parent.children():
@@ -399,20 +700,6 @@ class FarmingInterfaceLeft(QWidget):
                 # 递归处理子部件的子部件（如布局中的嵌套控件）
                 self._enable_setting(child)
 
-    def then_combobox_right_clicked(self):
-        if self.then_info_bar is not None:
-            return
-        self.then_info_bar = BaseInfoBar.info(
-            title=self.tr("当前选择后会永久保存"),
-            content="",
-            orient=Qt.Horizontal,
-            isClosable=True,
-            position=InfoBarPosition.BOTTOM_LEFT,
-            duration=1500,
-            parent=self.window(),
-        )
-        self.then_info_bar.destroyed.connect(lambda: setattr(self, "then_info_bar", None))
-
     def create_and_start_script(self):
         try:
             msg = "开始进行所有任务"
@@ -425,6 +712,8 @@ class FarmingInterfaceLeft(QWidget):
             self.my_script.start()
         except Exception as e:
             log.error(f"启动脚本失败: {e}")
+            self.link_start_button.set_text("Link Start!")
+            self._enable_setting(self.parent())
 
     def stop_script(self):
         if self.my_script and self.my_script.isRunning():
@@ -440,7 +729,9 @@ class FarmingInterfaceLeft(QWidget):
         # 连接所有可能信号
         mediator.link_start.connect(self.my_stop_shortcut)
         mediator.kill_signal.connect(self.stop_AALC)
+        # finished_signal 目前用于命令行延迟触发开始/停止按钮逻辑。
         mediator.finished_signal.connect(self.start_and_stop_tasks)
+        mediator.script_finished.connect(self._on_script_finished)
 
     def retranslateUi(self):
         self.set_windows.retranslateUi()
@@ -451,7 +742,7 @@ class FarmingInterfaceLeft(QWidget):
         self.resonate_with_Ahab.retranslateUi()
 
         self.then.retranslateUi()
-        self.then_combobox.retranslateUi()
+        self.after_completion_selector.retranslateUi()
         self.select_all.retranslateUi()
         self.clear_all.retranslateUi()
 

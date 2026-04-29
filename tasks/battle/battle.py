@@ -153,6 +153,7 @@ class Battle:
         defense_all_time=False,
         defense_on_turn1=False,
         choice_event_handling=True,
+        combat_count=1,
     ):
         chance = self.INIT_CHANCE
         waiting = self._update_wait_time()
@@ -179,7 +180,7 @@ class Battle:
                 continue
             if auto.get_restore_time() is not None:
                 start_time = max(start_time, auto.get_restore_time())
-            if infinite_battle is False and check_times(start_time, timeout=900, logs=False):
+            if infinite_battle is False and check_times(start_time, timeout=900 * combat_count, logs=False):
                 from tasks.base.back_init_menu import back_init_menu
 
                 back_init_menu()
@@ -272,7 +273,7 @@ class Battle:
                     sc = cv2.inRange(sc, 50, 255)
                     result = ocr.run(sc)
                     ocr_result = [result.txts[i] for i in range(len(result.txts))]
-                    ocr_result = "".join(ocr_result)
+                    ocr_result = "".join(ocr_result).lower()
                 except:
                     ocr_result = ""
                 if "turn" in ocr_result:
@@ -327,7 +328,7 @@ class Battle:
                     sc = cv2.inRange(sc, 50, 255)
                     result = ocr.run(sc)
                     ocr_result = [result.txts[i] for i in range(len(result.txts))]
-                    ocr_result = "".join(ocr_result)
+                    ocr_result = "".join(ocr_result).lower()
                 except:
                     ocr_result = ""
                 if (
@@ -401,16 +402,17 @@ class Battle:
                     else:
                         event_chance = -1
 
-            if auto.find_element("event/perform_the_check_feature_assets.png"):
+            if choice_event_handling and auto.find_element("event/perform_the_check_feature_assets.png"):
                 event_handling.decision_event_handling()
-            if auto.click_element("event/continue_assets.png"):
-                continue
-            if auto.click_element("event/proceed_assets.png"):
-                continue
-            if auto.click_element("event/commence_assets.png"):
-                continue
-            if auto.click_element("event/skip_assets.png", times=6):
-                continue
+            if choice_event_handling:
+                if auto.click_element("event/continue_assets.png"):
+                    continue
+                if auto.click_element("event/proceed_assets.png"):
+                    continue
+                if auto.click_element("event/commence_assets.png"):
+                    continue
+                if auto.click_element("event/skip_assets.png", times=6):
+                    continue
             if not self.is_tool:
                 # 点击中心以跳过播报员播报加速结算动画
                 random_number = random.randint(-10, 10)

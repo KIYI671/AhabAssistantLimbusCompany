@@ -25,6 +25,8 @@ from tasks.base.make_enkephalin_module import (
     make_enkephalin_module,
 )
 from tasks.base.retry import kill_game
+
+
 class ProductionWork(QThread):
     """生产逻辑工作线程，避免阻塞UI"""
 

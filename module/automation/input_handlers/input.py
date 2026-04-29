@@ -73,6 +73,10 @@ class WinAbstractInput(AbstractInput):
     Tips: 有特殊需求写在对应方法描述中
     """
 
+    def __init__(self) -> None:
+        super().__init__()
+        self.use_post_message = cfg.config.use_post_message
+
     def get_mouse_position(self) -> tuple[int, int]:
         """获取鼠标当前位置
 
@@ -224,9 +228,6 @@ class BackgroundInput(WinAbstractInput, metaclass=SingletonMeta):
     \n 除了不支持滚轮事件, 其余同 `Input` 类
     """
 
-    use_post_message = True
-    """控制所有输入事件是否使用`PostMessage"""
-
     def mouse_to_blank(self, coordinate=(1, 1), move_back=True) -> None:
         """鼠标移动到空白位置，避免遮挡（然而为了避免影响用户操作，这个暂时没用）
         Args:
@@ -272,6 +273,7 @@ class BackgroundInput(WinAbstractInput, metaclass=SingletonMeta):
             self.set_mouse_pos(x, y)
             self.set_active()
             self.mouse_down(x, y)
+            sleep(0.03)
             self.mouse_up(x, y)
             # 多次点击执行很快所以暂停放到循环外
 
@@ -298,8 +300,9 @@ class BackgroundInput(WinAbstractInput, metaclass=SingletonMeta):
         self.set_active()
         self.set_mouse_pos(x, y)
         self.mouse_down(x, y)
-        self.set_mouse_pos(x, y + int(300 * scale * reverse), duration=0.4)
-        self.mouse_up(x, y)
+        end_y = y + int(300 * scale * reverse)
+        self.set_mouse_pos(x, end_y, duration=0.4)
+        self.mouse_up(x, end_y)
 
         if move_back and current_mouse_position:
             self.mouse_move(current_mouse_position)
@@ -324,7 +327,7 @@ class BackgroundInput(WinAbstractInput, metaclass=SingletonMeta):
             sleep(drag_time * 0.3)
         else:
             sleep(0.5)
-        self.mouse_up(x, y)
+        self.mouse_up(x + dx, y + dy)
 
         if move_back and current_mouse_position:
             self.mouse_move(current_mouse_position)
@@ -361,6 +364,7 @@ class BackgroundInput(WinAbstractInput, metaclass=SingletonMeta):
             self.set_mouse_pos(x, y)
             self.set_active()
             self.mouse_down(x, y)
+            sleep(0.03)
             self.mouse_up(x, y)
 
         if move_back and current_mouse_position:
@@ -420,9 +424,10 @@ class BackgroundInput(WinAbstractInput, metaclass=SingletonMeta):
         long_positon = win32api.MAKELONG(x, y)
         if self.use_post_message:
             win32api.PostMessage(hwnd, win32con.WM_LBUTTONDOWN, 0, long_positon)
+            sleep(0.02 + cfg.config.mouse_down_duration)
         else:
             win32api.SendMessage(hwnd, win32con.WM_LBUTTONDOWN, 0, long_positon)
-        sleep(0.01)
+            sleep(0.01)
 
     def mouse_up(self, x, y):
         """鼠标左键抬起
@@ -436,9 +441,10 @@ class BackgroundInput(WinAbstractInput, metaclass=SingletonMeta):
         long_positon = win32api.MAKELONG(x, y)
         if self.use_post_message:
             win32api.PostMessage(hwnd, win32con.WM_LBUTTONUP, 0, long_positon)
+            sleep(0.02)
         else:
             win32api.SendMessage(hwnd, win32con.WM_LBUTTONUP, 0, long_positon)
-        sleep(0.01)
+            sleep(0.01)
 
     def set_mouse_pos(self, x, y, duration: float = 0):
         """移动光标位置
@@ -539,9 +545,6 @@ class BackgroundInput(WinAbstractInput, metaclass=SingletonMeta):
 class WindowMoveInput(WinAbstractInput, metaclass=SingletonMeta):
     """基于移动窗口位置改变光标相对位置的输入方式"""
 
-    use_post_message = True
-    """控制所有输入事件是否使用`PostMessage"""
-
     def mouse_to_blank(self, coordinate=(1, 1), move_back=False) -> None:
         # FIXME: 移动窗口来防止遮蔽不是一个好选择
         return
@@ -558,7 +561,7 @@ class WindowMoveInput(WinAbstractInput, metaclass=SingletonMeta):
             sleep(drag_time * 0.3)
         else:
             sleep(0.5)
-        self.mouse_up(x, y)
+        self.mouse_up(x + dx, y + dy)
         screen.handle.set_window_pos(*pos)
 
     def mouse_drag_down(self, x, y, reverse=1, move_back=True) -> None:
@@ -566,8 +569,9 @@ class WindowMoveInput(WinAbstractInput, metaclass=SingletonMeta):
         self.set_active()
         pos = self._set_window_pos(x, y)
         self.mouse_down(x, y)
-        self._window_move_to(x, y + int(500 * scale * reverse), duration=0.6)
-        self.mouse_up(x, y)
+        end_y = y + int(500 * scale * reverse)
+        self._window_move_to(x, end_y, duration=0.6)
+        self.mouse_up(x, end_y)
 
         screen.handle.set_window_pos(*pos)
 
@@ -729,9 +733,10 @@ class WindowMoveInput(WinAbstractInput, metaclass=SingletonMeta):
         long_positon = win32api.MAKELONG(x, y)
         if self.use_post_message:
             win32api.PostMessage(hwnd, win32con.WM_LBUTTONDOWN, 0, long_positon)
+            sleep(0.02 + cfg.config.mouse_down_duration)
         else:
             win32api.SendMessage(hwnd, win32con.WM_LBUTTONDOWN, 0, long_positon)
-        sleep(0.01)
+            sleep(0.01)
 
     def mouse_up(self, x, y):
         """鼠标左键抬起
@@ -745,9 +750,10 @@ class WindowMoveInput(WinAbstractInput, metaclass=SingletonMeta):
         long_positon = win32api.MAKELONG(x, y)
         if self.use_post_message:
             win32api.PostMessage(hwnd, win32con.WM_LBUTTONUP, 0, long_positon)
+            sleep(0.02)
         else:
             win32api.SendMessage(hwnd, win32con.WM_LBUTTONUP, 0, long_positon)
-        sleep(0.01)
+            sleep(0.01)
 
     def mouse_click(self, x, y, times=1, move_back=False) -> bool:
         msg = f"点击位置:({x},{y})"

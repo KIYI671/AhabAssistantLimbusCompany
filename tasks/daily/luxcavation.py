@@ -5,7 +5,7 @@ from module.config import cfg
 from module.logger import log
 
 
-def EXP_luxcavation():
+def EXP_luxcavation(combat_count: int = 1):
     loop_count = 30
     auto.model = "clam"
     while True:
@@ -22,18 +22,28 @@ def EXP_luxcavation():
         if auto.find_element("luxcavation/exp_enter.png", threshold=0.85, take_screenshot=True):
             if level := auto.find_element("luxcavation/exp_enter.png", find_type="image_with_multiple_targets"):
                 level = sorted(level, key=lambda x: x[0], reverse=True)
+                scale = cfg.set_win_size / 1440
                 for lv in level:
-                    auto.mouse_click(lv[0], lv[1])
-                    sleep(1)
-                    auto.mouse_to_blank()
+                    if combat_count > 1:
+                        auto.mouse_click(lv[0] + 300 * scale, lv[1] - 450 * scale)
+                        sleep(0.1)
+                        if slide_bar := auto.find_element("luxcavation/continuous_combat.png", take_screenshot=True):
+                            auto.mouse_drag(slide_bar[0], slide_bar[1], dx=30 * scale * (combat_count - 1))
+
                     select_team = False
                     for _ in range(3):
-                        if auto.find_element("battle/teams_assets.png", take_screenshot=True) or auto.find_element(
-                            "home/first_prompt_assets.png",
-                            model="clam",
-                            take_screenshot=True,
-                        ):
-                            select_team = True
+                        auto.mouse_click(lv[0], lv[1])
+                        sleep(1)
+                        auto.mouse_to_blank()
+                        for _ in range(3):
+                            if auto.find_element("battle/teams_assets.png", take_screenshot=True) or auto.find_element(
+                                "home/first_prompt_assets.png",
+                                model="clam",
+                                take_screenshot=True,
+                            ):
+                                select_team = True
+                                break
+                        if select_team:
                             break
                     if select_team:
                         break
@@ -67,7 +77,7 @@ def EXP_luxcavation():
             break
 
 
-def thread_luxcavation():
+def thread_luxcavation(combat_count: int = 1):
     loop_count = 30
     auto.model = "clam"
     while True:
@@ -99,11 +109,34 @@ def thread_luxcavation():
                     level = [(x, y) for x, y in level if x >= 700 * scale]
                 if level:
                     level = sorted(level, key=lambda y: y[1], reverse=True)
+                    if combat_count > 1 and auto.click_element(
+                        "luxcavation/thread_continuous_combat_show_box_assets.png"
+                    ):
+                        scale = cfg.set_win_size / 1440
+                        sleep(0.1)
+                        if slide_bar := auto.find_element(
+                            "luxcavation/continuous_combat.png", threshold=0.78, take_screenshot=True
+                        ):
+                            auto.mouse_drag(slide_bar[0], slide_bar[1], dx=32 * scale * (combat_count - 1))
                     for lv in level:
-                        auto.mouse_click(lv[0], lv[1])
-                        sleep(1)
-                        auto.mouse_to_blank()
-                        if auto.find_element("battle/teams_assets.png", take_screenshot=True):
+                        select_team = False
+                        for _ in range(3):
+                            auto.mouse_click(lv[0], lv[1])
+                            sleep(1)
+                            auto.mouse_to_blank()
+                            for _ in range(3):
+                                if auto.find_element(
+                                    "battle/teams_assets.png", take_screenshot=True
+                                ) or auto.find_element(
+                                    "home/first_prompt_assets.png",
+                                    model="clam",
+                                    take_screenshot=True,
+                                ):
+                                    select_team = True
+                                    break
+                            if select_team:
+                                break
+                        if select_team:
                             break
                 else:
                     # 处理下方所有关卡未解锁的情况
@@ -131,6 +164,15 @@ def thread_luxcavation():
                         continue
 
                     level = sorted(level, key=lambda y: y[1], reverse=True)
+                    if combat_count > 1 and auto.click_element(
+                        "luxcavation/thread_continuous_combat_show_box_assets.png"
+                    ):
+                        scale = cfg.set_win_size / 1440
+                        sleep(0.1)
+                        if slide_bar := auto.find_element(
+                            "luxcavation/continuous_combat.png", threshold=0.78, take_screenshot=True
+                        ):
+                            auto.mouse_drag(slide_bar[0], slide_bar[1], dx=32 * scale * (combat_count - 1))
                     for lv in level:
                         auto.mouse_click(lv[0], lv[1])
                         sleep(1)

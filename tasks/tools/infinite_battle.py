@@ -15,6 +15,9 @@ from module.game_and_screen import screen
 from module.hotkey_listener import ExactGlobalHotKeys
 from module.logger import log
 from tasks.battle.battle import Battle
+from utils.path_manager import path_manager
+
+
 class BattleWorker(QThread):
     """战斗逻辑工作线程，避免阻塞UI"""
 
@@ -52,6 +55,9 @@ class BattleWorker(QThread):
 
                 init_game()
                 self._set_win()
+                path_manager.initialize_paths(cfg.language_in_game)
+                auto.clear_img_cache()
+                log.debug(f"初始化图片路径: {path_manager.pic_path}")
                 self.initialized = True
                 self.initialization_complete.emit()
             except Exception as e:

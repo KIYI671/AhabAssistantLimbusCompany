@@ -78,7 +78,7 @@ def back_init_menu():
 
         if auto.click_element("mirror/road_in_mir/towindow&forfeit_confirm_assets.png"):
             continue
-        if auto.click_element("mirror/road_in_mir/to_window_assets.png"):
+        if auto.click_element("mirror/road_in_mir/to_window_assets.png", threshold=0.75):
             continue
         if auto.find_element("mirror/road_in_mir/legend_assets.png"):
             auto.click_element("mirror/road_in_mir/setting_assets.png")

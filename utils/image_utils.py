@@ -79,7 +79,7 @@ class ImageUtils:
             image = image[:, :, :3].copy()
         if resize:
             win_size = cfg.set_win_size
-# 如果win_size 为2560*1440，则不变，否则将图片缩放到对应的16：9大小
+            # 如果win_size 为2560*1440，则不变，否则将图片缩放到对应的16：9大小
             if win_size < 1440:
                 image = cv2.resize(
                     image,

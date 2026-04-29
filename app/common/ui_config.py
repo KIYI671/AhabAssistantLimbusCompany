@@ -2,11 +2,17 @@
 from typing import TYPE_CHECKING
 
 from PySide6.QtCore import Qt
-from qfluentwidgets import qconfig
+from PySide6.QtWidgets import QFrame
+from qfluentwidgets import isDarkTheme, qconfig
 
 if TYPE_CHECKING:
     from PySide6.QtGui import QPaintEvent
     from qfluentwidgets import SegmentedWidget
+
+BORDER_STYLE = {
+    "dark": """border: 1px solid #545454; border-radius: {radius}px;""",
+    "light": """border: 1px solid #c0c0c0; border-radius: {radius}px;""",
+}
 
 # 全局字体配置
 FONT_FAMILIES = [
@@ -466,3 +472,13 @@ SETTING_INTERFACE_STYLES = {
 def get_setting_interface_qss() -> tuple[str, str]:
     """返回 (light_qss, dark_qss) 用于设置界面"""
     return SETTING_INTERFACE_STYLES["light"], SETTING_INTERFACE_STYLES["dark"]
+
+
+def set_border_style(qframe: QFrame, is_dark: bool | None = None, border_radius: int = 5):
+    """为 QFrame 及子类设置边框样式"""
+    if is_dark is None:
+        is_dark = isDarkTheme()
+    style = BORDER_STYLE["dark"] if is_dark else BORDER_STYLE["light"]
+    style = style.format(radius=border_radius)
+    qss = f"{qframe.__class__.__name__} {{{style}}}"
+    qframe.setStyleSheet(qss)

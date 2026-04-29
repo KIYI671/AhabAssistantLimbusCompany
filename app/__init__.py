@@ -64,6 +64,7 @@ set_after_completion_options = {
     QT_TRANSLATE_NOOP("BaseComboBox", "退出AALC和MUMU模拟器"): 8,
 }
 all_teams = {f"Team{i}": i for i in range(1, 21)}
+coutinuous_times = {f"{i} Times": i for i in range(1, 11)}
 all_systems = {
     QT_TRANSLATE_NOOP("BaseComboBox", "烧伤"): 0,
     QT_TRANSLATE_NOOP("BaseComboBox", "流血"): 1,
@@ -118,9 +119,17 @@ skill_replacement_sinner = {
 }
 skill_replacement_mode = {"1→3": 0, "2→3": 1, "1→2": 2}
 
+refresh_count_options = {
+    "0": 0,
+    "1": 1,
+    "2": 2,
+    "3": 3,
+    "4": 4,
+    "5": 5,
+}
+
 blank_team_setting = {}
 
-team_setting_template = cfg._load_default_config().get("team1_setting", {})
 
 all_sinners_name = [
     "YiSang",
@@ -171,6 +180,8 @@ all_combobox_config_name = [
     "second_system_setting",
     "skill_replacement_select",
     "skill_replacement_mode",
+    "max_keyword_refresh",
+    "max_normal_refresh",
 ]
 
 all_checkbox_config_name = [
