@@ -774,7 +774,9 @@ class Mirror:
                             level_one_count += 1
                         elif self.opening_bonus_level[index] == 2:
                             level_two_count += 1
-                if len(click_list) == level_one_count:
+                if len(click_list) == 0:
+                    all_click_level = 0
+                elif len(click_list) == level_one_count:
                     all_click_level = 1
                 elif len(click_list) == level_two_count:
                     all_click_level = 2
