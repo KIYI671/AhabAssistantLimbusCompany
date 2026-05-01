@@ -521,7 +521,9 @@ class MumuControl(AbstractInput):
 
             # 尝试解析JSON
             try:
-                proc_result = json.loads(proc.stdout.strip())
+                output_lines = proc.stdout.strip().splitlines()
+                clean_json = "\n".join([line for line in output_lines if "Active code page" not in line])
+                proc_result = json.loads(clean_json)
                 result = bool(proc_result.get("app_keptlive") == "true")  # 使用get避免KeyError
                 return result
             except json.JSONDecodeError:
