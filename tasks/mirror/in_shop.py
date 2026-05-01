@@ -697,7 +697,7 @@ class Shop:
             points = auto.find_element(
                 "mirror/shop/fuse_label.png",
                 find_type="image_with_multiple_targets",
-                threshold=0.9,
+                threshold=0.85,
                 take_screenshot=True,
             )
             if len(points) < 2:
