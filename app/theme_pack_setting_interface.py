@@ -580,7 +580,7 @@ class ThemePackSettingDialog(FramelessDialog):
 
         self.batch_menu_button.setMenu(self.batch_menu)
 
-        # Connect to show menu upward
+        # 连接以向上显示菜单
         self.batch_menu_button.clicked.connect(lambda: self._show_menu_upward(self.batch_menu_button, self.batch_menu))
 
         # 导入导出按钮（仅队伍特定配置显示）
@@ -794,9 +794,9 @@ class ThemePackSettingDialog(FramelessDialog):
         self._has_unsaved_changes = True
 
     def _show_menu_upward(self, button, menu):
-        """Show menu above the button instead of below"""
-        # Anchor the menu to the button's global top-left corner and shift it
-        # upward by the menu height so the whole menu appears above the button.
+        """在按钮上方而不是下方显示菜单"""
+        # 将菜单锚定到按钮的全局左上角，并向上移动菜单高度
+        # 使整个菜单显示在按钮上方
         button_pos = button.mapToGlobal(button.rect().topLeft())
         menu_height = menu.sizeHint().height()
         menu.exec(button_pos.__class__(button_pos.x(), button_pos.y() - menu_height))
@@ -878,14 +878,14 @@ class ThemePackSettingDialog(FramelessDialog):
         self._has_unsaved_changes = True
 
     def _extract_team_num_from_path(self) -> int:
-        """Extract team number from save_path"""
+        """从保存路径中提取队伍编号"""
         match = re.search(r'team_(\d+)', self.save_path)
         if match:
             return int(match.group(1))
         return 0
 
     def on_export_settings(self):
-        """Export theme pack weight to YAML file"""
+        """导出主题包权重到 YAML 文件"""
         if not self.is_team_specific:
             return
 
@@ -900,7 +900,7 @@ class ThemePackSettingDialog(FramelessDialog):
         )
 
         if file_path:
-            # Save current config first to ensure export gets latest data
+            # 先保存当前配置以确保导出获取最新数据
             theme_list.save_config(path=self.save_path, config_data=self.config_data)
 
             success = export_theme_pack_weight(team_num, file_path)
@@ -926,7 +926,7 @@ class ThemePackSettingDialog(FramelessDialog):
                 )
 
     def on_import_settings(self):
-        """Import theme pack weight from YAML file"""
+        """从 YAML 文件导入主题包权重"""
         if not self.is_team_specific:
             return
 
@@ -940,7 +940,7 @@ class ThemePackSettingDialog(FramelessDialog):
         if not file_path:
             return
 
-        # Show confirmation dialog
+        # 显示确认对话框
         confirm = MessageBoxConfirm(
             self.tr("确认导入"),
             self.tr("导入将覆盖当前主题包权重设置，是否继续？"),
@@ -954,12 +954,12 @@ class ThemePackSettingDialog(FramelessDialog):
         success = import_theme_pack_weight(file_path, team_num)
 
         if success:
-            # Reload the config data from file
+            # 从文件重新加载配置数据
             self.config_data.clear()
             reloaded_config = theme_list.load_config(self.save_path)
             self.config_data.update(copy.deepcopy(reloaded_config))
 
-            # Update UI to reflect imported data
+            # 更新界面以反映导入的数据
             if self.is_cn:
                 normal_imported = reloaded_config.get("theme_pack_list_cn", {})
                 hard_imported = reloaded_config.get("theme_pack_list_hard_cn", {})

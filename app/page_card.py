@@ -14,6 +14,9 @@ from PySide6.QtWidgets import QFrame, QHBoxLayout, QVBoxLayout, QWidget, QFileDi
 from qfluentwidgets import FluentIcon as FIF
 from qfluentwidgets import (
     Action,
+    InfoBar,
+    InfoBarPosition,
+    MessageBox,
     PopUpAniStackedWidget,
     RoundMenu,
     ScrollArea,
@@ -645,7 +648,7 @@ class PageMirror(PageCard):
                 cfg.save()
 
     def show_team_creation_menu(self):
-        """Show menu with options to create team from scratch or from file"""
+        """显示菜单，提供从头创建队伍或从文件创建的选项"""
         menu = RoundMenu(parent=self)
 
         create_new_action = Action(FIF.ADD, self.tr("创建空白队伍"))
@@ -656,14 +659,12 @@ class PageMirror(PageCard):
         create_from_file_action.triggered.connect(self.create_team_from_file)
         menu.addAction(create_from_file_action)
 
-        # Show menu at button position
+        # 在按钮位置显示菜单
         menu.exec(self.add_team_button.mapToGlobal(self.add_team_button.rect().bottomLeft()))
 
     def create_team_from_file(self):
-        """Create a new team from an imported configuration file"""
-        from qfluentwidgets import InfoBar, InfoBarPosition, MessageBox
-
-        # Open file dialog to select YAML file
+        """从导入的配置文件创建新队伍"""
+        # 打开文件对话框选择 YAML 文件
         file_path, _ = QFileDialog.getOpenFileName(
             self,
             self.tr("选择队伍配置文件"),
@@ -674,7 +675,7 @@ class PageMirror(PageCard):
         if not file_path:
             return
 
-        # Import team settings from file
+        # 从文件导入队伍设置
         team_setting, theme_pack_weight, missing_fields = import_team_settings(file_path, 1)
 
         if team_setting is None:
@@ -685,7 +686,7 @@ class PageMirror(PageCard):
             ).exec()
             return
 
-        # Show warning if fields are missing
+        # 如果字段缺失则显示警告
         if missing_fields:
             missing_text = "\n- ".join(missing_fields)
             w = MessageBox(
@@ -698,10 +699,10 @@ class PageMirror(PageCard):
             if not w.exec():
                 return
 
-        # Auto-increment to next available team slot
+        # 自动递增到下一个可用的队伍槽位
         existing_teams = sorted([int(k) for k in cfg.config.teams.keys()])
 
-        # Find the next available slot
+        # 查找下一个可用槽位
         team_num = None
         for i in range(1, 21):
             if i not in existing_teams:
@@ -716,17 +717,17 @@ class PageMirror(PageCard):
             ).exec()
             return
 
-        # Apply the imported settings
+        # 应用导入的设置
         try:
             apply_team_settings(team_num, team_setting, theme_pack_weight)
 
-            # Add to teams_be_select and teams_order
+            # 添加到 teams_be_select 和 teams_order
             while len(cfg.config.teams_be_select) < team_num:
                 cfg.config.teams_be_select.append(False)
             while len(cfg.config.teams_order) < team_num:
                 cfg.config.teams_order.append(0)
 
-            # Refresh the UI
+            # 刷新界面
             self.get_setting()
 
             InfoBar.success(
@@ -934,7 +935,7 @@ class MarkdownViewer(QWidget):
         layout.addWidget(self.text_browser)
         self.help_path = file_path
 
-        # Connect theme change signal after help_path is set
+        # 在设置 help_path 后连接主题变化信号
         qconfig.themeChanged.connect(self.updateStyle)
         self.reset_viewer()
 
@@ -947,7 +948,7 @@ class MarkdownViewer(QWidget):
 
     def handle_link_clicked(self, url: QUrl):
         """
-        Decides how to handle a clicked link in the QTextBrowser.
+        处理 QTextBrowser 中点击链接的逻辑
         """
         if url.scheme() in ["http", "https"]:
             # 用系统默认浏览器打开外部链接

@@ -450,7 +450,7 @@ class TeamSettingCard(QFrame):
         mediator.close_setting.emit()
 
     def on_export_settings(self):
-        """Export team settings to YAML file"""
+        """导出队伍设置到 YAML 文件"""
         default_filename = generate_team_export_filename(self.team_num)
         file_path, _ = QFileDialog.getSaveFileName(
             self,
@@ -483,7 +483,7 @@ class TeamSettingCard(QFrame):
                 )
 
     def on_import_settings(self):
-        """Import team settings from YAML file"""
+        """从 YAML 文件导入队伍设置"""
         file_path, _ = QFileDialog.getOpenFileName(
             self,
             self.tr("导入队伍设置"),
@@ -508,7 +508,7 @@ class TeamSettingCard(QFrame):
             )
             return
 
-        # Show warning if there are missing fields
+        # 如果有缺失字段则显示警告
         if missing_fields:
             BaseInfoBar.warning(
                 title=self.tr("部分字段缺失"),
@@ -520,7 +520,7 @@ class TeamSettingCard(QFrame):
                 parent=self
             )
 
-        # Show confirmation dialog
+        # 显示确认对话框
         confirm = MessageBoxConfirm(
             self.tr("确认导入"),
             self.tr("导入将覆盖当前队伍设置，是否继续？"),
