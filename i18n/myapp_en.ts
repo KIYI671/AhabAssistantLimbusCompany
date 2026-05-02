@@ -787,8 +787,8 @@ Right-click to set as permanent</translation>
     </message>
     <message>
         <location filename="../app/__init__.py" line="118"/>
-        <source>所有人</source>
-        <translation>All</translation>
+        <source>所有选中的人</source>
+        <translation>All selected sinners</translation>
     </message>
     <message>
         <location filename="../app/__init__.py" line="98"/>
