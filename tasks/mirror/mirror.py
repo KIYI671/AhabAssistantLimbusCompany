@@ -32,6 +32,7 @@ from tasks.mirror.search_road import (
 from tasks.mirror.select_theme_pack import select_theme_pack
 from tasks.teams.team_formation import check_team, select_battle_team, team_formation
 from utils.image_utils import ImageUtils
+from utils.path_manager import path_manager
 
 
 # 输出时间统计
@@ -364,7 +365,7 @@ class Mirror:
             ):
                 self.acquire_ego_gift(type=2)
                 continue
-            if main_loop_count < 30 and auto.find_text_element(["拒绝饰品", "refuse"]):
+            if main_loop_count < 30 and auto.find_language_text("拒绝饰品", "refuse"):
                 self.acquire_ego_gift(type=2)
                 continue
 
@@ -916,8 +917,7 @@ class Mirror:
                 auto.model = "aggressive"
                 log.debug("识别模式切换到激进模式")
             if loop_count < 5:
-                key_word = "current" if cfg.language_in_game == "en" else "平均"
-                if auto.find_element(key_word, find_type="text"):
+                if auto.find_language_text("平均", "current"):
                     auto.click_element("mirror/road_to_mir/enter_mirror_confirm.png")
             if loop_count < 0:
                 log.error("无法进入镜牢,尝试回到初始界面")
@@ -1049,8 +1049,8 @@ class Mirror:
                 break
 
             if event_chance == 0:
-                key_word = "check" if cfg.language_in_game == "en" else "判定"
-                if auto.click_element(key_word, find_type="text", offset=False):
+                if key_word_position := auto.find_language_text("判定", "check"):
+                    auto.mouse_action_with_pos(key_word_position, offset=False)
                     event_chance += 5
             if 5 <= event_chance < 10:
                 auto.click_element("event/select_first_option_assets.png")
@@ -1194,10 +1194,7 @@ class Mirror:
                             button[1] + 350 * my_scale,
                         )
                         if not cfg.not_skip_whitegossypium:
-                            if cfg.language_in_game == "zh_cn":
-                                ocr_result = auto.find_text_element("白棉花", bbox)
-                            else:
-                                ocr_result = auto.find_text_element(["white", "gossypium"], bbox)
+                            ocr_result = auto.find_language_text("白棉花", ["white", "gossypium"], bbox)
                             if isinstance(ocr_result, list):
                                 if len(ocr_result) >= 2:
                                     continue
@@ -1219,10 +1216,7 @@ class Mirror:
                             button[1] + 350 * my_scale,
                         )
                         if not cfg.not_skip_whitegossypium:
-                            if cfg.language_in_game == "zh_cn":
-                                ocr_result = auto.find_text_element("白棉花", bbox)
-                            else:
-                                ocr_result = auto.find_text_element(["white", "gossypium"], bbox)
+                            ocr_result = auto.find_language_text("白棉花", ["white", "gossypium"], bbox)
                             if isinstance(ocr_result, list):
                                 if len(ocr_result) >= 2:
                                     time.sleep(1)
@@ -1258,10 +1252,7 @@ class Mirror:
                             button[1] + 350 * my_scale,
                         )
                         if not cfg.not_skip_whitegossypium:
-                            if cfg.language_in_game == "zh_cn":
-                                ocr_result = auto.find_text_element("白棉花", bbox)
-                            else:
-                                ocr_result = auto.find_text_element(["white", "gossypium"], bbox)
+                            ocr_result = auto.find_language_text("白棉花", ["white", "gossypium"], bbox)
                             if ocr_result:
                                 continue
                         if auto.find_element(
@@ -1415,33 +1406,45 @@ class Mirror:
     def get_which_floor(self):
         def extract_floor_from_text(ocr_text):
             normalized_text = ocr_text.replace(" ", "").replace("\n", "").lower()
-            floor = None
-            if cfg.language_in_game == "zh_cn":
+            def extract_zh_floor():
                 for pattern in (r"第([1-5])层", r"第([1-5])层?", r"([1-5])层"):
                     match = re.search(pattern, normalized_text)
                     if match:
-                        floor = int(match.group(1))
-                        break
-                if floor is None and "第" in normalized_text:
+                        return int(match.group(1))
+                if "第" in normalized_text:
                     for char in normalized_text[normalized_text.index("第") + 1 :]:
                         if char in "12345":
-                            floor = int(char)
-                            break
-            else:
+                            return int(char)
+                return None
+
+            def extract_en_floor():
                 for pattern in (r"floor([1-5])", r"oor([1-5])", r"([1-5])f"):
                     match = re.search(pattern, normalized_text)
                     if match:
-                        floor = int(match.group(1))
-                        break
-                if floor is None:
-                    anchor_index = normalized_text.find("floor")
-                    if anchor_index == -1:
-                        anchor_index = normalized_text.find("oor")
-                    if anchor_index != -1:
-                        for char in normalized_text[anchor_index:]:
-                            if char in "12345":
-                                floor = int(char)
-                                break
+                        return int(match.group(1))
+                anchor_index = normalized_text.find("floor")
+                if anchor_index == -1:
+                    anchor_index = normalized_text.find("oor")
+                if anchor_index != -1:
+                    for char in normalized_text[anchor_index:]:
+                        if char in "12345":
+                            return int(char)
+                return None
+
+            if path_manager.current_language == "zh_cn":
+                floor = extract_zh_floor()
+            elif path_manager.current_language == "en":
+                floor = extract_en_floor()
+            else:
+                floor = extract_zh_floor()
+                if floor is not None:
+                    path_manager.set_language("zh_cn")
+                else:
+                    floor = extract_en_floor()
+                    if floor is not None:
+                        path_manager.set_language("en")
+                        if path_manager.eliminate_zh_cn_paths():
+                            auto.clear_img_cache()
             if floor is None:
                 return None
             return floor if 0 < floor <= 5 else None

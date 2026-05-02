@@ -378,31 +378,31 @@ class Automation(metaclass=SingletonMeta):
                 return ocr_dict[text]
         return False
 
-    def find_text_element(self, target, my_crop=None, all_text=False, only_text=False, addtional_stack=0):
-        """
-        寻找文本元素所在的坐标位置
-        """
+    def _run_ocr_for_text(self, my_crop=None, only_text=False, addtional_stack=0):
         if my_crop is not None:
-            # 根据my_crop（为左上与右下四个坐标），截取self.screenshot的部分区域进行ocr
             cropped_image = self.screenshot.crop(my_crop)
             ocr_result = ocr.run(cropped_image)
         else:
             ocr_result = ocr.run(self.screenshot)
-        if ocr_result.txts:
-            ocr_text_list = [ocr_result.txts[i] for i in range(len(ocr_result.txts))]
-            if only_text:
-                return ocr_text_list
-            ocr_position_list = []
 
-            for box in ocr_result.boxes:
-                x = (box[0][0] + box[2][0]) / 2
-                y = (box[0][1] + box[2][1]) / 2
-                ocr_position_list.append([x, y])
+        if not ocr_result.txts:
+            return False if only_text else {}
 
-            ocr_dict = {text: position for text, position in zip(ocr_text_list, ocr_position_list)}
-            log.debug(f"识别到文本及其坐标：{ocr_dict}", stacklevel=addtional_stack + 3)
-        else:
-            ocr_dict = {}
+        ocr_text_list = [ocr_result.txts[i] for i in range(len(ocr_result.txts))]
+        if only_text:
+            return ocr_text_list
+
+        ocr_position_list = []
+        for box in ocr_result.boxes:
+            x = (box[0][0] + box[2][0]) / 2
+            y = (box[0][1] + box[2][1]) / 2
+            ocr_position_list.append([x, y])
+
+        ocr_dict = {text: position for text, position in zip(ocr_text_list, ocr_position_list)}
+        log.debug(f"识别到文本及其坐标：{ocr_dict}", stacklevel=addtional_stack + 3)
+        return ocr_dict
+
+    def _find_target_in_ocr_dict(self, target, ocr_dict, all_text=False):
         if ocr_dict == {}:
             return False
         if isinstance(target, str):
@@ -414,14 +414,78 @@ class Automation(metaclass=SingletonMeta):
                         return False
                 return True
             for key in target:
-                if self.find_str_in_text(str(key), ocr_dict):
-                    return self.find_str_in_text(str(key), ocr_dict)
+                if result := self.find_str_in_text(str(key), ocr_dict):
+                    return result
             return False
         elif isinstance(target, dict):
             for key, value in target.items():
                 if self.find_str_in_text(str(key), ocr_dict):
                     return value, str(key)
             return None
+        return False
+
+    @staticmethod
+    def _language_text_matched(result) -> bool:
+        return result is not False and result is not None
+
+    def find_language_text(
+        self,
+        zh_text,
+        en_text,
+        my_crop=None,
+        all_text=False,
+        addtional_stack=0,
+    ):
+        """
+        按当前语言状态查找中英文文本，并在语言未知时用命中结果同步语言。
+
+        该方法只执行一次 OCR，然后在同一份 OCR 结果中匹配文本：
+        - 当前语言为 zh_cn 时，只匹配 zh_text。
+        - 当前语言为 en 时，只匹配 en_text。
+        - 当前语言未知时，先匹配 zh_text；中文命中则同步语言为 zh_cn。
+        - 中文未命中时再匹配 en_text；英文命中则同步语言为 en，并移除 zh_cn 图片路径。
+
+        Args:
+            zh_text: 中文目标文本，支持 str、list、dict，规则同 find_text_element。
+            en_text: 英文目标文本，支持 str、list、dict，规则同 find_text_element。
+            my_crop: OCR 裁剪区域，格式为 (x1, y1, x2, y2)；为 None 时识别整张截图。
+            all_text: 当目标文本为 list 时，是否要求列表内所有关键词全部命中。
+            addtional_stack: 日志 stacklevel 补偿，用于让日志定位到业务调用处。
+
+        Returns:
+            文本命中结果，返回格式同 find_text_element；未命中返回 False。
+        """
+        ocr_dict = self._run_ocr_for_text(my_crop=my_crop, addtional_stack=addtional_stack)
+        if ocr_dict == {}:
+            return False
+
+        if path_manager.current_language == "zh_cn":
+            return self._find_target_in_ocr_dict(zh_text, ocr_dict, all_text=all_text)
+        if path_manager.current_language == "en":
+            return self._find_target_in_ocr_dict(en_text, ocr_dict, all_text=all_text)
+
+        zh_result = self._find_target_in_ocr_dict(zh_text, ocr_dict, all_text=all_text)
+        if self._language_text_matched(zh_result):
+            path_manager.set_language("zh_cn", log_stacklevel=addtional_stack + 4)
+            return zh_result
+
+        en_result = self._find_target_in_ocr_dict(en_text, ocr_dict, all_text=all_text)
+        if self._language_text_matched(en_result):
+            path_manager.set_language("en", log_stacklevel=addtional_stack + 4)
+            if path_manager.eliminate_zh_cn_paths():
+                self.clear_img_cache()
+            return en_result
+
+        return False
+
+    def find_text_element(self, target, my_crop=None, all_text=False, only_text=False, addtional_stack=0):
+        """
+        寻找文本元素所在的坐标位置
+        """
+        ocr_result = self._run_ocr_for_text(my_crop=my_crop, only_text=only_text, addtional_stack=addtional_stack)
+        if only_text:
+            return ocr_result
+        return self._find_target_in_ocr_dict(target, ocr_result, all_text=all_text)
 
     def get_text_from_screenshot(self, my_crop=None):
         """

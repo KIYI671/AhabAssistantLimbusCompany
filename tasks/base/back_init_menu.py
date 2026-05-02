@@ -35,17 +35,8 @@ def back_init_menu():
         if retry() is False:
             return False
 
-        if cfg.language_in_game == "zh_cn":
-            if auto.click_element("home/window_assets.png") and (
-                auto.find_element("home/mail_assets.png", model="normal")
-                or auto.find_element("home/mail_cn_assets.png", model="normal")
-            ):
-                break
-        else:
-            if auto.click_element("home/window_assets.png") and auto.find_element(
-                "home/mail_assets.png", model="normal"
-            ):
-                break
+        if auto.click_element("home/window_assets.png") and auto.find_element("home/mail_assets.png", model="normal"):
+            break
 
         if auto.find_element("base/notification_close_assets.png"):
             from datetime import datetime, timedelta

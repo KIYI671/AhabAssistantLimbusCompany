@@ -90,25 +90,24 @@ def select_battle_team(num):
                     first_position[1] + 100 * scale + 75 * team_order * scale,
                 )
         else:
-            if cfg.language_in_game == "en":
-                team_name = [f"TEAMS #{num}", f"TEAMS#{num}"]
-                team_name_error_correcting = f"TFAMS#{num}"
-            elif cfg.language_in_game == "zh_cn":
-                team_name = "编队#" + str(num)
-                team_name_error_correcting = "编队#" + str(num)
+            team_name_zh = "编队#" + str(num)
+            team_name_en = [f"TEAMS #{num}", f"TEAMS#{num}"]
+            team_name_error_correcting_zh = "编队#" + str(num)
+            team_name_error_correcting_en = f"TFAMS#{num}"
             position_bbox = (0, 0, position[0] + 130 * scale, position[1] + 600 * scale)
             for i in range(10):
                 while auto.take_screenshot() is None:
                     continue
-                if auto.click_element(team_name, find_type="text", offset=False, my_crop=position_bbox):
+                if team_position := auto.find_language_text(team_name_zh, team_name_en, my_crop=position_bbox):
+                    auto.mouse_action_with_pos(team_position, offset=False)
                     find = True
                     break
-                if auto.click_element(
-                    team_name_error_correcting,
-                    find_type="text",
-                    offset=False,
+                if team_position := auto.find_language_text(
+                    team_name_error_correcting_zh,
+                    team_name_error_correcting_en,
                     my_crop=position_bbox,
                 ):
+                    auto.mouse_action_with_pos(team_position, offset=False)
                     find = True
                     break
                 auto.mouse_drag(

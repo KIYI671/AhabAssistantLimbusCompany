@@ -14,9 +14,15 @@ def select_theme_pack(hard_switch=False, floor=None, team_num=None, use_custom_t
     loop_count = 30
     auto.model = "clam"
     scale = cfg.set_win_size / 1080
-    theme_pack_list = theme_list.get_effective_theme_pack_list(
+    theme_pack_list_zh = theme_list.get_effective_theme_pack_list(
         hard_switch,
-        cfg.language_in_game,
+        "zh_cn",
+        team_num,
+        use_custom_theme_pack_weight,
+    )
+    theme_pack_list_en = theme_list.get_effective_theme_pack_list(
+        hard_switch,
+        "en",
         team_num,
         use_custom_theme_pack_weight,
     )
@@ -111,7 +117,7 @@ def select_theme_pack(hard_switch=False, floor=None, team_num=None, use_custom_t
                         min(pack[1] + 390 * scale, cfg.set_win_size),
                     )
                     crop = (top_left[0], top_left[1], bottom_right[0], bottom_right[1])
-                    result = auto.find_text_element(theme_pack_list, crop)
+                    result = auto.find_language_text(theme_pack_list_zh, theme_pack_list_en, crop)
                     if (isinstance(result, list) or isinstance(result, tuple)) and len(result) > 1:
                         theme_pack_weight = result[0]
                         theme_pack_name = result[1]
