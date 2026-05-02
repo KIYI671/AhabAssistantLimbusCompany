@@ -1119,7 +1119,8 @@ class Mirror:
             if auto.find_element("event/choices_assets.png") and auto.find_element(
                 "event/select_first_option_assets.png"
             ):
-                auto.click_element("event/select_first_option_assets.png")
+                auto.click_element("event/select_first_option_assets.png", check_gray=True)
+                event_chance -= 1
             if auto.find_element("event/perform_the_check_feature_assets.png"):
                 event_handling.decision_event_handling()
             if auto.click_element("event/continue_assets.png"):
