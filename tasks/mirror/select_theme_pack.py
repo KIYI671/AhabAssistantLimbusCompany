@@ -6,6 +6,7 @@ from module.decorator.decorator import begin_and_finish_time_log
 from module.logger import log
 from tasks.base.back_init_menu import back_init_menu
 from utils.image_utils import ImageUtils
+from utils.path_manager import path_manager
 
 
 @begin_and_finish_time_log(task_name="选择镜牢主题包")
@@ -14,18 +15,23 @@ def select_theme_pack(hard_switch=False, floor=None, team_num=None, use_custom_t
     loop_count = 30
     auto.model = "clam"
     scale = cfg.set_win_size / 1080
-    theme_pack_list_zh = theme_list.get_effective_theme_pack_list(
-        hard_switch,
-        "zh_cn",
-        team_num,
-        use_custom_theme_pack_weight,
-    )
-    theme_pack_list_en = theme_list.get_effective_theme_pack_list(
-        hard_switch,
-        "en",
-        team_num,
-        use_custom_theme_pack_weight,
-    )
+    if path_manager.current_language == "zh_cn":
+        theme_pack_list_zh = theme_list.get_effective_theme_pack_list(
+            hard_switch, "zh_cn", team_num, use_custom_theme_pack_weight
+        )
+        theme_pack_list_en = {}
+    elif path_manager.current_language == "en":
+        theme_pack_list_zh = {}
+        theme_pack_list_en = theme_list.get_effective_theme_pack_list(
+            hard_switch, "en", team_num, use_custom_theme_pack_weight
+        )
+    else:
+        theme_pack_list_zh = theme_list.get_effective_theme_pack_list(
+            hard_switch, "zh_cn", team_num, use_custom_theme_pack_weight
+        )
+        theme_pack_list_en = theme_list.get_effective_theme_pack_list(
+            hard_switch, "en", team_num, use_custom_theme_pack_weight
+        )
     refresh_times = 3
     difficulty = None
     if auto.find_element("mirror/road_in_mir/legend_assets.png", take_screenshot=True):
