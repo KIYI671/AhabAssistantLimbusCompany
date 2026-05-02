@@ -74,6 +74,33 @@ class ImageUtils:
         return False, None
 
     @staticmethod
+    def existing_image_paths(image_path):
+        """返回当前有效路径中存在该图片的路径列表。"""
+        paths = []
+        for path in path_manager.pic_path:
+            img_path = os.path.join(f"./assets/images/{path}/{image_path}")
+            if os.path.exists(img_path):
+                paths.append(path)
+        if path_manager.current_theme == "dark":
+            dark_paths = [path for path in paths if path_manager.is_path_dark(path)]
+            if dark_paths:
+                paths = dark_paths
+        elif path_manager.current_theme == "default":
+            paths = [path for path in paths if path_manager.is_path_default(path)]
+
+        if path_manager.current_language == "zh_cn":
+            zh_cn_paths = [path for path in paths if path_manager.is_path_zh_cn(path)]
+            if zh_cn_paths:
+                paths = zh_cn_paths
+        elif path_manager.current_language == "en":
+            en_paths = [path for path in paths if path.endswith("/en")]
+            if en_paths:
+                paths = en_paths
+            else:
+                paths = [path for path in paths if path.endswith("/share")]
+        return paths
+
+    @staticmethod
     def load_from_specific_path(image_path, target_path, resize=True):
         """从指定路径加载图片。"""
         img_path = os.path.join(f"./assets/images/{target_path}/{image_path}")

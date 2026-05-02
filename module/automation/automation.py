@@ -534,9 +534,65 @@ class Automation(metaclass=SingletonMeta):
 
         self._sync_language_from_path(target_path, log_stacklevel=4)
         if on_match():
-            log.debug(success_log)
+            log.info(success_log)
             self.clear_img_cache()
         return center
+
+    def _load_template_for_path(self, target: str, target_path: str, cacheable: bool):
+        cache_key = (target, target_path)
+        if cacheable and cache_key in self.img_cache:
+            cached = self.img_cache[cache_key]
+            return cached["template"], cached["bbox"]
+
+        template = ImageUtils.load_from_specific_path(target, target_path)
+        if template is None:
+            return None, None
+        if target.endswith("assets.png"):
+            bbox = ImageUtils.get_bbox(template)
+            template = ImageUtils.crop(template, bbox)
+        else:
+            bbox = None
+        if cacheable:
+            self.img_cache[cache_key] = {"template": template, "bbox": bbox}
+        return template, bbox
+
+    @staticmethod
+    def _is_valid_match(match_val, threshold) -> bool:
+        return isinstance(match_val, (int, float, np.integer, np.floating)) and not math.isinf(match_val) and match_val >= threshold
+
+    def _update_path_state_from_match_results(self, results, addtional_stack: int = 0) -> None:
+        dark_results = [result for result in results if path_manager.is_path_dark(result["path"])]
+        default_results = [result for result in results if path_manager.is_path_default(result["path"])]
+        zh_cn_results = [result for result in results if path_manager.is_path_zh_cn(result["path"])]
+        en_or_share_results = [result for result in results if path_manager.is_path_en_or_share(result["path"])]
+
+        dark_exists = bool(dark_results)
+        dark_matched = any(result["matched"] for result in dark_results)
+        default_matched = any(result["matched"] for result in default_results)
+
+        path_changed = False
+        if dark_matched:
+            path_manager.set_theme("dark", log_stacklevel=addtional_stack + 4)
+        elif dark_exists and default_matched:
+            path_manager.set_theme("default", log_stacklevel=addtional_stack + 4)
+            path_changed = path_manager.eliminate_dark_paths() or path_changed
+
+        zh_cn_exists = bool(zh_cn_results)
+        zh_cn_matched = any(result["matched"] for result in zh_cn_results)
+        en_or_share_matched = any(result["matched"] for result in en_or_share_results)
+
+        if zh_cn_matched:
+            path_manager.set_language("zh_cn", log_stacklevel=addtional_stack + 4)
+        elif zh_cn_exists and en_or_share_matched:
+            path_manager.set_language("en", log_stacklevel=addtional_stack + 4)
+            path_changed = path_manager.eliminate_zh_cn_paths() or path_changed
+
+        if path_changed:
+            self.clear_img_cache()
+
+    @staticmethod
+    def _path_state_is_known() -> bool:
+        return path_manager.current_theme is not None and path_manager.current_language is not None
 
     def find_image_element(
         self,
@@ -559,65 +615,45 @@ class Automation(metaclass=SingletonMeta):
                     log.debug(f"当前系统内存总占用率: {current_percent}%，释放图片缓存")
                     self.clear_img_cache()
 
-            if cacheable and target in self.img_cache:
-                bbox = self.img_cache[target]["bbox"]
-                template = self.img_cache[target]["template"]
-                loaded_path = self.img_cache[target].get("loaded_path")
-            else:
-                template, loaded_path = ImageUtils.load_image(target, return_path=True)
-                if template is None:
-                    log.debug(f"无法加载图片: {target}", stacklevel=addtional_stack + 3)
-                    return None
-                if target.endswith("assets.png"):
-                    bbox = ImageUtils.get_bbox(template)
-                    template = ImageUtils.crop(template, bbox)
-                else:
-                    bbox = None
-                if cacheable:
-                    self.img_cache[target] = {"bbox": bbox, "template": template, "loaded_path": loaded_path}
+            existing_paths = ImageUtils.existing_image_paths(target)
+            if not existing_paths:
+                log.error(f"未找到图片： {target} ")
+                log.debug(f"无法加载图片: {target}", stacklevel=addtional_stack + 3)
+                return None
+
             screenshot = np.array(self.screenshot)
             if my_crop:
                 screenshot = ImageUtils.crop(screenshot, my_crop)
-            center, matchVal = ImageUtils.match_template(screenshot, template, bbox, model)  # 匹配模板
-            log.debug(
-                f"目标图片：{target.replace('./assets/images/', '')}, 路径: {loaded_path}, 相似度：{matchVal:.2f}, 目标位置：{center}",
-                stacklevel=addtional_stack + 3,
-            )
-            if isinstance(matchVal, (int, float)) and not math.isinf(matchVal) and matchVal >= threshold:
-                self._sync_language_from_path(loaded_path)
-                return center
-            if loaded_path and not path_manager.is_zh_cn_eliminated and path_manager.is_path_zh_cn(loaded_path):
-                english_exists, english_path = ImageUtils.check_english_path_exists(target, loaded_path)
-                if english_exists:
-                    fallback_center = self._try_fallback_image(
-                        target,
-                        english_path,
-                        screenshot,
-                        threshold,
-                        model,
-                        "英文路径",
-                        path_manager.eliminate_zh_cn_paths,
-                        f"检测到zh_cn路径失败但en路径成功，淘汰所有zh_cn路径，图片: {target}",
-                        addtional_stack,
-                    )
-                    if fallback_center:
-                        return fallback_center
-            if loaded_path and not path_manager.is_dark_eliminated and path_manager.is_path_dark(loaded_path):
-                default_exists, default_path = ImageUtils.check_default_path_exists(target)
-                if default_exists:
-                    fallback_center = self._try_fallback_image(
-                        target,
-                        default_path,
-                        screenshot,
-                        threshold,
-                        model,
-                        "默认路径",
-                        path_manager.eliminate_dark_paths,
-                        f"检测到dark路径失败但default路径成功，淘汰所有dark路径，图片: {target}",
-                        addtional_stack,
-                    )
-                    if fallback_center:
-                        return fallback_center
+
+            results = []
+            for loaded_path in existing_paths:
+                template, bbox = self._load_template_for_path(target, loaded_path, cacheable)
+                if template is None:
+                    continue
+                center, matchVal = ImageUtils.match_template(screenshot, template, bbox, model)
+                matched = self._is_valid_match(matchVal, threshold)
+                log.debug(
+                    f"目标图片：{target.replace('./assets/images/', '')}, 路径: {loaded_path}, 相似度：{matchVal:.2f}, 目标位置：{center}",
+                    stacklevel=addtional_stack + 3,
+                )
+                results.append(
+                    {
+                        "path": loaded_path,
+                        "center": center,
+                        "matched": matched,
+                    }
+                )
+                if matched and self._path_state_is_known():
+                    return center
+
+            if not results:
+                log.debug(f"无法加载图片: {target}", stacklevel=addtional_stack + 3)
+                return None
+
+            self._update_path_state_from_match_results(results, addtional_stack=addtional_stack)
+            for result in results:
+                if result["matched"]:
+                    return result["center"]
         except Exception as e:
             log.error(f"寻找图片失败:{e}")
         return None
