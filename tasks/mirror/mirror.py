@@ -44,6 +44,33 @@ def to_log_with_time(msg, elapsed_time):
     log.info(f"{msg} 总耗时:{time_string}")
 
 
+def extract_zh_floor(normalized_text):
+    for pattern in (r"第([1-5])层", r"第([1-5])层?", r"([1-5])层"):
+        match = re.search(pattern, normalized_text)
+        if match:
+            return int(match.group(1))
+    if "第" in normalized_text:
+        for char in normalized_text[normalized_text.index("第") + 1 :]:
+            if char in "12345":
+                return int(char)
+    return None
+
+
+def extract_en_floor(normalized_text):
+    for pattern in (r"floor([1-5])", r"oor([1-5])", r"([1-5])f"):
+        match = re.search(pattern, normalized_text)
+        if match:
+            return int(match.group(1))
+    anchor_index = normalized_text.find("floor")
+    if anchor_index == -1:
+        anchor_index = normalized_text.find("oor")
+    if anchor_index != -1:
+        for char in normalized_text[anchor_index:]:
+            if char in "12345":
+                return int(char)
+    return None
+
+
 class Mirror:
     def __init__(self, team_setting: TeamSetting, team_num: int):
         self.logger = log
@@ -1406,41 +1433,16 @@ class Mirror:
     def get_which_floor(self):
         def extract_floor_from_text(ocr_text):
             normalized_text = ocr_text.replace(" ", "").replace("\n", "").lower()
-            def extract_zh_floor():
-                for pattern in (r"第([1-5])层", r"第([1-5])层?", r"([1-5])层"):
-                    match = re.search(pattern, normalized_text)
-                    if match:
-                        return int(match.group(1))
-                if "第" in normalized_text:
-                    for char in normalized_text[normalized_text.index("第") + 1 :]:
-                        if char in "12345":
-                            return int(char)
-                return None
-
-            def extract_en_floor():
-                for pattern in (r"floor([1-5])", r"oor([1-5])", r"([1-5])f"):
-                    match = re.search(pattern, normalized_text)
-                    if match:
-                        return int(match.group(1))
-                anchor_index = normalized_text.find("floor")
-                if anchor_index == -1:
-                    anchor_index = normalized_text.find("oor")
-                if anchor_index != -1:
-                    for char in normalized_text[anchor_index:]:
-                        if char in "12345":
-                            return int(char)
-                return None
-
             if path_manager.current_language == "zh_cn":
-                floor = extract_zh_floor()
+                floor = extract_zh_floor(normalized_text)
             elif path_manager.current_language == "en":
-                floor = extract_en_floor()
+                floor = extract_en_floor(normalized_text)
             else:
-                floor = extract_zh_floor()
+                floor = extract_zh_floor(normalized_text)
                 if floor is not None:
                     path_manager.set_language("zh_cn")
                 else:
-                    floor = extract_en_floor()
+                    floor = extract_en_floor(normalized_text)
                     if floor is not None:
                         path_manager.set_language("en")
                         if path_manager.eliminate_zh_cn_paths():
