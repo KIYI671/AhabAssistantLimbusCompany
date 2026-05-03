@@ -3,7 +3,6 @@ import math
 import random
 import time
 from ast import List
-from collections.abc import Callable
 
 import cv2
 import numpy as np
@@ -548,55 +547,6 @@ class Automation(metaclass=SingletonMeta):
         self.img_cache.clear()
         gc.collect()  # 强制垃圾回收，清理内存
         log.debug("图片缓存已清除", stacklevel=2)
-
-    @staticmethod
-    def _sync_language_from_path(loaded_path: str | None, log_stacklevel: int = 3) -> None:
-        """根据成功匹配的图片路径同步运行期游戏语言。"""
-        if loaded_path is None:
-            return
-        if path_manager.is_path_zh_cn(loaded_path):
-            lang_code = "zh_cn"
-        elif loaded_path.endswith("/en"):
-            lang_code = "en"
-        else:
-            return
-        if cfg.language_in_game != lang_code:
-            cfg.unsaved_set_value("language_in_game", lang_code, stacklevel=log_stacklevel)
-
-    def _try_fallback_image(
-        self,
-        target: str,
-        target_path: str,
-        screenshot: np.ndarray,
-        threshold: float,
-        model: str,
-        attempt_label: str,
-        on_match: Callable[[], bool],
-        success_log: str,
-        addtional_stack: int = 0,
-    ):
-        template = ImageUtils.load_from_specific_path(target, target_path)
-        if template is None:
-            return None
-        if target.endswith("assets.png"):
-            bbox = ImageUtils.get_bbox(template)
-            template = ImageUtils.crop(template, bbox)
-        else:
-            bbox = None
-
-        center, matchVal = ImageUtils.match_template(screenshot, template, bbox, model)
-        log.debug(
-            f"尝试{attempt_label}图片：{target}, 路径: {target_path}, 相似度：{matchVal:.2f}",
-            stacklevel=addtional_stack + 3,
-        )
-        if not (isinstance(matchVal, (int, float)) and not math.isinf(matchVal) and matchVal >= threshold):
-            return None
-
-        self._sync_language_from_path(target_path, log_stacklevel=4)
-        if on_match():
-            log.info(success_log)
-            self.clear_img_cache()
-        return center
 
     def _load_template_for_path(self, target: str, target_path: str, cacheable: bool):
         cache_key = (target, target_path)
