@@ -511,6 +511,9 @@ class ConfigModel(BaseModel):
     teams_order: List[int] = [0]
     """队伍的顺序"""
 
+    teams_active_queue: List[int] = []
+    """镜牢启用队伍的执行队列（单一事实源）"""
+
     mirror_keyboard_navigation: bool = False
     """使用键盘进行镜牢寻路"""
 
