@@ -305,7 +305,7 @@ def script_task() -> None | int:
 
     path_manager.initialize_paths()
     auto.clear_img_cache()
-    log.info(f"初始化图片路径: {path_manager.pic_path}")
+    log.debug(f"初始化图片路径: {path_manager.pic_path}")
 
     if cfg.resonate_with_Ahab:
         Resonate_with_Ahab()

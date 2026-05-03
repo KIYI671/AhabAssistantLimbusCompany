@@ -41,7 +41,7 @@ class PathManager(metaclass=SingletonMeta):
         if self.is_zh_cn_eliminated:
             self.active_paths = [path for path in self.active_paths if not path.endswith("/zh_cn")]
 
-        log.info(f"路径管理器初始化完成，路径: {self.active_paths}")
+        log.debug(f"路径管理器初始化完成，路径: {self.active_paths}")
 
     def set_theme(self, theme: str, log_stacklevel: int = 3) -> bool:
         """记录当前图片主题。"""
@@ -50,9 +50,8 @@ class PathManager(metaclass=SingletonMeta):
         if self.current_theme == theme:
             return False
 
-        previous_theme = self.current_theme or "未知"
         self.current_theme = theme
-        log.info(f"图片主题由{previous_theme}识别为{theme}", stacklevel=log_stacklevel)
+        log.info(f"主题：{theme}", stacklevel=log_stacklevel)
         return True
 
     def set_language(self, lang_code: str, log_stacklevel: int = 3) -> bool:
@@ -61,7 +60,6 @@ class PathManager(metaclass=SingletonMeta):
             return False
 
         changed = self.current_language != lang_code
-        previous_language = self.current_language or "未知"
         self.current_language = lang_code
 
         from module.config import cfg
@@ -70,7 +68,8 @@ class PathManager(metaclass=SingletonMeta):
             cfg.unsaved_set_value("language_in_game", lang_code, stacklevel=log_stacklevel)
             changed = True
         if changed:
-            log.info(f"图片语言由{previous_language}识别为{lang_code}", stacklevel=log_stacklevel)
+            language_name = {"zh_cn": "中文", "en": "英文"}[lang_code]
+            log.info(f"语言: {language_name}", stacklevel=log_stacklevel)
         return changed
 
     def eliminate_dark_paths(self) -> bool:
