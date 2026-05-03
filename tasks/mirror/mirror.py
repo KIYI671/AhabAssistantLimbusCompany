@@ -30,7 +30,7 @@ from tasks.mirror.search_road import (
     search_road_farthest_distance,
 )
 from tasks.mirror.select_theme_pack import select_theme_pack
-from tasks.teams.team_formation import check_team, select_battle_team, team_formation
+from tasks.teams.team_formation import check_team, select_battle_team, team_formation, load_team_code_in_game
 from utils.image_utils import ImageUtils
 
 
@@ -900,6 +900,11 @@ class Mirror:
             if chance_to_select_team < 0:
                 log.error("无法寻得队伍")
                 raise unableToFindTeamError("无法寻得队伍，请检查队伍名称是否为默认名称")
+        # 加载编队码（如果启用）
+        team_setting = cfg.config.teams.get(str(self.team_order))
+        if team_setting and team_setting.use_team_code and team_setting.team_code:
+            if not load_team_code_in_game(team_setting.team_code):
+                log.warning(f"编队码加载失败，继续使用当前队伍配置")
         loop_count = 30
         auto.model = "clam"
         while auto.find_element("mirror/road_to_mir/dreaming_star/coins_assets.png") is None:

@@ -8,7 +8,7 @@ from PySide6.QtWidgets import (
     QVBoxLayout,
     QWidget,
 )
-from qfluentwidgets import ExpandSettingCard, PrimaryPushButton, PushButton, ScrollArea
+from qfluentwidgets import ExpandSettingCard, LineEdit, PrimaryPushButton, PushButton, ScrollArea
 from qfluentwidgets import FluentIcon as FIF
 
 from app import *
@@ -19,7 +19,7 @@ from app.base_combination import (
     SinnerSelect,
     ToolCheckButton,
 )
-from app.base_tools import BaseCheckBox, BaseComboBox, BaseLabel, BaseSettingLayout
+from app.base_tools import BaseCheckBox, BaseComboBox, BaseLabel, BaseLineEdit, BaseSettingLayout
 from app.common.icons import OverflowIcons
 from app.language_manager import LanguageManager
 from app.theme_pack_setting_interface import ThemePackSettingDialog
@@ -332,6 +332,7 @@ class TeamSettingCard(QFrame):
             shop_index = int(keys.split("_")[-1]) - 1
             self.team_setting.ignore_shop[shop_index] = values
 
+
     def save_team_setting(self):
         cfg.set_value(f"{self.team_num}", self.team_setting, config_obj=cfg.config.teams)
         self.cancel_team_setting()
@@ -418,6 +419,10 @@ class TeamSettingCard(QFrame):
                     self.findChild(BaseComboBox, combobox).set_options(getattr(self.team_setting, combobox))
                     if combobox == "team_system":
                         self.foolproof(getattr(self.team_setting, combobox))
+
+        # 读取编队码设置
+        if team_code_input := self.findChild(BaseLineEdit, "team_code"):
+            team_code_input.setText(self.team_setting.team_code)
 
     def foolproof(self, team_system):
         for checkbox in all_checkbox_config_name:
@@ -575,6 +580,8 @@ class CustomizeSettingsModule(QFrame):
         self.ninth_line = QHBoxLayout(self.ninth_line_widget)
         self.tenth_line_widget = QWidget()
         self.tenth_line = QHBoxLayout(self.tenth_line_widget)
+        self.eleventh_line_widget = QWidget()
+        self.eleventh_line = QHBoxLayout(self.eleventh_line_widget)
         self.floor_shop = QHBoxLayout()
 
     def __init_card(self):
@@ -750,6 +757,20 @@ class CustomizeSettingsModule(QFrame):
         )
         self.select_theme_pack_weight_button = PushButton(self.tr("权重选择"))
 
+        self.use_team_code = BaseCheckBox(
+            "use_team_code",
+            None,
+            QT_TRANSLATE_NOOP("BaseCheckBox", "使用编队码"),
+        )
+        self.team_code_warning = BaseLabel("")
+        self.team_code_warning.add_icon(FIF.INFO)
+        self.team_code_warning.setMaximumWidth(40)
+        self.team_code_warning.iconLabel.setToolTip(self.tr("后台模式下输入编队码可能不稳定"))
+        self.team_code_warning.iconLabel.setToolTipDuration(-1)
+        self.team_code_input = BaseLineEdit("team_code", self)
+        self.team_code_input.line_edit.setPlaceholderText(self.tr("输入编队码"))
+        self.team_code_input.line_edit.setMaximumWidth(400)
+
     def __init_layout(self):
         self.first_line.addWidget(self.do_not_heal)
         self.first_line.addWidget(self.do_not_buy)
@@ -818,6 +839,11 @@ class CustomizeSettingsModule(QFrame):
         self.tenth_line.addWidget(self.select_theme_pack_weight_button)
         self.tenth_line.addStretch()
 
+        self.eleventh_line.addWidget(self.use_team_code)
+        self.eleventh_line.addWidget(self.team_code_warning)
+        self.eleventh_line.addWidget(self.team_code_input)
+        self.eleventh_line.addStretch()
+
         self.main_layout.addWidget(self.first_line_widget)
         self.main_layout.addWidget(self.second_line_widget)
         self.main_layout.addWidget(self.third_line_widget)
@@ -831,6 +857,7 @@ class CustomizeSettingsModule(QFrame):
         self.main_layout.addWidget(self.eighth_line_widget)
         self.main_layout.addWidget(self.ninth_line_widget)
         self.main_layout.addWidget(self.tenth_line_widget)
+        self.main_layout.addWidget(self.eleventh_line_widget)
 
     def retranslateUi(self):
         self.do_not_heal.retranslateUi()
