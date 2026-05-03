@@ -601,6 +601,7 @@ class PageMirror(PageCard):
 
     def get_setting(self):
         team_toggle_button_group.clear()
+        cfg.normalize_and_sync_team_state(persist=False)
         self.page_general.setUpdatesEnabled(False)
         try:
             for i in range(1, 21):
@@ -636,8 +637,7 @@ class PageMirror(PageCard):
 
             if cfg.config.teams.get(f"{number}", None) is None:
                 cfg.config.teams[f"{number}"] = TeamSetting()
-                cfg.config.teams_be_select.append(False)
-                cfg.config.teams_order.append(0)
+                cfg.normalize_and_sync_team_state()
                 theme_list.create_team_weight_config(number)
                 cfg.save()
 
@@ -660,34 +660,32 @@ class PageMirror(PageCard):
                 team_order_box = team.findChild(BaseCheckBox, f"the_team_{team.team_number}")
                 if team_order_box is not None:
                     team_order_box.set_check_false()
+            number = int(target.split("_")[-1])
             self.remove_team_card(target)
 
-            number = int(target.split("_")[-1])
+            cfg.remove_team_from_queue(number)
             cfg.config.teams.pop(f"{number}", None)
-
-            cfg.config.teams_be_select.pop(number - 1)
-            cfg.config.teams_order.pop(number - 1)
             theme_list.delete_team_weight_config(number)
 
             self.refresh_team_setting_card()
-            cfg.save()
-
-            self.retranslateUi()
         except Exception as e:
             log.error(f"delete_team 出错：{e}")
 
     def refresh_team_setting_card(self):
-        save_index = 1
-        sorted_indexes = sorted(cfg.config.teams.copy(), key=lambda k: int(k))
-        for index in sorted_indexes:
-            if int(index) == save_index:
-                save_index += 1
-                continue
-            cfg.config.teams[f"{save_index}"] = cfg.config.teams[f"{index}"]
-            del cfg.config.teams[f"{index}"]
-            theme_list.set_team_weight_config_from_team(i, i + 1)
-            theme_list.delete_team_weight_config(i + 1)
-            save_index += 1
+        old_to_new = {}
+        compact_teams = {}
+        for new_index, old_index in enumerate(sorted(cfg.config.teams, key=lambda k: int(k)), start=1):
+            old_number = int(old_index)
+            old_to_new[old_number] = new_index
+            team_setting = cfg.config.teams[old_index]
+            team_setting.team_number = new_index
+            compact_teams[f"{new_index}"] = team_setting
+            if new_index != old_number:
+                theme_list.set_team_weight_config_from_team(new_index, old_number)
+                theme_list.delete_team_weight_config(old_number)
+
+        cfg.config.teams = compact_teams
+        cfg.reindex_team_queue(old_to_new)
 
         cfg.save()
         self.get_setting()
@@ -697,8 +695,9 @@ class PageMirror(PageCard):
         teams_order = cfg.config.teams_order
         for team in mirror_teams:
             number = team.team_number
-            if teams_order[number - 1] != 0:
-                team.order.setText(str(teams_order[number - 1]))
+            idx = number - 1
+            if idx < len(teams_order) and teams_order[idx] != 0:
+                team.order.setText(str(teams_order[idx]))
             else:
                 team.order.setText("")
 

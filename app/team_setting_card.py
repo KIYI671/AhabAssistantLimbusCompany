@@ -472,7 +472,9 @@ class StarlightCard(QFrame):
     def __init__(self, class_name: str, label_text: str, team_num: int, parent=None):
         super().__init__(parent)
         self.team_num: int = int(class_name.split("_")[-1])
-        self.level = cfg.config.teams[str(team_num)].opening_bonus_level[int(class_name.split("_")[-1]) - 1]
+        self.level = 0
+        if team_config := cfg.config.teams.get(str(team_num)):
+            self.level = team_config.opening_bonus_level[self.team_num - 1]
 
         self.label_text = label_text
         self.main_layout = QVBoxLayout(self)
