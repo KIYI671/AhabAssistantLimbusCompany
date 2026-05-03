@@ -3,6 +3,8 @@ import math
 import random
 import time
 from ast import List
+from dataclasses import dataclass
+from typing import Any
 
 import cv2
 import numpy as np
@@ -18,6 +20,15 @@ from ..logger import log
 from ..ocr import ocr
 from .input_handlers.input import AbstractInput
 from .screenshot import ScreenShot
+
+
+@dataclass(frozen=True)
+class TextMatchResult:
+    """Structured result for dict-based OCR target matches."""
+
+    value: Any
+    text: str
+    position: list[float]
 
 
 class Automation(metaclass=SingletonMeta):
@@ -418,8 +429,8 @@ class Automation(metaclass=SingletonMeta):
             return False
         elif isinstance(target, dict):
             for key, value in target.items():
-                if self.find_str_in_text(str(key), ocr_dict):
-                    return value, str(key)
+                if position := self.find_str_in_text(str(key), ocr_dict):
+                    return TextMatchResult(value=value, text=str(key), position=position)
             return None
         return False
 
@@ -475,7 +486,9 @@ class Automation(metaclass=SingletonMeta):
 
     def find_text_element(self, target, my_crop=None, all_text=False, only_text=False, additional_stack=0):
         """
-        寻找文本元素所在的坐标位置
+        寻找文本元素所在的坐标位置。
+
+        str/list 目标返回坐标；dict 目标返回 TextMatchResult。
         """
         ocr_result = self._run_ocr_for_text(my_crop=my_crop, only_text=only_text, additional_stack=additional_stack)
         if only_text:

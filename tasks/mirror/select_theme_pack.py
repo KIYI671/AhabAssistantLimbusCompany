@@ -1,6 +1,6 @@
 from time import sleep
 
-from module.automation import auto
+from module.automation import TextMatchResult, auto
 from module.config import cfg, theme_list
 from module.decorator.decorator import begin_and_finish_time_log
 from module.logger import log
@@ -124,9 +124,9 @@ def select_theme_pack(hard_switch=False, floor=None, team_num=None, use_custom_t
                     )
                     crop = (top_left[0], top_left[1], bottom_right[0], bottom_right[1])
                     result = auto.find_language_text(theme_pack_list_zh, theme_pack_list_en, crop)
-                    if (isinstance(result, list) or isinstance(result, tuple)) and len(result) > 1:
-                        theme_pack_weight = result[0]
-                        theme_pack_name = result[1]
+                    if isinstance(result, TextMatchResult):
+                        theme_pack_weight = result.value
+                        theme_pack_name = result.text
                     else:
                         theme_pack_weight = -5
                         theme_pack_name = "unknown"
