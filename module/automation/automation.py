@@ -83,6 +83,7 @@ class Automation(metaclass=SingletonMeta):
         self.mouse_to_blank = self.input_handler.mouse_to_blank
         self.mouse_drag_link = self.input_handler.mouse_drag_link
         self.key_press = self.input_handler.key_press
+        self.input_text = self.input_handler.input_text
         self.memory_protection = cfg.memory_protection
 
     def check_pause(self) -> bool:

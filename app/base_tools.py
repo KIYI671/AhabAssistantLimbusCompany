@@ -17,6 +17,7 @@ from qfluentwidgets import (
     ComboBox,
     DoubleSpinBox,
     FluentIconBase,
+    LineEdit,
     PushButton,
     RoundMenu,
     SpinBox,
@@ -485,3 +486,21 @@ class BaseSpinBox(BaseLayout):
     def value_changed(self):
         if cfg.get_value(self.config_name) is not None:
             cfg.set_value(self.config_name, self.spin_box.value())
+
+
+class BaseLineEdit(BaseLayout):
+    def __init__(self, config_name, parent=None):
+        super().__init__(parent=parent)
+        self.config_name = config_name
+        self.setObjectName(config_name)
+        self.line_edit = LineEdit(self)
+        self.hBoxLayout.addWidget(self.line_edit, stretch=1)
+        self.line_edit.textChanged.connect(self.text_changed)
+
+    def text_changed(self, text):
+        mediator.team_setting.emit({self.config_name: text})
+
+    def setText(self, text):
+        self.line_edit.blockSignals(True)
+        self.line_edit.setText(text)
+        self.line_edit.blockSignals(False)

@@ -219,6 +219,7 @@ all_checkbox_config_name = [
     "skill_replacement",
     "ignore_shop",
     "use_custom_theme_pack_weight",
+    "use_team_code",
 ]
 
 win_input_type_options = {

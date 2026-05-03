@@ -213,3 +213,76 @@ def check_team():
         return True
     else:
         return False
+
+
+@begin_and_finish_time_log(task_name="加载编队码")
+def load_team_code_in_game(team_code: str) -> bool:
+    """在游戏中加载编队码
+
+    Args:
+        team_code: 编队码字符串
+
+    Returns:
+        成功返回 True，失败返回 False
+    """
+    # 验证当前在队伍选择界面
+    if not auto.find_element("mirror/road_to_mir/select_team_confirm_assets.png"):
+        log.warning("未在队伍选择界面，跳过编队码加载")
+        return False
+
+    # 最多重试3次
+    max_retries = 3
+    for _ in range(1, max_retries + 1):
+        # 截图
+        while auto.take_screenshot() is None:
+            continue
+
+        # 点击队伍代码按钮
+        auto.click_element("teams/team_code_assets.png")
+        sleep(1)
+
+        # 截图
+        while auto.take_screenshot() is None:
+            continue
+
+        # 查找并点击加载编队码按钮
+        auto.click_element("teams/load_team_code_button_assets.png")
+
+        sleep(1)
+
+        # 等待输入框出现
+        while auto.take_screenshot() is None:
+            continue
+
+        # 查找输入框
+        if not auto.find_element("teams/team_code_input_field_assets.png"):
+            log.warning("未找到编队码输入框")
+            # 尝试点击取消按钮返回
+            auto.click_element("teams/team_code_cancel_button_assets.png")
+            sleep(1)
+            continue
+
+
+        # 使用 input_text(text) 直接输入编队码
+        auto.input_text(team_code)
+        sleep(0.5)  # 等待输入完成
+
+        # 点击确认按钮，最多重试 3 次
+        for _ in range(3):
+            if auto.click_element("teams/team_code_confirm_button_assets.png"):
+                sleep(1)
+                while auto.take_screenshot() is None:
+                    continue
+            else:
+                break
+
+        # 验证返回队伍选择界面
+        if auto.find_element("teams/team_code_assets.png"):
+            return True
+        else:
+            auto.click_element("teams/team_code_cancel_button_assets.png")
+            sleep(1)
+        
+    auto.mouse_click(100, 100)  # 点击左上角关闭
+    log.warning(f"加载编队码失败，已重试{max_retries}次: {team_code}")
+    return False
