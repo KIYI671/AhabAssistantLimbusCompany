@@ -324,6 +324,9 @@ def script_task() -> None | int:
         log.info("模拟器模式下强制使用英文图片与文本识别")
         cfg.set_value("language_in_game", "en")
 
+    if cfg.skip_enkephalin:
+        log.info("设置了跳过合成脑啡肽，将不会自动合成\nSet to skip make enkephalin, it will not to do")
+
     if not cfg.simulator:
         # 低渲染比例发出警告
         if get_game_config_from_registry().get("_renderingScale", -1) == 2:
