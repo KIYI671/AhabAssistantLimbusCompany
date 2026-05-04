@@ -1,8 +1,10 @@
 import copy
+import re
 
 from PySide6.QtCore import Qt, Signal
 from PySide6.QtGui import QPixmap
 from PySide6.QtWidgets import (
+    QFileDialog,
     QFrame,
     QGridLayout,
     QHBoxLayout,
@@ -11,9 +13,14 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 from qfluentwidgets import (
+    Action,
     BodyLabel,
+    DropDownPushButton,
+    FluentIcon as FIF,
+    InfoBarPosition,
     PrimaryPushButton,
     PushButton,
+    RoundMenu,
     ScrollArea,
     SubtitleLabel,
     TitleLabel,
@@ -23,9 +30,14 @@ from qframelesswindow import FramelessDialog, StandardTitleBar
 from ruamel.yaml import YAML
 
 from app.base_tools import BaseSpinBox
-from app.card.messagebox_custom import MessageBoxConfirm
+from app.card.messagebox_custom import BaseInfoBar, MessageBoxConfirm
 from module import THEME_PACK_LIST_EXAMPLE_PATH
 from module.config import cfg, theme_list
+from module.config.theme_pack_import_export import (
+    export_theme_pack_weight,
+    generate_theme_pack_export_filename,
+    import_theme_pack_weight,
+)
 
 # 英文key到中文名称的映射表（普通模式）
 THEME_PACK_NAME_MAP = {
@@ -546,21 +558,43 @@ class ThemePackSettingDialog(FramelessDialog):
         self.button_widget = QWidget()
         self.button_widget.setObjectName("button_widget")
         self.button_layout = QHBoxLayout(self.button_widget)
-        self.button_layout.setContentsMargins(0, 10, 0, 10)
+        self.button_layout.setContentsMargins(20, 10, 20, 10)
+        self.button_layout.setSpacing(8)
 
-        self.reset_button = PushButton(self.tr("重置为默认"), self)
-        self.reset_button.setFocusPolicy(Qt.FocusPolicy.NoFocus)
-        self.reset_button.clicked.connect(self.reset_to_default)
+        # 批量操作下拉菜单按钮
+        self.batch_menu_button = DropDownPushButton(self.tr("批量操作"), self)
+        self.batch_menu_button.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        self.batch_menu = RoundMenu(parent=self)
 
-        self.set_to_global_button = PushButton(self.tr("拉取全局配置"), self)
-        self.set_to_global_button.setFocusPolicy(Qt.FocusPolicy.NoFocus)
-        self.set_to_global_button.clicked.connect(self.set_to_global)
-        self.set_to_global_button.setVisible(self.is_team_specific)
+        self.reset_action = Action(FIF.SYNC, self.tr("重置为默认"))
+        self.reset_action.triggered.connect(self.reset_to_default)
+        self.batch_menu.addAction(self.reset_action)
 
-        self.set_all_negative_button = PushButton(self.tr("全部设为 -5"), self)
-        self.set_all_negative_button.setFocusPolicy(Qt.FocusPolicy.NoFocus)
-        self.set_all_negative_button.clicked.connect(self.set_all_weights_negative)
+        self.set_to_global_action = Action(FIF.DOWNLOAD, self.tr("拉取全局配置"))
+        self.set_to_global_action.triggered.connect(self.set_to_global)
+        self.batch_menu.addAction(self.set_to_global_action)
 
+        self.set_all_negative_action = Action(FIF.REMOVE, self.tr("全部设为 -5"))
+        self.set_all_negative_action.triggered.connect(self.set_all_weights_negative)
+        self.batch_menu.addAction(self.set_all_negative_action)
+
+        self.batch_menu_button.setMenu(self.batch_menu)
+
+        # 连接以向上显示菜单
+        self.batch_menu_button.clicked.connect(lambda: self._show_menu_upward(self.batch_menu_button, self.batch_menu))
+
+        # 导入导出按钮（仅队伍特定配置显示）
+        self.export_button = PushButton(FIF.UP, self.tr("导出"))
+        self.export_button.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        self.export_button.clicked.connect(self.on_export_settings)
+        self.export_button.setVisible(self.is_team_specific)
+
+        self.import_button = PushButton(FIF.DOWN, self.tr("导入"))
+        self.import_button.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        self.import_button.clicked.connect(self.on_import_settings)
+        self.import_button.setVisible(self.is_team_specific)
+
+        # 主要操作按钮
         self.save_button = PrimaryPushButton(self.tr("保存并关闭"), self)
         self.save_button.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         self.save_button.clicked.connect(self.save_and_close)
@@ -569,13 +603,12 @@ class ThemePackSettingDialog(FramelessDialog):
         self.close_button.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         self.close_button.clicked.connect(self.close)
 
+        self.button_layout.addWidget(self.batch_menu_button)
+        self.button_layout.addWidget(self.export_button)
+        self.button_layout.addWidget(self.import_button)
         self.button_layout.addStretch()
-        self.button_layout.addWidget(self.reset_button)
-        self.button_layout.addWidget(self.set_to_global_button)
-        self.button_layout.addWidget(self.set_all_negative_button)
         self.button_layout.addWidget(self.save_button)
         self.button_layout.addWidget(self.close_button)
-        self.button_layout.addStretch()
 
     def __init_layout(self):
         # 将组件添加到滚动布局
@@ -760,6 +793,14 @@ class ThemePackSettingDialog(FramelessDialog):
         # 标记有未保存的修改
         self._has_unsaved_changes = True
 
+    def _show_menu_upward(self, button, menu):
+        """在按钮上方而不是下方显示菜单"""
+        # 将菜单锚定到按钮的全局左上角，并向上移动菜单高度
+        # 使整个菜单显示在按钮上方
+        button_pos = button.mapToGlobal(button.rect().topLeft())
+        menu_height = menu.sizeHint().height()
+        menu.exec(button_pos.__class__(button_pos.x(), button_pos.y() - menu_height))
+
     def _on_preferred_threshold_changed(self, value: int):
         """处理优选阈值变化，只更新内存中的配置，不保存到文件"""
         self.config_data["preferred_thresholds"] = int(value)
@@ -835,6 +876,130 @@ class ThemePackSettingDialog(FramelessDialog):
         for card in list(self.normal_cards.values()) + list(self.hard_cards.values()):
             card.update_weight(-5)
         self._has_unsaved_changes = True
+
+    def _extract_team_num_from_path(self) -> int:
+        """从保存路径中提取队伍编号"""
+        match = re.search(r'team_(\d+)', self.save_path)
+        if match:
+            return int(match.group(1))
+        return 0
+
+    def on_export_settings(self):
+        """导出主题包权重到 YAML 文件"""
+        if not self.is_team_specific:
+            return
+
+        team_num = self._extract_team_num_from_path()
+        default_filename = generate_theme_pack_export_filename(team_num)
+
+        file_path, _ = QFileDialog.getSaveFileName(
+            self,
+            self.tr("导出主题包权重"),
+            default_filename,
+            "YAML Files (*.yaml *.yml)"
+        )
+
+        if file_path:
+            # 先保存当前配置以确保导出获取最新数据
+            theme_list.save_config(path=self.save_path, config_data=self.config_data)
+
+            success = export_theme_pack_weight(team_num, file_path)
+            if success:
+                BaseInfoBar.success(
+                    title=self.tr("导出成功"),
+                    content=self.tr("主题包权重已导出到: ") + file_path,
+                    orient=Qt.Orientation.Horizontal,
+                    isClosable=True,
+                    position=InfoBarPosition.TOP,
+                    duration=3000,
+                    parent=self
+                )
+            else:
+                BaseInfoBar.error(
+                    title=self.tr("导出失败"),
+                    content=self.tr("无法导出主题包权重，请检查日志"),
+                    orient=Qt.Orientation.Horizontal,
+                    isClosable=True,
+                    position=InfoBarPosition.TOP,
+                    duration=3000,
+                    parent=self
+                )
+
+    def on_import_settings(self):
+        """从 YAML 文件导入主题包权重"""
+        if not self.is_team_specific:
+            return
+
+        file_path, _ = QFileDialog.getOpenFileName(
+            self,
+            self.tr("导入主题包权重"),
+            "",
+            "YAML Files (*.yaml *.yml)"
+        )
+
+        if not file_path:
+            return
+
+        # 显示确认对话框
+        confirm = MessageBoxConfirm(
+            self.tr("确认导入"),
+            self.tr("导入将覆盖当前主题包权重设置，是否继续？"),
+            self.window()
+        )
+
+        if not confirm.exec():
+            return
+
+        team_num = self._extract_team_num_from_path()
+        success = import_theme_pack_weight(file_path, team_num)
+
+        if success:
+            # 从文件重新加载配置数据
+            self.config_data.clear()
+            reloaded_config = theme_list.load_config(self.save_path)
+            self.config_data.update(copy.deepcopy(reloaded_config))
+
+            # 更新界面以反映导入的数据
+            if self.is_cn:
+                normal_imported = reloaded_config.get("theme_pack_list_cn", {})
+                hard_imported = reloaded_config.get("theme_pack_list_hard_cn", {})
+            else:
+                normal_imported = reloaded_config.get("theme_pack_list", {})
+                hard_imported = reloaded_config.get("theme_pack_list_hard", {})
+
+            self.preferred_threshold_spinbox.spin_box.setValue(
+                int(reloaded_config.get("preferred_thresholds", 0))
+            )
+
+            for pack_key, weight in normal_imported.items():
+                if pack_key in self.normal_cards:
+                    self.normal_cards[pack_key].update_weight(weight)
+
+            for pack_key, weight in hard_imported.items():
+                if pack_key in self.hard_cards:
+                    self.hard_cards[pack_key].update_weight(weight)
+
+            self._has_unsaved_changes = False
+
+            BaseInfoBar.success(
+                title=self.tr("导入成功"),
+                content=self.tr("主题包权重已导入并应用"),
+                orient=Qt.Orientation.Horizontal,
+                isClosable=True,
+                position=InfoBarPosition.TOP,
+                duration=3000,
+                parent=self
+            )
+        else:
+            BaseInfoBar.error(
+                title=self.tr("导入失败"),
+                content=self.tr("无法导入主题包权重，请检查文件格式和日志"),
+                orient=Qt.Orientation.Horizontal,
+                isClosable=True,
+                position=InfoBarPosition.TOP,
+                duration=3000,
+                parent=self
+            )
 
     def save_and_close(self):
         """保存配置到文件并关闭对话框"""
