@@ -83,7 +83,7 @@ class PathManager(metaclass=SingletonMeta):
 
         self.active_paths = new_active_paths
         self.is_dark_eliminated = True
-        log.info(f"淘汰所有dark路径，当前路径: {self.active_paths}")
+        log.debug(f"淘汰所有dark路径，当前路径: {self.active_paths}")
         return True
 
     def eliminate_zh_cn_paths(self) -> bool:
@@ -102,7 +102,7 @@ class PathManager(metaclass=SingletonMeta):
         if cfg.language_in_game != "en":
             cfg.unsaved_set_value("language_in_game", "en", stacklevel=3)
         self.current_language = "en"
-        log.info(f"淘汰所有zh_cn路径，当前路径: {self.active_paths}")
+        log.debug(f"淘汰所有zh_cn路径，当前路径: {self.active_paths}")
         return True
 
     @staticmethod
