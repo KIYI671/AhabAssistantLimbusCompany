@@ -128,7 +128,8 @@ class AALCReloader:
         event_handler = FileChangeHandler(self)
         self.observer = Observer()
 
-        # Watch main directories
+        # Watch source directories. Runtime/user data files are filtered by
+        # FileChangeHandler before a restart is requested.
         watch_dirs = ["app", "module", "tasks", "utils", "i18n"]
         for dirname in watch_dirs:
             dir_path = Path.cwd() / dirname
@@ -234,9 +235,6 @@ os.environ['AALC_DEV_MODE'] = '1'
         if temp_file.exists():
             temp_file.unlink()
 
-        if temp_file.exists():
-            temp_file.unlink()
-
         log.info("Cleanup complete")
         sys.exit(0)
 
@@ -246,38 +244,81 @@ class FileChangeHandler(FileSystemEventHandler):
 
     def __init__(self, reloader):
         self.reloader = reloader
-        self.ignored_patterns = {
+        self.project_root = Path.cwd().resolve()
+        self.reload_suffixes = {".py"}
+        self.ignored_names = {
             "__pycache__",
-            ".pyc",
             ".git",
             ".idea",
+            ".vscode",
+            ".ruff_cache",
             "venv",
+            ".venv",
             "env",
             ".egg-info",
             "__main_dev_temp__.py",
+            "config.yaml",
+            "config.yaml.bak",
+            "config.yaml.backup",
+            "config.yaml.old",
+            "theme_pack_list.yaml",
+        }
+        self.ignored_suffixes = {".pyc", ".pyo"}
+        self.ignored_runtime_dirs = {
+            "build",
+            "dist",
+            "dist_release",
+            "logs",
+            "theme_pack_weight",
         }
 
-    def should_ignore(self, path):
-        """Check if file should be ignored"""
-        path_str = str(path)
-        return any(pattern in path_str for pattern in self.ignored_patterns)
+    def _resolve_path(self, path):
+        """Resolve watchdog paths without failing on transient files."""
+        try:
+            return Path(path).resolve()
+        except OSError:
+            return Path(path).absolute()
+
+    def should_reload_for_path(self, path):
+        """Check if a file change should restart the development app."""
+        file_path = self._resolve_path(path)
+
+        try:
+            relative_path = file_path.relative_to(self.project_root)
+        except ValueError:
+            return False
+
+        if any(part in self.ignored_names for part in relative_path.parts):
+            return False
+        if any(part in self.ignored_runtime_dirs for part in relative_path.parts[:-1]):
+            return False
+        if file_path.suffix in self.ignored_suffixes:
+            return False
+
+        return file_path.suffix in self.reload_suffixes
+
+    def request_reload(self, path, event_name):
+        """Request an app restart for a qualifying source file change."""
+        if not self.should_reload_for_path(path):
+            return
+
+        rel_path = self._resolve_path(path).relative_to(self.project_root)
+        log.info(f"File {event_name}: {rel_path}")
+        self.reloader.should_restart = True
 
     def on_modified(self, event):
         """Handle file modification"""
-        if event.is_directory or self.should_ignore(event.src_path):
+        if event.is_directory:
             return
 
-        if event.src_path.endswith(".py"):
-            rel_path = Path(event.src_path).relative_to(Path.cwd())
-            log.info(f"File changed: {rel_path}")
-            self.reloader.should_restart = True
+        self.request_reload(event.src_path, "changed")
 
     def on_created(self, event):
         """Handle file creation"""
-        if not event.is_directory and event.src_path.endswith(".py"):
-            rel_path = Path(event.src_path).relative_to(Path.cwd())
-            log.info(f"File created: {rel_path}")
-            self.reloader.should_restart = True
+        if event.is_directory:
+            return
+
+        self.request_reload(event.src_path, "created")
 
 
 def main():

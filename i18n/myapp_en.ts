@@ -216,42 +216,42 @@
 <context>
     <name>BaseCheckBox</name>
     <message>
-        <location filename="../app/page_card.py" line="221"/>
+        <location filename="../app/page_card.py" line="203"/>
         <source>勾选后将使用连续作战模式，设置的值为最大连续作战场次</source>
         <translation>When checked, Continuous Combat Mode will be enabled; the set value represents the maximum number of consecutive battles</translation>
     </message>
     <message>
-        <location filename="../app/page_card.py" line="230"/>
+        <location filename="../app/page_card.py" line="212"/>
         <source>经验本针对性配队</source>
         <translation>Daily EXP Teams</translation>
     </message>
     <message>
-        <location filename="../app/page_card.py" line="252"/>
+        <location filename="../app/page_card.py" line="234"/>
         <source>纽本针对性配队</source>
         <translation>Daily Thread Teams</translation>
     </message>
     <message>
-        <location filename="../app/page_card.py" line="373"/>
+        <location filename="../app/page_card.py" line="355"/>
         <source>葛朗台模式</source>
         <translation>Grandet mode</translation>
     </message>
     <message>
-        <location filename="../app/page_card.py" line="380"/>
+        <location filename="../app/page_card.py" line="362"/>
         <source>不自动兑换脑啡肽 (?)</source>
         <translation>Do not automatic exchange enkephalin (?)</translation>
     </message>
     <message>
-        <location filename="../app/page_card.py" line="381"/>
+        <location filename="../app/page_card.py" line="363"/>
         <source>勾选后除狂气换体以外不执行兑换脑啡肽的操作</source>
         <translation>After checking, do not perform the operation of exchanging enkephalin except for lunacy to enkephalin</translation>
     </message>
     <message>
-        <location filename="../app/page_card.py" line="431"/>
+        <location filename="../app/page_card.py" line="413"/>
         <source>使用困难镜牢*</source>
         <translation>Hard mode*</translation>
     </message>
     <message>
-        <location filename="../app/page_card.py" line="436"/>
+        <location filename="../app/page_card.py" line="418"/>
         <source>仅本次运行期间有效，重启AALC后失效
 右键可设置为永久生效
 注: 自动困牢会关闭本功能</source>
@@ -260,54 +260,54 @@ Right-click to set as permanent
 Note: Auto change Hard Mirror will disable this feature</translation>
     </message>
     <message>
-        <location filename="../app/page_card.py" line="442"/>
+        <location filename="../app/page_card.py" line="424"/>
         <source>不使用每周加成*</source>
         <translation>Non-weekly bonus*</translation>
     </message>
     <message>
-        <location filename="../app/page_card.py" line="447"/>
+        <location filename="../app/page_card.py" line="429"/>
         <source>仅本次运行期间有效，重启AALC后失效
 右键可设置为永久生效</source>
         <translation>Only effective for this run, invalid after restart
 Right-click to set as permanent</translation>
     </message>
     <message>
-        <location filename="../app/page_card.py" line="453"/>
+        <location filename="../app/page_card.py" line="435"/>
         <source>只打三层</source>
         <translation>Only floor 3</translation>
     </message>
     <message>
-        <location filename="../app/page_card.py" line="459"/>
+        <location filename="../app/page_card.py" line="441"/>
         <source>无限坐牢</source>
         <translation>Infinite farming</translation>
     </message>
     <message>
-        <location filename="../app/page_card.py" line="465"/>
+        <location filename="../app/page_card.py" line="447"/>
         <source>保存困牢奖励</source>
         <translation>Save hard mirror rewards</translation>
     </message>
     <message>
-        <location filename="../app/page_card.py" line="472"/>
+        <location filename="../app/page_card.py" line="454"/>
         <source>困牢单次加成</source>
         <translation>Hard mirror single bonus</translation>
     </message>
     <message>
-        <location filename="../app/page_card.py" line="484"/>
+        <location filename="../app/page_card.py" line="466"/>
         <source>第五层跳过（最左边）活动卡包</source>
         <translation>No select the leftmost theme pack on the fifth floor</translation>
     </message>
     <message>
-        <location filename="../app/page_card.py" line="496"/>
+        <location filename="../app/page_card.py" line="478"/>
         <source>不跳过白棉花</source>
         <translation>No skip White Gossypium</translation>
     </message>
     <message>
-        <location filename="../app/page_card.py" line="502"/>
+        <location filename="../app/page_card.py" line="484"/>
         <source>战斗直到全灭</source>
         <translation>Fight to last man</translation>
     </message>
     <message>
-        <location filename="../app/page_card.py" line="508"/>
+        <location filename="../app/page_card.py" line="490"/>
         <source>使用键盘进行镜牢寻路</source>
         <translation>Mirror Dungeon Pathfinding using the Keyboard</translation>
     </message>
@@ -427,12 +427,12 @@ Right-click to set as permanent</translation>
         <translation>Only formula fuse</translation>
     </message>
     <message>
-        <location filename="../app/page_card.py" line="466"/>
+        <location filename="../app/page_card.py" line="448"/>
         <source>仅在进行困难镜牢时生效，普通难度不生效</source>
         <translation>Only effective for hard mirror, ineffective for normal mirror</translation>
     </message>
     <message>
-        <location filename="../app/page_card.py" line="478"/>
+        <location filename="../app/page_card.py" line="460"/>
         <source>第五层选择（最左边）活动卡包</source>
         <translation>Select the leftmost theme pack on the fifth floor</translation>
     </message>
@@ -447,7 +447,7 @@ Right-click to set as permanent</translation>
         <translation>defense first round in normal encounters</translation>
     </message>
     <message>
-        <location filename="../app/page_card.py" line="490"/>
+        <location filename="../app/page_card.py" line="472"/>
         <source>再次领取奖励</source>
         <translation>Claim rewards again</translation>
     </message>
@@ -571,7 +571,7 @@ Right-click to set as permanent</translation>
     </message>
     <message>
         <location filename="../app/__init__.py" line="41"/>
-        <location filename="../app/page_card.py" line="163"/>
+        <location filename="../app/page_card.py" line="147"/>
         <source>是</source>
         <translation>Yes</translation>
     </message>
@@ -787,13 +787,8 @@ Right-click to set as permanent</translation>
     </message>
     <message>
         <location filename="../app/__init__.py" line="118"/>
-        <source>所有人</source>
-        <translation>All</translation>
-    </message>
-    <message>
-        <location filename="../app/language_manager.py" line="29"/>
-        <source>(实验性功能) 自动识别</source>
-        <translation>[Experimental] Auto</translation>
+        <source>所有选中的人</source>
+        <translation>All selected sinners</translation>
     </message>
     <message>
         <location filename="../app/__init__.py" line="98"/>
@@ -810,7 +805,7 @@ Right-click to set as permanent</translation>
         <translation type="vanished">Yes (Default)</translation>
     </message>
     <message>
-        <location filename="../app/page_card.py" line="163"/>
+        <location filename="../app/page_card.py" line="147"/>
         <source>否 (默认)</source>
         <translation>No (Default)</translation>
     </message>
@@ -828,8 +823,7 @@ Right-click to set as permanent</translation>
         <translation>Checking update failed (╥╯﹏╰╥)</translation>
     </message>
     <message>
-        <location filename="../app/setting_interface.py" line="607"/>
-        <location filename="../app/setting_interface.py" line="626"/>
+        <location filename="../app/setting_interface.py" line="598"/>
         <source>更改将在重新启动后生效</source>
         <translation>The changes will take effect after the restart</translation>
     </message>
@@ -859,13 +853,13 @@ Right-click to set as permanent</translation>
         <translation>Settings pasted</translation>
     </message>
     <message>
-        <location filename="../app/setting_interface.py" line="559"/>
+        <location filename="../app/setting_interface.py" line="550"/>
         <source>10次截图平均耗时 {time:.2f} ms</source>
         <translation>Average screenshot time over 10 attempts: {time:.2f} ms</translation>
     </message>
     <message>
-        <location filename="../app/setting_interface.py" line="560"/>
-        <location filename="../app/setting_interface.py" line="572"/>
+        <location filename="../app/setting_interface.py" line="551"/>
+        <location filename="../app/setting_interface.py" line="563"/>
         <source>截图测试结束</source>
         <translation>Screenshot test completed</translation>
     </message>
@@ -884,7 +878,7 @@ Right-click to set as permanent</translation>
         <translation>Image saved as AALC &gt; screenshot_{time_str}.png</translation>
     </message>
     <message>
-        <location filename="../app/setting_interface.py" line="571"/>
+        <location filename="../app/setting_interface.py" line="562"/>
         <source>请确保LimbusCompany正在运行</source>
         <translation>Please ensure that LimbusCompany is running</translation>
     </message>
@@ -1178,7 +1172,7 @@ Right-click to set as permanent</translation>
         <translation>Fixed team usage</translation>
     </message>
     <message>
-        <location filename="../app/page_card.py" line="218"/>
+        <location filename="../app/page_card.py" line="200"/>
         <source>使用连续作战</source>
         <translation>Continuous Combat</translation>
     </message>
@@ -1312,22 +1306,22 @@ Right-click to set as permanent</translation>
         <translation>Control method</translation>
     </message>
     <message>
-        <location filename="../app/setting_interface.py" line="588"/>
+        <location filename="../app/setting_interface.py" line="579"/>
         <source>后台模式，游戏可以在后台运行，但是&lt;font color=red&gt;游戏不能处于最小化状态!!&lt;/font&gt;</source>
         <translation>Background mode: The game can run in the background, but &lt;font color=red&gt;the game cannot be minimized!!&lt;/font&gt;</translation>
     </message>
     <message>
-        <location filename="../app/setting_interface.py" line="591"/>
+        <location filename="../app/setting_interface.py" line="582"/>
         <source>前台模式，游戏必须在显示在最上方</source>
         <translation>In foreground mode, the game must be displayed at the top</translation>
     </message>
     <message>
-        <location filename="../app/setting_interface.py" line="597"/>
+        <location filename="../app/setting_interface.py" line="588"/>
         <source>基于移动窗口的后台模式，有效规避了后台模式需要移动鼠标的情况，&lt;br/&gt;但是性能和稳定性较差，&lt;font color=red&gt;不推荐长时间无人使用&lt;/font&gt;</source>
         <translation>Window-move BG mode. Avoids mouse syncing move.&lt;br/&gt; But has poor stability.&lt;font color=red&gt; Don&apos;t leave it unattended.&lt;/font&gt;</translation>
     </message>
     <message>
-        <location filename="../app/setting_interface.py" line="601"/>
+        <location filename="../app/setting_interface.py" line="592"/>
         <source>未知的输入模式，发生了错误</source>
         <translation>An error occurred due to an unknown input pattern</translation>
     </message>
@@ -1622,43 +1616,37 @@ Right-click to set as permanent</translation>
         <translation>Restore window after completion</translation>
     </message>
     <message>
-        <location filename="../app/page_card.py" line="128"/>
-        <location filename="../app/page_card.py" line="137"/>
-        <source>游戏使用语言</source>
-        <translation>Game language</translation>
-    </message>
-    <message>
-        <location filename="../app/page_card.py" line="164"/>
+        <location filename="../app/page_card.py" line="148"/>
         <source>提高点击速度，但是对硬件与网络有一定需求，否则可能出现漏点</source>
         <translation>It increases click speed, but places certain demands on hardware and network performance; otherwise, missed clicks may occur</translation>
     </message>
     <message>
-        <location filename="../app/page_card.py" line="248"/>
+        <location filename="../app/page_card.py" line="230"/>
         <source>周日</source>
         <translation>Sun.</translation>
     </message>
     <message>
-        <location filename="../app/page_card.py" line="213"/>
+        <location filename="../app/page_card.py" line="195"/>
         <source>使用编队</source>
         <translation>Used TEAM</translation>
     </message>
     <message>
-        <location filename="../app/page_card.py" line="342"/>
+        <location filename="../app/page_card.py" line="324"/>
         <source>领取奖励</source>
         <translation>Claim Rewards</translation>
     </message>
     <message>
-        <location filename="../app/page_card.py" line="365"/>
+        <location filename="../app/page_card.py" line="347"/>
         <source>狂气换体</source>
         <translation>Buy Enkephalin</translation>
     </message>
     <message>
-        <location filename="../app/page_card.py" line="234"/>
+        <location filename="../app/page_card.py" line="216"/>
         <source>周一、周二（斩击）</source>
         <translation>Mon. Tue. (Slash)</translation>
     </message>
     <message>
-        <location filename="../app/page_card.py" line="161"/>
+        <location filename="../app/page_card.py" line="145"/>
         <source>使用异步方法进行键鼠输入</source>
         <translation>Use asynchronous method for input</translation>
     </message>
@@ -1671,47 +1659,47 @@ Right-click to set as permanent</translation>
         <translation type="vanished">No</translation>
     </message>
     <message>
-        <location filename="../app/page_card.py" line="239"/>
+        <location filename="../app/page_card.py" line="221"/>
         <source>周三、周四（突刺）</source>
         <translation>Wed. Thu. (Pierce)</translation>
     </message>
     <message>
-        <location filename="../app/page_card.py" line="244"/>
+        <location filename="../app/page_card.py" line="226"/>
         <source>周五、周六（打击）</source>
         <translation>Fri. Sat. (Blunt)</translation>
     </message>
     <message>
-        <location filename="../app/page_card.py" line="256"/>
+        <location filename="../app/page_card.py" line="238"/>
         <source>纽本周一（色欲）</source>
         <translation>Thread Mon. (Lust)</translation>
     </message>
     <message>
-        <location filename="../app/page_card.py" line="261"/>
+        <location filename="../app/page_card.py" line="243"/>
         <source>纽本周二（怠惰）</source>
         <translation>Thread Tue. (Sloth)</translation>
     </message>
     <message>
-        <location filename="../app/page_card.py" line="266"/>
+        <location filename="../app/page_card.py" line="248"/>
         <source>纽本周三（暴食）</source>
         <translation>Thread Wed. (Gluttony)</translation>
     </message>
     <message>
-        <location filename="../app/page_card.py" line="271"/>
+        <location filename="../app/page_card.py" line="253"/>
         <source>纽本周四（忧郁）</source>
         <translation>Thread Thu. (Gloom)</translation>
     </message>
     <message>
-        <location filename="../app/page_card.py" line="276"/>
+        <location filename="../app/page_card.py" line="258"/>
         <source>纽本周五（傲慢）</source>
         <translation>Thread Fri. (Pride)</translation>
     </message>
     <message>
-        <location filename="../app/page_card.py" line="281"/>
+        <location filename="../app/page_card.py" line="263"/>
         <source>纽本周六（嫉妒）</source>
         <translation>Thread Sat. (Envy)</translation>
     </message>
     <message>
-        <location filename="../app/page_card.py" line="286"/>
+        <location filename="../app/page_card.py" line="268"/>
         <source>纽本周日（暴怒）</source>
         <translation>Thread Sun. (Wrath)</translation>
     </message>
@@ -1729,32 +1717,32 @@ Right-click to set as permanent</translation>
 <context>
     <name>LabelWithSpinBox</name>
     <message>
-        <location filename="../app/page_card.py" line="143"/>
+        <location filename="../app/page_card.py" line="127"/>
         <source>截图间隔</source>
         <translation>Screenshot interval</translation>
     </message>
     <message>
-        <location filename="../app/page_card.py" line="148"/>
+        <location filename="../app/page_card.py" line="132"/>
         <source>鼠标活动间隔</source>
         <translation>Mouse activity interval</translation>
     </message>
     <message>
-        <location filename="../app/page_card.py" line="153"/>
+        <location filename="../app/page_card.py" line="137"/>
         <source>鼠标按下持续时间</source>
         <translation>Mouse press duration</translation>
     </message>
     <message>
-        <location filename="../app/page_card.py" line="158"/>
+        <location filename="../app/page_card.py" line="142"/>
         <source>仅在使用异步方法进行鼠标输入时生效，单位为秒，每次鼠标按下都会增加对应的延迟</source>
         <translation>Only effective when using asynchronous method for mouse input, unit is seconds, each mouse press will add corresponding delay</translation>
     </message>
     <message>
-        <location filename="../app/page_card.py" line="201"/>
+        <location filename="../app/page_card.py" line="183"/>
         <source>经验本次数</source>
         <translation>EXP count</translation>
     </message>
     <message>
-        <location filename="../app/page_card.py" line="207"/>
+        <location filename="../app/page_card.py" line="189"/>
         <source>纽本次数</source>
         <translation>Thread count</translation>
     </message>
@@ -1765,24 +1753,6 @@ Right-click to set as permanent</translation>
     <message>
         <source>普通刷新上限</source>
         <translation type="vanished">Normal Refresh Limit</translation>
-    </message>
-</context>
-<context>
-    <name>Logger</name>
-    <message>
-        <location filename="../module/ALI/autoLangIdentification.py" line="97"/>
-        <source>当前游戏语言为 {current_game_lang}, 即将自动切换</source>
-        <translation>Current game language is {current_game_lang}, switch soon</translation>
-    </message>
-    <message>
-        <location filename="../module/ALI/autoLangIdentification.py" line="104"/>
-        <source>当前游戏语言为 {current_game_lang}, 但是被错误设置成了 {setting_game_lang}</source>
-        <translation>Current game language is {current_game_lang}, but is set incorrectly  {setting_game_lang}</translation>
-    </message>
-    <message>
-        <location filename="../module/ALI/autoLangIdentification.py" line="113"/>
-        <source>自动切换失败, 不支持的游戏语言</source>
-        <translation>Auto switch failed, unsupported game language</translation>
     </message>
 </context>
 <context>
@@ -1970,7 +1940,7 @@ Right-click to set as permanent</translation>
 <context>
     <name>MirrorSpinBox</name>
     <message>
-        <location filename="../app/page_card.py" line="421"/>
+        <location filename="../app/page_card.py" line="403"/>
         <source>坐牢次数</source>
         <translation>Farming times</translation>
     </message>
@@ -1983,12 +1953,12 @@ Right-click to set as permanent</translation>
         <translation>Nickname</translation>
     </message>
     <message>
-        <location filename="../app/page_card.py" line="416"/>
+        <location filename="../app/page_card.py" line="398"/>
         <source>编队1</source>
         <translation>Team1</translation>
     </message>
     <message>
-        <location filename="../app/page_card.py" line="617"/>
+        <location filename="../app/page_card.py" line="599"/>
         <source>编队</source>
         <translation>Team</translation>
     </message>
@@ -1996,52 +1966,52 @@ Right-click to set as permanent</translation>
 <context>
     <name>Nav</name>
     <message>
-        <location filename="../app/setting_interface.py" line="476"/>
+        <location filename="../app/setting_interface.py" line="468"/>
         <source>游戏设置</source>
         <translation>Game Settings</translation>
     </message>
     <message>
-        <location filename="../app/setting_interface.py" line="479"/>
+        <location filename="../app/setting_interface.py" line="471"/>
         <source>镜牢主题包</source>
         <translation>Theme Pack</translation>
     </message>
     <message>
-        <location filename="../app/setting_interface.py" line="484"/>
+        <location filename="../app/setting_interface.py" line="476"/>
         <source>模拟器设置</source>
         <translation>Simulator Setting</translation>
     </message>
     <message>
-        <location filename="../app/setting_interface.py" line="487"/>
+        <location filename="../app/setting_interface.py" line="479"/>
         <source>启动游戏</source>
         <translation>Start Game</translation>
     </message>
     <message>
-        <location filename="../app/setting_interface.py" line="488"/>
+        <location filename="../app/setting_interface.py" line="480"/>
         <source>定时执行</source>
         <translation>Scheduled Tasks</translation>
     </message>
     <message>
-        <location filename="../app/setting_interface.py" line="489"/>
+        <location filename="../app/setting_interface.py" line="481"/>
         <source>个性化</source>
         <translation>Personalization</translation>
     </message>
     <message>
-        <location filename="../app/setting_interface.py" line="490"/>
+        <location filename="../app/setting_interface.py" line="482"/>
         <source>更新设置</source>
         <translation>Update Settings</translation>
     </message>
     <message>
-        <location filename="../app/setting_interface.py" line="491"/>
+        <location filename="../app/setting_interface.py" line="483"/>
         <source>日志设置</source>
         <translation>logs Settings</translation>
     </message>
     <message>
-        <location filename="../app/setting_interface.py" line="492"/>
+        <location filename="../app/setting_interface.py" line="484"/>
         <source>关于</source>
         <translation>About</translation>
     </message>
     <message>
-        <location filename="../app/setting_interface.py" line="495"/>
+        <location filename="../app/setting_interface.py" line="487"/>
         <source>实验性</source>
         <translation>Experimental</translation>
     </message>
@@ -2072,7 +2042,7 @@ Right-click to set as permanent</translation>
         <translation>Advanced</translation>
     </message>
     <message>
-        <location filename="../app/page_card.py" line="548"/>
+        <location filename="../app/page_card.py" line="530"/>
         <source>镜 牢 进 度 </source>
         <translation>Mirror Progress</translation>
     </message>
@@ -2080,14 +2050,14 @@ Right-click to set as permanent</translation>
 <context>
     <name>PageMirror</name>
     <message>
+        <location filename="../app/page_card.py" line="535"/>
         <location filename="../app/page_card.py" line="553"/>
-        <location filename="../app/page_card.py" line="571"/>
         <source>镜 牢 进 度 ( 普 通 ) </source>
         <translation>Mirror Progress (Normal)</translation>
     </message>
     <message>
-        <location filename="../app/page_card.py" line="550"/>
-        <location filename="../app/page_card.py" line="569"/>
+        <location filename="../app/page_card.py" line="532"/>
+        <location filename="../app/page_card.py" line="551"/>
         <source>镜 牢 进 度 ( 困 难 ) </source>
         <translation>Hard Mode Mirror Progress</translation>
     </message>
@@ -2192,11 +2162,6 @@ Right-click to set as permanent</translation>
         <translation>Join Beta update</translation>
     </message>
     <message>
-        <location filename="../app/setting_interface.py" line="394"/>
-        <source>自动检测并切换游戏语言</source>
-        <translation>Auto identify and switch game language</translation>
-    </message>
-    <message>
         <location filename="../app/setting_interface.py" line="111"/>
         <source>自动困难模式</source>
         <translation>Auto change Hard Mirror</translation>
@@ -2245,12 +2210,12 @@ Right-click to set as permanent</translation>
         <translation>When enabled, the application will be hidden to the system tray when minimized</translation>
     </message>
     <message>
-        <location filename="../app/setting_interface.py" line="401"/>
+        <location filename="../app/setting_interface.py" line="394"/>
         <source>运行时保持屏幕唤醒</source>
         <translation>Keep screen awake while running</translation>
     </message>
     <message>
-        <location filename="../app/setting_interface.py" line="405"/>
+        <location filename="../app/setting_interface.py" line="398"/>
         <source>任务运行中阻止系统休眠与锁屏；任务结束、停止或异常退出后会自动恢复系统默认策略</source>
         <translation>Prevented from entering sleep mode or locking the screen for running</translation>
     </message>
@@ -2537,12 +2502,12 @@ Update Logs:</translation>
         <translation>Shut Down AALC</translation>
     </message>
     <message>
-        <location filename="../tasks/base/script_task_scheme.py" line="379"/>
+        <location filename="../tasks/base/script_task_scheme.py" line="344"/>
         <source>AALC 运行结束</source>
         <translation>AALC Missions Completed</translation>
     </message>
     <message>
-        <location filename="../tasks/base/script_task_scheme.py" line="380"/>
+        <location filename="../tasks/base/script_task_scheme.py" line="345"/>
         <source>所有任务已完成</source>
         <translation>All Tasks Done</translation>
     </message>

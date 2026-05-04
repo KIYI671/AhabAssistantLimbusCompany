@@ -3,6 +3,8 @@ import math
 import random
 import time
 from ast import List
+from dataclasses import dataclass
+from typing import Any
 
 import cv2
 import numpy as np
@@ -18,6 +20,15 @@ from ..logger import log
 from ..ocr import ocr
 from .input_handlers.input import AbstractInput
 from .screenshot import ScreenShot
+
+
+@dataclass(frozen=True)
+class TextMatchResult:
+    """Structured result for dict-based OCR target matches."""
+
+    value: Any
+    text: str
+    position: list[float]
 
 
 class Automation(metaclass=SingletonMeta):
@@ -131,7 +142,7 @@ class Automation(metaclass=SingletonMeta):
             take_screenshot,
             model=model,
             my_crop=my_crop,
-            addtional_stack=1,
+            additional_stack=1,
         )
         if coordinates:
             if click:
@@ -283,7 +294,7 @@ class Automation(metaclass=SingletonMeta):
         take_screenshot=False,
         model=None,
         my_crop=None,
-        addtional_stack=0,
+        additional_stack=0,
     ):
         """
         查找元素，并根据指定的查找类型执行不同的查找策略。
@@ -295,7 +306,7 @@ class Automation(metaclass=SingletonMeta):
             take_screenshot: 是否需要先截图。
             model: 查找的策略,'clam' 为在模板图片位置查找，'normal' 为模板图片位置扩大范围查找，'aggressive' 为全截屏区域查找
             my_crop: 用于OCR识别的已截取的部分图片
-            addtional_stack: 用于日志堆栈层级调整
+            additional_stack: 用于日志堆栈层级调整
         Returns:
             查找到的元素位置，或者在图像计数查找时返回计数。
         """
@@ -318,18 +329,18 @@ class Automation(metaclass=SingletonMeta):
                         threshold,
                         model=model,
                         my_crop=my_crop,
-                        addtional_stack=addtional_stack,
+                        additional_stack=additional_stack,
                     )
                 elif find_type == "text":
                     # 使用文本查找方法查找元素
-                    center = self.find_text_element(target, my_crop, addtional_stack=addtional_stack)
+                    center = self.find_text_element(target, my_crop, additional_stack=additional_stack)
                 if center:
                     return center
             elif find_type in ["feature"]:
-                return self.find_feature_element(target, my_crop, addtional_stack=addtional_stack)
+                return self.find_feature_element(target, my_crop, additional_stack=additional_stack)
             elif find_type in ["image_with_multiple_targets"]:
                 # 使用多目标图像查找方法查找元素
-                return self.find_image_with_multiple_targets(target, threshold, addtional_stack=addtional_stack)
+                return self.find_image_with_multiple_targets(target, threshold, additional_stack=additional_stack)
             else:
                 raise ValueError("错误的类型")
 
@@ -337,7 +348,7 @@ class Automation(metaclass=SingletonMeta):
                 time.sleep(1)  # 在重试前等待一定时间
         return None
 
-    def find_image_with_multiple_targets(self, target: str, threshold, addtional_stack) -> List:
+    def find_image_with_multiple_targets(self, target: str, threshold, additional_stack) -> List:
         """
         在当前截图中查找多个目标图像的位置
         """
@@ -351,12 +362,12 @@ class Automation(metaclass=SingletonMeta):
             screenshot = np.array(self.screenshot)
             matches = ImageUtils.match_template_with_multiple_targets(screenshot, template, threshold)
             if len(matches) == 0:
-                log.debug(f"未找到任何目标图像{target}", stacklevel=addtional_stack + 3)
+                log.debug(f"未找到任何目标图像{target}", stacklevel=additional_stack + 3)
                 return []
             else:
                 log.debug(
                     f"找到{len(matches)}个目标：{matches}",
-                    stacklevel=addtional_stack + 3,
+                    stacklevel=additional_stack + 3,
                 )
                 return matches
         except Exception as e:
@@ -377,31 +388,31 @@ class Automation(metaclass=SingletonMeta):
                 return ocr_dict[text]
         return False
 
-    def find_text_element(self, target, my_crop=None, all_text=False, only_text=False, addtional_stack=0):
-        """
-        寻找文本元素所在的坐标位置
-        """
+    def _run_ocr_for_text(self, my_crop=None, only_text=False, additional_stack=0):
         if my_crop is not None:
-            # 根据my_crop（为左上与右下四个坐标），截取self.screenshot的部分区域进行ocr
             cropped_image = self.screenshot.crop(my_crop)
             ocr_result = ocr.run(cropped_image)
         else:
             ocr_result = ocr.run(self.screenshot)
-        if ocr_result.txts:
-            ocr_text_list = [ocr_result.txts[i] for i in range(len(ocr_result.txts))]
-            if only_text:
-                return ocr_text_list
-            ocr_position_list = []
 
-            for box in ocr_result.boxes:
-                x = (box[0][0] + box[2][0]) / 2
-                y = (box[0][1] + box[2][1]) / 2
-                ocr_position_list.append([x, y])
+        if not ocr_result.txts:
+            return False if only_text else {}
 
-            ocr_dict = {text: position for text, position in zip(ocr_text_list, ocr_position_list)}
-            log.debug(f"识别到文本及其坐标：{ocr_dict}", stacklevel=addtional_stack + 3)
-        else:
-            ocr_dict = {}
+        ocr_text_list = [ocr_result.txts[i] for i in range(len(ocr_result.txts))]
+        if only_text:
+            return ocr_text_list
+
+        ocr_position_list = []
+        for box in ocr_result.boxes:
+            x = (box[0][0] + box[2][0]) / 2
+            y = (box[0][1] + box[2][1]) / 2
+            ocr_position_list.append([x, y])
+
+        ocr_dict = {text: position for text, position in zip(ocr_text_list, ocr_position_list)}
+        log.debug(f"识别到文本及其坐标：{ocr_dict}", stacklevel=additional_stack + 3)
+        return ocr_dict
+
+    def _find_target_in_ocr_dict(self, target, ocr_dict, all_text=False):
         if ocr_dict == {}:
             return False
         if isinstance(target, str):
@@ -413,14 +424,76 @@ class Automation(metaclass=SingletonMeta):
                         return False
                 return True
             for key in target:
-                if self.find_str_in_text(str(key), ocr_dict):
-                    return self.find_str_in_text(str(key), ocr_dict)
+                if result := self.find_str_in_text(str(key), ocr_dict):
+                    return result
             return False
         elif isinstance(target, dict):
             for key, value in target.items():
-                if self.find_str_in_text(str(key), ocr_dict):
-                    return value, str(key)
+                if position := self.find_str_in_text(str(key), ocr_dict):
+                    return TextMatchResult(value=value, text=str(key), position=position)
             return None
+        return False
+
+    def find_language_text(
+        self,
+        zh_text,
+        en_text,
+        my_crop=None,
+        all_text=False,
+        additional_stack=0,
+    ):
+        """
+        按当前语言状态查找中英文文本，并在语言未知时用命中结果同步语言。
+
+        该方法只执行一次 OCR，然后在同一份 OCR 结果中匹配文本：
+        - 当前语言为 zh_cn 时，只匹配 zh_text。
+        - 当前语言为 en 时，只匹配 en_text。
+        - 当前语言未知时，先匹配 zh_text；中文命中则同步语言为 zh_cn。
+        - 中文未命中时再匹配 en_text；英文命中则同步语言为 en，并移除 zh_cn 图片路径。
+
+        Args:
+            zh_text: 中文目标文本，支持 str、list、dict，规则同 find_text_element。
+            en_text: 英文目标文本，支持 str、list、dict，规则同 find_text_element。
+            my_crop: OCR 裁剪区域，格式为 (x1, y1, x2, y2)；为 None 时识别整张截图。
+            all_text: 当目标文本为 list 时，是否要求列表内所有关键词全部命中。
+            additional_stack: 日志 stacklevel 补偿，用于让日志定位到业务调用处。
+
+        Returns:
+            文本命中结果，返回格式同 find_text_element；未命中返回 False。
+        """
+        ocr_dict = self._run_ocr_for_text(my_crop=my_crop, additional_stack=additional_stack)
+        if ocr_dict == {}:
+            return False
+
+        if path_manager.current_language == "zh_cn":
+            return self._find_target_in_ocr_dict(zh_text, ocr_dict, all_text=all_text)
+        if path_manager.current_language == "en":
+            return self._find_target_in_ocr_dict(en_text, ocr_dict, all_text=all_text)
+
+        zh_result = self._find_target_in_ocr_dict(zh_text, ocr_dict, all_text=all_text)
+        if zh_result is not False and zh_result is not None:
+            path_manager.set_language("zh_cn", log_stacklevel=additional_stack + 4)
+            return zh_result
+
+        en_result = self._find_target_in_ocr_dict(en_text, ocr_dict, all_text=all_text)
+        if en_result is not False and en_result is not None:
+            path_manager.set_language("en", log_stacklevel=additional_stack + 4)
+            if path_manager.eliminate_zh_cn_paths():
+                self.clear_img_cache()
+            return en_result
+
+        return False
+
+    def find_text_element(self, target, my_crop=None, all_text=False, only_text=False, additional_stack=0):
+        """
+        寻找文本元素所在的坐标位置。
+
+        str/list 目标返回坐标；dict 目标返回 TextMatchResult。
+        """
+        ocr_result = self._run_ocr_for_text(my_crop=my_crop, only_text=only_text, additional_stack=additional_stack)
+        if only_text:
+            return ocr_result
+        return self._find_target_in_ocr_dict(target, ocr_result, all_text=all_text)
 
     def get_text_from_screenshot(self, my_crop=None):
         """
@@ -439,7 +512,7 @@ class Automation(metaclass=SingletonMeta):
 
         return ocr_text_list
 
-    def find_feature_element(self, target, pic_crop=None, min_matches=8, addtional_stack=0):
+    def find_feature_element(self, target, pic_crop=None, min_matches=8, additional_stack=0):
         """
         寻找特征元素所在的坐标位置
         """
@@ -471,7 +544,7 @@ class Automation(metaclass=SingletonMeta):
             result, num_matches = ImageUtils.feature_matching(template, screenshot, min_matches)
             log.debug(
                 f"匹配目标特征图片：{target.replace('./assets/images/', '')}结果{result}, 找到 {num_matches} 个匹配点",
-                stacklevel=addtional_stack + 3,
+                stacklevel=additional_stack + 3,
             )
             return result
         except Exception as e:
@@ -488,6 +561,62 @@ class Automation(metaclass=SingletonMeta):
         gc.collect()  # 强制垃圾回收，清理内存
         log.debug("图片缓存已清除", stacklevel=2)
 
+    def _load_template_for_path(self, target: str, target_path: str, cacheable: bool):
+        cache_key = (target, target_path)
+        if cacheable and cache_key in self.img_cache:
+            cached = self.img_cache[cache_key]
+            return cached["template"], cached["bbox"]
+
+        template = ImageUtils.load_from_specific_path(target, target_path)
+        if template is None:
+            return None, None
+        if target.endswith("assets.png"):
+            bbox = ImageUtils.get_bbox(template)
+            template = ImageUtils.crop(template, bbox)
+        else:
+            bbox = None
+        if cacheable:
+            self.img_cache[cache_key] = {"template": template, "bbox": bbox}
+        return template, bbox
+
+    @staticmethod
+    def _is_valid_match(match_val, threshold) -> bool:
+        return isinstance(match_val, (int, float, np.integer, np.floating)) and not math.isinf(match_val) and match_val >= threshold
+
+    def _update_path_state_from_match_results(self, results, additional_stack: int = 0) -> None:
+        dark_results = [result for result in results if path_manager.is_path_dark(result["path"])]
+        default_results = [result for result in results if path_manager.is_path_default(result["path"])]
+        zh_cn_results = [result for result in results if path_manager.is_path_zh_cn(result["path"])]
+        en_or_share_results = [result for result in results if path_manager.is_path_en_or_share(result["path"])]
+
+        dark_exists = bool(dark_results)
+        dark_matched = any(result["matched"] for result in dark_results)
+        default_matched = any(result["matched"] for result in default_results)
+
+        path_changed = False
+        if dark_matched:
+            path_manager.set_theme("dark", log_stacklevel=additional_stack + 4)
+        elif dark_exists and default_matched:
+            path_manager.set_theme("default", log_stacklevel=additional_stack + 4)
+            path_changed = path_manager.eliminate_dark_paths() or path_changed
+
+        zh_cn_exists = bool(zh_cn_results)
+        zh_cn_matched = any(result["matched"] for result in zh_cn_results)
+        en_or_share_matched = any(result["matched"] for result in en_or_share_results)
+
+        if zh_cn_matched:
+            path_manager.set_language("zh_cn", log_stacklevel=additional_stack + 4)
+        elif zh_cn_exists and en_or_share_matched:
+            path_manager.set_language("en", log_stacklevel=additional_stack + 4)
+            path_changed = path_manager.eliminate_zh_cn_paths() or path_changed
+
+        if path_changed:
+            self.clear_img_cache()
+
+    @staticmethod
+    def _path_state_is_known() -> bool:
+        return path_manager.current_theme is not None and path_manager.current_language is not None
+
     def find_image_element(
         self,
         target: str,
@@ -495,7 +624,7 @@ class Automation(metaclass=SingletonMeta):
         cacheable=True,
         model="clam",
         my_crop=None,
-        addtional_stack=0,
+        additional_stack=0,
     ):
         """
         在当前截图中查找目标图像的位置
@@ -509,62 +638,45 @@ class Automation(metaclass=SingletonMeta):
                     log.debug(f"当前系统内存总占用率: {current_percent}%，释放图片缓存")
                     self.clear_img_cache()
 
-            if cacheable and target in self.img_cache:
-                bbox = self.img_cache[target]["bbox"]
-                template = self.img_cache[target]["template"]
-                loaded_path = self.img_cache[target].get("loaded_path")
-            else:
-                template, loaded_path = ImageUtils.load_image(target, return_path=True)
-                if template is None:
-                    log.debug(f"无法加载图片: {target}", stacklevel=addtional_stack + 3)
-                    return None
-                if target.endswith("assets.png"):
-                    bbox = ImageUtils.get_bbox(template)
-                    template = ImageUtils.crop(template, bbox)
-                else:
-                    bbox = None
-                if cacheable:
-                    self.img_cache[target] = {"bbox": bbox, "template": template, "loaded_path": loaded_path}
+            existing_paths = ImageUtils.existing_image_paths(target)
+            if not existing_paths:
+                log.error(f"未找到图片： {target} ")
+                log.debug(f"无法加载图片: {target}", stacklevel=additional_stack + 3)
+                return None
+
             screenshot = np.array(self.screenshot)
             if my_crop:
                 screenshot = ImageUtils.crop(screenshot, my_crop)
-            center, matchVal = ImageUtils.match_template(screenshot, template, bbox, model)  # 匹配模板
-            log.debug(
-                f"目标图片：{target.replace('./assets/images/', '')}, 路径: {loaded_path}, 相似度：{matchVal:.2f}, 目标位置：{center}",
-                stacklevel=addtional_stack + 3,
-            )
-            if isinstance(matchVal, (int, float)) and not math.isinf(matchVal) and matchVal >= threshold:
-                return center
-            if loaded_path and not path_manager.is_dark_eliminated and path_manager.is_path_dark(loaded_path):
-                default_exists, default_path = ImageUtils.check_default_path_exists(target)
-                if default_exists:
-                    default_template = ImageUtils.load_from_specific_path(target, default_path)
-                    if default_template is not None:
-                        if target.endswith("assets.png"):
-                            default_bbox = ImageUtils.get_bbox(default_template)
-                            default_template = ImageUtils.crop(default_template, default_bbox)
-                        else:
-                            default_bbox = None
 
-                        default_center, default_matchVal = ImageUtils.match_template(
-                            screenshot,
-                            default_template,
-                            default_bbox,
-                            model,
-                        )
-                        log.debug(
-                            f"尝试默认路径图片：{target}, 路径: {default_path}, 相似度：{default_matchVal:.2f}",
-                            stacklevel=addtional_stack + 3,
-                        )
-                        if (
-                            isinstance(default_matchVal, (int, float))
-                            and not math.isinf(default_matchVal)
-                            and default_matchVal >= threshold
-                        ):
-                            if path_manager.eliminate_dark_paths():
-                                log.debug(f"检测到dark路径失败但default路径成功，淘汰所有dark路径，图片: {target}")
-                                self.clear_img_cache()
-                            return default_center
+            results = []
+            for loaded_path in existing_paths:
+                template, bbox = self._load_template_for_path(target, loaded_path, cacheable)
+                if template is None:
+                    continue
+                center, matchVal = ImageUtils.match_template(screenshot, template, bbox, model)
+                matched = self._is_valid_match(matchVal, threshold)
+                log.debug(
+                    f"目标图片：{target.replace('./assets/images/', '')}, 路径: {loaded_path}, 相似度：{matchVal:.2f}, 目标位置：{center}",
+                    stacklevel=additional_stack + 3,
+                )
+                results.append(
+                    {
+                        "path": loaded_path,
+                        "center": center,
+                        "matched": matched,
+                    }
+                )
+                if matched and self._path_state_is_known():
+                    return center
+
+            if not results:
+                log.debug(f"无法加载图片: {target}", stacklevel=additional_stack + 3)
+                return None
+
+            self._update_path_state_from_match_results(results, additional_stack=additional_stack)
+            for result in results:
+                if result["matched"]:
+                    return result["center"]
         except Exception as e:
             log.error(f"寻找图片失败:{e}")
         return None

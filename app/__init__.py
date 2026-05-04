@@ -115,7 +115,7 @@ skill_replacement_sinner = {
     QT_TRANSLATE_NOOP("BaseComboBox", "配队首位"): 0,
     QT_TRANSLATE_NOOP("BaseComboBox", "配队前3"): 1,
     QT_TRANSLATE_NOOP("BaseComboBox", "配队前7"): 2,
-    QT_TRANSLATE_NOOP("BaseComboBox", "所有人"): 3,
+    QT_TRANSLATE_NOOP("BaseComboBox", "所有选中的人"): 3,
 }
 skill_replacement_mode = {"1→3": 0, "2→3": 1, "1→2": 2}
 

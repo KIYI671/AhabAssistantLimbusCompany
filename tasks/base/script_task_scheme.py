@@ -8,11 +8,6 @@ from PySide6.QtCore import QT_TRANSLATE_NOOP, QMutex, QThread
 
 from app import mediator
 from app.windows_toast import TemplateToast, send_toast
-from module.ALI import (
-    AutoSwitchCon,
-    auto_switch_language_in_game,
-    get_game_config_from_registry,
-)
 from module.automation import auto
 from module.config import TeamSetting, cfg
 from module.decorator.decorator import begin_and_finish_time_log
@@ -305,33 +300,10 @@ def script_task() -> None | int:
     # 获取（启动）游戏对游戏窗口进行设置
     init_game()
 
-    # 自动更改语言, 如果不支持则直接退出
-    try:
-        if cfg.experimental_auto_lang:
-            ret = auto_switch_language_in_game(screen.handle.hwnd)
-            if ret == AutoSwitchCon.FAILED:
-                log.info("自动切换语言失败，使用英语尝试")
-                cfg.set_value("language_in_game", "en")
-        else:
-            if cfg.language_in_game == "-":
-                log.warning("自动切换语言已关闭但是并未设置语言! 即将使用英语尝试!")
-                cfg.set_value("language_in_game", "en")
-    except Exception as e:
-        log.error(f"自动切换语言出错: {e}，使用英语尝试")
-        cfg.set_value("language_in_game", "en")
+    if not cfg.simulator and cfg.set_win_size == 720:
+        log.warning("当前游戏分辨率为1280*720, 可能会导致识别错误或卡死, 建议设置为更高分辨率")
 
-    if cfg.simulator and cfg.language_in_game != "en":
-        log.info("模拟器模式下强制使用英文图片与文本识别")
-        cfg.set_value("language_in_game", "en")
-
-    if not cfg.simulator:
-        # 低渲染比例发出警告
-        if get_game_config_from_registry().get("_renderingScale", -1) == 2:
-            log.warning("当前游戏渲染比例为低, 可能会导致识别错误, 建议设置为中或更高")
-        if cfg.set_win_size == 720:
-            log.warning("当前游戏分辨率为1280*720, 可能会导致识别错误或卡死, 建议设置为更高分辨率")
-
-    path_manager.initialize_paths(cfg.language_in_game)
+    path_manager.initialize_paths()
     auto.clear_img_cache()
     log.debug(f"初始化图片路径: {path_manager.pic_path}")
 

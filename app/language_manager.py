@@ -25,22 +25,6 @@ SUPPORTED_LANG_NAME = {v: k for k, v in SUPPORTED_LANG_CODE.items()}
 - 内容为UI支持的语言
 - 键为对语言**名称**, 值为对应代码
 """
-SUPPORTED_GAME_LANG_CODE = {
-    "-": QT_TRANSLATE_NOOP("BaseComboBox", "(实验性功能) 自动识别"),
-    "en": "English",
-    "zh_cn": "LLC_简体中文",
-}
-"""
-- 内容为图像识别支持的语言
-- 键为语言**代码**, 值为对应名称
-"""
-
-# 反转字典，方便设置界面显示语言名称
-SUPPORTED_GAME_LANG_NAME = {v: k for k, v in SUPPORTED_GAME_LANG_CODE.items()}
-"""
-- 内容为图像识别支持的语言
-- 键为对语言**名称**, 值为对应代码
-"""
 retranslateUi = "retranslateUi"
 """触发的控件方法名称"""
 
