@@ -10,10 +10,15 @@ from PySide6.QtGui import (
     QPainter,
     QTextDocument,
 )
-from PySide6.QtWidgets import QFrame, QHBoxLayout, QVBoxLayout, QWidget
+from PySide6.QtWidgets import QFrame, QHBoxLayout, QVBoxLayout, QWidget, QFileDialog
 from qfluentwidgets import FluentIcon as FIF
 from qfluentwidgets import (
+    Action,
+    InfoBar,
+    InfoBarPosition,
+    MessageBox,
     PopUpAniStackedWidget,
+    RoundMenu,
     ScrollArea,
     TextBrowser,
     TransparentToolButton,
@@ -36,6 +41,7 @@ from app.common.ui_config import get_theme_aware_text_browser_qss
 from app.language_manager import SUPPORTED_GAME_LANG_NAME, LanguageManager
 from app.widget.custom_segmented_widget import CustomSegmentedWidget
 from module.config import TeamSetting, cfg, theme_list
+from module.config.team_import_export import apply_team_settings, import_team_settings
 from module.logger import log
 
 from .markdown_it_imgdiv import imgdiv_plugin, render_div_close, render_div_open
@@ -423,7 +429,7 @@ class PageMirror(PageCard):
         self.add_team = QHBoxLayout()
         self.add_team_button = TransparentToolButton(FIF.ADD, None)
         self.add_team_button.setMinimumWidth(200)
-        self.add_team_button.clicked.connect(self.new_team)
+        self.add_team_button.clicked.connect(self.show_team_creation_menu)
 
         self.hard_mirror = BaseCheckBox(
             "hard_mirror",
@@ -641,6 +647,106 @@ class PageMirror(PageCard):
                 theme_list.create_team_weight_config(number)
                 cfg.save()
 
+    def show_team_creation_menu(self):
+        """显示菜单，提供从头创建队伍或从文件创建的选项"""
+        menu = RoundMenu(parent=self)
+
+        create_new_action = Action(FIF.ADD, self.tr("创建空白队伍"))
+        create_new_action.triggered.connect(self.new_team)
+        menu.addAction(create_new_action)
+
+        create_from_file_action = Action(FIF.FOLDER_ADD, self.tr("从现有配置创建"))
+        create_from_file_action.triggered.connect(self.create_team_from_file)
+        menu.addAction(create_from_file_action)
+
+        # 在按钮位置显示菜单
+        menu.exec(self.add_team_button.mapToGlobal(self.add_team_button.rect().bottomLeft()))
+
+    def create_team_from_file(self):
+        """从导入的配置文件创建新队伍"""
+        # 打开文件对话框选择 YAML 文件
+        file_path, _ = QFileDialog.getOpenFileName(
+            self,
+            self.tr("选择队伍配置文件"),
+            "",
+            "YAML Files (*.yaml *.yml)"
+        )
+
+        if not file_path:
+            return
+
+        # 从文件导入队伍设置
+        team_setting, theme_pack_weight, missing_fields = import_team_settings(file_path, 1)
+
+        if team_setting is None:
+            MessageBox(
+                self.tr("导入失败"),
+                self.tr("无法读取配置文件，请检查文件格式是否正确。"),
+                self
+            ).exec()
+            return
+
+        # 如果字段缺失则显示警告
+        if missing_fields:
+            missing_text = "\n- ".join(missing_fields)
+            w = MessageBox(
+                self.tr("缺少字段"),
+                self.tr(f"配置文件中缺少以下字段：\n- {missing_text}\n\n将使用默认值填充这些字段。是否继续？"),
+                self
+            )
+            w.yesButton.setText(self.tr("继续"))
+            w.cancelButton.setText(self.tr("取消"))
+            if not w.exec():
+                return
+
+        # 自动递增到下一个可用的队伍槽位
+        existing_teams = sorted([int(k) for k in cfg.config.teams.keys()])
+
+        # 查找下一个可用槽位
+        team_num = None
+        for i in range(1, 21):
+            if i not in existing_teams:
+                team_num = i
+                break
+
+        if team_num is None:
+            MessageBox(
+                self.tr("无可用队伍槽位"),
+                self.tr("已达到最大队伍数量（20个），无法创建新队伍。"),
+                self
+            ).exec()
+            return
+
+        # 应用导入的设置
+        try:
+            apply_team_settings(team_num, team_setting, theme_pack_weight)
+
+            # 添加到 teams_be_select 和 teams_order
+            while len(cfg.config.teams_be_select) < team_num:
+                cfg.config.teams_be_select.append(False)
+            while len(cfg.config.teams_order) < team_num:
+                cfg.config.teams_order.append(0)
+
+            # 刷新界面
+            self.get_setting()
+
+            InfoBar.success(
+                title=self.tr("导入成功"),
+                content=self.tr(f"已成功从文件创建队伍 {team_num}"),
+                orient=Qt.Horizontal,
+                isClosable=True,
+                position=InfoBarPosition.TOP,
+                duration=2000,
+                parent=self
+            )
+        except Exception as e:
+            log.error(f"Failed to create team from file: {e}")
+            MessageBox(
+                self.tr("创建失败"),
+                self.tr(f"创建队伍时出错：{str(e)}"),
+                self
+            ).exec()
+
     def remove_team_card(self, target: str):
         try:
             team = self.findChild(MirrorTeamCombination, target)
@@ -685,8 +791,8 @@ class PageMirror(PageCard):
                 continue
             cfg.config.teams[f"{save_index}"] = cfg.config.teams[f"{index}"]
             del cfg.config.teams[f"{index}"]
-            theme_list.set_team_weight_config_from_team(i, i + 1)
-            theme_list.delete_team_weight_config(i + 1)
+            theme_list.set_team_weight_config_from_team(save_index, int(index))
+            theme_list.delete_team_weight_config(int(index))
             save_index += 1
 
         cfg.save()
@@ -723,6 +829,7 @@ class PageMirror(PageCard):
         self.not_skip_whitegossypium.retranslateUi()
         self.fight_to_last_man.retranslateUi()
         self.mirror_keyboard_navigation.retranslateUi()
+        self.add_team_button.setToolTip(self.tr("添加队伍"))
         for child in self.findChildren(MirrorTeamCombination):
             child.retranslateUi()
 
@@ -828,7 +935,7 @@ class MarkdownViewer(QWidget):
         layout.addWidget(self.text_browser)
         self.help_path = file_path
 
-        # Connect theme change signal after help_path is set
+        # 在设置 help_path 后连接主题变化信号
         qconfig.themeChanged.connect(self.updateStyle)
         self.reset_viewer()
 
@@ -841,7 +948,7 @@ class MarkdownViewer(QWidget):
 
     def handle_link_clicked(self, url: QUrl):
         """
-        Decides how to handle a clicked link in the QTextBrowser.
+        处理 QTextBrowser 中点击链接的逻辑
         """
         if url.scheme() in ["http", "https"]:
             # 用系统默认浏览器打开外部链接
