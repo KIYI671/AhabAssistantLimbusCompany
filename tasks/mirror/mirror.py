@@ -1261,6 +1261,7 @@ class Mirror:
                                         return False
                                     return
                         auto.mouse_click(button[0], button[1])
+                        time.sleep(1)
                         auto.click_element(
                             "mirror/road_in_mir/acquire_ego_gift_select_assets.png",
                             model="normal",
