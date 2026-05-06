@@ -198,6 +198,8 @@ teams:
     ignore_shop: [0, 0, 0, 0, 0] # 忽略商店楼层
     use_custom_theme_pack_weight: False # 使用队伍自定义主题包权重
     remark_name: # 队伍备注名
+    use_team_code: False # 使用编队码
+    team_code: "" # 编队码
     total_mirror_time_hard: [] # 困难镜牢总用时
     mirror_hard_count: 0 # 困难镜牢次数
     total_mirror_time_normal: [] # 普通镜牢总用时

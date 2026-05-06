@@ -299,6 +299,20 @@ class SimulatorControl(AbstractInput):
         except Exception as e:
             log.error(f"输入失败：{e}")
 
+    def input_text(self, text: str):
+        """将提供的 `text` 直接输入到模拟器（使用 `adb shell input text`）。"""
+        if not text:
+            log.warning("未提供要输入的文本")
+            return
+        if self.simulator_device is None:
+            self.get_simulator()
+        try:
+            # Android 的 input text 需要把空格写成 %s
+            send_text = text.replace(" ", "%s")
+            self.simulator_device.shell(["input", "text", send_text])
+        except Exception as e:
+            log.error(f"输入文本失败：{e}")
+
     def _scale(self, x, y):
         pos_x = self.simulator_max_x - y
         pos_y = x
