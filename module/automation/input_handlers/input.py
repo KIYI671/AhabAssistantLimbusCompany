@@ -81,9 +81,13 @@ class WinAbstractInput(AbstractInput):
         """获取鼠标当前位置
 
         Returns:
-            tuple: 当前鼠标位置的元组 (x, y)
+            tuple: 当前鼠标位置的元组 (x, y)，锁屏时返回 (0, 0)
         """
-        return win32api.GetCursorPos()
+        try:
+            return win32api.GetCursorPos()
+        except PyWinTypesError:
+            log.debug("获取鼠标位置失败（可能锁屏），返回 (0, 0)")
+            return (0, 0)
 
 
 class Input(WinAbstractInput, metaclass=SingletonMeta):
