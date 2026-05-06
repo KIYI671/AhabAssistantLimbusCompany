@@ -549,11 +549,7 @@ class FarmingInterfaceLeft(QWidget):
             # 检查队伍配置状况
             teams_be_select = sum(1 for team in cfg.teams_be_select if team)
             if teams_be_select != cfg.teams_be_select_num:
-                cfg.set_value("teams_be_select_num", teams_be_select)
-                from utils.utils import check_teams_order
-
-                teams_order = check_teams_order(cfg.teams_order)
-                cfg.set_value("teams_order", teams_order)
+                cfg.normalize_and_sync_team_state()
                 cfg.flush()
 
             if cfg.teams_be_select_num == 0:

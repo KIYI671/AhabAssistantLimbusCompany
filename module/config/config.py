@@ -201,6 +201,12 @@ class Config(metaclass=SingletonMeta):
                     self._old_version_cfg_upgrade(saved_version, loaded_config)
                 # 使用更新后的配置初始化 Config 对象
                 self.config = ConfigModel(**loaded_config)
+                queue_in_loaded_config = loaded_config.get("teams_active_queue")
+                if queue_in_loaded_config is None:
+                    normalized_queue = self._normalize_team_queue(self.migrate_legacy_team_queue())
+                else:
+                    normalized_queue = self._normalize_team_queue(queue_in_loaded_config)
+                self._sync_legacy_team_state(normalized_queue)
                 # 成功加载后保存当前文件为备份
                 shutil.copy(path, path.with_suffix(".yaml.backup"))
                 self.config.save_count += 1
@@ -235,6 +241,130 @@ class Config(metaclass=SingletonMeta):
             except:
                 value = default
         return value
+
+    def get_team_numbers(self) -> list[int]:
+        teams = self.get_value("teams", {}) or {}
+        team_numbers: list[int] = []
+        for team_key in teams:
+            try:
+                team_num = int(team_key)
+            except (TypeError, ValueError):
+                continue
+            if team_num > 0:
+                team_numbers.append(team_num)
+        return sorted(team_numbers)
+
+    def _sync_team_setting_numbers(self) -> None:
+        teams = self.get_value("teams", {}) or {}
+        for team_key, team_setting in teams.items():
+            try:
+                team_num = int(team_key)
+            except (TypeError, ValueError):
+                continue
+            if team_num <= 0 or not isinstance(team_setting, TeamSetting):
+                continue
+            if team_setting.team_number != team_num:
+                self.unsaved_set_value("team_number", team_num, config_obj=team_setting)
+
+    def _normalize_team_queue(self, queue: list[int]) -> list[int]:
+        valid_team_numbers = set(self.get_team_numbers())
+        normalized_queue: list[int] = []
+        seen: set[int] = set()
+        for team_num in queue or []:
+            if type(team_num) is not int:
+                continue
+            if team_num not in valid_team_numbers or team_num in seen:
+                continue
+            normalized_queue.append(team_num)
+            seen.add(team_num)
+        return normalized_queue
+
+    def migrate_legacy_team_queue(self) -> list[int]:
+        team_numbers = self.get_team_numbers()
+        if not team_numbers:
+            return []
+
+        teams_order = self.get_value("teams_order", []) or []
+        order_pairs: list[tuple[int, int]] = []
+        used_orders: set[int] = set()
+        for team_num in team_numbers:
+            order_index = team_num - 1
+            if order_index >= len(teams_order):
+                continue
+            order = teams_order[order_index]
+            if not isinstance(order, int) or order <= 0 or order in used_orders:
+                continue
+            order_pairs.append((order, team_num))
+            used_orders.add(order)
+
+        teams_be_select = self.get_value("teams_be_select", []) or []
+        migrated_queue = [team_num for _, team_num in sorted(order_pairs)]
+        queued_team_numbers = set(migrated_queue)
+        for team_num in team_numbers:
+            select_index = team_num - 1
+            if select_index >= len(teams_be_select):
+                continue
+            if teams_be_select[select_index] is not True or team_num in queued_team_numbers:
+                continue
+            migrated_queue.append(team_num)
+        return migrated_queue
+
+    def _sync_legacy_team_state(self, queue: list[int]) -> None:
+        self._sync_team_setting_numbers()
+        max_team_num = max(self.get_team_numbers(), default=0)
+        teams_be_select = [False] * max_team_num
+        teams_order = [0] * max_team_num
+        for order, team_num in enumerate(queue, start=1):
+            if team_num <= 0 or team_num > max_team_num:
+                continue
+            teams_be_select[team_num - 1] = True
+            teams_order[team_num - 1] = order
+
+        self.unsaved_set_value("teams_active_queue", queue)
+        self.unsaved_set_value("teams_be_select", teams_be_select)
+        self.unsaved_set_value("teams_order", teams_order)
+        self.unsaved_set_value("teams_be_select_num", len(queue))
+
+    def normalize_and_sync_team_state(self, persist: bool = True) -> None:
+        queue = self.get_value("teams_active_queue")
+        if queue is None:
+            queue = self._normalize_team_queue(self.migrate_legacy_team_queue())
+        else:
+            queue = self._normalize_team_queue(queue)
+        self._sync_legacy_team_state(queue)
+        if persist:
+            self.save()
+
+    def reindex_team_queue(self, old_to_new: dict[int, int]) -> None:
+        queue = []
+        for team_num in self.get_value("teams_active_queue", []) or []:
+            new_team_num = old_to_new.get(team_num)
+            if isinstance(new_team_num, int):
+                queue.append(new_team_num)
+        self._sync_legacy_team_state(self._normalize_team_queue(queue))
+        self.save()
+
+    def rotate_team_queue(self) -> None:
+        queue = self._normalize_team_queue(self.get_value("teams_active_queue", []))
+        if len(queue) > 1:
+            queue = queue[1:] + queue[:1]
+        self._sync_legacy_team_state(queue)
+        self.save()
+
+    def remove_team_from_queue(self, team_num: int) -> None:
+        queue = [value for value in self.get_value("teams_active_queue", []) or [] if value != team_num]
+        self._sync_legacy_team_state(self._normalize_team_queue(queue))
+        self.save()
+
+    def set_team_enabled(self, team_num: int, enabled: bool) -> None:
+        queue = self._normalize_team_queue(self.get_value("teams_active_queue", []))
+        if enabled:
+            if team_num not in queue:
+                queue.append(team_num)
+        else:
+            queue = [value for value in queue if value != team_num]
+        self._sync_legacy_team_state(self._normalize_team_queue(queue))
+        self.save()
 
     def set_value(self, key: str, value: Any, *, config_obj: Optional[BaseModel | dict] = None) -> None:
         """设置配置项的值并延迟保存"""
@@ -312,6 +442,12 @@ class Config(metaclass=SingletonMeta):
                 loaded_config = self.yaml.load(file)
             if loaded_config:
                 self.config = ConfigModel(**loaded_config)
+                queue_in_loaded_config = loaded_config.get("teams_active_queue")
+                if queue_in_loaded_config is None:
+                    normalized_queue = self._normalize_team_queue(self.migrate_legacy_team_queue())
+                else:
+                    normalized_queue = self._normalize_team_queue(queue_in_loaded_config)
+                self._sync_legacy_team_state(normalized_queue)
         except FileNotFoundError:
             self._schedule_save()
         except Exception as e:

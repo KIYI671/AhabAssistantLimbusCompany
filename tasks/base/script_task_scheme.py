@@ -234,6 +234,7 @@ def Mirror_task():
     mediator.mirror_signal.emit(0, mir_times)
     # 开始执行镜牢任务
     while mir_times > 0:
+        cfg.normalize_and_sync_team_state(persist=False)
         # 检测配置的队伍能否顺利执行
         useful = False
         hard = bool(cfg.hard_mirror)
@@ -252,34 +253,22 @@ def Mirror_task():
         if useful is False:
             break
 
-        teams_order = cfg.teams_order  # 复制一份队伍顺序
-        team_num = teams_order.index(1)  # 获取序号1的队伍在队伍顺序中的位置
-        team_setting = cfg.config.teams[f"{team_num + 1}"]  # 获取序号1的队伍的配置
-        # 如果该队伍固定了用途，且不用途符合当前情况，将序号1的队伍移动到队伍顺序的最后
+        if not cfg.teams_active_queue:
+            break
+
+        team_num = cfg.teams_active_queue[0]
+        team_setting = cfg.config.teams[f"{team_num}"]
+        # 如果该队伍固定了用途，且用途不符合当前情况，将队首队伍轮转到队尾
         if team_setting.fixed_team_use:
             if (team_setting.fixed_team_use_select == 0 and not cfg.hard_mirror) or (
                 team_setting.fixed_team_use_select == 1 and cfg.hard_mirror
             ):
-                for index, value in enumerate(teams_order):
-                    if value == 0:
-                        continue
-                    if teams_order[index] == 1:
-                        teams_order[index] = cfg.teams_be_select_num
-                    elif teams_order[index] != 0:
-                        teams_order[index] -= 1
-                cfg.set_value("teams_order", teams_order)
+                cfg.rotate_team_queue()
                 continue
         # 执行一次镜牢任务，根据执行结果进行处理
-        mirror_result = onetime_mir_process(team_setting, int(team_num + 1))
+        mirror_result = onetime_mir_process(team_setting, team_num)
         if mirror_result:
-            for index, value in enumerate(teams_order):
-                if value == 0:
-                    continue
-                if teams_order[index] == 1:
-                    teams_order[index] = cfg.teams_be_select_num
-                elif teams_order[index] != 0:
-                    teams_order[index] -= 1
-            cfg.set_value("teams_order", teams_order)
+            cfg.rotate_team_queue()
             mir_times -= 1
             if cfg.hard_mirror and cfg.auto_hard_mirror:
                 chance = cfg.hard_mirror_chance - 1
