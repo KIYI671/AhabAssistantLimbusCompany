@@ -232,9 +232,9 @@ def Mirror_task():
         mir_times = 1
     finish_times = 0
     mediator.mirror_signal.emit(0, mir_times)
+    cfg.normalize_and_sync_team_state(persist=False)
     # 开始执行镜牢任务
     while mir_times > 0:
-        cfg.normalize_and_sync_team_state(persist=False)
         # 检测配置的队伍能否顺利执行
         useful = False
         hard = bool(cfg.hard_mirror)
