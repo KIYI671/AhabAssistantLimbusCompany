@@ -645,7 +645,6 @@ class PageMirror(PageCard):
                 cfg.config.teams[f"{number}"] = TeamSetting()
                 cfg.normalize_and_sync_team_state()
                 theme_list.create_team_weight_config(number)
-                cfg.save()
 
     def show_team_creation_menu(self):
         """显示菜单，提供从头创建队伍或从文件创建的选项"""
