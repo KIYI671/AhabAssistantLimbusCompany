@@ -879,7 +879,7 @@ class CustomizeSettingsModule(QFrame):
         self.team_code_warning = BaseLabel("")
         self.team_code_warning.add_icon(FIF.INFO)
         self.team_code_warning.setMaximumWidth(40)
-        self.team_code_warning.iconLabel.setToolTip(self.tr("后台模式下输入编队码可能不稳定"))
+        self.team_code_warning.iconLabel.setToolTip(self.tr("后台模式下输入编队码可能不稳定\n输入编队码会覆盖原有的队伍配置"))
         self.team_code_warning.iconLabel.setToolTipDuration(-1)
         self.team_code_input = BaseLineEdit("team_code", self)
         self.team_code_input.line_edit.setPlaceholderText(self.tr("输入编队码"))
