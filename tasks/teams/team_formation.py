@@ -241,24 +241,15 @@ def load_team_code_in_game(team_code: str) -> bool:
         auto.click_element("teams/team_code_assets.png")
         sleep(1)
 
-        # 截图
-        while auto.take_screenshot() is None:
-            continue
 
         # 查找并点击加载编队码按钮
-        auto.click_element("teams/load_team_code_button_assets.png")
-
+        auto.click_element("teams/load_team_code_button_assets.png",take_screenshot=True)
         sleep(1)
 
-        # 等待输入框出现
-        while auto.take_screenshot() is None:
-            continue
-
-        # 查找输入框
-        if not auto.find_element("teams/team_code_input_field_assets.png"):
-            log.warning("未找到编队码输入框")
+        # 查找根据取消按钮判断输入框是否出现
+        if not auto.find_element("teams/team_code_cancel_button_assets.png",take_screenshot=True):
             # 尝试点击取消按钮返回
-            auto.click_element("teams/team_code_cancel_button_assets.png")
+            auto.mouse_click_blank()
             sleep(1)
             continue
 
@@ -269,15 +260,13 @@ def load_team_code_in_game(team_code: str) -> bool:
 
         # 点击确认按钮，最多重试 3 次
         for _ in range(3):
-            if auto.click_element("teams/team_code_confirm_button_assets.png"):
+            if auto.click_element("teams/team_code_confirm_button_assets.png",take_screenshot=True):
                 sleep(1)
-                while auto.take_screenshot() is None:
-                    continue
             else:
                 break
 
         # 验证返回队伍选择界面
-        if auto.find_element("teams/team_code_assets.png"):
+        if auto.find_element("teams/team_code_assets.png",take_screenshot=True):
             return True
         else:
             auto.click_element("teams/team_code_cancel_button_assets.png")
