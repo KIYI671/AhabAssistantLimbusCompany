@@ -206,6 +206,7 @@ class Config(metaclass=SingletonMeta):
                     normalized_queue = self._normalize_team_queue(self.migrate_legacy_team_queue())
                 else:
                     normalized_queue = self._normalize_team_queue(queue_in_loaded_config)
+                self._sync_team_setting_numbers()
                 self._sync_legacy_team_state(normalized_queue)
                 # 成功加载后保存当前文件为备份
                 shutil.copy(path, path.with_suffix(".yaml.backup"))
@@ -310,7 +311,7 @@ class Config(metaclass=SingletonMeta):
         return migrated_queue
 
     def _sync_legacy_team_state(self, queue: list[int]) -> None:
-        self._sync_team_setting_numbers()
+        """将队列状态写回 teams_be_select / teams_order 等旧字段"""
         max_team_num = max(self.get_team_numbers(), default=0)
         teams_be_select = [False] * max_team_num
         teams_order = [0] * max_team_num
@@ -447,6 +448,7 @@ class Config(metaclass=SingletonMeta):
                     normalized_queue = self._normalize_team_queue(self.migrate_legacy_team_queue())
                 else:
                     normalized_queue = self._normalize_team_queue(queue_in_loaded_config)
+                self._sync_team_setting_numbers()
                 self._sync_legacy_team_state(normalized_queue)
         except FileNotFoundError:
             self._schedule_save()
