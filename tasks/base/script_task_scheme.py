@@ -46,7 +46,7 @@ from tasks.daily.luxcavation import EXP_luxcavation, thread_luxcavation
 from tasks.mirror.mirror import Mirror
 from tasks.teams.team_formation import select_battle_team
 from utils.path_manager import path_manager
-from utils.utils import calculate_the_teams, get_day_of_week
+from utils.utils import calculate_the_teams, get_day_of_week, check_hard_mirror_time
 
 
 @begin_and_finish_time_log(task_name="一次经验本")
@@ -84,6 +84,13 @@ def onetime_thread_process(combat_count: int = 1):
 @begin_and_finish_time_log(task_name="一次镜牢")
 # 一次镜牢的过程
 def onetime_mir_process(team_setting: TeamSetting, team_num: int):
+    # 实时检查是否需要切换到困难镜牢
+    if cfg.auto_hard_mirror and check_hard_mirror_time():
+        log.info("检测到新的困牢周期，实时切换困难镜牢，设置困牢次数为3")
+        cfg.set_value("last_auto_change", datetime.now().timestamp())
+        cfg.set_value("hard_mirror", True)
+        cfg.set_value("hard_mirror_chance", 3)
+
     # 进行一次镜牢
     try:
         mirror_adventure = Mirror(team_setting, team_num)

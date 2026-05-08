@@ -60,15 +60,6 @@ def select_theme_pack(hard_switch=False, floor=None, team_num=None, use_custom_t
 
         # 切换难度
         if hard_switch:
-            if auto.click_element("mirror/theme_pack/normal_assets.png"):
-                continue
-            elif difficulty == "normal":
-                normal_bbox = ImageUtils.get_bbox(ImageUtils.load_image("mirror/theme_pack/normal_assets.png"))
-                auto.mouse_click(
-                    (normal_bbox[0] + normal_bbox[2]) // 2,
-                    (normal_bbox[1] + normal_bbox[3]) // 2,
-                )
-        else:
             if auto.click_element("mirror/theme_pack/hard_assets.png"):
                 continue
             elif difficulty == "hard":
@@ -76,6 +67,15 @@ def select_theme_pack(hard_switch=False, floor=None, team_num=None, use_custom_t
                 auto.mouse_click(
                     (hard_bbox[0] + hard_bbox[2]) // 2,
                     (hard_bbox[1] + hard_bbox[3]) // 2,
+                )
+        else:
+            if auto.click_element("mirror/theme_pack/normal_assets.png"):
+                continue
+            elif difficulty == "normal":
+                normal_bbox = ImageUtils.get_bbox(ImageUtils.load_image("mirror/theme_pack/normal_assets.png"))
+                auto.mouse_click(
+                    (normal_bbox[0] + normal_bbox[2]) // 2,
+                    (normal_bbox[1] + normal_bbox[3]) // 2,
                 )
 
         try:

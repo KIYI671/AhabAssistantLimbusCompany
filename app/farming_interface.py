@@ -543,8 +543,15 @@ class FarmingInterfaceLeft(QWidget):
                     cfg.set_value("last_auto_change", datetime.now().timestamp())
                     cfg.set_value("hard_mirror", True)
                     cfg.set_value("hard_mirror_chance", 3)
+                    cfg.flush()
+                # 维持困难模式直到次数用尽
                 if cfg.hard_mirror_chance > 0:
                     cfg.set_value("hard_mirror", True)
+                    log.debug(f"困难镜牢模式启用中，剩余次数：{cfg.hard_mirror_chance}")
+                elif cfg.hard_mirror:
+                    # 防护机制：如果次数用尽但仍处于困难模式，自动关闭
+                    log.info("困难镜牢次数已用尽，自动关闭困难模式")
+                    cfg.set_value("hard_mirror", False)
 
             # 检查队伍配置状况
             teams_be_select = sum(1 for team in cfg.teams_be_select if team)
