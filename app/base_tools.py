@@ -17,6 +17,7 @@ from qfluentwidgets import (
     ComboBox,
     DoubleSpinBox,
     FluentIconBase,
+    LineEdit,
     PushButton,
     RoundMenu,
     SpinBox,
@@ -175,26 +176,8 @@ class BaseCheckBox(BaseLayout):
                 checked = 2 * checked
             cfg.set_value(self.config_name, checked)
         elif self.config_name.startswith("the_team_"):
-            index = int(self.config_name.split("_")[-1]) - 1
-            if checked:
-                cfg.set_value("teams_be_select_num", cfg.get_value("teams_be_select_num") + 1)
-                teams_be_select = cfg.get_value("teams_be_select")
-                teams_be_select[index] = True
-                teams_order = cfg.get_value("teams_order")
-                teams_order[index] = cfg.get_value("teams_be_select_num")
-                cfg.set_value("teams_be_select", teams_be_select)
-                cfg.set_value("teams_order", teams_order)
-            else:
-                cfg.set_value("teams_be_select_num", cfg.get_value("teams_be_select_num") - 1)
-                teams_be_select = cfg.get_value("teams_be_select")
-                teams_be_select[index] = False
-                teams_order = cfg.get_value("teams_order")
-                for i in range(len(teams_order)):
-                    if teams_order[i] > teams_order[index]:
-                        teams_order[i] -= 1
-                teams_order[index] = 0
-                cfg.set_value("teams_be_select", teams_be_select)
-                cfg.set_value("teams_order", teams_order)
+            team_num = int(self.config_name.split("_")[-1])
+            cfg.set_team_enabled(team_num, checked)
             mediator.refresh_teams_order.emit()
         elif self.config_name.startswith("autodaily"):
             mediator.autodaily_setting.emit(self.config_name)
@@ -485,3 +468,21 @@ class BaseSpinBox(BaseLayout):
     def value_changed(self):
         if cfg.get_value(self.config_name) is not None:
             cfg.set_value(self.config_name, self.spin_box.value())
+
+
+class BaseLineEdit(BaseLayout):
+    def __init__(self, config_name, parent=None):
+        super().__init__(parent=parent)
+        self.config_name = config_name
+        self.setObjectName(config_name)
+        self.line_edit = LineEdit(self)
+        self.hBoxLayout.addWidget(self.line_edit, stretch=1)
+        self.line_edit.textChanged.connect(self.text_changed)
+
+    def text_changed(self, text):
+        mediator.team_setting.emit({self.config_name: text})
+
+    def setText(self, text):
+        self.line_edit.blockSignals(True)
+        self.line_edit.setText(text)
+        self.line_edit.blockSignals(False)

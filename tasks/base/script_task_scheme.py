@@ -255,6 +255,7 @@ def Mirror_task():
         mir_times = 1
     finish_times = 0
     mediator.mirror_signal.emit(0, mir_times)
+    cfg.normalize_and_sync_team_state(persist=False)
     # 开始执行镜牢任务
     while mir_times > 0:
         # 检测配置的队伍能否顺利执行
@@ -275,34 +276,22 @@ def Mirror_task():
         if useful is False:
             break
 
-        teams_order = cfg.teams_order  # 复制一份队伍顺序
-        team_num = teams_order.index(1)  # 获取序号1的队伍在队伍顺序中的位置
-        team_setting = cfg.config.teams[f"{team_num + 1}"]  # 获取序号1的队伍的配置
-        # 如果该队伍固定了用途，且不用途符合当前情况，将序号1的队伍移动到队伍顺序的最后
+        if not cfg.teams_active_queue:
+            break
+
+        team_num = cfg.teams_active_queue[0]
+        team_setting = cfg.config.teams[f"{team_num}"]
+        # 如果该队伍固定了用途，且用途不符合当前情况，将队首队伍轮转到队尾
         if team_setting.fixed_team_use:
             if (team_setting.fixed_team_use_select == 0 and not cfg.hard_mirror) or (
                 team_setting.fixed_team_use_select == 1 and cfg.hard_mirror
             ):
-                for index, value in enumerate(teams_order):
-                    if value == 0:
-                        continue
-                    if teams_order[index] == 1:
-                        teams_order[index] = cfg.teams_be_select_num
-                    elif teams_order[index] != 0:
-                        teams_order[index] -= 1
-                cfg.set_value("teams_order", teams_order)
+                cfg.rotate_team_queue()
                 continue
         # 执行一次镜牢任务，根据执行结果进行处理
-        mirror_result = onetime_mir_process(team_setting, int(team_num + 1))
+        mirror_result = onetime_mir_process(team_setting, team_num)
         if mirror_result:
-            for index, value in enumerate(teams_order):
-                if value == 0:
-                    continue
-                if teams_order[index] == 1:
-                    teams_order[index] = cfg.teams_be_select_num
-                elif teams_order[index] != 0:
-                    teams_order[index] -= 1
-            cfg.set_value("teams_order", teams_order)
+            cfg.rotate_team_queue()
             mir_times -= 1
             if cfg.hard_mirror and cfg.auto_hard_mirror:
                 chance = cfg.hard_mirror_chance - 1
@@ -327,6 +316,28 @@ def script_task() -> None | int:
     start_time = time()
     # 获取（启动）游戏对游戏窗口进行设置
     init_game()
+
+    # 自动更改语言, 如果不支持则直接退出
+    try:
+        if cfg.experimental_auto_lang:
+            ret = auto_switch_language_in_game(screen.handle.hwnd)
+            if ret == AutoSwitchCon.FAILED:
+                log.info("自动切换语言失败，使用英语尝试")
+                cfg.set_value("language_in_game", "en")
+        else:
+            if cfg.language_in_game == "-":
+                log.warning("自动切换语言已关闭但是并未设置语言! 即将使用英语尝试!")
+                cfg.set_value("language_in_game", "en")
+    except Exception as e:
+        log.error(f"自动切换语言出错: {e}，使用英语尝试")
+        cfg.set_value("language_in_game", "en")
+
+    if cfg.simulator and cfg.language_in_game != "en":
+        log.info("模拟器模式下强制使用英文图片与文本识别")
+        cfg.set_value("language_in_game", "en")
+
+    if cfg.skip_enkephalin:
+        log.info("设置了跳过合成脑啡肽，将不会自动合成\nSet to skip make enkephalin, it will not to do")
 
     if not cfg.simulator:
         if _get_game_rendering_scale() == 2:
