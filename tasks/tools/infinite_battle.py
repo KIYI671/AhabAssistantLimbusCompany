@@ -55,7 +55,7 @@ class BattleWorker(QThread):
 
                 init_game()
                 self._set_win()
-                path_manager.initialize_paths(cfg.language_in_game)
+                path_manager.initialize_paths(reset_eliminations=False)
                 auto.clear_img_cache()
                 log.debug(f"初始化图片路径: {path_manager.pic_path}")
                 self.initialized = True

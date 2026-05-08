@@ -231,12 +231,8 @@ class Shop:
                     while auto.take_screenshot() is None:
                         continue
                     if self.system == "bleed" and not cfg.not_skip_whitegossypium:
-                        if cfg.language_in_game == "en":
-                            if auto.find_text_element(["white", "gossypium"], all_text=True):
-                                auto.mouse_click_blank(times=2)
-                        elif cfg.language_in_game == "zh_cn":
-                            if auto.find_text_element("白棉花"):
-                                auto.mouse_click_blank(times=2)
+                        if auto.find_language_text("白棉花", ["white", "gossypium"], all_text=True):
+                            auto.mouse_click_blank(times=2)
                         sleep(1)
                     if auto.click_element("mirror/shop/purchase_assets.png", take_screenshot=True):
                         sleep(1)
@@ -267,12 +263,8 @@ class Shop:
                         while auto.take_screenshot() is None:
                             continue
                         if self.system == "bleed" and not cfg.not_skip_whitegossypium:
-                            if cfg.language_in_game == "en":
-                                if auto.find_text_element(["white", "gossypium"], all_text=True):
-                                    auto.mouse_click_blank(times=2)
-                            elif cfg.language_in_game == "zh_cn":
-                                if auto.find_text_element("白棉花"):
-                                    auto.mouse_click_blank(times=2)
+                            if auto.find_language_text("白棉花", ["white", "gossypium"], all_text=True):
+                                auto.mouse_click_blank(times=2)
                             sleep(1)
                         if auto.click_element("mirror/shop/purchase_assets.png", take_screenshot=True):
                             sleep(1)
@@ -450,18 +442,10 @@ class Shop:
                     continue
 
                 if ego_gift_get_confirm := auto.find_element("mirror/road_in_mir/ego_gift_get_confirm_assets.png"):
-                    if cfg.language_in_game == "zh_cn":
-                        excluded_names = ["残片", "罪孽"]
-                    else:
-                        excluded_names = ["fragment", "corrosion", "resources"]
-                    if auto.find_element(excluded_names, find_type="text"):
+                    if auto.find_language_text(["残片", "罪孽"], ["fragment", "corrosion", "resources"]):
                         fuse = True
                     else:
-                        if cfg.language_in_game == "zh_cn":
-                            system_name = system_cn_zh[self.system]
-                        else:
-                            system_name = self.system
-                        if auto.find_element(system_name, find_type="text"):
+                        if auto.find_language_text(system_cn_zh[self.system], self.system):
                             self.after_fuse_IV()
                             fuse = False
                     auto.mouse_click(ego_gift_get_confirm[0], ego_gift_get_confirm[1])
@@ -615,18 +599,10 @@ class Shop:
 
                     if auto.find_element("mirror/road_in_mir/ego_gift_get_confirm_assets.png"):
                         if fuse_IV:
-                            if cfg.language_in_game == "zh_cn":
-                                excluded_names = ["残片", "罪孽"]
-                            else:
-                                excluded_names = ["fragment", "corrosion", "resources"]
-                            if auto.find_element(excluded_names, find_type="text"):
+                            if auto.find_language_text(["残片", "罪孽"], ["fragment", "corrosion", "resources"]):
                                 pass
                             else:
-                                if cfg.language_in_game == "zh_cn":
-                                    system_name = system_cn_zh[self.system]
-                                else:
-                                    system_name = self.system
-                                if auto.find_element(system_name, find_type="text"):
+                                if auto.find_language_text(system_cn_zh[self.system], self.system):
                                     self.fuse_IV = True
                                     self.fuse_aggressive_switch = False
                                     log.info("合成四级，切换到非激进模式")
@@ -1165,19 +1141,17 @@ class Shop:
                 module_position[1] + 100 * my_scale,
             )
             sinner_nums = {0: 1, 1: 3, 2: 7}.get(self.skill_replacement_select, 12)
-            if cfg.language_in_game == "en":
-                sinner = [
-                    all_sinners_name[self.sinner_team.index(i + 1)]
-                    for i in range(sinner_nums)
-                    if (i + 1) in self.sinner_team
-                ]
-            else:
-                sinner = [
-                    all_sinners_name_zh[self.sinner_team.index(i + 1)]
-                    for i in range(sinner_nums)
-                    if (i + 1) in self.sinner_team
-                ]
-            if auto.find_text_element(sinner, my_crop=bbox):
+            sinner_en = [
+                all_sinners_name[self.sinner_team.index(i + 1)]
+                for i in range(sinner_nums)
+                if (i + 1) in self.sinner_team
+            ]
+            sinner_zh = [
+                all_sinners_name_zh[self.sinner_team.index(i + 1)]
+                for i in range(sinner_nums)
+                if (i + 1) in self.sinner_team
+            ]
+            if auto.find_language_text(sinner_zh, sinner_en, my_crop=bbox):
                 auto.mouse_click(module_position[0], module_position[1] - 100 * my_scale)
                 sleep(0.5)
                 coins = auto.find_element(
@@ -1200,7 +1174,7 @@ class Shop:
     def selected_id_skill_replacement(self, image_path):
         """
         处理超级商店中的 "ID 技能替换" 功能。
-        点击"ID 技能搜索"按钮进入全员角色选项界面，
+        点击"ID 技能搜索"按钮进入已选中角色选项界面，
         遍历优先罪人列表尝试替换操作。若当前罪人无技能可替换则跳过并尝试下一个。
 
         参数:
@@ -1254,7 +1228,7 @@ class Shop:
         """
         技能替换主流程管理方法。
         会依据当前身处的商店类型（普通商店 or 超级商店）决定执行的替换逻辑：
-        如果是超级商店，则依次对两个普通替换选项以及全员技能搜索选项（如果存在）执行替换操作；
+        如果是超级商店，则依次对两个普通替换选项以及已选中角色技能搜索选项（如果存在）执行替换操作；
         如果是普通商店，则对唯一的技能替换选项执行操作。
         """
         msg = "执行商店技能替换任务"

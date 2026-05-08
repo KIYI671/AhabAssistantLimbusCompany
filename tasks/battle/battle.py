@@ -248,10 +248,7 @@ class Battle:
                         dead_position[0] + 100 * my_scale,
                         dead_position[1] + 30 * my_scale,
                     )
-                    if cfg.language_in_game == "zh_cn":
-                        ocr_result = auto.find_text_element("阵亡", dead_bbox)
-                    else:
-                        ocr_result = auto.find_text_element("dead", dead_bbox)
+                    ocr_result = auto.find_language_text("阵亡", "dead", dead_bbox)
                     if ocr_result is not False:
                         while True:
                             auto.mouse_to_blank()
@@ -344,7 +341,7 @@ class Battle:
             if chance == 1:
                 if not infinite_battle:
                     auto.mouse_to_blank()
-                if auto.find_text_element(["rate", "胜率"]):
+                if auto.find_language_text("胜率", "rate"):
                     self._battle_operation(first_turn, defense_first_round, avoid_skill_3)
                     chance = self.INIT_CHANCE
                     waiting = self._update_wait_time(waiting, False, total_count)
