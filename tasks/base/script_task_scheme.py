@@ -317,28 +317,8 @@ def script_task() -> None | int:
     # 获取（启动）游戏对游戏窗口进行设置
     init_game()
 
-    # 自动更改语言, 如果不支持则直接退出
-    try:
-        if cfg.experimental_auto_lang:
-            ret = auto_switch_language_in_game(screen.handle.hwnd)
-            if ret == AutoSwitchCon.FAILED:
-                log.info("自动切换语言失败，使用英语尝试")
-                cfg.set_value("language_in_game", "en")
-        else:
-            if cfg.language_in_game == "-":
-                log.warning("自动切换语言已关闭但是并未设置语言! 即将使用英语尝试!")
-                cfg.set_value("language_in_game", "en")
-    except Exception as e:
-        log.error(f"自动切换语言出错: {e}，使用英语尝试")
-        cfg.set_value("language_in_game", "en")
-
-    if cfg.simulator and cfg.language_in_game != "en":
-        log.info("模拟器模式下强制使用英文图片与文本识别")
-        cfg.set_value("language_in_game", "en")
-
     if cfg.skip_enkephalin:
         log.info("设置了跳过合成脑啡肽，将不会自动合成\nSet to skip make enkephalin, it will not to do")
-
     if not cfg.simulator:
         if _get_game_rendering_scale() == 2:
             log.warning("当前游戏渲染比例为低, 可能会导致识别错误, 建议设置为中或更高")
