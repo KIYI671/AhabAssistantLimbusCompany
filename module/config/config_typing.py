@@ -262,9 +262,6 @@ class ConfigModel(BaseModel):
     hard_mirror_chance: int = 0
     """困难镜牢剩余次数"""
 
-    timezone: Optional[float] = None
-    """当前时区相对于东九区的偏移量"""
-
     zoom_scale: int = 0
     """缩放比例"""
 

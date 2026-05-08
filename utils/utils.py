@@ -30,60 +30,24 @@ def get_day_of_week():
     return day
 
 
-def get_timezone():
-    # 获取当前UTC时间（带时区信息）
-    utc_now = datetime.now(ZoneInfo("UTC"))
-
-    # 转换为本地时区的时间（自动获取系统时区）
-    local_now = utc_now.astimezone()
-
-    # 东九区时区（如东京时间）
-    jst_tz = ZoneInfo("Asia/Tokyo")
-    jst_now = utc_now.astimezone(jst_tz)  # 东九区当前时间
-
-    # 获取本地时区和东九区的UTC偏移量（timedelta对象）
-    local_offset = local_now.utcoffset()
-    jst_offset = jst_now.utcoffset()
-
-    # 计算时间差（小时）
-    diff_hours = (jst_offset - local_offset).total_seconds() / 3600
-    cfg.set_value("timezone", round(diff_hours, 2))  # 保留二位小数，保存在配置文件中
-
-
 def check_hard_mirror_time():
-    if cfg.last_auto_change == 1715990400:
-        get_timezone()
-
-    last_time = datetime.fromtimestamp(cfg.last_auto_change)
-    now_time = datetime.now()
+    seoul_tz = ZoneInfo("Asia/Seoul")
+    last_time = datetime.fromtimestamp(cfg.last_auto_change, seoul_tz)
+    now_time = datetime.now(seoul_tz)
 
     if last_time >= now_time:
-        return False  # 原始时间t1不早于t2，偏移后也不会
+        return False  # 原始时间不应晚于当前时间
 
-    if cfg.timezone is None:
-        get_timezone()
-    # 应用时间偏移量（支持浮点数小时）
-    offset = timedelta(hours=cfg.timezone)
-    last_time_offset = last_time + offset
-    now_time_offset = now_time + offset
+    # 查找当前或下一个首尔时间周四 05:00
+    weekday = last_time.weekday()  # 0=周一，3=周四
+    days_to_thursday = (3 - weekday) % 7
+    candidate_date = last_time.date() + timedelta(days=days_to_thursday)
+    candidate = datetime.combine(candidate_date, time(5, 0), tzinfo=seoul_tz)
 
-    # 计算last_time_offset的星期几（0=周一，3=周四）
-    weekday = last_time_offset.weekday()  # 0-6分别对应周一到周日
-
-    # 计算到下一个周四的天数差（若当前是周四则为0，否则调整到最近的周四）
-    days_to_thursday = (3 - weekday) % 7  # 3对应周四的weekday值
-
-    # 构造候选时间：last_time_offset的日期 + 天数差，时间设为12:00
-    candidate_date = last_time_offset.date() + timedelta(days=days_to_thursday)
-    candidate = datetime.combine(candidate_date, time(12, 0))
-
-    # 如果候选时间早于last_time_offset，说明需要下一个周四
-    if candidate < last_time_offset:
+    if candidate <= last_time:
         candidate += timedelta(days=7)
 
-    # 检查候选时间是否在[last_time_offset, now_time_offset)区间内
-    return last_time_offset <= candidate < now_time_offset
-
+    return last_time < candidate <= now_time
 
 def calculate_the_teams():
     day = get_day_of_week()

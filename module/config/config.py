@@ -152,8 +152,6 @@ class Config(metaclass=SingletonMeta):
                 settings["remark_name"] = remark_name
                 teams[f"{i}"] = TeamSetting(**settings).model_dump()
             loaded_config["teams"] = teams
-            if loaded_config.get("timezone", "None") == "None":
-                loaded_config["timezone"] = None
 
         log.info("配置升级完成")
 

@@ -300,19 +300,6 @@ class MNTConnection(object):
         if not all_records:
             return []
 
-        # 仅打 debug 摘要，不落盘
-        try:
-            first_cmd = all_records[0].get("cmd")
-            last_cmd = all_records[-1].get("cmd")
-            log.debug(
-                "minitouch jlog drain: count=%d first=%s last=%s",
-                len(all_records),
-                first_cmd,
-                last_cmd,
-            )
-        except Exception:
-            pass
-
         return all_records
 
     def send(self, content):

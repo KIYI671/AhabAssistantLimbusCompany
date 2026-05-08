@@ -534,7 +534,6 @@ class FarmingInterfaceLeft(QWidget):
             if cfg.auto_hard_mirror:
                 from datetime import datetime
 
-                get_timezone()
                 if cfg.last_auto_change == 1715990400:
                     cfg.set_value("last_auto_change", datetime.now().timestamp())
                     cfg.flush()
@@ -543,8 +542,11 @@ class FarmingInterfaceLeft(QWidget):
                     cfg.set_value("last_auto_change", datetime.now().timestamp())
                     cfg.set_value("hard_mirror", True)
                     cfg.set_value("hard_mirror_chance", 3)
+                    cfg.flush()
+                # 自动切换到困难模式时，同步保留困难模式开关状态
                 if cfg.hard_mirror_chance > 0:
                     cfg.set_value("hard_mirror", True)
+                    log.debug(f"困难镜牢模式启用中，剩余次数：{cfg.hard_mirror_chance}")
 
             # 检查队伍配置状况
             teams_be_select = sum(1 for team in cfg.teams_be_select if team)
