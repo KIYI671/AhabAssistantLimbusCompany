@@ -670,6 +670,8 @@ class Shop:
         self.enter_fuse()
 
         while True:
+            if list_block := auto.find_element("mirror/shop/gifts_list_block.png", take_screenshot=True):
+                auto.mouse_drag(list_block[0], list_block[1], drag_time=1, dy=-500)
             points = auto.find_element(
                 "mirror/shop/fuse_label.png",
                 find_type="image_with_multiple_targets",
