@@ -217,9 +217,6 @@ class ConfigModel(BaseModel):
     game_path: str = r"C:\Program Files (x86\Steam\steamapps\common\Limbus Company\LimbusCompany.exe"
     """游戏启动路径"""
 
-    language_in_game: str = "en"
-    """游戏语言"""
-
     after_completion_actions: List[str] = []
     """脚本结束后的前置动作（可多选）：exit_game/exit_emulator/exit_aalc"""
 
@@ -342,9 +339,6 @@ class ConfigModel(BaseModel):
 
     resonate_with_Ahab: bool = False
     """是否播放亚哈语录"""
-
-    experimental_auto_lang: bool = True
-    """是否自动修改语言"""
 
     simulator: bool = False
     """是否使用模拟器"""
