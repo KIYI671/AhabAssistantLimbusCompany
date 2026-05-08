@@ -168,6 +168,34 @@ def Resonate_with_Ahab():
     playsound(f"assets/audio/This_is_all_your_fault_{random_number}.mp3", block=False)
 
 
+def _get_game_rendering_scale() -> int | None:
+    """读取非模拟器模式下 Limbus 的渲染比例设置。"""
+    try:
+        import json
+        import winreg
+
+        root = winreg.HKEY_CURRENT_USER
+        sub_key = r"Software\ProjectMoon\LimbusCompany"
+        value_name = "LocalSave.LocalGameOptionData_h467498167"
+        with winreg.OpenKey(root, sub_key, 0, winreg.KEY_READ) as key:
+            raw_data, reg_type = winreg.QueryValueEx(key, value_name)
+
+        if reg_type != winreg.REG_BINARY:
+            log.debug(f"游戏设置注册表值类型为 {reg_type}，预期为 REG_BINARY")
+            return None
+
+        json_str = raw_data.rstrip(b"\x00").decode("utf-8")
+        game_config = json.loads(json_str)
+        return game_config.get("_renderingScale")
+    except FileNotFoundError:
+        log.debug(r"游戏设置注册表路径不存在: HKEY_CURRENT_USER\Software\ProjectMoon\LimbusCompany")
+    except PermissionError:
+        log.debug("读取游戏设置注册表时权限不足")
+    except Exception as e:
+        log.debug(f"读取游戏渲染比例失败: {e}")
+    return None
+
+
 def _batch_combat(process_fn, times, max_times):
     """按 max_times 分批执行战斗"""
     if times <= 0:
@@ -300,8 +328,11 @@ def script_task() -> None | int:
     # 获取（启动）游戏对游戏窗口进行设置
     init_game()
 
-    if not cfg.simulator and cfg.set_win_size == 720:
-        log.warning("当前游戏分辨率为1280*720, 可能会导致识别错误或卡死, 建议设置为更高分辨率")
+    if not cfg.simulator:
+        if _get_game_rendering_scale() == 2:
+            log.warning("当前游戏渲染比例为低, 可能会导致识别错误, 建议设置为中或更高")
+        if cfg.set_win_size == 720:
+            log.warning("当前游戏分辨率为1280*720, 可能会导致识别错误或卡死, 建议设置为更高分辨率")
 
     path_manager.initialize_paths()
     auto.clear_img_cache()
