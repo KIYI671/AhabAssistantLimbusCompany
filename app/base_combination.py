@@ -63,7 +63,7 @@ from module.font_manager import font_manager
 from module.logger import log
 from module.my_error.my_error import settingsTypeError
 from module.update.check_update import check_update
-from utils.utils import decrypt_string, encrypt_string, get_timezone
+from utils.utils import decrypt_string, encrypt_string
 
 
 class ToolCheckButton(ToolButton):
@@ -953,7 +953,6 @@ class PushSettingCardDate(BasePushSettingCard):
         message_box = MessageBoxDate(self.tr(self.title), self.config_value, self.window())
         if message_box.exec():
             self.config_value = message_box.getDateTime()
-            get_timezone()
             cfg.set_value(self.config_name, self.config_value.timestamp())
             self.contentLabel.setText(self.config_value.strftime("%Y-%m-%d %H:%M"))
 

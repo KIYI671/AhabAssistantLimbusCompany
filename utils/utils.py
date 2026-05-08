@@ -30,26 +30,6 @@ def get_day_of_week():
     return day
 
 
-def get_timezone():
-    # 获取当前UTC时间（带时区信息）
-    utc_now = datetime.now(ZoneInfo("UTC"))
-
-    # 转换为本地时区的时间（自动获取系统时区）
-    local_now = utc_now.astimezone()
-
-    # 东九区时区（如东京时间）
-    jst_tz = ZoneInfo("Asia/Tokyo")
-    jst_now = utc_now.astimezone(jst_tz)  # 东九区当前时间
-
-    # 获取本地时区和东九区的UTC偏移量（timedelta对象）
-    local_offset = local_now.utcoffset()
-    jst_offset = jst_now.utcoffset()
-
-    # 计算时间差（小时）
-    diff_hours = (jst_offset - local_offset).total_seconds() / 3600
-    cfg.set_value("timezone", round(diff_hours, 2))  # 保留二位小数，保存在配置文件中
-
-
 def check_hard_mirror_time():
     seoul_tz = ZoneInfo("Asia/Seoul")
     last_time = datetime.fromtimestamp(cfg.last_auto_change, seoul_tz)

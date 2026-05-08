@@ -49,26 +49,20 @@ def back_init_menu():
 
         if auto.find_element("base/notification_close_assets.png"):
             from datetime import datetime, timedelta
+            from zoneinfo import ZoneInfo
 
             from tasks.base.retry import kill_game, restart_game
-            from utils.utils import get_day_of_week, get_timezone
+            from utils.utils import get_day_of_week
 
             kill_game()
             if get_day_of_week() == 4:
-                get_timezone()
-                now_time = datetime.now()
-                offset = timedelta(hours=cfg.timezone)
-                now_time_offset = now_time + offset
-                # 创建当天10:00和12:00的时间对象（与now_time_offset同日期）
-                today_10am = now_time_offset.replace(hour=10, minute=0, second=0, microsecond=0)
-                today_12pm = now_time_offset.replace(hour=12, minute=0, second=0, microsecond=0)
+                seoul_tz = ZoneInfo("Asia/Seoul")
+                now_time = datetime.now(seoul_tz)
+                today_10am = now_time.replace(hour=10, minute=0, second=0, microsecond=0)
+                today_12pm = now_time.replace(hour=12, minute=0, second=0, microsecond=0)
 
-                # 判断是否在10:00-12:00之间
-                if today_10am <= now_time_offset <= today_12pm:
-                    # 计算时间差
-                    time_remaining = today_12pm - now_time_offset
-
-                    # 获取总秒数
+                if today_10am <= now_time <= today_12pm:
+                    time_remaining = today_12pm - now_time
                     total_seconds = int(time_remaining.total_seconds())
                     msg = f"当前时间为Limbus周常维护时间，距离正常维护时间结束还有{total_seconds}秒，脚本程序将暂停同样时间"
                     log.info(msg)

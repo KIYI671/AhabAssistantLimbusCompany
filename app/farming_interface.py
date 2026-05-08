@@ -534,7 +534,6 @@ class FarmingInterfaceLeft(QWidget):
             if cfg.auto_hard_mirror:
                 from datetime import datetime
 
-                get_timezone()
                 if cfg.last_auto_change == 1715990400:
                     cfg.set_value("last_auto_change", datetime.now().timestamp())
                     cfg.flush()
