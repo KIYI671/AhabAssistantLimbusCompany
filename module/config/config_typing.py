@@ -211,9 +211,6 @@ class ConfigModel(BaseModel):
     game_path: str = r"C:\Program Files (x86\Steam\steamapps\common\Limbus Company\LimbusCompany.exe"
     """游戏启动路径"""
 
-    language_in_game: str = "en"
-    """运行期游戏语言状态，由图片路径匹配结果同步"""
-
     after_completion_actions: List[str] = []
     """脚本结束后的前置动作（可多选）：exit_game/exit_emulator/exit_aalc"""
 

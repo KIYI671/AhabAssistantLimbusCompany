@@ -61,12 +61,6 @@ class PathManager(metaclass=SingletonMeta):
 
         changed = self.current_language != lang_code
         self.current_language = lang_code
-
-        from module.config import cfg
-
-        if cfg.language_in_game != lang_code:
-            cfg.unsaved_set_value("language_in_game", lang_code, stacklevel=log_stacklevel)
-            changed = True
         if changed:
             language_name = {"zh_cn": "中文", "en": "英文"}[lang_code]
             log.info(f"语言: {language_name}", stacklevel=log_stacklevel)
@@ -97,10 +91,6 @@ class PathManager(metaclass=SingletonMeta):
 
         self.active_paths = new_active_paths
         self.is_zh_cn_eliminated = True
-        from module.config import cfg
-
-        if cfg.language_in_game != "en":
-            cfg.unsaved_set_value("language_in_game", "en", stacklevel=3)
         self.current_language = "en"
         log.debug(f"淘汰所有zh_cn路径，当前路径: {self.active_paths}")
         return True

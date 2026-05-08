@@ -397,9 +397,9 @@ class Theme_pack_list(metaclass=SingletonMeta):
         loaded_config = self.load_config(self.theme_pack_list_path)
         self.config = copy.deepcopy(loaded_config) if loaded_config else copy.deepcopy(default_config)
 
-    def build_setting_key(self, hard_switch: bool, language_in_game: str) -> list[str]:
+    def build_setting_key(self, hard_switch: bool, language: str | None) -> list[str]:
         """构建配置项键名列表。开启困难模式时同时返回普通和困难键。"""
-        suffix = "_cn" if language_in_game == "zh_cn" else ""
+        suffix = "_cn" if language == "zh_cn" else ""
         normal_key = f"theme_pack_list{suffix}"
         hard_key = f"theme_pack_list_hard{suffix}"
         if hard_switch:
@@ -476,10 +476,10 @@ class Theme_pack_list(metaclass=SingletonMeta):
                 self.save_config(path=str(team_weight_path), config_data=merged_config)
 
     def get_effective_theme_pack_list(
-        self, hard_switch: bool, language_in_game: str, team_num: int, use_custom_theme_pack_weight: bool
+        self, hard_switch: bool, language: str | None, team_num: int, use_custom_theme_pack_weight: bool
     ) -> tuple[dict]:
         """获取当前生效的主题包名单，考虑难度、语言、队伍和是否启用自定义权重等因素"""
-        setting_keys = self.build_setting_key(hard_switch, language_in_game)
+        setting_keys = self.build_setting_key(hard_switch, language)
         theme_pack_list = {}
         for key in setting_keys:
             theme_pack_list.update(self.config.get(key, {}))
