@@ -15,8 +15,8 @@ from module.logger import log
 
 
 def get_day_of_week():
-    # 直接获取当前东九区时间（Asia/Tokyo）
-    now_time = datetime.now(ZoneInfo("Asia/Tokyo"))
+    # 直接获取当前东九区时间（Asia/Seoul）
+    now_time = datetime.now(ZoneInfo("Asia/Seoul"))
 
     # 提取星期几（中文）、小时、分钟
     day = now_time.isoweekday()  # isoweekday() 返回 1（周一）~7（周日）
