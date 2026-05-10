@@ -1041,14 +1041,17 @@ class AutoDailyView(FlyoutViewBase):
             "autodaily_hibernate",
             "autodaily_shutdown",
             "autodaily_lock",
+            "autodaily_exit_emulator",
         ]
         self.box_exit_game = BaseCheckBox("autodaily_exit_game", None, QT_TRANSLATE_NOOP("BaseCheckBox", "退出游戏"))
+        self.box_exit_emulator = BaseCheckBox("autodaily_exit_emulator", None, QT_TRANSLATE_NOOP("BaseCheckBox", "退出模拟器"))
         self.box_exit_aalc = BaseCheckBox("autodaily_exit_aalc", None, QT_TRANSLATE_NOOP("BaseCheckBox", "退出AALC"))
         self.box_sleep = BaseCheckBox("autodaily_sleep", None, QT_TRANSLATE_NOOP("BaseCheckBox", "睡眠"))
         self.box_hibernate = BaseCheckBox("autodaily_hibernate", None, QT_TRANSLATE_NOOP("BaseCheckBox", "休眠"))
         self.box_shutdown = BaseCheckBox("autodaily_shutdown", None, QT_TRANSLATE_NOOP("BaseCheckBox", "关机"))
         self.box_lock = BaseCheckBox("autodaily_lock", None, QT_TRANSLATE_NOOP("BaseCheckBox", "锁屏"))
         self.line_2.addWidget(self.box_exit_game)
+        self.line_2.addWidget(self.box_exit_emulator)
         self.line_2.addWidget(self.box_exit_aalc)
         self.line_2.addWidget(self.box_sleep)
         self.line_2.addWidget(self.box_hibernate)
@@ -1086,8 +1089,11 @@ class AutoDailyView(FlyoutViewBase):
             self.config_name = self.__search_parent_class().config_name
         self.setting = cfg.get_value(self.config_name + "_task")
         self.exit_setting = cfg.get_value(self.config_name + "_task_exit")
-        if len(self.exit_setting) < 6:
-            self.exit_setting = list(self.exit_setting) + [False] * (6 - len(self.exit_setting))
+        exit_old_len = len(self.exit_setting)
+        if exit_old_len < 7:
+            self.exit_setting = list(self.exit_setting) + [False] * (7 - exit_old_len)
+            if exit_old_len > 0 and self.exit_setting[0]:
+                self.exit_setting[6] = True
 
         task = [
             self.box_daily,
@@ -1104,6 +1110,7 @@ class AutoDailyView(FlyoutViewBase):
             self.box_hibernate,
             self.box_shutdown,
             self.box_lock,
+            self.box_exit_emulator,
         ]
         for i in range(len(exit_task)):
             exit_task[i].set_checked(self.exit_setting[i])
@@ -1126,8 +1133,8 @@ class AutoDailyView(FlyoutViewBase):
             self.exit_setting[index] = not self.exit_setting[index]
 
     def __save(self):
-        if len(self.exit_setting) < 6:
-            self.exit_setting = list(self.exit_setting) + [False] * (6 - len(self.exit_setting))
+        if len(self.exit_setting) < 7:
+            self.exit_setting = list(self.exit_setting) + [False] * (7 - len(self.exit_setting))
         cfg.set_value(self.config_name + "_task", self.setting)
         cfg.set_value(self.config_name + "_task_exit", self.exit_setting)
         # 关闭弹出窗
@@ -1156,6 +1163,7 @@ class AutoDailyView(FlyoutViewBase):
         self.box_buy_enkephalin.retranslateUi()
         self.box_mirror.retranslateUi()
         self.box_exit_game.retranslateUi()
+        self.box_exit_emulator.retranslateUi()
         self.box_exit_aalc.retranslateUi()
         self.box_sleep.retranslateUi()
         self.box_hibernate.retranslateUi()
