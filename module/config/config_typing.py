@@ -280,8 +280,8 @@ class ConfigModel(BaseModel):
     autodaily_task: List[bool] = [False] * 4
     """定时任务列表"""
 
-    autodaily_task_exit: List[bool] = [False] * 5
-    """定时任务退出列表"""
+    autodaily_task_exit: List[bool] = [False] * 7
+    """定时任务退出列表: [exit_game, exit_aalc, sleep, hibernate, shutdown, lock, exit_emulator]"""
 
     autodaily_time: str = "00:00"
     """定时执行时间（HH:mm）"""
@@ -292,8 +292,8 @@ class ConfigModel(BaseModel):
     autodaily2_task: List[bool] = [False] * 4
     """定时任务2列表"""
 
-    autodaily2_task_exit: List[bool] = [False] * 5
-    """定时任务2退出列表"""
+    autodaily2_task_exit: List[bool] = [False] * 7
+    """定时任务2退出列表: [exit_game, exit_aalc, sleep, hibernate, shutdown, lock, exit_emulator]"""
 
     autodaily_time2: str = "00:00"
     """定时执行时间2（HH:mm）"""
@@ -304,8 +304,8 @@ class ConfigModel(BaseModel):
     autodaily3_task: List[bool] = [False] * 4
     """定时任务3列表"""
 
-    autodaily3_task_exit: List[bool] = [False] * 5
-    """定时任务3退出列表"""
+    autodaily3_task_exit: List[bool] = [False] * 7
+    """定时任务3退出列表: [exit_game, exit_aalc, sleep, hibernate, shutdown, lock, exit_emulator]"""
 
     autodaily_time3: str = "00:00"
     """定时执行时间3（HH:mm）"""
@@ -316,8 +316,8 @@ class ConfigModel(BaseModel):
     autodaily4_task: List[bool] = [False] * 4
     """定时任务4列表"""
 
-    autodaily4_task_exit: List[bool] = [False] * 5
-    """定时任务4退出列表"""
+    autodaily4_task_exit: List[bool] = [False] * 7
+    """定时任务4退出列表: [exit_game, exit_aalc, sleep, hibernate, shutdown, lock, exit_emulator]"""
 
     autodaily_time4: str = "00:00"
     """定时执行时间4（HH:mm）"""

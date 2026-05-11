@@ -31,19 +31,19 @@ theme_mode: AUTO # 应用主题：AUTO, LIGHT, DARK
 autostart: False # 自启动
 autodaily: False # 启用定时执行
 autodaily_task: [False, False, False, False]
-autodaily_task_exit: [False, False, False, False, False, False]
+autodaily_task_exit: [False, False, False, False, False, False, False]
 autodaily_time: "00:00" # 定时执行时间 (HH:mm)
 autodaily2: False # 启用定时执行2
 autodaily2_task: [False, False, False, False]
-autodaily2_task_exit: [False, False, False, False, False, False]
+autodaily2_task_exit: [False, False, False, False, False, False, False]
 autodaily_time2: "00:00" # 定时执行时间2 (HH:mm)
 autodaily3: False # 启用定时执行3
 autodaily3_task: [False, False, False, False]
-autodaily3_task_exit: [False, False, False, False, False, False]
+autodaily3_task_exit: [False, False, False, False, False, False, False]
 autodaily_time3: "00:00" # 定时执行时间3 (HH:mm)
 autodaily4: False # 启用定时执行4
 autodaily4_task: [False, False, False, False]
-autodaily4_task_exit: [False, False, False, False, False, False]
+autodaily4_task_exit: [False, False, False, False, False, False, False]
 autodaily_time4: "00:00" # 定时执行时间4 (HH:mm)
 minimize_to_tray: False # 最小化到托盘
 after_completion_actions: [] # 脚本结束后的前置动作（可多选）：exit_game/exit_emulator/exit_aalc

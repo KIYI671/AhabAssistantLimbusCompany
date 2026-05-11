@@ -76,15 +76,19 @@ def set_after_completion_config(actions: Iterable[str] | None, power_action: str
 
 def autodaily_exit_to_after_completion_config(exit_setting: list[bool] | tuple[bool, ...]) -> tuple[list[str], str]:
     """
-    将 autodaily_task_exit([exit_game, exit_aalc, sleep, hibernate, shutdown, lock]) 转换为统一动作配置。
+    将 autodaily_task_exit([exit_game, exit_aalc, sleep, hibernate, shutdown, lock, exit_emulator]) 转换为统一动作配置。
     """
     values = list(exit_setting) if isinstance(exit_setting, (list, tuple)) else []
-    while len(values) < 6:
+    original_len = len(values)
+    while len(values) < 7:
         values.append(False)
 
     actions: list[str] = []
     if values[0]:
         actions.append(ACTION_EXIT_GAME)
+        if original_len < 7:
+            actions.append(ACTION_EXIT_EMULATOR)
+    if original_len >= 7 and values[6]:
         actions.append(ACTION_EXIT_EMULATOR)
     if values[1]:
         actions.append(ACTION_EXIT_AALC)
