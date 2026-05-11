@@ -240,28 +240,40 @@ class MumuControl(AbstractInput):
 
         self.start_game_times = 0
 
+        self.mumu_control_api_backend()
+        if self.exe_path:
+            log.debug(f"MumuControl.__init__: exe_path 已初始化 -> {self.exe_path}")
+        else:
+            log.warning("MumuControl.__init__: exe_path 未初始化, 将由 start() 异常 fallback 重试")
         self.start()
         self.adb_connect()
 
-    def adb_connect(self):
-        # Try to connect
-        for _ in range(3):
+    def adb_connect(self, _depth=0):
+        _ADB_MAX_DEPTH = 3
+        if _depth >= _ADB_MAX_DEPTH:
+            log.error(
+                f"ADB 连接重试次数已耗尽 ({_ADB_MAX_DEPTH}轮), 放弃连接，请检查模拟器 ADB 是否正常开启"
+            )
+            return
+        for attempt in range(3):
+            self.check_stop_requested()
             try:
                 port = self.get_mumu_adb_port()
+                log.debug(f"尝试 ADB 连接 (轮次{_depth+1}/{_ADB_MAX_DEPTH}, 尝试{attempt+1}/3): {port}")
                 msg = adb.connect(port)
-                # Connected to 127.0.0.1:59865
-                # Already connected to 127.0.0.1:59865
                 if "connected" in msg:
                     log.debug(f"成功连接至:{port},连接信息: {msg}")
                     return
-                # bad port number '598265' in '127.0.0.1:598265'
                 elif "bad port" in msg:
-                    log.error(f"连接失败，端口号{port}不正确，可能是拼写错误或不规范")
-            except:
+                    log.error(f"ADB 连接失败，端口号{port}不正确，可能是拼写错误或不规范")
+            except Exception as e:
+                log.debug(f"ADB 连接尝试异常 (轮次{_depth+1}, 尝试{attempt+1}): {type(e).__name__}: {e}")
                 continue
+        self.check_stop_requested()
+        log.warning(f"ADB 连接全部3次尝试失败 (轮次{_depth+1}/{_ADB_MAX_DEPTH})，关闭模拟器并重试启动")
         self.close_simulator()
         self.start()
-        self.adb_connect()
+        self.adb_connect(_depth + 1)
 
     def adb_disconnect(self):
         try:
@@ -342,6 +354,7 @@ class MumuControl(AbstractInput):
                     except:
                         continue
                 if not key:
+                    log.debug("mumu_control_api_backend: 未在注册表中找到任何匹配的MuMu安装项")
                     return None
                 self.install_path = os.path.dirname(winreg.QueryValueEx(key, "DisplayIcon")[0]).strip('"')
                 mumu_version, _ = winreg.QueryValueEx(key, "DisplayVersion")
@@ -354,18 +367,16 @@ class MumuControl(AbstractInput):
                 return None
             # 修改路径，使其指向MuMuManager.exe
             self.exe_path = os.path.join(self.install_path, "MuMuManager.exe")
+            log.debug(f"mumu_control_api_backend: 注册表命中, install_path={self.install_path}, mumu_version={mumu_version}")
             if not os.path.isfile(self.exe_path):
+                log.debug(f"mumu_control_api_backend: exe_path 默认路径不存在 ({self.exe_path}), 尝试 shell 降级")
                 from pathlib import Path
 
                 exe_path = Path(self.exe_path)
-                # 1. 拆分路径为各个组成部分
                 parts = list(exe_path.parts)
-                # 2. 修改倒数第二个部分为 "shell"（确保路径长度足够，避免越界）
                 if len(parts) >= 2:
                     parts[-2] = "shell"
-                # 3. 重新拼接成新路径
-                new_exe_path = Path(*parts)  # 用 * 解包列表为Path的参数
-                # 转换为字符串（可选，若需要字符串路径）
+                new_exe_path = Path(*parts)
                 new_exe_path_str = str(new_exe_path)
                 self.exe_path = new_exe_path_str
                 if not os.path.isfile(self.exe_path):
@@ -373,6 +384,7 @@ class MumuControl(AbstractInput):
                         f"查找MuMuManager.exe失败，路径{self.exe_path}不存在，请检查MuMu模拟器是否安装或是否为特供版本"
                     )
                     return None
+                log.debug(f"mumu_control_api_backend: shell 降级成功, exe_path={self.exe_path}")
 
             def detect_major_version():
                 match = re.match(r"^(\d+)\.", mumu_version)
@@ -381,7 +393,8 @@ class MumuControl(AbstractInput):
 
             self.mumu_version = detect_major_version()
 
-    def get_mumu_adb_port(self, multi_instance_number=None):
+    def get_mumu_adb_port(self, multi_instance_number=None, _depth=0):
+        _MAX_DEPTH = 3
         try:
             if multi_instance_number is None and self.multi_instance_number is None:
                 self.multi_instance_number = 0
@@ -398,11 +411,19 @@ class MumuControl(AbstractInput):
                 adb_info = json.loads(proc.stdout)
                 try:
                     return f"{adb_info['adb_host']}:{adb_info['adb_port']}"
-                except:
+                except Exception:
                     return f"127.0.0.1:{int(self.multi_instance_number) * 32 + 16384}"
-        except:
+        except Exception as e:
+            if _depth >= _MAX_DEPTH:
+                log.warning(
+                    f"get_mumu_adb_port 重试耗尽 ({_MAX_DEPTH}轮)，使用默认端口计算"
+                )
+                return f"127.0.0.1:{int(self.multi_instance_number) * 32 + 16384}"
+            log.debug(
+                f"get_mumu_adb_port 异常 (轮次{_depth+1}/{_MAX_DEPTH}): {type(e).__name__}: {e}, 触发 start() 重建后重试"
+            )
             self.start()
-            self.get_mumu_adb_port(self.multi_instance_number)
+            return self.get_mumu_adb_port(multi_instance_number, _depth + 1)
 
     def start(self):
         try:
@@ -429,12 +450,17 @@ class MumuControl(AbstractInput):
             for _ in range(cfg.start_emulator_timeout):
                 time.sleep(1)
                 if self.get_launch_status() == "start_finished":
+                    log.debug("start: 模拟器启动状态确认为 start_finished")
                     break
+            else:
+                log.warning(f"start: 模拟器启动等待超时 ({cfg.start_emulator_timeout}s), 状态可能仍为未启动")
+            self.check_stop_requested()
             self.port = self.get_mumu_adb_port()
             self.load_dll()
             log.debug(f"MUMU模拟器编号{self.multi_instance_number}启动完成")
             self.connect()
-        except:
+        except Exception as e:
+            log.warning(f"start: 启动过程异常 ({type(e).__name__}: {e}), 触发 fallback 重试")
             self.mumu_control_api_backend()
             self.start()
 
@@ -504,6 +530,9 @@ class MumuControl(AbstractInput):
         # 获取应用保活状态
         try:
             log.debug("开始获取应用保活状态")
+            if self.exe_path is None:
+                log.warning("get_app_keptlive: exe_path 为 None, 将触发异常 fallback")
+                raise ValueError("exe_path is None")
             command = f""" "{self.exe_path}" setting -v {self.multi_instance_number} -k app_keptlive"""
             no_window_flag = subprocess.CREATE_NO_WINDOW if hasattr(subprocess, "CREATE_NO_WINDOW") else 0x08000000
             proc = subprocess.run(

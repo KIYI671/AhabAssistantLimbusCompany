@@ -220,9 +220,12 @@ def run_as_user(command: list[str], timeout: int = 30):
     task_name = "TempNonAdminTask"
     bat_path = None
 
+    no_window_flag = (
+        subprocess.CREATE_NO_WINDOW if hasattr(subprocess, "CREATE_NO_WINDOW") else 0x08000000
+    )
+
     def run_cmd(cmd: str, ignore_error: bool = False):
         try:
-            # 增加 timeout 防止进程挂起
             res = subprocess.run(cmd, shell=True, capture_output=True, text=True, timeout=10)
             if res.returncode != 0 and not ignore_error:
                 log.debug(f"命令执行失败: {cmd}\n错误: {res.stderr.strip()}")
@@ -231,41 +234,50 @@ def run_as_user(command: list[str], timeout: int = 30):
             log.debug(f"命令执行超时: {cmd}")
             return None
 
+    def _fallback_launch():
+        log.warning(f"schtasks 方式启动失败，改用 subprocess.Popen 直接启动: {command}")
+        proc = subprocess.Popen(command, creationflags=no_window_flag)
+        log.debug(f"Popen 已发起, pid={proc.pid}")
+
     try:
         # 1. 预清理：强制删除旧任务 (/f)
         run_cmd(f'schtasks /delete /tn "{task_name}" /f', ignore_error=True)
 
         # 2. 创建临时批处理文件
         with tempfile.NamedTemporaryFile(delete=False, suffix=".bat", mode="w", encoding="gbk") as bat:
-            # 使用 @echo off 减少输出，添加 exit 确保批处理退出
             bat.write(f"@echo off\n{subprocess.list2cmdline(command)}\nexit\n")
             bat_path = bat.name
 
         # 3. 创建任务
-        # /f: 强制创建；/rl limited: 确保以受限权限运行（非管理员）
         username = os.environ.get("USERNAME")
         create_cmd = (
             f'schtasks /create /f /tn "{task_name}" /sc once /st 23:59 /ru "{username}" /tr "cmd.exe /c \'{bat_path}\'"'
         )
-        if run_cmd(create_cmd) is None:
-            return False
+        create_result = run_cmd(create_cmd)
+        if create_result is None or create_result.returncode != 0:
+            _fallback_launch()
+            return
 
         # 4. 立即执行任务
         log.debug(f"启动任务: {command}")
-        if run_cmd(f'schtasks /run /tn "{task_name}"') is None:
-            return False
+        run_result = run_cmd(f'schtasks /run /tn "{task_name}"')
+        if run_result is None or run_result.returncode != 0:
+            _fallback_launch()
+            return
 
         # 5. 等待执行 (根据需求调整)
-        # 注意：schtasks /run 是异步的，这里 sleep 是等待程序启动
         sleep(2)
 
     except Exception as e:
-        log.debug(f"任务: {command} 发生异常: {e}")
-        return False
+        log.warning(f"run_as_user schtasks 路径异常 ({type(e).__name__}: {e}), 尝试 Popen 降级")
+        try:
+            proc = subprocess.Popen(command, creationflags=no_window_flag)
+            log.debug(f"run_as_user Popen 降级成功, pid={proc.pid}")
+        except Exception as e2:
+            log.error(f"run_as_user Popen 降级也失败了: {e2}")
     finally:
         # 6. 最终清理
         run_cmd(f'schtasks /delete /tn "{task_name}" /f', ignore_error=True)
-        # 修复点：增加对 bat_path 类型的显式检查
         if isinstance(bat_path, (str, bytes, os.PathLike)) and os.path.exists(bat_path):
             try:
                 os.unlink(bat_path)

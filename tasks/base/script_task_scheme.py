@@ -135,6 +135,10 @@ def init_game():
                     log.info("设置的模拟器端口非常用默认端口，使用默认mumu模拟器")
             elif cfg.mumu_instance_number != -1:
                 mumu_instance_number = cfg.mumu_instance_number
+            log.debug(
+                f"init_game: 模拟器类型=Mumu, 实例编号={mumu_instance_number}, "
+                f"simulator_port={cfg.simulator_port}, mumu_instance_number={cfg.mumu_instance_number}"
+            )
             from module.automation.input_handlers.simulator.mumu_control import (
                 MumuControl,
             )
