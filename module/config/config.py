@@ -153,6 +153,30 @@ class Config(metaclass=SingletonMeta):
                 teams[f"{i}"] = TeamSetting(**settings).model_dump()
             loaded_config["teams"] = teams
 
+        if saved_version < 1778544000:
+            legacy_default_opening_bonus = [0] * 10
+            legacy_default_opening_bonus_level = [0] * 10
+            current_default_opening_bonus = [1, 1, 1, 1, 0, 0, 0, 0, 0, 0]
+            teams = loaded_config.get("teams", {}) or {}
+            migrated_teams = 0
+            if isinstance(teams, dict):
+                for settings in teams.values():
+                    if not isinstance(settings, dict):
+                        continue
+                    uses_legacy_default_opening_bonus = (
+                        settings.get("opening_bonus", legacy_default_opening_bonus) == legacy_default_opening_bonus
+                        and settings.get("opening_bonus_level", legacy_default_opening_bonus_level)
+                        == legacy_default_opening_bonus_level
+                    )
+                    if not uses_legacy_default_opening_bonus:
+                        continue
+
+                    settings["opening_bonus"] = current_default_opening_bonus.copy()
+                    settings["opening_bonus_level"] = legacy_default_opening_bonus_level.copy()
+                    migrated_teams += 1
+            if migrated_teams:
+                log.info(f"已将 {migrated_teams} 个队伍的默认开局星光加成迁移为自选前四项")
+
         log.info("配置升级完成")
 
     def _load_version(self, version_path: str) -> str:

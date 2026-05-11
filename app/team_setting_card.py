@@ -338,19 +338,7 @@ class TeamSettingCard(QFrame):
             self.team_setting.opening_bonus_level[level_index] = values
         elif "starlight_" in keys:
             starlight_index = int(keys.split("_")[-1]) - 1
-            if values:
-                self.team_setting.opening_bonus_select += 1
-                self.team_setting.opening_bonus[starlight_index] = 1
-                self.team_setting.opening_bonus_order[starlight_index] = self.team_setting.opening_bonus_select
-            else:
-                order = self.team_setting.opening_bonus_order[starlight_index]
-                self.team_setting.opening_bonus_select -= 1
-                self.team_setting.opening_bonus[starlight_index] = 0
-                for i in range(10):
-                    if self.team_setting.opening_bonus_order[i] > order:
-                        self.team_setting.opening_bonus_order[i] -= 1
-                self.team_setting.opening_bonus_order[starlight_index] = 0
-            self.refresh_starlight_order()
+            self.team_setting.opening_bonus[starlight_index] = 1 if values else 0
         elif keys in second_system_mode:
             mode_index = second_system_mode.index(keys)
             self.team_setting.second_system_action[mode_index] = values
@@ -379,16 +367,6 @@ class TeamSettingCard(QFrame):
         )
         dialog.exec()
 
-    def refresh_starlight_order(self):
-        opening_bonus_order = self.team_setting.opening_bonus_order
-        for index, order in enumerate(opening_bonus_order):
-            starlight = self.findChild(CheckBoxWithLineEdit, f"starlight_{index + 1}")
-            if starlight is not None:
-                if order != 0:
-                    starlight.set_text(str(order))
-                else:
-                    starlight.set_text("")
-
     def refresh_starlight_select(self):
         opening_bonus = self.team_setting.opening_bonus
         for i in range(1, 11):
@@ -398,8 +376,6 @@ class TeamSettingCard(QFrame):
                     starlight.set_checked(True)
                 else:
                     starlight.set_checked(False)
-
-        self.refresh_starlight_order()
 
     def refresh_sinner_order(self):
         sinner_order = self.team_setting.sinner_order
@@ -612,7 +588,7 @@ class StarlightCard(QFrame):
         self.button_layout = QHBoxLayout(self.buttons_frame)
         self.button_layout.setContentsMargins(0, 0, 0, 0)
         self.button_layout.setAlignment(Qt.AlignmentFlag.AlignVCenter)
-        self.starlight_checkbox = CheckBoxWithLineEdit(class_name, label_text, None)
+        self.starlight_checkbox = CheckBoxWithLineEdit(class_name, label_text, None, show_line_edit=False)
         self.level_one_button = ToolCheckButton(FIF.ADD)
         self.level_one_button.setChecked(self.level == 1)
         self.level_one_button.checked.connect(self.__on_level_one_clicked)
@@ -774,13 +750,6 @@ class CustomizeSettingsModule(QFrame):
         )
         self.reward_cards.add_items(reward_cards)
 
-        self.choose_opening_bonus = BaseCheckBox(
-            "choose_opening_bonus",
-            FIF.BUS,
-            QT_TRANSLATE_NOOP("BaseCheckBox", "自选开局加成"),
-            center=False,
-        )
-
         QT_TRANSLATE_NOOP("CustomizeSettingsModule", "星光")
         self.starlight_1 = StarlightCard("starlight_1", "星光1", self.team_num)
         self.starlight_2 = StarlightCard("starlight_2", "星光2", self.team_num)
@@ -924,7 +893,6 @@ class CustomizeSettingsModule(QFrame):
         self.star_list.addWidget(self.starlight_8, 1, 2)
         self.star_list.addWidget(self.starlight_9, 1, 3)
         self.star_list.addWidget(self.starlight_10, 1, 4)
-        self.star_layout.add(self.choose_opening_bonus)
         self.star_layout.add(self.star_list)
 
         self.fourth_line.addWidget(self.after_level_IV)
@@ -999,7 +967,6 @@ class CustomizeSettingsModule(QFrame):
         self.defense_first_round.retranslateUi()
         self.fixed_team_use.retranslateUi()
         self.reward_cards.retranslateUi()
-        self.choose_opening_bonus.retranslateUi()
         self.re_formation_each_floor.retranslateUi()
 
         starlight_text = self.tr("星光")

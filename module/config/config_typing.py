@@ -108,17 +108,8 @@ class TeamSetting(BaseModel):
     reward_cards_select: int = 0
     """自定义奖励卡优先度"""
 
-    choose_opening_bonus: bool = False
-    """自选开局加成"""
-
-    opening_bonus_select: int = 0
-    """开局加成已选数量"""
-
-    opening_bonus: List[int] = [0] * 10
+    opening_bonus: List[int] = [1, 1, 1, 1, 0, 0, 0, 0, 0, 0]
     """启用的开局加成"""
-
-    opening_bonus_order: List[int] = [0] * 10
-    """启用的开局加成顺序"""
 
     opening_bonus_level: List[int] = [0] * 10
     """启用的开局加成等级"""
@@ -202,7 +193,7 @@ class TeamSetting(BaseModel):
 class ConfigModel(BaseModel):
     """配置模型"""
 
-    config_version: int = 1775826004
+    config_version: int = 1778544000
     """配置文件版本号（时间戳）"""
 
     save_count: int = 0

@@ -127,7 +127,7 @@ class CheckBoxWithButton(QFrame):
 
 
 class CheckBoxWithLineEdit(QFrame):
-    def __init__(self, config_name, check_box_title, parent=None):
+    def __init__(self, config_name, check_box_title, parent=None, show_line_edit=True):
         super().__init__(parent)
         self.setObjectName(config_name)
         self.config_name = config_name
@@ -135,6 +135,7 @@ class CheckBoxWithLineEdit(QFrame):
         self.hBoxLayout.setContentsMargins(0, 0, 0, 0)
         self.box = CheckBox(check_box_title, parent=self)
         self.line_edit = LineEdit(self)
+        self.line_edit.setVisible(show_line_edit)
         self.line_edit.setMaximumWidth(70)
         self.line_edit.setAlignment(Qt.AlignCenter)
         self.line_edit.setReadOnly(True)
