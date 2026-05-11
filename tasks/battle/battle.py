@@ -180,7 +180,7 @@ class Battle:
                 continue
             if auto.get_restore_time() is not None:
                 start_time = max(start_time, auto.get_restore_time())
-            if infinite_battle is False and check_times(start_time, timeout=900 * combat_count, logs=False):
+            if infinite_battle is False and check_times(start_time, timeout=900 + 300 * combat_count, logs=False):
                 from tasks.base.back_init_menu import back_init_menu
 
                 back_init_menu()
