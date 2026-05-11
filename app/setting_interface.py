@@ -12,6 +12,7 @@ from qfluentwidgets import (
     ExpandLayout,
     InfoBarPosition,
     ScrollArea,
+    SmoothMode,
     Theme,
     isDarkTheme,
     qconfig,
@@ -69,6 +70,8 @@ class SettingInterface(QWidget):
         # right scroll area with existing content
         self.content_scroll = ScrollArea(self)
         self.content_scroll.setObjectName("contentScroll")
+        self.content_scroll.setSmoothMode(SmoothMode.LINEAR, Qt.Orientation.Vertical)
+        self.content_scroll.scrollDelagate.verticalSmoothScroll.duration = 100
         self.content_scroll.setWidgetResizable(True)
         self.content_scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.content_scroll.enableTransparentBackground()
