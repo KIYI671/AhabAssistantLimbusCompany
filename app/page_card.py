@@ -765,7 +765,6 @@ class PageMirror(PageCard):
             old_number = int(old_index)
             old_to_new[old_number] = new_index
             team_setting = cfg.config.teams[old_index]
-            team_setting.team_number = new_index
             compact_teams[f"{new_index}"] = team_setting
             if new_index != old_number:
                 theme_list.set_team_weight_config_from_team(new_index, old_number)

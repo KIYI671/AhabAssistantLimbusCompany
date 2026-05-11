@@ -204,7 +204,6 @@ class Config(metaclass=SingletonMeta):
                     normalized_queue = self._normalize_team_queue(self.migrate_legacy_team_queue())
                 else:
                     normalized_queue = self._normalize_team_queue(queue_in_loaded_config)
-                self._sync_team_setting_numbers()
                 self._sync_legacy_team_state(normalized_queue)
                 # 成功加载后保存当前文件为备份
                 shutil.copy(path, path.with_suffix(".yaml.backup"))
@@ -253,19 +252,6 @@ class Config(metaclass=SingletonMeta):
             if team_num > 0:
                 team_numbers.append(team_num)
         return sorted(team_numbers)
-
-    def _sync_team_setting_numbers(self) -> None:
-        """同步每个 TeamSetting.team_number 与其字典键一致，防止漂移"""
-        teams = self.get_value("teams", {}) or {}
-        for team_key, team_setting in teams.items():
-            try:
-                team_num = int(team_key)
-            except (TypeError, ValueError):
-                continue
-            if team_num <= 0 or not isinstance(team_setting, TeamSetting):
-                continue
-            if team_setting.team_number != team_num:
-                self.unsaved_set_value("team_number", team_num, config_obj=team_setting)
 
     def _normalize_team_queue(self, queue: list[int]) -> list[int]:
         """去重并过滤无效队伍编号，返回干净的队列"""
@@ -455,7 +441,6 @@ class Config(metaclass=SingletonMeta):
                     normalized_queue = self._normalize_team_queue(self.migrate_legacy_team_queue())
                 else:
                     normalized_queue = self._normalize_team_queue(queue_in_loaded_config)
-                self._sync_team_setting_numbers()
                 self._sync_legacy_team_state(normalized_queue)
         except FileNotFoundError:
             self._schedule_save()

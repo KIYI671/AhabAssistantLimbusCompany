@@ -36,9 +36,9 @@ def export_team_settings(team_num: int, file_path: str) -> bool:
         yaml = YAML()
         export_data = team_setting.model_dump()
 
-        # 从导出中排除统计字段和队伍编号
+        # 从导出中排除统计字段；team_number 表示游戏内编队编号，需要保留。
         stats_fields = ['total_mirror_time_hard', 'mirror_hard_count',
-                       'total_mirror_time_normal', 'mirror_normal_count', 'team_number']
+                       'total_mirror_time_normal', 'mirror_normal_count']
         for field in stats_fields:
             export_data.pop(field, None)
 
