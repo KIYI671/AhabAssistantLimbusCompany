@@ -1,4 +1,6 @@
-from PySide6.QtCore import Qt
+from html import escape
+
+from PySide6.QtCore import QEvent, QObject, QTimer, Qt
 from PySide6.QtWidgets import (
     QFileDialog,
     QFrame,
@@ -7,6 +9,7 @@ from PySide6.QtWidgets import (
     QLabel,
     QPushButton,
     QSizePolicy,
+    QToolTip,
     QVBoxLayout,
     QWidget,
 )
@@ -53,6 +56,59 @@ STARLIGHT_BONUS_NAMES = [
 ]
 
 STARLIGHT_BONUS_COSTS = [10, 10, 20, 20, 30, 30, 40, 40, 50, 60]
+
+STARLIGHT_BONUS_TIPS = [
+    {
+        "buff": "buff：\n经费+\n卡包+\n饰品+\n刷新+",
+        "buff+": "buff+：\n经费+\\yellow{+}\n卡包+\n饰品+\n刷新+",
+        "buff++": "buff++：\n经费+\\yellow{+}\n卡包+\n饰品+\n刷新+\\yellow{+}",
+    },
+    {
+        "buff": "buff：\n过层经费+\n售卖经费+",
+        "buff+": "buff+：\n过层经费+\\yellow{+}\n售卖经费+\\yellow{+}",
+        "buff++": "buff++：\n过层经费+\\yellow{+}\\yellow{+}\n售卖经费+\\yellow{+}\\yellow{+}",
+    },
+    {
+        "buff": "buff：\n卡包+\n卡包刷新+\n人格等级+",
+        "buff+": "buff+：\n卡包+\n卡包刷新+\\yellow{+}\n人格等级+\n拼点\\yellow{+}",
+        "buff++": "buff++：\n卡包+\n卡包刷新+\\yellow{+}\\yellow{+}\n人格等级+\n拼点\\yellow{+}\\yellow{+}",
+    },
+    {
+        "buff": "buff：\n经费+\n饰品选择+",
+        "buff+": "buff+：\n经费+\\yellow{+}\n饰品选择+\n星芒经费\\yellow{+}",
+        "buff++": "buff++：\n经费+\\yellow{+}\\yellow{+}\n饰品选择+\n星芒经费\\yellow{+}",
+    },
+    {
+        "buff": "buff：\n商店饰品+\n战斗经费+\n高级饰品+",
+        "buff+": "buff+：\n商店饰品+\n战斗经费+\\yellow{+}\n高级饰品+\n商店经费\\yellow{+}",
+        "buff++": "buff++：\n商店饰品+\n战斗经费+\\yellow{+}\\yellow{+}\n高级饰品+\n商店经费\\yellow{+}",
+    },
+    {
+        "buff": "buff：\n关键词刷新+\n初始饰品+",
+        "buff+": "buff+：\n关键词刷新+\n初始饰品+\\yellow{+}\n特殊商店\\yellow{+}",
+        "buff++": "buff++：\n关键词刷新+\\yellow{+}\n初始饰品+\\yellow{+}\n特殊商店\\yellow{+}\\yellow{+}",
+    },
+    {
+        "buff": "buff：\n初始等级+\n过层等级+",
+        "buff+": "buff+：\n初始等级+\n过层等级+\\yellow{+}",
+        "buff++": "buff++：\n初始等级+\n六层等级\\yellow{+}\n过层等级+\\yellow{+}",
+    },
+    {
+        "buff": "buff：\n速度+\n拼点+\n伤害+\n守护+",
+        "buff+": "buff+：\n速度+\\yellow{+}\n拼点+\n伤害+\n守护+",
+        "buff++": "buff++：\n速度+\\yellow{+}\\yellow{+}\n拼点+\n伤害+\n守护+",
+    },
+    {
+        "buff": "buff：\n商店饰品+\n三层饰品+\n合成饰品+",
+        "buff+": "buff+：\n商店饰品+\\yellow{+}\n三层饰品+\n五层饰品\\yellow{+}\n合成饰品+",
+        "buff++": "buff++：\n商店饰品+\\yellow{+}\n三层饰品+\n五层饰品\\yellow{+}\n七层饰品\\yellow{+}\n合成饰品+\\yellow{+}",
+    },
+    {
+        "buff": "buff：\n卡包+\n饰品选择+\n关键词饰品+\n黯淡残影+",
+        "buff+": "buff+：\n饰品选择+\n关键词饰品+\\yellow{+}\n黯淡残影+\n微茫残影\\yellow{+}",
+        "buff++": "buff++：\n卡包+\n饰品选择+\n关键词饰品+\\yellow{+}\\yellow{+}\n黯淡残影+\n微茫残影\\yellow{+}\n闪耀残影\\yellow{+}",
+    },
+]
 
 
 class TeamSettingCard(QFrame):
@@ -584,6 +640,51 @@ class TeamSettingCard(QFrame):
         self.confirm_button.setText(self.tr("保存"))
 
 
+def _format_starlight_tip(title: str, tip_text: str) -> str:
+    tip_text = "\n".join(tip_text.splitlines()[1:])
+    html = escape(tip_text).replace("\\yellow{+}", '<span style="color:#d8a300;font-weight:700;">+</span>')
+    html = html.replace("\n", "<br>")
+    return (
+        '<div style="white-space:nowrap; font-size:12px; line-height:1.45;">'
+        f'<b>{escape(title)}</b><br>{html}'
+        "</div>"
+    )
+
+
+class DelayedRichToolTipFilter(QObject):
+    def __init__(self, text: str, parent=None):
+        super().__init__(parent)
+        self.text = text
+        self.widget = None
+        self.global_pos = None
+        self.timer = QTimer(self)
+        self.timer.setSingleShot(True)
+        self.timer.setInterval(500)
+        self.timer.timeout.connect(self.__show_tooltip)
+
+    def set_text(self, text: str):
+        self.text = text
+
+    def eventFilter(self, obj, event):
+        event_type = event.type()
+        if event_type == QEvent.Type.Enter:
+            self.widget = obj
+            self.global_pos = obj.mapToGlobal(obj.rect().bottomLeft())
+            self.timer.start()
+        elif event_type == QEvent.Type.MouseMove:
+            self.global_pos = event.globalPosition().toPoint()
+        elif event_type in (QEvent.Type.Leave, QEvent.Type.MouseButtonPress, QEvent.Type.Hide):
+            self.timer.stop()
+            QToolTip.hideText()
+        return super().eventFilter(obj, event)
+
+    def __show_tooltip(self):
+        if self.widget is None or not self.widget.underMouse():
+            return
+        pos = self.global_pos or self.widget.mapToGlobal(self.widget.rect().bottomLeft())
+        QToolTip.showText(pos, self.text, self.widget)
+
+
 class StarlightNameButton(QPushButton):
     def __init__(self, text: str, cost: int, parent=None):
         super().__init__(text, parent)
@@ -691,6 +792,7 @@ class StarlightLevelSelector(QFrame):
         self.default_button.clicked.connect(lambda _checked=False: self.__on_segment_clicked(0))
         self.level_one_button.clicked.connect(lambda _checked=False: self.__on_segment_clicked(1))
         self.level_two_button.clicked.connect(lambda _checked=False: self.__on_segment_clicked(2))
+        self.__refresh_tooltips(label_text)
 
     def __create_button(self, text: str, segment: str) -> QPushButton:
         if segment == "left":
@@ -702,6 +804,21 @@ class StarlightLevelSelector(QFrame):
         button.setProperty("segment", segment)
         button.setStyleSheet(self._STYLE)
         return button
+
+    def __refresh_tooltips(self, title: str):
+        tips = STARLIGHT_BONUS_TIPS[self.starlight_index - 1]
+        self.__set_button_tooltip(self.default_button, _format_starlight_tip(title, tips["buff"]))
+        self.__set_button_tooltip(self.level_one_button, _format_starlight_tip(title, tips["buff+"]))
+        self.__set_button_tooltip(self.level_two_button, _format_starlight_tip(title, tips["buff++"]))
+
+    def __set_button_tooltip(self, button: QPushButton, text: str):
+        tooltip_filter = getattr(button, "_starlight_tooltip_filter", None)
+        if tooltip_filter is None:
+            tooltip_filter = DelayedRichToolTipFilter(text, button)
+            button._starlight_tooltip_filter = tooltip_filter
+            button.installEventFilter(tooltip_filter)
+        else:
+            tooltip_filter.set_text(text)
 
     def __on_segment_clicked(self, target_level: int):
         if target_level == 0:
@@ -729,6 +846,7 @@ class StarlightLevelSelector(QFrame):
 
     def set_label_text(self, text: str):
         self.default_button.setText(text)
+        self.__refresh_tooltips(text)
 
 
 class StarlightCard(QFrame):
