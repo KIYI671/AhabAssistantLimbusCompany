@@ -20,6 +20,7 @@ from qfluentwidgets import (
     PopUpAniStackedWidget,
     RoundMenu,
     ScrollArea,
+    SmoothMode,
     TextBrowser,
     TransparentToolButton,
     isDarkTheme,
@@ -883,6 +884,8 @@ class MarkdownViewer(QWidget):
         LanguageManager().register_component(self)
 
         self.text_browser = ThemeAwareTextBrowser()
+        self.text_browser.scrollDelegate.verticalSmoothScroll.setSmoothMode(SmoothMode.LINEAR)
+        self.text_browser.scrollDelegate.verticalSmoothScroll.duration = 100
         self.text_browser.setOpenExternalLinks(False)
         self.text_browser.anchorClicked.connect(self.handle_link_clicked)
         self.text_browser.setContextMenuPolicy(Qt.ContextMenuPolicy.NoContextMenu)  # 禁用右键菜单

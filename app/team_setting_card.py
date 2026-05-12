@@ -9,7 +9,15 @@ from PySide6.QtWidgets import (
     QVBoxLayout,
     QWidget,
 )
-from qfluentwidgets import ExpandSettingCard, InfoBarPosition, LineEdit, PrimaryPushButton, PushButton, ScrollArea
+from qfluentwidgets import (
+    ExpandSettingCard,
+    InfoBarPosition,
+    LineEdit,
+    PrimaryPushButton,
+    PushButton,
+    ScrollArea,
+    SmoothMode,
+)
 from qfluentwidgets import FluentIcon as FIF
 
 from app import *
@@ -57,6 +65,8 @@ class TeamSettingCard(QFrame):
     def __init_widget(self):
         self.main_layout = QVBoxLayout(self)
         self.scroll_general = ScrollArea()
+        self.scroll_general.setSmoothMode(SmoothMode.LINEAR, Qt.Orientation.Vertical)
+        self.scroll_general.scrollDelagate.verticalSmoothScroll.duration = 100
         self.scroll_general.setWidgetResizable(True)
         self.scroll_general.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
 
