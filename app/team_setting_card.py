@@ -1,6 +1,7 @@
 from html import escape
 
-from PySide6.QtCore import QEvent, QObject, QTimer, Qt
+from PySide6.QtCore import QEvent, QObject, QPoint, QTimer, Qt
+from PySide6.QtGui import QCursor
 from PySide6.QtWidgets import (
     QFileDialog,
     QFrame,
@@ -667,21 +668,31 @@ class DelayedRichToolTipFilter(QObject):
 
     def eventFilter(self, obj, event):
         event_type = event.type()
-        if event_type == QEvent.Type.Enter:
+        if event_type in (QEvent.Type.Enter, QEvent.Type.HoverEnter):
+            QToolTip.hideText()
             self.widget = obj
-            self.global_pos = obj.mapToGlobal(obj.rect().bottomLeft())
+            self.global_pos = QCursor.pos()
+            self.timer.stop()
             self.timer.start()
-        elif event_type == QEvent.Type.MouseMove:
-            self.global_pos = event.globalPosition().toPoint()
-        elif event_type in (QEvent.Type.Leave, QEvent.Type.MouseButtonPress, QEvent.Type.Hide):
+        elif event_type in (QEvent.Type.MouseMove, QEvent.Type.HoverMove):
+            self.global_pos = QCursor.pos()
+        elif event_type in (
+            QEvent.Type.Leave,
+            QEvent.Type.HoverLeave,
+            QEvent.Type.MouseButtonPress,
+            QEvent.Type.Hide,
+        ):
             self.timer.stop()
             QToolTip.hideText()
         return super().eventFilter(obj, event)
 
     def __show_tooltip(self):
-        if self.widget is None or not self.widget.underMouse():
+        if self.widget is None:
             return
-        pos = self.global_pos or self.widget.mapToGlobal(self.widget.rect().bottomLeft())
+        cursor_pos = QCursor.pos()
+        if not self.widget.rect().contains(self.widget.mapFromGlobal(cursor_pos)):
+            return
+        pos = (self.global_pos or cursor_pos) + QPoint(12, 18)
         QToolTip.showText(pos, self.text, self.widget)
 
 
@@ -800,6 +811,8 @@ class StarlightLevelSelector(QFrame):
         else:
             button = QPushButton(text, self)
         button.setCheckable(True)
+        button.setMouseTracking(True)
+        button.setAttribute(Qt.WidgetAttribute.WA_Hover, True)
         button.setCursor(Qt.CursorShape.PointingHandCursor)
         button.setProperty("segment", segment)
         button.setStyleSheet(self._STYLE)
