@@ -7,6 +7,8 @@
 .idea
 .claude
 
+AGENTS.md
+
 # 构建文件
 build
 dist

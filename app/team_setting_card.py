@@ -1,10 +1,11 @@
 from PySide6.QtCore import Qt
-from PySide6.QtGui import QResizeEvent
 from PySide6.QtWidgets import (
     QFileDialog,
     QFrame,
     QGridLayout,
     QHBoxLayout,
+    QLabel,
+    QPushButton,
     QSizePolicy,
     QVBoxLayout,
     QWidget,
@@ -12,7 +13,6 @@ from PySide6.QtWidgets import (
 from qfluentwidgets import (
     ExpandSettingCard,
     InfoBarPosition,
-    LineEdit,
     PrimaryPushButton,
     PushButton,
     ScrollArea,
@@ -23,14 +23,11 @@ from qfluentwidgets import FluentIcon as FIF
 from app import *
 from app.base_combination import (
     CheckBoxWithComboBox,
-    CheckBoxWithLineEdit,
     LabelWithComboBox,
     SinnerSelect,
-    ToolCheckButton,
 )
 from app.base_tools import BaseCheckBox, BaseComboBox, BaseLabel, BaseLineEdit, BaseSettingLayout
 from app.card.messagebox_custom import BaseInfoBar, MessageBoxConfirm
-from app.common.icons import OverflowIcons
 from app.language_manager import LanguageManager
 from app.theme_pack_setting_interface import ThemePackSettingDialog
 from module.config import TeamSetting, cfg, theme_list
@@ -40,6 +37,22 @@ from module.config.team_import_export import (
     generate_team_export_filename,
     import_team_settings,
 )
+
+
+STARLIGHT_BONUS_NAMES = [
+    QT_TRANSLATE_NOOP("CustomizeSettingsModule", "起始之星"),
+    QT_TRANSLATE_NOOP("CustomizeSettingsModule", "层积星云"),
+    QT_TRANSLATE_NOOP("CustomizeSettingsModule", "星际旅行"),
+    QT_TRANSLATE_NOOP("CustomizeSettingsModule", "倾落的流星雨"),
+    QT_TRANSLATE_NOOP("CustomizeSettingsModule", "双星商店"),
+    QT_TRANSLATE_NOOP("CustomizeSettingsModule", "卫星商店"),
+    QT_TRANSLATE_NOOP("CustomizeSettingsModule", "星云的宠爱"),
+    QT_TRANSLATE_NOOP("CustomizeSettingsModule", "星芒的引导"),
+    QT_TRANSLATE_NOOP("CustomizeSettingsModule", "偶然的彗星"),
+    QT_TRANSLATE_NOOP("CustomizeSettingsModule", "全面的可能性"),
+]
+
+STARLIGHT_BONUS_COSTS = [10, 10, 20, 20, 30, 30, 40, 40, 50, 60]
 
 
 class TeamSettingCard(QFrame):
@@ -369,13 +382,13 @@ class TeamSettingCard(QFrame):
 
     def refresh_starlight_select(self):
         opening_bonus = self.team_setting.opening_bonus
+        opening_bonus_level = self.team_setting.opening_bonus_level
         for i in range(1, 11):
-            starlight = self.findChild(CheckBoxWithLineEdit, f"starlight_{i}")
+            starlight = self.findChild(StarlightLevelSelector, f"starlight_{i}")
             if starlight is not None:
-                if opening_bonus[i - 1]:
-                    starlight.set_checked(True)
-                else:
-                    starlight.set_checked(False)
+                selected = bool(opening_bonus[i - 1]) if i <= len(opening_bonus) else False
+                level = opening_bonus_level[i - 1] if i <= len(opening_bonus_level) else 0
+                starlight.set_state(selected, level)
 
     def refresh_sinner_order(self):
         sinner_order = self.team_setting.sinner_order
@@ -571,64 +584,170 @@ class TeamSettingCard(QFrame):
         self.confirm_button.setText(self.tr("保存"))
 
 
+class StarlightNameButton(QPushButton):
+    def __init__(self, text: str, cost: int, parent=None):
+        super().__init__(text, parent)
+        self.cost_label = QLabel(self)
+        self.cost_label.setAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignTop)
+        self.cost_label.setAttribute(Qt.WidgetAttribute.WA_TransparentForMouseEvents)
+        self.cost_label.setStyleSheet(
+            """
+            QLabel {
+                background: transparent;
+                border: none;
+                color: palette(text);
+                font-size: 10px;
+                font-weight: 500;
+            }
+            """
+        )
+        self.set_cost(cost)
+
+    def resizeEvent(self, event):
+        super().resizeEvent(event)
+        self.__place_cost_label()
+
+    def set_cost(self, cost: int):
+        self.cost_label.setText(str(cost))
+        self.__place_cost_label()
+
+    def __place_cost_label(self):
+        width = max(28, self.cost_label.fontMetrics().horizontalAdvance(self.cost_label.text()) + 6)
+        self.cost_label.setGeometry(max(0, self.width() - width - 4), 2, width, 14)
+
+
+class StarlightLevelSelector(QFrame):
+    """A three-part selector for default, +, and ++ starlight levels."""
+
+    _STYLE = """
+        QPushButton {
+            border: 1px solid rgba(120, 120, 120, 105);
+            background: rgba(120, 120, 120, 20);
+            padding: 5px 6px;
+            min-height: 32px;
+            color: palette(text);
+            font-size: 12px;
+        }
+        QPushButton:hover {
+            background: rgba(0, 120, 212, 28);
+        }
+        QPushButton:checked {
+            color: palette(text);
+            font-weight: 600;
+        }
+        QPushButton[segment="left"] {
+            border-top-left-radius: 5px;
+            border-bottom-left-radius: 5px;
+            border-top-right-radius: 0;
+            border-bottom-right-radius: 0;
+            padding-right: 24px;
+        }
+        QPushButton[segment="middle"] {
+            border-left: 0;
+            border-radius: 0;
+        }
+        QPushButton[segment="right"] {
+            border-left: 0;
+            border-top-left-radius: 0;
+            border-bottom-left-radius: 0;
+            border-top-right-radius: 5px;
+            border-bottom-right-radius: 5px;
+        }
+        QPushButton[segment="left"]:checked {
+            border-color: rgba(224, 132, 148, 165);
+            background: rgba(255, 182, 193, 70);
+        }
+        QPushButton[segment="middle"]:checked {
+            border-color: rgba(204, 76, 76, 180);
+            background: rgba(214, 96, 96, 88);
+        }
+        QPushButton[segment="right"]:checked {
+            border-color: rgba(150, 20, 32, 210);
+            background: rgba(150, 20, 32, 120);
+        }
+    """
+
+    def __init__(self, config_name: str, label_text: str, parent=None):
+        super().__init__(parent)
+        self.setObjectName(config_name)
+        self.config_name = config_name
+        self.starlight_index = int(config_name.split("_")[-1])
+        self.base_cost = STARLIGHT_BONUS_COSTS[self.starlight_index - 1]
+        self.selected = False
+        self.level = 0
+
+        self.segment_layout = QHBoxLayout(self)
+        self.segment_layout.setContentsMargins(0, 0, 0, 0)
+        self.segment_layout.setSpacing(0)
+
+        self.default_button = self.__create_button(label_text, "left")
+        self.level_one_button = self.__create_button("+", "middle")
+        self.level_two_button = self.__create_button("++", "right")
+
+        self.segment_layout.addWidget(self.default_button, 13)
+        self.segment_layout.addWidget(self.level_one_button, 4)
+        self.segment_layout.addWidget(self.level_two_button, 4)
+
+        self.default_button.clicked.connect(lambda _checked=False: self.__on_segment_clicked(0))
+        self.level_one_button.clicked.connect(lambda _checked=False: self.__on_segment_clicked(1))
+        self.level_two_button.clicked.connect(lambda _checked=False: self.__on_segment_clicked(2))
+
+    def __create_button(self, text: str, segment: str) -> QPushButton:
+        if segment == "left":
+            button = StarlightNameButton(text, self.base_cost, self)
+        else:
+            button = QPushButton(text, self)
+        button.setCheckable(True)
+        button.setCursor(Qt.CursorShape.PointingHandCursor)
+        button.setProperty("segment", segment)
+        button.setStyleSheet(self._STYLE)
+        return button
+
+    def __on_segment_clicked(self, target_level: int):
+        if target_level == 0:
+            selected = not self.selected if self.selected and self.level == 0 else True
+            level = 0
+        elif self.selected and self.level == target_level:
+            selected = True
+            level = 0
+        else:
+            selected = True
+            level = target_level
+
+        self.set_state(selected, level)
+        mediator.team_setting.emit({self.config_name: self.selected})
+        mediator.team_setting.emit({f"starlight_level_{self.starlight_index}": self.level})
+
+    def set_state(self, selected: bool, level: int):
+        self.selected = selected
+        self.level = max(0, min(level, 2)) if selected else 0
+
+        self.default_button.setChecked(self.selected)
+        self.level_one_button.setChecked(self.selected and self.level >= 1)
+        self.level_two_button.setChecked(self.selected and self.level >= 2)
+        self.default_button.set_cost(self.base_cost * (self.level + 1))
+
+    def set_label_text(self, text: str):
+        self.default_button.setText(text)
+
+
 class StarlightCard(QFrame):
     def __init__(self, class_name: str, label_text: str, team_num: int, parent=None):
         super().__init__(parent)
-        self.team_num: int = int(class_name.split("_")[-1])
+        self.starlight_index: int = int(class_name.split("_")[-1])
+        self.selected = False
         self.level = 0
         if team_config := cfg.config.teams.get(str(team_num)):
-            self.level = team_config.opening_bonus_level[self.team_num - 1]
+            self.selected = bool(team_config.opening_bonus[self.starlight_index - 1])
+            self.level = team_config.opening_bonus_level[self.starlight_index - 1]
 
         self.label_text = label_text
         self.main_layout = QVBoxLayout(self)
-        self.main_layout.setContentsMargins(10, 0, 0, 10)
+        self.main_layout.setContentsMargins(10, 0, 0, 0)
         self.main_layout.setAlignment(Qt.AlignmentFlag.AlignVCenter)
-        self.main_layout.setSpacing(10)
-        self.buttons_frame = QWidget()
-        self.button_layout = QHBoxLayout(self.buttons_frame)
-        self.button_layout.setContentsMargins(0, 0, 0, 0)
-        self.button_layout.setAlignment(Qt.AlignmentFlag.AlignVCenter)
-        self.starlight_checkbox = CheckBoxWithLineEdit(class_name, label_text, None, show_line_edit=False)
-        self.level_one_button = ToolCheckButton(FIF.ADD)
-        self.level_one_button.setChecked(self.level == 1)
-        self.level_one_button.checked.connect(self.__on_level_one_clicked)
-        self.level_one_button.setFixedHeight(25)
-        self.level_two_button = ToolCheckButton(OverflowIcons.DOUBLE_ADD)
-        self.level_two_button.setChecked(self.level == 2)
-        self.level_two_button.checked.connect(self.__on_level_two_clicked)
-        self.level_two_button.setFixedHeight(25)
-        self.button_layout.addWidget(self.level_one_button)
-        self.button_layout.addWidget(self.level_two_button)
+        self.starlight_checkbox = StarlightLevelSelector(class_name, label_text, self)
+        self.starlight_checkbox.set_state(self.selected, self.level)
         self.main_layout.addWidget(self.starlight_checkbox)
-        self.main_layout.addStretch()
-        self.main_layout.addWidget(self.buttons_frame)
-        self.main_layout.addStretch()
-
-    def resizeEvent(self, event: QResizeEvent) -> None:
-        super().resizeEvent(event)
-        width = int(self.width() * 0.9 // 2)
-        self.level_one_button.setFixedWidth(width)
-        self.level_two_button.setFixedWidth(width)
-
-    def __on_level_one_clicked(self, checked: bool):
-        if checked:
-            data = {f"starlight_level_{self.team_num}": 1}
-            self.level_two_button.blockSignals(True)
-            self.level_two_button.setChecked(False)
-            self.level_two_button.blockSignals(False)
-        else:
-            data = {f"starlight_level_{self.team_num}": 0}
-        mediator.team_setting.emit(data)
-
-    def __on_level_two_clicked(self, checked: bool):
-        if checked:
-            data = {f"starlight_level_{self.team_num}": 2}
-            self.level_one_button.blockSignals(True)
-            self.level_one_button.setChecked(False)
-            self.level_one_button.blockSignals(False)
-        else:
-            data = {f"starlight_level_{self.team_num}": 0}
-        mediator.team_setting.emit(data)
 
 
 class CustomizeSettingsModule(QFrame):
@@ -751,17 +870,17 @@ class CustomizeSettingsModule(QFrame):
         self.reward_cards.add_items(reward_cards)
 
         QT_TRANSLATE_NOOP("CustomizeSettingsModule", "星光")
-        self.starlight_1 = StarlightCard("starlight_1", "星光1", self.team_num)
-        self.starlight_2 = StarlightCard("starlight_2", "星光2", self.team_num)
-        self.starlight_3 = StarlightCard("starlight_3", "星光3", self.team_num)
-        self.starlight_4 = StarlightCard("starlight_4", "星光4", self.team_num)
-        self.starlight_5 = StarlightCard("starlight_5", "星光5", self.team_num)
+        self.starlight_1 = StarlightCard("starlight_1", STARLIGHT_BONUS_NAMES[0], self.team_num)
+        self.starlight_2 = StarlightCard("starlight_2", STARLIGHT_BONUS_NAMES[1], self.team_num)
+        self.starlight_3 = StarlightCard("starlight_3", STARLIGHT_BONUS_NAMES[2], self.team_num)
+        self.starlight_4 = StarlightCard("starlight_4", STARLIGHT_BONUS_NAMES[3], self.team_num)
+        self.starlight_5 = StarlightCard("starlight_5", STARLIGHT_BONUS_NAMES[4], self.team_num)
 
-        self.starlight_6 = StarlightCard("starlight_6", "星光6", self.team_num)
-        self.starlight_7 = StarlightCard("starlight_7", "星光7", self.team_num)
-        self.starlight_8 = StarlightCard("starlight_8", "星光8", self.team_num)
-        self.starlight_9 = StarlightCard("starlight_9", "星光9", self.team_num)
-        self.starlight_10 = StarlightCard("starlight_10", "星光10", self.team_num)
+        self.starlight_6 = StarlightCard("starlight_6", STARLIGHT_BONUS_NAMES[5], self.team_num)
+        self.starlight_7 = StarlightCard("starlight_7", STARLIGHT_BONUS_NAMES[6], self.team_num)
+        self.starlight_8 = StarlightCard("starlight_8", STARLIGHT_BONUS_NAMES[7], self.team_num)
+        self.starlight_9 = StarlightCard("starlight_9", STARLIGHT_BONUS_NAMES[8], self.team_num)
+        self.starlight_10 = StarlightCard("starlight_10", STARLIGHT_BONUS_NAMES[9], self.team_num)
 
         self.after_level_IV = CheckBoxWithComboBox(
             "after_level_IV",
@@ -969,10 +1088,9 @@ class CustomizeSettingsModule(QFrame):
         self.reward_cards.retranslateUi()
         self.re_formation_each_floor.retranslateUi()
 
-        starlight_text = self.tr("星光")
         for index in range(1, 11):
-            starlight = self.findChild(CheckBoxWithLineEdit, f"starlight_{index}")
-            starlight.box.setText(f"{starlight_text}{index}")
+            starlight = self.findChild(StarlightLevelSelector, f"starlight_{index}")
+            starlight.set_label_text(self.tr(STARLIGHT_BONUS_NAMES[index - 1]))
             if index <= 5:
                 floor_shop = self.findChild(BaseCheckBox, f"ignore_shop_{index}")
                 floor_shop.retranslateUi()
