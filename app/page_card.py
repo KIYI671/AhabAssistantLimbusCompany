@@ -97,12 +97,12 @@ class PageCard(QFrame):
         self.vbox_advanced.setAlignment(Qt.AlignTop)
 
     def retranslateUi(self):
-        self.pivot.setItemText("general", self.tr("常规设置"))
-        self.pivot.setItemText("advanced", self.tr("高级设置"))
+        self.pivot.setItemText("general", QCoreApplication.translate("PageCard", "常规设置"))
+        self.pivot.setItemText("advanced", QCoreApplication.translate("PageCard", "高级设置"))
 
     @classmethod
     def tr(cls, text):
-        return QCoreApplication.translate("PageCard", text)
+        return QCoreApplication.translate(cls.__name__, text)
 
 
 class PageSetWindows(PageCard):
@@ -396,6 +396,7 @@ class PageMirror(PageCard):
         self.bar = None
         self.bar_layout = None
         self.connect_mediator()
+        self.retranslateUi()
 
     def __init_card(self):
         self.team = MirrorTeamCombination(
