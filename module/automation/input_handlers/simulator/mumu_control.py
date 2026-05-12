@@ -257,7 +257,6 @@ class MumuControl(AbstractInput):
             )
             return
         for attempt in range(3):
-            self.check_stop_requested()
             try:
                 port = self.get_mumu_adb_port()
                 log.debug(f"尝试 ADB 连接 (轮次{_depth+1}/{_ADB_MAX_DEPTH}, 尝试{attempt+1}/3): {port}")
@@ -270,7 +269,6 @@ class MumuControl(AbstractInput):
             except Exception as e:
                 log.debug(f"ADB 连接尝试异常 (轮次{_depth+1}, 尝试{attempt+1}): {type(e).__name__}: {e}")
                 continue
-        self.check_stop_requested()
         log.warning(f"ADB 连接全部3次尝试失败 (轮次{_depth+1}/{_ADB_MAX_DEPTH})，关闭模拟器并重试启动")
         self.close_simulator()
         self.start()
@@ -457,7 +455,6 @@ class MumuControl(AbstractInput):
                     break
             else:
                 log.warning(f"start: 模拟器启动等待超时 ({cfg.start_emulator_timeout}s), 状态可能仍为未启动")
-            self.check_stop_requested()
             self.port = self.get_mumu_adb_port()
             self.load_dll()
             log.debug(f"MUMU模拟器编号{self.multi_instance_number}启动完成")
