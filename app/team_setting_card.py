@@ -1227,6 +1227,7 @@ class CustomizeSettingsModule(QFrame):
         self.max_normal_refresh.retranslateUi()
         self.use_custom_theme_pack_weight.retranslateUi()
         self.select_theme_pack_weight_button.setText(self.tr("权重选择"))
+        self.use_team_code.retranslateUi()
 
         self.max_keyword_refresh.setToolTip(self.tr("每次商店访问时定向刷新商品的次数上限"))
         self.max_normal_refresh.setToolTip(self.tr("每次商店访问时普通刷新商品的次数上限"))

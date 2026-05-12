@@ -29,6 +29,7 @@ from qfluentwidgets import (
 from qframelesswindow import FramelessDialog, StandardTitleBar
 from ruamel.yaml import YAML
 
+from app.language_manager import LanguageManager
 from app.base_tools import BaseSpinBox
 from app.card.messagebox_custom import BaseInfoBar, MessageBoxConfirm
 from module import THEME_PACK_LIST_EXAMPLE_PATH
@@ -442,6 +443,12 @@ class ThemePackCard(QFrame):
         """更新权重显示值"""
         self.weight_spinbox.spin_box.setValue(int(weight))
 
+    def retranslateUi(self):
+        self.weight_label.setText(self.tr("权重:"))
+        image_path = get_image_path(self.pack_key, self.is_hard, self.is_cn)
+        if not image_path or QPixmap(image_path).isNull():
+            self.image_label.setText(self.tr("无图片"))
+
     def cleanup(self):
         """清理资源，断开信号连接"""
         try:
@@ -456,6 +463,7 @@ class ThemePackSettingDialog(FramelessDialog):
     def __init__(self, parent, config_data, save_path):
         super().__init__(parent)
         self.setObjectName("ThemePackSettingDialog")
+        LanguageManager().register_component(self)
         self.setWindowTitle(self.tr("主题包权重配置"))
         self.setMinimumSize(1100, 600)
         self.resize(1200, 700)
@@ -1011,6 +1019,32 @@ class ThemePackSettingDialog(FramelessDialog):
         self._is_save_and_close = True  # 标记是保存并关闭
         self.close()
 
+    def retranslateUi(self):
+        self.setWindowTitle(self.tr("主题包权重配置"))
+        self.title_label.setText(self.tr("主题包权重配置"))
+        self.info_label.setText(
+            self.tr(
+                "权重说明: 正数=优先选择(值越大优先级越高), 负数=避免选择, 0=无特殊偏好\n"
+                "优选阈值说明: 当主题包权重大于或等于优选阈值时，会被优先选中\n"
+                "保存时会自动同步其他语言配置权重 (如有)"
+            )
+        )
+        self.threshold_label.setText(self.tr("优选阈值"))
+        self.normal_group_label.setText(self.tr("普通模式主题包"))
+        self.hard_group_label.setText(self.tr("困难模式主题包"))
+        self.batch_menu_button.setText(self.tr("批量操作"))
+        self.reset_action.setText(self.tr("重置为默认"))
+        self.set_to_global_action.setText(self.tr("拉取全局配置"))
+        self.set_all_negative_action.setText(self.tr("全部设为 -5"))
+        self.export_button.setText(self.tr("导出"))
+        self.import_button.setText(self.tr("导入"))
+        self.save_button.setText(self.tr("保存并关闭"))
+        self.close_button.setText(self.tr("关闭"))
+        for card in self.normal_cards.values():
+            card.retranslateUi()
+        for card in self.hard_cards.values():
+            card.retranslateUi()
+
     def closeEvent(self, event):
         """对话框关闭时注销所有组件，防止内存泄漏
 
@@ -1031,6 +1065,8 @@ class ThemePackSettingDialog(FramelessDialog):
         if not self._is_save_and_close and self._has_unsaved_changes:
             self.config_data.clear()
             self.config_data.update(copy.deepcopy(self._original_config))
+
+        LanguageManager().unregister_component(self)
 
         # 先断开所有信号连接，防止在清理过程中触发信号
         for card in self.normal_cards.values():
