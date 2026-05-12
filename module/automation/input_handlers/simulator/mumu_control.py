@@ -15,6 +15,7 @@ from adbutils import AdbError, adb
 
 from module.config import cfg
 from module.logger import log
+from module.my_error.my_error import userStopError
 from utils.utils import run_as_user
 
 from .. import AbstractInput
@@ -413,6 +414,8 @@ class MumuControl(AbstractInput):
                     return f"{adb_info['adb_host']}:{adb_info['adb_port']}"
                 except Exception:
                     return f"127.0.0.1:{int(self.multi_instance_number) * 32 + 16384}"
+        except userStopError:
+            raise
         except Exception as e:
             if _depth >= _MAX_DEPTH:
                 log.warning(
@@ -459,6 +462,8 @@ class MumuControl(AbstractInput):
             self.load_dll()
             log.debug(f"MUMU模拟器编号{self.multi_instance_number}启动完成")
             self.connect()
+        except userStopError:
+            raise
         except Exception as e:
             log.warning(f"start: 启动过程异常 ({type(e).__name__}: {e}), 触发 fallback 重试")
             self.mumu_control_api_backend()
@@ -485,6 +490,8 @@ class MumuControl(AbstractInput):
             ]
             subprocess.run(command)
             log.debug(f"MUMU模拟器编号{self.multi_instance_number}关闭完成")
+        except userStopError:
+            raise
         except:
             self.mumu_control_api_backend()
             self.stop()
@@ -563,6 +570,8 @@ class MumuControl(AbstractInput):
             log.debug(f"命令执行失败！返回码: {cmd_err.returncode}, 错误输出: {cmd_err.stderr}")
             # 可选：根据业务需求返回默认值或重新抛出
             return False
+        except userStopError:
+            raise
         except Exception as e:
             log.error(f"获取应用保活状态失败：{e}", exc_info=True)  # 记录完整堆栈
             self.mumu_control_api_backend()
