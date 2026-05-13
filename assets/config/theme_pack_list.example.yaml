@@ -52,9 +52,12 @@ theme_pack_list:
   Hatred: -5 # 绝望骑士
   Wander: -5 # 提灯、乘客、蜈蚣、黑檀
   dusk: -5 # BunBun虫子
+  thread: -5 # 讲解员
   compassion: -5 # 明日方舟联动
 
 theme_pack_list_hard:
+  Theb: 10 # 鸡鸡
+  b·e: 10 # 鸡鸡
   20: 0 # 诺姆
   seismic: 0 # 妖精
   extrenal: 0 # 寄居蟹、提灯、符人
@@ -147,10 +150,13 @@ theme_pack_list_cn:
   绝望: -5 # 绝望骑士
   彷徨: -5 # 提灯、乘客、蜈蚣、黑檀
   黄昏: -5 # BunBun虫子
+  绞丝: -5 #讲解员
   巡礼: -5 # 明日方舟联动
   unknown: -5 # 未汉化的新卡包
 
 theme_pack_list_hard_cn:
+  凤皇: 10 # 鸡鸡
+  凤·皇: 10 # 鸡鸡
   奇迹复刻: 0 # 诺姆
   地震: 0 # 妖精
   破坏性: 0 # 寄居蟹、提灯、符人
