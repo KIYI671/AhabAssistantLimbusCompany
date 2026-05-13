@@ -49,6 +49,7 @@ def check_hard_mirror_time():
 
     return last_time < candidate <= now_time
 
+
 def calculate_the_teams():
     day = get_day_of_week()
     if day == 1 or day == 2:
@@ -220,9 +221,7 @@ def run_as_user(command: list[str], timeout: int = 30):
     task_name = "TempNonAdminTask"
     bat_path = None
 
-    no_window_flag = (
-        subprocess.CREATE_NO_WINDOW if hasattr(subprocess, "CREATE_NO_WINDOW") else 0x08000000
-    )
+    no_window_flag = subprocess.CREATE_NO_WINDOW if hasattr(subprocess, "CREATE_NO_WINDOW") else 0x08000000
 
     def run_cmd(cmd: str, ignore_error: bool = False):
         try:

@@ -1044,7 +1044,9 @@ class AutoDailyView(FlyoutViewBase):
             "autodaily_exit_emulator",
         ]
         self.box_exit_game = BaseCheckBox("autodaily_exit_game", None, QT_TRANSLATE_NOOP("BaseCheckBox", "退出游戏"))
-        self.box_exit_emulator = BaseCheckBox("autodaily_exit_emulator", None, QT_TRANSLATE_NOOP("BaseCheckBox", "退出模拟器"))
+        self.box_exit_emulator = BaseCheckBox(
+            "autodaily_exit_emulator", None, QT_TRANSLATE_NOOP("BaseCheckBox", "退出模拟器")
+        )
         self.box_exit_aalc = BaseCheckBox("autodaily_exit_aalc", None, QT_TRANSLATE_NOOP("BaseCheckBox", "退出AALC"))
         self.box_sleep = BaseCheckBox("autodaily_sleep", None, QT_TRANSLATE_NOOP("BaseCheckBox", "睡眠"))
         self.box_hibernate = BaseCheckBox("autodaily_hibernate", None, QT_TRANSLATE_NOOP("BaseCheckBox", "休眠"))

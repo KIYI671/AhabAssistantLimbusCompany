@@ -24,7 +24,7 @@ def generate_theme_pack_export_filename(team_num: int) -> str:
     date_str = datetime.date.today().isoformat()
 
     if remark_name:
-        safe_name = re.sub(r'[<>:"/\\|?*]', '_', remark_name)
+        safe_name = re.sub(r'[<>:"/\\|?*]', "_", remark_name)
         return f"theme_pack_weight_team_{safe_name}_{date_str}.yaml"
     else:
         return f"theme_pack_weight_team_{team_num}_{date_str}.yaml"
@@ -48,14 +48,14 @@ def export_theme_pack_weight(team_num: int, file_path: str) -> bool:
             return False
 
         yaml = YAML()
-        with open(theme_pack_weight_path, 'r', encoding='utf-8') as f:
+        with open(theme_pack_weight_path, "r", encoding="utf-8") as f:
             theme_pack_data = yaml.load(f)
 
         if not theme_pack_data:
             log.error(f"队伍 {team_num} 的主题包权重文件为空")
             return False
 
-        with open(file_path, 'w', encoding='utf-8') as f:
+        with open(file_path, "w", encoding="utf-8") as f:
             yaml.dump(theme_pack_data, f)
 
         log.info(f"已导出队伍 {team_num} 的主题包权重到 {file_path}")
@@ -98,7 +98,7 @@ def import_theme_pack_weight(file_path: str, team_num: int) -> bool:
         yaml = YAML()
 
         # 加载导入数据
-        with open(file_path, 'r', encoding='utf-8') as f:
+        with open(file_path, "r", encoding="utf-8") as f:
             import_data = yaml.load(f)
 
         if not import_data:
@@ -110,7 +110,7 @@ def import_theme_pack_weight(file_path: str, team_num: int) -> bool:
         target_path = Path(theme_pack_weight_path)
 
         if target_path.exists():
-            with open(theme_pack_weight_path, 'r', encoding='utf-8') as f:
+            with open(theme_pack_weight_path, "r", encoding="utf-8") as f:
                 existing_data = yaml.load(f)
                 if not existing_data:
                     existing_data = {}
@@ -128,7 +128,7 @@ def import_theme_pack_weight(file_path: str, team_num: int) -> bool:
         target_path.parent.mkdir(parents=True, exist_ok=True)
 
         # 保存回 theme_pack_weight_team_{team_num}.yaml
-        with open(theme_pack_weight_path, 'w', encoding='utf-8') as f:
+        with open(theme_pack_weight_path, "w", encoding="utf-8") as f:
             yaml.dump(existing_data, f)
 
         log.info(f"已从 {file_path} 导入队伍 {team_num} 的主题包权重")

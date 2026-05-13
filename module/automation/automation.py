@@ -582,7 +582,11 @@ class Automation(metaclass=SingletonMeta):
 
     @staticmethod
     def _is_valid_match(match_val, threshold) -> bool:
-        return isinstance(match_val, (int, float, np.integer, np.floating)) and not math.isinf(match_val) and match_val >= threshold
+        return (
+            isinstance(match_val, (int, float, np.integer, np.floating))
+            and not math.isinf(match_val)
+            and match_val >= threshold
+        )
 
     def _update_path_state_from_match_results(self, results, additional_stack: int = 0) -> None:
         dark_results = [result for result in results if path_manager.is_path_dark(result["path"])]

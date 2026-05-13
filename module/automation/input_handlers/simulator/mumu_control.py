@@ -256,14 +256,12 @@ class MumuControl(AbstractInput):
     def adb_connect(self, _depth=0):
         _ADB_MAX_DEPTH = 3
         if _depth >= _ADB_MAX_DEPTH:
-            log.error(
-                f"ADB 连接重试次数已耗尽 ({_ADB_MAX_DEPTH}轮), 放弃连接，请检查模拟器 ADB 是否正常开启"
-            )
+            log.error(f"ADB 连接重试次数已耗尽 ({_ADB_MAX_DEPTH}轮), 放弃连接，请检查模拟器 ADB 是否正常开启")
             return
         for attempt in range(3):
             try:
                 port = self.get_mumu_adb_port()
-                log.debug(f"尝试 ADB 连接 (轮次{_depth+1}/{_ADB_MAX_DEPTH}, 尝试{attempt+1}/3): {port}")
+                log.debug(f"尝试 ADB 连接 (轮次{_depth + 1}/{_ADB_MAX_DEPTH}, 尝试{attempt + 1}/3): {port}")
                 msg = adb.connect(port)
                 if "connected" in msg:
                     log.debug(f"成功连接至:{port},连接信息: {msg}")
@@ -271,9 +269,9 @@ class MumuControl(AbstractInput):
                 elif "bad port" in msg:
                     log.error(f"ADB 连接失败，端口号{port}不正确，可能是拼写错误或不规范")
             except Exception as e:
-                log.debug(f"ADB 连接尝试异常 (轮次{_depth+1}, 尝试{attempt+1}): {type(e).__name__}: {e}")
+                log.debug(f"ADB 连接尝试异常 (轮次{_depth + 1}, 尝试{attempt + 1}): {type(e).__name__}: {e}")
                 continue
-        log.warning(f"ADB 连接全部3次尝试失败 (轮次{_depth+1}/{_ADB_MAX_DEPTH})，关闭模拟器并重试启动")
+        log.warning(f"ADB 连接全部3次尝试失败 (轮次{_depth + 1}/{_ADB_MAX_DEPTH})，关闭模拟器并重试启动")
         self.close_simulator()
         self.start()
         self.adb_connect(_depth + 1)
@@ -370,7 +368,9 @@ class MumuControl(AbstractInput):
                 return None
             # 修改路径，使其指向MuMuManager.exe
             self.exe_path = os.path.join(self.install_path, "MuMuManager.exe")
-            log.debug(f"mumu_control_api_backend: 注册表命中, install_path={self.install_path}, mumu_version={mumu_version}")
+            log.debug(
+                f"mumu_control_api_backend: 注册表命中, install_path={self.install_path}, mumu_version={mumu_version}"
+            )
             if not os.path.isfile(self.exe_path):
                 log.debug(f"mumu_control_api_backend: exe_path 默认路径不存在 ({self.exe_path}), 尝试 shell 降级")
                 from pathlib import Path
@@ -420,12 +420,10 @@ class MumuControl(AbstractInput):
             raise
         except Exception as e:
             if _depth >= _MAX_DEPTH:
-                log.warning(
-                    f"get_mumu_adb_port 重试耗尽 ({_MAX_DEPTH}轮)，使用默认端口计算"
-                )
+                log.warning(f"get_mumu_adb_port 重试耗尽 ({_MAX_DEPTH}轮)，使用默认端口计算")
                 return f"127.0.0.1:{int(self.multi_instance_number) * 32 + 16384}"
             log.debug(
-                f"get_mumu_adb_port 异常 (轮次{_depth+1}/{_MAX_DEPTH}): {type(e).__name__}: {e}, 触发 start() 重建后重试"
+                f"get_mumu_adb_port 异常 (轮次{_depth + 1}/{_MAX_DEPTH}): {type(e).__name__}: {e}, 触发 start() 重建后重试"
             )
             self.start()
             return self.get_mumu_adb_port(multi_instance_number, _depth + 1)
@@ -859,7 +857,7 @@ class MumuControl(AbstractInput):
             return
         try:
             # 将文本编码为C字符串指针，确保与原生接口参数类型一致
-            text_bytes = text.encode('utf-8')
+            text_bytes = text.encode("utf-8")
             text_buffer = ctypes.c_char_p(text_bytes)
 
             # 使用 nemu_input_text 将文本输入到模拟器，第二个参数是文本长度
@@ -876,7 +874,6 @@ class MumuControl(AbstractInput):
                 log.warning(f"粘贴文本失败，返回值: {ret}")
         except Exception as e:
             log.error(f"粘贴操作发生异常: {e}")
-
 
     def click(self, x, y):
         msg = f"点击位置:({x},{y})"
