@@ -594,14 +594,13 @@ class Automation(metaclass=SingletonMeta):
         zh_cn_results = [result for result in results if path_manager.is_path_zh_cn(result["path"])]
         en_or_share_results = [result for result in results if path_manager.is_path_en_or_share(result["path"])]
 
-        dark_exists = bool(dark_results)
         dark_matched = any(result["matched"] for result in dark_results)
         default_matched = any(result["matched"] for result in default_results)
 
         path_changed = False
-        if dark_matched:
+        if dark_matched and not default_matched:
             path_manager.set_theme("dark", log_stacklevel=additional_stack + 4)
-        elif dark_exists and default_matched:
+        elif default_matched and not dark_matched:
             path_manager.set_theme("default", log_stacklevel=additional_stack + 4)
             path_changed = path_manager.eliminate_dark_paths() or path_changed
 
@@ -669,6 +668,7 @@ class Automation(metaclass=SingletonMeta):
                         "path": loaded_path,
                         "center": center,
                         "matched": matched,
+                        "matchVal": matchVal,
                     }
                 )
                 if matched and self._path_state_is_known():
