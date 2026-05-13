@@ -262,6 +262,25 @@ class Battle:
                             if auto.click_element("battle/setting_assets.png"):
                                 continue
 
+            # 如果正在战斗待机界面
+            # 更新回合数
+            if infinite_battle and defense_on_turn1:
+                try:
+                    sc = ImageUtils.crop(np.array(auto.screenshot), turn_ocr_bbox)
+                    result = ocr.run(sc)
+                    ocr_result = [result.txts[i] for i in range(len(result.txts))]
+                    ocr_result = "".join(ocr_result)
+                    # 用正则匹配字符串里的数字
+                    m = re.search(r"\d+", ocr_result)
+                    if m:
+                        self.cur_turn = int(m.group())
+                    else:
+                        self.cur_turn = -1
+                    if self.cur_turn == 1:
+                        first_turn = True
+                except:
+                    self.cur_turn = -1  # 表示识别失败
+
             if fail_count >= 10 or self.identify_keyword_turn is False:
                 # 如果多次识别不到战斗界面
                 try:
@@ -286,25 +305,6 @@ class Battle:
                     waiting = self._update_wait_time(waiting, False, total_count)
                     continue
             else:
-                # 如果正在战斗待机界面
-                # 更新回合数
-                if infinite_battle and defense_on_turn1:
-                    try:
-                        sc = ImageUtils.crop(np.array(auto.screenshot), turn_ocr_bbox)
-                        result = ocr.run(sc)
-                        ocr_result = [result.txts[i] for i in range(len(result.txts))]
-                        ocr_result = "".join(ocr_result)
-                        # 用正则匹配字符串里的数字
-                        m = re.search(r"\d+", ocr_result)
-                        if m:
-                            self.cur_turn = int(m.group())
-                        else:
-                            self.cur_turn = -1
-                        if self.cur_turn == 1:
-                            first_turn = True
-                    except:
-                        self.cur_turn = -1  # 表示识别失败
-
                 if auto.find_element("battle/more_information_assets.png") or auto.find_element(
                     "battle/win_rate_assets.png"
                 ):
