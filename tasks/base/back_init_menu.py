@@ -39,7 +39,7 @@ def back_init_menu():
             break
 
         if auto.find_element("base/notification_close_assets.png"):
-            from datetime import datetime, timedelta
+            from datetime import datetime
             from zoneinfo import ZoneInfo
 
             from tasks.base.retry import kill_game, restart_game
