@@ -193,7 +193,7 @@ class TeamSetting(BaseModel):
 class ConfigModel(BaseModel):
     """配置模型"""
 
-    config_version: int = 1778544000
+    config_version: int = 1778889600
     """配置文件版本号（时间戳）"""
 
     save_count: int = 0

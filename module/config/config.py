@@ -153,31 +153,42 @@ class Config(metaclass=SingletonMeta):
                 teams[f"{i}"] = TeamSetting(**settings).model_dump()
             loaded_config["teams"] = teams
 
-        if saved_version < 1778544000:
-            legacy_default_opening_bonus = [0] * 10
-            legacy_default_opening_bonus_level = [0] * 10
+        if saved_version < 1778889600:
             current_default_opening_bonus = [1, 1, 1, 1, 0, 0, 0, 0, 0, 0]
+            current_default_opening_bonus_level = [0] * 10
             teams = loaded_config.get("teams", {}) or {}
-            migrated_teams = 0
+            defaulted_teams = 0
+            preserved_teams = 0
             if isinstance(teams, dict):
                 for settings in teams.values():
                     if not isinstance(settings, dict):
                         continue
-                    uses_legacy_default_opening_bonus = (
-                        settings.get("opening_bonus", legacy_default_opening_bonus) == legacy_default_opening_bonus
-                        and settings.get("opening_bonus_level", legacy_default_opening_bonus_level)
-                        == legacy_default_opening_bonus_level
-                    )
-                    if not uses_legacy_default_opening_bonus:
+                    if self._has_custom_opening_bonus(settings):
+                        preserved_teams += 1
                         continue
 
                     settings["opening_bonus"] = current_default_opening_bonus.copy()
-                    settings["opening_bonus_level"] = legacy_default_opening_bonus_level.copy()
-                    migrated_teams += 1
-            if migrated_teams:
-                log.info(f"已将 {migrated_teams} 个队伍的默认开局星光加成迁移为自选前四项")
+                    settings["opening_bonus_level"] = current_default_opening_bonus_level.copy()
+                    defaulted_teams += 1
+            if defaulted_teams:
+                log.info(
+                    f"已将 {defaulted_teams} 个未启用自选开局加成的队伍固定为前四个默认星光"
+                    f"（保留 {preserved_teams} 个自定义队伍）"
+                )
 
         log.info("配置升级完成")
+
+    @staticmethod
+    def _has_custom_opening_bonus(settings: dict) -> bool:
+        """判断旧队伍配置是否已经启用了自选开局星光加成。"""
+        legacy_default_opening_bonus = [0] * 10
+        legacy_default_opening_bonus_level = [0] * 10
+        opening_bonus = settings.get("opening_bonus")
+        opening_bonus_level = settings.get("opening_bonus_level")
+
+        if opening_bonus is None and opening_bonus_level is None:
+            return False
+        return opening_bonus != legacy_default_opening_bonus or opening_bonus_level != legacy_default_opening_bonus_level
 
     def _load_version(self, version_path: str) -> str:
         """加载版本信息"""
