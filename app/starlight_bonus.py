@@ -1,8 +1,9 @@
 from html import escape
 
-from PySide6.QtCore import QT_TRANSLATE_NOOP, QEvent, QObject, QPoint, Qt, QTimer
-from PySide6.QtGui import QCursor
-from PySide6.QtWidgets import QFrame, QHBoxLayout, QLabel, QPushButton, QToolTip, QVBoxLayout
+from PySide6.QtCore import QT_TRANSLATE_NOOP, QEvent, QObject, QPoint, QRectF, Qt, QTimer
+from PySide6.QtGui import QColor, QCursor, QPainter, QPainterPath, QPen
+from PySide6.QtWidgets import QFrame, QHBoxLayout, QLabel, QPushButton, QVBoxLayout
+from qfluentwidgets import StyleSheetBase, Theme, isDarkTheme, setStyleSheet
 
 from app import mediator
 from module.config import cfg
@@ -76,19 +77,85 @@ STARLIGHT_BONUS_TIPS = [
 ]
 
 
+class InlineThemeStyleSheet(StyleSheetBase):
+    """Inline light/dark QSS managed by qfluentwidgets' theme style manager."""
+
+    def __init__(self, light_qss: str, dark_qss: str):
+        super().__init__()
+        self.light_qss = light_qss
+        self.dark_qss = dark_qss
+
+    def content(self, theme=Theme.AUTO) -> str:
+        if theme == Theme.AUTO:
+            return self.dark_qss if isDarkTheme() else self.light_qss
+        return self.light_qss if theme == Theme.LIGHT else self.dark_qss
+
+
+def _set_custom_theme_style(widget, light_qss: str, dark_qss: str):
+    setStyleSheet(widget, InlineThemeStyleSheet(light_qss, dark_qss))
+
+
 def _format_starlight_tip(title: str, tip_text: str) -> str:
     tip_text = "\n".join(tip_text.splitlines()[1:])
+    text_color = "rgba(255, 255, 255, 0.92)" if isDarkTheme() else "rgba(0, 0, 0, 0.82)"
     html = escape(tip_text).replace("\\yellow{+}", '<span style="color:#d8a300;font-weight:700;">+</span>')
     html = html.replace("\n", "<br>")
     return (
-        '<div style="white-space:nowrap; font-size:12px; line-height:1.45;">'
+        f'<div style="white-space:nowrap; font-size:12px; line-height:1.45; color:{text_color};">'
         f'<b>{escape(title)}</b><br>{html}'
         "</div>"
     )
 
 
+class StarlightToolTipPopup(QLabel):
+    def __init__(self):
+        super().__init__(None, Qt.WindowType.ToolTip | Qt.WindowType.FramelessWindowHint)
+        self.setTextFormat(Qt.TextFormat.RichText)
+        self.setAttribute(Qt.WidgetAttribute.WA_ShowWithoutActivating)
+        self.setMargin(0)
+
+    def show_text(self, pos: QPoint, text: str):
+        self.setText(text)
+        self.__apply_theme_style()
+        self.adjustSize()
+        self.move(pos)
+        self.show()
+
+    def __apply_theme_style(self):
+        if isDarkTheme():
+            background = "rgb(45, 45, 45)"
+            border = "rgba(255, 255, 255, 46)"
+            text = "rgba(255, 255, 255, 0.92)"
+        else:
+            background = "rgb(255, 255, 255)"
+            border = "rgba(0, 0, 0, 38)"
+            text = "rgba(0, 0, 0, 0.82)"
+
+        self.setStyleSheet(
+            f"""
+            QLabel {{
+                background-color: {background};
+                border: 1px solid {border};
+                border-radius: 6px;
+                color: {text};
+                padding: 6px 8px;
+            }}
+            """
+        )
+
+
+_starlight_tooltip_popup = None
+
+
+def _get_starlight_tooltip_popup() -> StarlightToolTipPopup:
+    global _starlight_tooltip_popup
+    if _starlight_tooltip_popup is None:
+        _starlight_tooltip_popup = StarlightToolTipPopup()
+    return _starlight_tooltip_popup
+
+
 class DelayedRichToolTipFilter(QObject):
-    def __init__(self, text: str, parent=None):
+    def __init__(self, text, parent=None):
         super().__init__(parent)
         self.text = text
         self.widget = None
@@ -98,13 +165,13 @@ class DelayedRichToolTipFilter(QObject):
         self.timer.setInterval(500)
         self.timer.timeout.connect(self.__show_tooltip)
 
-    def set_text(self, text: str):
+    def set_text(self, text):
         self.text = text
 
     def eventFilter(self, obj, event):
         event_type = event.type()
         if event_type in (QEvent.Type.Enter, QEvent.Type.HoverEnter):
-            QToolTip.hideText()
+            _get_starlight_tooltip_popup().hide()
             self.widget = obj
             self.global_pos = QCursor.pos()
             self.timer.stop()
@@ -118,7 +185,7 @@ class DelayedRichToolTipFilter(QObject):
             QEvent.Type.Hide,
         ):
             self.timer.stop()
-            QToolTip.hideText()
+            _get_starlight_tooltip_popup().hide()
         return super().eventFilter(obj, event)
 
     def __show_tooltip(self):
@@ -128,7 +195,8 @@ class DelayedRichToolTipFilter(QObject):
         if not self.widget.rect().contains(self.widget.mapFromGlobal(cursor_pos)):
             return
         pos = (self.global_pos or cursor_pos) + QPoint(12, 18)
-        QToolTip.showText(pos, self.text, self.widget)
+        text = self.text() if callable(self.text) else self.text
+        _get_starlight_tooltip_popup().show_text(pos, text)
 
 
 class StarlightNameButton(QPushButton):
@@ -137,18 +205,33 @@ class StarlightNameButton(QPushButton):
         self.cost_label = QLabel(self)
         self.cost_label.setAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignTop)
         self.cost_label.setAttribute(Qt.WidgetAttribute.WA_TransparentForMouseEvents)
-        self.cost_label.setStyleSheet(
-            """
+        self.apply_cost_style()
+        self.set_cost(cost)
+
+    def apply_cost_style(self):
+        light_qss = """
             QLabel {
                 background: transparent;
                 border: none;
-                color: palette(text);
-                font-size: 10px;
+                color: rgba(0, 0, 0, 0.82);
+                font-size: 11px;
                 font-weight: 500;
             }
-            """
+        """
+        dark_qss = """
+            QLabel {
+                background: transparent;
+                border: none;
+                color: rgba(255, 255, 255, 0.92);
+                font-size: 11px;
+                font-weight: 500;
+            }
+        """
+        _set_custom_theme_style(
+            self.cost_label,
+            light_qss,
+            dark_qss,
         )
-        self.set_cost(cost)
 
     def resizeEvent(self, event):
         super().resizeEvent(event)
@@ -166,51 +249,23 @@ class StarlightNameButton(QPushButton):
 class StarlightLevelSelector(QFrame):
     """A three-part selector for default, +, and ++ starlight levels."""
 
-    _STYLE = """
+    _BASE_STYLE = """
         QPushButton {
-            border: 1px solid rgba(120, 120, 120, 105);
-            background: rgba(120, 120, 120, 20);
+            border: none;
+            background: transparent;
             padding: 5px 6px;
             min-height: 32px;
-            color: palette(text);
-            font-size: 12px;
+            color: __TEXT_COLOR__;
+            font-size: 13px;
         }
         QPushButton:hover {
-            background: rgba(0, 120, 212, 28);
+            background: transparent;
         }
         QPushButton:checked {
-            color: palette(text);
-            font-weight: 600;
+            color: __TEXT_COLOR__;
         }
         QPushButton[segment="left"] {
-            border-top-left-radius: 5px;
-            border-bottom-left-radius: 5px;
-            border-top-right-radius: 0;
-            border-bottom-right-radius: 0;
             padding-right: 24px;
-        }
-        QPushButton[segment="middle"] {
-            border-left: 0;
-            border-radius: 0;
-        }
-        QPushButton[segment="right"] {
-            border-left: 0;
-            border-top-left-radius: 0;
-            border-bottom-left-radius: 0;
-            border-top-right-radius: 5px;
-            border-bottom-right-radius: 5px;
-        }
-        QPushButton[segment="left"]:checked {
-            border-color: rgba(224, 132, 148, 165);
-            background: rgba(255, 182, 193, 70);
-        }
-        QPushButton[segment="middle"]:checked {
-            border-color: rgba(204, 76, 76, 180);
-            background: rgba(214, 96, 96, 88);
-        }
-        QPushButton[segment="right"]:checked {
-            border-color: rgba(150, 20, 32, 210);
-            background: rgba(150, 20, 32, 120);
         }
     """
 
@@ -238,6 +293,7 @@ class StarlightLevelSelector(QFrame):
         self.default_button.clicked.connect(lambda _checked=False: self.__on_segment_clicked(0))
         self.level_one_button.clicked.connect(lambda _checked=False: self.__on_segment_clicked(1))
         self.level_two_button.clicked.connect(lambda _checked=False: self.__on_segment_clicked(2))
+        self.__apply_theme_style()
         self.__refresh_tooltips(label_text)
 
     def __create_button(self, text: str, segment: str) -> QPushButton:
@@ -245,21 +301,93 @@ class StarlightLevelSelector(QFrame):
             button = StarlightNameButton(text, self.base_cost, self)
         else:
             button = QPushButton(text, self)
+        button.setFlat(True)
         button.setCheckable(True)
         button.setMouseTracking(True)
         button.setAttribute(Qt.WidgetAttribute.WA_Hover, True)
         button.setCursor(Qt.CursorShape.PointingHandCursor)
         button.setProperty("segment", segment)
-        button.setStyleSheet(self._STYLE)
         return button
+
+    def __apply_theme_style(self):
+        light_style = self._BASE_STYLE.replace("__TEXT_COLOR__", "rgba(0, 0, 0, 0.82)")
+        dark_style = self._BASE_STYLE.replace("__TEXT_COLOR__", "rgba(255, 255, 255, 0.92)")
+
+        for button in (self.default_button, self.level_one_button, self.level_two_button):
+            _set_custom_theme_style(button, light_style, dark_style)
+        _set_custom_theme_style(self, "StarlightLevelSelector { background: transparent; }", "StarlightLevelSelector { background: transparent; }")
+        self.update()
+
+    def paintEvent(self, event):
+        super().paintEvent(event)
+        painter = QPainter(self)
+        painter.setRenderHint(QPainter.RenderHint.Antialiasing, True)
+        colors = self.__theme_colors()
+
+        rect = QRectF(self.rect()).adjusted(0.5, 0.5, -0.5, -0.5)
+        radius = 5
+        path = QPainterPath()
+        path.addRoundedRect(rect, radius, radius)
+
+        painter.save()
+        painter.setClipPath(path)
+        self.__fill_segment(painter, 0, self.default_button.geometry().right() + 1, self.__segment_color(0, colors))
+        self.__fill_segment(
+            painter,
+            self.level_one_button.geometry().x(),
+            self.level_one_button.geometry().right() + 1,
+            self.__segment_color(1, colors),
+        )
+        self.__fill_segment(
+            painter,
+            self.level_two_button.geometry().x(),
+            self.width(),
+            self.__segment_color(2, colors),
+        )
+        painter.restore()
+
+        painter.setPen(QPen(colors["border"], 1))
+        painter.drawPath(path)
+        for x in (self.level_one_button.geometry().x(), self.level_two_button.geometry().x()):
+            painter.fillRect(QRectF(x, 1, 1, self.height() - 2), colors["divider"])
+
+    def __fill_segment(self, painter: QPainter, left: int, right: int, color: QColor):
+        if right <= left:
+            return
+        painter.fillRect(QRectF(left, 0, right - left, self.height()), color)
+
+    def __segment_color(self, segment_level: int, colors: dict[str, QColor]) -> QColor:
+        if not self.selected or self.level < segment_level:
+            return colors["empty"]
+        return (colors["left"], colors["middle"], colors["right"])[segment_level]
+
+    def __theme_colors(self) -> dict[str, QColor]:
+        default_line_color = QColor(120, 120, 120, 105)
+        if isDarkTheme():
+            return {
+                "border": default_line_color,
+                "divider": default_line_color,
+                "empty": QColor(255, 255, 255, 18),
+                "left": QColor(255, 182, 193, 70),
+                "middle": QColor(214, 96, 96, 88),
+                "right": QColor(170, 32, 44, 130),
+            }
+        return {
+            "border": default_line_color,
+            "divider": default_line_color,
+            "empty": QColor(120, 120, 120, 20),
+            "left": QColor(255, 143, 161, 150),
+            "middle": QColor(224, 76, 76, 175),
+            "right": QColor(190, 38, 52, 195),
+        }
 
     def __refresh_tooltips(self, title: str):
         tips = STARLIGHT_BONUS_TIPS[self.starlight_index - 1]
-        self.__set_button_tooltip(self.default_button, _format_starlight_tip(title, tips["buff"]))
-        self.__set_button_tooltip(self.level_one_button, _format_starlight_tip(title, tips["buff+"]))
-        self.__set_button_tooltip(self.level_two_button, _format_starlight_tip(title, tips["buff++"]))
+        self.__set_button_tooltip(self.default_button, lambda title=title: _format_starlight_tip(title, tips["buff"]))
+        self.__set_button_tooltip(self.level_one_button, lambda title=title: _format_starlight_tip(title, tips["buff+"]))
+        self.__set_button_tooltip(self.level_two_button, lambda title=title: _format_starlight_tip(title, tips["buff++"]))
 
-    def __set_button_tooltip(self, button: QPushButton, text: str):
+    def __set_button_tooltip(self, button: QPushButton, text):
         tooltip_filter = getattr(button, "_starlight_tooltip_filter", None)
         if tooltip_filter is None:
             tooltip_filter = DelayedRichToolTipFilter(text, button)
@@ -291,6 +419,7 @@ class StarlightLevelSelector(QFrame):
         self.level_one_button.setChecked(self.selected and self.level >= 1)
         self.level_two_button.setChecked(self.selected and self.level >= 2)
         self.default_button.set_cost(self.base_cost * (self.level + 1))
+        self.update()
 
     def set_label_text(self, text: str):
         self.default_button.setText(text)
