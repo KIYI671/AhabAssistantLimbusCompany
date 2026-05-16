@@ -41,7 +41,7 @@ from tasks.daily.luxcavation import EXP_luxcavation, thread_luxcavation
 from tasks.mirror.mirror import Mirror
 from tasks.teams.team_formation import select_battle_team
 from utils.path_manager import path_manager
-from utils.utils import calculate_the_teams, get_day_of_week, check_hard_mirror_time
+from utils.utils import calculate_the_teams, check_hard_mirror_time, get_day_of_week
 
 
 @begin_and_finish_time_log(task_name="一次经验本")

@@ -341,7 +341,6 @@ class TeamSettingCard(QFrame):
             shop_index = int(keys.split("_")[-1]) - 1
             self.team_setting.ignore_shop[shop_index] = values
 
-
     def save_team_setting(self):
         cfg.set_value(f"{self.team_num}", self.team_setting, config_obj=cfg.config.teams)
         self.cancel_team_setting()
@@ -439,10 +438,7 @@ class TeamSettingCard(QFrame):
         """导出队伍设置到 YAML 文件"""
         default_filename = generate_team_export_filename(self.team_num)
         file_path, _ = QFileDialog.getSaveFileName(
-            self,
-            self.tr("导出队伍设置"),
-            default_filename,
-            "YAML Files (*.yaml *.yml)"
+            self, self.tr("导出队伍设置"), default_filename, "YAML Files (*.yaml *.yml)"
         )
 
         if file_path:
@@ -455,7 +451,7 @@ class TeamSettingCard(QFrame):
                     isClosable=True,
                     position=InfoBarPosition.TOP,
                     duration=3000,
-                    parent=self
+                    parent=self,
                 )
             else:
                 BaseInfoBar.error(
@@ -465,17 +461,12 @@ class TeamSettingCard(QFrame):
                     isClosable=True,
                     position=InfoBarPosition.TOP,
                     duration=3000,
-                    parent=self
+                    parent=self,
                 )
 
     def on_import_settings(self):
         """从 YAML 文件导入队伍设置"""
-        file_path, _ = QFileDialog.getOpenFileName(
-            self,
-            self.tr("导入队伍设置"),
-            "",
-            "YAML Files (*.yaml *.yml)"
-        )
+        file_path, _ = QFileDialog.getOpenFileName(self, self.tr("导入队伍设置"), "", "YAML Files (*.yaml *.yml)")
 
         if not file_path:
             return
@@ -490,7 +481,7 @@ class TeamSettingCard(QFrame):
                 isClosable=True,
                 position=InfoBarPosition.TOP,
                 duration=3000,
-                parent=self
+                parent=self,
             )
             return
 
@@ -503,15 +494,11 @@ class TeamSettingCard(QFrame):
                 isClosable=True,
                 position=InfoBarPosition.TOP,
                 duration=5000,
-                parent=self
+                parent=self,
             )
 
         # 显示确认对话框
-        confirm = MessageBoxConfirm(
-            self.tr("确认导入"),
-            self.tr("导入将覆盖当前队伍设置，是否继续？"),
-            self.window()
-        )
+        confirm = MessageBoxConfirm(self.tr("确认导入"), self.tr("导入将覆盖当前队伍设置，是否继续？"), self.window())
 
         if confirm.exec():
             apply_team_settings(self.team_num, team_setting, theme_pack_weight)
@@ -526,7 +513,7 @@ class TeamSettingCard(QFrame):
                 isClosable=True,
                 position=InfoBarPosition.TOP,
                 duration=3000,
-                parent=self
+                parent=self,
             )
 
     def retranslateUi(self):
@@ -793,7 +780,9 @@ class CustomizeSettingsModule(QFrame):
         self.team_code_warning = BaseLabel("")
         self.team_code_warning.add_icon(FIF.INFO)
         self.team_code_warning.setMaximumWidth(40)
-        self.team_code_warning.iconLabel.setToolTip(self.tr("后台模式下输入编队码可能不稳定\n输入编队码会覆盖原有的队伍配置"))
+        self.team_code_warning.iconLabel.setToolTip(
+            self.tr("后台模式下输入编队码可能不稳定\n输入编队码会覆盖原有的队伍配置")
+        )
         self.team_code_warning.iconLabel.setToolTipDuration(-1)
         self.team_code_input = BaseLineEdit("team_code", self)
         self.team_code_input.line_edit.setPlaceholderText(self.tr("输入编队码"))

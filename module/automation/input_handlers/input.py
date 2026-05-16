@@ -3,10 +3,10 @@ from time import sleep, time
 from typing import overload
 
 import pyautogui
+import pyperclip
 import win32api
 import win32con
 import win32gui
-import pyperclip
 from pywintypes import error as PyWinTypesError
 
 from module.config import cfg
@@ -242,7 +242,7 @@ class Input(WinAbstractInput, metaclass=SingletonMeta):
             except Exception:
                 log.error("pyautogui 直接输入失败")
                 return
-        pyautogui.hotkey('ctrl', 'v')
+        pyautogui.hotkey("ctrl", "v")
 
 
 class BackgroundInput(WinAbstractInput, metaclass=SingletonMeta):
@@ -517,7 +517,7 @@ class BackgroundInput(WinAbstractInput, metaclass=SingletonMeta):
 
     def input_text(self, text: str):
         """将 `text` 通过 WM_CHAR 消息逐字符输入目标窗口（后台模式）。
-        
+
         使用 WM_CHAR 消息而非 WM_SETTEXT，因为游戏窗口通常不处理 WM_SETTEXT。
         对每个字符发送单独的 WM_CHAR 消息。
         """
@@ -769,7 +769,7 @@ class WindowMoveInput(WinAbstractInput, metaclass=SingletonMeta):
 
     def input_text(self, text: str):
         """将 `text` 通过 WM_CHAR 消息逐字符输入窗口。
-        
+
         使用 WM_CHAR 消息而非 WM_SETTEXT，因为游戏窗口通常不处理 WM_SETTEXT。
         对每个字符发送单独的 WM_CHAR 消息。
         """
