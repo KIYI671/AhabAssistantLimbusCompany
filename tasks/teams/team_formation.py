@@ -64,7 +64,7 @@ def select_battle_team(num):
     ):
         auto.click_element("home/back_assets.png")
     if identify_position := auto.find_element("teams/identify_assets.png", take_screenshot=True):
-        position = [identify_position[0] + 2150 * scale, identify_position[1] - 215 * scale]
+        position = [identify_position[0] - 2150 * scale, identify_position[1] + 215 * scale]
         auto.mouse_click(1, 1)
         my_position[0] += position[0]
         my_position[1] += position[1]
