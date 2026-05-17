@@ -125,42 +125,6 @@ class CheckBoxWithButton(QFrame):
     def retranslateUi(self):
         self.box.check_box.setText(self.tr(self.box_text))
 
-
-class CheckBoxWithLineEdit(QFrame):
-    def __init__(self, config_name, check_box_title, parent=None, show_line_edit=True):
-        super().__init__(parent)
-        self.setObjectName(config_name)
-        self.config_name = config_name
-        self.hBoxLayout = QHBoxLayout(self)
-        self.hBoxLayout.setContentsMargins(0, 0, 0, 0)
-        self.box = CheckBox(check_box_title, parent=self)
-        self.line_edit = LineEdit(self)
-        self.line_edit.setVisible(show_line_edit)
-        self.line_edit.setMaximumWidth(70)
-        self.line_edit.setAlignment(Qt.AlignCenter)
-        self.line_edit.setReadOnly(True)
-        self.hBoxLayout.addWidget(self.box)
-        self.hBoxLayout.addWidget(self.line_edit)
-        self.hBoxLayout.setAlignment(Qt.AlignCenter)
-
-        self.box.toggled.connect(self.on_toggle)
-
-    def on_toggle(self, checked):
-        data_dict = {self.config_name: checked}
-        self.send_switch_signal(data_dict)
-
-    def send_switch_signal(self, target: dict):
-        mediator.team_setting.emit(target)
-
-    def set_checked(self, checked):
-        self.box.toggled.disconnect(self.on_toggle)
-        self.box.setChecked(checked)
-        self.box.toggled.connect(self.on_toggle)
-
-    def set_text(self, text):
-        self.line_edit.setText(text)
-
-
 class CheckBoxWithComboBox(QFrame):
     def __init__(
         self,

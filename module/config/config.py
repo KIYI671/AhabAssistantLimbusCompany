@@ -150,8 +150,6 @@ class Config(metaclass=SingletonMeta):
 
                 settings.update(history)
                 settings["remark_name"] = remark_name
-                if not settings.get("choose_opening_bonus", False):
-                    self._set_default_opening_bonus(settings)
                 teams[f"{i}"] = TeamSetting(**settings).model_dump()
             loaded_config["teams"] = teams
 
@@ -164,15 +162,10 @@ class Config(metaclass=SingletonMeta):
                     if settings.get("choose_opening_bonus", False):
                         continue
 
-                    self._set_default_opening_bonus(settings)
+                    settings["opening_bonus"] = [1, 1, 1, 1, 0, 0, 0, 0, 0, 0]
+                    settings["opening_bonus_level"] = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 
         log.info("配置升级完成")
-
-    @staticmethod
-    def _set_default_opening_bonus(settings: dict) -> None:
-        """写入新版默认开局星光，避免旧版未启用自选时保留残留值。"""
-        settings["opening_bonus"] = [1, 1, 1, 1, 0, 0, 0, 0, 0, 0]
-        settings["opening_bonus_level"] = [0] * 10
 
     def _load_version(self, version_path: str) -> str:
         """加载版本信息"""

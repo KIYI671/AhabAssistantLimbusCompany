@@ -290,7 +290,7 @@ class Automation(metaclass=SingletonMeta):
                 try:
                     _, pid = win32process.GetWindowThreadProcessId(screen.handle.hwnd)
                     os.system(f"taskkill /F /PID {pid}")
-                except Exception:
+                except:
                     pass
                 from tasks.base.script_task_scheme import init_game
 
