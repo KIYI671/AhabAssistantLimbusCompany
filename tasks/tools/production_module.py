@@ -25,6 +25,7 @@ from tasks.base.make_enkephalin_module import (
     make_enkephalin_module,
 )
 from tasks.base.retry import kill_game
+from tasks.tools.ui_style import get_status_label_style
 
 
 class ProductionWork(QThread):
@@ -126,7 +127,7 @@ class ProductionModule(QWidget):
 
         # 添加状态显示标签
         self.status_label = QLabel("状态：初始化中...")
-        self.status_label.setStyleSheet("QLabel { background-color: #f0f0f0; padding: 5px; border: 1px solid #ccc; }")
+        self.status_label.setStyleSheet(get_status_label_style())
         layout.addWidget(self.status_label)
 
         # 添加控制按钮

@@ -15,6 +15,7 @@ from module.game_and_screen import screen
 from module.hotkey_listener import ExactGlobalHotKeys
 from module.logger import log
 from tasks.battle.battle import Battle
+from tasks.tools.ui_style import get_status_label_style
 from utils.path_manager import path_manager
 
 
@@ -128,7 +129,7 @@ class InfiniteBattles(QWidget):
 
         # 添加状态显示标签
         self.status_label = QLabel("状态：初始化中...")
-        self.status_label.setStyleSheet("QLabel { background-color: #f0f0f0; padding: 5px; border: 1px solid #ccc; }")
+        self.status_label.setStyleSheet(get_status_label_style())
         layout.addWidget(self.status_label)
 
         # 添加控制按钮
