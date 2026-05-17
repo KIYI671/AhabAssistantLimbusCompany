@@ -1,3 +1,4 @@
+import json
 import os
 import shutil
 import subprocess
@@ -52,21 +53,65 @@ class Updater:
 
     def cover_folder(self):
         """覆盖安装最新版本的文件。"""
-        if not os.path.exists(self.changes_file_path):
+        if os.path.exists(self.changes_file_path):
+            self._apply_incremental_update()
+        else:
             try:
                 if os.path.exists(self.delete_folder_path):
                     shutil.rmtree(self.delete_folder_path)
             except Exception as e:
                 print(f"删除旧资源文件失败: {e}")
-        print("开始覆盖安装...")
-        while True:
-            try:
-                shutil.copytree(self.extract_folder_path, self.cover_folder_path, dirs_exist_ok=True)
-                print("覆盖安装完成")
-                break
-            except Exception as e:
-                print(f"覆盖安装失败: {e}")
-                input("按回车键重试. . . \n Press any key to continue")
+            print("开始覆盖安装...")
+            while True:
+                try:
+                    shutil.copytree(self.extract_folder_path, self.cover_folder_path, dirs_exist_ok=True)
+                    print("覆盖安装完成")
+                    break
+                except Exception as e:
+                    print(f"覆盖安装失败: {e}")
+                    input("按回车键重试. . . \n Press any key to continue")
+
+    def _apply_incremental_update(self):
+        """根据 changes.json 执行增量更新。"""
+        with open(self.changes_file_path, "r", encoding="utf-8") as f:
+            changes = json.load(f)
+
+        print("检测到增量更新清单，执行增量更新...")
+
+        for dir_path in changes.get("deleted_dir", []):
+            full_path = os.path.join(self.cover_folder_path, dir_path)
+            if os.path.exists(full_path):
+                shutil.rmtree(full_path)
+                print(f"删除目录: {dir_path}")
+
+        for file_path in changes.get("deleted", []):
+            full_path = os.path.join(self.cover_folder_path, file_path)
+            if os.path.exists(full_path):
+                os.remove(full_path)
+                print(f"删除文件: {file_path}")
+
+        for dir_path in changes.get("added_dir", []):
+            full_path = os.path.join(self.cover_folder_path, dir_path)
+            os.makedirs(full_path, exist_ok=True)
+            print(f"创建目录: {dir_path}")
+
+        for file_path in changes.get("added", []):
+            src = os.path.join(self.extract_folder_path, file_path)
+            dst = os.path.join(self.cover_folder_path, file_path)
+            if os.path.exists(src):
+                os.makedirs(os.path.dirname(dst), exist_ok=True)
+                shutil.copy2(src, dst)
+                print(f"新增文件: {file_path}")
+
+        for file_path in changes.get("modified", []):
+            src = os.path.join(self.extract_folder_path, file_path)
+            dst = os.path.join(self.cover_folder_path, file_path)
+            if os.path.exists(src):
+                os.makedirs(os.path.dirname(dst), exist_ok=True)
+                shutil.copy2(src, dst)
+                print(f"更新文件: {file_path}")
+
+        print("增量更新完成")
 
     def terminate_processes(self):
         """终止相关进程以准备更新。"""
