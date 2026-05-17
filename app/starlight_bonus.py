@@ -1,98 +1,35 @@
 from html import escape
 
-from PySide6.QtCore import QT_TRANSLATE_NOOP, QEvent, QObject, QPoint, QRectF, Qt, QTimer
+from PySide6.QtCore import QEvent, QObject, QPoint, QRectF, Qt, QTimer
 from PySide6.QtGui import QColor, QCursor, QPainter, QPainterPath, QPen
-from PySide6.QtWidgets import QFrame, QHBoxLayout, QLabel, QPushButton, QVBoxLayout
-from qfluentwidgets import StyleSheetBase, Theme, isDarkTheme, setStyleSheet
+from PySide6.QtWidgets import QFrame, QHBoxLayout, QLabel, QPushButton, QSizePolicy, QVBoxLayout
+from qfluentwidgets import StyleSheetBase, isDarkTheme, setCustomStyleSheet, setStyleSheet
 
 from app import mediator
+from app.common.ui_config import (
+    STARLIGHT_BONUS_COSTS,
+    STARLIGHT_BONUS_TIPS,
+    get_starlight_cost_label_qss,
+    get_starlight_level_button_qss,
+    get_starlight_paint_colors,
+    get_starlight_selector_qss,
+    get_starlight_tooltip_qss,
+)
 from module.config import cfg
 
-STARLIGHT_BONUS_NAMES = [
-    QT_TRANSLATE_NOOP("CustomizeSettingsModule", "起始之星"),
-    QT_TRANSLATE_NOOP("CustomizeSettingsModule", "层积星云"),
-    QT_TRANSLATE_NOOP("CustomizeSettingsModule", "星际旅行"),
-    QT_TRANSLATE_NOOP("CustomizeSettingsModule", "倾落的流星雨"),
-    QT_TRANSLATE_NOOP("CustomizeSettingsModule", "双星商店"),
-    QT_TRANSLATE_NOOP("CustomizeSettingsModule", "卫星商店"),
-    QT_TRANSLATE_NOOP("CustomizeSettingsModule", "星云的宠爱"),
-    QT_TRANSLATE_NOOP("CustomizeSettingsModule", "星芒的引导"),
-    QT_TRANSLATE_NOOP("CustomizeSettingsModule", "偶然的彗星"),
-    QT_TRANSLATE_NOOP("CustomizeSettingsModule", "全面的可能性"),
-]
 
-STARLIGHT_BONUS_COSTS = [10, 10, 20, 20, 30, 30, 40, 40, 50, 60]
+class EmptyStyleSheet(StyleSheetBase):
+    """Empty style source used only to register plain Qt widgets for theme updates."""
 
-STARLIGHT_BONUS_TIPS = [
-    {
-        "buff": "buff：\n经费+\n卡包+\n饰品+\n刷新+",
-        "buff+": "buff+：\n经费+\\yellow{+}\n卡包+\n饰品+\n刷新+",
-        "buff++": "buff++：\n经费+\\yellow{+}\n卡包+\n饰品+\n刷新+\\yellow{+}",
-    },
-    {
-        "buff": "buff：\n过层经费+\n售卖经费+",
-        "buff+": "buff+：\n过层经费+\\yellow{+}\n售卖经费+\\yellow{+}",
-        "buff++": "buff++：\n过层经费+\\yellow{+}\\yellow{+}\n售卖经费+\\yellow{+}\\yellow{+}",
-    },
-    {
-        "buff": "buff：\n卡包+\n卡包刷新+\n人格等级+",
-        "buff+": "buff+：\n卡包+\n卡包刷新+\\yellow{+}\n人格等级+\n拼点\\yellow{+}",
-        "buff++": "buff++：\n卡包+\n卡包刷新+\\yellow{+}\\yellow{+}\n人格等级+\n拼点\\yellow{+}\\yellow{+}",
-    },
-    {
-        "buff": "buff：\n经费+\n饰品选择+",
-        "buff+": "buff+：\n经费+\\yellow{+}\n饰品选择+\n星芒经费\\yellow{+}",
-        "buff++": "buff++：\n经费+\\yellow{+}\\yellow{+}\n饰品选择+\n星芒经费\\yellow{+}",
-    },
-    {
-        "buff": "buff：\n商店饰品+\n战斗经费+\n高级饰品+",
-        "buff+": "buff+：\n商店饰品+\n战斗经费+\\yellow{+}\n高级饰品+\n商店经费\\yellow{+}",
-        "buff++": "buff++：\n商店饰品+\n战斗经费+\\yellow{+}\\yellow{+}\n高级饰品+\n商店经费\\yellow{+}",
-    },
-    {
-        "buff": "buff：\n关键词刷新+\n初始饰品+",
-        "buff+": "buff+：\n关键词刷新+\n初始饰品+\\yellow{+}\n特殊商店\\yellow{+}",
-        "buff++": "buff++：\n关键词刷新+\\yellow{+}\n初始饰品+\\yellow{+}\n特殊商店\\yellow{+}\\yellow{+}",
-    },
-    {
-        "buff": "buff：\n初始等级+\n过层等级+",
-        "buff+": "buff+：\n初始等级+\n过层等级+\\yellow{+}",
-        "buff++": "buff++：\n初始等级+\n六层等级\\yellow{+}\n过层等级+\\yellow{+}",
-    },
-    {
-        "buff": "buff：\n速度+\n拼点+\n伤害+\n守护+",
-        "buff+": "buff+：\n速度+\\yellow{+}\n拼点+\n伤害+\n守护+",
-        "buff++": "buff++：\n速度+\\yellow{+}\\yellow{+}\n拼点+\n伤害+\n守护+",
-    },
-    {
-        "buff": "buff：\n商店饰品+\n三层饰品+\n合成饰品+",
-        "buff+": "buff+：\n商店饰品+\\yellow{+}\n三层饰品+\n五层饰品\\yellow{+}\n合成饰品+",
-        "buff++": "buff++：\n商店饰品+\\yellow{+}\n三层饰品+\n五层饰品\\yellow{+}\n七层饰品\\yellow{+}\n合成饰品+\\yellow{+}",
-    },
-    {
-        "buff": "buff：\n卡包+\n饰品选择+\n关键词饰品+\n黯淡残影+",
-        "buff+": "buff+：\n饰品选择+\n关键词饰品+\\yellow{+}\n黯淡残影+\n微茫残影\\yellow{+}",
-        "buff++": "buff++：\n卡包+\n饰品选择+\n关键词饰品+\\yellow{+}\\yellow{+}\n黯淡残影+\n微茫残影\\yellow{+}\n闪耀残影\\yellow{+}",
-    },
-]
+    def content(self, theme=None) -> str:
+        return ""
 
 
-class InlineThemeStyleSheet(StyleSheetBase):
-    """Inline light/dark QSS managed by qfluentwidgets' theme style manager."""
-
-    def __init__(self, light_qss: str, dark_qss: str):
-        super().__init__()
-        self.light_qss = light_qss
-        self.dark_qss = dark_qss
-
-    def content(self, theme=Theme.AUTO) -> str:
-        if theme == Theme.AUTO:
-            return self.dark_qss if isDarkTheme() else self.light_qss
-        return self.light_qss if theme == Theme.LIGHT else self.dark_qss
-
-
-def _set_custom_theme_style(widget, light_qss: str, dark_qss: str):
-    setStyleSheet(widget, InlineThemeStyleSheet(light_qss, dark_qss))
+def _register_custom_style_widget(widget):
+    if widget.property("_starlight_custom_style_registered"):
+        return
+    setStyleSheet(widget, EmptyStyleSheet())
+    widget.setProperty("_starlight_custom_style_registered", True)
 
 
 def _format_starlight_tip(title: str, tip_text: str) -> str:
@@ -116,32 +53,15 @@ class StarlightToolTipPopup(QLabel):
 
     def show_text(self, pos: QPoint, text: str):
         self.setText(text)
-        self.__apply_theme_style()
+        self._apply_theme_style()
         self.adjustSize()
         self.move(pos)
         self.show()
 
-    def __apply_theme_style(self):
-        if isDarkTheme():
-            background = "rgb(45, 45, 45)"
-            border = "rgba(255, 255, 255, 46)"
-            text = "rgba(255, 255, 255, 0.92)"
-        else:
-            background = "rgb(255, 255, 255)"
-            border = "rgba(0, 0, 0, 38)"
-            text = "rgba(0, 0, 0, 0.82)"
-
-        self.setStyleSheet(
-            f"""
-            QLabel {{
-                background-color: {background};
-                border: 1px solid {border};
-                border-radius: 6px;
-                color: {text};
-                padding: 6px 8px;
-            }}
-            """
-        )
+    def _apply_theme_style(self):
+        _register_custom_style_widget(self)
+        light_qss, dark_qss = get_starlight_tooltip_qss()
+        setCustomStyleSheet(self, light_qss, dark_qss)
 
 
 _starlight_tooltip_popup = None
@@ -205,33 +125,13 @@ class StarlightNameButton(QPushButton):
         self.cost_label = QLabel(self)
         self.cost_label.setAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignTop)
         self.cost_label.setAttribute(Qt.WidgetAttribute.WA_TransparentForMouseEvents)
-        self.apply_cost_style()
+        self._apply_theme_style()
         self.set_cost(cost)
 
-    def apply_cost_style(self):
-        light_qss = """
-            QLabel {
-                background: transparent;
-                border: none;
-                color: rgba(0, 0, 0, 0.82);
-                font-size: 11px;
-                font-weight: 500;
-            }
-        """
-        dark_qss = """
-            QLabel {
-                background: transparent;
-                border: none;
-                color: rgba(255, 255, 255, 0.92);
-                font-size: 11px;
-                font-weight: 500;
-            }
-        """
-        _set_custom_theme_style(
-            self.cost_label,
-            light_qss,
-            dark_qss,
-        )
+    def _apply_theme_style(self):
+        _register_custom_style_widget(self.cost_label)
+        light_qss, dark_qss = get_starlight_cost_label_qss()
+        setCustomStyleSheet(self.cost_label, light_qss, dark_qss)
 
     def resizeEvent(self, event):
         super().resizeEvent(event)
@@ -248,26 +148,6 @@ class StarlightNameButton(QPushButton):
 
 class StarlightLevelSelector(QFrame):
     """A three-part selector for default, +, and ++ starlight levels."""
-
-    _BASE_STYLE = """
-        QPushButton {
-            border: none;
-            background: transparent;
-            padding: 5px 6px;
-            min-height: 32px;
-            color: __TEXT_COLOR__;
-            font-size: 13px;
-        }
-        QPushButton:hover {
-            background: transparent;
-        }
-        QPushButton:checked {
-            color: __TEXT_COLOR__;
-        }
-        QPushButton[segment="left"] {
-            padding-right: 24px;
-        }
-    """
 
     def __init__(self, config_name: str, label_text: str, parent=None):
         super().__init__(parent)
@@ -293,7 +173,7 @@ class StarlightLevelSelector(QFrame):
         self.default_button.clicked.connect(lambda _checked=False: self.__on_segment_clicked(0))
         self.level_one_button.clicked.connect(lambda _checked=False: self.__on_segment_clicked(1))
         self.level_two_button.clicked.connect(lambda _checked=False: self.__on_segment_clicked(2))
-        self.__apply_theme_style()
+        self._apply_theme_style()
         self.__refresh_tooltips(label_text)
 
     def __create_button(self, text: str, segment: str) -> QPushButton:
@@ -302,6 +182,8 @@ class StarlightLevelSelector(QFrame):
         else:
             button = QPushButton(text, self)
         button.setFlat(True)
+        button.setMinimumWidth(0)
+        button.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Expanding)
         button.setCheckable(True)
         button.setMouseTracking(True)
         button.setAttribute(Qt.WidgetAttribute.WA_Hover, True)
@@ -309,13 +191,15 @@ class StarlightLevelSelector(QFrame):
         button.setProperty("segment", segment)
         return button
 
-    def __apply_theme_style(self):
-        light_style = self._BASE_STYLE.replace("__TEXT_COLOR__", "rgba(0, 0, 0, 0.82)")
-        dark_style = self._BASE_STYLE.replace("__TEXT_COLOR__", "rgba(255, 255, 255, 0.92)")
-
+    def _apply_theme_style(self):
+        light_style, dark_style = get_starlight_level_button_qss()
         for button in (self.default_button, self.level_one_button, self.level_two_button):
-            _set_custom_theme_style(button, light_style, dark_style)
-        _set_custom_theme_style(self, "StarlightLevelSelector { background: transparent; }", "StarlightLevelSelector { background: transparent; }")
+            _register_custom_style_widget(button)
+            setCustomStyleSheet(button, light_style, dark_style)
+
+        _register_custom_style_widget(self)
+        light_style, dark_style = get_starlight_selector_qss()
+        setCustomStyleSheet(self, light_style, dark_style)
         self.update()
 
     def paintEvent(self, event):
@@ -362,24 +246,7 @@ class StarlightLevelSelector(QFrame):
         return (colors["left"], colors["middle"], colors["right"])[segment_level]
 
     def __theme_colors(self) -> dict[str, QColor]:
-        default_line_color = QColor(120, 120, 120, 105)
-        if isDarkTheme():
-            return {
-                "border": default_line_color,
-                "divider": default_line_color,
-                "empty": QColor(255, 255, 255, 18),
-                "left": QColor(255, 182, 193, 70),
-                "middle": QColor(214, 96, 96, 88),
-                "right": QColor(170, 32, 44, 130),
-            }
-        return {
-            "border": default_line_color,
-            "divider": default_line_color,
-            "empty": QColor(120, 120, 120, 20),
-            "left": QColor(255, 143, 161, 150),
-            "middle": QColor(224, 76, 76, 175),
-            "right": QColor(190, 38, 52, 195),
-        }
+        return get_starlight_paint_colors(isDarkTheme())
 
     def __refresh_tooltips(self, title: str):
         tips = STARLIGHT_BONUS_TIPS[self.starlight_index - 1]

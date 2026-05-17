@@ -1,13 +1,8 @@
 # 应用 UI 配置
-from typing import TYPE_CHECKING
-
-from PySide6.QtCore import Qt
+from PySide6.QtCore import QT_TRANSLATE_NOOP, Qt
+from PySide6.QtGui import QColor
 from PySide6.QtWidgets import QFrame
 from qfluentwidgets import isDarkTheme, qconfig
-
-if TYPE_CHECKING:
-    from PySide6.QtGui import QPaintEvent
-    from qfluentwidgets import SegmentedWidget
 
 BORDER_STYLE = {
     "dark": """border: 1px solid #545454; border-radius: {radius}px;""",
@@ -244,6 +239,208 @@ def get_segmented_widget_qss(theme_color: str) -> tuple[str, str]:
     light_qss = SEGMENTED_WIDGET_STYLES["light"].format(theme_color=theme_color)
     dark_qss = SEGMENTED_WIDGET_STYLES["dark"].format(theme_color=theme_color)
     return light_qss, dark_qss
+
+
+# 星光加成配置
+STARLIGHT_BONUS_NAMES = [
+    QT_TRANSLATE_NOOP("CustomizeSettingsModule", "起始之星"),
+    QT_TRANSLATE_NOOP("CustomizeSettingsModule", "层积星云"),
+    QT_TRANSLATE_NOOP("CustomizeSettingsModule", "星际旅行"),
+    QT_TRANSLATE_NOOP("CustomizeSettingsModule", "倾落的流星雨"),
+    QT_TRANSLATE_NOOP("CustomizeSettingsModule", "双星商店"),
+    QT_TRANSLATE_NOOP("CustomizeSettingsModule", "卫星商店"),
+    QT_TRANSLATE_NOOP("CustomizeSettingsModule", "星云的宠爱"),
+    QT_TRANSLATE_NOOP("CustomizeSettingsModule", "星芒的引导"),
+    QT_TRANSLATE_NOOP("CustomizeSettingsModule", "偶然的彗星"),
+    QT_TRANSLATE_NOOP("CustomizeSettingsModule", "全面的可能性"),
+]
+
+STARLIGHT_BONUS_COSTS = [10, 10, 20, 20, 30, 30, 40, 40, 50, 60]
+
+STARLIGHT_BONUS_TIPS = [
+    {
+        "buff": "buff：\n经费+\n卡包+\n饰品+\n刷新+",
+        "buff+": "buff+：\n经费+\\yellow{+}\n卡包+\n饰品+\n刷新+",
+        "buff++": "buff++：\n经费+\\yellow{+}\n卡包+\n饰品+\n刷新+\\yellow{+}",
+    },
+    {
+        "buff": "buff：\n过层经费+\n售卖经费+",
+        "buff+": "buff+：\n过层经费+\\yellow{+}\n售卖经费+\\yellow{+}",
+        "buff++": "buff++：\n过层经费+\\yellow{+}\\yellow{+}\n售卖经费+\\yellow{+}\\yellow{+}",
+    },
+    {
+        "buff": "buff：\n卡包+\n卡包刷新+\n人格等级+",
+        "buff+": "buff+：\n卡包+\n卡包刷新+\\yellow{+}\n人格等级+\n拼点\\yellow{+}",
+        "buff++": "buff++：\n卡包+\n卡包刷新+\\yellow{+}\\yellow{+}\n人格等级+\n拼点\\yellow{+}\\yellow{+}",
+    },
+    {
+        "buff": "buff：\n经费+\n饰品选择+",
+        "buff+": "buff+：\n经费+\\yellow{+}\n饰品选择+\n星芒经费\\yellow{+}",
+        "buff++": "buff++：\n经费+\\yellow{+}\\yellow{+}\n饰品选择+\n星芒经费\\yellow{+}",
+    },
+    {
+        "buff": "buff：\n商店饰品+\n战斗经费+\n高级饰品+",
+        "buff+": "buff+：\n商店饰品+\n战斗经费+\\yellow{+}\n高级饰品+\n商店经费\\yellow{+}",
+        "buff++": "buff++：\n商店饰品+\n战斗经费+\\yellow{+}\\yellow{+}\n高级饰品+\n商店经费\\yellow{+}",
+    },
+    {
+        "buff": "buff：\n关键词刷新+\n初始饰品+",
+        "buff+": "buff+：\n关键词刷新+\n初始饰品+\\yellow{+}\n特殊商店\\yellow{+}",
+        "buff++": "buff++：\n关键词刷新+\\yellow{+}\n初始饰品+\\yellow{+}\n特殊商店\\yellow{+}\\yellow{+}",
+    },
+    {
+        "buff": "buff：\n初始等级+\n过层等级+",
+        "buff+": "buff+：\n初始等级+\n过层等级+\\yellow{+}",
+        "buff++": "buff++：\n初始等级+\n六层等级\\yellow{+}\n过层等级+\\yellow{+}",
+    },
+    {
+        "buff": "buff：\n速度+\n拼点+\n伤害+\n守护+",
+        "buff+": "buff+：\n速度+\\yellow{+}\n拼点+\n伤害+\n守护+",
+        "buff++": "buff++：\n速度+\\yellow{+}\\yellow{+}\n拼点+\n伤害+\n守护+",
+    },
+    {
+        "buff": "buff：\n商店饰品+\n三层饰品+\n合成饰品+",
+        "buff+": "buff+：\n商店饰品+\\yellow{+}\n三层饰品+\n五层饰品\\yellow{+}\n合成饰品+",
+        "buff++": "buff++：\n商店饰品+\\yellow{+}\n三层饰品+\n五层饰品\\yellow{+}\n七层饰品\\yellow{+}\n合成饰品+\\yellow{+}",
+    },
+    {
+        "buff": "buff：\n卡包+\n饰品选择+\n关键词饰品+\n黯淡残影+",
+        "buff+": "buff+：\n饰品选择+\n关键词饰品+\\yellow{+}\n黯淡残影+\n微茫残影\\yellow{+}",
+        "buff++": "buff++：\n卡包+\n饰品选择+\n关键词饰品+\\yellow{+}\\yellow{+}\n黯淡残影+\n微茫残影\\yellow{+}\n闪耀残影\\yellow{+}",
+    },
+]
+
+STARLIGHT_COST_LABEL_STYLES = {
+    "light": """
+        QLabel {
+            background: transparent;
+            border: none;
+            color: rgba(0, 0, 0, 0.82);
+            font-size: 11px;
+            font-weight: 500;
+        }
+    """,
+    "dark": """
+        QLabel {
+            background: transparent;
+            border: none;
+            color: rgba(255, 255, 255, 0.92);
+            font-size: 11px;
+            font-weight: 500;
+        }
+    """,
+}
+
+STARLIGHT_TOOLTIP_STYLES = {
+    "light": """
+        QLabel {
+            background-color: rgb(255, 255, 255);
+            border: 1px solid rgba(0, 0, 0, 38);
+            border-radius: 6px;
+            color: rgba(0, 0, 0, 0.82);
+            padding: 6px 8px;
+        }
+    """,
+    "dark": """
+        QLabel {
+            background-color: rgb(45, 45, 45);
+            border: 1px solid rgba(255, 255, 255, 46);
+            border-radius: 6px;
+            color: rgba(255, 255, 255, 0.92);
+            padding: 6px 8px;
+        }
+    """,
+}
+
+STARLIGHT_LEVEL_BUTTON_STYLES = {
+    "light": """
+        QPushButton {
+            border: none;
+            background: transparent;
+            padding: 5px 6px;
+            min-height: 32px;
+            color: rgba(0, 0, 0, 0.82);
+            font-size: 13px;
+        }
+        QPushButton:hover {
+            background: transparent;
+        }
+        QPushButton:checked {
+            color: rgba(0, 0, 0, 0.82);
+        }
+        QPushButton[segment="left"] {
+            padding-right: 24px;
+        }
+    """,
+    "dark": """
+        QPushButton {
+            border: none;
+            background: transparent;
+            padding: 5px 6px;
+            min-height: 32px;
+            color: rgba(255, 255, 255, 0.92);
+            font-size: 13px;
+        }
+        QPushButton:hover {
+            background: transparent;
+        }
+        QPushButton:checked {
+            color: rgba(255, 255, 255, 0.92);
+        }
+        QPushButton[segment="left"] {
+            padding-right: 24px;
+        }
+    """,
+}
+
+STARLIGHT_SELECTOR_STYLES = {
+    "light": "StarlightLevelSelector { background: transparent; }",
+    "dark": "StarlightLevelSelector { background: transparent; }",
+}
+
+STARLIGHT_PAINT_COLORS = {
+    "light": {
+        "empty": (120, 120, 120, 20),
+        "left": (255, 143, 161, 150),
+        "middle": (224, 76, 76, 175),
+        "right": (190, 38, 52, 195),
+    },
+    "dark": {
+        "empty": (255, 255, 255, 18),
+        "left": (255, 182, 193, 70),
+        "middle": (214, 96, 96, 88),
+        "right": (170, 32, 44, 130),
+    },
+}
+
+
+def get_starlight_cost_label_qss() -> tuple[str, str]:
+    return STARLIGHT_COST_LABEL_STYLES["light"], STARLIGHT_COST_LABEL_STYLES["dark"]
+
+
+def get_starlight_tooltip_qss() -> tuple[str, str]:
+    return STARLIGHT_TOOLTIP_STYLES["light"], STARLIGHT_TOOLTIP_STYLES["dark"]
+
+
+def get_starlight_level_button_qss() -> tuple[str, str]:
+    return STARLIGHT_LEVEL_BUTTON_STYLES["light"], STARLIGHT_LEVEL_BUTTON_STYLES["dark"]
+
+
+def get_starlight_selector_qss() -> tuple[str, str]:
+    return STARLIGHT_SELECTOR_STYLES["light"], STARLIGHT_SELECTOR_STYLES["dark"]
+
+
+def get_starlight_paint_colors(is_dark: bool) -> dict[str, QColor]:
+    style = STARLIGHT_PAINT_COLORS["dark"] if is_dark else STARLIGHT_PAINT_COLORS["light"]
+    default_line_color = QColor(120, 120, 120, 105)
+    return {
+        "border": default_line_color,
+        "divider": default_line_color,
+        "empty": QColor(*style["empty"]),
+        "left": QColor(*style["left"]),
+        "middle": QColor(*style["middle"]),
+        "right": QColor(*style["right"]),
+    }
 
 
 # 公告板侧边栏样式配置

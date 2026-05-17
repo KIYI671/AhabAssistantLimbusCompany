@@ -26,8 +26,9 @@ from app.base_combination import (
 )
 from app.base_tools import BaseCheckBox, BaseComboBox, BaseLabel, BaseLineEdit, BaseSettingLayout
 from app.card.messagebox_custom import BaseInfoBar, MessageBoxConfirm
+from app.common.ui_config import STARLIGHT_BONUS_NAMES
 from app.language_manager import LanguageManager
-from app.starlight_bonus import STARLIGHT_BONUS_NAMES, StarlightCard, StarlightLevelSelector
+from app.starlight_bonus import StarlightCard, StarlightLevelSelector
 from app.theme_pack_setting_interface import ThemePackSettingDialog
 from module.config import TeamSetting, cfg, theme_list
 from module.config.team_import_export import (
@@ -36,6 +37,7 @@ from module.config.team_import_export import (
     generate_team_export_filename,
     import_team_settings,
 )
+
 
 class TeamSettingCard(QFrame):
     def __init__(self, team_num=0, parent=None):
