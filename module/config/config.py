@@ -157,23 +157,14 @@ class Config(metaclass=SingletonMeta):
 
         if saved_version < 1778889600:
             teams = loaded_config.get("teams", {}) or {}
-            defaulted_teams = 0
-            preserved_teams = 0
             if isinstance(teams, dict):
                 for settings in teams.values():
                     if not isinstance(settings, dict):
                         continue
                     if settings.get("choose_opening_bonus", False):
-                        preserved_teams += 1
                         continue
 
                     self._set_default_opening_bonus(settings)
-                    defaulted_teams += 1
-            if defaulted_teams:
-                log.info(
-                    f"已将 {defaulted_teams} 个未启用自选开局加成的队伍固定为前四个默认星光"
-                    f"（保留 {preserved_teams} 个自定义队伍）"
-                )
 
         log.info("配置升级完成")
 
