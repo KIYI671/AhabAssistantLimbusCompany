@@ -150,12 +150,12 @@ class Config(metaclass=SingletonMeta):
 
                 settings.update(history)
                 settings["remark_name"] = remark_name
+                if not settings.get("choose_opening_bonus", False):
+                    self._set_default_opening_bonus(settings)
                 teams[f"{i}"] = TeamSetting(**settings).model_dump()
             loaded_config["teams"] = teams
 
         if saved_version < 1778889600:
-            current_default_opening_bonus = [1, 1, 1, 1, 0, 0, 0, 0, 0, 0]
-            current_default_opening_bonus_level = [0] * 10
             teams = loaded_config.get("teams", {}) or {}
             defaulted_teams = 0
             preserved_teams = 0
@@ -163,12 +163,11 @@ class Config(metaclass=SingletonMeta):
                 for settings in teams.values():
                     if not isinstance(settings, dict):
                         continue
-                    if self._has_custom_opening_bonus(settings):
+                    if settings.get("choose_opening_bonus", False):
                         preserved_teams += 1
                         continue
 
-                    settings["opening_bonus"] = current_default_opening_bonus.copy()
-                    settings["opening_bonus_level"] = current_default_opening_bonus_level.copy()
+                    self._set_default_opening_bonus(settings)
                     defaulted_teams += 1
             if defaulted_teams:
                 log.info(
@@ -179,16 +178,10 @@ class Config(metaclass=SingletonMeta):
         log.info("配置升级完成")
 
     @staticmethod
-    def _has_custom_opening_bonus(settings: dict) -> bool:
-        """判断旧队伍配置是否已经启用了自选开局星光加成。"""
-        legacy_default_opening_bonus = [0] * 10
-        legacy_default_opening_bonus_level = [0] * 10
-        opening_bonus = settings.get("opening_bonus")
-        opening_bonus_level = settings.get("opening_bonus_level")
-
-        if opening_bonus is None and opening_bonus_level is None:
-            return False
-        return opening_bonus != legacy_default_opening_bonus or opening_bonus_level != legacy_default_opening_bonus_level
+    def _set_default_opening_bonus(settings: dict) -> None:
+        """写入新版默认开局星光，避免旧版未启用自选时保留残留值。"""
+        settings["opening_bonus"] = [1, 1, 1, 1, 0, 0, 0, 0, 0, 0]
+        settings["opening_bonus_level"] = [0] * 10
 
     def _load_version(self, version_path: str) -> str:
         """加载版本信息"""

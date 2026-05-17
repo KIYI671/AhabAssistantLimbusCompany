@@ -34,11 +34,10 @@ def _register_custom_style_widget(widget):
 
 def _format_starlight_tip(title: str, tip_text: str) -> str:
     tip_text = "\n".join(tip_text.splitlines()[1:])
-    text_color = "rgba(255, 255, 255, 0.92)" if isDarkTheme() else "rgba(0, 0, 0, 0.82)"
     html = escape(tip_text).replace("\\yellow{+}", '<span style="color:#d8a300;font-weight:700;">+</span>')
     html = html.replace("\n", "<br>")
     return (
-        f'<div style="white-space:nowrap; font-size:12px; line-height:1.45; color:{text_color};">'
+        '<div style="white-space:nowrap; font-size:12px; line-height:1.45;">'
         f'<b>{escape(title)}</b><br>{html}'
         "</div>"
     )
