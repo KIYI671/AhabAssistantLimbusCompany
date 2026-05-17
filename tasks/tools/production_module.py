@@ -13,6 +13,7 @@ from PySide6.QtWidgets import (
     QVBoxLayout,
     QWidget,
 )
+from qfluentwidgets import qconfig
 
 from module.automation import auto
 from module.config import cfg
@@ -25,7 +26,7 @@ from tasks.base.make_enkephalin_module import (
     make_enkephalin_module,
 )
 from tasks.base.retry import kill_game
-from tasks.tools.ui_style import get_status_label_style
+from tasks.tools.ui_style import apply_tool_window_theme, get_status_label_style
 
 
 class ProductionWork(QThread):
@@ -127,7 +128,8 @@ class ProductionModule(QWidget):
 
         # 添加状态显示标签
         self.status_label = QLabel("状态：初始化中...")
-        self.status_label.setStyleSheet(get_status_label_style())
+        self._apply_theme_style()
+        qconfig.themeChanged.connect(self._apply_theme_style)
         layout.addWidget(self.status_label)
 
         # 添加控制按钮
@@ -153,6 +155,10 @@ class ProductionModule(QWidget):
         layout.addWidget(self.log_text)
 
         self.setLayout(layout)
+
+    def _apply_theme_style(self):
+        apply_tool_window_theme(self, "ProductionModule")
+        self.status_label.setStyleSheet(get_status_label_style())
 
     def start_production(self):
         """启动生产工作线程"""
