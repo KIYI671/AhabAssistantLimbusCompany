@@ -1,3 +1,5 @@
+import os
+from datetime import datetime
 from time import sleep
 
 from module.automation import auto
@@ -8,6 +10,37 @@ from tasks.base.back_init_menu import back_init_menu
 from tasks.base.retry import retry
 from tasks.mirror import fusion_result, must_be_abandoned, must_purchase
 from utils.image_utils import ImageUtils
+
+
+def _is_shop_debug_enabled():
+    return bool(cfg.get_value("debug_mode", False) and cfg.get_value("debug_shop", False))
+
+
+def _shop_debug_save(step_name):
+    if not _is_shop_debug_enabled():
+        return
+    debug_dir = "logs/shop_debug"
+    os.makedirs(debug_dir, exist_ok=True)
+    ts = datetime.now().strftime("%H%M%S_%f")[:13]
+    if auto.screenshot:
+        auto.screenshot.save(f"{debug_dir}/{ts}_{step_name}.png")
+    log.info(f"[商店调试] {step_name}")
+
+
+def _debug_save_on_failure(money_bbox, ocr_result, in_heal=False):
+    """金钱OCR失败时自动保存截图和裁剪区域，不依赖debug_shop开关。"""
+    debug_dir = "logs/shop_debug"
+    os.makedirs(debug_dir, exist_ok=True)
+    ts = datetime.now().strftime("%H%M%S_%f")[:13]
+    prefix = "heal" if in_heal else "shop"
+    if auto.screenshot is not None:
+        auto.screenshot.save(f"{debug_dir}/{ts}_{prefix}_full.png")
+        if money_bbox is not None:
+            try:
+                auto.screenshot.crop(money_bbox).save(f"{debug_dir}/{ts}_{prefix}_crop.png")
+            except Exception:
+                pass
+    log.info(f"[商店调试] OCR失败, 原始结果: {ocr_result}, 坐标: {money_bbox}")
 
 
 class Shop:
@@ -1379,6 +1412,8 @@ class Shop:
     def _get_cost(self, in_heal=False) -> int:
         """获取当前剩余的经费"""
         my_remaining_money = -1
+        money_bbox = None
+        my_money = None
         try:
             if in_heal:
                 money_bbox = ImageUtils.get_bbox(ImageUtils.load_image("mirror/shop/my_money_heal_bbox.png"))
@@ -1388,9 +1423,11 @@ class Shop:
             if my_money:  # 避免非空
                 my_remaining_money = int(my_money[0])
             if not my_money or not isinstance(my_remaining_money, int):
+                _debug_save_on_failure(money_bbox, my_money, in_heal)
                 log.error("获取剩余金钱失败")
             else:
                 log.debug(f"剩余金钱：{my_remaining_money}")
         except Exception as e:
+            _debug_save_on_failure(money_bbox, my_money, in_heal)
             log.error(f"获取剩余金钱失败：{e}")
         return my_remaining_money
