@@ -2,9 +2,12 @@ import os
 from datetime import datetime
 from time import sleep
 
+from PIL import Image
+
 from module.automation import auto
 from module.config import TeamSetting, cfg
 from module.logger import log
+from module.ocr import ocr
 from tasks import all_sinners_name, all_sinners_name_zh, all_systems, system_cn_zh
 from tasks.base.back_init_menu import back_init_menu
 from tasks.base.retry import retry
@@ -41,6 +44,54 @@ def _debug_save_on_failure(money_bbox, ocr_result, in_heal=False):
             except Exception:
                 pass
     log.info(f"[商店调试] OCR失败, 原始结果: {ocr_result}, 坐标: {money_bbox}")
+
+
+_MONEY_OCR_TRANSLATION = str.maketrans(
+    {
+        "O": "0",
+        "o": "0",
+        "D": "0",
+        "Q": "0",
+        "I": "1",
+        "l": "1",
+        "Z": "2",
+        "S": "5",
+        "G": "6",
+        "B": "8",
+    }
+)
+
+
+def _extract_money_from_ocr_texts(texts):
+    if not texts:
+        return None
+
+    cleaned_texts = [text.strip().replace(" ", "").replace(",", "") for text in texts if text]
+    for text in cleaned_texts:
+        if text.isdigit():
+            return int(text)
+
+    for text in cleaned_texts:
+        normalized = text.translate(_MONEY_OCR_TRANSLATION)
+        if normalized.isdigit() and any(ch.isdigit() for ch in normalized):
+            return int(normalized)
+
+    return None
+
+
+def _retry_money_ocr_with_scaled_crop(money_bbox, scale=2):
+    if auto.screenshot is None or money_bbox is None:
+        return []
+
+    try:
+        crop = auto.screenshot.crop(money_bbox)
+        width, height = crop.size
+        resampling = getattr(getattr(Image, "Resampling", Image), "BICUBIC")
+        enlarged = crop.resize((width * scale, height * scale), resample=resampling)
+        result = ocr.run(enlarged)
+        return list(result.txts or [])
+    except Exception:
+        return []
 
 
 class Shop:
@@ -1420,9 +1471,20 @@ class Shop:
             else:
                 money_bbox = ImageUtils.get_bbox(ImageUtils.load_image("mirror/shop/my_money_bbox.png"))
             my_money = auto.get_text_from_screenshot(money_bbox)
-            if my_money:  # 避免非空
-                my_remaining_money = int(my_money[0])
-            if not my_money or not isinstance(my_remaining_money, int):
+            if _is_shop_debug_enabled():
+                _shop_debug_save(f"get_cost_{'heal' if in_heal else 'shop'}_bbox")
+                log.info(f"[商店调试] OCR原始结果: {my_money}, 坐标: {money_bbox}")
+            parsed_money = _extract_money_from_ocr_texts(my_money)
+            if parsed_money is None:
+                scaled_money = _retry_money_ocr_with_scaled_crop(money_bbox, scale=2)
+                if scaled_money:
+                    log.info(f"[商店调试] OCR放大重试结果: {scaled_money}")
+                    parsed_money = _extract_money_from_ocr_texts(scaled_money)
+                    if parsed_money is not None:
+                        my_money = scaled_money
+            if parsed_money is not None:
+                my_remaining_money = parsed_money
+            if parsed_money is None or my_remaining_money < 0:
                 _debug_save_on_failure(money_bbox, my_money, in_heal)
                 log.error("获取剩余金钱失败")
             else:
