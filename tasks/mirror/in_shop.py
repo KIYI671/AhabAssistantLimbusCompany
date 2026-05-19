@@ -310,7 +310,7 @@ class Shop:
                 system_gift = sort_points(system_gift, complete_count)
                 while system_gift:
                     gift = system_gift.pop(0)
-                    auto.mouse_click(gift[0], gift[1])
+                    auto.mouse_action_with_pos((gift[0], gift[1]), offset=True)
                     sleep(1)
                     while auto.take_screenshot() is None:
                         continue
@@ -329,7 +329,10 @@ class Shop:
                         auto.mouse_click_blank(times=3)
                         continue
                     else:
-                        auto.mouse_click_blank(times=2)
+                        auto.take_screenshot()
+                        if auto.click_element("mirror/road_in_mir/ego_gift_get_confirm_assets.png"):
+                            sleep(0.5)
+                        auto.mouse_click_blank(times=3)
                         sleep(1)
 
             if self.second_system and self.second_system_action[1]:
@@ -342,7 +345,7 @@ class Shop:
                     system_gift = sort_points(system_gift, complete_count)
                     while system_gift:
                         gift = system_gift.pop(0)
-                        auto.mouse_click(gift[0], gift[1])
+                        auto.mouse_action_with_pos((gift[0], gift[1]), offset=True)
                         sleep(1)
                         while auto.take_screenshot() is None:
                             continue
@@ -361,7 +364,10 @@ class Shop:
                             auto.mouse_click_blank(times=3)
                             continue
                         else:
-                            auto.mouse_click_blank(times=2)
+                            auto.take_screenshot()
+                            if auto.click_element("mirror/road_in_mir/ego_gift_get_confirm_assets.png"):
+                                sleep(0.5)
+                            auto.mouse_click_blank(times=3)
                             sleep(1)
 
             if retry() is False:
@@ -369,25 +375,55 @@ class Shop:
 
             my_remaining_money = self._get_cost()
 
-            if my_remaining_money < 0:
-                log.warning("无法读取剩余金钱，跳过本次刷新")
-            elif keyword_refresh_count < self.max_keyword_refresh and my_remaining_money >= 300:
-                auto.mouse_click_blank(times=3)
-                if auto.click_element("mirror/shop/refresh_keyword_assets.png"):
-                    sleep(1)
-                    auto.click_element(
-                        f"mirror/shop/keyword/keyword_{self.system}.png",
-                        take_screenshot=True,
-                    )
-                    auto.click_element("mirror/shop/refresh_keyword_confirm_assets.png")
-                    keyword_refresh_count += 1
-                    auto.mouse_click_blank()
-                    sleep(3)
-                    if retry() is False:
-                        raise self.RestartGame()
-                    if self.skill_replacement and self.replacement < 3:
-                        self.replacement_skill()
-                    continue
+            if keyword_refresh_count < self.max_keyword_refresh:
+                if my_remaining_money < 0 or my_remaining_money >= 300:
+                    auto.mouse_click_blank(times=3)
+                    if auto.click_element("mirror/shop/refresh_keyword_assets.png"):
+                        sleep(1)
+                        auto.click_element(
+                            f"mirror/shop/keyword/keyword_{self.system}.png",
+                            take_screenshot=True,
+                        )
+                        sleep(0.5)
+                        auto.click_element("mirror/shop/refresh_keyword_confirm_assets.png")
+                        for _ in range(3):
+                            if auto.find_element(
+                                "mirror/shop/refresh_keyword_confirm_assets.png",
+                                take_screenshot=True,
+                            ):
+                                log.warning("关键词刷新确认未生效，重试中")
+                                sleep(0.5)
+                                auto.click_element(
+                                    f"mirror/shop/keyword/keyword_{self.system}.png",
+                                    take_screenshot=True,
+                                )
+                                sleep(0.5)
+                                auto.click_element(
+                                    "mirror/shop/refresh_keyword_confirm_assets.png",
+                                    take_screenshot=True,
+                                )
+                            else:
+                                break
+                        keyword_refresh_count += 1
+                        auto.mouse_click_blank()
+                        sleep(3)
+                        if retry() is False:
+                            raise self.RestartGame()
+                        if self.skill_replacement and self.replacement < 3:
+                            self.replacement_skill()
+                        continue
+
+            if normal_refresh_count < self.max_normal_refresh:
+                if my_remaining_money < 0 or my_remaining_money >= 200:
+                    auto.mouse_click_blank(times=3)
+                    if auto.click_element("mirror/shop/refresh_assets.png"):
+                        normal_refresh_count += 1
+                        sleep(3)
+                        if retry() is False:
+                            raise self.RestartGame()
+                        if self.skill_replacement and self.replacement < 3:
+                            self.replacement_skill()
+                        continue
 
             if normal_refresh_count < self.max_normal_refresh and my_remaining_money >= 200:
                 auto.mouse_click_blank(times=3)
@@ -1099,6 +1135,7 @@ class Shop:
         auto.model = "clam"
         system_level_IV = False
         second_system_level_IV = False
+        stale_count = 0
         while True:
             # 自动截图
             if auto.take_screenshot() is None:
@@ -1166,6 +1203,11 @@ class Shop:
             #     continue
 
             if next_gift is False:
+                break
+
+            stale_count += 1
+            if stale_count > 2:
+                log.debug("连续多轮未找到可升级饰品，退出升级模块")
                 break
 
             loop_count -= 1
