@@ -73,7 +73,7 @@ def get_current_enkephalin():
 
 
 @begin_and_finish_time_log(task_name="体力换饼", calculate_time=False)
-def make_enkephalin_module(cancel=True, skip=True):
+def make_enkephalin_module(cancel=True, skip=True, *, task_name: str = "体力换饼"):
     """体力换饼的模块
     Args:
         cancel (bool): 是否点击取消按钮 (即关闭换体界面)
@@ -89,9 +89,11 @@ def make_enkephalin_module(cancel=True, skip=True):
 
     while True:
         now_time = time.time()
+        if auto.get_restore_time() is not None:
+            start_time = max(start_time, auto.get_restore_time())
         if 60 > now_time - start_time > 20 and int(now_time - start_time) % 10 == 0:
             if last_log_time is None or now_time - last_log_time > 5:
-                msg = f"已尝试狂气换体超过{int(now_time - start_time)}秒，如果非电脑硬件配置不足，请确认是否执行了正确的语言配置"
+                msg = f"已尝试{task_name}超过{int(now_time - start_time)}秒，如果非电脑硬件配置不足，请确认是否执行了正确的语言配置"
                 log.warning(msg)
                 last_log_time = now_time
         if now_time - start_time > 60:
@@ -100,9 +102,9 @@ def make_enkephalin_module(cancel=True, skip=True):
             if first_popup_warning and (last_log_time is None or now_time - last_log_time > 5):
                 # only do it once
                 first_popup_warning = False
-                log.warning("已尝试狂气换体超过1分钟，脚本将停止运行，请先检查语言配置，或检查电脑配置是否支持")
+                log.warning(f"已尝试{task_name}超过1分钟，脚本将停止运行，请先检查语言配置，或检查电脑配置是否支持")
                 mediator.link_start.emit()
-                message = "脚本卡死在狂气换体，请检查语言配置，或检查电脑配置是否支持"
+                message = f"脚本卡死在{task_name}，请检查语言配置，或检查电脑配置是否支持"
                 mediator.warning.emit(message)
         # 自动截图
         if auto.take_screenshot() is None:
@@ -140,7 +142,7 @@ def make_enkephalin_module(cancel=True, skip=True):
 
 @begin_and_finish_time_log(task_name="狂气换体", calculate_time=False)
 def lunacy_to_enkephalin(times=0):
-    make_enkephalin_module(cancel=False, skip=False)
+    make_enkephalin_module(cancel=False, skip=False, task_name="狂气换体")
     auto.click_element("enkephalin/use_lunacy_assets.png")
     sleep(0.5)
     Grandet = False
