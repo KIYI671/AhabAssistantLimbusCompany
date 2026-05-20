@@ -1,3 +1,14 @@
+"""
+这是一个 n×n 图片模板匹配相似度矩阵 的自动化分析工具，用于 发现重复/高度相似的图片资源、检查命名规范
+
+用法:
+    python scripts/image_similarity.py [folder] [options]
+
+默认扫描 assets/images，对每对图片计算 cv2.TM_CCOEFF_NORMED 得分，
+按类型（assets-assets / non-assets / mixed）使用不同匹配策略，
+超过 --threshold 的对会被归入报告。同时检查 5 类命名规范问题。
+"""
+
 import argparse
 import csv
 import hashlib

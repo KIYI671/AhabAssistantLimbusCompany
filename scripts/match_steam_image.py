@@ -1,3 +1,13 @@
+"""
+启动 Steam 游戏并截图，对指定目标图片进行模板匹配验证，输出各语言/主题下的匹配得分和坐标，
+用于确认某张资源图能否在当前游戏画面上被正确识别。
+
+用法:
+    python scripts/match_steam_image.py
+
+流程: DPI 初始化 → 挂载项目路径 → 启动游戏(120s 超时) → 截图 → 模板匹配 → 打印结果
+"""
+
 import os
 import sys
 import time
@@ -65,7 +75,7 @@ print(f"scale={scale:.6f}")
 # =============================================================================
 
 image_root = PROJECT_ROOT / "assets" / "images"
-target = "lunacy_spend_26_assets.png"
+target = "lunacy_spend_26_assets.png"  # 在此处修改用于识别的图片路径
 threshold = 0.8
 models = ("clam", "normal")
 
