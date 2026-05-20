@@ -160,9 +160,9 @@ class Handle:
         win32gui.ShowWindow(self.hwnd, win32con.SW_SHOWNOACTIVATE)
 
     @overload
-    def client_to_screen(self, x: int, y: int, /) -> tuple[int, int]: ...
+    def client_to_window(self, x: int, y: int, /) -> tuple[int, int]: ...
     @overload
-    def client_to_screen(
+    def client_to_window(
         self,
         x: int,
         y: int,
@@ -170,7 +170,7 @@ class Handle:
         client_rect: tuple[int, int, int, int],
         window_rect: tuple[int, int, int, int],
     ) -> tuple[int, int]: ...
-    def client_to_screen(
+    def client_to_window(
         self,
         x: int,
         y: int,
@@ -178,7 +178,7 @@ class Handle:
         client_rect: tuple[int, int, int, int] | None = None,
         window_rect: tuple[int, int, int, int] | None = None,
     ) -> tuple[int, int]:
-        """将客户区坐标转换为屏幕坐标"""
+        """将客户区屏幕坐标转换为窗口外框屏幕坐标"""
         if self.hwnd == 0:
             return (x, y)
         if client_rect is None or window_rect is None:
@@ -233,10 +233,10 @@ class Handle:
             if cfg.set_win_position == "free":
                 if rect[3] - rect[1] != bottom - top:
                     need_y = (
-                        top - self.client_to_screen(0, 0, client_rect=rect, window_rect=window_rect)[1]
+                        top - self.client_to_window(0, 0, client_rect=rect, window_rect=window_rect)[1]
                     )  # 防止标题栏不在窗口内
 
-        x, y = self.client_to_screen(need_x, need_y, client_rect=rect, window_rect=window_rect)
+        x, y = self.client_to_window(need_x, need_y, client_rect=rect, window_rect=window_rect)
         if need_x != rect[0] or need_y != rect[1]:
             self.set_window_pos(x, y)
 
@@ -371,7 +371,7 @@ class Screen(metaclass=SingletonMeta):
         # 获取当前窗口和客户区大小
         window_rect = win32gui.GetWindowRect(hwnd)
         client_rect = win32gui.GetClientRect(hwnd)
-        if self.handle.client_to_screen(0, 0) != (0, 0):
+        if self.handle.client_to_window(0, 0) != (0, 0):
             # 计算边框和标题栏厚度
             window_width = window_rect[2] - window_rect[0]
             window_height = window_rect[3] - window_rect[1]
