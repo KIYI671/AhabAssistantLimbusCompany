@@ -668,9 +668,6 @@ class WindowMoveInput(WinAbstractInput, metaclass=SingletonMeta):
         self._set_window_pos(target_x, target_y)
         return raw_pos
 
-    def get_mouse_position(self) -> tuple[int, int]:
-        return win32api.GetCursorPos()
-
     @overload
     def _set_window_pos(self, x_or_pos: int, y: int) -> tuple[int, int]: ...
     @overload
