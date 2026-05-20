@@ -8,8 +8,6 @@ from pathlib import Path
 # =============================================================================
 # 初始化区域：DPI、项目路径、依赖导入、参数、Steam 游戏窗口、截图
 # =============================================================================
-
-# DPI awareness must be set before importing Win32 / screenshot-related modules.
 try:
     if not windll.user32.SetProcessDpiAwarenessContext(c_void_p(-4)):
         raise OSError
@@ -61,9 +59,6 @@ print(f"client={screen.handle.width(True)}x{screen.handle.height(True)}")
 print(f"screenshot={screen_w}x{screen_h}")
 print(f"screenshot_path={screenshot_path}")
 print(f"scale={scale:.6f}")
-
-# 到这里初始化已经完成。
-# 你可以在这里插入其他测试代码，例如 OCR、窗口尺寸验证、点击坐标验证等。
 
 # =============================================================================
 # 核心识图区域：扫描 assets/images 下的目标图片，并计算模板匹配相似度
