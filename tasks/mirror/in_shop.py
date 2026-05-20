@@ -58,6 +58,7 @@ _MONEY_OCR_TRANSLATION = str.maketrans(
         "S": "5",
         "G": "6",
         "B": "8",
+        "h": "4",
     }
 )
 
