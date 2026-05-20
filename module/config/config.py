@@ -163,7 +163,6 @@ class Config(metaclass=SingletonMeta):
                         continue
 
                     settings["opening_bonus"] = [1, 1, 1, 1, 0, 0, 0, 0, 0, 0]
-                    settings["opening_bonus_level"] = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 
         log.info("配置升级完成")
 

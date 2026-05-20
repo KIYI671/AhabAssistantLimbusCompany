@@ -1,7 +1,8 @@
+import re
 from html import escape
 
-from PySide6.QtCore import QEvent, QObject, QPoint, QRectF, Qt, QTimer
-from PySide6.QtGui import QColor, QCursor, QPainter, QPainterPath, QPen
+from PySide6.QtCore import QEvent, QObject, QPoint, QRectF, Qt, QTimer, Signal
+from PySide6.QtGui import QColor, QCursor, QGuiApplication, QPainter, QPainterPath, QPen
 from PySide6.QtWidgets import QFrame, QHBoxLayout, QLabel, QPushButton, QSizePolicy, QVBoxLayout
 from qfluentwidgets import StyleSheetBase, isDarkTheme, setCustomStyleSheet, setStyleSheet
 
@@ -34,7 +35,15 @@ def _register_custom_style_widget(widget):
 
 def _format_starlight_tip(title: str, tip_text: str) -> str:
     tip_text = "\n".join(tip_text.splitlines()[1:])
-    html = escape(tip_text).replace("\\yellow{+}", '<span style="color:#d8a300;font-weight:700;">+</span>')
+    escaped_parts = []
+    last_end = 0
+    for match in re.finditer(r"\\yellow\{([^{}]*)\}", tip_text):
+        escaped_parts.append(escape(tip_text[last_end : match.start()]))
+        highlighted = escape(match.group(1))
+        escaped_parts.append(f'<span style="color:#d8a300;font-weight:700;">{highlighted}</span>')
+        last_end = match.end()
+    escaped_parts.append(escape(tip_text[last_end:]))
+    html = "".join(escaped_parts)
     html = html.replace("\n", "<br>")
     return (
         '<div style="white-space:nowrap; font-size:12px; line-height:1.45;">'
@@ -43,19 +52,44 @@ def _format_starlight_tip(title: str, tip_text: str) -> str:
     )
 
 
-class StarlightToolTipPopup(QLabel):
+class StarlightToolTipPopup(QFrame):
     def __init__(self):
         super().__init__(None, Qt.WindowType.ToolTip | Qt.WindowType.FramelessWindowHint)
-        self.setTextFormat(Qt.TextFormat.RichText)
+        self.setObjectName("starlightToolTipPopup")
         self.setAttribute(Qt.WidgetAttribute.WA_ShowWithoutActivating)
-        self.setMargin(0)
+
+        self.content_label = QLabel(self)
+        self.content_label.setObjectName("starlightToolTipText")
+        self.content_label.setTextFormat(Qt.TextFormat.RichText)
+        self.content_label.setAttribute(Qt.WidgetAttribute.WA_TransparentForMouseEvents)
+
+        self.content_layout = QVBoxLayout(self)
+        self.content_layout.setContentsMargins(7, 5, 7, 5)
+        self.content_layout.setSpacing(0)
+        self.content_layout.addWidget(self.content_label)
 
     def show_text(self, pos: QPoint, text: str):
-        self.setText(text)
+        self.content_label.setText(text)
         self._apply_theme_style()
+        self.content_label.adjustSize()
+        self.content_layout.activate()
         self.adjustSize()
-        self.move(pos)
+        self.move(self.__fit_to_screen(pos))
         self.show()
+
+    def __fit_to_screen(self, pos: QPoint) -> QPoint:
+        screen = QGuiApplication.screenAt(pos) or QGuiApplication.primaryScreen()
+        if screen is None:
+            return pos
+
+        rect = screen.availableGeometry()
+        min_x = rect.left() + 4
+        min_y = rect.top() + 4
+        max_x = max(min_x, rect.right() - self.width() - 4)
+        max_y = max(min_y, rect.bottom() - self.height() - 4)
+        x = min(max(pos.x(), min_x), max_x)
+        y = min(max(pos.y(), min_y), max_y)
+        return QPoint(x, y)
 
     def _apply_theme_style(self):
         _register_custom_style_widget(self)
@@ -148,12 +182,26 @@ class StarlightNameButton(QPushButton):
 class StarlightLevelSelector(QFrame):
     """A three-part selector for default, +, and ++ starlight levels."""
 
-    def __init__(self, config_name: str, label_text: str, parent=None):
+    stateChangedByClick = Signal(bool, int)
+
+    def __init__(
+        self,
+        config_name: str,
+        label_text: str,
+        parent=None,
+        *,
+        starlight_index: int | None = None,
+        base_cost: int | None = None,
+        emit_team_setting: bool = True,
+        toggle_selected_level: bool = True,
+    ):
         super().__init__(parent)
         self.setObjectName(config_name)
         self.config_name = config_name
-        self.starlight_index = int(config_name.split("_")[-1])
-        self.base_cost = STARLIGHT_BONUS_COSTS[self.starlight_index - 1]
+        self.starlight_index = starlight_index if starlight_index is not None else int(config_name.split("_")[-1])
+        self.base_cost = base_cost if base_cost is not None else STARLIGHT_BONUS_COSTS[self.starlight_index - 1]
+        self.emit_team_setting = emit_team_setting
+        self.toggle_selected_level = toggle_selected_level
         self.selected = False
         self.level = 0
 
@@ -173,7 +221,8 @@ class StarlightLevelSelector(QFrame):
         self.level_one_button.clicked.connect(lambda _checked=False: self.__on_segment_clicked(1))
         self.level_two_button.clicked.connect(lambda _checked=False: self.__on_segment_clicked(2))
         self._apply_theme_style()
-        self.__refresh_tooltips(label_text)
+        if 1 <= self.starlight_index <= len(STARLIGHT_BONUS_TIPS):
+            self.__refresh_tooltips(label_text)
 
     def __create_button(self, text: str, segment: str) -> QPushButton:
         if segment == "left":
@@ -250,8 +299,14 @@ class StarlightLevelSelector(QFrame):
     def __refresh_tooltips(self, title: str):
         tips = STARLIGHT_BONUS_TIPS[self.starlight_index - 1]
         self.__set_button_tooltip(self.default_button, lambda title=title: _format_starlight_tip(title, tips["buff"]))
-        self.__set_button_tooltip(self.level_one_button, lambda title=title: _format_starlight_tip(title, tips["buff+"]))
-        self.__set_button_tooltip(self.level_two_button, lambda title=title: _format_starlight_tip(title, tips["buff++"]))
+        self.__set_button_tooltip(
+            self.level_one_button,
+            lambda title=title: _format_starlight_tip(f"{title}+", tips["buff+"]),
+        )
+        self.__set_button_tooltip(
+            self.level_two_button,
+            lambda title=title: _format_starlight_tip(f"{title}++", tips["buff++"]),
+        )
 
     def __set_button_tooltip(self, button: QPushButton, text):
         tooltip_filter = getattr(button, "_starlight_tooltip_filter", None)
@@ -263,7 +318,10 @@ class StarlightLevelSelector(QFrame):
             tooltip_filter.set_text(text)
 
     def __on_segment_clicked(self, target_level: int):
-        if target_level == 0:
+        if not self.toggle_selected_level:
+            selected = True
+            level = target_level
+        elif target_level == 0:
             selected = not self.selected if self.selected and self.level == 0 else True
             level = 0
         elif self.selected and self.level == target_level:
@@ -273,9 +331,11 @@ class StarlightLevelSelector(QFrame):
             selected = True
             level = target_level
 
-        self.set_state(selected, level)
-        mediator.team_setting.emit({self.config_name: self.selected})
-        mediator.team_setting.emit({f"starlight_level_{self.starlight_index}": self.level})
+        self.stateChangedByClick.emit(selected, level)
+        if self.emit_team_setting:
+            mediator.team_setting.emit(
+                {f"starlight_state_{self.starlight_index}": {"selected": selected, "level": level}}
+            )
 
     def set_state(self, selected: bool, level: int):
         self.selected = selected
@@ -289,7 +349,8 @@ class StarlightLevelSelector(QFrame):
 
     def set_label_text(self, text: str):
         self.default_button.setText(text)
-        self.__refresh_tooltips(text)
+        if 1 <= self.starlight_index <= len(STARLIGHT_BONUS_TIPS):
+            self.__refresh_tooltips(text)
 
 
 class StarlightCard(QFrame):
@@ -299,8 +360,9 @@ class StarlightCard(QFrame):
         self.selected = False
         self.level = 0
         if team_config := cfg.config.teams.get(str(team_num)):
-            self.selected = bool(team_config.opening_bonus[self.starlight_index - 1])
-            self.level = team_config.opening_bonus_level[self.starlight_index - 1]
+            bonus_value = team_config.opening_bonus[self.starlight_index - 1]
+            self.selected = bonus_value >= 1
+            self.level = bonus_value - 1 if self.selected else 0
 
         self.label_text = label_text
         self.main_layout = QVBoxLayout(self)

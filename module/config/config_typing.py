@@ -109,10 +109,7 @@ class TeamSetting(BaseModel):
     """自定义奖励卡优先度"""
 
     opening_bonus: List[int] = [1, 1, 1, 1, 0, 0, 0, 0, 0, 0]
-    """启用的开局加成"""
-
-    opening_bonus_level: List[int] = [0] * 10
-    """启用的开局加成等级"""
+    """开局星光加成：0 未选中，1 基础，2 +，3 ++"""
 
     after_level_IV: bool = False
     """自定义合成四级后的操作"""

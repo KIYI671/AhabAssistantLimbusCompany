@@ -82,7 +82,6 @@ class Mirror:
         self.avoid_skill_3 = team_setting.avoid_skill_3  # 是否避免使用3技能
         # 开局星光加成
         self.opening_bonus = team_setting.opening_bonus
-        self.opening_bonus_level = team_setting.opening_bonus_level
         self.use_starlight = team_setting.use_starlight
         # 自选奖励卡优先度
         self.reward_cards = team_setting.reward_cards
@@ -760,12 +759,12 @@ class Mirror:
             click_list = []
             level_one_count = 0
             level_two_count = 0
-            for index, selected in enumerate(self.opening_bonus):
-                if selected:
+            for index, bonus_value in enumerate(self.opening_bonus):
+                if bonus_value >= 1:
                     click_list.append(index)
-                    if self.opening_bonus_level[index] == 1:
+                    if bonus_value == 2:
                         level_one_count += 1
-                    elif self.opening_bonus_level[index] == 2:
+                    elif bonus_value == 3:
                         level_two_count += 1
             if click_list and len(click_list) == level_one_count:
                 all_click_level = 1
@@ -797,9 +796,9 @@ class Mirror:
                 pass
             else:
                 for index in click_list:
-                    if self.opening_bonus_level[index]:
+                    if self.opening_bonus[index] >= 2:
                         if index <= 4:
-                            if self.opening_bonus_level[index] == 2:
+                            if self.opening_bonus[index] == 3:
                                 x = first_single_plus[0] + double_plus_offset + star_card_size[0] * index
                             else:
                                 x = first_single_plus[0] + star_card_size[0] * index
@@ -808,7 +807,7 @@ class Mirror:
                                 first_single_plus[1],
                             )
                         else:
-                            if self.opening_bonus_level[index] == 2:
+                            if self.opening_bonus[index] == 3:
                                 x = first_single_plus[0] + double_plus_offset + star_card_size[0] * (index - 5)
                             else:
                                 x = first_single_plus[0] + star_card_size[0] * (index - 5)

@@ -259,54 +259,54 @@ STARLIGHT_BONUS_COSTS = [10, 10, 20, 20, 30, 30, 40, 40, 50, 60]
 
 STARLIGHT_BONUS_TIPS = [
     {
-        "buff": "buff：\n经费+\n卡包+\n饰品+\n刷新+",
-        "buff+": "buff+：\n经费+\\yellow{+}\n卡包+\n饰品+\n刷新+",
-        "buff++": "buff++：\n经费+\\yellow{+}\n卡包+\n饰品+\n刷新+\\yellow{+}",
+        "buff": "buff：\n初始经费 +150\n主题卡包出现数量 +1\n商店里展出的饰品数量 +1\n可免费进行商店普通刷新 1次",
+        "buff+": "buff+：\n初始经费 \\yellow{+250}\n主题卡包出现数量 +1\n商店里展出的饰品数量 +1\n可免费进行商店普通刷新 1次",
+        "buff++": "buff++：\n初始经费 \\yellow{+250}\n主题卡包出现数量 +1\n商店里展出的饰品数量 +1\n可免费进行商店普通刷新 \\yellow{2次}",
     },
     {
-        "buff": "buff：\n过层经费+\n售卖经费+",
-        "buff+": "buff+：\n过层经费+\\yellow{+}\n售卖经费+\\yellow{+}",
-        "buff++": "buff++：\n过层经费+\\yellow{+}\\yellow{+}\n售卖经费+\\yellow{+}\\yellow{+}",
+        "buff": "buff：\n进入下个阶段时，增加当前经费的10%(最多100)\n售卖饰品所得经费增加50%(每个商店1次)",
+        "buff+": "buff+：\n进入下个阶段时，增加当前经费的\\yellow{20%(最多125)}\n售卖饰品所得经费增加\\yellow{75%(每个商店1次)}",
+        "buff++": "buff++：\n进入下个阶段时，增加当前经费的\\yellow{30%(最多150)}\n售卖饰品所得经费增加\\yellow{100%(每个商店1次)}",
     },
     {
-        "buff": "buff：\n卡包+\n卡包刷新+\n人格等级+",
-        "buff+": "buff+：\n卡包+\n卡包刷新+\\yellow{+}\n人格等级+\n拼点\\yellow{+}",
-        "buff++": "buff++：\n卡包+\n卡包刷新+\\yellow{+}\\yellow{+}\n人格等级+\n拼点\\yellow{+}\\yellow{+}",
+        "buff": "buff：\n主题卡包出现数量 +1\n主题卡包刷新次数 +2\n选择未记录的主题卡包时，所有人格等级 +3(最多9级)",
+        "buff+": "buff+：\n主题卡包出现数量 +1\n主题卡包刷新次数 \\yellow{+3}\n选择未记录的主题卡包时，所有人格等级 +3(最多9级)\n\\yellow{如果解锁了45个及以上主题卡包图鉴中的主题卡包，获得1层拼点威力提升}",
+        "buff++": "buff++：\n主题卡包出现数量 +1\n主题卡包刷新次数 \\yellow{+4}\n选择未记录的主题卡包时，所有人格等级 +3(最多9级)\n\\yellow{如果解锁了45个及以上主题卡包图鉴中的主题卡包，获得2层拼点威力提升}",
     },
     {
-        "buff": "buff：\n经费+\n饰品选择+",
-        "buff+": "buff+：\n经费+\\yellow{+}\n饰品选择+\n星芒经费\\yellow{+}",
-        "buff++": "buff++：\n经费+\\yellow{+}\\yellow{+}\n饰品选择+\n星芒经费\\yellow{+}",
+        "buff": "buff：\n初始经费 +400\n初始饰品可选择数 +1",
+        "buff+": "buff+：\n初始经费 \\yellow{+500}\n初始饰品可选择数 +1\n\\yellow{选择遭遇战奖励卡中的星芒选项时，经费 +75}",
+        "buff++": "buff++：\n初始经费 \\yellow{+700}\n初始饰品可选择数 +1\n\\yellow{选择遭遇战奖励卡中的星芒选项时，经费 +150}",
     },
     {
-        "buff": "buff：\n商店饰品+\n战斗经费+\n高级饰品+",
-        "buff+": "buff+：\n商店饰品+\n战斗经费+\\yellow{+}\n高级饰品+\n商店经费\\yellow{+}",
-        "buff++": "buff++：\n商店饰品+\n战斗经费+\\yellow{+}\\yellow{+}\n高级饰品+\n商店经费\\yellow{+}",
+        "buff": "buff：\n商店里展出的饰品数量 +1\n战斗胜利时获得的经费 +20%\n提升商店里更高等级饰品的展出概率",
+        "buff+": "buff+：\n商店里展出的饰品数量 +1\n战斗胜利时获得的经费 \\yellow{+30%}\n提升商店里更高等级饰品的展出概率\n\\yellow{进入商店时，获得等同于当前持有的饰品等级之和的经费(最多75)}",
+        "buff++": "buff++：\n商店里展出的饰品数量 +1\n战斗胜利时获得的经费 \\yellow{+40%}\n提升商店里更高等级饰品的展出概率\n\\yellow{进入商店时，获得等同于当前持有的饰品等级之和的经费(最多150)}",
     },
     {
-        "buff": "buff：\n关键词刷新+\n初始饰品+",
-        "buff+": "buff+：\n关键词刷新+\n初始饰品+\\yellow{+}\n特殊商店\\yellow{+}",
-        "buff++": "buff++：\n关键词刷新+\\yellow{+}\n初始饰品+\\yellow{+}\n特殊商店\\yellow{+}\\yellow{+}",
+        "buff": "buff：\n可免费进行商店关键词刷新 1次\n进入第1层时，随机获得1件1级饰品",
+        "buff+": "buff+：\n可免费进行商店关键词刷新 1次\n进入第1层时，随机获得\\yellow{2件}1级饰品\n\\yellow{特殊商店出现概率 +10%}",
+        "buff++": "buff++：\n可免费进行商店关键词刷新 \\yellow{2次}\n进入第1层时，随机获得\\yellow{3件}1级饰品\n\\yellow{特殊商店出现概率 +25%}",
     },
     {
-        "buff": "buff：\n初始等级+\n过层等级+",
-        "buff+": "buff+：\n初始等级+\n过层等级+\\yellow{+}",
-        "buff++": "buff++：\n初始等级+\n六层等级\\yellow{+}\n过层等级+\\yellow{+}",
+        "buff": "buff：\n进入第1层时，人格等级 +3\n通过阶段时，人格等级 +1(最多+5)",
+        "buff+": "buff+：\n进入第1层时，人格等级 +3\n通过阶段时，人格等级 +1\\yellow{(最多+9)}",
+        "buff++": "buff++：\n进入第1层时，人格等级 +3\n\\yellow{进入第6层时，人格等级 +3}\n通过阶段时，人格等级 +1\\yellow{(最多+9)}",
     },
     {
-        "buff": "buff：\n速度+\n拼点+\n伤害+\n守护+",
-        "buff+": "buff+：\n速度+\\yellow{+}\n拼点+\n伤害+\n守护+",
-        "buff++": "buff++：\n速度+\\yellow{+}\\yellow{+}\n拼点+\n伤害+\n守护+",
+        "buff": "buff：\n最大速度值 +2\n获得1层 拼点威力提升\n获得1层 伤害强化\n获得1层 守护",
+        "buff+": "buff+：\n最大速度值 \\yellow{+3}\n获得\\yellow{2层} 拼点威力提升\n获得1层 伤害强化\n获得1层 守护",
+        "buff++": "buff++：\n最大速度值 \\yellow{+3}\n获得\\yellow{2层} 拼点威力提升\n获得\\yellow{2层} 伤害强化\n获得\\yellow{2层} 守护",
     },
     {
-        "buff": "buff：\n商店饰品+\n三层饰品+\n合成饰品+",
-        "buff+": "buff+：\n商店饰品+\\yellow{+}\n三层饰品+\n五层饰品\\yellow{+}\n合成饰品+",
-        "buff++": "buff++：\n商店饰品+\\yellow{+}\n三层饰品+\n五层饰品\\yellow{+}\n七层饰品\\yellow{+}\n合成饰品+\\yellow{+}",
+        "buff": "buff：\n进入商店时，随机获得1件3级及以下的合成/售卖专用饰品\n进入第3层时，随机获得1件3级饰品\n合成时，随机获得比合成产物(3级及以上)低2级的饰品(每个商店最多1次)",
+        "buff+": "buff+：\n售卖专用饰品\n第5层及以下：\\yellow{1~3级}\n第6层及以上：\\yellow{2~3级}\n进入第3层\\yellow{与第5层}时，随机获得1件所选关键词的3级饰品\n合成时，随机获得比合成产物(3级及以上)低2级的饰品(每个商店最多1次)",
+        "buff++": "buff++：\n售卖专用饰品\n第5层及以下：\\yellow{2~3级}\n第6层及以上：\\yellow{3~4级}\n进入第3层、第5层\\yellow{与第7层}时，随机获得1件所选关键词的\\yellow{4级}饰品\n合成时，随机获得比合成产物(3级及以上)低\\yellow{1级}的饰品(每个商店最多1次)",
     },
     {
-        "buff": "buff：\n卡包+\n饰品选择+\n关键词饰品+\n黯淡残影+",
-        "buff+": "buff+：\n饰品选择+\n关键词饰品+\\yellow{+}\n黯淡残影+\n微茫残影\\yellow{+}",
-        "buff++": "buff++：\n卡包+\n饰品选择+\n关键词饰品+\\yellow{+}\\yellow{+}\n黯淡残影+\n微茫残影\\yellow{+}\n闪耀残影\\yellow{+}",
+        "buff": "buff：\n主题卡包出现数量 +1\n初始饰品可选择数 +1\n进入镜像迷宫时，选择获得1件所选关键词对应的随机3级饰品(若无该等级的饰品，则会出现更低等级的饰品)\n进入镜像迷宫时，获得1个黯淡的残影",
+        "buff+": "buff+：\n主题卡包出现数量 +1\n初始饰品可选择数 +1\n进入镜像迷宫时，选择获得\\yellow{2件}所选关键词对应的随机3级饰品(若无该等级的饰品，则会出现更低等级的饰品)\n进入镜像迷宫时，获得1个黯淡的残影、\\yellow{1个微茫的残影}",
+        "buff++": "buff++：\n初始饰品可选择数 +1\n进入镜像迷宫时，选择获得\\yellow{3件}所选关键词对应的随机3级饰品(若无该等级的饰品，则会出现更低等级的饰品)\n进入镜像迷宫时，获得1个黯淡的残影、1个微茫的残影、\\yellow{1个闪耀的残影}",
     },
 ]
 
@@ -333,21 +333,29 @@ STARLIGHT_COST_LABEL_STYLES = {
 
 STARLIGHT_TOOLTIP_STYLES = {
     "light": """
-        QLabel {
+        QFrame#starlightToolTipPopup {
             background-color: rgb(255, 255, 255);
             border: 1px solid rgba(0, 0, 0, 38);
             border-radius: 6px;
+        }
+        QLabel#starlightToolTipText {
+            background: transparent;
+            border: none;
             color: rgba(0, 0, 0, 0.82);
-            padding: 6px 8px;
+            padding: 0;
         }
     """,
     "dark": """
-        QLabel {
+        QFrame#starlightToolTipPopup {
             background-color: rgb(45, 45, 45);
             border: 1px solid rgba(255, 255, 255, 46);
             border-radius: 6px;
+        }
+        QLabel#starlightToolTipText {
+            background: transparent;
+            border: none;
             color: rgba(255, 255, 255, 0.92);
-            padding: 6px 8px;
+            padding: 0;
         }
     """,
 }

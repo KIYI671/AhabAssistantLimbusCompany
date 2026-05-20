@@ -26,7 +26,7 @@ from app.base_combination import (
 )
 from app.base_tools import BaseCheckBox, BaseComboBox, BaseLabel, BaseLineEdit, BaseSettingLayout
 from app.card.messagebox_custom import BaseInfoBar, MessageBoxConfirm
-from app.common.ui_config import STARLIGHT_BONUS_NAMES
+from app.common.ui_config import STARLIGHT_BONUS_COSTS, STARLIGHT_BONUS_NAMES
 from app.language_manager import LanguageManager
 from app.starlight_bonus import StarlightCard, StarlightLevelSelector
 from app.theme_pack_setting_interface import ThemePackSettingDialog
@@ -330,12 +330,26 @@ class TeamSettingCard(QFrame):
                         self.team_setting.sinner_order[i] -= 1
                 self.team_setting.sinner_order[sinner_index] = 0
             self.refresh_sinner_order()
+        elif keys == "starlight_all_state":
+            selected = bool(values["selected"])
+            level = max(0, min(int(values["level"]), 2)) if selected else 0
+            self.team_setting.opening_bonus = [level + 1 if selected else 0] * 10
+            self.refresh_starlight_select()
+        elif "starlight_state_" in keys:
+            starlight_index = int(keys.split("_")[-1]) - 1
+            selected = bool(values["selected"])
+            level = max(0, min(int(values["level"]), 2)) if selected else 0
+            self.team_setting.opening_bonus[starlight_index] = level + 1 if selected else 0
+            self.refresh_starlight_select()
         elif "starlight_level_" in keys:
             level_index = int(keys.split("_")[-1]) - 1
-            self.team_setting.opening_bonus_level[level_index] = values
+            if self.team_setting.opening_bonus[level_index] >= 1:
+                self.team_setting.opening_bonus[level_index] = max(0, min(int(values), 2)) + 1
+            self.refresh_starlight_select()
         elif "starlight_" in keys:
             starlight_index = int(keys.split("_")[-1]) - 1
             self.team_setting.opening_bonus[starlight_index] = 1 if values else 0
+            self.refresh_starlight_select()
         elif keys in second_system_mode:
             mode_index = second_system_mode.index(keys)
             self.team_setting.second_system_action[mode_index] = values
@@ -365,13 +379,33 @@ class TeamSettingCard(QFrame):
 
     def refresh_starlight_select(self):
         opening_bonus = self.team_setting.opening_bonus
-        opening_bonus_level = self.team_setting.opening_bonus_level
         for i in range(1, 11):
             starlight = self.findChild(StarlightLevelSelector, f"starlight_{i}")
             if starlight is not None:
-                selected = bool(opening_bonus[i - 1]) if i <= len(opening_bonus) else False
-                level = opening_bonus_level[i - 1] if i <= len(opening_bonus_level) else 0
+                bonus_value = opening_bonus[i - 1] if i <= len(opening_bonus) else 0
+                selected = bonus_value >= 1
+                level = bonus_value - 1 if selected else 0
                 starlight.set_state(selected, level)
+        self.refresh_starlight_select_all()
+
+    def refresh_starlight_select_all(self):
+        select_all = self.findChild(StarlightLevelSelector, "starlight_all")
+        if select_all is None:
+            return
+
+        opening_bonus = self.team_setting.opening_bonus
+        if len(opening_bonus) < 10:
+            select_all.set_state(False, 0)
+            return
+
+        if all(opening_bonus[index] >= 3 for index in range(10)):
+            select_all.set_state(True, 2)
+        elif all(opening_bonus[index] >= 2 for index in range(10)):
+            select_all.set_state(True, 1)
+        elif all(opening_bonus[index] >= 1 for index in range(10)):
+            select_all.set_state(True, 0)
+        else:
+            select_all.set_state(False, 0)
 
     def refresh_sinner_order(self):
         sinner_order = self.team_setting.sinner_order
@@ -583,6 +617,10 @@ class CustomizeSettingsModule(QFrame):
         self.star_layout.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
         self.star_layout.setMaximumHeight(240)
         self.star_layout.setMaximumWidth(950)
+        self.star_action_widget = QWidget()
+        self.star_action_line = QHBoxLayout(self.star_action_widget)
+        self.star_action_line.setContentsMargins(0, 0, 0, 0)
+        self.star_action_line.setSpacing(8)
         self.star_list = QGridLayout()
         self.star_list.setVerticalSpacing(10)
 
@@ -686,6 +724,19 @@ class CustomizeSettingsModule(QFrame):
         self.starlight_8 = StarlightCard("starlight_8", STARLIGHT_BONUS_NAMES[7], self.team_num)
         self.starlight_9 = StarlightCard("starlight_9", STARLIGHT_BONUS_NAMES[8], self.team_num)
         self.starlight_10 = StarlightCard("starlight_10", STARLIGHT_BONUS_NAMES[9], self.team_num)
+        self.starlight_select_all = StarlightLevelSelector(
+            "starlight_all",
+            QT_TRANSLATE_NOOP("CustomizeSettingsModule", "全选"),
+            self,
+            starlight_index=0,
+            base_cost=sum(STARLIGHT_BONUS_COSTS),
+            emit_team_setting=False,
+        )
+        self.starlight_select_all.setFixedWidth(260)
+        self.starlight_clear_button = PushButton(QT_TRANSLATE_NOOP("CustomizeSettingsModule", "清空"))
+
+        self.starlight_clear_button.clicked.connect(lambda: self.__set_all_starlight(False, 0))
+        self.starlight_select_all.stateChangedByClick.connect(self.__set_all_starlight)
 
         self.after_level_IV = CheckBoxWithComboBox(
             "after_level_IV",
@@ -809,6 +860,10 @@ class CustomizeSettingsModule(QFrame):
         self.features_patch_line_1.addWidget(self.aggressive_save_systems)
         self.features_patch_line_1.addWidget(self.defense_first_round)
 
+        self.star_action_line.addWidget(self.starlight_clear_button)
+        self.star_action_line.addWidget(self.starlight_select_all)
+        self.star_action_line.addStretch()
+        self.star_layout.add(self.star_action_widget)
         self.star_list.addWidget(self.starlight_1, 0, 0)
         self.star_list.addWidget(self.starlight_2, 0, 1)
         self.star_list.addWidget(self.starlight_3, 0, 2)
@@ -877,6 +932,10 @@ class CustomizeSettingsModule(QFrame):
         self.main_layout.addWidget(self.tenth_line_widget)
         self.main_layout.addWidget(self.eleventh_line_widget)
 
+    def __set_all_starlight(self, selected: bool, level: int):
+        level = max(0, min(level, 2)) if selected else 0
+        mediator.team_setting.emit({"starlight_all_state": {"selected": selected, "level": level}})
+
     def retranslateUi(self):
         self.do_not_heal.retranslateUi()
         self.do_not_buy.retranslateUi()
@@ -894,6 +953,8 @@ class CustomizeSettingsModule(QFrame):
         self.fixed_team_use.retranslateUi()
         self.reward_cards.retranslateUi()
         self.re_formation_each_floor.retranslateUi()
+        self.starlight_select_all.set_label_text(self.tr("全选"))
+        self.starlight_clear_button.setText(self.tr("清空"))
 
         for index in range(1, 11):
             starlight = self.findChild(StarlightLevelSelector, f"starlight_{index}")
