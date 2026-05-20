@@ -8,6 +8,7 @@ import win32process
 
 from module.automation import auto
 from module.config import cfg
+from module.game_and_screen import screen
 from module.logger import log
 from utils.utils import check_game_running
 
@@ -69,7 +70,12 @@ def check_times(start_time, timeout=90, logs=True):
 def retry():
     """重试连接"""
     start_time = time.time()
+    saved_hwnd = screen.handle.hwnd
     while True:
+        if screen.handle.hwnd != saved_hwnd:
+            # 句柄发生变化则重置初始时间, 以免误判卡死
+            saved_hwnd = screen.handle.hwnd
+            start_time = time.time()
         if auto.get_restore_time() is not None:
             start_time = max(start_time, auto.get_restore_time())
         if check_times(start_time):
