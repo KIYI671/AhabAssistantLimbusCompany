@@ -431,12 +431,12 @@ class Battle:
                 # 为某些人在副本战斗过程中启动脚本任务进行收尾
                 if self.first_battle:
                     if (
-                        auto.find_element("battle/clear_rewards_EXP_1.png")
-                        or auto.find_element("battle/clear_rewards_EXP_2.png")
-                        or auto.find_element("battle/clear_rewards_EXP_3.png")
+                        auto.find_element("battle/clear_rewards_EXP_1_assets.png")
+                        or auto.find_element("battle/clear_rewards_EXP_2_assets.png")
+                        or auto.find_element("battle/clear_rewards_EXP_3_assets.png")
                     ):
                         first_battle_reward = "EXP"
-                    if auto.find_element("battle/clear_rewards_thread.png"):
+                    if auto.find_element("battle/clear_rewards_thread_assets.png"):
                         first_battle_reward = "thread"
                 auto.click_element("battle/battle_finish_confirm_assets.png")
                 if infinite_battle:

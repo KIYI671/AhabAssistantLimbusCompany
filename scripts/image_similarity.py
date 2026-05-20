@@ -45,6 +45,9 @@ class NamingIssue:
     detail: str
 
 
+SimilarityPair = tuple[str, str, float, float, float, str, str]
+
+
 def emit(message: str) -> None:
     sys.stdout.write(f"{message}\n")
     sys.stdout.flush()
@@ -293,7 +296,11 @@ def checkbox_key(*parts: object) -> str:
     return hashlib.sha1(raw.encode("utf-8")).hexdigest()
 
 
-def entry_similarity(left: ImageEntry, right: ImageEntry, assets_model: str) -> tuple[float, str]:
+def score_label(clam_score: float, normal_score: float) -> str:
+    return f"{clam_score:.6f} / {normal_score:.6f}"
+
+
+def entry_similarity_for_model(left: ImageEntry, right: ImageEntry, assets_model: str) -> tuple[float, str]:
     kind = pair_type(left, right)
     if kind == "assets-assets":
         scores = [
@@ -310,7 +317,18 @@ def entry_similarity(left: ImageEntry, right: ImageEntry, assets_model: str) -> 
     return non_positioned_similarity(assets_entry.template, non_assets_entry.image), kind
 
 
-def compute_similarity_row(row: int, images: list[ImageEntry], threshold: float, assets_model: str):
+def entry_similarity(left: ImageEntry, right: ImageEntry) -> tuple[float, float, float, str]:
+    kind = pair_type(left, right)
+    if kind == "assets-assets":
+        clam_score, _ = entry_similarity_for_model(left, right, "clam")
+        normal_score, _ = entry_similarity_for_model(left, right, "normal")
+        return max(clam_score, normal_score), clam_score, normal_score, kind
+
+    score, _ = entry_similarity_for_model(left, right, "normal")
+    return score, score, score, kind
+
+
+def compute_similarity_row(row: int, images: list[ImageEntry], threshold: float):
     row_entry = images[row]
     row_scores = [0.0 for _ in images]
     row_scores[row] = 1.0
@@ -319,11 +337,21 @@ def compute_similarity_row(row: int, images: list[ImageEntry], threshold: float,
 
     for col in range(row + 1, len(images)):
         col_entry = images[col]
-        score, kind = entry_similarity(row_entry, col_entry, assets_model)
+        max_score, clam_score, normal_score, kind = entry_similarity(row_entry, col_entry)
         category_counts[kind] += 1
-        row_scores[col] = score
-        if score >= threshold:
-            highlighted_pairs.append((row_entry.name, col_entry.name, score, kind, name_relation(row_entry.name, col_entry.name)))
+        row_scores[col] = max_score
+        if max_score >= threshold:
+            highlighted_pairs.append(
+                (
+                    row_entry.name,
+                    col_entry.name,
+                    max_score,
+                    clam_score,
+                    normal_score,
+                    kind,
+                    name_relation(row_entry.name, col_entry.name),
+                )
+            )
 
     return row, row_scores, highlighted_pairs, len(images) - row - 1, category_counts
 
@@ -368,9 +396,10 @@ def write_pairs(
     load_seconds: float,
     write_seconds: float,
     total_seconds: float,
-    pairs: list[tuple[str, str, float, str, str]],
+    pairs: list[SimilarityPair],
     skipped: list[tuple[str, str]],
     naming_issues: list[NamingIssue],
+    assets_model: str | None = None,
 ) -> None:
     with output_path.open("w", encoding="utf-8") as file:
         file.write(f"folder={folder.as_posix()}\n")
@@ -382,11 +411,13 @@ def write_pairs(
         file.write(f"assets_assets_pairs={category_counts['assets-assets']}\n")
         file.write(f"non_assets_pairs={category_counts['non-assets']}\n")
         file.write(f"mixed_pairs={category_counts['mixed']}\n")
-        same_target_pairs = [pair for pair in pairs if pair[4] == "same-target"]
-        different_target_pairs = [pair for pair in pairs if pair[4] == "different-target"]
+        same_target_pairs = [pair for pair in pairs if pair[6] == "same-target"]
+        different_target_pairs = [pair for pair in pairs if pair[6] == "different-target"]
         file.write(f"same_target_pairs={len(same_target_pairs)}\n")
         file.write(f"different_target_pairs={len(different_target_pairs)}\n")
         file.write(f"naming_issues={len(naming_issues)}\n")
+        if assets_model is not None:
+            file.write("assets_models=clam,normal\n")
         file.write(f"max_workers={max_workers}\n")
         file.write(f"parallel_pair_workers={max_workers}\n")
         file.write(f"load_seconds={load_seconds:.3f}\n")
@@ -402,11 +433,17 @@ def write_pairs(
             for issue in naming_issues:
                 file.write(f"{issue.kind}\t{issue.name}\t{issue.detail}\n")
         file.write("SAME_TARGET_PAIRS\n")
-        for left, right, score, kind, relation in same_target_pairs:
-            file.write(f"{score:.6f}\t{left}\t{right}\t{kind}\t{relation}\n")
+        for left, right, max_score, clam_score, normal_score, kind, relation in same_target_pairs:
+            file.write(
+                f"score={score_label(clam_score, normal_score)}\t"
+                f"max={max_score:.6f}\t{left}\t{right}\t{kind}\t{relation}\n"
+            )
         file.write("DIFFERENT_TARGET_PAIRS\n")
-        for left, right, score, kind, relation in different_target_pairs:
-            file.write(f"{score:.6f}\t{left}\t{right}\t{kind}\t{relation}\n")
+        for left, right, max_score, clam_score, normal_score, kind, relation in different_target_pairs:
+            file.write(
+                f"score={score_label(clam_score, normal_score)}\t"
+                f"max={max_score:.6f}\t{left}\t{right}\t{kind}\t{relation}\n"
+            )
 
 
 def write_report(
@@ -416,16 +453,17 @@ def write_report(
     threshold: float,
     total_pairs: int,
     category_counts: dict[str, int],
-    pairs: list[tuple[str, str, float, str, str]],
+    pairs: list[SimilarityPair],
     naming_issues: list[NamingIssue],
     html_report_path: Path | None = None,
+    assets_model: str = "normal",
 ) -> None:
     grouped_pairs = {
         "same-target": {"assets-assets": [], "non-assets": [], "mixed": []},
         "different-target": {"assets-assets": [], "non-assets": [], "mixed": []},
     }
     for pair in pairs:
-        grouped_pairs[pair[4]][pair[3]].append(pair)
+        grouped_pairs[pair[6]][pair[5]].append(pair)
 
     grouped_issues: dict[str, list[NamingIssue]] = {}
     for issue in naming_issues:
@@ -442,7 +480,9 @@ def write_report(
         folder_path = folder.as_posix()
         file.write(f"- 图片目录：[`{folder_path}`]({folder_path})\n")
         file.write(f"- 图片数量：{len(images)}\n")
-        file.write(f"- 阈值：score >= {threshold}\n")
+        file.write(f"- 阈值：max(score) >= {threshold}\n")
+        file.write("- score 格式：clam / normal\n")
+        file.write("- 排序与阈值：按 clam 与 normal 的最大值判断\n")
         file.write(f"- 总匹配对数：{total_pairs}\n")
         file.write(f"- 命中对数：{len(pairs)}\n")
         file.write(f"- assets-assets 对数：{category_counts['assets-assets']}\n")
@@ -473,7 +513,7 @@ def write_relation_section(file, section: str, title: str, grouped_by_kind: dict
     write_kind_section(
         file,
         "assets-assets：位置敏感匹配",
-        "这类包含 `_assets` 和 `_bbox` 后缀图片，使用 `find_element` 风格的 bbox 限定区域，默认 model=normal。",
+        "这类包含 `_assets` 和 `_bbox` 后缀图片，使用 `find_element` 风格的 bbox 限定区域；本次报告模式见汇总。",
         grouped_by_kind["assets-assets"],
     )
     write_kind_section(file, "non-assets：核心图匹配", "", grouped_by_kind["non-assets"])
@@ -485,15 +525,15 @@ def write_relation_section(file, section: str, title: str, grouped_by_kind: dict
     )
 
 
-def write_kind_section(file, title: str, description: str, pairs: list) -> None:
+def write_kind_section(file, title: str, description: str, pairs: list[SimilarityPair]) -> None:
     file.write(f"### {title}（{len(pairs)} 对）\n\n")
     if description:
         file.write(f"{description}\n\n")
     if not pairs:
         file.write("- 无\n\n")
         return
-    for left, right, score, kind, relation in pairs:
-        file.write(markdown_item_line(f"score={score:.6f}"))
+    for left, right, max_score, clam_score, normal_score, kind, relation in pairs:
+        file.write(markdown_item_line(f"score={score_label(clam_score, normal_score)}"))
         file.write(f"  - {image_link(left)}\n")
         file.write(f"  - {image_link(right)}\n")
     file.write("\n")
@@ -506,15 +546,16 @@ def write_html_report(
     threshold: float,
     total_pairs: int,
     category_counts: dict[str, int],
-    pairs: list[tuple[str, str, float, str, str]],
+    pairs: list[SimilarityPair],
     naming_issues: list[NamingIssue],
+    assets_model: str = "normal",
 ) -> None:
     grouped_pairs = {
         "same-target": {"assets-assets": [], "non-assets": [], "mixed": []},
         "different-target": {"assets-assets": [], "non-assets": [], "mixed": []},
     }
     for pair in pairs:
-        grouped_pairs[pair[4]][pair[3]].append(pair)
+        grouped_pairs[pair[6]][pair[5]].append(pair)
 
     grouped_issues: dict[str, list[NamingIssue]] = {}
     for issue in naming_issues:
@@ -546,7 +587,9 @@ def write_html_report(
         file.write("<h2>汇总</h2>\n<ul class=\"summary\">\n")
         file.write(f"<li>图片目录：{html_link(folder_path, folder_path)}</li>\n")
         file.write(f"<li>图片数量：{len(images)}</li>\n")
-        file.write(f"<li>阈值：score &gt;= {threshold}</li>\n")
+        file.write(f"<li>阈值：max(score) &gt;= {threshold}</li>\n")
+        file.write("<li>score 格式：clam / normal</li>\n")
+        file.write("<li>排序与阈值：按 clam 与 normal 的最大值判断</li>\n")
         file.write(f"<li>总匹配对数：{total_pairs}</li>\n")
         file.write(f"<li>命中对数：{len(pairs)}</li>\n")
         file.write(f"<li>assets-assets 对数：{category_counts['assets-assets']}</li>\n")
@@ -602,7 +645,7 @@ def write_html_relation_section(file, section: str, title: str, grouped_by_kind:
     write_html_kind_section(
         file,
         "assets-assets：位置敏感匹配",
-        "这类包含 `_assets` 和 `_bbox` 后缀图片，使用 `find_element` 风格的 bbox 限定区域，默认 model=normal。",
+        "这类包含 `_assets` 和 `_bbox` 后缀图片，使用 `find_element` 风格的 bbox 限定区域；本次报告模式见汇总。",
         grouped_by_kind["assets-assets"],
     )
     write_html_kind_section(file, "non-assets：核心图匹配", "", grouped_by_kind["non-assets"])
@@ -614,7 +657,7 @@ def write_html_relation_section(file, section: str, title: str, grouped_by_kind:
     )
 
 
-def write_html_kind_section(file, title: str, description: str, pairs: list) -> None:
+def write_html_kind_section(file, title: str, description: str, pairs: list[SimilarityPair]) -> None:
     file.write(f"<h3>{html.escape(title)}（{len(pairs)} 对）</h3>\n")
     if description:
         file.write(f"<p>{html.escape(description)}</p>\n")
@@ -622,9 +665,9 @@ def write_html_kind_section(file, title: str, description: str, pairs: list) -> 
         file.write("<p>无</p>\n")
         return
     file.write("<ul>\n")
-    for left, right, score, kind, relation in pairs:
+    for left, right, max_score, clam_score, normal_score, kind, relation in pairs:
         key = checkbox_key("pair", left, right, kind)
-        file.write(f"<li>{html_checkbox_html(key, f'score={score:.6f}')}\n<ul>\n")
+        file.write(f"<li>{html_checkbox_html(key, f'score={score_label(clam_score, normal_score)}')}\n<ul>\n")
         file.write(f"<li>{html_link(left, f'assets/images/{left}')}</li>\n")
         file.write(f"<li>{html_link(right, f'assets/images/{right}')}</li>\n")
         file.write("</ul>\n</li>\n")
@@ -654,7 +697,7 @@ def parse_args() -> argparse.Namespace:
         "--assets-model",
         choices=("normal", "clam", "aggressive"),
         default="normal",
-        help="assets-assets 的 bbox 搜索模式，默认 normal",
+        help="兼容旧参数；当前会同时计算 clam 和 normal",
     )
     parser.add_argument("--no-recursive", action="store_true", help="只扫描文件夹第一层")
     parser.add_argument("--no-assets-crop", action="store_true", help="不对 *_assets / *_bbox 图片裁剪黑边")
@@ -718,7 +761,7 @@ def main() -> int:
     emit(f"matrix_cells={image_count * image_count}")
     emit(f"recursive={not args.no_recursive}")
     emit(f"crop_assets={not args.no_assets_crop}")
-    emit(f"assets_model={args.assets_model}")
+    emit("assets_models=clam,normal")
     emit(f"parallel_workers={max_workers}")
     emit(f"parallel_pair_workers={max_workers}")
     emit("opencv_threads_per_worker=1")
@@ -741,7 +784,7 @@ def main() -> int:
     try:
         with ThreadPoolExecutor(max_workers=max_workers) as executor:
             future_to_row = {
-                executor.submit(compute_similarity_row, row, images, args.threshold, args.assets_model): row
+                executor.submit(compute_similarity_row, row, images, args.threshold): row
                 for row in range(image_count)
             }
             for future in as_completed(future_to_row):
@@ -783,6 +826,7 @@ def main() -> int:
         pairs_sorted,
         skipped,
         naming_issues,
+        assets_model=args.assets_model,
     )
     write_report(
         report_output,
@@ -794,6 +838,7 @@ def main() -> int:
         pairs_sorted,
         naming_issues,
         html_report_output,
+        args.assets_model,
     )
     write_html_report(
         html_report_output,
@@ -804,6 +849,7 @@ def main() -> int:
         category_counts,
         pairs_sorted,
         naming_issues,
+        args.assets_model,
     )
     write_seconds = time.time() - write_start
     total_seconds = time.time() - start_time
@@ -822,6 +868,7 @@ def main() -> int:
         pairs_sorted,
         skipped,
         naming_issues,
+        assets_model=args.assets_model,
     )
 
     emit("RESULT_START")
@@ -837,7 +884,7 @@ def main() -> int:
     emit(f"non_assets_pairs={category_counts['non-assets']}")
     emit(f"mixed_pairs={category_counts['mixed']}")
     emit(f"threshold={args.threshold}")
-    emit(f"assets_model={args.assets_model}")
+    emit("assets_models=clam,normal")
     emit(f"parallel_workers={max_workers}")
     emit(f"parallel_rows_in_flight={max_workers}")
     emit(f"parallel_pair_workers={max_workers}")
@@ -853,8 +900,11 @@ def main() -> int:
     emit(f"total_elapsed={format_duration(total_seconds)}")
     emit(f"pair_speed={total_pairs / match_seconds if match_seconds > 0 else 0:.1f} pairs/s")
     emit("top_pairs")
-    for left, right, score, kind, relation in pairs_sorted[: args.top]:
-        emit(f"{score:.3f}\t{left}\t{right}\t{kind}\t{relation}")
+    for left, right, max_score, clam_score, normal_score, kind, relation in pairs_sorted[: args.top]:
+        emit(
+            f"score={clam_score:.3f} / {normal_score:.3f}\t"
+            f"max={max_score:.3f}\t{left}\t{right}\t{kind}\t{relation}"
+        )
     emit("RESULT_END")
     return 0
 
