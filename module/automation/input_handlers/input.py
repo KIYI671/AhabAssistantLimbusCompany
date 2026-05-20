@@ -696,7 +696,7 @@ class WindowMoveInput(WinAbstractInput, metaclass=SingletonMeta):
         y = int(y)
 
         if cfg.set_win_position == "free":
-            dx, dy = screen.handle.client_to_screen(0, 0)
+            dx, dy = screen.handle.client_to_window(0, 0)
         else:
             dx = 0
             dy = 0
