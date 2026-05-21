@@ -310,6 +310,98 @@ STARLIGHT_BONUS_TIPS = [
     },
 ]
 
+STARLIGHT_BONUS_NAMES_EN = [
+    "Star of the Beginning",
+    "Cumulating Starcloud",
+    "Interstellar Travel",
+    "Star-shower",
+    "Binary Star-shop",
+    "Moon Star-shop",
+    "Favor of the Nebulae",
+    "Starlight Guidance",
+    "Chance Comet",
+    "Perfected Possibility",
+]
+
+STARLIGHT_ACTION_LABELS_EN = {
+    "全选": "Select All",
+    "清空": "Clear",
+}
+
+STARLIGHT_BONUS_TIPS_EN = [
+    {
+        "buff": "buff:\nStarting Cost +150\nTheme Pack Selection +1\nShop E.G.O Gift Choice +1\n1 Free normal Refresh(es) for Shops",
+        "buff+": "buff+:\nStarting Cost \\yellow{+250}\nTheme Pack Selection +1\nShop E.G.O Gift Choice +1\n1 Free normal Refresh(es) for Shops",
+        "buff++": "buff++:\nStarting Cost \\yellow{+250}\nTheme Pack Selection +1\nShop E.G.O Gift Choice +1\n\\yellow{2} Free normal Refresh(es) for Shops",
+    },
+    {
+        "buff": "buff:\nWhen moving to the next floor, increase current Cost balance by 10% (max 100)\nIncrease E.G.O Gift sale price by 50% (once per Shop)",
+        "buff+": "buff+:\nWhen moving to the next floor, increase current Cost balance by \\yellow{20% (max 125)}\nIncrease E.G.O Gift sale price by \\yellow{75% (once per Shop)}",
+        "buff++": "buff++:\nWhen moving to the next floor, increase current Cost balance by \\yellow{30% (max 150)}\nIncrease E.G.O Gift sale price by \\yellow{100% (once per Shop)}",
+    },
+    {
+        "buff": "buff:\nTheme Pack Selection +1\nTheme Pack Refresh Chance +2\nWhen choosing a new Theme Pack for the first time, all Identities gain +3 Level(s) (max 9)",
+        "buff+": "buff+:\nTheme Pack Selection +1\nTheme Pack Refresh Chance \\yellow{+3}\nWhen choosing a new Theme Pack for the first time, all Identities gain +3 Level(s) (max 9)\n\\yellow{If 45+ Theme Packs are unlocked in the Theme Pack Compendium, gain 1 Clash Power Up}",
+        "buff++": "buff++:\nTheme Pack Refresh Chance \\yellow{+4}\nWhen choosing a new Theme Pack for the first time, all Identities gain +3 Level(s) (max 9)\n\\yellow{If 45+ Theme Packs are unlocked in the Theme Pack Compendium, gain 2 Clash Power Up}",
+    },
+    {
+        "buff": "buff:\nStarting Cost +400\nStarting E.G.O Gift Choice +1",
+        "buff+": "buff+:\nStarting Cost \\yellow{+500}\nStarting E.G.O Gift Choice +1\n\\yellow{When Choosing Starlight from Encounter Reward Cards, Cost +75}",
+        "buff++": "buff++:\nStarting Cost \\yellow{+700}\nStarting E.G.O Gift Choice +1\n\\yellow{When Choosing Starlight from Encounter Reward Cards, Cost +150}",
+    },
+    {
+        "buff": "buff:\nShop E.G.O Gift Choice +1\nEncounter Reward Cost +20%\nGreater chance for high Tier E.G.O Gifts to appear in Shops",
+        "buff+": "buff+:\nShop E.G.O Gift Choice +1\nEncounter Reward Cost \\yellow{+30%}\nGreater chance for high Tier E.G.O Gifts to appear in Shops\n\\yellow{Upon entering a Shop, add up all the Tier numbers of currently owned E.G.O Gifts}",
+        "buff++": "buff++:\nEncounter Reward Cost \\yellow{+40%}\nGreater chance for high Tier E.G.O Gifts to appear in Shops\n\\yellow{Upon entering a Shop, add up all the Tier numbers of currently owned E.G.O Gifts}",
+    },
+    {
+        "buff": "buff:\n1 Free Keyword Refresh(es) for Shops\nUpon entering Floor 1, gain 1 random Tier 1 E.G.O Gift(s)",
+        "buff+": "buff+:\n1 Free Keyword Refresh(es) for Shops\nUpon entering Floor 1, gain \\yellow{2} random Tier 1 E.G.O Gift(s)\n\\yellow{+10% chance for Super Shop to appear}",
+        "buff++": "buff++:\n\\yellow{2} Free Keyword Refresh(es) for Shops\nUpon entering Floor 1, gain \\yellow{3} random Tier 1 E.G.O Gift(s)\n\\yellow{+25% chance for Super Shop to appear}",
+    },
+    {
+        "buff": "buff:\nUpon entering Floor 1, all Identities gain 3 Level(s)\nUpon Floor clear, all Identities gain 1 Level(s) (max 5)",
+        "buff+": "buff+:\nUpon entering Floor 1, all Identities gain 3 Level(s)\nUpon Floor clear, all Identities gain 1 Level(s) \\yellow{(max 9)}",
+        "buff++": "buff++:\nUpon entering Floor 1, all Identities gain 3 Level(s)\n\\yellow{Upon entering Floor 6, all Identities gain 3 Level(s)}\nUpon Floor clear, all Identities gain 1 Level(s) \\yellow{(max 9)}",
+    },
+    {
+        "buff": "buff:\nMax Speed +2\nGain 1 Clash Power Up\nGain 1 Damage Up\nGain 1 Protection",
+        "buff+": "buff+:\nMax Speed \\yellow{+3}\nGain \\yellow{2} Clash Power Up\nGain 1 Damage Up\nGain 1 Protection",
+        "buff++": "buff++:\nMax Speed \\yellow{+3}\nGain \\yellow{2} Clash Power Up\nGain \\yellow{2} Damage Up\nGain \\yellow{2} Protection",
+    },
+    {
+        "buff": "buff:\nFuse or Sale only E.G.O Gift(s)\nUpon entering Floor 3, gain 1 random Tier 3 E.G.O Gift(s)\nWhen Fusing, gain a random additional E.G.O Gift 2 Tiers below the Fusion result(must be Tier 3 or higher) (once per Shop)",
+        "buff+": "buff+:\nFuse or Sale only E.G.O Gift(s)\nFloor 5 or lower : \\yellow{Tier 1~3}\nFloor 6 or higher : \\yellow{Tier 2~3}\nUpon entering Floor 3/Floor 5, gain 1 random Tier 3 E.G.O Gift(s) from the selected Keyword category\nWhen Fusing, gain a random additional E.G.O Gift 2 Tiers below the Fusion result(must be Tier 3 or higher) (once per Shop)",
+        "buff++": "buff++:\nFuse or Sale only E.G.O Gift(s)\nFloor 5 or lower : \\yellow{Tier 2~3}\nFloor 6 or higher : \\yellow{Tier 3~4}\nUpon entering Floor 3/Floor 5/Floor 7, gain 1 random Tier \\yellow{4} E.G.O Gift(s) from the selected Keyword category\nWhen Fusing, gain a random additional E.G.O Gift \\yellow{1 Tier below} the Fusion result(must be Tier 3 or higher) (once per Shop)",
+    },
+    {
+        "buff": "buff:\nTheme Pack Selection +1\nStarting E.G.O Gift Choice +1\nUpon entry, gain 1 Tier 3 E.G.O Gift(s) of your choice for the selected Keyword (if no remaining Gifts meet the conditions, a lower Tier one will appear instead)\nUpon entry, gain 1 Dark Vestige",
+        "buff+": "buff+:\nTheme Pack Selection +1\nStarting E.G.O Gift Choice +1\nUpon entry, gain \\yellow{2} Tier 3 E.G.O Gift(s) of your choice for the selected Keyword (if no remaining Gifts meet the conditions, a lower Tier one will appear instead)\nUpon entry, gain 1 Dark Vestige and \\yellow{1 Dim Vestige}",
+        "buff++": "buff++:\nStarting E.G.O Gift Choice +1\nUpon entry, gain \\yellow{3} Tier 3 E.G.O Gift(s) of your choice for the selected Keyword (if no remaining Gifts meet the conditions, a lower Tier one will appear instead)\nUpon entry, gain 1 Dark Vestige, 1 Dim Vestige, and \\yellow{1 Shining Vestige}",
+    },
+]
+
+
+def _is_starlight_english(language: str | None) -> bool:
+    return str(language or "").lower().startswith("en")
+
+
+def get_starlight_bonus_name(index: int, language: str | None = None) -> str:
+    names = STARLIGHT_BONUS_NAMES_EN if _is_starlight_english(language) else STARLIGHT_BONUS_NAMES
+    return names[index]
+
+
+def get_starlight_action_label(text: str, language: str | None = None) -> str:
+    if _is_starlight_english(language):
+        return STARLIGHT_ACTION_LABELS_EN.get(text, text)
+    return text
+
+
+def get_starlight_bonus_tips(index: int, language: str | None = None) -> dict[str, str]:
+    tips = STARLIGHT_BONUS_TIPS_EN if _is_starlight_english(language) else STARLIGHT_BONUS_TIPS
+    return tips[index]
+
+
 STARLIGHT_COST_LABEL_STYLES = {
     "light": """
         QLabel {

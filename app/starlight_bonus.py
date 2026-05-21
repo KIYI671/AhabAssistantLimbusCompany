@@ -10,6 +10,7 @@ from app import mediator
 from app.common.ui_config import (
     STARLIGHT_BONUS_COSTS,
     STARLIGHT_BONUS_TIPS,
+    get_starlight_bonus_tips,
     get_starlight_cost_label_qss,
     get_starlight_level_button_qss,
     get_starlight_paint_colors,
@@ -295,7 +296,7 @@ class StarlightLevelSelector(QFrame):
         return get_starlight_paint_colors(isDarkTheme())
 
     def __refresh_tooltips(self, title: str):
-        tips = STARLIGHT_BONUS_TIPS[self.starlight_index - 1]
+        tips = get_starlight_bonus_tips(self.starlight_index - 1, cfg.language_in_program)
         self.__set_button_tooltip(self.default_button, lambda title=title: _format_starlight_tip(title, tips["buff"]))
         self.__set_button_tooltip(
             self.level_one_button,

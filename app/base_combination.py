@@ -319,8 +319,9 @@ class MirrorTeamCombination(QFrame):
             return
 
         data: dict = cfg.yaml.load(setting)
-        from module.config import TeamSetting
+        from module.config.config_typing import TeamSetting, migrate_legacy_team_setting_data
 
+        data = migrate_legacy_team_setting_data(data)
         try:
             team_config = TeamSetting(**data)
         except Exception:

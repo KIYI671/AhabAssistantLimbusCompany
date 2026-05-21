@@ -1,6 +1,46 @@
 from typing import List, Optional
 
+import numpy as np
 from pydantic import BaseModel, field_validator
+
+
+DEFAULT_OPENING_BONUS = [1, 1, 1, 1, 0, 0, 0, 0, 0, 0]
+LEGACY_OPENING_BONUS_FIELDS = {
+    "choose_opening_bonus",
+    "opening_bonus_select",
+    "opening_bonus_order",
+    "opening_bonus_level",
+}
+
+
+def _legacy_starlight_array(values, *, length: int = 10) -> np.ndarray:
+    result = np.zeros(length, dtype=int)
+    if values is None:
+        return result
+
+    source = np.asarray(values, dtype=int).reshape(-1)
+    copy_length = min(length, source.size)
+    if copy_length:
+        result[:copy_length] = source[:copy_length]
+    return result
+
+
+def migrate_legacy_team_setting_data(data: dict) -> dict:
+    """Return team setting data with legacy starlight fields folded into opening_bonus."""
+    migrated = dict(data)
+    if not (LEGACY_OPENING_BONUS_FIELDS & migrated.keys()):
+        return migrated
+
+    if migrated.get("choose_opening_bonus", False):
+        opening_bonus = _legacy_starlight_array(migrated.get("opening_bonus"))
+        opening_bonus_level = _legacy_starlight_array(migrated.get("opening_bonus_level"))
+        migrated["opening_bonus"] = (opening_bonus * (opening_bonus_level + 1)).tolist()
+    else:
+        migrated["opening_bonus"] = DEFAULT_OPENING_BONUS.copy()
+
+    for field_name in LEGACY_OPENING_BONUS_FIELDS:
+        migrated.pop(field_name, None)
+    return migrated
 
 
 class TeamSetting(BaseModel):
@@ -108,7 +148,7 @@ class TeamSetting(BaseModel):
     reward_cards_select: int = 0
     """自定义奖励卡优先度"""
 
-    opening_bonus: List[int] = [1, 1, 1, 1, 0, 0, 0, 0, 0, 0]
+    opening_bonus: List[int] = DEFAULT_OPENING_BONUS.copy()
     """开局星光加成：0 未选中，1 基础，2 +，3 ++"""
 
     after_level_IV: bool = False

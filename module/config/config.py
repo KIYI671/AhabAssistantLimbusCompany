@@ -6,7 +6,6 @@ import threading
 from pathlib import Path
 from typing import Any, Optional
 
-import numpy as np
 from pydantic import BaseModel
 from ruamel.yaml import YAML
 
@@ -19,7 +18,7 @@ from module.after_completion_types import (
 from module.logger import log
 from utils.singletonmeta import SingletonMeta
 
-from .config_typing import ConfigModel, TeamSetting
+from .config_typing import ConfigModel, TeamSetting, migrate_legacy_team_setting_data
 
 
 class Config(metaclass=SingletonMeta):
@@ -156,13 +155,8 @@ class Config(metaclass=SingletonMeta):
 
         if saved_version < 1778889600:
             teams = loaded_config.get("teams", {}) or {}
-            for settings in teams.values():
-                if settings.get("choose_opening_bonus", False):
-                    opening_bonus = np.array(settings.get("opening_bonus", [0] * 10), dtype=int)
-                    opening_bonus_level = np.array(settings.get("opening_bonus_level", [0] * 10), dtype=int)
-                    settings["opening_bonus"] = (opening_bonus * (opening_bonus_level + 1)).tolist()
-                else:
-                    settings["opening_bonus"] = [1, 1, 1, 1, 0, 0, 0, 0, 0, 0]
+            for team_key, settings in list(teams.items()):
+                teams[team_key] = migrate_legacy_team_setting_data(settings)
         log.info("配置升级完成")
 
     def _load_version(self, version_path: str) -> str:

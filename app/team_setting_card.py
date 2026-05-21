@@ -26,7 +26,11 @@ from app.base_combination import (
 )
 from app.base_tools import BaseCheckBox, BaseComboBox, BaseLabel, BaseLineEdit, BaseSettingLayout
 from app.card.messagebox_custom import BaseInfoBar, MessageBoxConfirm
-from app.common.ui_config import STARLIGHT_BONUS_COSTS, STARLIGHT_BONUS_NAMES
+from app.common.ui_config import (
+    STARLIGHT_BONUS_COSTS,
+    get_starlight_action_label,
+    get_starlight_bonus_name,
+)
 from app.language_manager import LanguageManager
 from app.starlight_bonus import StarlightCard, StarlightLevelSelector
 from app.theme_pack_setting_interface import ThemePackSettingDialog
@@ -704,17 +708,37 @@ class CustomizeSettingsModule(QFrame):
         self.reward_cards.add_items(reward_cards)
 
         QT_TRANSLATE_NOOP("CustomizeSettingsModule", "星光")
-        self.starlight_1 = StarlightCard("starlight_1", STARLIGHT_BONUS_NAMES[0], self.team_num)
-        self.starlight_2 = StarlightCard("starlight_2", STARLIGHT_BONUS_NAMES[1], self.team_num)
-        self.starlight_3 = StarlightCard("starlight_3", STARLIGHT_BONUS_NAMES[2], self.team_num)
-        self.starlight_4 = StarlightCard("starlight_4", STARLIGHT_BONUS_NAMES[3], self.team_num)
-        self.starlight_5 = StarlightCard("starlight_5", STARLIGHT_BONUS_NAMES[4], self.team_num)
+        self.starlight_1 = StarlightCard(
+            "starlight_1", get_starlight_bonus_name(0, cfg.language_in_program), self.team_num
+        )
+        self.starlight_2 = StarlightCard(
+            "starlight_2", get_starlight_bonus_name(1, cfg.language_in_program), self.team_num
+        )
+        self.starlight_3 = StarlightCard(
+            "starlight_3", get_starlight_bonus_name(2, cfg.language_in_program), self.team_num
+        )
+        self.starlight_4 = StarlightCard(
+            "starlight_4", get_starlight_bonus_name(3, cfg.language_in_program), self.team_num
+        )
+        self.starlight_5 = StarlightCard(
+            "starlight_5", get_starlight_bonus_name(4, cfg.language_in_program), self.team_num
+        )
 
-        self.starlight_6 = StarlightCard("starlight_6", STARLIGHT_BONUS_NAMES[5], self.team_num)
-        self.starlight_7 = StarlightCard("starlight_7", STARLIGHT_BONUS_NAMES[6], self.team_num)
-        self.starlight_8 = StarlightCard("starlight_8", STARLIGHT_BONUS_NAMES[7], self.team_num)
-        self.starlight_9 = StarlightCard("starlight_9", STARLIGHT_BONUS_NAMES[8], self.team_num)
-        self.starlight_10 = StarlightCard("starlight_10", STARLIGHT_BONUS_NAMES[9], self.team_num)
+        self.starlight_6 = StarlightCard(
+            "starlight_6", get_starlight_bonus_name(5, cfg.language_in_program), self.team_num
+        )
+        self.starlight_7 = StarlightCard(
+            "starlight_7", get_starlight_bonus_name(6, cfg.language_in_program), self.team_num
+        )
+        self.starlight_8 = StarlightCard(
+            "starlight_8", get_starlight_bonus_name(7, cfg.language_in_program), self.team_num
+        )
+        self.starlight_9 = StarlightCard(
+            "starlight_9", get_starlight_bonus_name(8, cfg.language_in_program), self.team_num
+        )
+        self.starlight_10 = StarlightCard(
+            "starlight_10", get_starlight_bonus_name(9, cfg.language_in_program), self.team_num
+        )
         self.starlight_select_all = StarlightLevelSelector(
             "starlight_all",
             QT_TRANSLATE_NOOP("CustomizeSettingsModule", "全选"),
@@ -944,12 +968,12 @@ class CustomizeSettingsModule(QFrame):
         self.fixed_team_use.retranslateUi()
         self.reward_cards.retranslateUi()
         self.re_formation_each_floor.retranslateUi()
-        self.starlight_select_all.set_label_text(self.tr("全选"))
-        self.starlight_clear_button.setText(self.tr("清空"))
+        self.starlight_select_all.set_label_text(get_starlight_action_label(self.tr("全选"), cfg.language_in_program))
+        self.starlight_clear_button.setText(get_starlight_action_label(self.tr("清空"), cfg.language_in_program))
 
         for index in range(1, 11):
             starlight = self.findChild(StarlightLevelSelector, f"starlight_{index}")
-            starlight.set_label_text(self.tr(STARLIGHT_BONUS_NAMES[index - 1]))
+            starlight.set_label_text(get_starlight_bonus_name(index - 1, cfg.language_in_program))
             if index <= 5:
                 floor_shop = self.findChild(BaseCheckBox, f"ignore_shop_{index}")
                 floor_shop.retranslateUi()
