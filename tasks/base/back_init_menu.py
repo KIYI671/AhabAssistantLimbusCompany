@@ -9,10 +9,26 @@ from tasks.mirror.reward_card import get_reward_card
 
 
 @begin_and_finish_time_log(task_name="返回主界面")
-def back_init_menu():
+def back_init_menu(*, allow_restart: bool = True):
     loop_count = 30
     auto.model = "clam"
     while True:
+        auto.ensure_not_stopped()
+        loop_count -= 1
+        if loop_count < 20:
+            auto.model = "normal"
+        if loop_count < 10:
+            auto.model = "aggressive"
+        if loop_count < 0:
+            if not allow_restart:
+                log.warning("无法返回主界面，本次调用禁用内部重启，返回失败")
+                return False
+            from tasks.base.retry import kill_game, restart_game
+
+            log.error("无法返回主界面，尝试重启游戏")
+            kill_game()
+            restart_game()
+            return back_init_menu(allow_restart=allow_restart)
         if cfg.simulator:
             if cfg.simulator_type == 0:
                 from module.automation.input_handlers.simulator.mumu_control import (
@@ -30,13 +46,14 @@ def back_init_menu():
                     SimulatorControl.connection_device.start_game()
         # 自动截图
         if auto.take_screenshot() is None:
+            sleep(0.2)
             continue
 
-        if retry() is False:
+        if retry(skip_screenshot=True) is False:
             return False
 
         if auto.click_element("home/window_assets.png") and auto.find_element("home/mail_assets.png", model="normal"):
-            break
+            return True
 
         if auto.find_element("base/notification_close_assets.png"):
             from datetime import datetime
@@ -58,6 +75,9 @@ def back_init_menu():
                     msg = f"当前时间为Limbus周常维护时间，距离正常维护时间结束还有{total_seconds}秒，脚本程序将暂停同样时间"
                     log.info(msg)
                     sleep(total_seconds)
+            if not allow_restart:
+                log.warning("检测到维护提示且本次调用禁用内部重启，返回失败")
+                return False
             restart_game()
             continue
 
@@ -114,16 +134,3 @@ def back_init_menu():
 
         auto.mouse_click_blank()
         auto.key_press("esc")
-
-        loop_count -= 1
-        if loop_count < 20:
-            auto.model = "normal"
-        if loop_count < 10:
-            auto.model = "aggressive"
-        if loop_count < 0:
-            from tasks.base.retry import kill_game, restart_game
-
-            log.error("无法返回主界面，尝试重启游戏")
-            kill_game()
-            restart_game()
-            back_init_menu()
