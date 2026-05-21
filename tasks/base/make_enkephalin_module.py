@@ -145,7 +145,7 @@ def make_enkephalin_module(cancel=True, skip=True, *, task_name: str = "体力�
                 offset=False,
             ):
                 last_open_panel_click_time = now_time
-                sleep(0.8 if not cfg.simulator else 0.5)
+                sleep(0.5)
             continue
         if auto.click_element(
             "enkephalin/all_in_assets.png",
@@ -207,7 +207,9 @@ def lunacy_to_enkephalin(times=0):
         break
     current_enkephalin = get_current_enkephalin()
     auto.click_element("enkephalin/enkephalin_cancel_assets.png")
-    if current_enkephalin is not None and current_enkephalin >= 20:
+    if current_enkephalin is None:
+        log.warning("狂气换体结束后无法识别当前体力，跳过补做脑啡肽模块")
+    elif current_enkephalin >= 20:
         make_enkephalin_module(skip=False)
     else:
         log.debug(f"狂气换体结束后当前体力为{current_enkephalin}，不足20，跳过补做脑啡肽模块")
