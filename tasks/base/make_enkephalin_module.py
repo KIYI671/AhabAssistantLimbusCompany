@@ -6,15 +6,6 @@ from module.decorator.decorator import begin_and_finish_time_log
 from module.logger import log
 
 
-def handle_disabled_module_exchange(cancel, close_when_disabled=True):
-    log.debug("脑啡肽模块兑换按钮当前为灰态，本轮不执行兑换")
-    if cancel and close_when_disabled:
-        if auto.take_screenshot() is None:
-            return False
-        auto.click_element("enkephalin/enkephalin_cancel_assets.png")
-    return False
-
-
 def get_the_timing(return_time=False):
     if module_position := auto.find_element("enkephalin/lunacy_assets.png", take_screenshot=True):
         my_scale = cfg.set_win_size / 1440
@@ -82,7 +73,7 @@ def get_current_enkephalin():
 
 
 @begin_and_finish_time_log(task_name="体力换饼", calculate_time=False)
-def make_enkephalin_module(cancel=True, skip=True, close_when_disabled=True, *, task_name: str = "体力换饼"):
+def make_enkephalin_module(cancel=True, skip=True, *, task_name: str = "体力换饼"):
     """体力换饼的模块
     Args:
         cancel (bool): 是否点击取消按钮 (即关闭换体界面)
@@ -145,7 +136,6 @@ def make_enkephalin_module(cancel=True, skip=True, close_when_disabled=True, *, 
         panel_visible = bool(
             auto.find_element("enkephalin/use_lunacy_assets.png", threshold=use_lunacy_threshold)
             or auto.find_element("enkephalin/enkephalin_cancel_assets.png", threshold=popup_marker_threshold)
-            or auto.find_element("enkephalin/all_in_disabled_assets.png", threshold=popup_marker_threshold)
             or auto.find_element("enkephalin/all_in_assets.png", threshold=all_in_threshold)
         )
         if not panel_visible:
@@ -171,12 +161,12 @@ def make_enkephalin_module(cancel=True, skip=True, close_when_disabled=True, *, 
             if cancel:
                 auto.click_element("enkephalin/enkephalin_cancel_assets.png")
             return True
-        return handle_disabled_module_exchange(cancel, close_when_disabled=close_when_disabled)
+        return False
 
 
 @begin_and_finish_time_log(task_name="狂气换体", calculate_time=False)
 def lunacy_to_enkephalin(times=0):
-    make_enkephalin_module(cancel=False, skip=False, close_when_disabled=False, task_name="狂气换体")
+    make_enkephalin_module(cancel=False, skip=False, task_name="狂气换体")
     auto.click_element("enkephalin/use_lunacy_assets.png")
     sleep(0.5)
     Grandet = False
