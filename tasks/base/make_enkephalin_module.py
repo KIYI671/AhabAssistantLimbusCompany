@@ -95,11 +95,10 @@ def make_enkephalin_module(cancel=True, skip=True, close_when_disabled=True, *, 
     start_time = time.time()
     last_log_time = None
     first_popup_warning = True
-    # Windows 后台输入在该界面的模板匹配稳定性较差，使用更宽松阈值避免反复回点入口
-    use_lunacy_threshold = 0.8 if cfg.simulator else 0.45
-    all_in_threshold = 0.8 if cfg.simulator else 0.5
-    popup_marker_threshold = 0.7 if cfg.simulator else 0.55
-    open_panel_click_cooldown = 0.5 if cfg.simulator else 1.2
+    use_lunacy_threshold = 0.8
+    all_in_threshold = 0.8
+    popup_marker_threshold = 0.7
+    open_panel_click_cooldown = 0.5
     last_open_panel_click_time = 0.0
 
     while True:
@@ -124,9 +123,7 @@ def make_enkephalin_module(cancel=True, skip=True, close_when_disabled=True, *, 
         # 自动截图
         if auto.take_screenshot() is None:
             continue
-        # Windows 后台输入下，持续把鼠标移到(1,1)会给用户造成“左上角狂点”的观感，且对后台点击无帮助
-        if cfg.simulator or cfg.win_input_type != "background":
-            auto.mouse_to_blank()
+        auto.mouse_to_blank()
         if auto.find_element("base/update_close_assets.png", model="clam") and auto.find_element(
             "home/drive_assets.png", model="normal"
         ):
