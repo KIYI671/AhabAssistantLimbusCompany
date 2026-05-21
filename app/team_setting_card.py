@@ -341,15 +341,6 @@ class TeamSettingCard(QFrame):
             level = max(0, min(int(values["level"]), 2)) if selected else 0
             self.team_setting.opening_bonus[starlight_index] = level + 1 if selected else 0
             self.refresh_starlight_select()
-        elif "starlight_level_" in keys:
-            level_index = int(keys.split("_")[-1]) - 1
-            if self.team_setting.opening_bonus[level_index] >= 1:
-                self.team_setting.opening_bonus[level_index] = max(0, min(int(values), 2)) + 1
-            self.refresh_starlight_select()
-        elif "starlight_" in keys:
-            starlight_index = int(keys.split("_")[-1]) - 1
-            self.team_setting.opening_bonus[starlight_index] = 1 if values else 0
-            self.refresh_starlight_select()
         elif keys in second_system_mode:
             mode_index = second_system_mode.index(keys)
             self.team_setting.second_system_action[mode_index] = values

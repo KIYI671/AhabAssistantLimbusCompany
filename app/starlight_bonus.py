@@ -193,7 +193,6 @@ class StarlightLevelSelector(QFrame):
         starlight_index: int | None = None,
         base_cost: int | None = None,
         emit_team_setting: bool = True,
-        toggle_selected_level: bool = True,
     ):
         super().__init__(parent)
         self.setObjectName(config_name)
@@ -201,7 +200,6 @@ class StarlightLevelSelector(QFrame):
         self.starlight_index = starlight_index if starlight_index is not None else int(config_name.split("_")[-1])
         self.base_cost = base_cost if base_cost is not None else STARLIGHT_BONUS_COSTS[self.starlight_index - 1]
         self.emit_team_setting = emit_team_setting
-        self.toggle_selected_level = toggle_selected_level
         self.selected = False
         self.level = 0
 
@@ -318,10 +316,7 @@ class StarlightLevelSelector(QFrame):
             tooltip_filter.set_text(text)
 
     def __on_segment_clicked(self, target_level: int):
-        if not self.toggle_selected_level:
-            selected = True
-            level = target_level
-        elif target_level == 0:
+        if target_level == 0:
             selected = not self.selected if self.selected and self.level == 0 else True
             level = 0
         elif self.selected and self.level == target_level:

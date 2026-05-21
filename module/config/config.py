@@ -6,6 +6,7 @@ import threading
 from pathlib import Path
 from typing import Any, Optional
 
+import numpy as np
 from pydantic import BaseModel
 from ruamel.yaml import YAML
 
@@ -150,20 +151,18 @@ class Config(metaclass=SingletonMeta):
 
                 settings.update(history)
                 settings["remark_name"] = remark_name
-                teams[f"{i}"] = TeamSetting(**settings).model_dump()
+                teams[f"{i}"] = settings
             loaded_config["teams"] = teams
 
         if saved_version < 1778889600:
             teams = loaded_config.get("teams", {}) or {}
-            if isinstance(teams, dict):
-                for settings in teams.values():
-                    if not isinstance(settings, dict):
-                        continue
-                    if settings.get("choose_opening_bonus", False):
-                        continue
-
+            for settings in teams.values():
+                if settings.get("choose_opening_bonus", False):
+                    opening_bonus = np.array(settings.get("opening_bonus", [0] * 10), dtype=int)
+                    opening_bonus_level = np.array(settings.get("opening_bonus_level", [0] * 10), dtype=int)
+                    settings["opening_bonus"] = (opening_bonus * (opening_bonus_level + 1)).tolist()
+                else:
                     settings["opening_bonus"] = [1, 1, 1, 1, 0, 0, 0, 0, 0, 0]
-
         log.info("配置升级完成")
 
     def _load_version(self, version_path: str) -> str:
