@@ -150,9 +150,6 @@ def make_enkephalin_module(cancel=True, skip=True, *, task_name: str = "体力�
         if auto.click_element(
             "enkephalin/all_in_assets.png",
             threshold=all_in_threshold,
-            check_gray=True,
-            gray_saturation_threshold=15,
-            gray_brightness_threshold=65,
         ):
             sleep(0.2)
             if auto.take_screenshot() is None:

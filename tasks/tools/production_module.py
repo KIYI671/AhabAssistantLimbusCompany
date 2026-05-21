@@ -48,75 +48,68 @@ class ProductionWork(QThread):
     def stop(self):
         """停止工作线程"""
         self.production_running = False
-        auto.request_stop("用户主动停止自动换饼")
 
     def run(self):
         """工作线程的主循环"""
-        auto.clear_stop_request()
-        try:
-            while self.production_running:
-                # 首先进行游戏初始化
-                try:
-                    from tasks.base.script_task_scheme import init_game
+        while self.production_running:
+            # 首先进行游戏初始化
+            try:
+                from tasks.base.script_task_scheme import init_game
 
-                    init_game()
-                    self._init_retry_count = 0
-                    self._set_win()
-                    self.initialization_complete.emit()
-                except userStopError:
-                    return
-                except Exception as e:
-                    if not cfg.simulator and self._is_set_window_access_denied(e):
-                        self._init_retry_count += 1
-                        if self._init_retry_count <= 8:
-                            wait_seconds = min(2 * self._init_retry_count, 10)
-                            msg = f"游戏窗口尚未就绪，{wait_seconds}秒后重试初始化 ({self._init_retry_count}/8)"
-                            log.warning(
-                                f"init_game 遇到 SetWindowPos 拒绝访问，等待{wait_seconds}秒重试"
-                                f" ({self._init_retry_count}/8): {e}"
-                            )
-                            self.error_occurred.emit(msg)
-                            self.msleep(wait_seconds * 1000)
-                            continue
-                    self.error_occurred.emit(f"游戏初始化错误: {str(e)}")
-                    self.msleep(2000)
-                    return
-                try:
-                    if self._back_init_menu_with_tool_policy() is False:
-                        log.warning("自动换饼返回主界面失败，准备重新初始化后重试")
-                        self.msleep(1000)
+                init_game()
+                self._init_retry_count = 0
+                self._set_win()
+                self.initialization_complete.emit()
+            except userStopError:
+                return
+            except Exception as e:
+                if not cfg.simulator and self._is_set_window_access_denied(e):
+                    self._init_retry_count += 1
+                    if self._init_retry_count <= 8:
+                        wait_seconds = min(2 * self._init_retry_count, 10)
+                        msg = f"游戏窗口尚未就绪，{wait_seconds}秒后重试初始化 ({self._init_retry_count}/8)"
+                        log.warning(
+                            f"init_game 遇到 SetWindowPos 拒绝访问，等待{wait_seconds}秒重试"
+                            f" ({self._init_retry_count}/8): {e}"
+                        )
+                        self.error_occurred.emit(msg)
+                        self.msleep(wait_seconds * 1000)
                         continue
-                    make_enkephalin_module(cancel=False, skip=False)
-                    while not auto.find_element("enkephalin/lunacy_assets.png", take_screenshot=True):
-                        auto.ensure_not_stopped()
-                        auto.click_element("enkephalin/use_lunacy_assets.png")
-                    current_enkephalin = get_current_enkephalin()
-                    if current_enkephalin is None:
-                        log.warning("无法识别当前体力，跳过本次循环")
-                        self._sleep_with_stop_check(30)
-                        continue
-                    timing = None
-                    for _ in range(60):
-                        auto.ensure_not_stopped()
-                        timing = get_the_timing(return_time=True)
-                        if timing:
-                            break
-                    if timing is None:
-                        log.warning("无法获取体力回复时间，跳过本次循环")
-                        self._sleep_with_stop_check(60)
-                        continue
-                    auto.mouse_click_blank()
-                    if current_enkephalin >= 20:
-                        make_enkephalin_module(skip=False)
-                    sleep_time = (20 - current_enkephalin % 20 - 1) * 6 * 60 + timing
-                    self.on_waiting_occurred.emit(current_enkephalin, timing, sleep_time)
-                    if self.kill_game:
-                        kill_game()
-                    self._sleep_with_stop_check(float(sleep_time))
-                except userStopError:
-                    return
-        finally:
-            auto.clear_stop_request()
+                self.error_occurred.emit(f"游戏初始化错误: {str(e)}")
+                self.msleep(2000)
+                return
+            try:
+                if self._back_init_menu_with_tool_policy() is False:
+                    log.warning("自动换饼返回主界面失败，准备重新初始化后重试")
+                    self.msleep(1000)
+                    continue
+                make_enkephalin_module(cancel=False, skip=False)
+                while not auto.find_element("enkephalin/lunacy_assets.png", take_screenshot=True):
+                    auto.click_element("enkephalin/use_lunacy_assets.png")
+                current_enkephalin = get_current_enkephalin()
+                if current_enkephalin is None:
+                    log.warning("无法识别当前体力，跳过本次循环")
+                    self._sleep_with_stop_check(30)
+                    continue
+                timing = None
+                for _ in range(60):
+                    timing = get_the_timing(return_time=True)
+                    if timing:
+                        break
+                if timing is None:
+                    log.warning("无法获取体力回复时间，跳过本次循环")
+                    self._sleep_with_stop_check(60)
+                    continue
+                auto.mouse_click_blank()
+                if current_enkephalin >= 20:
+                    make_enkephalin_module(skip=False)
+                sleep_time = (20 - current_enkephalin % 20 - 1) * 6 * 60 + timing
+                self.on_waiting_occurred.emit(current_enkephalin, timing, sleep_time)
+                if self.kill_game:
+                    kill_game()
+                self._sleep_with_stop_check(float(sleep_time))
+            except userStopError:
+                return
 
     def _back_init_menu_with_tool_policy(self) -> bool:
         restart_timeout = 180.0 if cfg.simulator else 120.0
@@ -124,7 +117,6 @@ class ProductionWork(QThread):
         start_time = monotonic()
 
         while self.production_running:
-            auto.ensure_not_stopped()
             if back_init_menu(allow_restart=False):
                 return True
 
@@ -163,7 +155,6 @@ class ProductionWork(QThread):
     def _sleep_with_stop_check(self, seconds: float):
         end_time = monotonic() + max(0.0, seconds)
         while monotonic() < end_time and self.production_running:
-            auto.ensure_not_stopped()
             remain = end_time - monotonic()
             self.msleep(max(50, int(min(0.5, remain) * 1000)))
 

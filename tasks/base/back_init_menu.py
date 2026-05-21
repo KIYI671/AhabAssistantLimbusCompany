@@ -13,7 +13,6 @@ def back_init_menu(*, allow_restart: bool = True):
     loop_count = 30
     auto.model = "clam"
     while True:
-        auto.ensure_not_stopped()
         loop_count -= 1
         if loop_count < 20:
             auto.model = "normal"
