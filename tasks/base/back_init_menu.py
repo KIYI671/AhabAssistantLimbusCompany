@@ -27,7 +27,10 @@ def back_init_menu(*, allow_restart: bool = True):
             log.error("无法返回主界面，尝试重启游戏")
             kill_game()
             restart_game()
-            return back_init_menu(allow_restart=allow_restart)
+            loop_count = 30
+            auto.model = "clam"
+            sleep(1)
+            continue
         if cfg.simulator:
             if cfg.simulator_type == 0:
                 from module.automation.input_handlers.simulator.mumu_control import (

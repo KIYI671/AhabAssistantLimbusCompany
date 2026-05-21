@@ -158,7 +158,8 @@ def make_enkephalin_module(cancel=True, skip=True, *, task_name: str = "体力�
             if cancel:
                 auto.click_element("enkephalin/enkephalin_cancel_assets.png")
             return True
-        return False
+        sleep(0.2)
+        continue
 
 
 @begin_and_finish_time_log(task_name="狂气换体", calculate_time=False)
