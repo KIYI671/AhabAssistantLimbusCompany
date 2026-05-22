@@ -198,10 +198,21 @@ class Config(metaclass=SingletonMeta):
             with open(path, "r", encoding="utf-8") as file:
                 loaded_config: dict = self.yaml.load(file)
                 if loaded_config is None:
-                    log.error(
-                        f"读取到的设置文件为空, 请确认是否因为罕见情况丢失了数据，如果是，请尝试通过根目录下的{self.backup_path.name}文件夹中的文件恢复"
-                    )
-                    loaded_config = ConfigModel().model_dump()
+                    log.error("读取到的设置文件为空, 请确认是否因为罕见情况丢失了数据")
+                    backup_files = [f for f in self.backup_path.iterdir() if f.is_file() and f.suffix == ".yaml"]
+                    if backup_files:
+                        backup_files.sort(key=lambda f: f.stat().st_birthtime, reverse=True)
+                        with open(backup_files[0], "r", encoding="utf-8") as backup_file:
+                            loaded_config = self.yaml.load(backup_file) or {}
+                        if loaded_config:
+                            log.info(f"已从最新的备份文件 {backup_files[0].name} 恢复配置")
+                        else:
+                            log.error(
+                                f"最新的备份文件 {backup_files[0].name} 无法读取到有效配置，请自行通过 {self.backup_path.name} 文件夹下其他文件恢复数据"
+                            )
+                            loaded_config = ConfigModel().model_dump()
+                    else:
+                        loaded_config = ConfigModel().model_dump()
 
                 if loaded_config.get("config_version", 0) < self.config.config_version:
                     saved_version = loaded_config.get("config_version", 0)
