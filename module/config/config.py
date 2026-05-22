@@ -6,7 +6,7 @@ from pathlib import Path
 from time import localtime, strftime, time
 from typing import Any, Optional
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ValidationError
 from ruamel.yaml import YAML
 
 from module.after_completion_types import (
@@ -217,7 +217,8 @@ class Config(metaclass=SingletonMeta):
                             loaded_config = ConfigModel().model_dump()
                     else:
                         loaded_config = ConfigModel().model_dump()
-
+                if not isinstance(loaded_config.get("config_version", 0), int):
+                    raise TypeError("配置文件版本号不是 int 类型")
                 if loaded_config.get("config_version", 0) < self.config.config_version:
                     saved_version = loaded_config.get("config_version", 0)
                     loaded_config["config_version"] = self.config.config_version
@@ -235,9 +236,25 @@ class Config(metaclass=SingletonMeta):
                 self._save_config()
         except FileNotFoundError:
             self._save_config()
+        except (ValidationError, ValueError, TypeError) as e:
+            if path == self.config_path:
+                log.error("配置文件数据非法, 尝试使用备份文件恢复配置")
+                if self.backup_path.exists():
+                    backup_files = [f for f in self.backup_path.iterdir() if f.is_file() and f.suffix == ".yaml"]
+                    if not backup_files:
+                        log.error("备份目录下没有可用的备份文件，无法恢复配置")
+                        raise e
+                    backup_files.sort(key=lambda f: f.stat().st_birthtime, reverse=True)
+                    self._load_config(backup_files[0])
+                else:
+                    log.error("备份目录不存在，无法恢复配置")
+                    raise e
+            else:
+                log.error(f"配置文件 {path} 数据非法，错误信息：{e}", exc_info=True)
+                raise e
         except Exception as e:
             log.error(f"配置文件{path}加载错误: {e}", exc_info=True)
-            sys.exit(f"配置文件{path}加载错误: {e}")
+            raise e
 
     def _save_config(self) -> None:
         """保存到配置文件（立即写盘）"""
