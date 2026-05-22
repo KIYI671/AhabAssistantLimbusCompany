@@ -125,13 +125,14 @@ class DelayedRichToolTipFilter(QObject):
     def eventFilter(self, obj, event):
         event_type = event.type()
         if event_type in (QEvent.Type.Enter, QEvent.Type.HoverEnter):
-            _get_starlight_tooltip_popup().hide()
-            self.widget = obj
-            self.global_pos = QCursor.pos()
-            self.timer.stop()
-            self.timer.start()
+            self.__restart_timer(obj)
         elif event_type in (QEvent.Type.MouseMove, QEvent.Type.HoverMove):
             self.global_pos = QCursor.pos()
+            if self.widget is obj and not self.timer.isActive() and not _get_starlight_tooltip_popup().isVisible():
+                self.timer.start()
+        elif event_type == QEvent.Type.MouseButtonRelease:
+            if obj.rect().contains(obj.mapFromGlobal(QCursor.pos())):
+                self.__restart_timer(obj)
         elif event_type in (
             QEvent.Type.Leave,
             QEvent.Type.HoverLeave,
@@ -141,6 +142,13 @@ class DelayedRichToolTipFilter(QObject):
             self.timer.stop()
             _get_starlight_tooltip_popup().hide()
         return super().eventFilter(obj, event)
+
+    def __restart_timer(self, obj):
+        _get_starlight_tooltip_popup().hide()
+        self.widget = obj
+        self.global_pos = QCursor.pos()
+        self.timer.stop()
+        self.timer.start()
 
     def __show_tooltip(self):
         if self.widget is None:

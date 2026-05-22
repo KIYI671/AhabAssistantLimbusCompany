@@ -306,7 +306,7 @@ STARLIGHT_BONUS_TIPS = [
     {
         "buff": "buff：\n主题卡包出现数量 +1\n初始饰品可选择数 +1\n进入镜像迷宫时，选择获得1件所选关键词对应的随机3级饰品(若无该等级的饰品，则会出现更低等级的饰品)\n进入镜像迷宫时，获得1个黯淡的残影",
         "buff+": "buff+：\n主题卡包出现数量 +1\n初始饰品可选择数 +1\n进入镜像迷宫时，选择获得\\yellow{2件}所选关键词对应的随机3级饰品(若无该等级的饰品，则会出现更低等级的饰品)\n进入镜像迷宫时，获得1个黯淡的残影、\\yellow{1个微茫的残影}",
-        "buff++": "buff++：\n初始饰品可选择数 +1\n进入镜像迷宫时，选择获得\\yellow{3件}所选关键词对应的随机3级饰品(若无该等级的饰品，则会出现更低等级的饰品)\n进入镜像迷宫时，获得1个黯淡的残影、1个微茫的残影、\\yellow{1个闪耀的残影}",
+        "buff++": "buff++：\n主题卡包出现数量 +1\n初始饰品可选择数 +1\n进入镜像迷宫时，选择获得\\yellow{3件}所选关键词对应的随机3级饰品(若无该等级的饰品，则会出现更低等级的饰品)\n进入镜像迷宫时，获得1个黯淡的残影、1个微茫的残影与\\yellow{1个闪耀的残影}",
     },
 ]
 
@@ -377,7 +377,7 @@ STARLIGHT_BONUS_TIPS_EN = [
     {
         "buff": "buff:\nTheme Pack Selection +1\nStarting E.G.O Gift Choice +1\nUpon entry, gain 1 Tier 3 E.G.O Gift(s) of your choice for the selected Keyword (if no remaining Gifts meet the conditions, a lower Tier one will appear instead)\nUpon entry, gain 1 Dark Vestige",
         "buff+": "buff+:\nTheme Pack Selection +1\nStarting E.G.O Gift Choice +1\nUpon entry, gain \\yellow{2} Tier 3 E.G.O Gift(s) of your choice for the selected Keyword (if no remaining Gifts meet the conditions, a lower Tier one will appear instead)\nUpon entry, gain 1 Dark Vestige and \\yellow{1 Dim Vestige}",
-        "buff++": "buff++:\nStarting E.G.O Gift Choice +1\nUpon entry, gain \\yellow{3} Tier 3 E.G.O Gift(s) of your choice for the selected Keyword (if no remaining Gifts meet the conditions, a lower Tier one will appear instead)\nUpon entry, gain 1 Dark Vestige, 1 Dim Vestige, and \\yellow{1 Shining Vestige}",
+        "buff++": "buff++:\nTheme Pack Selection +1\nStarting E.G.O Gift Choice +1\nUpon entry, gain \\yellow{3} Tier 3 E.G.O Gift(s) of your choice for the selected Keyword (if no remaining Gifts meet the conditions, a lower Tier one will appear instead)\nUpon entry, gain 1 Dark Vestige, 1 Dim Vestige, and \\yellow{1 Shining Vestige}",
     },
 ]
 

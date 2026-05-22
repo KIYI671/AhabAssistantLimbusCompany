@@ -6,6 +6,7 @@ import threading
 from pathlib import Path
 from typing import Any, Optional
 
+import numpy as np
 from pydantic import BaseModel
 from ruamel.yaml import YAML
 
@@ -18,7 +19,7 @@ from module.after_completion_types import (
 from module.logger import log
 from utils.singletonmeta import SingletonMeta
 
-from .config_typing import ConfigModel, TeamSetting, migrate_legacy_team_setting_data
+from .config_typing import ConfigModel, TeamSetting
 
 
 class Config(metaclass=SingletonMeta):
@@ -516,6 +517,42 @@ class Config(metaclass=SingletonMeta):
         if hasattr(self.config, name):
             return self.get_value(name)
         raise AttributeError(f"'{type(self).__name__}' 对象没有属性 ‘{name}'")
+
+
+def _legacy_starlight_array(values, *, length: int = 10) -> np.ndarray:
+    result = np.zeros(length, dtype=int)
+    if values is None:
+        return result
+
+    source = np.asarray(values, dtype=int).reshape(-1)
+    copy_length = min(length, source.size)
+    if copy_length:
+        result[:copy_length] = source[:copy_length]
+    return result
+
+
+def migrate_legacy_team_setting_data(data: dict) -> dict:
+    """Return team setting data with legacy starlight fields folded into opening_bonus."""
+    legacy_opening_bonus_fields = {
+        "choose_opening_bonus",
+        "opening_bonus_select",
+        "opening_bonus_order",
+        "opening_bonus_level",
+    }
+    migrated = dict(data)
+    if not (legacy_opening_bonus_fields & migrated.keys()):
+        return migrated
+
+    if migrated.get("choose_opening_bonus", False):
+        opening_bonus = _legacy_starlight_array(migrated.get("opening_bonus"))
+        opening_bonus_level = _legacy_starlight_array(migrated.get("opening_bonus_level"))
+        migrated["opening_bonus"] = (opening_bonus * (opening_bonus_level + 1)).tolist()
+    else:
+        migrated["opening_bonus"] = TeamSetting().opening_bonus.copy()
+
+    for field_name in legacy_opening_bonus_fields:
+        migrated.pop(field_name, None)
+    return migrated
 
 
 class Theme_pack_list(metaclass=SingletonMeta):

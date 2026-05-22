@@ -6,8 +6,7 @@ from typing import Optional
 from pydantic import ValidationError
 from ruamel.yaml import YAML
 
-from module.config import cfg, theme_list
-from module.config.config_typing import TeamSetting, migrate_legacy_team_setting_data
+from module.config import TeamSetting, cfg, theme_list
 from module.logger import log
 
 
@@ -85,7 +84,6 @@ def import_team_settings(file_path: str, team_num: int) -> tuple[Optional[TeamSe
             return None, None, ["文件为空"]
 
         theme_pack_weight = data.pop("custom_theme_pack_weight", None)
-        data = migrate_legacy_team_setting_data(data)
 
         try:
             team_setting = TeamSetting(**data)

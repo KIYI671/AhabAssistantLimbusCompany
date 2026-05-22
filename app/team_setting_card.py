@@ -374,6 +374,8 @@ class TeamSettingCard(QFrame):
 
     def refresh_starlight_select(self):
         opening_bonus = self.team_setting.opening_bonus
+        # opening_bonus 使用 0 表示未选择，1/2/3 分别表示默认/+ /++ 等级。
+        # StarlightLevelSelector 使用 selected + level(0/1/2)
         for i in range(1, 11):
             starlight = self.findChild(StarlightLevelSelector, f"starlight_{i}")
             if starlight is not None:
@@ -381,6 +383,7 @@ class TeamSettingCard(QFrame):
                 selected = bonus_value >= 1
                 level = bonus_value - 1 if selected else 0
                 starlight.set_state(selected, level)
+        # 单个星光按钮刷新完成后，同步“全选”按钮状态。
         self.refresh_starlight_select_all()
 
     def refresh_starlight_select_all(self):
