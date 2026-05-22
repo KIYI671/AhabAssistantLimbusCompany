@@ -157,12 +157,14 @@ class Config(metaclass=SingletonMeta):
             loaded_config["teams"] = teams
         if saved_version < 1779444115:
             current_config_path = Path("config.yaml")
-            if current_config_path.with_suffix(".yaml.bak").exists():
-                current_config_path.with_suffix(".yaml.bak").unlink()
-            if current_config_path.with_suffix(".yaml.backup").exists():
-                current_config_path.with_suffix(".yaml.backup").unlink()
-            if current_config_path.with_suffix(".yaml.old").exists():
-                current_config_path.with_suffix(".yaml.old").unlink()
+            suffixes = [".yaml.bak", ".yaml.backup", ".yaml.old"]
+            for suffix in suffixes:
+                file = current_config_path.with_suffix(suffix)
+                if file.exists():
+                    try:
+                        file.unlink()
+                    except Exception as e:
+                        log.error(f"删除旧备份文件 {file} 失败: {e}")
 
         log.info("配置升级完成")
 
