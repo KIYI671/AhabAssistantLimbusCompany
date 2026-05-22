@@ -199,7 +199,10 @@ class Config(metaclass=SingletonMeta):
                 loaded_config: dict = self.yaml.load(file)
                 if loaded_config is None:
                     log.error("读取到的设置文件为空, 请确认是否因为罕见情况丢失了数据")
-                    backup_files = [f for f in self.backup_path.iterdir() if f.is_file() and f.suffix == ".yaml"]
+                    if self.backup_path.exists():
+                        backup_files = [f for f in self.backup_path.iterdir() if f.is_file() and f.suffix == ".yaml"]
+                    else:
+                        backup_files = []
                     if backup_files:
                         backup_files.sort(key=lambda f: f.stat().st_birthtime, reverse=True)
                         with open(backup_files[0], "r", encoding="utf-8") as backup_file:
