@@ -86,6 +86,11 @@ def make_enkephalin_module(cancel=True, skip=True, *, task_name: str = "体力�
     start_time = time.time()
     last_log_time = None
     first_popup_warning = True
+    use_lunacy_threshold = 0.8
+    all_in_threshold = 0.8
+    popup_marker_threshold = 0.7
+    open_panel_click_cooldown = 0.5
+    last_open_panel_click_time = 0.0
 
     while True:
         now_time = time.time()
@@ -128,16 +133,33 @@ def make_enkephalin_module(cancel=True, skip=True, *, task_name: str = "体力�
             back_init_menu()
             start_time = time.time()
             continue
-        if auto.find_element("enkephalin/use_lunacy_assets.png") is None:
-            if auto.click_element("home/enkephalin_box_assets.png", threshold=0.75):
+        panel_visible = bool(
+            auto.find_element("enkephalin/use_lunacy_assets.png", threshold=use_lunacy_threshold)
+            or auto.find_element("enkephalin/enkephalin_cancel_assets.png", threshold=popup_marker_threshold)
+            or auto.find_element("enkephalin/all_in_assets.png", threshold=all_in_threshold)
+        )
+        if not panel_visible:
+            if now_time - last_open_panel_click_time >= open_panel_click_cooldown and auto.click_element(
+                "home/enkephalin_box_assets.png",
+                threshold=0.75,
+                offset=False,
+            ):
+                last_open_panel_click_time = now_time
                 sleep(0.5)
             continue
-        auto.click_element("enkephalin/all_in_assets.png")
-        auto.click_element("enkephalin/enkephalin_confirm_assets.png")
-        if cancel:
-            auto.click_element("enkephalin/enkephalin_cancel_assets.png")
-
-        break
+        if auto.click_element(
+            "enkephalin/all_in_assets.png",
+            threshold=all_in_threshold,
+        ):
+            sleep(0.2)
+            if auto.take_screenshot() is None:
+                continue
+            auto.click_element("enkephalin/enkephalin_confirm_assets.png")
+            if cancel:
+                auto.click_element("enkephalin/enkephalin_cancel_assets.png")
+            return True
+        sleep(0.2)
+        continue
 
 
 @begin_and_finish_time_log(task_name="狂气换体", calculate_time=False)
@@ -183,5 +205,11 @@ def lunacy_to_enkephalin(times=0):
             sleep(1)
             continue
         break
+    current_enkephalin = get_current_enkephalin()
     auto.click_element("enkephalin/enkephalin_cancel_assets.png")
-    make_enkephalin_module(skip=False)
+    if current_enkephalin is None:
+        log.warning("狂气换体结束后无法识别当前体力，跳过补做脑啡肽模块")
+    elif current_enkephalin >= 20:
+        make_enkephalin_module(skip=False)
+    else:
+        log.debug(f"狂气换体结束后当前体力为{current_enkephalin}，不足20，跳过补做脑啡肽模块")

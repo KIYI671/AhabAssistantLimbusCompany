@@ -121,7 +121,6 @@ def to_get_reward():
 
 def init_game():
     log.debug("初始化游戏")
-    simulator = None
     if cfg.simulator:
         if cfg.simulator_type == 0:
             mumu_instance_number = 0
@@ -143,7 +142,7 @@ def init_game():
                 MumuControl,
             )
 
-            simulator = MumuControl(instance_number=mumu_instance_number)
+            MumuControl(instance_number=mumu_instance_number)
         else:
             from module.automation.input_handlers.simulator.simulator_control import (
                 SimulatorControl,
@@ -151,7 +150,7 @@ def init_game():
 
             # 启动时先清理旧连接
             SimulatorControl.clean_connect()
-            simulator = SimulatorControl()
+            SimulatorControl()
     auto.init_input()
     if cfg.simulator:
         if cfg.simulator_type == 0:
@@ -253,8 +252,11 @@ def Daily_task_wrapper(get_reward=None):
 
 
 def Buy_enkephalin():
+    times = cfg.set_lunacy_to_enkephalin
+    if times == 0:
+        return
     back_init_menu()
-    lunacy_to_enkephalin(times=cfg.set_lunacy_to_enkephalin)
+    lunacy_to_enkephalin(times=times)
 
 
 def Mirror_task():

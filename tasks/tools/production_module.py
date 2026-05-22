@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta
-from time import sleep
+from time import monotonic
 
 import win32con
 import win32gui
@@ -19,6 +19,7 @@ from module.automation import auto
 from module.config import cfg
 from module.game_and_screen import screen
 from module.logger import log
+from module.my_error.my_error import userStopError
 from tasks.base.back_init_menu import back_init_menu
 from tasks.base.make_enkephalin_module import (
     get_current_enkephalin,
@@ -41,6 +42,8 @@ class ProductionWork(QThread):
         super().__init__(parent)
         self.production_running = True
         self.kill_game = kill_game
+        self._init_retry_count = 0
+        self._last_back_init_restart_time = 0.0
 
     def stop(self):
         """停止工作线程"""
@@ -54,36 +57,127 @@ class ProductionWork(QThread):
                 from tasks.base.script_task_scheme import init_game
 
                 init_game()
+                self._init_retry_count = 0
                 self._set_win()
                 self.initialization_complete.emit()
+            except userStopError:
+                return
             except Exception as e:
+                if not cfg.simulator and self._is_set_window_access_denied(e):
+                    self._init_retry_count += 1
+                    if self._init_retry_count <= 8:
+                        wait_seconds = min(2 * self._init_retry_count, 10)
+                        msg = f"游戏窗口尚未就绪，{wait_seconds}秒后重试初始化 ({self._init_retry_count}/8)"
+                        log.warning(
+                            f"init_game 遇到 SetWindowPos 拒绝访问，等待{wait_seconds}秒重试"
+                            f" ({self._init_retry_count}/8): {e}"
+                        )
+                        self.error_occurred.emit(msg)
+                        self.msleep(wait_seconds * 1000)
+                        continue
                 self.error_occurred.emit(f"游戏初始化错误: {str(e)}")
                 self.msleep(2000)
                 return
-            back_init_menu()
-            make_enkephalin_module(cancel=False, skip=False)
-            while not auto.find_element("enkephalin/lunacy_assets.png", take_screenshot=True):
-                auto.click_element("enkephalin/use_lunacy_assets.png")
-            current_enkephalin = get_current_enkephalin()
-            timing = None
-            while True:
-                timing = get_the_timing(return_time=True)
-                if timing:
-                    break
-            auto.mouse_click_blank()
-            if current_enkephalin and current_enkephalin >= 20:
-                make_enkephalin_module(skip=False)
-            sleep_time = (20 - current_enkephalin % 20 - 1) * 6 * 60 + timing
-            self.on_waiting_occurred.emit(current_enkephalin, timing, sleep_time)
-            if self.kill_game:
+            try:
+                if self._back_init_menu_with_tool_policy() is False:
+                    log.warning("自动换饼返回主界面失败，准备重新初始化后重试")
+                    self.msleep(1000)
+                    continue
+                make_enkephalin_module(cancel=False, skip=False)
+                while not auto.find_element("enkephalin/lunacy_assets.png", take_screenshot=True):
+                    auto.click_element("enkephalin/use_lunacy_assets.png")
+                current_enkephalin = get_current_enkephalin()
+                if current_enkephalin is None:
+                    log.warning("无法识别当前体力，跳过本次循环")
+                    self._sleep_with_stop_check(30)
+                    continue
+                timing = None
+                for _ in range(60):
+                    timing = get_the_timing(return_time=True)
+                    if timing:
+                        break
+                if timing is None:
+                    log.warning("无法获取体力回复时间，跳过本次循环")
+                    self._sleep_with_stop_check(60)
+                    continue
+                auto.mouse_click_blank()
+                if current_enkephalin >= 20:
+                    make_enkephalin_module(skip=False)
+                sleep_time = (20 - current_enkephalin % 20 - 1) * 6 * 60 + timing
+                self.on_waiting_occurred.emit(current_enkephalin, timing, sleep_time)
+                if self.kill_game:
+                    kill_game()
+                self._sleep_with_stop_check(float(sleep_time))
+            except userStopError:
+                return
+
+    def _back_init_menu_with_tool_policy(self) -> bool:
+        restart_timeout = 180.0 if cfg.simulator else 120.0
+        restart_cooldown = 120.0 if cfg.simulator else 60.0
+        start_time = monotonic()
+
+        while self.production_running:
+            if back_init_menu(allow_restart=False):
+                return True
+
+            elapsed = monotonic() - start_time
+            if elapsed < restart_timeout:
+                log.warning(f"自动换饼返回主界面未完成，已尝试{int(elapsed)}秒，继续尝试")
+                self._sleep_with_stop_check(1.5)
+                continue
+
+            now = monotonic()
+            since_last_restart = now - self._last_back_init_restart_time
+            if since_last_restart < restart_cooldown:
+                wait_seconds = max(1, int(restart_cooldown - since_last_restart))
+                log.warning(f"自动换饼返回主界面超时，但仍在重启冷却期，等待{wait_seconds}秒后继续尝试")
+                self._sleep_with_stop_check(min(wait_seconds, 5))
+                continue
+
+            log.error(f"自动换饼返回主界面超时（{int(elapsed)}秒），执行一次重启恢复")
+            self._last_back_init_restart_time = now
+            try:
                 kill_game()
-            sleep(sleep_time)
+                from tasks.base.script_task_scheme import init_game
+
+                init_game()
+                self._set_win()
+            except userStopError:
+                raise
+            except Exception as e:
+                log.error(f"自动换饼重启后初始化失败: {e}")
+                self.error_occurred.emit(f"自动换饼重启后初始化失败: {e}")
+                self._sleep_with_stop_check(2)
+            start_time = monotonic()
+
+        return False
+
+    def _sleep_with_stop_check(self, seconds: float):
+        end_time = monotonic() + max(0.0, seconds)
+        while monotonic() < end_time and self.production_running:
+            remain = end_time - monotonic()
+            self.msleep(max(50, int(min(0.5, remain) * 1000)))
+
+    @staticmethod
+    def _is_set_window_access_denied(error: Exception) -> bool:
+        args = getattr(error, "args", ())
+        if len(args) >= 2:
+            try:
+                if int(args[0]) == 5 and str(args[1]) == "SetWindowPos":
+                    return True
+            except Exception:
+                pass
+        msg = str(error)
+        return "SetWindowPos" in msg and ("拒绝访问" in msg or "Access is denied" in msg)
 
     def _set_win(self):
+        if cfg.simulator:
+            return
         try:
-            from module.game_and_screen import screen
-
             hwnd = screen.handle.hwnd
+            if hwnd == 0 or not win32gui.IsWindow(hwnd):
+                log.debug("自动换饼跳过窗口置顶恢复：未获取到有效游戏窗口句柄")
+                return
             win32gui.SetWindowPos(
                 hwnd,  # 目标窗口句柄
                 win32con.HWND_NOTOPMOST,  # 关键参数：取消置顶
@@ -196,7 +290,7 @@ class ProductionModule(QWidget):
                 self.worker.terminate()
                 self.worker.wait(1000)
             self.kill_game_box.setDisabled(False)
-            if cfg.set_reduce_miscontact:
+            if cfg.set_reduce_miscontact and not cfg.simulator:
                 screen.reset_win()
             auto.clear_img_cache()
 
@@ -245,13 +339,11 @@ class ProductionModule(QWidget):
                 self.worker.terminate()
 
         # 资源清理
-        try:
-            if self.worker is not None and self.worker.isRunning():
-                if cfg.set_reduce_miscontact:
+        if self.worker is not None and self.worker.isRunning():
+            try:
+                if cfg.set_reduce_miscontact and not cfg.simulator:
                     screen.reset_win()
                 auto.clear_img_cache()
-                self.listener.stop()
-        except Exception:
-            # 忽略清理异常，避免影响关闭
-            pass
+            except Exception as e:
+                log.error(f"关闭自动换饼窗口时清理失败: {e}")
         event.accept()
