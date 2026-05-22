@@ -191,7 +191,7 @@ class StarlightNameButton(QPushButton):
 class StarlightLevelSelector(QFrame):
     """A three-part selector for default, +, and ++ starlight levels."""
 
-    stateChangedByClick = Signal(bool, int)
+    stateChangedByClick = Signal(int)
 
     def __init__(
         self,
@@ -209,8 +209,7 @@ class StarlightLevelSelector(QFrame):
         self.starlight_index = starlight_index if starlight_index is not None else int(config_name.split("_")[-1])
         self.base_cost = base_cost if base_cost is not None else STARLIGHT_BONUS_COSTS[self.starlight_index - 1]
         self.emit_team_setting = emit_team_setting
-        self.selected = False
-        self.level = 0
+        self.bonus_value = 0
 
         self.segment_layout = QHBoxLayout(self)
         self.segment_layout.setContentsMargins(0, 0, 0, 0)
@@ -296,7 +295,7 @@ class StarlightLevelSelector(QFrame):
         painter.fillRect(QRectF(left, 0, right - left, self.height()), color)
 
     def __segment_color(self, segment_level: int, colors: dict[str, QColor]) -> QColor:
-        if not self.selected or self.level < segment_level:
+        if self.bonus_value <= segment_level:
             return colors["empty"]
         return (colors["left"], colors["middle"], colors["right"])[segment_level]
 
@@ -325,30 +324,25 @@ class StarlightLevelSelector(QFrame):
             tooltip_filter.set_text(text)
 
     def __on_segment_clicked(self, target_level: int):
+        target_value = target_level + 1
         if target_level == 0:
-            selected = not self.selected if self.selected and self.level == 0 else True
-            level = 0
-        elif self.selected and self.level == target_level:
-            selected = True
-            level = 0
+            bonus_value = 0 if self.bonus_value == target_value else target_value
+        elif self.bonus_value == target_value:
+            bonus_value = 1
         else:
-            selected = True
-            level = target_level
+            bonus_value = target_value
 
-        self.stateChangedByClick.emit(selected, level)
+        self.stateChangedByClick.emit(bonus_value)
         if self.emit_team_setting:
-            mediator.team_setting.emit(
-                {f"starlight_state_{self.starlight_index}": {"selected": selected, "level": level}}
-            )
+            mediator.team_setting.emit({f"starlight_state_{self.starlight_index}": bonus_value})
 
-    def set_state(self, selected: bool, level: int):
-        self.selected = selected
-        self.level = max(0, min(level, 2)) if selected else 0
+    def set_state(self, bonus_value: int):
+        self.bonus_value = max(0, min(int(bonus_value), 3))
 
-        self.default_button.setChecked(self.selected)
-        self.level_one_button.setChecked(self.selected and self.level >= 1)
-        self.level_two_button.setChecked(self.selected and self.level >= 2)
-        self.default_button.set_cost(self.base_cost * (self.level + 1))
+        self.default_button.setChecked(self.bonus_value >= 1)
+        self.level_one_button.setChecked(self.bonus_value >= 2)
+        self.level_two_button.setChecked(self.bonus_value >= 3)
+        self.default_button.set_cost(self.base_cost * max(1, self.bonus_value))
         self.update()
 
     def set_label_text(self, text: str):
@@ -361,17 +355,14 @@ class StarlightCard(QFrame):
     def __init__(self, class_name: str, label_text: str, team_num: int, parent=None):
         super().__init__(parent)
         self.starlight_index: int = int(class_name.split("_")[-1])
-        self.selected = False
-        self.level = 0
+        self.bonus_value = 0
         if team_config := cfg.config.teams.get(str(team_num)):
-            bonus_value = team_config.opening_bonus[self.starlight_index - 1]
-            self.selected = bonus_value >= 1
-            self.level = bonus_value - 1 if self.selected else 0
+            self.bonus_value = team_config.opening_bonus[self.starlight_index - 1]
 
         self.label_text = label_text
         self.main_layout = QVBoxLayout(self)
         self.main_layout.setContentsMargins(10, 0, 0, 0)
         self.main_layout.setAlignment(Qt.AlignmentFlag.AlignVCenter)
         self.starlight_checkbox = StarlightLevelSelector(class_name, label_text, self)
-        self.starlight_checkbox.set_state(self.selected, self.level)
+        self.starlight_checkbox.set_state(self.bonus_value)
         self.main_layout.addWidget(self.starlight_checkbox)

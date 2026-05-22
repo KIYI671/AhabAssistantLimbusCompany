@@ -335,15 +335,12 @@ class TeamSettingCard(QFrame):
                 self.team_setting.sinner_order[sinner_index] = 0
             self.refresh_sinner_order()
         elif keys == "starlight_all_state":
-            selected = bool(values["selected"])
-            level = max(0, min(int(values["level"]), 2)) if selected else 0
-            self.team_setting.opening_bonus = [level + 1 if selected else 0] * 10
+            bonus_value = max(0, min(int(values), 3))
+            self.team_setting.opening_bonus = [bonus_value] * 10
             self.refresh_starlight_select()
         elif "starlight_state_" in keys:
             starlight_index = int(keys.split("_")[-1]) - 1
-            selected = bool(values["selected"])
-            level = max(0, min(int(values["level"]), 2)) if selected else 0
-            self.team_setting.opening_bonus[starlight_index] = level + 1 if selected else 0
+            self.team_setting.opening_bonus[starlight_index] = max(0, min(int(values), 3))
             self.refresh_starlight_select()
         elif keys in second_system_mode:
             mode_index = second_system_mode.index(keys)
@@ -374,15 +371,11 @@ class TeamSettingCard(QFrame):
 
     def refresh_starlight_select(self):
         opening_bonus = self.team_setting.opening_bonus
-        # opening_bonus 使用 0 表示未选择，1/2/3 分别表示默认/+ /++ 等级。
-        # StarlightLevelSelector 使用 selected + level(0/1/2)
         for i in range(1, 11):
             starlight = self.findChild(StarlightLevelSelector, f"starlight_{i}")
             if starlight is not None:
                 bonus_value = opening_bonus[i - 1] if i <= len(opening_bonus) else 0
-                selected = bonus_value >= 1
-                level = bonus_value - 1 if selected else 0
-                starlight.set_state(selected, level)
+                starlight.set_state(bonus_value)
         # 单个星光按钮刷新完成后，同步“全选”按钮状态。
         self.refresh_starlight_select_all()
 
@@ -393,17 +386,17 @@ class TeamSettingCard(QFrame):
 
         opening_bonus = self.team_setting.opening_bonus
         if len(opening_bonus) < 10:
-            select_all.set_state(False, 0)
+            select_all.set_state(0)
             return
 
         if all(opening_bonus[index] >= 3 for index in range(10)):
-            select_all.set_state(True, 2)
+            select_all.set_state(3)
         elif all(opening_bonus[index] >= 2 for index in range(10)):
-            select_all.set_state(True, 1)
+            select_all.set_state(2)
         elif all(opening_bonus[index] >= 1 for index in range(10)):
-            select_all.set_state(True, 0)
+            select_all.set_state(1)
         else:
-            select_all.set_state(False, 0)
+            select_all.set_state(0)
 
     def refresh_sinner_order(self):
         sinner_order = self.team_setting.sinner_order
@@ -753,7 +746,7 @@ class CustomizeSettingsModule(QFrame):
         self.starlight_select_all.setFixedWidth(260)
         self.starlight_clear_button = PushButton(QT_TRANSLATE_NOOP("CustomizeSettingsModule", "清空"))
 
-        self.starlight_clear_button.clicked.connect(lambda: self.__set_all_starlight(False, 0))
+        self.starlight_clear_button.clicked.connect(lambda: self.__set_all_starlight(0))
         self.starlight_select_all.stateChangedByClick.connect(self.__set_all_starlight)
 
         self.after_level_IV = CheckBoxWithComboBox(
@@ -950,9 +943,8 @@ class CustomizeSettingsModule(QFrame):
         self.main_layout.addWidget(self.tenth_line_widget)
         self.main_layout.addWidget(self.eleventh_line_widget)
 
-    def __set_all_starlight(self, selected: bool, level: int):
-        level = max(0, min(level, 2)) if selected else 0
-        mediator.team_setting.emit({"starlight_all_state": {"selected": selected, "level": level}})
+    def __set_all_starlight(self, bonus_value: int):
+        mediator.team_setting.emit({"starlight_all_state": max(0, min(int(bonus_value), 3))})
 
     def retranslateUi(self):
         self.do_not_heal.retranslateUi()
