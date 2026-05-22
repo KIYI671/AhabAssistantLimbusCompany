@@ -1,6 +1,5 @@
 import atexit
 import copy
-import shutil
 import sys
 import threading
 from pathlib import Path
