@@ -243,18 +243,18 @@ class Config(metaclass=SingletonMeta):
                     backup_files = [f for f in self.backup_path.iterdir() if f.is_file() and f.suffix == ".yaml"]
                     if not backup_files:
                         log.error("备份目录下没有可用的备份文件，无法恢复配置")
-                        raise e
+                        raise
                     backup_files.sort(key=lambda f: f.stat().st_birthtime, reverse=True)
                     self._load_config(backup_files[0])
                 else:
                     log.error("备份目录不存在，无法恢复配置")
-                    raise e
+                    raise
             else:
                 log.error(f"配置文件 {path} 数据非法，错误信息：{e}", exc_info=True)
-                raise e
+                raise
         except Exception as e:
             log.error(f"配置文件{path}加载错误: {e}", exc_info=True)
-            raise e
+            raise
 
     def _save_config(self) -> None:
         """保存到配置文件（立即写盘）"""
