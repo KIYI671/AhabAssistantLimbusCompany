@@ -122,17 +122,14 @@ class ScreenShot:
         if gray:
             image = image.convert("L")
 
-        # =========================
-        # 添加窗口大小约束 (保持16:9)
-        # =========================
-        x, y, w, h = screen.handle.rect(True)
-
-        # 防止越界
-        size_width = min(w, image.width)
-        size_height = min(h, image.height)
-
-        # 裁剪截图 (从左上角开始)
-        image = image.crop((x, y, size_width, size_height))
+        left, top, right, bottom = screen.handle.rect(True)
+        crop_box = (
+            max(left - screen_x, 0),
+            max(top - screen_y, 0),
+            min(right - screen_x, image.width),
+            min(bottom - screen_y, image.height),
+        )
+        image = image.crop(crop_box)
 
         return image
 
@@ -162,12 +159,14 @@ class ScreenShot:
             screenshot = screenshot_temp.convert("L")
         else:
             screenshot = screenshot_temp
-        x, y, w, h = screen.handle.rect(True)
-        # 防止越界
-        size_width = min(w, screenshot.width)
-        size_height = min(h, screenshot.height)
-        # 裁剪截图到指定的宽高
-        screenshot = screenshot.crop((x, y, size_width, size_height))
+        left, top, right, bottom = screen.handle.rect(True)
+        crop_box = (
+            max(left, 0),
+            max(top, 0),
+            min(right, screenshot.width),
+            min(bottom, screenshot.height),
+        )
+        screenshot = screenshot.crop(crop_box)
 
         # 返回裁剪后的截图
         return screenshot

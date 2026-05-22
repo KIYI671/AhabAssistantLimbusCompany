@@ -598,32 +598,54 @@ class Automation(metaclass=SingletonMeta):
             and match_val >= threshold
         )
 
+    MATCH_GAP = 0.15
+
     def _update_path_state_from_match_results(self, results, additional_stack: int = 0) -> None:
         dark_results = [result for result in results if path_manager.is_path_dark(result["path"])]
         default_results = [result for result in results if path_manager.is_path_default(result["path"])]
         zh_cn_results = [result for result in results if path_manager.is_path_zh_cn(result["path"])]
-        en_or_share_results = [result for result in results if path_manager.is_path_en_or_share(result["path"])]
+        en_results = [result for result in results if result["path"].endswith("/en")]
+        share_results = [result for result in results if result["path"].endswith("/share")]
 
-        dark_exists = bool(dark_results)
         dark_matched = any(result["matched"] for result in dark_results)
         default_matched = any(result["matched"] for result in default_results)
 
         path_changed = False
-        if dark_matched:
+        if dark_matched and not default_matched:
             path_manager.set_theme("dark", log_stacklevel=additional_stack + 4)
-        elif dark_exists and default_matched:
+        elif default_matched and not dark_matched:
             path_manager.set_theme("default", log_stacklevel=additional_stack + 4)
             path_changed = path_manager.eliminate_dark_paths() or path_changed
+        elif dark_matched and default_matched:
+            best_dark = max(r["matchVal"] for r in dark_results if r["matched"])
+            best_default = max(r["matchVal"] for r in default_results if r["matched"])
+            if best_default - best_dark > self.MATCH_GAP:
+                path_manager.set_theme("default", log_stacklevel=additional_stack + 4)
+                path_changed = path_manager.eliminate_dark_paths() or path_changed
+            elif best_dark - best_default > self.MATCH_GAP:
+                path_manager.set_theme("dark", log_stacklevel=additional_stack + 4)
 
-        zh_cn_exists = bool(zh_cn_results)
         zh_cn_matched = any(result["matched"] for result in zh_cn_results)
-        en_or_share_matched = any(result["matched"] for result in en_or_share_results)
+        en_matched = any(result["matched"] for result in en_results)
+        share_matched = any(result["matched"] for result in share_results)
 
-        if zh_cn_matched:
+        # share 路径是语言无关资源，不能单独决定语言为英文
+        if zh_cn_matched and not en_matched:
             path_manager.set_language("zh_cn", log_stacklevel=additional_stack + 4)
-        elif zh_cn_exists and en_or_share_matched:
+        elif en_matched and not zh_cn_matched:
             path_manager.set_language("en", log_stacklevel=additional_stack + 4)
             path_changed = path_manager.eliminate_zh_cn_paths() or path_changed
+        elif zh_cn_matched and en_matched:
+            best_zh = max(r["matchVal"] for r in zh_cn_results if r["matched"])
+            best_en = max(r["matchVal"] for r in en_results if r["matched"])
+            if best_en - best_zh > self.MATCH_GAP:
+                path_manager.set_language("en", log_stacklevel=additional_stack + 4)
+                path_changed = path_manager.eliminate_zh_cn_paths() or path_changed
+            elif best_zh - best_en > self.MATCH_GAP:
+                path_manager.set_language("zh_cn", log_stacklevel=additional_stack + 4)
+        elif share_matched:
+            # 仅命中 share 时保持当前语言未知/不变，等待后续专属语言资源判定
+            pass
 
         if path_changed:
             self.clear_img_cache()
@@ -679,6 +701,7 @@ class Automation(metaclass=SingletonMeta):
                         "path": loaded_path,
                         "center": center,
                         "matched": matched,
+                        "matchVal": matchVal,
                     }
                 )
                 if matched and self._path_state_is_known():
