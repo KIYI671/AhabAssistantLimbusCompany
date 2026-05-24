@@ -10,6 +10,115 @@ from tasks.mirror import fusion_result, must_be_abandoned, must_purchase
 from utils.image_utils import ImageUtils
 
 
+def _is_shop_debug_enabled():
+    return bool(cfg.get_value("debug_mode", False) and cfg.get_value("debug_shop", False))
+
+
+def _shop_debug_save(step_name):
+    if not _is_shop_debug_enabled():
+        return
+    debug_dir = "logs/shop_debug"
+    os.makedirs(debug_dir, exist_ok=True)
+    ts = datetime.now().strftime("%H%M%S_%f")[:13]
+    if auto.screenshot:
+        auto.screenshot.save(f"{debug_dir}/{ts}_{step_name}.png")
+    log.info(f"[商店调试] {step_name}")
+
+
+def _debug_save_on_failure(money_bbox, ocr_result, in_heal=False):
+    """金钱OCR失败时自动保存截图和裁剪区域，不依赖debug_shop开关。"""
+    debug_dir = "logs/shop_debug"
+    os.makedirs(debug_dir, exist_ok=True)
+    ts = datetime.now().strftime("%H%M%S_%f")[:13]
+    prefix = "heal" if in_heal else "shop"
+    if auto.screenshot is not None:
+        auto.screenshot.save(f"{debug_dir}/{ts}_{prefix}_full.png")
+        if money_bbox is not None:
+            try:
+                auto.screenshot.crop(money_bbox).save(f"{debug_dir}/{ts}_{prefix}_crop.png")
+            except Exception:
+                pass
+    log.info(f"[商店调试] OCR失败, 原始结果: {ocr_result}, 坐标: {money_bbox}")
+
+
+_MONEY_OCR_TRANSLATION = str.maketrans(
+    {
+        "O": "0",
+        "o": "0",
+        "D": "0",
+        "Q": "0",
+        "I": "1",
+        "l": "1",
+        "Z": "2",
+        "S": "5",
+        "G": "6",
+        "B": "8",
+        "h": "4",
+    }
+)
+
+
+# E.G.O 饰品升级扫描区域（相对坐标，基于 1080p/2k 样本校准）
+_ENHANCE_SCAN_REGION_REL = {
+    "left": 0.5151,
+    "top": 0.3380,
+    "right": 0.8844,
+    "bottom": 0.7130,
+}
+
+
+def _filter_enhance_gift_scan_points(points, screen_size):
+    if not points or not screen_size:
+        return points
+
+    width, height = screen_size
+    if not width or not height:
+        return points
+
+    left = int(round(_ENHANCE_SCAN_REGION_REL["left"] * width))
+    top = int(round(_ENHANCE_SCAN_REGION_REL["top"] * height))
+    right = int(round(_ENHANCE_SCAN_REGION_REL["right"] * width))
+    bottom = int(round(_ENHANCE_SCAN_REGION_REL["bottom"] * height))
+
+    return [
+        point
+        for point in points
+        if left <= int(point[0]) <= right and top <= int(point[1]) <= bottom
+    ]
+
+
+def _extract_money_from_ocr_texts(texts):
+    if not texts:
+        return None
+
+    cleaned_texts = [text.strip().replace(" ", "").replace(",", "") for text in texts if text]
+    for text in cleaned_texts:
+        if text.isdigit():
+            return int(text)
+
+    for text in cleaned_texts:
+        normalized = text.translate(_MONEY_OCR_TRANSLATION)
+        if normalized.isdigit() and any(ch.isdigit() for ch in normalized):
+            return int(normalized)
+
+    return None
+
+
+def _retry_money_ocr_with_scaled_crop(money_bbox, scale=2):
+    if auto.screenshot is None or money_bbox is None:
+        return []
+
+    try:
+        crop = auto.screenshot.crop(money_bbox)
+        width, height = crop.size
+        resampling = getattr(getattr(Image, "Resampling", Image), "BICUBIC")
+        enlarged = crop.resize((width * scale, height * scale), resample=resampling)
+        result = ocr.run(enlarged)
+        return list(result.txts or [])
+    except Exception:
+        return []
+
+
 class Shop:
     def __init__(self, team_setting: TeamSetting):
         self.system = all_systems[team_setting.team_system]  # 队伍体系
@@ -1100,6 +1209,11 @@ class Shop:
                 find_type="image_with_multiple_targets",
             ):
                 gifts = sorted(gifts, key=lambda x: (x[1], x[0]))
+                raw_count = len(gifts)
+                screen_size = auto.screenshot.size if auto.screenshot is not None else None
+                gifts = _filter_enhance_gift_scan_points(gifts, screen_size)
+                if len(gifts) != raw_count:
+                    log.debug(f"升级扫描区域过滤：{raw_count} -> {len(gifts)}")
                 for gift in gifts:
                     if check_enhanced(gift) is False:
                         auto.mouse_click(gift[0], gift[1])
