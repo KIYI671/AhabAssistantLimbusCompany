@@ -683,7 +683,7 @@ class Automation(metaclass=SingletonMeta):
                 center, matchVal = ImageUtils.match_template(screenshot, template, bbox, model)
                 matched = self._is_valid_match(matchVal, threshold)
                 log.debug(
-                    f"目标图片：{target.replace('./assets/images/', '')}, 路径: {loaded_path}, 相似度：{matchVal:.4f}, 目标位置：{center}",
+                    f"目标图片：{target.replace('./assets/images/', '')}, 路径: {loaded_path}, 相似度：{matchVal:.3f}, 目标位置：{center}",
                     stacklevel=additional_stack + 3,
                 )
                 results.append(
