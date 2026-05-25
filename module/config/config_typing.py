@@ -190,11 +190,8 @@ class TeamSetting(BaseModel):
 class ConfigModel(BaseModel):
     """配置模型"""
 
-    config_version: int = 1778889600
+    config_version: int = 1779444115
     """配置文件版本号（时间戳）"""
-
-    save_count: int = 0
-    """保存次数"""
 
     game_title_name: str = "LimbusCompany"
     """游戏窗口标题"""

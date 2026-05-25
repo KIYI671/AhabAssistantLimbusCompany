@@ -6,9 +6,7 @@
 .agents
 .idea
 .claude
-
 AGENTS.md
-
 # 构建文件
 build
 dist
@@ -20,6 +18,7 @@ dist_release
 *.dll
 !3rdparty/PaddleOCR-json_v1.4.1/*.dll
 build.bat
+config_backup
 config.yaml*
 theme_pack_list.yaml
 theme_pack_weight/
@@ -33,5 +32,4 @@ __main_dev_temp__.py
 /test*.py
 
 # 其他
-MaaFramework
 .worktrees
