@@ -51,7 +51,7 @@ def back_init_menu(*, allow_restart: bool = True):
             sleep(0.2)
             continue
 
-        if retry(skip_screenshot=True) is False:
+        if retry() is False:
             return False
 
         if auto.click_element("home/window_assets.png") and auto.find_element("home/mail_assets.png", model="normal"):
