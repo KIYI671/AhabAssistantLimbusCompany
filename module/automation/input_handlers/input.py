@@ -66,6 +66,32 @@ key_list = {
     "right": win32con.VK_RIGHT,
 }
 
+EXTENDED_KEY_VKS = frozenset(
+    {
+        win32con.VK_UP,
+        win32con.VK_DOWN,
+        win32con.VK_LEFT,
+        win32con.VK_RIGHT,
+        win32con.VK_HOME,
+        win32con.VK_END,
+        win32con.VK_PRIOR,
+        win32con.VK_NEXT,
+        win32con.VK_INSERT,
+        win32con.VK_DELETE,
+        win32con.VK_RCONTROL,
+        win32con.VK_RMENU,
+        win32con.VK_LWIN,
+        win32con.VK_RWIN,
+    }
+)
+
+MESSAGE_KEY_WPARAMS = {
+    win32con.VK_LCONTROL: win32con.VK_CONTROL,
+    win32con.VK_RCONTROL: win32con.VK_CONTROL,
+    win32con.VK_LMENU: win32con.VK_MENU,
+    win32con.VK_RMENU: win32con.VK_MENU,
+}
+
 
 class WinAbstractInput(AbstractInput):
     """输入接口类，定义输入方法的抽象接口
@@ -89,6 +115,26 @@ class WinAbstractInput(AbstractInput):
         except PyWinTypesError:
             log.debug("获取鼠标位置失败（可能锁屏），返回 (0, 0)")
             return (0, 0)
+
+    @staticmethod
+    def _make_key_lparam(vk: int, key_up: bool = False) -> int:
+        """构造 WM_KEYDOWN/UP 的正确 lParam。
+
+        Unity 6+ 会校验 scan code 和 extended flag，
+        固定 0x00000001 / 0xC0000001 的消息会被忽略。
+        """
+        scan = win32api.MapVirtualKey(vk, 0) & 0xFF
+        extended = vk in EXTENDED_KEY_VKS
+        lparam = 1 | (scan << 16)
+        if extended:
+            lparam |= 1 << 24
+        if key_up:
+            lparam |= (1 << 30) | (1 << 31)
+        return lparam
+
+    @staticmethod
+    def _make_key_wparam(vk: int) -> int:
+        return MESSAGE_KEY_WPARAMS.get(vk, vk)
 
 
 class Input(WinAbstractInput, metaclass=SingletonMeta):
@@ -488,11 +534,13 @@ class BackgroundInput(WinAbstractInput, metaclass=SingletonMeta):
             key (str): 按键名称
         """
         hwnd = screen.handle.hwnd
-        lparam = 0x00000001  # 重复次数为1
+        vk = key_list[key.lower()]
+        wparam = self._make_key_wparam(vk)
+        lparam = self._make_key_lparam(vk, key_up=False)
         if self.use_post_message:
-            win32api.PostMessage(hwnd, win32con.WM_KEYDOWN, key_list[key.lower()], lparam)
+            win32api.PostMessage(hwnd, win32con.WM_KEYDOWN, wparam, lparam)
         else:
-            win32api.SendMessage(hwnd, win32con.WM_KEYDOWN, key_list[key.lower()], lparam)
+            win32api.SendMessage(hwnd, win32con.WM_KEYDOWN, wparam, lparam)
 
     def key_up(self, key: str):
         """键盘按键抬起
@@ -500,11 +548,13 @@ class BackgroundInput(WinAbstractInput, metaclass=SingletonMeta):
             key (str): 按键名称
         """
         hwnd = screen.handle.hwnd
-        lparam = 0xC0000001  # 转换状态为1（按键释放）
+        vk = key_list[key.lower()]
+        wparam = self._make_key_wparam(vk)
+        lparam = self._make_key_lparam(vk, key_up=True)
         if self.use_post_message:
-            win32api.PostMessage(hwnd, win32con.WM_KEYUP, key_list[key.lower()], lparam)
+            win32api.PostMessage(hwnd, win32con.WM_KEYUP, wparam, lparam)
         else:
-            win32api.SendMessage(hwnd, win32con.WM_KEYUP, key_list[key.lower()], lparam)
+            win32api.SendMessage(hwnd, win32con.WM_KEYUP, wparam, lparam)
 
     def key_press(self, key):
         """一次键盘按键操作
@@ -740,11 +790,13 @@ class WindowMoveInput(WinAbstractInput, metaclass=SingletonMeta):
             key (str): 按键名称
         """
         hwnd = screen.handle.hwnd
-        lparam = 0x00000001  # 重复次数为1
+        vk = key_list[key.lower()]
+        wparam = self._make_key_wparam(vk)
+        lparam = self._make_key_lparam(vk, key_up=False)
         if self.use_post_message:
-            win32api.PostMessage(hwnd, win32con.WM_KEYDOWN, key_list[key.lower()], lparam)
+            win32api.PostMessage(hwnd, win32con.WM_KEYDOWN, wparam, lparam)
         else:
-            win32api.SendMessage(hwnd, win32con.WM_KEYDOWN, key_list[key.lower()], lparam)
+            win32api.SendMessage(hwnd, win32con.WM_KEYDOWN, wparam, lparam)
 
     def key_up(self, key: str):
         """键盘按键抬起
@@ -752,11 +804,13 @@ class WindowMoveInput(WinAbstractInput, metaclass=SingletonMeta):
             key (str): 按键名称
         """
         hwnd = screen.handle.hwnd
-        lparam = 0xC0000001  # 转换状态为1（按键释放）
+        vk = key_list[key.lower()]
+        wparam = self._make_key_wparam(vk)
+        lparam = self._make_key_lparam(vk, key_up=True)
         if self.use_post_message:
-            win32api.PostMessage(hwnd, win32con.WM_KEYUP, key_list[key.lower()], lparam)
+            win32api.PostMessage(hwnd, win32con.WM_KEYUP, wparam, lparam)
         else:
-            win32api.SendMessage(hwnd, win32con.WM_KEYUP, key_list[key.lower()], lparam)
+            win32api.SendMessage(hwnd, win32con.WM_KEYUP, wparam, lparam)
 
     def key_press(self, key):
         """一次键盘按键操作
