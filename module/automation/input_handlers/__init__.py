@@ -124,5 +124,8 @@ class AbstractInput:
         """
         raise InterruptedError(f"未实现的输入方法 {self.__class__.__name__}.mouse_to_blank")
 
-    def key_press(self, key) -> None:
+    def key_press(self, key: str) -> None:
         raise InterruptedError(f"未实现的输入方法 {self.__class__.__name__}.key_press")
+
+    def input_text(self, text: str) -> None:
+        raise InterruptedError(f"未实现的输入方法 {self.__class__.__name__}.input_text")
