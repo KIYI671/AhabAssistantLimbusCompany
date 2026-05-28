@@ -402,6 +402,33 @@ def get_starlight_bonus_tips(index: int, language: str | None = None) -> dict[st
     return tips[index]
 
 
+
+STARLIGHT_TOTAL_COST_STYLES = {
+    "light": """
+        QLabel#starlightTotalCostLabel {
+            background: transparent;
+            border: none;
+            color: rgba(0, 0, 0, 0.82);
+            font-size: 18px;
+            font-weight: 600;
+        }
+    """,
+    "dark": """
+        QLabel#starlightTotalCostLabel {
+            background: transparent;
+            border: none;
+            color: rgba(255, 255, 255, 0.92);
+            font-size: 18px;
+            font-weight: 600;
+        }
+    """,
+}
+
+
+def get_starlight_total_cost_qss() -> tuple[str, str]:
+    return STARLIGHT_TOTAL_COST_STYLES["light"], STARLIGHT_TOTAL_COST_STYLES["dark"]
+
+
 STARLIGHT_COST_LABEL_STYLES = {
     "light": """
         QLabel {

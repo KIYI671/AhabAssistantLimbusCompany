@@ -325,12 +325,10 @@ class StarlightLevelSelector(QFrame):
 
     def __on_segment_clicked(self, target_level: int):
         target_value = target_level + 1
-        if target_level == 0:
-            bonus_value = 0 if self.bonus_value == target_value else target_value
-        elif self.bonus_value == target_value:
-            bonus_value = 1
-        else:
+        if target_value > self.bonus_value:
             bonus_value = target_value
+        else:
+            bonus_value = target_level
 
         self.stateChangedByClick.emit(bonus_value)
         if self.emit_team_setting:

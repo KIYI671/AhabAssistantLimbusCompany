@@ -4,6 +4,7 @@ from PySide6.QtWidgets import (
     QFrame,
     QGridLayout,
     QHBoxLayout,
+    QLabel,
     QSizePolicy,
     QVBoxLayout,
     QWidget,
@@ -30,6 +31,7 @@ from app.common.ui_config import (
     STARLIGHT_BONUS_COSTS,
     get_starlight_action_label,
     get_starlight_bonus_name,
+    get_starlight_total_cost_qss,
 )
 from app.language_manager import LanguageManager
 from app.starlight_bonus import StarlightCard, StarlightLevelSelector
@@ -378,6 +380,8 @@ class TeamSettingCard(QFrame):
                 starlight.set_state(bonus_value)
         # 单个星光按钮刷新完成后，同步“全选”按钮状态。
         self.refresh_starlight_select_all()
+        # 更新总星光消耗
+        self.customize_settings_module.update_total_starlight_cost(opening_bonus)
 
     def refresh_starlight_select_all(self):
         select_all = self.findChild(StarlightLevelSelector, "starlight_all")
@@ -608,10 +612,6 @@ class CustomizeSettingsModule(QFrame):
         self.star_layout.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
         self.star_layout.setMaximumHeight(240)
         self.star_layout.setMaximumWidth(950)
-        self.star_action_widget = QWidget()
-        self.star_action_line = QHBoxLayout(self.star_action_widget)
-        self.star_action_line.setContentsMargins(0, 0, 0, 0)
-        self.star_action_line.setSpacing(8)
         self.star_list = QGridLayout()
         self.star_list.setVerticalSpacing(10)
 
@@ -743,8 +743,25 @@ class CustomizeSettingsModule(QFrame):
             base_cost=sum(STARLIGHT_BONUS_COSTS),
             emit_team_setting=False,
         )
-        self.starlight_select_all.setFixedWidth(260)
+
+        self.starlight_select_all_wrapper = QWidget(self)
+        select_all_layout = QVBoxLayout(self.starlight_select_all_wrapper)
+        select_all_layout.setContentsMargins(10, 0, 0, 0)
+        select_all_layout.setAlignment(Qt.AlignmentFlag.AlignVCenter)
+        select_all_layout.addWidget(self.starlight_select_all)
+
         self.starlight_clear_button = PushButton(QT_TRANSLATE_NOOP("CustomizeSettingsModule", "清空"))
+
+        self.starlight_clear_button_wrapper = QWidget(self)
+        clear_btn_layout = QVBoxLayout(self.starlight_clear_button_wrapper)
+        clear_btn_layout.setContentsMargins(10, 0, 0, 0)
+        clear_btn_layout.setAlignment(Qt.AlignmentFlag.AlignVCenter)
+        clear_btn_layout.addWidget(self.starlight_clear_button, 0, Qt.AlignmentFlag.AlignLeft)
+
+        self.starlight_total_cost_label = QLabel(self)
+        self.starlight_total_cost_label.setObjectName("starlightTotalCostLabel")
+        self.starlight_total_cost_label.setAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
+        self._apply_total_cost_style()
 
         self.starlight_clear_button.clicked.connect(lambda: self.__set_all_starlight(0))
         self.starlight_select_all.stateChangedByClick.connect(self.__set_all_starlight)
@@ -871,20 +888,20 @@ class CustomizeSettingsModule(QFrame):
         self.features_patch_line_1.addWidget(self.aggressive_save_systems)
         self.features_patch_line_1.addWidget(self.defense_first_round)
 
-        self.star_action_line.addWidget(self.starlight_clear_button)
-        self.star_action_line.addWidget(self.starlight_select_all)
-        self.star_action_line.addStretch()
-        self.star_layout.add(self.star_action_widget)
-        self.star_list.addWidget(self.starlight_1, 0, 0)
-        self.star_list.addWidget(self.starlight_2, 0, 1)
-        self.star_list.addWidget(self.starlight_3, 0, 2)
-        self.star_list.addWidget(self.starlight_4, 0, 3)
-        self.star_list.addWidget(self.starlight_5, 0, 4)
-        self.star_list.addWidget(self.starlight_6, 1, 0)
-        self.star_list.addWidget(self.starlight_7, 1, 1)
-        self.star_list.addWidget(self.starlight_8, 1, 2)
-        self.star_list.addWidget(self.starlight_9, 1, 3)
-        self.star_list.addWidget(self.starlight_10, 1, 4)
+        self.star_list.addWidget(self.starlight_select_all_wrapper, 0, 0)
+        self.star_list.addWidget(self.starlight_clear_button_wrapper, 0, 1)
+        self.star_list.addWidget(self.starlight_total_cost_label, 0, 4, Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
+
+        self.star_list.addWidget(self.starlight_1, 1, 0)
+        self.star_list.addWidget(self.starlight_2, 1, 1)
+        self.star_list.addWidget(self.starlight_3, 1, 2)
+        self.star_list.addWidget(self.starlight_4, 1, 3)
+        self.star_list.addWidget(self.starlight_5, 1, 4)
+        self.star_list.addWidget(self.starlight_6, 2, 0)
+        self.star_list.addWidget(self.starlight_7, 2, 1)
+        self.star_list.addWidget(self.starlight_8, 2, 2)
+        self.star_list.addWidget(self.starlight_9, 2, 3)
+        self.star_list.addWidget(self.starlight_10, 2, 4)
         self.star_layout.add(self.star_list)
 
         self.fourth_line.addWidget(self.after_level_IV)
@@ -945,6 +962,20 @@ class CustomizeSettingsModule(QFrame):
 
     def __set_all_starlight(self, bonus_value: int):
         mediator.team_setting.emit({"starlight_all_state": max(0, min(int(bonus_value), 3))})
+
+    def _apply_total_cost_style(self):
+        from qfluentwidgets import setCustomStyleSheet
+        from app.starlight_bonus import _register_custom_style_widget
+        _register_custom_style_widget(self.starlight_total_cost_label)
+        light_qss, dark_qss = get_starlight_total_cost_qss()
+        setCustomStyleSheet(self.starlight_total_cost_label, light_qss, dark_qss)
+
+    def update_total_starlight_cost(self, opening_bonus: list[int]):
+        total = sum(
+            STARLIGHT_BONUS_COSTS[i] * opening_bonus[i]
+            for i in range(min(len(opening_bonus), len(STARLIGHT_BONUS_COSTS)))
+        )
+        self.starlight_total_cost_label.setText(str(total))
 
     def retranslateUi(self):
         self.do_not_heal.retranslateUi()
