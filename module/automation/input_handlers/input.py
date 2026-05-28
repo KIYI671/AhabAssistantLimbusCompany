@@ -534,7 +534,10 @@ class BackgroundInput(WinAbstractInput, metaclass=SingletonMeta):
                 char_code = ord(char)
                 # wParam: 字符代码（Unicode）
                 # lParam: 重复计数和标志（为简化起见设为 0）
-                win32api.SendMessage(hwnd, win32con.WM_CHAR, char_code, 0)
+                if self.use_post_message:
+                    win32api.PostMessage(hwnd, win32con.WM_CHAR, char_code, 0)
+                else:
+                    win32api.SendMessage(hwnd, win32con.WM_CHAR, char_code, 0)
                 sleep(0.01)  # 字符之间的延迟，防止字符丢失
         except Exception as e:
             log.debug(f"通过 WM_CHAR 输入文本失败: {e}")
@@ -783,7 +786,10 @@ class WindowMoveInput(WinAbstractInput, metaclass=SingletonMeta):
                 char_code = ord(char)
                 # wParam: 字符代码（Unicode）
                 # lParam: 重复计数和标志（为简化起见设为 0）
-                win32api.SendMessage(hwnd, win32con.WM_CHAR, char_code, 0)
+                if self.use_post_message:
+                    win32api.PostMessage(hwnd, win32con.WM_CHAR, char_code, 0)
+                else:
+                    win32api.SendMessage(hwnd, win32con.WM_CHAR, char_code, 0)
                 sleep(0.01)  # 字符之间的延迟，防止字符丢失
         except Exception as e:
             log.debug(f"通过 WM_CHAR 输入文本失败: {e}")
