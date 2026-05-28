@@ -46,12 +46,7 @@ def back_init_menu(*, allow_restart: bool = True):
 
                 if SimulatorControl.connection_device.check_game_alive() is False:
                     SimulatorControl.connection_device.start_game()
-        # 自动截图
-        if auto.take_screenshot() is None:
-            sleep(0.2)
-            continue
-
-        if retry(skip_screenshot=True) is False:
+        if retry() is False:
             return False
 
         if auto.click_element("home/window_assets.png") and auto.find_element("home/mail_assets.png", model="normal"):
