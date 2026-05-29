@@ -765,15 +765,12 @@ class Mirror:
             level_plusplus_count = self.opening_bonus.count(3)
             if level_count == bonus_num:
                 auto.click_element("mirror/road_to_mir/select_all_stars_assets.png")
-                pass
             elif level_plus_count == bonus_num:
                 auto.click_element("mirror/road_to_mir/select_all_stars_assets.png")
                 auto.click_element("mirror/road_to_mir/dreaming_star/level_one_bonus_assets.png")
-                pass
             elif level_plusplus_count == bonus_num:
                 auto.click_element("mirror/road_to_mir/select_all_stars_assets.png")
                 auto.click_element("mirror/road_to_mir/dreaming_star/level_two_bonus_assets.png")
-                pass
             else:
                 for i in range(bonus_num):
                     if self.opening_bonus[i] >= 1:
