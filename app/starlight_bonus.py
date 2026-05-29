@@ -116,7 +116,7 @@ class DelayedRichToolTipFilter(QObject):
         self.global_pos = None
         self.timer = QTimer(self)
         self.timer.setSingleShot(True)
-        self.timer.setInterval(500)
+        self.timer.setInterval(1000)
         self.timer.timeout.connect(self.__show_tooltip)
 
     def set_text(self, text):
