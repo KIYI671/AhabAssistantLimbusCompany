@@ -6,18 +6,7 @@ from module.logger import log
 
 _CONTINUOUS_COMBAT_DEFAULT_COUNT = 1
 _CONTINUOUS_COMBAT_MAX_COUNT = 10
-_CONTINUOUS_COMBAT_SHOW_BOX_ASSET = "luxcavation/thread_continuous_combat_show_box_assets.png"
-_CONTINUOUS_COMBAT_UP_BOX_ASSET = "luxcavation/continuous_combat_up_box_assets.png"
 _THREAD_CONSUME_ASSET = "luxcavation/thread_consume.png"
-_THREAD_CONSUME_THRESHOLD = 0.85
-_THREAD_LEVEL_MULTI_TARGET_THRESHOLD = 0.8
-
-# 坐标偏移均以 1440p 模板为基准，使用时按当前窗口高度缩放。
-_EXP_CONTINUOUS_BOX_X_OFFSET = 300
-_EXP_CONTINUOUS_BOX_Y_OFFSET = -450
-_THREAD_LEVEL_MIN_X = 700
-_THREAD_LEVEL_ROW_GAP = 70
-_THREAD_LEVEL_MIN_ROW_GAP = 20
 
 
 def _get_continuous_combat_up_clicks(combat_count: int) -> int:
@@ -32,7 +21,7 @@ def _open_continuous_combat_count_box(log_prefix: str, box_position: tuple[int, 
         return True
 
     if not (pos := auto.click_element(
-        _CONTINUOUS_COMBAT_SHOW_BOX_ASSET,
+        "luxcavation/thread_continuous_combat_show_box_assets.png",
         threshold=0.85,
         click=False,
         model="aggressive",
@@ -55,7 +44,7 @@ def _close_continuous_combat_count_box(log_prefix: str, box_position: tuple[int,
     if auto.take_screenshot() is None:
         return
     if pos := auto.click_element(
-        _CONTINUOUS_COMBAT_SHOW_BOX_ASSET,
+        "luxcavation/thread_continuous_combat_show_box_assets.png",
         threshold=0.85,
         click=False,
         model="aggressive",
@@ -81,7 +70,7 @@ def _set_continuous_combat_count(
         if auto.take_screenshot() is None:
             return False
         up_button = auto.click_element(
-            _CONTINUOUS_COMBAT_UP_BOX_ASSET,
+            "luxcavation/continuous_combat_up_box_assets.png",
             threshold=0.85,
             click=False,
             model="aggressive",
@@ -117,18 +106,17 @@ def _prepare_continuous_combat_count(
 
 
 def _get_exp_continuous_combat_box_position(level: tuple[int, int], scale: float) -> tuple[int, int]:
-    return (
-        int(level[0] + _EXP_CONTINUOUS_BOX_X_OFFSET * scale),
-        int(level[1] + _EXP_CONTINUOUS_BOX_Y_OFFSET * scale),
-    )
+    # 1440p 下从 exp_enter 入口锚点偏移到同一卡片的连战次数框。
+    return (int(level[0] + 300 * scale), int(level[1] - 450 * scale))
 
 
 def _filter_thread_level_targets(level: list[tuple[int, int]] | None, scale: float) -> list[tuple[int, int]]:
     if not level:
         return []
 
-    min_x = _THREAD_LEVEL_MIN_X * scale
-    min_row_gap = max(_THREAD_LEVEL_MIN_ROW_GAP, int(_THREAD_LEVEL_ROW_GAP * scale))
+    # 只保留右侧关卡列表区域，并按 1440p 基准行距去重。
+    min_x = 700 * scale
+    min_row_gap = max(20, int(70 * scale))
     selected = []
     for x, y in level:
         point = (int(x), int(y))
@@ -232,7 +220,7 @@ def thread_luxcavation(combat_count: int = 1):
             auto.find_element("home/first_prompt_assets.png", model="clam")
             and auto.find_element("home/back_assets.png", model="normal")
             and not auto.find_element("luxcavation/thread_enter_assets.png", threshold=0.78)
-            and not auto.find_element(_THREAD_CONSUME_ASSET, threshold=_THREAD_CONSUME_THRESHOLD)
+            and not auto.find_element(_THREAD_CONSUME_ASSET, threshold=0.85)
         ):
             auto.key_press("esc")
             continue
@@ -247,7 +235,7 @@ def thread_luxcavation(combat_count: int = 1):
             sleep(0.5)
             if auto.take_screenshot() is None:
                 continue
-            if pos := auto.find_element(_THREAD_CONSUME_ASSET, threshold=_THREAD_CONSUME_THRESHOLD):
+            if pos := auto.find_element(_THREAD_CONSUME_ASSET, threshold=0.85):
                 if scroll_bar := auto.find_element("luxcavation/thread_scroll_bar.png"):
                     auto.mouse_drag_down(scroll_bar[0], scroll_bar[1], reverse=2)
                 else:
@@ -257,7 +245,7 @@ def thread_luxcavation(combat_count: int = 1):
                 level = auto.find_element(
                     _THREAD_CONSUME_ASSET,
                     find_type="image_with_multiple_targets",
-                    threshold=_THREAD_LEVEL_MULTI_TARGET_THRESHOLD,
+                    threshold=0.8,
                     take_screenshot=True,
                 )
                 scale = cfg.set_win_size / 1440
@@ -300,7 +288,7 @@ def thread_luxcavation(combat_count: int = 1):
                         level = auto.find_element(
                             _THREAD_CONSUME_ASSET,
                             find_type="image_with_multiple_targets",
-                            threshold=_THREAD_LEVEL_MULTI_TARGET_THRESHOLD,
+                            threshold=0.8,
                             take_screenshot=True,
                         )
                         level = _filter_thread_level_targets(level, scale)
