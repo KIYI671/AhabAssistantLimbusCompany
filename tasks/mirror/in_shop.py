@@ -1,45 +1,16 @@
 from time import sleep
 
+from PIL import Image
+
 from module.automation import auto
 from module.config import TeamSetting, cfg
 from module.logger import log
+from module.ocr import ocr
 from tasks import all_sinners_name, all_sinners_name_zh, all_systems, system_cn_zh
 from tasks.base.back_init_menu import back_init_menu
 from tasks.base.retry import retry
 from tasks.mirror import fusion_result, must_be_abandoned, must_purchase
 from utils.image_utils import ImageUtils
-
-
-def _is_shop_debug_enabled():
-    return bool(cfg.get_value("debug_mode", False) and cfg.get_value("debug_shop", False))
-
-
-def _shop_debug_save(step_name):
-    if not _is_shop_debug_enabled():
-        return
-    debug_dir = "logs/shop_debug"
-    os.makedirs(debug_dir, exist_ok=True)
-    ts = datetime.now().strftime("%H%M%S_%f")[:13]
-    if auto.screenshot:
-        auto.screenshot.save(f"{debug_dir}/{ts}_{step_name}.png")
-    log.info(f"[商店调试] {step_name}")
-
-
-def _debug_save_on_failure(money_bbox, ocr_result, in_heal=False):
-    """金钱OCR失败时自动保存截图和裁剪区域，不依赖debug_shop开关。"""
-    debug_dir = "logs/shop_debug"
-    os.makedirs(debug_dir, exist_ok=True)
-    ts = datetime.now().strftime("%H%M%S_%f")[:13]
-    prefix = "heal" if in_heal else "shop"
-    if auto.screenshot is not None:
-        auto.screenshot.save(f"{debug_dir}/{ts}_{prefix}_full.png")
-        if money_bbox is not None:
-            try:
-                auto.screenshot.crop(money_bbox).save(f"{debug_dir}/{ts}_{prefix}_crop.png")
-            except Exception:
-                pass
-    log.info(f"[商店调试] OCR失败, 原始结果: {ocr_result}, 坐标: {money_bbox}")
-
 
 _MONEY_OCR_TRANSLATION = str.maketrans(
     {
@@ -56,35 +27,6 @@ _MONEY_OCR_TRANSLATION = str.maketrans(
         "h": "4",
     }
 )
-
-
-# E.G.O 饰品升级扫描区域（相对坐标，基于 1080p/2k 样本校准）
-_ENHANCE_SCAN_REGION_REL = {
-    "left": 0.5151,
-    "top": 0.3380,
-    "right": 0.8844,
-    "bottom": 0.7130,
-}
-
-
-def _filter_enhance_gift_scan_points(points, screen_size):
-    if not points or not screen_size:
-        return points
-
-    width, height = screen_size
-    if not width or not height:
-        return points
-
-    left = int(round(_ENHANCE_SCAN_REGION_REL["left"] * width))
-    top = int(round(_ENHANCE_SCAN_REGION_REL["top"] * height))
-    right = int(round(_ENHANCE_SCAN_REGION_REL["right"] * width))
-    bottom = int(round(_ENHANCE_SCAN_REGION_REL["bottom"] * height))
-
-    return [
-        point
-        for point in points
-        if left <= int(point[0]) <= right and top <= int(point[1]) <= bottom
-    ]
 
 
 def _extract_money_from_ocr_texts(texts):
@@ -118,6 +60,34 @@ def _retry_money_ocr_with_scaled_crop(money_bbox, scale=2):
     except Exception:
         return []
 
+
+# E.G.O 饰品升级扫描区域（相对坐标，基于 1080p/2k 样本校准）
+_ENHANCE_SCAN_REGION_REL = {
+    "left": 0.5151,
+    "top": 0.3380,
+    "right": 0.8844,
+    "bottom": 0.7130,
+}
+
+
+def _filter_enhance_gift_scan_points(points, screen_size):
+    if not points or not screen_size:
+        return points
+
+    width, height = screen_size
+    if not width or not height:
+        return points
+
+    left = int(round(_ENHANCE_SCAN_REGION_REL["left"] * width))
+    top = int(round(_ENHANCE_SCAN_REGION_REL["top"] * height))
+    right = int(round(_ENHANCE_SCAN_REGION_REL["right"] * width))
+    bottom = int(round(_ENHANCE_SCAN_REGION_REL["bottom"] * height))
+
+    return [
+        point
+        for point in points
+        if left <= int(point[0]) <= right and top <= int(point[1]) <= bottom
+    ]
 
 class Shop:
     def __init__(self, team_setting: TeamSetting):
