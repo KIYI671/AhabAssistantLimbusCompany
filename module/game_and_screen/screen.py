@@ -19,7 +19,9 @@ class Handle:
 
     _hwnd: int = 0
     _transparent = False
-    _enum_windows_list = []
+
+    def __init__(self):
+        self._enum_windows_list = []
 
     def init_handle(self, title: str = "LimbusCompany", class_name: str = "UnityWndClass") -> int:
         """获取窗口句柄"""
@@ -29,6 +31,7 @@ class Handle:
         else:
             self._hwnd = 0
             try:
+                self._enum_windows_list.clear()
                 win32gui.EnumWindows(self._enum_windows_callback, None)
             except win32gui.error:
                 pass
@@ -50,6 +53,7 @@ class Handle:
             self._hwnd = hwnd
             self._enum_windows_list.clear()
             return False  # 停止枚举
+        return True  # 继续枚举
 
     @property
     def hwnd(self) -> int:
