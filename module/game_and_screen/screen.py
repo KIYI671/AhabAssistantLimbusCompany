@@ -19,11 +19,37 @@ class Handle:
 
     _hwnd: int = 0
     _transparent = False
+    _enum_windows_list = []
 
     def init_handle(self, title: str = "LimbusCompany", class_name: str = "UnityWndClass") -> int:
         """获取窗口句柄"""
-        self._hwnd = win32gui.FindWindow(class_name, title)
+        hwnd = win32gui.FindWindow(class_name, title)
+        if hwnd:
+            self._hwnd = hwnd
+        else:
+            self._hwnd = 0
+            try:
+                win32gui.EnumWindows(self._enum_windows_callback, None)
+            except win32gui.error:
+                pass
+            except Exception as e:
+                log.error(f"枚举窗口时发生错误: {e}", stacklevel=3)
+            if self._hwnd == 0:
+                log.error("未能获取到游戏窗口", stacklevel=3)
+                log.debug(f"枚举窗口列表: {self._enum_windows_list}")
+                self._enum_windows_list.clear()
         return self._hwnd
+
+    def _enum_windows_callback(self, hwnd, _):
+        """该函数于GUI线程中返回停止信号固定触发`win32gui.error`报错, 外部调用务必捕获异常, 以防崩溃"""
+        class_name = win32gui.GetClassName(hwnd)
+        window_text = win32gui.GetWindowText(hwnd)
+        self._enum_windows_list.append(f"hwnd: {hwnd}, class_name: {class_name}, window_text: {window_text}")
+        if class_name == "UnityWndClass" and window_text == "LimbusCompany":
+            log.debug(f"在枚举窗口中找到匹配的窗口: {hwnd}", stacklevel=4)
+            self._hwnd = hwnd
+            self._enum_windows_list.clear()
+            return False  # 停止枚举
 
     @property
     def hwnd(self) -> int:
@@ -33,14 +59,13 @@ class Handle:
         if self._hwnd == 0:
             if cfg.config.simulator:
                 log.warning("模拟器模式下无法获取窗口句柄，请勿调用句柄", stacklevel=3)
+            else:
+                self.init_handle()
         elif not win32gui.IsWindow(self._hwnd):
-            log.warning("窗口句柄无效，可能窗口已关闭，重新获取", stacklevel=3)
+            log.warning(f"窗口句柄无效，可能窗口已关闭，重新获取, 当前句柄为 {self._hwnd}", stacklevel=3)
             self.init_handle()
             if win32gui.IsWindow(self._hwnd):
-                log.info("重新获取窗口句柄成功", stacklevel=3)
-            else:
-                log.error("重新获取窗口句柄失败", stacklevel=3)
-                self._hwnd = 0
+                log.info(f"重新获取窗口句柄成功, 新句柄为 {self._hwnd}", stacklevel=3)
         return self._hwnd
 
     @property
