@@ -774,16 +774,14 @@ class Mirror:
             else:
                 for i in range(bonus_num):
                     if self.opening_bonus[i] >= 1:
-                        auto.mouse_click(starlights_X[i], starlights_Y[i])
+                        auto.mouse_action_with_pos((starlights_X[i], starlights_Y[i]))
                     if self.opening_bonus[i] == 2:
-                        auto.mouse_click(
-                            starlights_X[i] - 80 * scale,
-                            starlights_Y[i] + 320 * scale,
+                        auto.mouse_action_with_pos(
+                            (starlights_X[i] - 80 * scale, starlights_Y[i] + 320 * scale),
                         )
                     elif self.opening_bonus[i] == 3:
-                        auto.mouse_click(
-                            starlights_X[i] + 80 * scale,
-                            starlights_Y[i] + 320 * scale,
+                        auto.mouse_action_with_pos(
+                            (starlights_X[i] + 80 * scale, starlights_Y[i] + 320 * scale),
                         )
 
             if auto.click_element("mirror/road_to_mir/dreaming_star/dreaming_star_enter_assets.png"):
