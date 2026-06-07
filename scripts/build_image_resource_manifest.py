@@ -71,9 +71,9 @@ def iter_resource_files(source_dir: Path) -> list[Path]:
         按相对路径排序后的资源文件路径列表。
     """
     if not source_dir.exists():
-        raise FileNotFoundError(f"源资源目录不存在: {source_dir}")
+        raise FileNotFoundError(f"Source resource directory does not exist: {source_dir}")
     if not source_dir.is_dir():
-        raise NotADirectoryError(f"源资源路径不是目录: {source_dir}")
+        raise NotADirectoryError(f"Source resource path is not a directory: {source_dir}")
 
     # 先扫描全部文件，再按归一化相对路径排序，保证每次构建顺序一致。
     files = [path for path in source_dir.rglob("*") if path.is_file()]
@@ -179,7 +179,10 @@ def build_package_entry(output_manifest_path: Path, output_package_path: Path) -
         # 资源包路径必须相对 manifest 所在目录可表达，客户端才能稳定推导下载地址。
         package_relative_path = output_package_path.relative_to(output_manifest_path.parent).as_posix()
     except ValueError as exc:
-        raise ValueError("资源包输出路径必须位于清单输出目录之下，以便写入稳定的相对路径") from exc
+        raise ValueError(
+            "Package output path must be located under the manifest output directory "
+            "so a stable relative path can be written."
+        ) from exc
 
     # 同步记录资源包相对路径、哈希、大小和格式，供客户端整包校验使用。
     return ResourcePackageEntry(

@@ -11,7 +11,12 @@ import sys
 if __package__ in {None, ""}:
     sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from scripts.build_image_resource_manifest import DEFAULT_OUTPUT_MANIFEST_PATH, DEFAULT_OUTPUT_PACKAGE_PATH
+# 默认将资源构建产物输出到 logs 目录，并与构建脚本保持一致。
+DEFAULT_OUTPUT_ROOT = Path("logs/image_resource_build")
+# 默认的清单输出路径。
+DEFAULT_OUTPUT_MANIFEST_PATH = DEFAULT_OUTPUT_ROOT / "manifest.json"
+# 默认的资源包输出路径。
+DEFAULT_OUTPUT_PACKAGE_PATH = DEFAULT_OUTPUT_ROOT / Path("packages/images.7z")
 
 # 目标资源仓库中默认的清单相对路径。
 DEFAULT_REPO_MANIFEST_RELATIVE_PATH = Path("manifest.json")
@@ -39,13 +44,13 @@ def sync_resource_repo(
         同步后的目标 manifest 路径和目标资源包路径。
     """
     if not artifact_manifest_path.is_file():
-        raise FileNotFoundError(f"构建产物中的清单文件不存在: {artifact_manifest_path}")
+        raise FileNotFoundError(f"Manifest file does not exist in build artifacts: {artifact_manifest_path}")
     if not artifact_package_path.is_file():
-        raise FileNotFoundError(f"构建产物中的资源包文件不存在: {artifact_package_path}")
+        raise FileNotFoundError(f"Resource package does not exist in build artifacts: {artifact_package_path}")
     if not repo_root.exists():
-        raise FileNotFoundError(f"目标资源仓库目录不存在: {repo_root}")
+        raise FileNotFoundError(f"Target resource repository directory does not exist: {repo_root}")
     if not repo_root.is_dir():
-        raise NotADirectoryError(f"目标资源仓库路径不是目录: {repo_root}")
+        raise NotADirectoryError(f"Target resource repository path is not a directory: {repo_root}")
 
     target_manifest_path = repo_root / repo_manifest_relative_path
     target_packages_dir = repo_root / repo_packages_relative_dir
@@ -126,9 +131,6 @@ def main() -> int:
         repo_packages_relative_dir=args.repo_packages_dir,
     )
 
-    # 第三步：输出同步结果，便于 CI 日志确认发布产物位置。
-    print(f"已同步清单文件: {manifest_path}")
-    print(f"已同步资源包: {package_path}")
     return 0
 
 
