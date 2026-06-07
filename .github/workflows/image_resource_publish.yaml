@@ -14,7 +14,7 @@ env:
   # Gitee 资源仓库地址。
   IMAGE_RESOURCE_TARGET_GITEE_REPOSITORY: "KIYI/AALCImageResources"
   # Gitee 资源仓库默认推送分支。
-  IMAGE_RESOURCE_TARGET_GITEE_BRANCH: "main"
+  IMAGE_RESOURCE_TARGET_GITEE_BRANCH: "master"
 
 jobs:
   build-and-sync:
