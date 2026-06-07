@@ -1225,6 +1225,8 @@ class Shop:
             auto.click_element("mirror/shop/skill_replacement_confirm_assets.png")
             if retry() is False:
                 raise self.RestartGame()
+        # 如果所有优先罪人都没有技能可替换，则点击返回按钮退出该界面
+        auto.click_element("mirror/shop/ID_skill_replace_search_return_assets.png")
 
     def replacement_skill(self):
         """
