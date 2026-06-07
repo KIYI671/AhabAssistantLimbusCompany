@@ -1,0 +1,140 @@
+name: Image Resource Publish Workflow
+
+on:
+  release:
+    types:
+      - published
+  workflow_dispatch:
+
+env:
+  # GitHub 资源仓库地址。
+  IMAGE_RESOURCE_TARGET_GITHUB_REPOSITORY: "KIYI671/AALCImageResources"
+  # GitHub 资源仓库默认推送分支。
+  IMAGE_RESOURCE_TARGET_GITHUB_BRANCH: "main"
+  # Gitee 资源仓库地址先保留占位值，后续补全后即可启用同步。
+  IMAGE_RESOURCE_TARGET_GITEE_REPOSITORY: "TODO_OWNER/TODO_REPO"
+  # Gitee 资源仓库默认推送分支。
+  IMAGE_RESOURCE_TARGET_GITEE_BRANCH: "main"
+
+jobs:
+  build-and-sync:
+    runs-on: windows-latest
+    steps:
+      # 检出当前主仓库代码。
+      - name: Checkout
+        uses: actions/checkout@main
+
+      # 配置 uv 运行环境。
+      - name: Setup UV for Python
+        uses: astral-sh/setup-uv@v8.1.0
+        with:
+          enable-cache: true
+          cache-dependency-glob: |
+            **/uv.lock
+
+      # 安装项目依赖，保证脚本运行环境与仓库一致。
+      - name: Install dependencies
+        run: |
+          uv sync --frozen
+
+      # 构建图片资源清单与 7z 资源包。
+      - name: Build image resource artifacts
+        run: |
+          uv run python ./scripts/build_image_resource_manifest.py
+
+      # 无论是否启用外部同步，都先上传 manifest 与 7z 资源包供排查或人工下载。
+      - name: Upload image resource artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: image-resource-build
+          path: |
+            logs/image_resource_build/manifest.json
+            logs/image_resource_build/packages
+
+      # 当 GitHub 目标仓库仍为占位值时，仅保留构建产物，不执行对外同步。
+      - name: Skip GitHub sync when repository placeholder is still in use
+        if: env.IMAGE_RESOURCE_TARGET_GITHUB_REPOSITORY == 'TODO_OWNER/TODO_REPO'
+        run: |
+          echo "GitHub 资源仓库仍为占位值，已跳过 GitHub 外部仓库同步。"
+
+      # 使用完整认证远端地址克隆 GitHub 资源仓库，避免把平台认证逻辑写死在 workflow 中。
+      - name: Clone GitHub target resource repository
+        if: env.IMAGE_RESOURCE_TARGET_GITHUB_REPOSITORY != 'TODO_OWNER/TODO_REPO'
+        shell: bash
+        env:
+          IMAGE_RESOURCE_TARGET_REMOTE_URL: ${{ secrets.IMAGE_RESOURCE_TARGET_GITHUB_REMOTE_URL }}
+        run: |
+          if [ -z "$IMAGE_RESOURCE_TARGET_REMOTE_URL" ]; then
+            echo "缺少 GitHub 资源仓库远端地址 secret：IMAGE_RESOURCE_TARGET_GITHUB_REMOTE_URL"
+            exit 1
+          fi
+
+          git clone --branch "${{ env.IMAGE_RESOURCE_TARGET_GITHUB_BRANCH }}" "$IMAGE_RESOURCE_TARGET_REMOTE_URL" resource_repo_github
+
+      # 将构建产物同步到 GitHub 资源仓库工作目录。
+      - name: Sync GitHub resource repository
+        if: env.IMAGE_RESOURCE_TARGET_GITHUB_REPOSITORY != 'TODO_OWNER/TODO_REPO'
+        run: |
+          uv run python ./scripts/sync_image_resource_repo.py --repo-root ./resource_repo_github
+
+      # 若 GitHub 资源仓库存在变化，则提交并推送。
+      - name: Commit and push GitHub resource repository changes
+        if: env.IMAGE_RESOURCE_TARGET_GITHUB_REPOSITORY != 'TODO_OWNER/TODO_REPO'
+        shell: bash
+        working-directory: resource_repo_github
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          if [ -z "$(git status --short)" ]; then
+            echo "GitHub 资源仓库未检测到图片资源变化"
+            exit 0
+          fi
+
+          git add -A
+          git commit -m "chore: update image resource manifest"
+          git push origin HEAD:${{ env.IMAGE_RESOURCE_TARGET_GITHUB_BRANCH }}
+
+      # 当 Gitee 目标仓库仍为占位值时，仅保留构建产物，不执行对外同步。
+      - name: Skip Gitee sync when repository placeholder is still in use
+        if: env.IMAGE_RESOURCE_TARGET_GITEE_REPOSITORY == 'TODO_OWNER/TODO_REPO'
+        run: |
+          echo "Gitee 资源仓库仍为占位值，已跳过 Gitee 外部仓库同步。"
+
+      # 使用完整认证远端地址克隆 Gitee 资源仓库，具体认证方式交由 secret 自行承载。
+      - name: Clone Gitee target resource repository
+        if: env.IMAGE_RESOURCE_TARGET_GITEE_REPOSITORY != 'TODO_OWNER/TODO_REPO'
+        shell: bash
+        env:
+          IMAGE_RESOURCE_TARGET_REMOTE_URL: ${{ secrets.IMAGE_RESOURCE_TARGET_GITEE_REMOTE_URL }}
+        run: |
+          if [ -z "$IMAGE_RESOURCE_TARGET_REMOTE_URL" ]; then
+            echo "缺少 Gitee 资源仓库远端地址 secret：IMAGE_RESOURCE_TARGET_GITEE_REMOTE_URL"
+            exit 1
+          fi
+
+          git clone --branch "${{ env.IMAGE_RESOURCE_TARGET_GITEE_BRANCH }}" "$IMAGE_RESOURCE_TARGET_REMOTE_URL" resource_repo_gitee
+
+      # 将构建产物同步到 Gitee 资源仓库工作目录。
+      - name: Sync Gitee resource repository
+        if: env.IMAGE_RESOURCE_TARGET_GITEE_REPOSITORY != 'TODO_OWNER/TODO_REPO'
+        run: |
+          uv run python ./scripts/sync_image_resource_repo.py --repo-root ./resource_repo_gitee
+
+      # 若 Gitee 资源仓库存在变化，则提交并推送。
+      - name: Commit and push Gitee resource repository changes
+        if: env.IMAGE_RESOURCE_TARGET_GITEE_REPOSITORY != 'TODO_OWNER/TODO_REPO'
+        shell: bash
+        working-directory: resource_repo_gitee
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          if [ -z "$(git status --short)" ]; then
+            echo "Gitee 资源仓库未检测到图片资源变化"
+            exit 0
+          fi
+
+          git add -A
+          git commit -m "chore: update image resource manifest"
+          git push origin HEAD:${{ env.IMAGE_RESOURCE_TARGET_GITEE_BRANCH }}
