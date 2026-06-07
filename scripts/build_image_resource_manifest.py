@@ -285,11 +285,7 @@ def main() -> int:
         generated_at=args.generated_at,
     )
 
-    # 第三步：输出关键信息，便于 CI 日志和人工核对。
-    print(f"已生成资源清单: {args.output_manifest_path}")
-    print(f"已生成资源包: {args.output_package_path}")
-    print(f"清单标识: {manifest.manifest_id}")
-    print(f"文件数量: {len(manifest.files)}")
+
     return 0
 
 
