@@ -3,6 +3,10 @@ import socket
 import sys
 import threading
 
+# 将当前工作目录设置为程序所在的目录，确保无论从哪里执行，其工作目录都正确设置为程序本身的位置，避免路径错误。
+os.chdir(
+    os.path.dirname(sys.executable) if getattr(sys, "frozen", False) else os.path.dirname(os.path.abspath(__file__))
+)
 # 解决 Windows DPI 缩放问题
 from ctypes import c_void_p, windll
 
@@ -26,10 +30,6 @@ from app.language_manager import LanguageManager
 from app.my_app import MainWindow
 from module.config import cfg
 
-# 将当前工作目录设置为程序所在的目录，确保无论从哪里执行，其工作目录都正确设置为程序本身的位置，避免路径错误。
-os.chdir(
-    os.path.dirname(sys.executable) if getattr(sys, "frozen", False) else os.path.dirname(os.path.abspath(__file__))
-)
 
 # 获取管理员权限
 import pyuac

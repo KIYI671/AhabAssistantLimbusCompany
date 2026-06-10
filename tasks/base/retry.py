@@ -78,9 +78,11 @@ def retry():
     为保证稳定性，retry 内循环始终刷新截图，避免复用旧帧导致误判。
     """
     start_time = time.time()
-    saved_hwnd = screen.handle.hwnd
+    is_windows = not cfg.config.simulator
+    if is_windows:
+        saved_hwnd = screen.handle.hwnd
     while True:
-        if screen.handle.hwnd != saved_hwnd:
+        if is_windows and screen.handle.hwnd != saved_hwnd:
             # 句柄发生变化则重置初始时间, 以免误判卡死
             saved_hwnd = screen.handle.hwnd
             start_time = time.time()
