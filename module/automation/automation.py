@@ -603,7 +603,7 @@ class Automation(metaclass=SingletonMeta):
         path_changed = False
         if dark_matched and not default_matched:
             path_manager.set_theme("dark", log_stacklevel=additional_stack + 4)
-        elif default_matched and not dark_matched:
+        elif default_matched and dark_results and not dark_matched:
             path_manager.set_theme("default", log_stacklevel=additional_stack + 4)
             path_changed = path_manager.eliminate_dark_paths() or path_changed
         elif dark_matched and default_matched:
