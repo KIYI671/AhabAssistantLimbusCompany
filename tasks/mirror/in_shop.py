@@ -40,7 +40,7 @@ def _extract_money_from_ocr_texts(texts):
 
     for text in cleaned_texts:
         normalized = text.translate(_MONEY_OCR_TRANSLATION)
-        if normalized.isdigit() and any(ch.isdigit() for ch in normalized):
+        if normalized.isdigit():
             return int(normalized)
 
     return None
@@ -53,11 +53,15 @@ def _retry_money_ocr_with_scaled_crop(money_bbox, scale=2):
     try:
         crop = auto.screenshot.crop(money_bbox)
         width, height = crop.size
-        resampling = getattr(getattr(Image, "Resampling", Image), "BICUBIC")
+        try:
+            resampling = Image.Resampling.BICUBIC
+        except AttributeError:
+            resampling = Image.BICUBIC
         enlarged = crop.resize((width * scale, height * scale), resample=resampling)
         result = ocr.run(enlarged)
         return list(result.txts or [])
     except Exception:
+        log.debug("OCR 放大裁剪识别失败", exc_info=True)
         return []
 
 
@@ -370,55 +374,44 @@ class Shop:
 
             my_remaining_money = self._get_cost()
 
-            if keyword_refresh_count < self.max_keyword_refresh:
-                if my_remaining_money < 0 or my_remaining_money >= 300:
-                    auto.mouse_click_blank(times=3)
-                    if auto.click_element("mirror/shop/refresh_keyword_assets.png"):
-                        sleep(1)
-                        auto.click_element(
-                            f"mirror/shop/keyword/keyword_{self.system}.png",
+            if my_remaining_money < 0:
+                log.warning("无法读取剩余金钱，跳过本次刷新")
+            elif keyword_refresh_count < self.max_keyword_refresh and my_remaining_money >= 300:
+                auto.mouse_click_blank(times=3)
+                if auto.click_element("mirror/shop/refresh_keyword_assets.png"):
+                    sleep(1)
+                    auto.click_element(
+                        f"mirror/shop/keyword/keyword_{self.system}.png",
+                        take_screenshot=True,
+                    )
+                    sleep(0.5)
+                    auto.click_element("mirror/shop/refresh_keyword_confirm_assets.png")
+                    for _ in range(3):
+                        if auto.find_element(
+                            "mirror/shop/refresh_keyword_confirm_assets.png",
                             take_screenshot=True,
-                        )
-                        sleep(0.5)
-                        auto.click_element("mirror/shop/refresh_keyword_confirm_assets.png")
-                        for _ in range(3):
-                            if auto.find_element(
+                        ):
+                            log.warning("关键词刷新确认未生效，重试中")
+                            sleep(0.5)
+                            auto.click_element(
+                                f"mirror/shop/keyword/keyword_{self.system}.png",
+                                take_screenshot=True,
+                            )
+                            sleep(0.5)
+                            auto.click_element(
                                 "mirror/shop/refresh_keyword_confirm_assets.png",
                                 take_screenshot=True,
-                            ):
-                                log.warning("关键词刷新确认未生效，重试中")
-                                sleep(0.5)
-                                auto.click_element(
-                                    f"mirror/shop/keyword/keyword_{self.system}.png",
-                                    take_screenshot=True,
-                                )
-                                sleep(0.5)
-                                auto.click_element(
-                                    "mirror/shop/refresh_keyword_confirm_assets.png",
-                                    take_screenshot=True,
-                                )
-                            else:
-                                break
-                        keyword_refresh_count += 1
-                        auto.mouse_click_blank()
-                        sleep(3)
-                        if retry() is False:
-                            raise self.RestartGame()
-                        if self.skill_replacement and self.replacement < 3:
-                            self.replacement_skill()
-                        continue
-
-            if normal_refresh_count < self.max_normal_refresh:
-                if my_remaining_money < 0 or my_remaining_money >= 200:
-                    auto.mouse_click_blank(times=3)
-                    if auto.click_element("mirror/shop/refresh_assets.png"):
-                        normal_refresh_count += 1
-                        sleep(3)
-                        if retry() is False:
-                            raise self.RestartGame()
-                        if self.skill_replacement and self.replacement < 3:
-                            self.replacement_skill()
-                        continue
+                            )
+                        else:
+                            break
+                    keyword_refresh_count += 1
+                    auto.mouse_click_blank()
+                    sleep(3)
+                    if retry() is False:
+                        raise self.RestartGame()
+                    if self.skill_replacement and self.replacement < 3:
+                        self.replacement_skill()
+                    continue
 
             if normal_refresh_count < self.max_normal_refresh and my_remaining_money >= 200:
                 auto.mouse_click_blank(times=3)
@@ -1505,15 +1498,25 @@ class Shop:
     def _get_cost(self, in_heal=False) -> int:
         """获取当前剩余的经费"""
         my_remaining_money = -1
+        money_bbox = None
+        my_money = None
         try:
             if in_heal:
                 money_bbox = ImageUtils.get_bbox(ImageUtils.load_image("mirror/shop/my_money_heal_bbox.png"))
             else:
                 money_bbox = ImageUtils.get_bbox(ImageUtils.load_image("mirror/shop/my_money_bbox.png"))
             my_money = auto.get_text_from_screenshot(money_bbox)
-            if my_money:  # 避免非空
-                my_remaining_money = int(my_money[0])
-            if not my_money or not isinstance(my_remaining_money, int):
+            parsed_money = _extract_money_from_ocr_texts(my_money)
+            if parsed_money is None:
+                scaled_money = _retry_money_ocr_with_scaled_crop(money_bbox, scale=2)
+                if scaled_money:
+                    log.debug(f"OCR 放大重试结果: {scaled_money}")
+                    parsed_money = _extract_money_from_ocr_texts(scaled_money)
+                    if parsed_money is not None:
+                        my_money = scaled_money
+            if parsed_money is not None:
+                my_remaining_money = parsed_money
+            if parsed_money is None or my_remaining_money < 0:
                 log.error("获取剩余金钱失败")
             else:
                 log.debug(f"剩余金钱：{my_remaining_money}")
