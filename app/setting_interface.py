@@ -1,6 +1,6 @@
 import datetime
 
-from PySide6.QtCore import QT_TRANSLATE_NOOP, QPoint, Qt, QUrl
+from PySide6.QtCore import QT_TRANSLATE_NOOP, QPoint, Qt, QUrl, Signal
 from PySide6.QtGui import QDesktopServices
 from PySide6.QtWidgets import (
     QFileDialog,
@@ -43,16 +43,27 @@ from utils.schedule_helper import ScheduleHelper
 
 
 class SettingInterface(QWidget):
+    # 手动检查图片资源更新请求，由主窗口统一接管后续流程。
+    manualResourceSyncRequested = Signal()
+
     def __init__(self, parent=None):
+        """初始化设置页及其资源同步入口。
+
+        参数:
+            parent: Qt 父对象。
+        """
         super().__init__(parent=parent)
+        # 先创建基础界面骨架、卡片和导航结构。
         self.__init_widget()
         self.__init_card()
         self.__initLayout()
         self.__init_nav()
 
+        # 再应用主题样式并注册主题切换监听。
         self._apply_theme_style()
         qconfig.themeChanged.connect(self._apply_theme_style)
 
+        # 最后连接交互信号并注册到语言管理器。
         self.__connect_signal()
         self.setObjectName("SettingInterface")
 
@@ -92,6 +103,8 @@ class SettingInterface(QWidget):
         self.content_scroll.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
 
     def __init_card(self):
+        """初始化设置页中全部设置卡片。"""
+        # 第一组：创建游戏、模拟器、启动方式等基础设置卡片。
         self.game_setting_group = BaseSettingCardGroup(
             QT_TRANSLATE_NOOP("BaseSettingCardGroup", "游戏设置"), self.scroll_widget
         )
@@ -342,7 +355,33 @@ class SettingInterface(QWidget):
             "mirrorchyan_cdk",
             parent=self.update_group,
         )
+        # 资源同步相关卡片集中放在更新设置分组下，便于用户理解它与软件更新的关系。
+        self.image_resource_sync_card = SwitchSettingCard(
+            FIF.SCROLL,
+            QT_TRANSLATE_NOOP("SwitchSettingCard", "自动更新图片资源"),
+            "",
+            "image_resource_sync",
+            parent=self.update_group,
+        )
+        self.image_resource_source_card = ComboBoxSettingCard(
+            "image_resource_source",
+            FIF.DOWNLOAD,
+            QT_TRANSLATE_NOOP("ComboBoxSettingCard", "图片更新源"),
+            texts={
+                QT_TRANSLATE_NOOP("ComboBoxSettingCard", "自动"): "Auto",
+                QT_TRANSLATE_NOOP("ComboBoxSettingCard", "Gitee"): "Gitee",
+                QT_TRANSLATE_NOOP("ComboBoxSettingCard", "GitHub"): "GitHub",
+            },
+            parent=self.update_group,
+        )
+        self.check_image_resource_update_card = BasePrimaryPushSettingCard(
+            QT_TRANSLATE_NOOP("BasePrimaryPushSettingCard", "立即检查"),
+            FIF.UPDATE,
+            QT_TRANSLATE_NOOP("BasePrimaryPushSettingCard", "手动检查资源更新"),
+            parent=self.update_group,
+        )
 
+        # 最后一组：创建日志、关于和实验性功能等辅助设置卡片。
         self.logs_group = BaseSettingCardGroup(
             QT_TRANSLATE_NOOP("BaseSettingCardGroup", "日志设置"), self.scroll_widget
         )
@@ -404,14 +443,22 @@ class SettingInterface(QWidget):
         )
 
     def _on_hard_mirror_chance_confirm(self, _: int) -> None:
-        """手动调整困难模式次数后，同步刷新自动切换时间戳。"""
+        """手动调整困难模式次数后，同步刷新自动切换时间戳。
+
+        参数:
+            _: PushSettingCardChance 传入的确认值，此处不需要直接使用。
+        """
+        # 记录当前时间为新的自动切换时间戳。
         now = datetime.datetime.now()
         cfg.set_value("last_auto_change", now.timestamp())
         cfg.flush()
+        # 同步刷新卡片上的缓存值和显示文本。
         self.last_auto_hard_mirror_card.config_value = now
         self.last_auto_hard_mirror_card.contentLabel.setText(now.strftime("%Y-%m-%d %H:%M"))
 
     def __initLayout(self):
+        """将已创建的设置卡片挂载到各自分组与滚动布局中。"""
+        # 先把卡片加入各自的设置分组。
         self.game_setting_group.addSettingCard(self.game_setting_card)
         self.game_setting_group.addSettingCard(self.auto_hard_mirror_card)
         self.game_setting_group.addSettingCard(self.last_auto_hard_mirror_card)
@@ -444,6 +491,9 @@ class SettingInterface(QWidget):
         self.update_group.addSettingCard(self.check_update_card)
         self.update_group.addSettingCard(self.update_source_card)
         self.update_group.addSettingCard(self.mirrorchyan_cdk_card)
+        self.update_group.addSettingCard(self.image_resource_sync_card)
+        self.update_group.addSettingCard(self.image_resource_source_card)
+        self.update_group.addSettingCard(self.check_image_resource_update_card)
 
         self.logs_group.addSettingCard(self.open_logs_card)
 
@@ -453,6 +503,7 @@ class SettingInterface(QWidget):
 
         self.experimental_group.addSettingCard(self.keep_screen_awake_card)
 
+        # 再把各个分组按页面顺序加入主滚动布局。
         self.expand_layout.addWidget(self.game_setting_group)
         self.expand_layout.addWidget(self.theme_pack_group)
         self.expand_layout.addWidget(self.simulator_setting_group)
@@ -515,17 +566,22 @@ class SettingInterface(QWidget):
         self.setStyleSheet(dark_qss if isDarkTheme() else light_qss)
 
     def __connect_signal(self):
+        """连接设置页卡片与处理函数之间的信号。"""
+        # 先连接按钮点击类交互，包括图片资源手动检查入口。
         self.game_path_card.clicked.connect(self.__onGamePathCardClicked)
         self.open_logs_card.clicked.connect(self.__onOpenLogsCardClicked)
         self.screenshot_benchmark_card.clicked.connect(self.__onScreenshotBenchmarkCardClicked)
         self.theme_pack_card.clicked.connect(self.__onThemePackCardClicked)
+        self.check_image_resource_update_card.clicked.connect(self.__onCheckImageResourceUpdateClicked)
 
+        # 再连接配置变更类交互，保证界面动作能同步刷新配置和主题。
         self.zoom_card.valueChanged.connect(self.__onZoomCardValueChanged)
         self.win_input_type_card.valueChanged.connect(self.__onWinInputTypeChanged)
         self.__onWinInputTypeChanged()
         self.autostart_card.switchButton.checkedChanged.connect(self.__onAutostartCardChanged)
         self.theme_card.valueChanged.connect(self.__onThemeCardChanged)
 
+        # 最后连接外链卡片，统一复用打开 URL 的回调工厂。
         self.github_card.clicked.connect(self.__openUrl("https://github.com/KIYI671/AhabAssistantLimbusCompany"))
         self.discord_group_card.clicked.connect(self.__openUrl("https://discord.gg/vUAw98cEVe"))
         self.feedback_card.clicked.connect(
@@ -538,6 +594,10 @@ class SettingInterface(QWidget):
             return
         cfg.set_value("game_path", game_path)
         self.game_path_card.setContent(game_path)
+
+    def __onCheckImageResourceUpdateClicked(self) -> None:
+        """将手动检查图片资源的请求上抛给主窗口处理。"""
+        self.manualResourceSyncRequested.emit()
 
     def __onOpenLogsCardClicked(self):
         import os
@@ -663,6 +723,9 @@ class SettingInterface(QWidget):
         self.update_source_card.retranslateUi()
         self.check_update_card.retranslateUi()
         self.mirrorchyan_cdk_card.retranslateUi()
+        self.image_resource_sync_card.retranslateUi()
+        self.image_resource_source_card.retranslateUi()
+        self.check_image_resource_update_card.retranslateUi()
         self.logs_group.retranslateUi()
         self.about_group.retranslateUi()
         self.open_logs_card.retranslateUi()

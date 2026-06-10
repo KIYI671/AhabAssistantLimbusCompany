@@ -43,6 +43,7 @@ from app.custom_pivot import FullWidthPivot
 from app.farming_interface import FarmingInterface
 from app.language_manager import LanguageManager
 from app.page_card import MarkdownViewer
+from app.resource_sync_coordinator import ResourceSyncCoordinator
 from app.setting_interface import SettingInterface
 from app.team_setting_card import TeamSettingCard
 from app.tools_interface import ToolsInterface
@@ -54,10 +55,7 @@ from module.after_completion_types import (
 from module.config import cfg
 from module.font_manager import font_manager
 from module.logger import log
-from module.system_actions import (
-    autodaily_exit_to_after_completion_config,
-)
-from module.update.check_update import check_update
+from module.system_actions import autodaily_exit_to_after_completion_config
 
 # WinRT toast / Win32 焦点切换存在异步回跳，这里保留一次延迟补偿。
 _FOREGROUND_RETRY_DELAY_MS = 600
@@ -121,6 +119,12 @@ class MainWindow(FramelessWindow):
         self.progress_ring = ProgressRing(self)
         self.progress_ring.hide()
 
+        # 展示有可更新图片资源，默认隐藏，仅在检查到更新或同步完成后显示。
+        self.resource_sync_status_label = QLabel(self.titleBar)
+        self.resource_sync_status_label.setAttribute(Qt.WA_TransparentForMouseEvents, True)
+        self.resource_sync_status_label.hide()
+        self.titleBar.hBoxLayout.insertWidget(3, self.resource_sync_status_label, 0, Qt.AlignLeft)
+
         self.resize(1080, 600)
         # 恢复窗口位置
         saved_x = cfg.get_value("window_position_x", None)
@@ -152,6 +156,19 @@ class MainWindow(FramelessWindow):
         self.farming_interface = FarmingInterface(self)
         self.tools_interface = ToolsInterface(self)
         self.setting_interface = SettingInterface(self)
+        # 由独立协调类统一接管资源同步编排，主窗口只保留界面接缝。
+        self.resource_sync_coordinator = ResourceSyncCoordinator(
+            window=self,
+            status_label=self.resource_sync_status_label,
+            startup_argv=list(argv),
+            continue_startup=lambda: self._continue_main_startup_sequence(list(argv)),
+            set_progress=self.set_progress_ring,
+            has_running_script=self._has_running_script,
+        )
+        # 设置页只负责发信号，由协调类统一接管手动资源同步入口。
+        self.setting_interface.manualResourceSyncRequested.connect(
+            self.resource_sync_coordinator.start_manual_resource_sync_check
+        )
         # self.team_setting = TeamSettingCard(self)
 
         # 向 pivot 添加子界面
@@ -188,17 +205,10 @@ class MainWindow(FramelessWindow):
 
         self.show()
 
-        # 开发模式下不检查更新
-        if os.environ.get("AALC_DEV_MODE") != "1" and getattr(sys, "frozen", False):
-            check_update(self, flag=True)
-
+        # 初始化进度环
         self.set_ring()
-
-        self.show_announcement_board()
-
-        self.command_start(argv)
-
-        self.init_system_tray()
+        # 启动阶段先走软件更新检查，再决定是否继续执行资源同步。
+        self.resource_sync_coordinator.start_startup_check()
 
         # 判断是否需要降低缩放以适配小屏幕
         screen_rect = self.screen().availableGeometry()  # 获取到的rect会经过缩放因子的缩放
@@ -233,11 +243,32 @@ class MainWindow(FramelessWindow):
             cfg.set_value("zoom_scale", scale_factor)
 
     def init_system_tray(self):
+        """初始化系统托盘图标与点击事件。"""
+        # 创建系统托盘对象，并绑定主窗口的激活处理逻辑。
         self.tray_menu = None
         self.tray_icon = QSystemTrayIcon(self)
         self.tray_icon.setIcon(QIcon("./assets/logo/my_icon_256X256.ico"))
         self.tray_icon.activated.connect(self.on_tray_icon_activated)
         self.tray_icon.show()
+
+    def _continue_main_startup_sequence(self, argv: list[str]) -> None:
+        """
+        继续执行启动链路。
+        """
+
+        self.show_announcement_board()
+        self.command_start(argv)
+        self.init_system_tray()
+
+    def _has_running_script(self) -> bool:
+        """判断当前是否存在正在运行的主脚本任务。
+
+        返回:
+            若主脚本线程仍在运行则返回 True，否则返回 False。
+        """
+        # 直接查询左侧主脚本线程状态，用于阻止运行中插入资源替换。
+        script = self.farming_interface.interface_left.my_script
+        return script is not None and script.isRunning()
 
     def restore_window(self):
         """Restore window from minimized/hidden state and reset title bar button states"""
@@ -392,6 +423,8 @@ class MainWindow(FramelessWindow):
             btn.setPressedColor(titleBar_style["btn_color"])
         if not is_dark:
             self.titleBar.closeBtn.setHoverColor(Qt.white)
+        if hasattr(self, "resource_sync_coordinator"):
+            self.resource_sync_coordinator.apply_status_style(is_dark)
 
     def closeEvent(self, e):
         # 保存窗口位置
@@ -593,6 +626,8 @@ class MainWindow(FramelessWindow):
 
         if "team_setting" in list(self.pivot.items.keys()):
             self.pivot.setItemText("team_setting", self.tr("队伍设置"))
+        if hasattr(self, "resource_sync_coordinator"):
+            self.resource_sync_coordinator.refresh_status_text()
 
     def show_announcement_board(self):
         def handler_update(status):

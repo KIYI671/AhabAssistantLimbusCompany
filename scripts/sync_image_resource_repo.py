@@ -56,16 +56,14 @@ def sync_resource_repo(
     target_packages_dir = repo_root / repo_packages_relative_dir
     target_package_path = target_packages_dir / artifact_package_path.name
 
-    # 第一步：整体替换目标资源包目录，确保旧资源包不会残留在仓库里。
-    # 整体替换目标资源包目录，确保仓库中的过期资源包会被清理。
+    # 第一步：整体替换目标资源包目录，确保仓库中的过期资源包不会残留。
     if target_packages_dir.exists():
         shutil.rmtree(target_packages_dir)
     target_packages_dir.parent.mkdir(parents=True, exist_ok=True)
     target_packages_dir.mkdir(parents=True, exist_ok=True)
     shutil.copy2(artifact_package_path, target_package_path)
 
-    # 第二步：单独覆盖 manifest 文件，让资源仓库清单始终指向最新资源包。
-    # 单独覆盖清单文件，保持目标仓库中的最新协议内容。
+    # 第二步：单独覆盖 manifest 文件，保持目标仓库中的协议内容始终为最新版本。
     target_manifest_path.parent.mkdir(parents=True, exist_ok=True)
     shutil.copy2(artifact_manifest_path, target_manifest_path)
     return target_manifest_path, target_package_path
@@ -123,7 +121,7 @@ def main() -> int:
     args = parser.parse_args()
 
     # 第二步：执行构建产物同步，拿到目标仓库中的最终落盘位置。
-    manifest_path, package_path = sync_resource_repo(
+    sync_resource_repo(
         artifact_manifest_path=args.artifact_manifest_path,
         artifact_package_path=args.artifact_package_path,
         repo_root=args.repo_root,

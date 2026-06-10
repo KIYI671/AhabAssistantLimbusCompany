@@ -868,8 +868,10 @@ class PushSettingCardMirrorchyan(SettingCard):
         self.button.clicked.connect(self.__onclicked)
 
     def __onclicked(self):
+        """保存 Mirror 酱 CDK，并立即触发一次更新检查刷新结果。"""
         message_box = MessageBoxEdit(self.tr(self.title), self.config_value, self.window())
         if message_box.exec():
+            # 先写回新的 CDK 配置，再主动触发更新检查，便于立即验证下载源状态。
             base64_cdk = encrypt_string(message_box.getText())
             cfg.set_value(self.config_name, base64_cdk)
             self.contentLabel.setText(message_box.getText())
