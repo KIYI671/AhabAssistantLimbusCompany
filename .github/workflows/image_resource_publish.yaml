@@ -51,15 +51,8 @@ jobs:
             logs/image_resource_build/manifest.json
             logs/image_resource_build/packages
 
-      # 当 GitHub 目标仓库仍为占位值时，仅保留构建产物，不执行对外同步。
-      - name: Skip GitHub sync when repository placeholder is still in use
-        if: env.IMAGE_RESOURCE_TARGET_GITHUB_REPOSITORY == 'TODO_OWNER/TODO_REPO'
-        run: |
-          echo "GitHub 资源仓库仍为占位值，已跳过 GitHub 外部仓库同步。"
-
       # 使用完整认证远端地址克隆 GitHub 资源仓库，避免把平台认证逻辑写死在 workflow 中。
       - name: Clone GitHub target resource repository
-        if: env.IMAGE_RESOURCE_TARGET_GITHUB_REPOSITORY != 'TODO_OWNER/TODO_REPO'
         shell: bash
         env:
           IMAGE_RESOURCE_TARGET_REMOTE_URL: ${{ secrets.IMAGE_RESOURCE_TARGET_GITHUB_REMOTE_URL }}
@@ -73,13 +66,11 @@ jobs:
 
       # 将构建产物同步到 GitHub 资源仓库工作目录。
       - name: Sync GitHub resource repository
-        if: env.IMAGE_RESOURCE_TARGET_GITHUB_REPOSITORY != 'TODO_OWNER/TODO_REPO'
         run: |
           uv run python ./scripts/sync_image_resource_repo.py --repo-root ./resource_repo_github
 
       # 若 GitHub 资源仓库存在变化，则提交并推送。
       - name: Commit and push GitHub resource repository changes
-        if: env.IMAGE_RESOURCE_TARGET_GITHUB_REPOSITORY != 'TODO_OWNER/TODO_REPO'
         shell: bash
         working-directory: resource_repo_github
         run: |
@@ -95,15 +86,8 @@ jobs:
           git commit -m "chore: update image resource manifest"
           git push origin HEAD:${{ env.IMAGE_RESOURCE_TARGET_GITHUB_BRANCH }}
 
-      # 当 Gitee 目标仓库仍为占位值时，仅保留构建产物，不执行对外同步。
-      - name: Skip Gitee sync when repository placeholder is still in use
-        if: env.IMAGE_RESOURCE_TARGET_GITEE_REPOSITORY == 'TODO_OWNER/TODO_REPO'
-        run: |
-          echo "Gitee 资源仓库仍为占位值，已跳过 Gitee 外部仓库同步。"
-
       # 使用完整认证远端地址克隆 Gitee 资源仓库，具体认证方式交由 secret 自行承载。
       - name: Clone Gitee target resource repository
-        if: env.IMAGE_RESOURCE_TARGET_GITEE_REPOSITORY != 'TODO_OWNER/TODO_REPO'
         shell: bash
         env:
           IMAGE_RESOURCE_TARGET_REMOTE_URL: ${{ secrets.IMAGE_RESOURCE_TARGET_GITEE_REMOTE_URL }}
@@ -117,13 +101,11 @@ jobs:
 
       # 将构建产物同步到 Gitee 资源仓库工作目录。
       - name: Sync Gitee resource repository
-        if: env.IMAGE_RESOURCE_TARGET_GITEE_REPOSITORY != 'TODO_OWNER/TODO_REPO'
         run: |
           uv run python ./scripts/sync_image_resource_repo.py --repo-root ./resource_repo_gitee
 
       # 若 Gitee 资源仓库存在变化，则提交并推送。
       - name: Commit and push Gitee resource repository changes
-        if: env.IMAGE_RESOURCE_TARGET_GITEE_REPOSITORY != 'TODO_OWNER/TODO_REPO'
         shell: bash
         working-directory: resource_repo_gitee
         run: |
