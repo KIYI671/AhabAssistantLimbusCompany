@@ -29,7 +29,8 @@ class Handle:
     def hwnd(self) -> int:
         """获取窗口句柄"""
         if self._hwnd == 0:
-            log.warning("窗口未初始化", stacklevel=3)
+            if not cfg.simulator:
+                log.warning("窗口未初始化", stacklevel=3)
         elif not win32gui.IsWindow(self._hwnd):
             log.warning("窗口句柄无效，可能窗口已关闭，重新获取", stacklevel=3)
             self.init_handle()
