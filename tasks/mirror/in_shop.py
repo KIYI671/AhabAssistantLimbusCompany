@@ -1,14 +1,97 @@
 from time import sleep
 
+from PIL import Image
+
 from module.automation import auto
 from module.config import TeamSetting, cfg
 from module.logger import log
+from module.ocr import ocr
 from tasks import all_sinners_name, all_sinners_name_zh, all_systems, system_cn_zh
 from tasks.base.back_init_menu import back_init_menu
 from tasks.base.retry import retry
 from tasks.mirror import fusion_result, must_be_abandoned, must_purchase
 from utils.image_utils import ImageUtils
 
+_MONEY_OCR_TRANSLATION = str.maketrans(
+    {
+        "O": "0",
+        "o": "0",
+        "D": "0",
+        "Q": "0",
+        "I": "1",
+        "l": "1",
+        "Z": "2",
+        "S": "5",
+        "G": "6",
+        "B": "8",
+        "h": "4",
+    }
+)
+
+
+def _extract_money_from_ocr_texts(texts):
+    if not texts:
+        return None
+
+    cleaned_texts = [text.strip().replace(" ", "").replace(",", "") for text in texts if text]
+    for text in cleaned_texts:
+        if text.isdigit():
+            return int(text)
+
+    for text in cleaned_texts:
+        normalized = text.translate(_MONEY_OCR_TRANSLATION)
+        if normalized.isdigit():
+            return int(normalized)
+
+    return None
+
+
+def _retry_money_ocr_with_scaled_crop(money_bbox, scale=2):
+    if auto.screenshot is None or money_bbox is None:
+        return []
+
+    try:
+        crop = auto.screenshot.crop(money_bbox)
+        width, height = crop.size
+        try:
+            resampling = Image.Resampling.BICUBIC
+        except AttributeError:
+            resampling = Image.BICUBIC
+        enlarged = crop.resize((width * scale, height * scale), resample=resampling)
+        result = ocr.run(enlarged)
+        return list(result.txts or [])
+    except Exception:
+        log.debug("OCR 放大裁剪识别失败", exc_info=True)
+        return []
+
+
+# E.G.O 饰品升级扫描区域（相对坐标，基于 1080p/2k 样本校准）
+_ENHANCE_SCAN_REGION_REL = {
+    "left": 0.5151,
+    "top": 0.3380,
+    "right": 0.8844,
+    "bottom": 0.7130,
+}
+
+
+def _filter_enhance_gift_scan_points(points, screen_size):
+    if not points or not screen_size:
+        return points
+
+    width, height = screen_size
+    if not width or not height:
+        return points
+
+    left = int(round(_ENHANCE_SCAN_REGION_REL["left"] * width))
+    top = int(round(_ENHANCE_SCAN_REGION_REL["top"] * height))
+    right = int(round(_ENHANCE_SCAN_REGION_REL["right"] * width))
+    bottom = int(round(_ENHANCE_SCAN_REGION_REL["bottom"] * height))
+
+    return [
+        point
+        for point in points
+        if left <= int(point[0]) <= right and top <= int(point[1]) <= bottom
+    ]
 
 class Shop:
     def __init__(self, team_setting: TeamSetting):
@@ -226,7 +309,7 @@ class Shop:
                 system_gift = sort_points(system_gift, complete_count)
                 while system_gift:
                     gift = system_gift.pop(0)
-                    auto.mouse_click(gift[0], gift[1])
+                    auto.mouse_action_with_pos((gift[0], gift[1]), offset=True)
                     sleep(1)
                     while auto.take_screenshot() is None:
                         continue
@@ -245,7 +328,10 @@ class Shop:
                         auto.mouse_click_blank(times=3)
                         continue
                     else:
-                        auto.mouse_click_blank(times=2)
+                        auto.take_screenshot()
+                        if auto.click_element("mirror/road_in_mir/ego_gift_get_confirm_assets.png"):
+                            sleep(0.5)
+                        auto.mouse_click_blank(times=3)
                         sleep(1)
 
             if self.second_system and self.second_system_action[1]:
@@ -258,7 +344,7 @@ class Shop:
                     system_gift = sort_points(system_gift, complete_count)
                     while system_gift:
                         gift = system_gift.pop(0)
-                        auto.mouse_click(gift[0], gift[1])
+                        auto.mouse_action_with_pos((gift[0], gift[1]), offset=True)
                         sleep(1)
                         while auto.take_screenshot() is None:
                             continue
@@ -277,7 +363,10 @@ class Shop:
                             auto.mouse_click_blank(times=3)
                             continue
                         else:
-                            auto.mouse_click_blank(times=2)
+                            auto.take_screenshot()
+                            if auto.click_element("mirror/road_in_mir/ego_gift_get_confirm_assets.png"):
+                                sleep(0.5)
+                            auto.mouse_click_blank(times=3)
                             sleep(1)
 
             if retry() is False:
@@ -295,7 +384,26 @@ class Shop:
                         f"mirror/shop/keyword/keyword_{self.system}.png",
                         take_screenshot=True,
                     )
+                    sleep(0.5)
                     auto.click_element("mirror/shop/refresh_keyword_confirm_assets.png")
+                    for _ in range(3):
+                        if auto.find_element(
+                            "mirror/shop/refresh_keyword_confirm_assets.png",
+                            take_screenshot=True,
+                        ):
+                            log.warning("关键词刷新确认未生效，重试中")
+                            sleep(0.5)
+                            auto.click_element(
+                                f"mirror/shop/keyword/keyword_{self.system}.png",
+                                take_screenshot=True,
+                            )
+                            sleep(0.5)
+                            auto.click_element(
+                                "mirror/shop/refresh_keyword_confirm_assets.png",
+                                take_screenshot=True,
+                            )
+                        else:
+                            break
                     keyword_refresh_count += 1
                     auto.mouse_click_blank()
                     sleep(3)
@@ -1015,6 +1123,7 @@ class Shop:
         auto.model = "clam"
         system_level_IV = False
         second_system_level_IV = False
+        stale_count = 0
         while True:
             # 自动截图
             if auto.take_screenshot() is None:
@@ -1063,6 +1172,11 @@ class Shop:
                 find_type="image_with_multiple_targets",
             ):
                 gifts = sorted(gifts, key=lambda x: (x[1], x[0]))
+                raw_count = len(gifts)
+                screen_size = auto.screenshot.size if auto.screenshot is not None else None
+                gifts = _filter_enhance_gift_scan_points(gifts, screen_size)
+                if len(gifts) != raw_count:
+                    log.debug(f"升级扫描区域过滤：{raw_count} -> {len(gifts)}")
                 for gift in gifts:
                     if check_enhanced(gift) is False:
                         auto.mouse_click(gift[0], gift[1])
@@ -1082,6 +1196,11 @@ class Shop:
             #     continue
 
             if next_gift is False:
+                break
+
+            stale_count += 1
+            if stale_count > 2:
+                log.debug("连续多轮未找到可升级饰品，退出升级模块")
                 break
 
             loop_count -= 1
@@ -1379,15 +1498,25 @@ class Shop:
     def _get_cost(self, in_heal=False) -> int:
         """获取当前剩余的经费"""
         my_remaining_money = -1
+        money_bbox = None
+        my_money = None
         try:
             if in_heal:
                 money_bbox = ImageUtils.get_bbox(ImageUtils.load_image("mirror/shop/my_money_heal_bbox.png"))
             else:
                 money_bbox = ImageUtils.get_bbox(ImageUtils.load_image("mirror/shop/my_money_bbox.png"))
             my_money = auto.get_text_from_screenshot(money_bbox)
-            if my_money:  # 避免非空
-                my_remaining_money = int(my_money[0])
-            if not my_money or not isinstance(my_remaining_money, int):
+            parsed_money = _extract_money_from_ocr_texts(my_money)
+            if parsed_money is None:
+                scaled_money = _retry_money_ocr_with_scaled_crop(money_bbox, scale=2)
+                if scaled_money:
+                    log.debug(f"OCR 放大重试结果: {scaled_money}")
+                    parsed_money = _extract_money_from_ocr_texts(scaled_money)
+                    if parsed_money is not None:
+                        my_money = scaled_money
+            if parsed_money is not None:
+                my_remaining_money = parsed_money
+            if parsed_money is None or my_remaining_money < 0:
                 log.error("获取剩余金钱失败")
             else:
                 log.debug(f"剩余金钱：{my_remaining_money}")
