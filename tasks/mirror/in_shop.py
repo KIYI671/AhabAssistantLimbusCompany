@@ -12,86 +12,6 @@ from tasks.base.retry import retry
 from tasks.mirror import fusion_result, must_be_abandoned, must_purchase
 from utils.image_utils import ImageUtils
 
-_MONEY_OCR_TRANSLATION = str.maketrans(
-    {
-        "O": "0",
-        "o": "0",
-        "D": "0",
-        "Q": "0",
-        "I": "1",
-        "l": "1",
-        "Z": "2",
-        "S": "5",
-        "G": "6",
-        "B": "8",
-        "h": "4",
-    }
-)
-
-
-def _extract_money_from_ocr_texts(texts):
-    if not texts:
-        return None
-
-    cleaned_texts = [text.strip().replace(" ", "").replace(",", "") for text in texts if text]
-    for text in cleaned_texts:
-        if text.isdigit():
-            return int(text)
-
-    for text in cleaned_texts:
-        normalized = text.translate(_MONEY_OCR_TRANSLATION)
-        if normalized.isdigit():
-            return int(normalized)
-
-    return None
-
-
-def _retry_money_ocr_with_scaled_crop(money_bbox, scale=2):
-    if auto.screenshot is None or money_bbox is None:
-        return []
-
-    try:
-        crop = auto.screenshot.crop(money_bbox)
-        width, height = crop.size
-        try:
-            resampling = Image.Resampling.BICUBIC
-        except AttributeError:
-            resampling = Image.BICUBIC
-        enlarged = crop.resize((width * scale, height * scale), resample=resampling)
-        result = ocr.run(enlarged)
-        return list(result.txts or [])
-    except Exception:
-        log.debug("OCR 放大裁剪识别失败", exc_info=True)
-        return []
-
-
-# E.G.O 饰品升级扫描区域（相对坐标，基于 1080p/2k 样本校准）
-_ENHANCE_SCAN_REGION_REL = {
-    "left": 0.5151,
-    "top": 0.3380,
-    "right": 0.8844,
-    "bottom": 0.7130,
-}
-
-
-def _filter_enhance_gift_scan_points(points, screen_size):
-    if not points or not screen_size:
-        return points
-
-    width, height = screen_size
-    if not width or not height:
-        return points
-
-    left = int(round(_ENHANCE_SCAN_REGION_REL["left"] * width))
-    top = int(round(_ENHANCE_SCAN_REGION_REL["top"] * height))
-    right = int(round(_ENHANCE_SCAN_REGION_REL["right"] * width))
-    bottom = int(round(_ENHANCE_SCAN_REGION_REL["bottom"] * height))
-
-    return [
-        point
-        for point in points
-        if left <= int(point[0]) <= right and top <= int(point[1]) <= bottom
-    ]
 
 class Shop:
     def __init__(self, team_setting: TeamSetting):
@@ -328,8 +248,7 @@ class Shop:
                         auto.mouse_click_blank(times=3)
                         continue
                     else:
-                        auto.take_screenshot()
-                        if auto.click_element("mirror/road_in_mir/ego_gift_get_confirm_assets.png"):
+                        if auto.click_element("mirror/road_in_mir/ego_gift_get_confirm_assets.png",take_screenshot=True):
                             sleep(0.5)
                         auto.mouse_click_blank(times=3)
                         sleep(1)
@@ -363,8 +282,7 @@ class Shop:
                             auto.mouse_click_blank(times=3)
                             continue
                         else:
-                            auto.take_screenshot()
-                            if auto.click_element("mirror/road_in_mir/ego_gift_get_confirm_assets.png"):
+                            if auto.click_element("mirror/road_in_mir/ego_gift_get_confirm_assets.png",take_screenshot=True):
                                 sleep(0.5)
                             auto.mouse_click_blank(times=3)
                             sleep(1)
@@ -391,7 +309,7 @@ class Shop:
                             "mirror/shop/refresh_keyword_confirm_assets.png",
                             take_screenshot=True,
                         ):
-                            log.warning("关键词刷新确认未生效，重试中")
+                            log.debug("关键词刷新确认未生效，重试中")
                             sleep(0.5)
                             auto.click_element(
                                 f"mirror/shop/keyword/keyword_{self.system}.png",
@@ -1087,6 +1005,32 @@ class Shop:
                 raise self.RestartGame()
 
     def enhance_gifts(self):
+        _ENHANCE_SCAN_REGION_REL = {
+            "left": 0.5151,
+            "top": 0.3380,
+            "right": 0.8844,
+            "bottom": 0.7130,
+        }
+
+        def _filter_enhance_gift_scan_points(points, screen_size):
+            if not points or not screen_size:
+                return points
+
+            width, height = screen_size
+            if not width or not height:
+                return points
+
+            left = int(round(_ENHANCE_SCAN_REGION_REL["left"] * width))
+            top = int(round(_ENHANCE_SCAN_REGION_REL["top"] * height))
+            right = int(round(_ENHANCE_SCAN_REGION_REL["right"] * width))
+            bottom = int(round(_ENHANCE_SCAN_REGION_REL["bottom"] * height))
+
+            return [
+                point
+                for point in points
+                if left <= int(point[0]) <= right and top <= int(point[1]) <= bottom
+            ]
+
         def check_enhanced(pos):
             for p in self.enhance_gifts_list:
                 if abs(pos[0] - p[0]) <= 10 and abs(pos[1] - p[1]) <= 10:
@@ -1496,6 +1440,56 @@ class Shop:
             return
 
     def _get_cost(self, in_heal=False) -> int:
+        _MONEY_OCR_TRANSLATION = str.maketrans(
+            {
+                "O": "0",
+                "o": "0",
+                "D": "0",
+                "Q": "0",
+                "I": "1",
+                "l": "1",
+                "Z": "2",
+                "S": "5",
+                "G": "6",
+                "B": "8",
+                "h": "4",
+            }
+        )
+
+        def _extract_money_from_ocr_texts(texts):
+            if not texts:
+                return None
+
+            cleaned_texts = [text.strip().replace(" ", "").replace(",", "") for text in texts if text]
+            for text in cleaned_texts:
+                if text.isdigit():
+                    return int(text)
+
+            for text in cleaned_texts:
+                normalized = text.translate(_MONEY_OCR_TRANSLATION)
+                if normalized.isdigit():
+                    return int(normalized)
+
+            return None
+
+        def _retry_money_ocr_with_scaled_crop(money_bbox, scale=2):
+            if auto.screenshot is None or money_bbox is None:
+                return []
+
+            try:
+                crop = auto.screenshot.crop(money_bbox)
+                width, height = crop.size
+                try:
+                    resampling = Image.Resampling.BICUBIC
+                except AttributeError:
+                    resampling = Image.BICUBIC
+                enlarged = crop.resize((width * scale, height * scale), resample=resampling)
+                result = ocr.run(enlarged)
+                return list(result.txts or [])
+            except Exception:
+                log.debug("OCR 放大裁剪识别失败", exc_info=True)
+                return []
+
         """获取当前剩余的经费"""
         my_remaining_money = -1
         money_bbox = None
