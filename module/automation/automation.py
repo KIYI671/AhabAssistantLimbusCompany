@@ -4,6 +4,7 @@ import random
 import time
 from ast import List
 from dataclasses import dataclass
+from enum import Enum
 from typing import Any
 
 import cv2
@@ -33,6 +34,15 @@ class TextMatchResult:
 
 class Automation(metaclass=SingletonMeta):
     """自动化管理类，用于管理与游戏窗口有关的自动化操作"""
+
+    class FindType(str, Enum):
+        """find_element方法的find_type参数枚举"""
+
+        IMAGE = "image"
+        TEXT = "text"
+        FEATURE = "feature"
+        IMAGE_WITH_MULTIPLE_TARGETS = "image_with_multiple_targets"
+        EDGE_CANNY = "edge_canny"
 
     def __init__(self, windows_title):
         self.windows_title = windows_title
@@ -321,9 +331,9 @@ class Automation(metaclass=SingletonMeta):
                 while self.take_screenshot() is None:
                     continue
             # 根据查找类型执行不同的查找策略
-            if find_type in ["image", "text"]:
+            if find_type in [self.FindType.IMAGE, self.FindType.TEXT]:
                 center = None
-                if find_type in ["image"]:
+                if find_type == self.FindType.IMAGE:
                     # 使用图像查找方法查找元素
                     center = self.find_image_element(
                         target,
@@ -332,14 +342,14 @@ class Automation(metaclass=SingletonMeta):
                         my_crop=my_crop,
                         additional_stack=additional_stack,
                     )
-                elif find_type == "text":
+                elif find_type == self.FindType.TEXT:
                     # 使用文本查找方法查找元素
                     center = self.find_text_element(target, my_crop, additional_stack=additional_stack)
                 if center:
                     return center
-            elif find_type in ["feature"]:
+            elif find_type == self.FindType.FEATURE:
                 return self.find_feature_element(target, my_crop, additional_stack=additional_stack)
-            elif find_type in ["image_with_multiple_targets"]:
+            elif find_type == self.FindType.IMAGE_WITH_MULTIPLE_TARGETS:
                 # 使用多目标图像查找方法查找元素
                 return self.find_image_with_multiple_targets(target, threshold, additional_stack=additional_stack)
             else:
