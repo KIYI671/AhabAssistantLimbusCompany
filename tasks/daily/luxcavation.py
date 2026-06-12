@@ -30,7 +30,6 @@ def _open_continuous_combat_count_box(log_prefix: str, box_position: tuple[int, 
 def _set_continuous_combat_count(
     combat_count: int,
     log_prefix: str,
-    box_position: tuple[int, int] | None = None,
 ) -> bool:
     up_clicks = combat_count - _CONTINUOUS_COMBAT_DEFAULT_COUNT
     up_button = None
@@ -68,7 +67,6 @@ def _prepare_continuous_combat_count(
     return _open_continuous_combat_count_box(log_prefix, box_position) and _set_continuous_combat_count(
         combat_count,
         log_prefix,
-        box_position,
     )
 
 
