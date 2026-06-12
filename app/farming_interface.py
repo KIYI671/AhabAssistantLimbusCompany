@@ -391,7 +391,7 @@ class FarmingInterface(QWidget):
         mediator.link_start.emit()
 
     def my_pause_and_resume(self):
-        auto.set_pause()
+        mediator.pause_resume.emit()
 
     def resizeEvent(self, event):
         super().resizeEvent(event)
@@ -477,12 +477,17 @@ class FarmingInterfaceLeft(QWidget):
         self.link_start_button = NormalTextButton("Link Start!", "link_start", 0)
         self.link_start_button.clicked.connect(self.start_and_stop_tasks)
         self.link_start_button.button.setMinimumSize(130, 70)
+        self.pause_resume_button = NormalTextButton(QT_TRANSLATE_NOOP("NormalTextButton", "暂停"), "pause_resume", 0)
+        self.pause_resume_button.clicked.connect(self.pause_or_resume_tasks)
+        self.pause_resume_button.button.setMinimumSize(90, 70)
+        self.pause_resume_button.button.setEnabled(False)
         scale_factor = QApplication.primaryScreen().logicalDotsPerInch() / 96  # Windows 标准 DPI 是 96
         font_size = min(14, int(14 / scale_factor))
         # 创建字体对象并设置大小
         font = self.link_start_button.button.font()  # 获取当前字体
         font.setPointSize(font_size)  # 设置字体大小（单位：点）
         self.link_start_button.button.setFont(font)  # 应用新字体
+        self.pause_resume_button.button.setFont(font)
 
     def __init_layout(self):
         self.setting_options.addWidget(self.set_windows)
@@ -502,7 +507,10 @@ class FarmingInterfaceLeft(QWidget):
         self.hbox_layout.addWidget(self.setting_box)
         self.hbox_layout.addWidget(self.then)
         self.hbox_layout.addWidget(self.after_completion_selector)
-        self.hbox_layout.addWidget(self.link_start_button)
+        self.action_button_layout = QHBoxLayout()
+        self.action_button_layout.addWidget(self.link_start_button)
+        self.action_button_layout.addWidget(self.pause_resume_button)
+        self.hbox_layout.addLayout(self.action_button_layout)
 
     @staticmethod
     def select_all_function():
@@ -603,7 +611,9 @@ class FarmingInterfaceLeft(QWidget):
             if self.check_setting() is False:
                 return
             self.link_start_button.set_text("S t o p !")
+            self._sync_pause_resume_button()
             self._disable_setting(self.parent())
+            self.pause_resume_button.button.setEnabled(True)
             self.create_and_start_script()
         else:
             if cfg.set_reduce_miscontact and cfg.simulator is False:
@@ -634,6 +644,7 @@ class FarmingInterfaceLeft(QWidget):
                             continue
             self.link_start_button.set_text("Link Start!")
             self._enable_setting(self.parent())
+            self._reset_pause_resume_button()
             mediator.refresh_teams_order.emit()
             # 检查线程是否仍在运行，如果仍在运行则执行清理，否则跳过（因为脚本已自行清理）
             thread_was_running = self.my_script is not None and self.my_script.isRunning()
@@ -647,6 +658,7 @@ class FarmingInterfaceLeft(QWidget):
         log.debug("脚本自然结束，执行 UI 收尾，不再重复重置游戏窗口")
         self.link_start_button.set_text("Link Start!")
         self._enable_setting(self.parent())
+        self._reset_pause_resume_button()
         mediator.refresh_teams_order.emit()
         mediator.mirror_bar_kill_signal.emit()
 
@@ -655,7 +667,7 @@ class FarmingInterfaceLeft(QWidget):
             # 跳过非 QWidget 类型的子对象（如信号、槽等）
             if not isinstance(child, QWidget):
                 continue
-            if child.objectName() == "link_start":
+            if child.objectName() in ("link_start", "pause_resume"):
                 continue
             # 检查是否为目标控件类型
             if isinstance(
@@ -712,6 +724,7 @@ class FarmingInterfaceLeft(QWidget):
             log.error(f"启动脚本失败: {e}")
             self.link_start_button.set_text("Link Start!")
             self._enable_setting(self.parent())
+            self._reset_pause_resume_button()
 
     def stop_script(self):
         if self.my_script and self.my_script.isRunning():
@@ -723,9 +736,38 @@ class FarmingInterfaceLeft(QWidget):
         if current_text != "Link Start!":
             self.link_start_button.be_click()
 
+    def pause_or_resume_tasks(self):
+        if self.link_start_button.get_text() == "Link Start!":
+            self._reset_pause_resume_button()
+            return
+        auto.set_pause()
+        self._sync_pause_resume_button()
+
+    def _sync_pause_resume_button(self):
+        if self.link_start_button.get_text() == "Link Start!":
+            self._reset_pause_resume_button()
+            return
+        paused = False
+        try:
+            paused = auto.check_pause()
+        except Exception as e:
+            log.debug(f"同步暂停状态失败: {e}")
+        self.pause_resume_button.set_text(self.tr("继续" if paused else "暂停"))
+        self.pause_resume_button.button.setEnabled(True)
+
+    def _reset_pause_resume_button(self):
+        try:
+            if auto.check_pause():
+                auto.set_pause()
+        except Exception as e:
+            log.debug(f"重置暂停状态失败: {e}")
+        self.pause_resume_button.set_text(self.tr("暂停"))
+        self.pause_resume_button.button.setEnabled(False)
+
     def connect_mediator(self):
         # 连接所有可能信号
         mediator.link_start.connect(self.my_stop_shortcut)
+        mediator.pause_resume.connect(self.pause_or_resume_tasks)
         mediator.kill_signal.connect(self.stop_AALC)
         # finished_signal 目前用于命令行延迟触发开始/停止按钮逻辑。
         mediator.finished_signal.connect(self.start_and_stop_tasks)
@@ -743,6 +785,7 @@ class FarmingInterfaceLeft(QWidget):
         self.after_completion_selector.retranslateUi()
         self.select_all.retranslateUi()
         self.clear_all.retranslateUi()
+        self._sync_pause_resume_button()
 
 
 class FarmingInterfaceCenter(QWidget):
