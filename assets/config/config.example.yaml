@@ -68,6 +68,7 @@ simulator_type: 0 # 0:mumu , 10:其他 。TODO:蓝迭 , 雷电 , 夜神 , 逍遥
 simulator_port: 0 # 端口
 mumu_instance_number: -1 # mumu模拟器的实例编号
 start_emulator_timeout: 120 # 启动模拟器超时时间
+adb_reconnect_on_error: True # ADB或minitouch连接失效时自动重连
 
 # 自动更新
 check_update: True
