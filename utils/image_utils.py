@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 
 import cv2
 import numpy as np
@@ -331,3 +332,356 @@ class ImageUtils:
             return True, len(good_matches)
         else:
             return False, len(good_matches)
+
+    @staticmethod
+    def get_icon_advise_scales(image_name: str) -> tuple[list[float], int]:
+        """获取某个模板图片的推荐缩放比例列表, 以及基准尺寸（通常是1440）"""
+        if image_name.endswith(".png"):
+            image_name = image_name[:-4]
+        if image_name in (
+            "body",
+            "back",
+            "head",
+            "left_hand",
+            "right_hand",
+            "left_eye",
+            "right_eye",
+            "left_foot",
+            # "right_foot", 暂无
+            "tail",
+            "top_plate",
+        ):  # 异想体部位
+            return [0.19, 0.18, 0.20, 0.25, 0.26, 0.23, 0.22], 1440
+        return [1], 1440
+
+    @staticmethod
+    def find_all_icons_canny(
+        screenshot,
+        template,
+        threshold=0.35,
+        iou_threshold=0.3,
+        target_path="",
+        image_name="",
+        clear_cache: bool = False,
+        advise_scales: list[float] | None = None,
+        base_size: int = 1440,
+    ):
+        """
+        识别所有图标位置
+        Args:
+            iou_threshold: float, 非极大值抑制的IOU阈值，默认为0.3
+            clear_cache: bool, 是否清除缓存，默认为False
+            target_path: str, 模板图片所在的路径（相对于assets/images/），默认为空字符串
+            image_name: str, 模板图片的名称（不带扩展名），默认为空字符串
+            advise_scales: list[float], 可选的缩放比例列表，如果提供则只使用这些比例进行检测
+            base_size: int, 基准尺寸，通常是1440，用于根据当前截图尺寸调整建议的缩放比例
+        """
+
+        # 读取图像
+        large_img = screenshot
+        original_template = template
+
+        cache_size = f"{screenshot.shape[1]}x{screenshot.shape[0]}"
+        cache_path: Path = Path("cache") / cache_size / target_path / image_name
+
+        # 预处理大图（只做一次）
+        large_edges = ImageUtils._canny_process(large_img)
+        cv2.imwrite("test_large_edges.png", large_edges)
+
+        # 存储所有检测结果
+        all_detections = []
+
+        # 预先计算模板的原始尺寸
+        template_h, template_w = original_template.shape
+
+        # 只在可能成功的缩放比例范围内搜索（根据给出的范围）
+        if not advise_scales:
+            advise_scales, base_size = ImageUtils.get_icon_advise_scales(image_name)
+        scale = screenshot.shape[0] / base_size
+        optimized_scales: set[float] = set([round(s * scale, 2) for s in advise_scales])
+        # 优先读取缓存模板
+        if not clear_cache and cache_path and cache_path.exists():
+            template_list = [f for f in cache_path.iterdir() if f.is_file() and f.suffix == ".png"]
+            if template_list:
+                for template_file in template_list:
+                    scale_str = template_file.stem
+                    try:
+                        scale = float(scale_str)
+                        if scale in optimized_scales:
+                            scaled_template = cv2.imread(str(template_file), cv2.IMREAD_GRAYSCALE)
+                            result = cv2.matchTemplate(large_edges, scaled_template, cv2.TM_CCOEFF_NORMED)
+                            locations = ImageUtils.__find_local_maxima_fast(result, threshold=threshold)
+                            new_w, new_h = scaled_template.shape[::-1]
+                            for x, y, score in locations:
+                                all_detections.append(
+                                    {"location": (x, y), "size": (new_w, new_h), "score": score, "scale": scale}
+                                )
+                            optimized_scales.remove(scale)  # 从待处理列表中移除已处理的比例
+                        else:
+                            log.debug(f"缓存模板 {template_file.name} 的缩放比例 {scale} 不在建议范围内，已删除。")
+                            template_file.unlink()
+                    except ValueError:
+                        log.debug(f"缓存文件名 {template_file} 不是有效的缩放比例，已删除。")
+                        template_file.unlink()
+        for scale in optimized_scales:
+            # 缩放模板
+            new_w = int(template_w * scale)
+            new_h = int(template_h * scale)
+
+            if new_w < 10 or new_h < 10:
+                log.debug(
+                    f"缩放比例 {scale} 导致模板尺寸过小，已跳过。相关图片: {target_path}/{image_name}，模板尺寸: ({new_w}, {new_h})"
+                )
+                continue
+            if new_w > large_edges.shape[1] or new_h > large_edges.shape[0]:
+                log.debug(
+                    f"缩放比例 {scale} 导致模板尺寸过大，已跳过。相关图片: {target_path}/{image_name}，模板尺寸: ({new_w}, {new_h})"
+                )
+                continue
+
+            # 处理模板
+            scaled_template = cv2.resize(original_template, (new_w, new_h))
+            template_edges = ImageUtils._canny_process(scaled_template)
+
+            # 缓存模板
+            if cache_path:
+                cache_path.mkdir(parents=True, exist_ok=True)
+                cv2.imwrite(str(cache_path / f"{scale}.png"), template_edges)
+
+            # 模板匹配
+            result = cv2.matchTemplate(large_edges, template_edges, cv2.TM_CCOEFF_NORMED)
+
+            # 找到所有局部最大值
+            locations = ImageUtils.__find_local_maxima_fast(result, threshold=threshold)
+
+            for x, y, score in locations:
+                all_detections.append({"location": (x, y), "size": (new_w, new_h), "score": score, "scale": scale})
+
+        # 应用非极大值抑制合并重复检测
+        final_detections = ImageUtils.__non_max_suppression(all_detections, iou_threshold=iou_threshold)
+
+        # 按Y坐标排序（从上到下），再按X排序（从左到右）
+        final_detections.sort(key=lambda d: (d["location"][1], d["location"][0]))
+
+        return final_detections
+
+    @staticmethod
+    def __find_local_maxima_fast(result, threshold=0.35, min_distance=20):
+        """
+        找到所有局部最大值
+        """
+
+        # 使用 dilation 快速找到局部最大值
+        # 创建核，膨胀操作会扩大最大值区域
+        kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (5, 5))
+        dilated = cv2.dilate(result, kernel)
+
+        # 局部最大值就是原始值等于膨胀值的位置
+        local_max_mask = (result == dilated) & (result >= threshold)
+
+        # 找到所有局部最大值的坐标
+        locations = np.where(local_max_mask)
+
+        # 转换为列表并过滤
+        raw_locations = []
+        for y, x in zip(locations[0], locations[1]):
+            raw_locations.append((x, y, result[y, x]))
+
+        # 按分数排序
+        raw_locations.sort(key=lambda x: x[2], reverse=True)
+
+        # 移除距离太近的点
+        filtered = []
+        for x, y, score in raw_locations:
+            too_close = False
+            for fx, fy, _ in filtered:
+                if abs(x - fx) < min_distance and abs(y - fy) < min_distance:
+                    too_close = True
+                    break
+            if not too_close:
+                filtered.append((x, y, score))
+
+        return filtered
+
+    @staticmethod
+    def __non_max_suppression(detections, iou_threshold=0.3):
+        """
+        合并重叠的检测框
+        """
+        if not detections:
+            return []
+
+        # 按分数排序
+        detections = sorted(detections, key=lambda x: x["score"], reverse=True)
+
+        keep = []
+        while detections:
+            current = detections.pop(0)
+            keep.append(current)
+
+            # 只计算一次当前框的参数
+            x1, y1 = current["location"]
+            w1, h1 = current["size"]
+            area1 = w1 * h1
+
+            # 过滤重叠的检测
+            remaining = []
+            for d in detections:
+                x2, y2 = d["location"]
+                w2, h2 = d["size"]
+
+                # 快速检查：如果中心点距离太远，直接跳过IoU计算
+                center_dist = abs((x1 + w1 // 2) - (x2 + w2 // 2)) + abs((y1 + h1 // 2) - (y2 + h2 // 2))
+                if center_dist > (max(w1, w2) + max(h1, h2)):
+                    remaining.append(d)
+                    continue
+
+                # 计算IoU
+                xi1 = max(x1, x2)
+                yi1 = max(y1, y2)
+                xi2 = min(x1 + w1, x2 + w2)
+                yi2 = min(y1 + h1, y2 + h2)
+
+                if xi2 > xi1 and yi2 > yi1:
+                    inter_area = (xi2 - xi1) * (yi2 - yi1)
+                    area2 = w2 * h2
+                    union_area = area1 + area2 - inter_area
+                    iou = inter_area / union_area
+
+                    if iou < iou_threshold:
+                        remaining.append(d)
+                else:
+                    remaining.append(d)
+
+            detections = remaining
+        return keep
+
+    @staticmethod
+    def _canny_process(image, blur_ksize=(3, 3), low_threshold: float = 50, high_threshold: float = 150):
+        """
+        对图像进行Canny边缘检测的预处理
+        """
+        if ImageUtils.image_channel(image) == 3:
+            gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+        else:
+            gray = image
+        blur = cv2.GaussianBlur(gray, blur_ksize, 0)
+        edges = cv2.Canny(blur, low_threshold, high_threshold)
+        return edges
+
+    @staticmethod
+    def auto_find_best_scales(
+        screenshot, template, threshold: float = 0.4, scale_range=(0.1, 0.5), step=0.01, resize=False
+    ):
+        """
+        自动找出最佳的缩放比例范围（快速扫描）
+        Args:
+            screenshot: 大图的numpy数组
+            template: 模板图的numpy数组
+            threshold: 匹配度阈值，范围在0到1之间
+            scale_range: 扫描的缩放比例范围，默认为0.1到0.5
+            step: 扫描的步长，默认为0.01
+            resize: 是否根据窗口大小调整图片尺寸，默认为False
+        Returns:
+            best_scales: 满足阈值条件的最佳缩放比例列表
+            img: 标注了匹配结果的图像（BGR格式）
+            edge_target_img: 经过边缘处理的原图
+        """
+        if resize:
+            if cfg.set_win_size < 1440:
+                screenshot = cv2.resize(
+                    screenshot,
+                    None,
+                    fx=1440 / cfg.set_win_size,
+                    fy=1440 / cfg.set_win_size,
+                    interpolation=cv2.INTER_AREA,
+                )
+            elif cfg.set_win_size > 1440:
+                screenshot = cv2.resize(
+                    screenshot,
+                    None,
+                    fx=cfg.set_win_size / 1440,
+                    fy=cfg.set_win_size / 1440,
+                    interpolation=cv2.INTER_AREA,
+                )
+        large_img = screenshot
+        original_template = template
+        raw_screenshot = screenshot
+        if ImageUtils.image_channel(large_img) == 3:
+            large_gray = cv2.cvtColor(large_img, cv2.COLOR_BGR2GRAY)
+        else:
+            large_gray = large_img
+        large_edges = ImageUtils._canny_process(large_gray)
+
+        template_h, template_w = original_template.shape
+        best_scores = []
+        results = []
+        # 大步长快速扫描
+        for scale in np.arange(scale_range[0], scale_range[1], step):
+            new_w = int(template_w * scale)
+            new_h = int(template_h * scale)
+
+            if new_w > large_edges.shape[1] or new_h > large_edges.shape[0]:
+                continue
+
+            scaled_template = cv2.resize(original_template, (new_w, new_h))
+            template_edges = ImageUtils._canny_process(scaled_template)
+
+            result = cv2.matchTemplate(large_edges, template_edges, cv2.TM_CCOEFF_NORMED)
+            locations = ImageUtils.__find_local_maxima_fast(result, threshold=threshold * 0.9)
+            max_score = np.max(result)
+            for x, y, score in locations:
+                results.append(
+                    {
+                        "scale": scale,
+                        "score": score,
+                        "location": (x, y),
+                        "size": (new_w, new_h),
+                    }
+                )
+            best_scores.append((scale, max_score))
+
+        # 找出最佳比例
+        best_scores.sort(key=lambda x: x[1], reverse=True)
+        top_scales = [s[0] if s[1] >= threshold else None for s in best_scores[:3]]
+        for scale in top_scales:
+            if scale is not None:
+                log.debug(f"最佳缩放比例: {scale:.2f}，匹配度: {dict(best_scores)[scale]:.3f}")
+            else:
+                log.debug(
+                    f"没有找到满足阈值的缩放比例，最高匹配度为: {best_scores[0][1]:.3f}, 前五的匹配度为: {[f'{s[1]:.3f}, scale: {s[0]:.2f}' for s in best_scores[:5]]}"
+                )
+
+        img = cv2.cvtColor(np.array(raw_screenshot), cv2.COLOR_RGB2BGR)
+        pass_count = 0
+        for i, det in enumerate(results):
+            x, y = det["location"]
+            w, h = det["size"]
+            score = det["score"]
+            scale = det["scale"]
+            if score >= threshold:
+                # 绘制矩形框
+                cv2.rectangle(img, (x, y), (x + w, y + h), (0, 255, 0), 2)
+
+                # 标注序号和分数
+                # sl : scale
+                # so : score
+                line1 = f"sl:{scale:.2f}"
+                line2 = f"so:{score:.2f}"
+                cv2.putText(img, line1, (x, y - 20), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 1)
+                cv2.putText(img, line2, (x, y - 5), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 1)
+                pass_count += 1
+            else:
+                # 绘制矩形框
+                cv2.rectangle(img, (x, y), (x + w, y + h), (0, 0, 255), 2)
+
+                # 标注序号和分数
+                line1 = f"sl:{scale:.2f}"
+                line2 = f"so:{score:.2f}"
+                cv2.putText(img, line1, (x, y - 20), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255), 1)
+                cv2.putText(img, line2, (x, y - 5), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255), 1)
+
+        cv2.putText(
+            img, f"Total Icons: {pass_count}/{len(results)}", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2
+        )
+        return top_scales, img, large_edges
