@@ -5,13 +5,7 @@ from module.config import cfg
 from module.logger import log
 
 _CONTINUOUS_COMBAT_DEFAULT_COUNT = 1
-_CONTINUOUS_COMBAT_MAX_COUNT = 10
 _THREAD_CONSUME_ASSET = "luxcavation/thread_consume.png"
-
-
-def _get_continuous_combat_up_clicks(combat_count: int) -> int:
-    target_count = max(_CONTINUOUS_COMBAT_DEFAULT_COUNT, min(int(combat_count), _CONTINUOUS_COMBAT_MAX_COUNT))
-    return target_count - _CONTINUOUS_COMBAT_DEFAULT_COUNT
 
 
 def _open_continuous_combat_count_box(log_prefix: str, box_position: tuple[int, int] | None = None) -> bool:
@@ -21,10 +15,9 @@ def _open_continuous_combat_count_box(log_prefix: str, box_position: tuple[int, 
         return True
 
     if not (pos := auto.click_element(
-        "luxcavation/thread_continuous_combat_show_box_assets.png",
+        "luxcavation/thread_continuous_combat_show_box.png",
         threshold=0.85,
         click=False,
-        model="aggressive",
     )):
         log.debug(f"{log_prefix}未找到连续战斗设置入口")
         return False
@@ -34,46 +27,21 @@ def _open_continuous_combat_count_box(log_prefix: str, box_position: tuple[int, 
     return True
 
 
-def _close_continuous_combat_count_box(log_prefix: str, box_position: tuple[int, int] | None = None) -> None:
-    sleep(0.1)
-    if box_position is not None:
-        auto.mouse_click(box_position[0], box_position[1])
-        sleep(0.1)
-        return
-
-    if auto.take_screenshot() is None:
-        return
-    if pos := auto.click_element(
-        "luxcavation/thread_continuous_combat_show_box_assets.png",
-        threshold=0.85,
-        click=False,
-        model="aggressive",
-    ):
-        auto.mouse_click(pos[0], pos[1])
-        sleep(0.1)
-    else:
-        log.debug(f"{log_prefix}未找到连续战斗设置入口，无法收起次数面板")
-
-
 def _set_continuous_combat_count(
     combat_count: int,
     log_prefix: str,
     box_position: tuple[int, int] | None = None,
 ) -> bool:
-    up_clicks = _get_continuous_combat_up_clicks(combat_count)
-    if up_clicks <= 0:
-        return True
-
+    up_clicks = combat_count - _CONTINUOUS_COMBAT_DEFAULT_COUNT
     up_button = None
     for attempt in range(2):
         sleep(0.4 if attempt == 0 else 0.2)
         if auto.take_screenshot() is None:
             return False
         up_button = auto.click_element(
-            "luxcavation/continuous_combat_up_box_assets.png",
+            "luxcavation/continuous_combat_up_box.png",
             threshold=0.85,
             click=False,
-            model="aggressive",
         )
         if up_button:
             break
@@ -87,7 +55,6 @@ def _set_continuous_combat_count(
         sleep(0.1)
 
     log.debug(f"{log_prefix}连续战斗次数已设置为 {up_clicks + _CONTINUOUS_COMBAT_DEFAULT_COUNT} 次")
-    _close_continuous_combat_count_box(log_prefix, box_position)
     return True
 
 
@@ -245,7 +212,6 @@ def thread_luxcavation(combat_count: int = 1):
                 level = auto.find_element(
                     _THREAD_CONSUME_ASSET,
                     find_type="image_with_multiple_targets",
-                    threshold=0.8,
                     take_screenshot=True,
                 )
                 scale = cfg.set_win_size / 1440
@@ -288,7 +254,6 @@ def thread_luxcavation(combat_count: int = 1):
                         level = auto.find_element(
                             _THREAD_CONSUME_ASSET,
                             find_type="image_with_multiple_targets",
-                            threshold=0.8,
                             take_screenshot=True,
                         )
                         level = _filter_thread_level_targets(level, scale)
