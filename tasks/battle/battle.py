@@ -672,7 +672,7 @@ class Battle:
                     sleep(cfg.mouse_action_interval // 1.5)
                 skill_list.append((skill_slot[0], skill_slot[1] - 150 * scale))
             for time in range(retry_times):
-                auto.mouse_click(*skill_list[1])
+                auto.mouse_click(*skill_list[0])
                 # 通过点击技能自动移动摄像头至敌人
                 sleep(0.5 + time)
 
