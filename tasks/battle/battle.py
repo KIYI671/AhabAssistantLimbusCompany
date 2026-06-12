@@ -671,10 +671,10 @@ class Battle:
                 else:
                     sleep(cfg.mouse_action_interval // 1.5)
                 skill_list.append((skill_slot[0], skill_slot[1] - 150 * scale))
-            for _ in range(retry_times):
+            for time in range(retry_times):
                 auto.mouse_click(*skill_list[1])
                 # 通过点击技能自动移动摄像头至敌人
-                sleep(0.5)
+                sleep(0.5 + time)
 
                 random_pos = (
                     random.randint(int(space_area[0]), int(space_area[1])),
@@ -713,6 +713,7 @@ class Battle:
                         part_num = part_num % len(parts)
                         part_pos = parts[part_num].get("location", (0, 0))
                         auto.mouse_click(*skill_list[skill_num])
+                        sleep(0.3)
                         part_scale = parts[part_num].get("scale", 1) / 0.26
                         offset_y = int(150 * part_scale)
                         auto.mouse_click(part_pos[0], part_pos[1] + offset_y)
