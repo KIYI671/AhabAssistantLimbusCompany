@@ -386,7 +386,6 @@ class ImageUtils:
 
         # 预处理大图（只做一次）
         large_edges = ImageUtils._canny_process(large_img)
-        cv2.imwrite("test_large_edges.png", large_edges)
 
         # 存储所有检测结果
         all_detections = []
