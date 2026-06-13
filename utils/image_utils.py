@@ -561,7 +561,7 @@ class ImageUtils:
         对图像进行Canny边缘检测的预处理
         """
         if ImageUtils.image_channel(image) == 3:
-            gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+            gray = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
         else:
             gray = image
         blur = cv2.GaussianBlur(gray, blur_ksize, 0)
@@ -607,7 +607,7 @@ class ImageUtils:
         original_template = template
         raw_screenshot = screenshot
         if ImageUtils.image_channel(large_img) == 3:
-            large_gray = cv2.cvtColor(large_img, cv2.COLOR_BGR2GRAY)
+            large_gray = cv2.cvtColor(large_img, cv2.COLOR_RGB2GRAY)
         else:
             large_gray = large_img
         large_edges = ImageUtils._canny_process(large_gray)
