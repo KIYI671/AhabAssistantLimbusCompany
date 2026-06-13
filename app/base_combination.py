@@ -37,7 +37,6 @@ from qfluentwidgets import (
     PopupTeachingTip,
     PrimaryPushButton,
     PrimaryPushSettingCard,
-    PrimaryToolButton,
     ProgressBar,
     PushSettingCard,
     SettingCard,
@@ -45,7 +44,6 @@ from qfluentwidgets import (
     SwitchButton,
     TeachingTipTailPosition,
     TimePicker,
-    ToolButton,
     setCustomStyleSheet,
 )
 
@@ -57,45 +55,12 @@ from app.card.messagebox_custom import (
     MessageBoxEdit,
     MessageBoxSpinbox,
 )
-from app.common.icons import OverflowIcons
 from app.language_manager import LanguageManager
 from module.font_manager import font_manager
 from module.logger import log
 from module.my_error.my_error import settingsTypeError
 from module.update.check_update import check_update
 from utils.utils import decrypt_string, encrypt_string
-
-
-class ToolCheckButton(ToolButton):
-    checked = Signal(bool)
-
-    def _postInit(self):
-        self.setCheckable(True)
-        self.toggled.connect(self.checked)
-        self.setChecked(False)
-        self._apply_style()
-
-    def _apply_style(self):
-        qss = """
-ToolCheckButton:checked {
-background-color: --ThemeColorPrimary;
-}
-ToolCheckButton:checked:hover {
-    background-color: --ThemeColorPrimary;
-}
-"""
-        setCustomStyleSheet(self, qss, qss)
-
-    def _drawIcon(self, icon, painter, rect, state=QIcon.Off):
-        if not self.isChecked():
-            if isinstance(icon, OverflowIcons):
-                icon.set_reverse(False)
-            return super()._drawIcon(icon, painter, rect)
-        if isinstance(icon, OverflowIcons):
-            icon.set_reverse(True)
-            super()._drawIcon(icon, painter, rect, QIcon.On)
-        else:
-            PrimaryToolButton._drawIcon(self, icon, painter, rect, QIcon.On)
 
 
 class CheckBoxWithButton(QFrame):
@@ -124,41 +89,6 @@ class CheckBoxWithButton(QFrame):
 
     def retranslateUi(self):
         self.box.check_box.setText(self.tr(self.box_text))
-
-
-class CheckBoxWithLineEdit(QFrame):
-    def __init__(self, config_name, check_box_title, parent=None):
-        super().__init__(parent)
-        self.setObjectName(config_name)
-        self.config_name = config_name
-        self.hBoxLayout = QHBoxLayout(self)
-        self.hBoxLayout.setContentsMargins(0, 0, 0, 0)
-        self.box = CheckBox(check_box_title, parent=self)
-        self.line_edit = LineEdit(self)
-        self.line_edit.setMaximumWidth(70)
-        self.line_edit.setAlignment(Qt.AlignCenter)
-        self.line_edit.setReadOnly(True)
-        self.hBoxLayout.addWidget(self.box)
-        self.hBoxLayout.addWidget(self.line_edit)
-        self.hBoxLayout.setAlignment(Qt.AlignCenter)
-
-        self.box.toggled.connect(self.on_toggle)
-
-    def on_toggle(self, checked):
-        data_dict = {self.config_name: checked}
-        self.send_switch_signal(data_dict)
-
-    def send_switch_signal(self, target: dict):
-        mediator.team_setting.emit(target)
-
-    def set_checked(self, checked):
-        self.box.toggled.disconnect(self.on_toggle)
-        self.box.setChecked(checked)
-        self.box.toggled.connect(self.on_toggle)
-
-    def set_text(self, text):
-        self.line_edit.setText(text)
-
 
 class CheckBoxWithComboBox(QFrame):
     def __init__(

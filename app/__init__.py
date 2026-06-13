@@ -211,7 +211,6 @@ all_checkbox_config_name = [
     "defense_first_round",
     "fixed_team_use",
     "reward_cards",
-    "choose_opening_bonus",
     "after_level_IV",
     "shopping_strategy",
     "opening_items",
