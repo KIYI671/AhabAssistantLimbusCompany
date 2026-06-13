@@ -6,7 +6,6 @@ game_process_name: LimbusCompany.exe # 游戏进程名。
 
 game_path: C:\Program Files (x86)\Steam\steamapps\common\Limbus Company\LimbusCompany.exe # 游戏启动路径。
 
-after_completion: 0 # 脚本结束后的操作
 keep_after_completion: False # 是否保持脚本结束后的操作
 language_in_program: "" # 程序语言
 shutdown_hotkey: "<ctrl>+q" # 关闭快捷键
@@ -175,11 +174,7 @@ teams:
     fixed_team_use_select: 0 # 固定队伍用途的选择项
     reward_cards: False # 奖励卡优先度
     reward_cards_select: 0 # 自定义奖励卡优先度
-    choose_opening_bonus: False # 自选开局加成
-    opening_bonus_select: 0 # 开局加成已选数量
-    opening_bonus: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0] # 启用的开局加成
-    opening_bonus_order: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0] # 启用的开局加成顺序
-    opening_bonus_level: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0] # 启用的开局加成等级
+    opening_bonus: [1, 1, 1, 1, 0, 0, 0, 0, 0, 0] # 开局星光加成：0 未选中，1 基础，2 +，3 ++
     after_level_IV: False # 自定义合成四级后的操作
     after_level_IV_select: 0 # 合成四级后的操作
     shopping_strategy: False # 自定义购物策略
@@ -195,6 +190,8 @@ teams:
     skill_replacement_select: 0 # 技能替换设置
     skill_replacement_mode: 0 # 技能替换模式
     ignore_shop: [0, 0, 0, 0, 0] # 忽略商店楼层
+    max_keyword_refresh: 1 # 每次商店访问时定向刷新商品的次数上限
+    max_normal_refresh: 1 # 每次商店访问时普通刷新商品的次数上限
     use_custom_theme_pack_weight: False # 使用队伍自定义主题包权重
     remark_name: # 队伍备注名
     use_team_code: False # 使用编队码

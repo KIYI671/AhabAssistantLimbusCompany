@@ -27,15 +27,19 @@ from qfluentwidgets import FluentIcon as FIF
 from app import *
 from app.base_combination import (
     CheckBoxWithComboBox,
-    CheckBoxWithLineEdit,
     LabelWithComboBox,
     SinnerSelect,
-    ToolCheckButton,
 )
 from app.base_tools import BaseCheckBox, BaseComboBox, BaseLabel, BaseLineEdit, BaseSettingLayout
 from app.card.messagebox_custom import BaseInfoBar, MessageBoxConfirm
-from app.common.icons import OverflowIcons
+from app.common.ui_config import (
+    STARLIGHT_BONUS_COSTS,
+    get_starlight_action_label,
+    get_starlight_bonus_name,
+    get_starlight_total_cost_qss,
+)
 from app.language_manager import LanguageManager
+from app.starlight_bonus import StarlightCard, StarlightLevelSelector
 from app.theme_pack_setting_interface import ThemePackSettingDialog
 from module.config import TeamSetting, cfg, theme_list
 from module.config.team_import_export import (
@@ -347,24 +351,14 @@ class TeamSettingCard(QFrame):
                         self.team_setting.sinner_order[i] -= 1
                 self.team_setting.sinner_order[sinner_index] = 0
             self.refresh_sinner_order()
-        elif "starlight_level_" in keys:
-            level_index = int(keys.split("_")[-1]) - 1
-            self.team_setting.opening_bonus_level[level_index] = values
-        elif "starlight_" in keys:
+        elif keys == "starlight_all_state":
+            bonus_value = max(0, min(int(values), 3))
+            self.team_setting.opening_bonus = [bonus_value] * 10
+            self.refresh_starlight_select()
+        elif "starlight_state_" in keys:
             starlight_index = int(keys.split("_")[-1]) - 1
-            if values:
-                self.team_setting.opening_bonus_select += 1
-                self.team_setting.opening_bonus[starlight_index] = 1
-                self.team_setting.opening_bonus_order[starlight_index] = self.team_setting.opening_bonus_select
-            else:
-                order = self.team_setting.opening_bonus_order[starlight_index]
-                self.team_setting.opening_bonus_select -= 1
-                self.team_setting.opening_bonus[starlight_index] = 0
-                for i in range(10):
-                    if self.team_setting.opening_bonus_order[i] > order:
-                        self.team_setting.opening_bonus_order[i] -= 1
-                self.team_setting.opening_bonus_order[starlight_index] = 0
-            self.refresh_starlight_order()
+            self.team_setting.opening_bonus[starlight_index] = max(0, min(int(values), 3))
+            self.refresh_starlight_select()
         elif keys in second_system_mode:
             mode_index = second_system_mode.index(keys)
             self.team_setting.second_system_action[mode_index] = values
@@ -392,27 +386,36 @@ class TeamSettingCard(QFrame):
         )
         dialog.exec()
 
-    def refresh_starlight_order(self):
-        opening_bonus_order = self.team_setting.opening_bonus_order
-        for index, order in enumerate(opening_bonus_order):
-            starlight = self.findChild(CheckBoxWithLineEdit, f"starlight_{index + 1}")
-            if starlight is not None:
-                if order != 0:
-                    starlight.set_text(str(order))
-                else:
-                    starlight.set_text("")
-
     def refresh_starlight_select(self):
         opening_bonus = self.team_setting.opening_bonus
         for i in range(1, 11):
-            starlight = self.findChild(CheckBoxWithLineEdit, f"starlight_{i}")
+            starlight = self.findChild(StarlightLevelSelector, f"starlight_{i}")
             if starlight is not None:
-                if opening_bonus[i - 1]:
-                    starlight.set_checked(True)
-                else:
-                    starlight.set_checked(False)
+                bonus_value = opening_bonus[i - 1] if i <= len(opening_bonus) else 0
+                starlight.set_state(bonus_value)
+        # 单个星光按钮刷新完成后，同步“全选”按钮状态。
+        self.refresh_starlight_select_all()
+        # 更新总星光消耗
+        self.customize_settings_module.update_total_starlight_cost(opening_bonus)
 
-        self.refresh_starlight_order()
+    def refresh_starlight_select_all(self):
+        select_all = self.findChild(StarlightLevelSelector, "starlight_all")
+        if select_all is None:
+            return
+
+        opening_bonus = self.team_setting.opening_bonus
+        if len(opening_bonus) < 10:
+            select_all.set_state(0)
+            return
+
+        if all(opening_bonus[index] >= 3 for index in range(10)):
+            select_all.set_state(3)
+        elif all(opening_bonus[index] >= 2 for index in range(10)):
+            select_all.set_state(2)
+        elif all(opening_bonus[index] >= 1 for index in range(10)):
+            select_all.set_state(1)
+        else:
+            select_all.set_state(0)
 
     def refresh_sinner_order(self):
         sinner_order = self.team_setting.sinner_order
@@ -1167,25 +1170,68 @@ class CustomizeSettingsModule(QFrame):
         )
         self.reward_cards.add_items(reward_cards)
 
-        self.choose_opening_bonus = BaseCheckBox(
-            "choose_opening_bonus",
-            FIF.BUS,
-            QT_TRANSLATE_NOOP("BaseCheckBox", "自选开局加成"),
-            center=False,
+        QT_TRANSLATE_NOOP("CustomizeSettingsModule", "星光")
+        self.starlight_1 = StarlightCard(
+            "starlight_1", get_starlight_bonus_name(0, cfg.language_in_program), self.team_num
+        )
+        self.starlight_2 = StarlightCard(
+            "starlight_2", get_starlight_bonus_name(1, cfg.language_in_program), self.team_num
+        )
+        self.starlight_3 = StarlightCard(
+            "starlight_3", get_starlight_bonus_name(2, cfg.language_in_program), self.team_num
+        )
+        self.starlight_4 = StarlightCard(
+            "starlight_4", get_starlight_bonus_name(3, cfg.language_in_program), self.team_num
+        )
+        self.starlight_5 = StarlightCard(
+            "starlight_5", get_starlight_bonus_name(4, cfg.language_in_program), self.team_num
         )
 
-        QT_TRANSLATE_NOOP("CustomizeSettingsModule", "星光")
-        self.starlight_1 = StarlightCard("starlight_1", "星光1", self.team_num)
-        self.starlight_2 = StarlightCard("starlight_2", "星光2", self.team_num)
-        self.starlight_3 = StarlightCard("starlight_3", "星光3", self.team_num)
-        self.starlight_4 = StarlightCard("starlight_4", "星光4", self.team_num)
-        self.starlight_5 = StarlightCard("starlight_5", "星光5", self.team_num)
+        self.starlight_6 = StarlightCard(
+            "starlight_6", get_starlight_bonus_name(5, cfg.language_in_program), self.team_num
+        )
+        self.starlight_7 = StarlightCard(
+            "starlight_7", get_starlight_bonus_name(6, cfg.language_in_program), self.team_num
+        )
+        self.starlight_8 = StarlightCard(
+            "starlight_8", get_starlight_bonus_name(7, cfg.language_in_program), self.team_num
+        )
+        self.starlight_9 = StarlightCard(
+            "starlight_9", get_starlight_bonus_name(8, cfg.language_in_program), self.team_num
+        )
+        self.starlight_10 = StarlightCard(
+            "starlight_10", get_starlight_bonus_name(9, cfg.language_in_program), self.team_num
+        )
+        self.starlight_select_all = StarlightLevelSelector(
+            "starlight_all",
+            QT_TRANSLATE_NOOP("CustomizeSettingsModule", "全选"),
+            self,
+            starlight_index=0,
+            base_cost=sum(STARLIGHT_BONUS_COSTS),
+            emit_team_setting=False,
+        )
 
-        self.starlight_6 = StarlightCard("starlight_6", "星光6", self.team_num)
-        self.starlight_7 = StarlightCard("starlight_7", "星光7", self.team_num)
-        self.starlight_8 = StarlightCard("starlight_8", "星光8", self.team_num)
-        self.starlight_9 = StarlightCard("starlight_9", "星光9", self.team_num)
-        self.starlight_10 = StarlightCard("starlight_10", "星光10", self.team_num)
+        self.starlight_select_all_wrapper = QWidget(self)
+        select_all_layout = QVBoxLayout(self.starlight_select_all_wrapper)
+        select_all_layout.setContentsMargins(10, 0, 0, 0)
+        select_all_layout.setAlignment(Qt.AlignmentFlag.AlignVCenter)
+        select_all_layout.addWidget(self.starlight_select_all)
+
+        self.starlight_clear_button = PushButton(QT_TRANSLATE_NOOP("CustomizeSettingsModule", "清空"))
+
+        self.starlight_clear_button_wrapper = QWidget(self)
+        clear_btn_layout = QVBoxLayout(self.starlight_clear_button_wrapper)
+        clear_btn_layout.setContentsMargins(10, 0, 0, 0)
+        clear_btn_layout.setAlignment(Qt.AlignmentFlag.AlignVCenter)
+        clear_btn_layout.addWidget(self.starlight_clear_button, 0, Qt.AlignmentFlag.AlignLeft)
+
+        self.starlight_total_cost_label = QLabel(self)
+        self.starlight_total_cost_label.setObjectName("starlightTotalCostLabel")
+        self.starlight_total_cost_label.setAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
+        self._apply_total_cost_style()
+
+        self.starlight_clear_button.clicked.connect(lambda: self.__set_all_starlight(0))
+        self.starlight_select_all.stateChangedByClick.connect(self.__set_all_starlight)
 
         self.after_level_IV = CheckBoxWithComboBox(
             "after_level_IV",
@@ -1309,17 +1355,20 @@ class CustomizeSettingsModule(QFrame):
         self.features_patch_line_1.addWidget(self.aggressive_save_systems)
         self.features_patch_line_1.addWidget(self.defense_first_round)
 
-        self.star_list.addWidget(self.starlight_1, 0, 0)
-        self.star_list.addWidget(self.starlight_2, 0, 1)
-        self.star_list.addWidget(self.starlight_3, 0, 2)
-        self.star_list.addWidget(self.starlight_4, 0, 3)
-        self.star_list.addWidget(self.starlight_5, 0, 4)
-        self.star_list.addWidget(self.starlight_6, 1, 0)
-        self.star_list.addWidget(self.starlight_7, 1, 1)
-        self.star_list.addWidget(self.starlight_8, 1, 2)
-        self.star_list.addWidget(self.starlight_9, 1, 3)
-        self.star_list.addWidget(self.starlight_10, 1, 4)
-        self.star_layout.add(self.choose_opening_bonus)
+        self.star_list.addWidget(self.starlight_select_all_wrapper, 0, 0)
+        self.star_list.addWidget(self.starlight_clear_button_wrapper, 0, 1)
+        self.star_list.addWidget(self.starlight_total_cost_label, 0, 4, Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
+
+        self.star_list.addWidget(self.starlight_1, 1, 0)
+        self.star_list.addWidget(self.starlight_2, 1, 1)
+        self.star_list.addWidget(self.starlight_3, 1, 2)
+        self.star_list.addWidget(self.starlight_4, 1, 3)
+        self.star_list.addWidget(self.starlight_5, 1, 4)
+        self.star_list.addWidget(self.starlight_6, 2, 0)
+        self.star_list.addWidget(self.starlight_7, 2, 1)
+        self.star_list.addWidget(self.starlight_8, 2, 2)
+        self.star_list.addWidget(self.starlight_9, 2, 3)
+        self.star_list.addWidget(self.starlight_10, 2, 4)
         self.star_layout.add(self.star_list)
 
         self.fourth_line.addWidget(self.after_level_IV)
@@ -1378,6 +1427,23 @@ class CustomizeSettingsModule(QFrame):
         self.main_layout.addWidget(self.tenth_line_widget)
         self.main_layout.addWidget(self.eleventh_line_widget)
 
+    def __set_all_starlight(self, bonus_value: int):
+        mediator.team_setting.emit({"starlight_all_state": max(0, min(int(bonus_value), 3))})
+
+    def _apply_total_cost_style(self):
+        from qfluentwidgets import setCustomStyleSheet
+        from app.starlight_bonus import _register_custom_style_widget
+        _register_custom_style_widget(self.starlight_total_cost_label)
+        light_qss, dark_qss = get_starlight_total_cost_qss()
+        setCustomStyleSheet(self.starlight_total_cost_label, light_qss, dark_qss)
+
+    def update_total_starlight_cost(self, opening_bonus: list[int]):
+        total = sum(
+            STARLIGHT_BONUS_COSTS[i] * opening_bonus[i]
+            for i in range(min(len(opening_bonus), len(STARLIGHT_BONUS_COSTS)))
+        )
+        self.starlight_total_cost_label.setText(str(total))
+
     def retranslateUi(self):
         self.do_not_heal.retranslateUi()
         self.do_not_buy.retranslateUi()
@@ -1394,13 +1460,13 @@ class CustomizeSettingsModule(QFrame):
         self.defense_first_round.retranslateUi()
         self.fixed_team_use.retranslateUi()
         self.reward_cards.retranslateUi()
-        self.choose_opening_bonus.retranslateUi()
         self.re_formation_each_floor.retranslateUi()
+        self.starlight_select_all.set_label_text(get_starlight_action_label(self.tr("全选"), cfg.language_in_program))
+        self.starlight_clear_button.setText(get_starlight_action_label(self.tr("清空"), cfg.language_in_program))
 
-        starlight_text = self.tr("星光")
         for index in range(1, 11):
-            starlight = self.findChild(CheckBoxWithLineEdit, f"starlight_{index}")
-            starlight.box.setText(f"{starlight_text}{index}")
+            starlight = self.findChild(StarlightLevelSelector, f"starlight_{index}")
+            starlight.set_label_text(get_starlight_bonus_name(index - 1, cfg.language_in_program))
             if index <= 5:
                 floor_shop = self.findChild(BaseCheckBox, f"ignore_shop_{index}")
                 floor_shop.retranslateUi()

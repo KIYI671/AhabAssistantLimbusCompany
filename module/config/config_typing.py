@@ -108,20 +108,8 @@ class TeamSetting(BaseModel):
     reward_cards_select: int = 0
     """自定义奖励卡优先度"""
 
-    choose_opening_bonus: bool = False
-    """自选开局加成"""
-
-    opening_bonus_select: int = 0
-    """开局加成已选数量"""
-
-    opening_bonus: List[int] = [0] * 10
-    """启用的开局加成"""
-
-    opening_bonus_order: List[int] = [0] * 10
-    """启用的开局加成顺序"""
-
-    opening_bonus_level: List[int] = [0] * 10
-    """启用的开局加成等级"""
+    opening_bonus: List[int] = [1, 1, 1, 1, 0, 0, 0, 0, 0, 0]
+    """开局星光加成：0 未选中，1 基础，2 +，3 ++"""
 
     after_level_IV: bool = False
     """自定义合成四级后的操作"""
@@ -208,7 +196,7 @@ class TeamSetting(BaseModel):
 class ConfigModel(BaseModel):
     """配置模型"""
 
-    config_version: int = 1779444115
+    config_version: int = 1781049600
     """配置文件版本号（时间戳）"""
 
     game_title_name: str = "LimbusCompany"
@@ -342,6 +330,9 @@ class ConfigModel(BaseModel):
 
     resonate_with_Ahab: bool = False
     """是否播放亚哈语录"""
+
+    experimental_keep_screen_awake: bool = False
+    """运行期间阻止系统与显示器休眠，任务结束自动恢复"""
 
     simulator: bool = False
     """是否使用模拟器"""
