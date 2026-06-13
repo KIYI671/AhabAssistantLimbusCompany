@@ -892,12 +892,14 @@ class Shop:
                     while auto.take_screenshot() is None:
                         continue
                     if auto.click_element("mirror/shop/fuse_gift_confirm_assets.png", model="normal"):
+                        sleep(0.5)
                         break
             else:
                 if auto.click_element(f"mirror/shop/keyword/keyword_{self.system}.png"):
                     while auto.take_screenshot() is None:
                         continue
                     if auto.click_element("mirror/shop/fuse_gift_confirm_assets.png", model="normal"):
+                        sleep(0.5)
                         break
             if auto.click_element("mirror/shop/fuse_to_select_keyword_assets.png"):
                 continue
