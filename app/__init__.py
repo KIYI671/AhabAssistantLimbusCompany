@@ -220,6 +220,7 @@ all_checkbox_config_name = [
     "ignore_shop",
     "use_custom_theme_pack_weight",
     "use_team_code",
+    "observe_ego_gift",
 ]
 
 win_input_type_options = {

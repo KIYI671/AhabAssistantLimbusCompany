@@ -153,6 +153,12 @@ class TeamSetting(BaseModel):
     second_system_setting: int = 0
     """第二体系启用时间"""
 
+    observe_ego_gift: bool = False
+    """是否需要观测饰品"""
+
+    observe_ego_gift_selected: List[str] = []
+    """观测饰品选中的饰品列表（最多3个，按选择顺序存储文件名）"""
+
     second_system_action: List[int] = [0] * 4
     """第二体系行动模式"""
 

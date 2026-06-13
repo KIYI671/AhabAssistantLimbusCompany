@@ -1,10 +1,15 @@
+import os
+import re
+
 from PySide6.QtCore import Qt
-from PySide6.QtGui import QResizeEvent
+from PySide6.QtGui import QPixmap, QResizeEvent
 from PySide6.QtWidgets import (
+    QApplication,
     QFileDialog,
     QFrame,
     QGridLayout,
     QHBoxLayout,
+    QLabel,
     QSizePolicy,
     QVBoxLayout,
     QWidget,
@@ -89,6 +94,11 @@ class TeamSettingCard(QFrame):
         self.custom_layout = ExpandSettingCard(
             icon=FIF.EDIT,
             title=self.tr("自定义设置（设置存在冲突时，将根据优先级覆盖生效）"),
+        )
+
+        self.observe_ego_gift_layout = ExpandSettingCard(
+            icon=FIF.SEARCH,
+            title=self.tr("观测EGO饰品"),
         )
 
         self.custom_layout2 = ExpandSettingCard(icon=FIF.INFO, title=self.tr("编队统计数据"))
@@ -232,6 +242,7 @@ class TeamSettingCard(QFrame):
         )
 
         self.customize_settings_module = CustomizeSettingsModule(self.team_num)
+        self.observe_ego_gift_module = ObserveEgoGiftModule(self.team_num)
         self.customize_info_module = CustomizeInfoModule(self.team_num)
         self.customize_settings_module.select_theme_pack_weight_button.clicked.connect(
             self.open_theme_pack_weight_dialog
@@ -291,6 +302,7 @@ class TeamSettingCard(QFrame):
         self.layout_.addLayout(self.sinner_layout)
         self.layout_.addWidget(self.gift_system_layout)
         self.layout_.addWidget(self.custom_layout)
+        self.layout_.addWidget(self.observe_ego_gift_layout)
         self.layout_.addWidget(self.custom_layout2)
 
         self.main_layout.addLayout(self.setting_layout)
@@ -298,6 +310,7 @@ class TeamSettingCard(QFrame):
         self.setting_layout.setContentsMargins(10, 0, 10, 0)  # 手动对齐其他组件
 
         self.custom_layout.viewLayout.addWidget(self.customize_settings_module)
+        self.observe_ego_gift_layout.viewLayout.addWidget(self.observe_ego_gift_module)
         self.custom_layout2.viewLayout.addWidget(self.customize_info_module)
 
     def connect_mediator(self):
@@ -317,6 +330,8 @@ class TeamSettingCard(QFrame):
             setattr(self.team_setting, keys, values)
             if keys == "team_system":
                 self.foolproof(values)
+        elif keys == "observe_ego_gift_selected":
+            self.team_setting.observe_ego_gift_selected = values
         elif keys in all_sinners_name:
             sinner_index = all_sinners_name.index(keys)
             if values:
@@ -447,6 +462,11 @@ class TeamSettingCard(QFrame):
         # 读取编队码设置
         if team_code_input := self.findChild(BaseLineEdit, "team_code"):
             team_code_input.setText(self.team_setting.team_code)
+
+        # 回显观测EGO饰品选中状态
+        observe_module = self.findChild(ObserveEgoGiftModule, "ObserveEgoGiftModule")
+        if observe_module:
+            observe_module.load_selected(self.team_setting.observe_ego_gift_selected)
 
     def foolproof(self, team_system):
         for checkbox in all_checkbox_config_name:
@@ -639,6 +659,393 @@ class StarlightCard(QFrame):
         else:
             data = {f"starlight_level_{self.team_num}": 0}
         mediator.team_setting.emit(data)
+
+
+class SystemIconButton(QLabel):
+    """体系图标按钮"""
+
+    def __init__(self, system: str, icon_path: str, tooltip: str, parent=None):
+        super().__init__(parent)
+        self.system = system
+        self._active = False
+        self._normal_pixmap = QPixmap(icon_path)
+        if not self._normal_pixmap.isNull():
+            self.setPixmap(self._normal_pixmap.scaled(48, 48, Qt.KeepAspectRatio, Qt.SmoothTransformation))
+        else:
+            self.setText(tooltip)
+        self.setFixedSize(54, 54)
+        self.setAlignment(Qt.AlignCenter)
+        self.setCursor(Qt.PointingHandCursor)
+        self._refresh_style()
+
+    def _refresh_style(self):
+        is_text_mode = self._normal_pixmap.isNull()
+        text_style = "font-size: 12px; color: palette(text);" if is_text_mode else ""
+        if self._active:
+            self.setStyleSheet(
+                f"border: 2px solid #00aaff; border-radius: 6px; background-color: rgba(0,150,255,0.15);{text_style}"
+            )
+        else:
+            self.setStyleSheet(
+                f"border: 1px solid rgba(128,128,128,0.25); border-radius: 6px; background-color: transparent;{text_style}"
+            )
+
+    def set_active(self, active: bool):
+        self._active = active
+        self._refresh_style()
+
+    def is_active(self):
+        return self._active
+
+    def mousePressEvent(self, event):
+        if event.button() == Qt.LeftButton:
+            module = self._find_module()
+            if module:
+                module.on_system_clicked(self)
+        super().mousePressEvent(event)
+
+    def _find_module(self):
+        w = self.parent()
+        while w:
+            if isinstance(w, ObserveEgoGiftModule):
+                return w
+            w = w.parent()
+        return None
+
+
+class GiftItemButton(QLabel):
+    """饰品图片按钮"""
+
+    def __init__(self, gift_filename: str, system: str, img_path: str, parent=None):
+        super().__init__(parent)
+        self.gift_filename = gift_filename  # 如 "burn_gift_3_1.png"
+        self.system = system
+        self._selected = False
+
+        full_path = f"{img_path}/{system}_gift/{gift_filename}"
+        pixmap = QPixmap(full_path)
+        if not pixmap.isNull():
+            self.setPixmap(pixmap.scaled(56, 56, Qt.KeepAspectRatio, Qt.SmoothTransformation))
+        self.setFixedSize(60, 60)
+        self.setAlignment(Qt.AlignCenter)
+        self.setCursor(Qt.PointingHandCursor)
+        self._refresh_style()
+
+    def _refresh_style(self):
+        if self._selected:
+            self.setStyleSheet(
+                "border: 2px solid #00cc44; border-radius: 6px; background-color: rgba(0,200,60,0.12);"
+            )
+        else:
+            self.setStyleSheet(
+                "border: 1px solid rgba(128,128,128,0.3); border-radius: 6px; background-color: transparent;"
+            )
+
+    def set_selected(self, selected: bool, order: int = 0):
+        self._selected = selected
+        self._refresh_style()
+
+    def is_selected(self):
+        return self._selected
+
+    def mousePressEvent(self, event):
+        if event.button() == Qt.LeftButton:
+            module = self._find_module()
+            if module:
+                module.on_gift_clicked(self)
+        super().mousePressEvent(event)
+
+    def _find_module(self):
+        w = self.parent()
+        while w:
+            if isinstance(w, ObserveEgoGiftModule):
+                return w
+            w = w.parent()
+        return None
+
+
+class PreviewGiftLabel(QLabel):
+    """预览区饰品图标，点击后从已选列表中移除"""
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.gift_filename: str = ""
+        self.setFixedSize(36, 36)
+        self.setAlignment(Qt.AlignCenter)
+        self.setCursor(Qt.PointingHandCursor)
+
+    def mousePressEvent(self, event):
+        if event.button() == Qt.LeftButton and self.gift_filename:
+            module = self._find_module()
+            if module:
+                module.on_preview_remove_clicked(self.gift_filename)
+        super().mousePressEvent(event)
+
+    def _find_module(self):
+        w = self.parent()
+        while w:
+            if isinstance(w, ObserveEgoGiftModule):
+                return w
+            w = w.parent()
+        return None
+
+
+class ObserveEgoGiftModule(QFrame):
+    """观测饰品"""
+    def __init__(self, team_num: int, parent=None):
+        super().__init__(parent)
+        self.team_num = team_num
+        self.setObjectName("ObserveEgoGiftModule")
+        self.main_layout = QVBoxLayout(self)
+        self.main_layout.setContentsMargins(0, 0, 0, 0)
+        self.main_layout.setSpacing(6)
+
+        self._img_path = "./assets/images/default/zh_cn/mirror/observe_ego_gift"
+        self._selected_gifts: list[str] = []
+        self._gift_buttons: dict[str, GiftItemButton] = {}
+        self._current_system: str | None = None
+
+        self.__init_widget()
+        self.__init_card()
+        self.__init_layout()
+
+        LanguageManager().register_component(self)
+        self.retranslateUi()
+
+    def __init_widget(self):
+        # 顶部行：启用观测 checkbox + 右侧已选饰品预览（最多3个）
+        self.top_row_widget = QWidget()
+        self.top_row_layout = QHBoxLayout(self.top_row_widget)
+        self.top_row_layout.setContentsMargins(0, 0, 0, 0)
+        self.top_row_layout.setSpacing(8)
+        self.top_row_layout.setAlignment(Qt.AlignLeft)
+
+        self.observe_ego_gift_checkbox = BaseCheckBox(
+            "observe_ego_gift",
+            None,
+            self.tr("启用观测"),
+            icon_size=30,
+        )
+
+        # 已选饰品预览区（3个小图标，可点击删除）
+        self.selected_preview_widget = QWidget()
+        self.selected_preview_layout = QHBoxLayout(self.selected_preview_widget)
+        self.selected_preview_layout.setContentsMargins(0, 0, 0, 0)
+        self.selected_preview_layout.setSpacing(4)
+        self.selected_preview_layout.setAlignment(Qt.AlignLeft)
+        self._preview_labels: list[PreviewGiftLabel] = []
+        for _ in range(3):
+            lbl = PreviewGiftLabel()
+            lbl.setStyleSheet(
+                "border: 1px solid rgba(128,128,128,0.4); border-radius: 4px; background-color: rgba(0,0,0,0.1);"
+            )
+            self._preview_labels.append(lbl)
+            self.selected_preview_layout.addWidget(lbl)
+
+        # 体系选择行（11个体系图标按钮，纯QLabel）
+        self.system_select_widget = QWidget()
+        self.system_select_layout = QHBoxLayout(self.system_select_widget)
+        self.system_select_layout.setContentsMargins(0, 0, 0, 0)
+        self.system_select_layout.setSpacing(5)
+        self.system_select_layout.setAlignment(Qt.AlignLeft)
+
+        # 饰品网格展示区
+        self.gift_grid_widget = QWidget()
+        self.gift_grid_layout = QGridLayout(self.gift_grid_widget)
+        self.gift_grid_layout.setContentsMargins(0, 4, 0, 4)
+        self.gift_grid_layout.setSpacing(4)
+        self.gift_grid_layout.setAlignment(Qt.AlignLeft)
+        self.gift_grid_widget.setVisible(False)
+
+    def __init_card(self):
+        self.observe_systems = [
+            ("burn", self.tr("烧伤")),
+            ("bleed", self.tr("流血")),
+            ("tremor", self.tr("震颤")),
+            ("rupture", self.tr("破裂")),
+            ("sinking", self.tr("沉沦")),
+            ("poise", self.tr("呼吸")),
+            ("charge", self.tr("充能")),
+            ("slash", self.tr("斩击")),
+            ("pierce", self.tr("突刺")),
+            ("blunt", self.tr("打击")),
+            ("general", self.tr("泛用")),
+        ]
+
+        self._system_buttons: dict[str, SystemIconButton] = {}
+        for system, label in self.observe_systems:
+            icon_path = f"./assets/app/status_effects/{system}.png"
+            btn = SystemIconButton(system, icon_path, label, self.system_select_widget)
+            self._system_buttons[system] = btn
+            self.system_select_layout.addWidget(btn)
+
+    def __init_layout(self):
+        self.top_row_layout.addWidget(self.observe_ego_gift_checkbox)
+        self.top_row_layout.addWidget(self.selected_preview_widget)
+        self.top_row_layout.addStretch()
+
+        self.main_layout.addWidget(self.top_row_widget)
+        self.main_layout.addWidget(self.system_select_widget)
+        self.main_layout.addWidget(self.gift_grid_widget)
+
+    # ─── 体系选择逻辑 ──────────────────────────────────────────────
+
+    def on_system_clicked(self, btn: SystemIconButton):
+        """体系图标点击：切换展开/关闭对应饰品网格"""
+        system = btn.system
+        was_active = btn.is_active()
+        # 关闭所有体系按钮高亮
+        for s, b in self._system_buttons.items():
+            b.set_active(False)
+        if not was_active:
+            # 展开新体系：先隐藏网格避免中间状态触发高度抖动，重建后再显示
+            self.gift_grid_widget.setVisible(False)
+            btn.set_active(True)
+            self._current_system = system
+            self._rebuild_gift_grid(system)
+            self.gift_grid_widget.setVisible(True)
+        else:
+            # 点击已展开的体系则收起
+            self._current_system = None
+            self.gift_grid_widget.setVisible(False)
+        # 让布局系统先处理完成，再刷新 ExpandSettingCard 高度
+        QApplication.processEvents()
+        self._notify_expand_card()
+
+    def _notify_expand_card(self):
+        """向上查找ExpandSettingCard并调用_adjustViewSize刷新高度"""
+        from qfluentwidgets import ExpandSettingCard
+        w = self.parent()
+        while w:
+            if isinstance(w, ExpandSettingCard):
+                w._adjustViewSize()
+                return
+            w = w.parent()
+
+    def _get_gift_files_for_system(self, system: str) -> list[str]:
+        """扫描体系文件夹，返回 gift_3_x、gift_2_x、gift_1_x 排序后的文件名列表"""
+        folder = os.path.join(self._img_path, f"{system}_gift")
+        if not os.path.isdir(folder):
+            return []
+        pattern_files: dict[int, list[tuple[int, str]]] = {}  # level -> [(index, filename)]
+        for fname in os.listdir(folder):
+            # 匹配 xx_gift_L_N.png
+            m = re.match(rf"{re.escape(system)}_gift_(\d+)_(\d+)\.png", fname)
+            if m:
+                level = int(m.group(1))
+                idx = int(m.group(2))
+                pattern_files.setdefault(level, []).append((idx, fname))
+        result = []
+        for level in sorted(pattern_files.keys(), reverse=True):  # 3 → 2 → 1
+            sorted_files = sorted(pattern_files[level], key=lambda x: x[0])
+            result.extend(fname for _, fname in sorted_files)
+        return result
+
+    def _rebuild_gift_grid(self, system: str):
+        """清空并重建饰品网格，每行8个，先3级后2级后1级"""
+        # 清空旧内容
+        while self.gift_grid_layout.count():
+            item = self.gift_grid_layout.takeAt(0)
+            if item.widget():
+                item.widget().deleteLater()
+        self._gift_buttons.clear()
+
+        files = self._get_gift_files_for_system(system)
+        cols = 8
+        for pos, fname in enumerate(files):
+            row, col = divmod(pos, cols)
+            btn = GiftItemButton(fname, system, self._img_path, self.gift_grid_widget)
+            if fname in self._selected_gifts:
+                order = self._selected_gifts.index(fname) + 1
+                btn.set_selected(True, order)
+            self._gift_buttons[fname] = btn
+            self.gift_grid_layout.addWidget(btn, row, col)
+
+    # ─── 饰品点击逻辑 ──────────────────────────────────────────────
+
+    def on_gift_clicked(self, btn: GiftItemButton):
+        """处理饰品点击：最多记录3个，先进先出"""
+        fname = btn.gift_filename
+        if fname in self._selected_gifts:
+            # 取消选中
+            self._selected_gifts.remove(fname)
+        else:
+            if len(self._selected_gifts) >= 3:
+                # 移除最旧的
+                removed = self._selected_gifts.pop(0)
+                if removed in self._gift_buttons:
+                    self._gift_buttons[removed].set_selected(False)
+            self._selected_gifts.append(fname)
+
+        # 刷新当前网格内所有按钮状态
+        for f, b in self._gift_buttons.items():
+            if f in self._selected_gifts:
+                b.set_selected(True, self._selected_gifts.index(f) + 1)
+            else:
+                b.set_selected(False)
+
+        self._refresh_preview()
+        mediator.team_setting.emit({"observe_ego_gift_selected": list(self._selected_gifts)})
+
+    # ─── 预览刷新 ─────────────────────────────────────────────────
+
+    def _refresh_preview(self):
+        """刷新右侧3个预览图标"""
+        for i, lbl in enumerate(self._preview_labels):
+            if i < len(self._selected_gifts):
+                fname = self._selected_gifts[i]
+                lbl.gift_filename = fname
+                system = self._infer_system_from_filename(fname)
+                if system:
+                    path = f"{self._img_path}/{system}_gift/{fname}"
+                    px = QPixmap(path)
+                    if not px.isNull():
+                        lbl.setPixmap(px.scaled(32, 32, Qt.KeepAspectRatio, Qt.SmoothTransformation))
+                        lbl.setStyleSheet(
+                            "border: 1px solid #00cc44; border-radius: 4px; background-color: rgba(0,200,60,0.08);"
+                        )
+                        continue
+            lbl.gift_filename = ""
+            lbl.clear()
+            lbl.setStyleSheet(
+                "border: 1px solid rgba(128,128,128,0.4); border-radius: 4px; background-color: rgba(0,0,0,0.1);"
+            )
+
+    def on_preview_remove_clicked(self, gift_filename: str):
+        """预览区图标被点击时，从已选列表中移除对应饰品"""
+        if gift_filename in self._selected_gifts:
+            self._selected_gifts.remove(gift_filename)
+            # 同步更新网格内按钮状态
+            for f, b in self._gift_buttons.items():
+                if f in self._selected_gifts:
+                    b.set_selected(True, self._selected_gifts.index(f) + 1)
+                else:
+                    b.set_selected(False)
+            self._refresh_preview()
+            mediator.team_setting.emit({"observe_ego_gift_selected": list(self._selected_gifts)})
+
+    def _infer_system_from_filename(self, fname: str) -> str | None:
+        """从文件名推断体系名，如 burn_gift_3_1.png -> burn"""
+        for system, _ in self.observe_systems:
+            if fname.startswith(f"{system}_gift_"):
+                return system
+        return None
+
+    # ─── 外部数据接口 ─────────────────────────────────────────────
+
+    def load_selected(self, selected: list[str]):
+        """从配置加载已保存的选中状态"""
+        self._selected_gifts = list(selected[:3])
+        # 如果当前有网格展开，刷新按钮状态
+        for f, b in self._gift_buttons.items():
+            if f in self._selected_gifts:
+                b.set_selected(True, self._selected_gifts.index(f) + 1)
+            else:
+                b.set_selected(False)
+        self._refresh_preview()
+
+    def retranslateUi(self):
+        self.observe_ego_gift_checkbox.check_box.setText(self.tr("启用观测"))
 
 
 class CustomizeSettingsModule(QFrame):
