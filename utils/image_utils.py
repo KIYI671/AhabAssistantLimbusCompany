@@ -408,6 +408,10 @@ class ImageUtils:
                         scale = float(scale_str)
                         if scale in optimized_scales:
                             scaled_template = cv2.imread(str(template_file), cv2.IMREAD_GRAYSCALE)
+                            if not scaled_template.any():
+                                log.debug(f"缓存模板 {template_file} 读取失败，已删除。")
+                                template_file.unlink()
+                                continue
                             result = cv2.matchTemplate(large_edges, scaled_template, cv2.TM_CCOEFF_NORMED)
                             locations = ImageUtils.__find_local_maxima_fast(result, threshold=threshold)
                             new_w, new_h = scaled_template.shape[::-1]
