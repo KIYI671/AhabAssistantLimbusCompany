@@ -144,6 +144,12 @@ class TeamSetting(BaseModel):
     second_system_action: List[int] = [0] * 4
     """第二体系行动模式"""
 
+    observe_ego_gift: bool = False
+    """是否启用观测EGO饰品"""
+
+    observe_ego_gift_selected: List[str] = []
+    """用户选择的观测EGO饰品列表"""
+
     skill_replacement: bool = False
     """自定义技能替换"""
 
