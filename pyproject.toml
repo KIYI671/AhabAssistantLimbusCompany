@@ -64,6 +64,8 @@ files = [
     "app/farming_interface.py",
     "app/tools_interface.py",
     "app/team_setting_card.py",
+    "app/common/ui_config.py",
+    "app/starlight_bonus.py",
     "app/base_combination.py",
     "app/card/messagebox_custom.py",
     "app/base_tools.py",
