@@ -190,7 +190,7 @@ class TeamSetting(BaseModel):
 class ConfigModel(BaseModel):
     """配置模型"""
 
-    config_version: int = 1779444115
+    config_version: int = 1781049600
     """配置文件版本号（时间戳）"""
 
     game_title_name: str = "LimbusCompany"
@@ -324,6 +324,9 @@ class ConfigModel(BaseModel):
 
     resonate_with_Ahab: bool = False
     """是否播放亚哈语录"""
+
+    experimental_keep_screen_awake: bool = False
+    """运行期间阻止系统与显示器休眠，任务结束自动恢复"""
 
     simulator: bool = False
     """是否使用模拟器"""

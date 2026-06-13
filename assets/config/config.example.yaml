@@ -6,7 +6,6 @@ game_process_name: LimbusCompany.exe # 游戏进程名。
 
 game_path: C:\Program Files (x86)\Steam\steamapps\common\Limbus Company\LimbusCompany.exe # 游戏启动路径。
 
-after_completion: 0 # 脚本结束后的操作
 keep_after_completion: False # 是否保持脚本结束后的操作
 language_in_program: "" # 程序语言
 shutdown_hotkey: "<ctrl>+q" # 关闭快捷键
@@ -191,6 +190,8 @@ teams:
     skill_replacement_select: 0 # 技能替换设置
     skill_replacement_mode: 0 # 技能替换模式
     ignore_shop: [0, 0, 0, 0, 0] # 忽略商店楼层
+    max_keyword_refresh: 1 # 每次商店访问时定向刷新商品的次数上限
+    max_normal_refresh: 1 # 每次商店访问时普通刷新商品的次数上限
     use_custom_theme_pack_weight: False # 使用队伍自定义主题包权重
     remark_name: # 队伍备注名
     use_team_code: False # 使用编队码
