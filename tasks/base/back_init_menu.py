@@ -1,10 +1,9 @@
 from time import sleep
 
 from module.automation import auto
-from module.config import cfg
 from module.decorator.decorator import begin_and_finish_time_log
 from module.logger import log
-from tasks.base.retry import retry
+from tasks.base.retry import click_title_screen_safely, ensure_simulator_game_started, retry
 from tasks.mirror.reward_card import get_reward_card
 
 
@@ -31,21 +30,8 @@ def back_init_menu(*, allow_restart: bool = True):
             auto.model = "clam"
             sleep(1)
             continue
-        if cfg.simulator:
-            if cfg.simulator_type == 0:
-                from module.automation.input_handlers.simulator.mumu_control import (
-                    MumuControl,
-                )
-
-                if MumuControl.connection_device.check_game_alive() is False:
-                    MumuControl.connection_device.start_game()
-            else:
-                from module.automation.input_handlers.simulator.simulator_control import (
-                    SimulatorControl,
-                )
-
-                if SimulatorControl.connection_device.check_game_alive() is False:
-                    SimulatorControl.connection_device.start_game()
+        if ensure_simulator_game_started():
+            continue
         if retry() is False:
             return False
 
@@ -122,7 +108,7 @@ def back_init_menu(*, allow_restart: bool = True):
         if auto.find_element("base/clear_all_caches_assets.png", model="clam"):
             if auto.click_element("base/update_confirm_assets.png"):
                 continue
-            auto.mouse_click_blank()
+            click_title_screen_safely()
             sleep(5)
             continue
 
