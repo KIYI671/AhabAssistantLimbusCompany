@@ -6,14 +6,13 @@ import win32gui
 from PySide6.QtCore import Qt, QThread, Signal
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import (
-    QCheckBox,
     QLabel,
     QPushButton,
     QTextEdit,
     QVBoxLayout,
     QWidget,
 )
-from qfluentwidgets import qconfig
+from qfluentwidgets import CheckBox, qconfig
 
 from module.automation import auto
 from module.config import cfg
@@ -233,7 +232,7 @@ class ProductionModule(QWidget):
         self.start_stop_button = QPushButton(self.start_msg)
         self.start_stop_button.clicked.connect(self.toggle_production)
         self.box_msg = self.tr("等待期间关闭游戏")
-        self.kill_game_box = QCheckBox(self.box_msg)
+        self.kill_game_box = CheckBox(self.box_msg)
         button_layout.addWidget(self.start_stop_button)
         button_layout.addWidget(self.kill_game_box)
 

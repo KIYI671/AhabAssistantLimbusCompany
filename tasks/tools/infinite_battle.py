@@ -1,14 +1,13 @@
 from PySide6.QtCore import Qt, QThread, Signal
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import (
-    QCheckBox,
     QLabel,
     QPushButton,
     QTextEdit,
     QVBoxLayout,
     QWidget,
 )
-from qfluentwidgets import qconfig
+from qfluentwidgets import CheckBox, qconfig
 
 from module.automation import auto
 from module.config import cfg
@@ -139,9 +138,9 @@ class InfiniteBattles(QWidget):
 
         self.start_stop_button = QPushButton(self.tr("开始战斗"))
         self.start_stop_button.clicked.connect(self.toggle_battle)
-        self.defense_box = QCheckBox(self.tr("无限守备"))
-        self.defense_on_turn1_box = QCheckBox(self.tr("第一回合开启守备"))
-        self.not_choose_event_box = QCheckBox(self.tr("不处理事件"))
+        self.defense_box = CheckBox(self.tr("无限守备"))
+        self.defense_on_turn1_box = CheckBox(self.tr("第一回合开启守备"))
+        self.not_choose_event_box = CheckBox(self.tr("不处理事件"))
         button_layout.addWidget(self.start_stop_button)
         button_layout.addWidget(self.defense_box)
         button_layout.addWidget(self.defense_on_turn1_box)
