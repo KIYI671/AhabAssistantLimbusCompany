@@ -109,7 +109,6 @@ def back_init_menu(*, allow_restart: bool = True):
             if auto.click_element("base/update_confirm_assets.png"):
                 continue
             click_title_screen_safely()
-            sleep(5)
             continue
 
         if auto.click_element("base/only_option_assets.png", model="clam"):
