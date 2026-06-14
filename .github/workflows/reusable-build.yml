@@ -40,3 +40,4 @@ jobs:
           name: AALC_${{ inputs.version }}
           path: |
             dist/AALC_${{ inputs.version }}.7z
+          archive: false
