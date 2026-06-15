@@ -79,7 +79,7 @@ def select_battle_team(num):
                 auto.mouse_drag(
                     first_position[0],
                     first_position[1] + 375 * scale,
-                    dy=-385 * scale,
+                    dy=-375 * scale,
                     drag_time=1.5,
                 )
                 sleep(1)
