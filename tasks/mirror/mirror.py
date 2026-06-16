@@ -833,7 +833,6 @@ class Mirror:
             # 如果未启用观测或启用了但未选择饰品，关闭观测饰品按钮
             if not self.observe_ego_gift or len(self.observe_ego_gift_selected)==0:
                 auto.click_element("mirror/road_to_mir/activate_gift_search_on_assets.png")
-                continue
             # 如果已经进入观测饰品页面,则跳过初始EGO选择
             if auto.find_element("mirror/theme_pack/feature_theme_pack_assets.png") or auto.find_element(
                     "mirror/road_to_mir/observe_ego_gift/observe_bleed_assets.png") or auto.find_element(
