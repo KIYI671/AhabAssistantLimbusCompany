@@ -1,5 +1,8 @@
-from PySide6.QtCore import Qt
+import os
+from PySide6.QtCore import QTimer, Qt
+from PySide6.QtGui import QPixmap
 from PySide6.QtWidgets import (
+    QApplication,
     QFileDialog,
     QFrame,
     QGridLayout,
@@ -16,6 +19,9 @@ from qfluentwidgets import (
     PushButton,
     ScrollArea,
     SmoothMode,
+    ToolButton,
+    ToolTipFilter,
+    ToolTipPosition,
 )
 from qfluentwidgets import FluentIcon as FIF
 
@@ -23,6 +29,7 @@ from app import *
 from app.base_combination import (
     CheckBoxWithComboBox,
     LabelWithComboBox,
+    ObserveGiftSelectionRow,
     SinnerSelect,
 )
 from app.base_tools import BaseCheckBox, BaseComboBox, BaseLabel, BaseLineEdit, BaseSettingLayout
@@ -42,6 +49,13 @@ from module.config.team_import_export import (
     export_team_settings,
     generate_team_export_filename,
     import_team_settings,
+)
+from app.observe_ego_gift_selection import (
+    MAX_OBSERVE_GIFT_SELECTIONS,
+    ObserveGiftSelection,
+    ensure_placeholder_row,
+    parse_observe_ego_gift_values,
+    serialize_observe_ego_gift_values,
 )
 
 
@@ -93,6 +107,11 @@ class TeamSettingCard(QFrame):
         self.custom_layout = ExpandSettingCard(
             icon=FIF.EDIT,
             title=self.tr("自定义设置（设置存在冲突时，将根据优先级覆盖生效）"),
+        )
+
+        self.observe_ego_gift_layout = ExpandSettingCard(
+            icon=FIF.SEARCH,
+            title=self.tr("观测EGO饰品"),
         )
 
         self.custom_layout2 = ExpandSettingCard(icon=FIF.INFO, title=self.tr("编队统计数据"))
@@ -236,6 +255,7 @@ class TeamSettingCard(QFrame):
         )
 
         self.customize_settings_module = CustomizeSettingsModule(self.team_num)
+        self.observe_ego_gift_module = ObserveEgoGiftModule(self.team_num)
         self.customize_info_module = CustomizeInfoModule(self.team_num)
         self.customize_settings_module.select_theme_pack_weight_button.clicked.connect(
             self.open_theme_pack_weight_dialog
@@ -295,6 +315,7 @@ class TeamSettingCard(QFrame):
         self.layout_.addLayout(self.sinner_layout)
         self.layout_.addWidget(self.gift_system_layout)
         self.layout_.addWidget(self.custom_layout)
+        self.layout_.addWidget(self.observe_ego_gift_layout)
         self.layout_.addWidget(self.custom_layout2)
 
         self.main_layout.addLayout(self.setting_layout)
@@ -302,6 +323,7 @@ class TeamSettingCard(QFrame):
         self.setting_layout.setContentsMargins(10, 0, 10, 0)  # 手动对齐其他组件
 
         self.custom_layout.viewLayout.addWidget(self.customize_settings_module)
+        self.observe_ego_gift_layout.viewLayout.addWidget(self.observe_ego_gift_module)
         self.custom_layout2.viewLayout.addWidget(self.customize_info_module)
 
     def connect_mediator(self):
@@ -321,6 +343,8 @@ class TeamSettingCard(QFrame):
             setattr(self.team_setting, keys, values)
             if keys == "team_system":
                 self.foolproof(values)
+        elif keys == "observe_ego_gift_selected":
+            self.team_setting.observe_ego_gift_selected = values
         elif keys in all_sinners_name:
             sinner_index = all_sinners_name.index(keys)
             if values:
@@ -450,6 +474,11 @@ class TeamSettingCard(QFrame):
         # 读取编队码设置
         if team_code_input := self.findChild(BaseLineEdit, "team_code"):
             team_code_input.setText(self.team_setting.team_code)
+
+        # 回显观测EGO饰品选中状态
+        observe_module = self.findChild(ObserveEgoGiftModule, "ObserveEgoGiftModule")
+        if observe_module:
+            observe_module.load_selected(self.team_setting.observe_ego_gift_selected)
 
     def foolproof(self, team_system):
         for checkbox in all_checkbox_config_name:
@@ -1022,6 +1051,372 @@ class CustomizeSettingsModule(QFrame):
 
         self.max_keyword_refresh.setToolTip(self.tr("每次商店访问时定向刷新商品的次数上限"))
         self.max_normal_refresh.setToolTip(self.tr("每次商店访问时普通刷新商品的次数上限"))
+
+
+class SystemIconButton(QLabel):
+    """体系图标按钮"""
+
+    def __init__(self, system: str, icon_path: str, tooltip: str, parent=None, force_text: bool = False):
+        super().__init__(parent)
+        self.system = system
+        self._active = False
+        self._force_text = force_text
+        self._normal_pixmap = QPixmap(icon_path)
+        if not self._force_text and not self._normal_pixmap.isNull():
+            self.setPixmap(self._normal_pixmap.scaled(48, 48, Qt.KeepAspectRatio, Qt.SmoothTransformation))
+        else:
+            self.setText(tooltip)
+        self.setFixedSize(54, 54)
+        self.setAlignment(Qt.AlignCenter)
+        self.setCursor(Qt.PointingHandCursor)
+        self._refresh_style()
+
+    def _refresh_style(self):
+        is_text_mode = self._force_text or self._normal_pixmap.isNull()
+        text_style = "font-size: 12px; color: palette(text);" if is_text_mode else ""
+        if self._active:
+            self.setStyleSheet(
+                f"border: 2px solid rgba(128,128,128,0.45); border-radius: 6px; background-color: transparent;{text_style}"
+            )
+        else:
+            self.setStyleSheet(
+                f"border: 1px solid rgba(128,128,128,0.25); border-radius: 6px; background-color: transparent;{text_style}"
+            )
+
+    def set_active(self, active: bool):
+        self._active = active
+        self._refresh_style()
+
+    def mousePressEvent(self, event):
+        if event.button() == Qt.LeftButton:
+            module = self._find_module()
+            if module:
+                module.on_system_clicked(self)
+        super().mousePressEvent(event)
+
+    def _find_module(self):
+        w = self.parent()
+        while w:
+            if isinstance(w, ObserveEgoGiftModule):
+                return w
+            w = w.parent()
+        return None
+
+
+class PreviewGiftLabel(QLabel):
+    """预览区体系图标，点击后定位到对应控件组"""
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.row_index: int | None = None
+        self.setFixedSize(36, 36)
+        self.setAlignment(Qt.AlignCenter)
+        self.setCursor(Qt.PointingHandCursor)
+
+    def mousePressEvent(self, event):
+        if event.button() == Qt.LeftButton and self.row_index is not None:
+            module = self._find_module()
+            if module:
+                module.on_preview_clicked(self.row_index)
+        super().mousePressEvent(event)
+
+    def _find_module(self):
+        w = self.parent()
+        while w:
+            if isinstance(w, ObserveEgoGiftModule):
+                return w
+            w = w.parent()
+        return None
+
+
+class ObserveEgoGiftModule(QFrame):
+    """观测饰品"""
+
+    def __init__(self, team_num: int, parent=None):
+        super().__init__(parent)
+        self.team_num = team_num
+        self.setObjectName("ObserveEgoGiftModule")
+        self.main_layout = QVBoxLayout(self)
+        self.main_layout.setContentsMargins(0, 0, 0, 0)
+        self.main_layout.setSpacing(6)
+
+        self._row_selections = ensure_placeholder_row([])
+        self._row_widgets: list[ObserveGiftSelectionRow] = []
+
+        self.__init_widget()
+        self.__init_card()
+        self.__init_layout()
+        self._rebuild_rows()
+        self._refresh_preview()
+
+        LanguageManager().register_component(self)
+        self.retranslateUi()
+
+    def __init_widget(self):
+        self.top_row_widget = QWidget()
+        self.top_row_layout = QHBoxLayout(self.top_row_widget)
+        self.top_row_layout.setContentsMargins(0, 0, 0, 0)
+        self.top_row_layout.setSpacing(8)
+        self.top_row_layout.setAlignment(Qt.AlignLeft)
+
+        self.observe_ego_gift_checkbox = BaseCheckBox(
+            "observe_ego_gift",
+            None,
+            self.tr("启用观测"),
+            icon_size=30,
+        )
+
+        self.selected_preview_widget = QWidget()
+        self.selected_preview_layout = QHBoxLayout(self.selected_preview_widget)
+        self.selected_preview_layout.setContentsMargins(0, 0, 0, 0)
+        self.selected_preview_layout.setSpacing(4)
+        self.selected_preview_layout.setAlignment(Qt.AlignLeft)
+        self._preview_labels: list[PreviewGiftLabel] = []
+        for _ in range(MAX_OBSERVE_GIFT_SELECTIONS):
+            lbl = PreviewGiftLabel()
+            lbl.setStyleSheet(
+                "border: 1px solid rgba(128,128,128,0.4); border-radius: 4px; background-color: rgba(0,0,0,0.1);"
+            )
+            self._preview_labels.append(lbl)
+            self.selected_preview_layout.addWidget(lbl)
+        self.selected_preview_layout.addSpacing(4)
+
+        self.preview_hint_button = ToolButton(FIF.INFO, self.selected_preview_widget)
+        self.preview_hint_button.setFixedSize(32, 32)
+        self.preview_hint_button.setCursor(Qt.ArrowCursor)
+        self.preview_hint_button.setToolTip(self._preview_hint_tooltip())
+        self.preview_hint_button.installEventFilter(
+            ToolTipFilter(self.preview_hint_button, showDelay=0, position=ToolTipPosition.BOTTOM_LEFT)
+        )
+        self.selected_preview_layout.addWidget(self.preview_hint_button)
+
+        self.system_select_widget = QWidget()
+        self.system_select_layout = QHBoxLayout(self.system_select_widget)
+        self.system_select_layout.setContentsMargins(0, 0, 0, 0)
+        self.system_select_layout.setSpacing(5)
+        self.system_select_layout.setAlignment(Qt.AlignLeft)
+
+        self.selection_rows_widget = QWidget()
+        self.selection_rows_layout = QVBoxLayout(self.selection_rows_widget)
+        self.selection_rows_layout.setContentsMargins(0, 4, 0, 4)
+        self.selection_rows_layout.setSpacing(6)
+        self.selection_rows_layout.setAlignment(Qt.AlignTop)
+
+    def __init_card(self):
+        self.observe_systems = [
+            ("burn", self.tr("烧伤")),
+            ("bleed", self.tr("流血")),
+            ("tremor", self.tr("震颤")),
+            ("rupture", self.tr("破裂")),
+            ("sinking", self.tr("沉沦")),
+            ("poise", self.tr("呼吸")),
+            ("charge", self.tr("充能")),
+            ("slash", self.tr("斩击")),
+            ("pierce", self.tr("突刺")),
+            ("blunt", self.tr("打击")),
+            ("general", self.tr("泛用")),
+        ]
+
+        self._system_buttons: dict[str, SystemIconButton] = {}
+        for system, label in self.observe_systems:
+            icon_path = f"./assets/app/status_effects/{system}.png"
+            btn = SystemIconButton(system, icon_path, label, self.system_select_widget, force_text=system == "general")
+            self._system_buttons[system] = btn
+            self.system_select_layout.addWidget(btn)
+
+    def __init_layout(self):
+        self.top_row_layout.addWidget(self.observe_ego_gift_checkbox)
+        self.top_row_layout.addWidget(self.selected_preview_widget)
+        self.top_row_layout.addStretch()
+
+        self.main_layout.addWidget(self.top_row_widget)
+        self.main_layout.addWidget(self.system_select_widget)
+        self.main_layout.addWidget(self.selection_rows_widget)
+
+    def _row_labels(self) -> dict[str, str]:
+        return {
+            "system": self.tr("体系"),
+            "level": self.tr("等级"),
+            "row": self.tr("所在行"),
+            "col": self.tr("所在列"),
+        }
+
+    def _preview_hint_tooltip(self) -> str:
+        return self.tr(
+            '<div style="font-size: 15px; line-height: 1.6;">'
+            "知道你们想要什么<br>"
+            "2026-06 蜘蛛巢良秀专武在泛用-3级-4行-8列"
+            "</div>"
+        )
+
+    def _find_scroll_area(self):
+        w = self.parent()
+        while w:
+            if isinstance(w, ScrollArea):
+                return w
+            w = w.parent()
+        return None
+
+    def _scroll_to_row(self, row_index: int):
+        if not (0 <= row_index < len(self._row_widgets)):
+            return
+
+        target_widget = self._row_widgets[row_index]
+        if scroll_area := self._find_scroll_area():
+            scroll_area.ensureWidgetVisible(target_widget, 0, 40)
+
+    def _completed_rows(self) -> list[tuple[int, ObserveGiftSelection]]:
+        return [(index, row) for index, row in enumerate(self._row_selections) if row.is_complete()]
+
+    def _first_row_with_system(self, system: str) -> int | None:
+        for index, row in enumerate(self._row_selections):
+            if row.system == system:
+                return index
+        return None
+
+    def _first_fillable_row(self) -> int | None:
+        for index, row in enumerate(self._row_selections):
+            if row.system is None and not row.is_complete():
+                return index
+        return None
+
+    def _normalize_row_selections(self, rows: list[ObserveGiftSelection]) -> list[ObserveGiftSelection]:
+        return ensure_placeholder_row(rows, max_completed=MAX_OBSERVE_GIFT_SELECTIONS)
+
+    def _emit_selected_rows(self):
+        mediator.team_setting.emit({"observe_ego_gift_selected": serialize_observe_ego_gift_values(self._row_selections)})
+
+    def _rebuild_rows(self, target_row_index: int | None = None, emit: bool = False):
+        while self.selection_rows_layout.count():
+            item = self.selection_rows_layout.takeAt(0)
+            if item.widget():
+                item.widget().deleteLater()
+
+        self._row_widgets.clear()
+        labels = self._row_labels()
+        for index, selection in enumerate(self._row_selections):
+            row_widget = ObserveGiftSelectionRow(index, self.observe_systems, labels, self.selection_rows_widget)
+            row_widget.set_selection(selection)
+            row_widget.selectionChanged.connect(self._on_row_selection_changed)
+            row_widget.removeRequested.connect(self._on_row_remove_requested)
+            self._row_widgets.append(row_widget)
+            self.selection_rows_layout.addWidget(row_widget)
+
+        self._refresh_preview()
+        QTimer.singleShot(0, self._notify_expand_card)
+
+        if target_row_index is not None:
+            QTimer.singleShot(0, lambda index=target_row_index: self._scroll_to_row(index))
+
+        if emit:
+            self._emit_selected_rows()
+
+    def on_system_clicked(self, btn: SystemIconButton):
+        for system_button in self._system_buttons.values():
+            system_button.set_active(system_button is btn)
+
+        row_index = self._first_row_with_system(btn.system)
+        if row_index is not None:
+            self._scroll_to_row(row_index)
+            return
+
+        fillable_index = self._first_fillable_row()
+        if fillable_index is not None:
+            new_rows = [ObserveGiftSelection(row.system, row.level, row.row, row.col) for row in self._row_selections]
+            row = new_rows[fillable_index]
+            new_rows[fillable_index] = ObserveGiftSelection(btn.system, row.level, row.row, row.col)
+            self._row_selections = self._normalize_row_selections(new_rows)
+            self._rebuild_rows(target_row_index=fillable_index, emit=True)
+            return
+
+        if len(self._completed_rows()) < MAX_OBSERVE_GIFT_SELECTIONS:
+            new_rows = [ObserveGiftSelection(row.system, row.level, row.row, row.col) for row in self._row_selections]
+            new_rows.append(ObserveGiftSelection(system=btn.system))
+            self._row_selections = self._normalize_row_selections(new_rows)
+            self._rebuild_rows(target_row_index=len(self._row_selections) - 1, emit=True)
+
+    def _notify_expand_card(self):
+        from qfluentwidgets import ExpandSettingCard
+
+        w = self.parent()
+        while w:
+            if isinstance(w, ExpandSettingCard):
+                w._adjustViewSize()
+                return
+            w = w.parent()
+
+    def _on_row_selection_changed(self, row_index: int, selection: ObserveGiftSelection):
+        if not (0 <= row_index < len(self._row_selections)):
+            return
+
+        new_rows = [ObserveGiftSelection(row.system, row.level, row.row, row.col) for row in self._row_selections]
+        new_rows[row_index] = selection
+        self._row_selections = self._normalize_row_selections(new_rows)
+        self._rebuild_rows(target_row_index=row_index, emit=True)
+
+    def _on_row_remove_requested(self, row_index: int):
+        if not (0 <= row_index < len(self._row_selections)):
+            return
+
+        new_rows = [ObserveGiftSelection(row.system, row.level, row.row, row.col) for row in self._row_selections]
+        if new_rows[row_index].is_complete():
+            new_rows.pop(row_index)
+            target_row_index = min(row_index, len(new_rows) - 1) if new_rows else 0
+        else:
+            new_rows[row_index] = ObserveGiftSelection()
+            target_row_index = row_index
+
+        self._row_selections = self._normalize_row_selections(new_rows)
+        self._rebuild_rows(target_row_index=target_row_index, emit=True)
+
+    def on_preview_clicked(self, row_index: int):
+        self._scroll_to_row(row_index)
+
+    def _refresh_preview(self):
+        completed_rows = self._completed_rows()
+        for index, label in enumerate(self._preview_labels):
+            if index < len(completed_rows):
+                row_index, selection = completed_rows[index]
+                label.row_index = row_index
+                pixmap = QPixmap(f"./assets/app/status_effects/{selection.system}.png")
+                if not pixmap.isNull():
+                    label.setPixmap(pixmap.scaled(32, 32, Qt.KeepAspectRatio, Qt.SmoothTransformation))
+                    label.setStyleSheet(
+                        "border: 1px solid rgba(128,128,128,0.4); border-radius: 4px; background-color: rgba(0,0,0,0.1);"
+                    )
+                    continue
+
+            label.row_index = None
+            label.clear()
+            label.setStyleSheet(
+                "border: 1px solid rgba(128,128,128,0.4); border-radius: 4px; background-color: rgba(0,0,0,0.1);"
+            )
+
+    def load_selected(self, selected: list[str]):
+        self._row_selections = parse_observe_ego_gift_values(selected)
+        self._rebuild_rows()
+
+    def retranslateUi(self):
+        self.observe_ego_gift_checkbox.check_box.setText(self.tr("启用观测"))
+        self.preview_hint_button.setToolTip(self._preview_hint_tooltip())
+        self.observe_systems = [
+            ("burn", self.tr("烧伤")),
+            ("bleed", self.tr("流血")),
+            ("tremor", self.tr("震颤")),
+            ("rupture", self.tr("破裂")),
+            ("sinking", self.tr("沉沦")),
+            ("poise", self.tr("呼吸")),
+            ("charge", self.tr("充能")),
+            ("slash", self.tr("斩击")),
+            ("pierce", self.tr("突刺")),
+            ("blunt", self.tr("打击")),
+            ("general", self.tr("泛用")),
+        ]
+        for system, label in self.observe_systems:
+            if system in self._system_buttons:
+                if self._system_buttons[system]._force_text or self._system_buttons[system]._normal_pixmap.isNull():
+                    self._system_buttons[system].setText(label)
+        self._rebuild_rows()
 
 
 class CustomizeInfoModule(QFrame):
