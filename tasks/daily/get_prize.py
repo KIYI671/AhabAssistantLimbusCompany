@@ -1,3 +1,5 @@
+from time import sleep
+
 from module.automation import auto
 from module.decorator.decorator import begin_and_finish_time_log
 from module.logger import log
@@ -74,10 +76,15 @@ def get_mail_prize():
         # 自动截图
         if auto.take_screenshot() is None:
             continue
+        if retry() is False:
+            return False
         if auto.click_element("mail/get_mail_prize_confirm.png"):
             auto.click_element("mail/close_assets.png")
             break
         if auto.click_element("mail/claim_all_assets.png"):
+            sleep(3)
+            if retry():
+                continue
             auto.click_element("mail/close_assets.png")
             break
         if auto.click_element("home/mail_assets.png"):
