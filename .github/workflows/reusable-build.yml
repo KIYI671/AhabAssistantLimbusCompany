@@ -23,6 +23,10 @@ jobs:
           cache-dependency-glob: |
             **/uv.lock
 
+      - name: Ruff format (check)
+        run: |
+          uvx ruff==0.13.1 format --check .
+
       # 安装依赖
       - name: Install dependencies
         run: |
