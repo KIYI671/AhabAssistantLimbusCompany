@@ -350,22 +350,18 @@ def script_task() -> None | int:
     if auto.click_element("battle/turn_assets.png", take_screenshot=True):
         get_reward = battle.fight()
 
+    # 按配置的任务顺序构建执行列表
+    task_order = cfg.get_value("task_order", ["daily_task", "get_reward", "buy_enkephalin", "mirror"])
     task_list = []
-    # 执行日常刷本任务
-    if cfg.daily_task:
-        task_list.append(Daily_task_wrapper(get_reward=get_reward))
-
-    # 执行奖励领取任务
-    if cfg.get_reward:
-        task_list.append(to_get_reward)
-
-    # 执行狂气换饼任务
-    if cfg.buy_enkephalin:
-        task_list.append(Buy_enkephalin)
-
-    # 执行镜牢任务
-    if cfg.mirror:
-        task_list.append(Mirror_task)
+    for task_name in task_order:
+        if task_name == "daily_task" and cfg.daily_task:
+            task_list.append(Daily_task_wrapper(get_reward=get_reward))
+        elif task_name == "get_reward" and cfg.get_reward:
+            task_list.append(to_get_reward)
+        elif task_name == "buy_enkephalin" and cfg.buy_enkephalin:
+            task_list.append(Buy_enkephalin)
+        elif task_name == "mirror" and cfg.mirror:
+            task_list.append(Mirror_task)
 
     for task in task_list:
         task()
