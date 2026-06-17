@@ -254,11 +254,13 @@ class DraggableTaskList(QWidget):
         """在目标插入位置显示指示线"""
         n = len(self._order)
         if target_index <= 0:
+            # 指示线放在第一个项顶部边缘，避免 y 为负被裁剪
             first_item = self._item_map[self._order[0]]
-            y = first_item.geometry().top() - 6
+            y = first_item.geometry().top()
         elif target_index >= n:
+            # 指示线放在最后一个项底部边缘，避免 y 超出 widget 被裁剪
             last_item = self._item_map[self._order[-1]]
-            y = last_item.geometry().bottom() + 4
+            y = last_item.geometry().bottom() - 2
         else:
             above_item = self._item_map[self._order[target_index - 1]]
             below_item = self._item_map[self._order[target_index]]
