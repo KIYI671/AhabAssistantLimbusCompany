@@ -47,7 +47,8 @@ from module.automation import auto
 from module.config import TeamSetting, cfg
 from module.game_and_screen import screen
 from module.hotkey_listener import ExactGlobalHotKeys
-from module.logger import log, ui_log_dispatcher
+from module.logger import log
+from module.logger.my_log import ui_log_dispatcher
 from module.system_actions import (
     get_after_completion_config,
     set_after_completion_config,
