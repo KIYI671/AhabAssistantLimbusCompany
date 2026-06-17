@@ -211,7 +211,6 @@ all_checkbox_config_name = [
     "defense_first_round",
     "fixed_team_use",
     "reward_cards",
-    "choose_opening_bonus",
     "after_level_IV",
     "shopping_strategy",
     "opening_items",
@@ -220,6 +219,7 @@ all_checkbox_config_name = [
     "ignore_shop",
     "use_custom_theme_pack_weight",
     "use_team_code",
+    "observe_ego_gift",
 ]
 
 win_input_type_options = {

@@ -211,7 +211,17 @@ class Automation(metaclass=SingletonMeta):
         """
         if find_type == "image_with_multiple_targets" and len(coordinates) > 0:
             for c in coordinates:
-                self.mouse_action_with_pos(c, offset, action, times, dx, dy, find_type="image", interval=1)
+                self.mouse_action_with_pos(
+                    c,
+                    offset=offset,
+                    action=action,
+                    times=times,
+                    drag_time=drag_time,
+                    dx=dx,
+                    dy=dy,
+                    find_type="image",
+                    interval=1,
+                )
             return True
 
         if cfg.mouse_action_interval and interval == 0.5:

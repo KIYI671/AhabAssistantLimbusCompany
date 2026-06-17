@@ -108,20 +108,8 @@ class TeamSetting(BaseModel):
     reward_cards_select: int = 0
     """自定义奖励卡优先度"""
 
-    choose_opening_bonus: bool = False
-    """自选开局加成"""
-
-    opening_bonus_select: int = 0
-    """开局加成已选数量"""
-
-    opening_bonus: List[int] = [0] * 10
-    """启用的开局加成"""
-
-    opening_bonus_order: List[int] = [0] * 10
-    """启用的开局加成顺序"""
-
-    opening_bonus_level: List[int] = [0] * 10
-    """启用的开局加成等级"""
+    opening_bonus: List[int] = [1, 1, 1, 1, 0, 0, 0, 0, 0, 0]
+    """开局星光加成：0 未选中，1 基础，2 +，3 ++"""
 
     after_level_IV: bool = False
     """自定义合成四级后的操作"""
@@ -155,6 +143,12 @@ class TeamSetting(BaseModel):
 
     second_system_action: List[int] = [0] * 4
     """第二体系行动模式"""
+
+    observe_ego_gift: bool = False
+    """是否启用观测EGO饰品"""
+
+    observe_ego_gift_selected: List[str] = []
+    """用户选择的观测EGO饰品列表"""
 
     skill_replacement: bool = False
     """自定义技能替换"""
@@ -202,7 +196,7 @@ class TeamSetting(BaseModel):
 class ConfigModel(BaseModel):
     """配置模型"""
 
-    config_version: int = 1779444115
+    config_version: int = 1781049600
     """配置文件版本号（时间戳）"""
 
     game_title_name: str = "LimbusCompany"
@@ -337,6 +331,9 @@ class ConfigModel(BaseModel):
     resonate_with_Ahab: bool = False
     """是否播放亚哈语录"""
 
+    experimental_keep_screen_awake: bool = False
+    """运行期间阻止系统与显示器休眠，任务结束自动恢复"""
+
     simulator: bool = False
     """是否使用模拟器"""
 
@@ -351,6 +348,9 @@ class ConfigModel(BaseModel):
 
     start_emulator_timeout: int = 120
     """启动模拟器超时时间"""
+
+    adb_reconnect_on_error: bool = True
+    """ADB或minitouch连接失效时自动重连"""
 
     check_update: bool = True
     """检查更新"""

@@ -29,6 +29,7 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 from qfluentwidgets import (
+    ComboBox,
     FlyoutViewBase,
     IndicatorPosition,
     InfoBarPosition,
@@ -37,15 +38,14 @@ from qfluentwidgets import (
     PopupTeachingTip,
     PrimaryPushButton,
     PrimaryPushSettingCard,
-    PrimaryToolButton,
     ProgressBar,
+    PushButton,
     PushSettingCard,
     SettingCard,
     SettingCardGroup,
     SwitchButton,
     TeachingTipTailPosition,
     TimePicker,
-    ToolButton,
     setCustomStyleSheet,
 )
 
@@ -57,45 +57,18 @@ from app.card.messagebox_custom import (
     MessageBoxEdit,
     MessageBoxSpinbox,
 )
-from app.common.icons import OverflowIcons
 from app.language_manager import LanguageManager
 from module.font_manager import font_manager
 from module.logger import log
 from module.my_error.my_error import settingsTypeError
 from module.update.check_update import check_update
+from app.observe_ego_gift_selection import (
+    OBSERVE_COL_VALUES,
+    OBSERVE_LEVEL_VALUES,
+    OBSERVE_ROW_VALUES,
+    ObserveGiftSelection,
+)
 from utils.utils import decrypt_string, encrypt_string
-
-
-class ToolCheckButton(ToolButton):
-    checked = Signal(bool)
-
-    def _postInit(self):
-        self.setCheckable(True)
-        self.toggled.connect(self.checked)
-        self.setChecked(False)
-        self._apply_style()
-
-    def _apply_style(self):
-        qss = """
-ToolCheckButton:checked {
-background-color: --ThemeColorPrimary;
-}
-ToolCheckButton:checked:hover {
-    background-color: --ThemeColorPrimary;
-}
-"""
-        setCustomStyleSheet(self, qss, qss)
-
-    def _drawIcon(self, icon, painter, rect, state=QIcon.Off):
-        if not self.isChecked():
-            if isinstance(icon, OverflowIcons):
-                icon.set_reverse(False)
-            return super()._drawIcon(icon, painter, rect)
-        if isinstance(icon, OverflowIcons):
-            icon.set_reverse(True)
-            super()._drawIcon(icon, painter, rect, QIcon.On)
-        else:
-            PrimaryToolButton._drawIcon(self, icon, painter, rect, QIcon.On)
 
 
 class CheckBoxWithButton(QFrame):
@@ -124,41 +97,6 @@ class CheckBoxWithButton(QFrame):
 
     def retranslateUi(self):
         self.box.check_box.setText(self.tr(self.box_text))
-
-
-class CheckBoxWithLineEdit(QFrame):
-    def __init__(self, config_name, check_box_title, parent=None):
-        super().__init__(parent)
-        self.setObjectName(config_name)
-        self.config_name = config_name
-        self.hBoxLayout = QHBoxLayout(self)
-        self.hBoxLayout.setContentsMargins(0, 0, 0, 0)
-        self.box = CheckBox(check_box_title, parent=self)
-        self.line_edit = LineEdit(self)
-        self.line_edit.setMaximumWidth(70)
-        self.line_edit.setAlignment(Qt.AlignCenter)
-        self.line_edit.setReadOnly(True)
-        self.hBoxLayout.addWidget(self.box)
-        self.hBoxLayout.addWidget(self.line_edit)
-        self.hBoxLayout.setAlignment(Qt.AlignCenter)
-
-        self.box.toggled.connect(self.on_toggle)
-
-    def on_toggle(self, checked):
-        data_dict = {self.config_name: checked}
-        self.send_switch_signal(data_dict)
-
-    def send_switch_signal(self, target: dict):
-        mediator.team_setting.emit(target)
-
-    def set_checked(self, checked):
-        self.box.toggled.disconnect(self.on_toggle)
-        self.box.setChecked(checked)
-        self.box.toggled.connect(self.on_toggle)
-
-    def set_text(self, text):
-        self.line_edit.setText(text)
-
 
 class CheckBoxWithComboBox(QFrame):
     def __init__(
@@ -1610,3 +1548,148 @@ class TextProgressBar(ProgressBar):
         if self.maximum() <= self.minimum():
             return 100
         return int((self.value() - self.minimum()) * 100 / (self.maximum() - self.minimum()))
+
+
+
+
+class ObserveGiftSelectionRow(QFrame):
+    selectionChanged = Signal(int, object)
+    removeRequested = Signal(int)
+
+    def __init__(self, row_index: int, system_options: list[tuple[str, str]], labels: dict[str, str], parent=None):
+        super().__init__(parent)
+        self.row_index = row_index
+        self._system_options = system_options
+        self._labels = labels
+        self.setObjectName("ObserveGiftSelectionRow")
+
+        self.layout_ = QHBoxLayout(self)
+        self.layout_.setContentsMargins(16, 6, 12, 6)
+        self.layout_.setSpacing(18)
+        self.layout_.setAlignment(Qt.AlignLeft)
+
+        self.system_label = QLabel()
+        self.level_label = QLabel()
+        self.row_label = QLabel()
+        self.col_label = QLabel()
+
+        self.system_combo = ComboBox(self)
+        self.level_combo = ComboBox(self)
+        self.row_combo = ComboBox(self)
+        self.col_combo = ComboBox(self)
+        self.remove_button = PushButton("-", self)
+        self.system_group = QWidget(self)
+        self.level_group = QWidget(self)
+        self.row_group = QWidget(self)
+        self.col_group = QWidget(self)
+
+        self.system_label.setFixedWidth(34)
+        self.level_label.setFixedWidth(34)
+        self.row_label.setFixedWidth(54)
+        self.col_label.setFixedWidth(54)
+
+        self.system_combo.setMinimumWidth(120)
+        self.level_combo.setFixedWidth(80)
+        self.row_combo.setFixedWidth(90)
+        self.col_combo.setFixedWidth(90)
+        self.remove_button.setFixedWidth(34)
+        self.remove_button.setToolTip(self.tr("移除或清空当前控件组"))
+
+        self._init_group_layout(self.system_group, self.system_label, self.system_combo)
+        self._init_group_layout(self.level_group, self.level_label, self.level_combo)
+        self._init_group_layout(self.row_group, self.row_label, self.row_combo)
+        self._init_group_layout(self.col_group, self.col_label, self.col_combo)
+
+        for widget in (
+            self.system_group,
+            self.level_group,
+            self.row_group,
+            self.col_group,
+            self.remove_button,
+        ):
+            self.layout_.addWidget(widget)
+
+        self._populate_system_combo()
+        self._populate_simple_combo(self.level_combo, OBSERVE_LEVEL_VALUES)
+        self._populate_simple_combo(self.row_combo, OBSERVE_ROW_VALUES)
+        self._populate_simple_combo(self.col_combo, OBSERVE_COL_VALUES)
+        self.retranslate_row(labels, system_options)
+
+        self.system_combo.currentIndexChanged.connect(self._emit_selection_changed)
+        self.level_combo.currentIndexChanged.connect(self._emit_selection_changed)
+        self.row_combo.currentIndexChanged.connect(self._emit_selection_changed)
+        self.col_combo.currentIndexChanged.connect(self._emit_selection_changed)
+        self.remove_button.clicked.connect(lambda: self.removeRequested.emit(self.row_index))
+
+        self.set_selection(ObserveGiftSelection())
+
+    def _populate_system_combo(self):
+        self.system_combo.clear()
+        self.system_combo.addItem("-", userData=None)
+        for system, label in self._system_options:
+            self.system_combo.addItem(label, userData=system)
+
+    def _populate_simple_combo(self, combo: ComboBox, values: tuple[int, ...]):
+        combo.clear()
+        combo.addItem("-", userData=None)
+        for value in values:
+            combo.addItem(str(value), userData=value)
+
+    def _init_group_layout(self, group_widget: QWidget, label: QLabel, combo: ComboBox):
+        group_layout = QHBoxLayout(group_widget)
+        group_layout.setContentsMargins(0, 0, 0, 0)
+        group_layout.setSpacing(6)
+        group_layout.addWidget(label)
+        group_layout.addWidget(combo)
+        group_layout.setAlignment(Qt.AlignLeft)
+
+    def _set_combo_value(self, combo: ComboBox, value):
+        for index in range(combo.count()):
+            if combo.itemData(index) == value:
+                combo.setCurrentIndex(index)
+                return
+        combo.setCurrentIndex(0)
+
+    def _emit_selection_changed(self):
+        self.selectionChanged.emit(self.row_index, self.get_selection())
+
+    def get_selection(self) -> ObserveGiftSelection:
+        return ObserveGiftSelection(
+            system=self.system_combo.currentData(),
+            level=self.level_combo.currentData(),
+            row=self.row_combo.currentData(),
+            col=self.col_combo.currentData(),
+        )
+
+    def set_selection(self, selection: ObserveGiftSelection):
+        for combo in (self.system_combo, self.level_combo, self.row_combo, self.col_combo):
+            combo.blockSignals(True)
+
+        self._set_combo_value(self.system_combo, selection.system)
+        self._set_combo_value(self.level_combo, selection.level)
+        self._set_combo_value(self.row_combo, selection.row)
+        self._set_combo_value(self.col_combo, selection.col)
+
+        for combo in (self.system_combo, self.level_combo, self.row_combo, self.col_combo):
+            combo.blockSignals(False)
+
+        self._refresh_style()
+
+    def retranslate_row(self, labels: dict[str, str], system_options: list[tuple[str, str]]):
+        self._labels = labels
+        self._system_options = system_options
+        self.system_label.setText(labels["system"])
+        self.level_label.setText(labels["level"])
+        self.row_label.setText(labels["row"])
+        self.col_label.setText(labels["col"])
+        self.remove_button.setToolTip(self.tr("移除或清空当前控件组"))
+
+        current_selection = self.get_selection()
+        self.system_combo.blockSignals(True)
+        self._populate_system_combo()
+        self.system_combo.blockSignals(False)
+        self.set_selection(current_selection)
+
+    def _refresh_style(self):
+        style = "border: 1px solid rgba(128,128,128,0.18); border-radius: 6px; background-color: transparent;"
+        self.setStyleSheet(f"QFrame#ObserveGiftSelectionRow {{{style}}}")

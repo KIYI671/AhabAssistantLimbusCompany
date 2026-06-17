@@ -6,8 +6,7 @@ from typing import Optional
 from pydantic import ValidationError
 from ruamel.yaml import YAML
 
-from module.config import cfg, theme_list
-from module.config.config_typing import TeamSetting
+from module.config import TeamSetting, cfg, theme_list
 from module.logger import log
 
 

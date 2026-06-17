@@ -1,10 +1,13 @@
-from PySide6.QtCore import Qt
-from PySide6.QtGui import QResizeEvent
+import os
+from PySide6.QtCore import QTimer, Qt
+from PySide6.QtGui import QPixmap
 from PySide6.QtWidgets import (
+    QApplication,
     QFileDialog,
     QFrame,
     QGridLayout,
     QHBoxLayout,
+    QLabel,
     QSizePolicy,
     QVBoxLayout,
     QWidget,
@@ -16,21 +19,29 @@ from qfluentwidgets import (
     PushButton,
     ScrollArea,
     SmoothMode,
+    ToolButton,
+    ToolTipFilter,
+    ToolTipPosition,
 )
 from qfluentwidgets import FluentIcon as FIF
 
 from app import *
 from app.base_combination import (
     CheckBoxWithComboBox,
-    CheckBoxWithLineEdit,
     LabelWithComboBox,
+    ObserveGiftSelectionRow,
     SinnerSelect,
-    ToolCheckButton,
 )
 from app.base_tools import BaseCheckBox, BaseComboBox, BaseLabel, BaseLineEdit, BaseSettingLayout
 from app.card.messagebox_custom import BaseInfoBar, MessageBoxConfirm
-from app.common.icons import OverflowIcons
+from app.common.ui_config import (
+    STARLIGHT_BONUS_COSTS,
+    get_starlight_action_label,
+    get_starlight_bonus_name,
+    get_starlight_total_cost_qss,
+)
 from app.language_manager import LanguageManager
+from app.starlight_bonus import StarlightCard, StarlightLevelSelector
 from app.theme_pack_setting_interface import ThemePackSettingDialog
 from module.config import TeamSetting, cfg, theme_list
 from module.config.team_import_export import (
@@ -38,6 +49,13 @@ from module.config.team_import_export import (
     export_team_settings,
     generate_team_export_filename,
     import_team_settings,
+)
+from app.observe_ego_gift_selection import (
+    MAX_OBSERVE_GIFT_SELECTIONS,
+    ObserveGiftSelection,
+    ensure_placeholder_row,
+    parse_observe_ego_gift_values,
+    serialize_observe_ego_gift_values,
 )
 
 
@@ -89,6 +107,11 @@ class TeamSettingCard(QFrame):
         self.custom_layout = ExpandSettingCard(
             icon=FIF.EDIT,
             title=self.tr("自定义设置（设置存在冲突时，将根据优先级覆盖生效）"),
+        )
+
+        self.observe_ego_gift_layout = ExpandSettingCard(
+            icon=FIF.SEARCH,
+            title=self.tr("观测EGO饰品"),
         )
 
         self.custom_layout2 = ExpandSettingCard(icon=FIF.INFO, title=self.tr("编队统计数据"))
@@ -232,6 +255,7 @@ class TeamSettingCard(QFrame):
         )
 
         self.customize_settings_module = CustomizeSettingsModule(self.team_num)
+        self.observe_ego_gift_module = ObserveEgoGiftModule(self.team_num)
         self.customize_info_module = CustomizeInfoModule(self.team_num)
         self.customize_settings_module.select_theme_pack_weight_button.clicked.connect(
             self.open_theme_pack_weight_dialog
@@ -291,6 +315,7 @@ class TeamSettingCard(QFrame):
         self.layout_.addLayout(self.sinner_layout)
         self.layout_.addWidget(self.gift_system_layout)
         self.layout_.addWidget(self.custom_layout)
+        self.layout_.addWidget(self.observe_ego_gift_layout)
         self.layout_.addWidget(self.custom_layout2)
 
         self.main_layout.addLayout(self.setting_layout)
@@ -298,6 +323,7 @@ class TeamSettingCard(QFrame):
         self.setting_layout.setContentsMargins(10, 0, 10, 0)  # 手动对齐其他组件
 
         self.custom_layout.viewLayout.addWidget(self.customize_settings_module)
+        self.observe_ego_gift_layout.viewLayout.addWidget(self.observe_ego_gift_module)
         self.custom_layout2.viewLayout.addWidget(self.customize_info_module)
 
     def connect_mediator(self):
@@ -317,6 +343,8 @@ class TeamSettingCard(QFrame):
             setattr(self.team_setting, keys, values)
             if keys == "team_system":
                 self.foolproof(values)
+        elif keys == "observe_ego_gift_selected":
+            self.team_setting.observe_ego_gift_selected = values
         elif keys in all_sinners_name:
             sinner_index = all_sinners_name.index(keys)
             if values:
@@ -332,24 +360,14 @@ class TeamSettingCard(QFrame):
                         self.team_setting.sinner_order[i] -= 1
                 self.team_setting.sinner_order[sinner_index] = 0
             self.refresh_sinner_order()
-        elif "starlight_level_" in keys:
-            level_index = int(keys.split("_")[-1]) - 1
-            self.team_setting.opening_bonus_level[level_index] = values
-        elif "starlight_" in keys:
+        elif keys == "starlight_all_state":
+            bonus_value = max(0, min(int(values), 3))
+            self.team_setting.opening_bonus = [bonus_value] * 10
+            self.refresh_starlight_select()
+        elif "starlight_state_" in keys:
             starlight_index = int(keys.split("_")[-1]) - 1
-            if values:
-                self.team_setting.opening_bonus_select += 1
-                self.team_setting.opening_bonus[starlight_index] = 1
-                self.team_setting.opening_bonus_order[starlight_index] = self.team_setting.opening_bonus_select
-            else:
-                order = self.team_setting.opening_bonus_order[starlight_index]
-                self.team_setting.opening_bonus_select -= 1
-                self.team_setting.opening_bonus[starlight_index] = 0
-                for i in range(10):
-                    if self.team_setting.opening_bonus_order[i] > order:
-                        self.team_setting.opening_bonus_order[i] -= 1
-                self.team_setting.opening_bonus_order[starlight_index] = 0
-            self.refresh_starlight_order()
+            self.team_setting.opening_bonus[starlight_index] = max(0, min(int(values), 3))
+            self.refresh_starlight_select()
         elif keys in second_system_mode:
             mode_index = second_system_mode.index(keys)
             self.team_setting.second_system_action[mode_index] = values
@@ -377,27 +395,36 @@ class TeamSettingCard(QFrame):
         )
         dialog.exec()
 
-    def refresh_starlight_order(self):
-        opening_bonus_order = self.team_setting.opening_bonus_order
-        for index, order in enumerate(opening_bonus_order):
-            starlight = self.findChild(CheckBoxWithLineEdit, f"starlight_{index + 1}")
-            if starlight is not None:
-                if order != 0:
-                    starlight.set_text(str(order))
-                else:
-                    starlight.set_text("")
-
     def refresh_starlight_select(self):
         opening_bonus = self.team_setting.opening_bonus
         for i in range(1, 11):
-            starlight = self.findChild(CheckBoxWithLineEdit, f"starlight_{i}")
+            starlight = self.findChild(StarlightLevelSelector, f"starlight_{i}")
             if starlight is not None:
-                if opening_bonus[i - 1]:
-                    starlight.set_checked(True)
-                else:
-                    starlight.set_checked(False)
+                bonus_value = opening_bonus[i - 1] if i <= len(opening_bonus) else 0
+                starlight.set_state(bonus_value)
+        # 单个星光按钮刷新完成后，同步“全选”按钮状态。
+        self.refresh_starlight_select_all()
+        # 更新总星光消耗
+        self.customize_settings_module.update_total_starlight_cost(opening_bonus)
 
-        self.refresh_starlight_order()
+    def refresh_starlight_select_all(self):
+        select_all = self.findChild(StarlightLevelSelector, "starlight_all")
+        if select_all is None:
+            return
+
+        opening_bonus = self.team_setting.opening_bonus
+        if len(opening_bonus) < 10:
+            select_all.set_state(0)
+            return
+
+        if all(opening_bonus[index] >= 3 for index in range(10)):
+            select_all.set_state(3)
+        elif all(opening_bonus[index] >= 2 for index in range(10)):
+            select_all.set_state(2)
+        elif all(opening_bonus[index] >= 1 for index in range(10)):
+            select_all.set_state(1)
+        else:
+            select_all.set_state(0)
 
     def refresh_sinner_order(self):
         sinner_order = self.team_setting.sinner_order
@@ -447,6 +474,11 @@ class TeamSettingCard(QFrame):
         # 读取编队码设置
         if team_code_input := self.findChild(BaseLineEdit, "team_code"):
             team_code_input.setText(self.team_setting.team_code)
+
+        # 回显观测EGO饰品选中状态
+        observe_module = self.findChild(ObserveEgoGiftModule, "ObserveEgoGiftModule")
+        if observe_module:
+            observe_module.load_selected(self.team_setting.observe_ego_gift_selected)
 
     def foolproof(self, team_system):
         for checkbox in all_checkbox_config_name:
@@ -581,66 +613,6 @@ class TeamSettingCard(QFrame):
         self.confirm_button.setText(self.tr("保存"))
 
 
-class StarlightCard(QFrame):
-    def __init__(self, class_name: str, label_text: str, team_num: int, parent=None):
-        super().__init__(parent)
-        self.team_num: int = int(class_name.split("_")[-1])
-        self.level = 0
-        if team_config := cfg.config.teams.get(str(team_num)):
-            self.level = team_config.opening_bonus_level[self.team_num - 1]
-
-        self.label_text = label_text
-        self.main_layout = QVBoxLayout(self)
-        self.main_layout.setContentsMargins(10, 0, 0, 10)
-        self.main_layout.setAlignment(Qt.AlignmentFlag.AlignVCenter)
-        self.main_layout.setSpacing(10)
-        self.buttons_frame = QWidget()
-        self.button_layout = QHBoxLayout(self.buttons_frame)
-        self.button_layout.setContentsMargins(0, 0, 0, 0)
-        self.button_layout.setAlignment(Qt.AlignmentFlag.AlignVCenter)
-        self.starlight_checkbox = CheckBoxWithLineEdit(class_name, label_text, None)
-        self.level_one_button = ToolCheckButton(FIF.ADD)
-        self.level_one_button.setChecked(self.level == 1)
-        self.level_one_button.checked.connect(self.__on_level_one_clicked)
-        self.level_one_button.setFixedHeight(25)
-        self.level_two_button = ToolCheckButton(OverflowIcons.DOUBLE_ADD)
-        self.level_two_button.setChecked(self.level == 2)
-        self.level_two_button.checked.connect(self.__on_level_two_clicked)
-        self.level_two_button.setFixedHeight(25)
-        self.button_layout.addWidget(self.level_one_button)
-        self.button_layout.addWidget(self.level_two_button)
-        self.main_layout.addWidget(self.starlight_checkbox)
-        self.main_layout.addStretch()
-        self.main_layout.addWidget(self.buttons_frame)
-        self.main_layout.addStretch()
-
-    def resizeEvent(self, event: QResizeEvent) -> None:
-        super().resizeEvent(event)
-        width = int(self.width() * 0.9 // 2)
-        self.level_one_button.setFixedWidth(width)
-        self.level_two_button.setFixedWidth(width)
-
-    def __on_level_one_clicked(self, checked: bool):
-        if checked:
-            data = {f"starlight_level_{self.team_num}": 1}
-            self.level_two_button.blockSignals(True)
-            self.level_two_button.setChecked(False)
-            self.level_two_button.blockSignals(False)
-        else:
-            data = {f"starlight_level_{self.team_num}": 0}
-        mediator.team_setting.emit(data)
-
-    def __on_level_two_clicked(self, checked: bool):
-        if checked:
-            data = {f"starlight_level_{self.team_num}": 2}
-            self.level_one_button.blockSignals(True)
-            self.level_one_button.setChecked(False)
-            self.level_one_button.blockSignals(False)
-        else:
-            data = {f"starlight_level_{self.team_num}": 0}
-        mediator.team_setting.emit(data)
-
-
 class CustomizeSettingsModule(QFrame):
     def __init__(self, team_num: int, parent=None):
         super().__init__(parent)
@@ -760,25 +732,68 @@ class CustomizeSettingsModule(QFrame):
         )
         self.reward_cards.add_items(reward_cards)
 
-        self.choose_opening_bonus = BaseCheckBox(
-            "choose_opening_bonus",
-            FIF.BUS,
-            QT_TRANSLATE_NOOP("BaseCheckBox", "自选开局加成"),
-            center=False,
+        QT_TRANSLATE_NOOP("CustomizeSettingsModule", "星光")
+        self.starlight_1 = StarlightCard(
+            "starlight_1", get_starlight_bonus_name(0, cfg.language_in_program), self.team_num
+        )
+        self.starlight_2 = StarlightCard(
+            "starlight_2", get_starlight_bonus_name(1, cfg.language_in_program), self.team_num
+        )
+        self.starlight_3 = StarlightCard(
+            "starlight_3", get_starlight_bonus_name(2, cfg.language_in_program), self.team_num
+        )
+        self.starlight_4 = StarlightCard(
+            "starlight_4", get_starlight_bonus_name(3, cfg.language_in_program), self.team_num
+        )
+        self.starlight_5 = StarlightCard(
+            "starlight_5", get_starlight_bonus_name(4, cfg.language_in_program), self.team_num
         )
 
-        QT_TRANSLATE_NOOP("CustomizeSettingsModule", "星光")
-        self.starlight_1 = StarlightCard("starlight_1", "星光1", self.team_num)
-        self.starlight_2 = StarlightCard("starlight_2", "星光2", self.team_num)
-        self.starlight_3 = StarlightCard("starlight_3", "星光3", self.team_num)
-        self.starlight_4 = StarlightCard("starlight_4", "星光4", self.team_num)
-        self.starlight_5 = StarlightCard("starlight_5", "星光5", self.team_num)
+        self.starlight_6 = StarlightCard(
+            "starlight_6", get_starlight_bonus_name(5, cfg.language_in_program), self.team_num
+        )
+        self.starlight_7 = StarlightCard(
+            "starlight_7", get_starlight_bonus_name(6, cfg.language_in_program), self.team_num
+        )
+        self.starlight_8 = StarlightCard(
+            "starlight_8", get_starlight_bonus_name(7, cfg.language_in_program), self.team_num
+        )
+        self.starlight_9 = StarlightCard(
+            "starlight_9", get_starlight_bonus_name(8, cfg.language_in_program), self.team_num
+        )
+        self.starlight_10 = StarlightCard(
+            "starlight_10", get_starlight_bonus_name(9, cfg.language_in_program), self.team_num
+        )
+        self.starlight_select_all = StarlightLevelSelector(
+            "starlight_all",
+            QT_TRANSLATE_NOOP("CustomizeSettingsModule", "全选"),
+            self,
+            starlight_index=0,
+            base_cost=sum(STARLIGHT_BONUS_COSTS),
+            emit_team_setting=False,
+        )
 
-        self.starlight_6 = StarlightCard("starlight_6", "星光6", self.team_num)
-        self.starlight_7 = StarlightCard("starlight_7", "星光7", self.team_num)
-        self.starlight_8 = StarlightCard("starlight_8", "星光8", self.team_num)
-        self.starlight_9 = StarlightCard("starlight_9", "星光9", self.team_num)
-        self.starlight_10 = StarlightCard("starlight_10", "星光10", self.team_num)
+        self.starlight_select_all_wrapper = QWidget(self)
+        select_all_layout = QVBoxLayout(self.starlight_select_all_wrapper)
+        select_all_layout.setContentsMargins(10, 0, 0, 0)
+        select_all_layout.setAlignment(Qt.AlignmentFlag.AlignVCenter)
+        select_all_layout.addWidget(self.starlight_select_all)
+
+        self.starlight_clear_button = PushButton(QT_TRANSLATE_NOOP("CustomizeSettingsModule", "清空"))
+
+        self.starlight_clear_button_wrapper = QWidget(self)
+        clear_btn_layout = QVBoxLayout(self.starlight_clear_button_wrapper)
+        clear_btn_layout.setContentsMargins(10, 0, 0, 0)
+        clear_btn_layout.setAlignment(Qt.AlignmentFlag.AlignVCenter)
+        clear_btn_layout.addWidget(self.starlight_clear_button, 0, Qt.AlignmentFlag.AlignLeft)
+
+        self.starlight_total_cost_label = QLabel(self)
+        self.starlight_total_cost_label.setObjectName("starlightTotalCostLabel")
+        self.starlight_total_cost_label.setAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
+        self._apply_total_cost_style()
+
+        self.starlight_clear_button.clicked.connect(lambda: self.__set_all_starlight(0))
+        self.starlight_select_all.stateChangedByClick.connect(self.__set_all_starlight)
 
         self.after_level_IV = CheckBoxWithComboBox(
             "after_level_IV",
@@ -902,17 +917,20 @@ class CustomizeSettingsModule(QFrame):
         self.features_patch_line_1.addWidget(self.aggressive_save_systems)
         self.features_patch_line_1.addWidget(self.defense_first_round)
 
-        self.star_list.addWidget(self.starlight_1, 0, 0)
-        self.star_list.addWidget(self.starlight_2, 0, 1)
-        self.star_list.addWidget(self.starlight_3, 0, 2)
-        self.star_list.addWidget(self.starlight_4, 0, 3)
-        self.star_list.addWidget(self.starlight_5, 0, 4)
-        self.star_list.addWidget(self.starlight_6, 1, 0)
-        self.star_list.addWidget(self.starlight_7, 1, 1)
-        self.star_list.addWidget(self.starlight_8, 1, 2)
-        self.star_list.addWidget(self.starlight_9, 1, 3)
-        self.star_list.addWidget(self.starlight_10, 1, 4)
-        self.star_layout.add(self.choose_opening_bonus)
+        self.star_list.addWidget(self.starlight_select_all_wrapper, 0, 0)
+        self.star_list.addWidget(self.starlight_clear_button_wrapper, 0, 1)
+        self.star_list.addWidget(self.starlight_total_cost_label, 0, 4, Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
+
+        self.star_list.addWidget(self.starlight_1, 1, 0)
+        self.star_list.addWidget(self.starlight_2, 1, 1)
+        self.star_list.addWidget(self.starlight_3, 1, 2)
+        self.star_list.addWidget(self.starlight_4, 1, 3)
+        self.star_list.addWidget(self.starlight_5, 1, 4)
+        self.star_list.addWidget(self.starlight_6, 2, 0)
+        self.star_list.addWidget(self.starlight_7, 2, 1)
+        self.star_list.addWidget(self.starlight_8, 2, 2)
+        self.star_list.addWidget(self.starlight_9, 2, 3)
+        self.star_list.addWidget(self.starlight_10, 2, 4)
         self.star_layout.add(self.star_list)
 
         self.fourth_line.addWidget(self.after_level_IV)
@@ -971,6 +989,23 @@ class CustomizeSettingsModule(QFrame):
         self.main_layout.addWidget(self.tenth_line_widget)
         self.main_layout.addWidget(self.eleventh_line_widget)
 
+    def __set_all_starlight(self, bonus_value: int):
+        mediator.team_setting.emit({"starlight_all_state": max(0, min(int(bonus_value), 3))})
+
+    def _apply_total_cost_style(self):
+        from qfluentwidgets import setCustomStyleSheet
+        from app.starlight_bonus import _register_custom_style_widget
+        _register_custom_style_widget(self.starlight_total_cost_label)
+        light_qss, dark_qss = get_starlight_total_cost_qss()
+        setCustomStyleSheet(self.starlight_total_cost_label, light_qss, dark_qss)
+
+    def update_total_starlight_cost(self, opening_bonus: list[int]):
+        total = sum(
+            STARLIGHT_BONUS_COSTS[i] * opening_bonus[i]
+            for i in range(min(len(opening_bonus), len(STARLIGHT_BONUS_COSTS)))
+        )
+        self.starlight_total_cost_label.setText(str(total))
+
     def retranslateUi(self):
         self.do_not_heal.retranslateUi()
         self.do_not_buy.retranslateUi()
@@ -987,13 +1022,13 @@ class CustomizeSettingsModule(QFrame):
         self.defense_first_round.retranslateUi()
         self.fixed_team_use.retranslateUi()
         self.reward_cards.retranslateUi()
-        self.choose_opening_bonus.retranslateUi()
         self.re_formation_each_floor.retranslateUi()
+        self.starlight_select_all.set_label_text(get_starlight_action_label(self.tr("全选"), cfg.language_in_program))
+        self.starlight_clear_button.setText(get_starlight_action_label(self.tr("清空"), cfg.language_in_program))
 
-        starlight_text = self.tr("星光")
         for index in range(1, 11):
-            starlight = self.findChild(CheckBoxWithLineEdit, f"starlight_{index}")
-            starlight.box.setText(f"{starlight_text}{index}")
+            starlight = self.findChild(StarlightLevelSelector, f"starlight_{index}")
+            starlight.set_label_text(get_starlight_bonus_name(index - 1, cfg.language_in_program))
             if index <= 5:
                 floor_shop = self.findChild(BaseCheckBox, f"ignore_shop_{index}")
                 floor_shop.retranslateUi()
@@ -1016,6 +1051,372 @@ class CustomizeSettingsModule(QFrame):
 
         self.max_keyword_refresh.setToolTip(self.tr("每次商店访问时定向刷新商品的次数上限"))
         self.max_normal_refresh.setToolTip(self.tr("每次商店访问时普通刷新商品的次数上限"))
+
+
+class SystemIconButton(QLabel):
+    """体系图标按钮"""
+
+    def __init__(self, system: str, icon_path: str, tooltip: str, parent=None, force_text: bool = False):
+        super().__init__(parent)
+        self.system = system
+        self._active = False
+        self._force_text = force_text
+        self._normal_pixmap = QPixmap(icon_path)
+        if not self._force_text and not self._normal_pixmap.isNull():
+            self.setPixmap(self._normal_pixmap.scaled(48, 48, Qt.KeepAspectRatio, Qt.SmoothTransformation))
+        else:
+            self.setText(tooltip)
+        self.setFixedSize(54, 54)
+        self.setAlignment(Qt.AlignCenter)
+        self.setCursor(Qt.PointingHandCursor)
+        self._refresh_style()
+
+    def _refresh_style(self):
+        is_text_mode = self._force_text or self._normal_pixmap.isNull()
+        text_style = "font-size: 12px; color: palette(text);" if is_text_mode else ""
+        if self._active:
+            self.setStyleSheet(
+                f"border: 2px solid rgba(128,128,128,0.45); border-radius: 6px; background-color: transparent;{text_style}"
+            )
+        else:
+            self.setStyleSheet(
+                f"border: 1px solid rgba(128,128,128,0.25); border-radius: 6px; background-color: transparent;{text_style}"
+            )
+
+    def set_active(self, active: bool):
+        self._active = active
+        self._refresh_style()
+
+    def mousePressEvent(self, event):
+        if event.button() == Qt.LeftButton:
+            module = self._find_module()
+            if module:
+                module.on_system_clicked(self)
+        super().mousePressEvent(event)
+
+    def _find_module(self):
+        w = self.parent()
+        while w:
+            if isinstance(w, ObserveEgoGiftModule):
+                return w
+            w = w.parent()
+        return None
+
+
+class PreviewGiftLabel(QLabel):
+    """预览区体系图标，点击后定位到对应控件组"""
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.row_index: int | None = None
+        self.setFixedSize(36, 36)
+        self.setAlignment(Qt.AlignCenter)
+        self.setCursor(Qt.PointingHandCursor)
+
+    def mousePressEvent(self, event):
+        if event.button() == Qt.LeftButton and self.row_index is not None:
+            module = self._find_module()
+            if module:
+                module.on_preview_clicked(self.row_index)
+        super().mousePressEvent(event)
+
+    def _find_module(self):
+        w = self.parent()
+        while w:
+            if isinstance(w, ObserveEgoGiftModule):
+                return w
+            w = w.parent()
+        return None
+
+
+class ObserveEgoGiftModule(QFrame):
+    """观测饰品"""
+
+    def __init__(self, team_num: int, parent=None):
+        super().__init__(parent)
+        self.team_num = team_num
+        self.setObjectName("ObserveEgoGiftModule")
+        self.main_layout = QVBoxLayout(self)
+        self.main_layout.setContentsMargins(0, 0, 0, 0)
+        self.main_layout.setSpacing(6)
+
+        self._row_selections = ensure_placeholder_row([])
+        self._row_widgets: list[ObserveGiftSelectionRow] = []
+
+        self.__init_widget()
+        self.__init_card()
+        self.__init_layout()
+        self._rebuild_rows()
+        self._refresh_preview()
+
+        LanguageManager().register_component(self)
+        self.retranslateUi()
+
+    def __init_widget(self):
+        self.top_row_widget = QWidget()
+        self.top_row_layout = QHBoxLayout(self.top_row_widget)
+        self.top_row_layout.setContentsMargins(0, 0, 0, 0)
+        self.top_row_layout.setSpacing(8)
+        self.top_row_layout.setAlignment(Qt.AlignLeft)
+
+        self.observe_ego_gift_checkbox = BaseCheckBox(
+            "observe_ego_gift",
+            None,
+            self.tr("启用观测"),
+            icon_size=30,
+        )
+
+        self.selected_preview_widget = QWidget()
+        self.selected_preview_layout = QHBoxLayout(self.selected_preview_widget)
+        self.selected_preview_layout.setContentsMargins(0, 0, 0, 0)
+        self.selected_preview_layout.setSpacing(4)
+        self.selected_preview_layout.setAlignment(Qt.AlignLeft)
+        self._preview_labels: list[PreviewGiftLabel] = []
+        for _ in range(MAX_OBSERVE_GIFT_SELECTIONS):
+            lbl = PreviewGiftLabel()
+            lbl.setStyleSheet(
+                "border: 1px solid rgba(128,128,128,0.4); border-radius: 4px; background-color: rgba(0,0,0,0.1);"
+            )
+            self._preview_labels.append(lbl)
+            self.selected_preview_layout.addWidget(lbl)
+        self.selected_preview_layout.addSpacing(4)
+
+        self.preview_hint_button = ToolButton(FIF.INFO, self.selected_preview_widget)
+        self.preview_hint_button.setFixedSize(32, 32)
+        self.preview_hint_button.setCursor(Qt.ArrowCursor)
+        self.preview_hint_button.setToolTip(self._preview_hint_tooltip())
+        self.preview_hint_button.installEventFilter(
+            ToolTipFilter(self.preview_hint_button, showDelay=0, position=ToolTipPosition.BOTTOM_LEFT)
+        )
+        self.selected_preview_layout.addWidget(self.preview_hint_button)
+
+        self.system_select_widget = QWidget()
+        self.system_select_layout = QHBoxLayout(self.system_select_widget)
+        self.system_select_layout.setContentsMargins(0, 0, 0, 0)
+        self.system_select_layout.setSpacing(5)
+        self.system_select_layout.setAlignment(Qt.AlignLeft)
+
+        self.selection_rows_widget = QWidget()
+        self.selection_rows_layout = QVBoxLayout(self.selection_rows_widget)
+        self.selection_rows_layout.setContentsMargins(0, 4, 0, 4)
+        self.selection_rows_layout.setSpacing(6)
+        self.selection_rows_layout.setAlignment(Qt.AlignTop)
+
+    def __init_card(self):
+        self.observe_systems = [
+            ("burn", self.tr("烧伤")),
+            ("bleed", self.tr("流血")),
+            ("tremor", self.tr("震颤")),
+            ("rupture", self.tr("破裂")),
+            ("sinking", self.tr("沉沦")),
+            ("poise", self.tr("呼吸")),
+            ("charge", self.tr("充能")),
+            ("slash", self.tr("斩击")),
+            ("pierce", self.tr("突刺")),
+            ("blunt", self.tr("打击")),
+            ("general", self.tr("泛用")),
+        ]
+
+        self._system_buttons: dict[str, SystemIconButton] = {}
+        for system, label in self.observe_systems:
+            icon_path = f"./assets/app/status_effects/{system}.png"
+            btn = SystemIconButton(system, icon_path, label, self.system_select_widget, force_text=system == "general")
+            self._system_buttons[system] = btn
+            self.system_select_layout.addWidget(btn)
+
+    def __init_layout(self):
+        self.top_row_layout.addWidget(self.observe_ego_gift_checkbox)
+        self.top_row_layout.addWidget(self.selected_preview_widget)
+        self.top_row_layout.addStretch()
+
+        self.main_layout.addWidget(self.top_row_widget)
+        self.main_layout.addWidget(self.system_select_widget)
+        self.main_layout.addWidget(self.selection_rows_widget)
+
+    def _row_labels(self) -> dict[str, str]:
+        return {
+            "system": self.tr("体系"),
+            "level": self.tr("等级"),
+            "row": self.tr("所在行"),
+            "col": self.tr("所在列"),
+        }
+
+    def _preview_hint_tooltip(self) -> str:
+        return self.tr(
+            '<div style="font-size: 15px; line-height: 1.6;">'
+            "知道你们想要什么<br>"
+            "2026-06 蜘蛛巢良秀专武在泛用-3级-4行-8列"
+            "</div>"
+        )
+
+    def _find_scroll_area(self):
+        w = self.parent()
+        while w:
+            if isinstance(w, ScrollArea):
+                return w
+            w = w.parent()
+        return None
+
+    def _scroll_to_row(self, row_index: int):
+        if not (0 <= row_index < len(self._row_widgets)):
+            return
+
+        target_widget = self._row_widgets[row_index]
+        if scroll_area := self._find_scroll_area():
+            scroll_area.ensureWidgetVisible(target_widget, 0, 40)
+
+    def _completed_rows(self) -> list[tuple[int, ObserveGiftSelection]]:
+        return [(index, row) for index, row in enumerate(self._row_selections) if row.is_complete()]
+
+    def _first_row_with_system(self, system: str) -> int | None:
+        for index, row in enumerate(self._row_selections):
+            if row.system == system:
+                return index
+        return None
+
+    def _first_fillable_row(self) -> int | None:
+        for index, row in enumerate(self._row_selections):
+            if row.system is None and not row.is_complete():
+                return index
+        return None
+
+    def _normalize_row_selections(self, rows: list[ObserveGiftSelection]) -> list[ObserveGiftSelection]:
+        return ensure_placeholder_row(rows, max_completed=MAX_OBSERVE_GIFT_SELECTIONS)
+
+    def _emit_selected_rows(self):
+        mediator.team_setting.emit({"observe_ego_gift_selected": serialize_observe_ego_gift_values(self._row_selections)})
+
+    def _rebuild_rows(self, target_row_index: int | None = None, emit: bool = False):
+        while self.selection_rows_layout.count():
+            item = self.selection_rows_layout.takeAt(0)
+            if item.widget():
+                item.widget().deleteLater()
+
+        self._row_widgets.clear()
+        labels = self._row_labels()
+        for index, selection in enumerate(self._row_selections):
+            row_widget = ObserveGiftSelectionRow(index, self.observe_systems, labels, self.selection_rows_widget)
+            row_widget.set_selection(selection)
+            row_widget.selectionChanged.connect(self._on_row_selection_changed)
+            row_widget.removeRequested.connect(self._on_row_remove_requested)
+            self._row_widgets.append(row_widget)
+            self.selection_rows_layout.addWidget(row_widget)
+
+        self._refresh_preview()
+        QTimer.singleShot(0, self._notify_expand_card)
+
+        if target_row_index is not None:
+            QTimer.singleShot(0, lambda index=target_row_index: self._scroll_to_row(index))
+
+        if emit:
+            self._emit_selected_rows()
+
+    def on_system_clicked(self, btn: SystemIconButton):
+        for system_button in self._system_buttons.values():
+            system_button.set_active(system_button is btn)
+
+        row_index = self._first_row_with_system(btn.system)
+        if row_index is not None:
+            self._scroll_to_row(row_index)
+            return
+
+        fillable_index = self._first_fillable_row()
+        if fillable_index is not None:
+            new_rows = [ObserveGiftSelection(row.system, row.level, row.row, row.col) for row in self._row_selections]
+            row = new_rows[fillable_index]
+            new_rows[fillable_index] = ObserveGiftSelection(btn.system, row.level, row.row, row.col)
+            self._row_selections = self._normalize_row_selections(new_rows)
+            self._rebuild_rows(target_row_index=fillable_index, emit=True)
+            return
+
+        if len(self._completed_rows()) < MAX_OBSERVE_GIFT_SELECTIONS:
+            new_rows = [ObserveGiftSelection(row.system, row.level, row.row, row.col) for row in self._row_selections]
+            new_rows.append(ObserveGiftSelection(system=btn.system))
+            self._row_selections = self._normalize_row_selections(new_rows)
+            self._rebuild_rows(target_row_index=len(self._row_selections) - 1, emit=True)
+
+    def _notify_expand_card(self):
+        from qfluentwidgets import ExpandSettingCard
+
+        w = self.parent()
+        while w:
+            if isinstance(w, ExpandSettingCard):
+                w._adjustViewSize()
+                return
+            w = w.parent()
+
+    def _on_row_selection_changed(self, row_index: int, selection: ObserveGiftSelection):
+        if not (0 <= row_index < len(self._row_selections)):
+            return
+
+        new_rows = [ObserveGiftSelection(row.system, row.level, row.row, row.col) for row in self._row_selections]
+        new_rows[row_index] = selection
+        self._row_selections = self._normalize_row_selections(new_rows)
+        self._rebuild_rows(target_row_index=row_index, emit=True)
+
+    def _on_row_remove_requested(self, row_index: int):
+        if not (0 <= row_index < len(self._row_selections)):
+            return
+
+        new_rows = [ObserveGiftSelection(row.system, row.level, row.row, row.col) for row in self._row_selections]
+        if new_rows[row_index].is_complete():
+            new_rows.pop(row_index)
+            target_row_index = min(row_index, len(new_rows) - 1) if new_rows else 0
+        else:
+            new_rows[row_index] = ObserveGiftSelection()
+            target_row_index = row_index
+
+        self._row_selections = self._normalize_row_selections(new_rows)
+        self._rebuild_rows(target_row_index=target_row_index, emit=True)
+
+    def on_preview_clicked(self, row_index: int):
+        self._scroll_to_row(row_index)
+
+    def _refresh_preview(self):
+        completed_rows = self._completed_rows()
+        for index, label in enumerate(self._preview_labels):
+            if index < len(completed_rows):
+                row_index, selection = completed_rows[index]
+                label.row_index = row_index
+                pixmap = QPixmap(f"./assets/app/status_effects/{selection.system}.png")
+                if not pixmap.isNull():
+                    label.setPixmap(pixmap.scaled(32, 32, Qt.KeepAspectRatio, Qt.SmoothTransformation))
+                    label.setStyleSheet(
+                        "border: 1px solid rgba(128,128,128,0.4); border-radius: 4px; background-color: rgba(0,0,0,0.1);"
+                    )
+                    continue
+
+            label.row_index = None
+            label.clear()
+            label.setStyleSheet(
+                "border: 1px solid rgba(128,128,128,0.4); border-radius: 4px; background-color: rgba(0,0,0,0.1);"
+            )
+
+    def load_selected(self, selected: list[str]):
+        self._row_selections = parse_observe_ego_gift_values(selected)
+        self._rebuild_rows()
+
+    def retranslateUi(self):
+        self.observe_ego_gift_checkbox.check_box.setText(self.tr("启用观测"))
+        self.preview_hint_button.setToolTip(self._preview_hint_tooltip())
+        self.observe_systems = [
+            ("burn", self.tr("烧伤")),
+            ("bleed", self.tr("流血")),
+            ("tremor", self.tr("震颤")),
+            ("rupture", self.tr("破裂")),
+            ("sinking", self.tr("沉沦")),
+            ("poise", self.tr("呼吸")),
+            ("charge", self.tr("充能")),
+            ("slash", self.tr("斩击")),
+            ("pierce", self.tr("突刺")),
+            ("blunt", self.tr("打击")),
+            ("general", self.tr("泛用")),
+        ]
+        for system, label in self.observe_systems:
+            if system in self._system_buttons:
+                if self._system_buttons[system]._force_text or self._system_buttons[system]._normal_pixmap.isNull():
+                    self._system_buttons[system].setText(label)
+        self._rebuild_rows()
 
 
 class CustomizeInfoModule(QFrame):

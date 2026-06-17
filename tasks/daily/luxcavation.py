@@ -5,6 +5,46 @@ from module.config import cfg
 from module.logger import log
 
 
+def _prepare_continuous_combat_count(
+    combat_count: int,
+    log_prefix: str,
+    box_position: tuple[int, int] | None = None,
+) -> bool:
+    if box_position is not None:
+        auto.mouse_click(box_position[0], box_position[1])
+    else:
+        if not (pos := auto.click_element(
+            "luxcavation/thread_continuous_combat_show_box.png",
+            threshold=0.85,
+            click=False,
+        )):
+            log.debug(f"{log_prefix}未找到连续战斗设置入口")
+            return False
+        auto.mouse_click(pos[0], pos[1])
+
+    up_button = None
+    for attempt in range(2):
+        sleep(0.4 if attempt == 0 else 0.2)
+        up_button = auto.find_element(
+            "luxcavation/continuous_combat_up_box.png",
+            threshold=0.85,
+            take_screenshot=True
+        )
+        if up_button:
+            break
+
+    if not up_button:
+        log.debug(f"{log_prefix}未找到连续战斗增加按钮")
+        return False
+
+    for _ in range(combat_count - 1):
+        auto.mouse_click(up_button[0], up_button[1])
+        sleep(0.1)
+
+    log.debug(f"{log_prefix}连续战斗次数已设置为 {combat_count} 次")
+    return True
+
+
 def EXP_luxcavation(combat_count: int = 1):
     loop_count = 30
     auto.model = "clam"
@@ -25,15 +65,17 @@ def EXP_luxcavation(combat_count: int = 1):
             if level := auto.find_element("luxcavation/exp_enter.png", find_type="image_with_multiple_targets"):
                 level = sorted(level, key=lambda x: x[0], reverse=True)
                 scale = cfg.set_win_size / 1440
-                for lv in level:
+                log.debug(f"经验本检测到 {len(level)} 个关卡入口: {level}")
+                for lv_idx, lv in enumerate(level):
                     if combat_count > 1:
-                        auto.mouse_click(lv[0] + 300 * scale, lv[1] - 450 * scale)
-                        sleep(0.1)
-                        if slide_bar := auto.find_element("luxcavation/continuous_combat.png", take_screenshot=True):
-                            auto.mouse_drag(slide_bar[0], slide_bar[1], dx=30 * scale * (combat_count - 1))
+                        box_position = (lv[0] + 300 * scale, lv[1] - 450 * scale)
+                        if not _prepare_continuous_combat_count(combat_count, "EXP", box_position):
+                            log.debug(f"经验本第 {lv_idx + 1} 关连续战斗设置失败，降级尝试下一关")
+                            continue
 
                     select_team = False
-                    for _ in range(3):
+                    for retry in range(3):
+                        log.debug(f"经验本尝试第 {lv_idx + 1} 关 (x={lv[0]}, y={lv[1]}), 第 {retry + 1}/3 次")
                         auto.mouse_click(lv[0], lv[1])
                         sleep(1)
                         auto.mouse_to_blank()
@@ -43,12 +85,14 @@ def EXP_luxcavation(combat_count: int = 1):
                                 model="clam",
                                 take_screenshot=True,
                             ):
+                                log.debug(f"经验本第 {lv_idx + 1} 关点击成功，已进入编队界面")
                                 select_team = True
                                 break
                         if select_team:
                             break
                     if select_team:
                         break
+                    log.debug(f"经验本第 {lv_idx + 1} 关 3 次尝试均未进入编队，降级尝试下一关")
         if auto.click_element("home/luxcavation_assets.png"):
             continue
         if auto.find_element("home/inferno_bus_assets.png") and not auto.find_element("home/luxcavation_assets.png"):
@@ -80,7 +124,23 @@ def EXP_luxcavation(combat_count: int = 1):
 
 
 def thread_luxcavation(combat_count: int = 1):
+    def _click_level_targets(level: list, log_prefix: str) -> bool:
+        for lv_idx, lv in enumerate(level):
+            for retry in range(3):
+                log.debug(f"{log_prefix}尝试第 {lv_idx + 1} 关 (x={lv[0]}, y={lv[1]}), 第 {retry + 1}/3 次")
+                auto.mouse_click(lv[0], lv[1])
+                sleep(1)
+                auto.mouse_to_blank()
+                for _ in range(3):
+                    if auto.find_element("teams/identify_assets.png", take_screenshot=True) or auto.find_element(
+                            "home/first_prompt_assets.png", model="clam", take_screenshot=True
+                    ):
+                        log.debug(f"{log_prefix}第 {lv_idx + 1} 关点击成功，已进入编队界面")
+                        return True
+            log.debug(f"{log_prefix}第 {lv_idx + 1} 关 3 次尝试均未进入编队，降级尝试下一关")
+        return False
     loop_count = 30
+    continuous_combat_set = False
     auto.model = "clam"
     while True:
         # 自动截图
@@ -96,8 +156,16 @@ def thread_luxcavation(combat_count: int = 1):
         ):
             auto.key_press("esc")
             continue
-        if auto.click_element("luxcavation/thread_enter_assets.png", threshold=0.78):
-            if pos := auto.find_element("luxcavation/thread_consume.png", threshold=0.85, take_screenshot=True):
+        if thread_enter := auto.click_element("luxcavation/thread_enter_assets.png", threshold=0.78, click=False):
+            # 纽本连战次数框位于外层纺锤卡片，需在进入关卡列表前设置。
+            if combat_count > 1 and not continuous_combat_set:
+                if not _prepare_continuous_combat_count(combat_count, "Thread"):
+                    log.debug("纽本连续战斗设置失败，重新检测")
+                    continue
+                continuous_combat_set = True
+            auto.mouse_click(thread_enter[0], thread_enter[1])
+            sleep(0.5)
+            if pos := auto.find_element("luxcavation/thread_consume.png", threshold=0.85,take_screenshot=True):
                 if scroll_bar := auto.find_element("luxcavation/thread_scroll_bar.png"):
                     auto.mouse_drag_down(scroll_bar[0], scroll_bar[1], reverse=2)
                 else:
@@ -110,39 +178,12 @@ def thread_luxcavation(combat_count: int = 1):
                     take_screenshot=True,
                 )
                 scale = cfg.set_win_size / 1440
+                # 只识别右半屏幕
+                min_x = cfg.set_win_size / 2
+                level = sorted([(x, y) for x, y in level if x >= min_x], key=lambda p: p[1], reverse=True)
                 if level:
-                    level = [(x, y) for x, y in level if x >= 700 * scale]
-                if level:
-                    level = sorted(level, key=lambda y: y[1], reverse=True)
-                    if combat_count > 1 and auto.click_element(
-                        "luxcavation/thread_continuous_combat_show_box_assets.png"
-                    ):
-                        scale = cfg.set_win_size / 1440
-                        sleep(0.1)
-                        if slide_bar := auto.find_element(
-                            "luxcavation/continuous_combat.png", threshold=0.78, take_screenshot=True
-                        ):
-                            auto.mouse_drag(slide_bar[0], slide_bar[1], dx=32 * scale * (combat_count - 1))
-                    for lv in level:
-                        select_team = False
-                        for _ in range(3):
-                            auto.mouse_click(lv[0], lv[1])
-                            sleep(1)
-                            auto.mouse_to_blank()
-                            for _ in range(3):
-                                if auto.find_element(
-                                    "teams/identify_assets.png", take_screenshot=True
-                                ) or auto.find_element(
-                                    "home/first_prompt_assets.png",
-                                    model="clam",
-                                    take_screenshot=True,
-                                ):
-                                    select_team = True
-                                    break
-                            if select_team:
-                                break
-                        if select_team:
-                            break
+                    log.debug(f"纽本检测到 {len(level)} 个关卡入口: {level}")
+                    _click_level_targets(level, "纽本")
                 else:
                     # 处理下方所有关卡未解锁的情况
                     level = None
@@ -159,7 +200,10 @@ def thread_luxcavation(combat_count: int = 1):
                             take_screenshot=True,
                         )
                         if level:
-                            level = [(x, y) for x, y in level if x >= 700 * scale]
+                            min_x = cfg.set_win_size / 2
+                            level = sorted([(x, y) for x, y in level if x >= min_x], key=lambda p: p[1], reverse=True)
+                        else:
+                            level = []
                         if level:
                             break
                         slide_times += 1
@@ -168,25 +212,14 @@ def thread_luxcavation(combat_count: int = 1):
                     if not level:
                         continue
 
-                    level = sorted(level, key=lambda y: y[1], reverse=True)
-                    if combat_count > 1 and auto.click_element(
-                        "luxcavation/thread_continuous_combat_show_box_assets.png"
-                    ):
-                        scale = cfg.set_win_size / 1440
-                        sleep(0.1)
-                        if slide_bar := auto.find_element(
-                            "luxcavation/continuous_combat.png", threshold=0.78, take_screenshot=True
-                        ):
-                            auto.mouse_drag(slide_bar[0], slide_bar[1], dx=32 * scale * (combat_count - 1))
-                    for lv in level:
-                        auto.mouse_click(lv[0], lv[1])
-                        sleep(1)
-                        auto.mouse_to_blank()
-                        if auto.find_element("teams/identify_assets.png", take_screenshot=True):
-                            break
+                    log.debug(f"纽本(滑动后)检测到 {len(level)} 个关卡入口: {level}")
+                    _click_level_targets(level, "纽本(滑动后)")
 
+            else:
+                log.debug("纽本未找到关卡消耗锚点")
             continue
         if auto.click_element("luxcavation/thread_assets.png"):
+            sleep(0.5)
             continue
         if auto.click_element("home/luxcavation_assets.png"):
             continue

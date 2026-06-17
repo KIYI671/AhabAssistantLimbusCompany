@@ -12,6 +12,65 @@ from module.game_and_screen import screen
 from module.logger import log
 from utils.utils import check_game_running
 
+_last_title_screen_tap_time = 0.0
+_last_simulator_alive_check_time = 0.0
+
+
+def ensure_simulator_game_started() -> bool:
+    """模拟器模式下确认游戏仍在前台，不在时尝试拉起游戏。"""
+    global _last_simulator_alive_check_time
+    if not cfg.simulator:
+        return False
+
+    now = time.time()
+    if now - _last_simulator_alive_check_time < 5:
+        return False
+    _last_simulator_alive_check_time = now
+
+    if cfg.simulator_type == 0:
+        from module.automation.input_handlers.simulator.mumu_control import (
+            MumuControl,
+        )
+
+        connection_device = MumuControl.connection_device
+    else:
+        from module.automation.input_handlers.simulator.simulator_control import (
+            SimulatorControl,
+        )
+
+        connection_device = SimulatorControl.connection_device
+
+    if connection_device is None:
+        return False
+
+    if connection_device.check_game_alive():
+        return False
+
+    log.info("检测到游戏未运行或不在前台，尝试自动启动游戏")
+    connection_device.start_game()
+    sleep(3)
+    return True
+
+
+def click_title_screen_safely() -> None:
+    """标题页点击入口，避开账号、清缓存和中间弹窗区域。"""
+    global _last_title_screen_tap_time
+    if not cfg.simulator:
+        auto.mouse_click_blank()
+        return
+
+    now = time.time()
+    if now - _last_title_screen_tap_time < 5:
+        return
+    _last_title_screen_tap_time = now
+
+    height = int(cfg.set_win_size or 1080)
+    width = int(height * 16 / 9)
+    tap_points = ((0.86, 0.80), (0.74, 0.83), (0.91, 0.58))
+    index = int(now // 10) % len(tap_points)
+    x_ratio, y_ratio = tap_points[index]
+    auto.mouse_click(int(width * x_ratio), int(height * y_ratio))
+
 
 def kill_game():
     """关闭游戏"""
@@ -82,6 +141,9 @@ def retry():
     if is_windows:
         saved_hwnd = screen.handle.hwnd
     while True:
+        if ensure_simulator_game_started():
+            start_time = time.time()
+            continue
         if is_windows and screen.handle.hwnd != saved_hwnd:
             # 句柄发生变化则重置初始时间, 以免误判卡死
             saved_hwnd = screen.handle.hwnd
@@ -111,7 +173,7 @@ def retry():
         if auto.find_element("base/clear_all_caches_assets.png", model="clam"):
             if auto.click_element("base/update_confirm_assets.png"):
                 continue
-            auto.mouse_click_blank()
+            click_title_screen_safely()
             continue
         if auto.click_element("base/only_option_assets.png", model="clam"):
             sleep(5)
