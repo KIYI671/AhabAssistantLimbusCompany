@@ -121,6 +121,7 @@ skip_enkephalin: False # 跳过换体
 
 # 是否进行自动镜牢
 mirror: False # 是否进行自动镜牢
+task_order: [daily_task, get_reward, buy_enkephalin, mirror] # 主任务执行顺序（可拖拽调整）
 set_mirror_count: 1 # 镜牢的次数
 hard_mirror: False # 进行困难镜牢
 no_weekly_bonuses: False # 不使用每周加成

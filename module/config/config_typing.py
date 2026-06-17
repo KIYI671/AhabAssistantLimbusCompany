@@ -466,6 +466,9 @@ class ConfigModel(BaseModel):
     mirror: bool = False
     """是否进行自动镜牢"""
 
+    task_order: List[str] = ["daily_task", "get_reward", "buy_enkephalin", "mirror"]
+    """主任务执行顺序（可拖拽调整）"""
+
     set_mirror_count: int = 1
     """镜牢的次数"""
 

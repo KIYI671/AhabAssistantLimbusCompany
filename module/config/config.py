@@ -165,6 +165,10 @@ class Config(metaclass=SingletonMeta):
                         file.unlink()
                     except Exception as e:
                         log.error(f"删除旧备份文件 {file} 失败: {e}")
+        if saved_version < 1779550000:
+            task_order = loaded_config.get("task_order")
+            if not isinstance(task_order, list) or not task_order:
+                loaded_config["task_order"] = ["daily_task", "get_reward", "buy_enkephalin", "mirror"]
 
         if saved_version < 1778889600:
             teams = loaded_config.get("teams", {}) or {}
