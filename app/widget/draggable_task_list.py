@@ -1,4 +1,4 @@
-from PySide6.QtCore import Qt, Signal
+from PySide6.QtCore import Qt, Signal, qInstallMessageHandler
 from PySide6.QtWidgets import (
     QFrame,
     QGraphicsOpacityEffect,
@@ -9,6 +9,26 @@ from PySide6.QtWidgets import (
 )
 
 from qfluentwidgets import isDarkTheme, qconfig, themeColor
+
+# QGraphicsOpacityEffect 在拖拽重绘时会触发 QPainter 冲突警告，
+# 属于已知 Qt 问题，功能不受影响，静默过滤即可
+_SUPPRESSED_PAINTER_WARNINGS = (
+    "QPainter::begin",
+    "QPainter::translate",
+    "QBackingStore::endPaint",
+)
+_default_qt_handler = qInstallMessageHandler(None)
+
+
+def _filtered_message_handler(msg_type, context, message):
+    msg = message if isinstance(message, str) else message.data().decode("utf-8", errors="replace")
+    if any(w in msg for w in _SUPPRESSED_PAINTER_WARNINGS):
+        return
+    if _default_qt_handler:
+        _default_qt_handler(msg_type, context, message)
+
+
+qInstallMessageHandler(_filtered_message_handler)
 
 from app.base_combination import CheckBoxWithButton
 

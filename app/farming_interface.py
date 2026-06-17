@@ -723,6 +723,7 @@ class FarmingInterfaceLeft(QWidget):
                     ComboBox,
                     SpinBox,
                     TransparentToolButton,
+                    DragHandleButton,
                 ),
             ):
                 child.setEnabled(True)
