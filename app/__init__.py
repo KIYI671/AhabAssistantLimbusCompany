@@ -13,13 +13,17 @@ team_toggle_button_group = []
 
 task_check_box = []
 
-page_name_and_index = {
-    "set_windows": 0,
-    "daily_task": 1,
-    "get_reward": 2,
-    "buy_enkephalin": 3,
-    "mirror": 4,
-}
+def get_page_name_and_index():
+    """根据 task_order 配置动态生成页面名称到索引的映射"""
+    order = cfg.get_value("task_order", ["daily_task", "get_reward", "buy_enkephalin", "mirror"])
+    result = {"set_windows": 0}
+    for i, name in enumerate(order):
+        result[name] = i + 1
+    return result
+
+
+# 向后兼容的模块级变量（启动时计算一次，动态场景请使用 get_page_name_and_index()）
+page_name_and_index = get_page_name_and_index()
 
 set_win_size_options = {
     "1920*1080": 1080,

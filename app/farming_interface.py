@@ -24,6 +24,7 @@ from app.base_combination import *
 from app.base_tools import *
 from app.common.ui_config import get_log_text_edit_qss, set_border_style
 from app.language_manager import LanguageManager
+from app.widget.draggable_task_list import DragHandleButton, DraggableTaskList
 from app.page_card import (
     PageDailyTask,
     PageGetPrize,
@@ -490,11 +491,16 @@ class FarmingInterfaceLeft(QWidget):
         self.pause_resume_button.button.setFont(font)
 
     def __init_layout(self):
+        # 窗口设置固定在顶部
         self.setting_options.addWidget(self.set_windows)
-        self.setting_options.addWidget(self.daily_task)
-        self.setting_options.addWidget(self.get_reward)
-        self.setting_options.addWidget(self.buy_enkephalin)
-        self.setting_options.addWidget(self.mirror)
+        # 可拖拽任务列表
+        self.draggable_list = DraggableTaskList(
+            [self.daily_task, self.get_reward, self.buy_enkephalin, self.mirror],
+            initial_order=cfg.get_value("task_order", ["daily_task", "get_reward", "buy_enkephalin", "mirror"]),
+        )
+        self.setting_options.addWidget(self.draggable_list)
+        self.draggable_list.order_changed.connect(self._on_task_order_changed)
+        # 亚哈共鸣固定在底部
         self.setting_options.addWidget(self.resonate_with_Ahab)
         self.setting_layout.addLayout(self.setting_options)
 
@@ -514,13 +520,27 @@ class FarmingInterfaceLeft(QWidget):
 
     @staticmethod
     def select_all_function():
-        for check_box in task_check_box[:5]:
-            check_box.setChecked(True)
+        # task_check_box 中存的是 RightClickCheckBox（内部 checkbox），
+        # 其 objectName 未设置，需通过父级 BaseCheckBox 的 objectName 匹配
+        task_names = set(cfg.get_value("task_order", ["daily_task", "get_reward", "buy_enkephalin", "mirror"]))
+        task_names.add("set_windows")
+        for check_box in task_check_box:
+            parent = check_box.parentWidget()
+            if parent and parent.objectName() in task_names:
+                check_box.setChecked(True)
 
     @staticmethod
     def clear_all_function():
-        for check_box in task_check_box[1:5]:
-            check_box.setChecked(False)
+        task_names = set(cfg.get_value("task_order", ["daily_task", "get_reward", "buy_enkephalin", "mirror"]))
+        for check_box in task_check_box:
+            parent = check_box.parentWidget()
+            if parent and parent.objectName() in task_names:
+                check_box.setChecked(False)
+
+    def _on_task_order_changed(self, new_order: list[str]):
+        """拖拽排序变更时保存到配置并通知中心面板重建"""
+        cfg.set_value("task_order", new_order)
+        mediator.task_order_changed.emit(new_order)
 
     def stop_AALC(self):
         log.debug("即将关闭AALC")
@@ -678,6 +698,7 @@ class FarmingInterfaceLeft(QWidget):
                     ComboBox,
                     SpinBox,
                     TransparentToolButton,
+                    DragHandleButton,
                 ),
             ):
                 child.setEnabled(False)
@@ -814,13 +835,25 @@ class FarmingInterfaceCenter(QWidget):
         self.mirror = PageMirror(self)
 
     def __init_layout(self):
+        # 窗口设置始终在第一个
         self.setting_page.addWidget(self.set_windows)
-        self.setting_page.addWidget(self.daily_task)
-        self.setting_page.addWidget(self.get_reward)
-        self.setting_page.addWidget(self.buy_enkephalin)
-        self.setting_page.addWidget(self.mirror)
+        # 按配置顺序添加任务页面，补全 task_order 中缺失的页面防止不可达
+        task_order = cfg.get_value("task_order", ["daily_task", "get_reward", "buy_enkephalin", "mirror"])
+        task_page_map = {
+            "daily_task": self.daily_task,
+            "get_reward": self.get_reward,
+            "buy_enkephalin": self.buy_enkephalin,
+            "mirror": self.mirror,
+        }
+        added = set()
+        for task_name in task_order:
+            if task_name in task_page_map:
+                self.setting_page.addWidget(task_page_map[task_name])
+                added.add(task_name)
+        for name, page in task_page_map.items():
+            if name not in added:
+                self.setting_page.addWidget(page)
         self.vbox.addWidget(self.setting_page)
-        # self.setting_box.setLayout(self.vbox)
 
     def __init_setting(self):
         self.setting_page.setCurrentIndex(cfg.get_value("default_page"))
@@ -828,16 +861,48 @@ class FarmingInterfaceCenter(QWidget):
 
     def switch_to_page(self, target: str):
         try:
-            """切换页面（带越界保护）"""
+            from app import get_page_name_and_index
+
+            page_name_and_index = get_page_name_and_index()
             page_index = page_name_and_index[target]
-            self.setting_page.setCurrentIndex(page_index)  # 当调用 setCurrentIndex 时，StackedWidget 会自动播放过渡动画
+            self.setting_page.setCurrentIndex(page_index)
             cfg.set_value("default_page", page_index)
         except Exception as e:
             log.error(f"【异常】switch_to_page 出错：{type(e).__name__}:{e}")
 
+    def _rebuild_page_order(self, new_order: list[str]):
+        """按新的任务顺序重建中心面板的页面排列"""
+        task_page_map = {
+            "daily_task": self.daily_task,
+            "get_reward": self.get_reward,
+            "buy_enkephalin": self.buy_enkephalin,
+            "mirror": self.mirror,
+        }
+        current_index = self.setting_page.currentIndex()
+
+        # 移除所有页面（不销毁 widget）
+        for _ in range(self.setting_page.count()):
+            w = self.setting_page.widget(0)
+            if w is not None:
+                self.setting_page.removeWidget(w)
+
+        self.setting_page.addWidget(self.set_windows)
+        added = set()
+        for task_name in new_order:
+            if task_name in task_page_map:
+                self.setting_page.addWidget(task_page_map[task_name])
+                added.add(task_name)
+        for name, page in task_page_map.items():
+            if name not in added:
+                self.setting_page.addWidget(page)
+
+        if 0 <= current_index < self.setting_page.count():
+            self.setting_page.setCurrentIndex(current_index)
+
     def connect_mediator(self):
         # 连接所有可能信号
         mediator.switch_page.connect(self.switch_to_page)
+        mediator.task_order_changed.connect(self._rebuild_page_order)
 
     def retranslateUi(self):
         self.set_windows.retranslateUi()

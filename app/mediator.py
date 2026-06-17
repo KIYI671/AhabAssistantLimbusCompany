@@ -26,6 +26,7 @@ class Mediator(QObject):
     mirror_bar_kill_signal = Signal()
     hotkey_listener_stop_signal = Signal()
     hotkey_listener_start_signal = Signal()
+    task_order_changed = Signal(list)
 
     # 单例实例（类变量）
     _instance = None
