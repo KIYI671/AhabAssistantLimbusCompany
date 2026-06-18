@@ -139,6 +139,7 @@ teams_order: [0] # 队伍的顺序
 mirror_keyboard_navigation: False # 使用键盘进行镜牢寻路
 
 # 队伍设置
+teams_active_queue: [] # 镜牢启用队伍的执行队列（单一事实源）
 teams:
   '1':
     team_system: 0 # 队伍使用的体系
