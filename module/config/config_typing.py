@@ -205,7 +205,7 @@ class ConfigModel(BaseModel):
     game_process_name: str = "LimbusCompany.exe"
     """游戏进程名"""
 
-    game_path: str = r"C:\Program Files (x86\Steam\steamapps\common\Limbus Company\LimbusCompany.exe"
+    game_path: str = r"C:\Program Files (x86)\Steam\steamapps\common\Limbus Company\LimbusCompany.exe"
     """游戏启动路径"""
 
     after_completion_actions: List[str] = []
