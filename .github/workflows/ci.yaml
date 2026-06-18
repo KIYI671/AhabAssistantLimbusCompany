@@ -45,9 +45,25 @@ jobs:
             --current-run-number "${{ github.run_number }}" \
             --fallback-version "${{ github.sha }}"
 
-  # 复用既有打包流程，只替换传入的构建版本号。
+  # 跑 pytest。这些测试只做静态解析（AST + ruamel），不 import 项目代码，
+  # 所以跟平台无关，放在 ubuntu 上跑最快最省。用 --no-project 跳过整套项目依赖
+  # （否则 uv 会去装 pywin32 这类 Windows-only 包，在 Linux 上必然失败），
+  # 只临时拉测试真正需要的 pytest + ruamel.yaml。
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@main
+
+      - name: Setup UV for Python
+        uses: astral-sh/setup-uv@v8.1.0
+
+      - name: Run pytest
+        run: uv run --no-project --python 3.12 --with pytest --with "ruamel.yaml" pytest -ra
+
+  # 复用既有打包流程，只替换传入的构建版本号。测试不过就不打包。
   build:
-    needs: prepare-version
+    needs: [prepare-version, test]
     uses: ./.github/workflows/reusable-build.yml
     with:
       version: ${{ needs.prepare-version.outputs.version }}
