@@ -37,14 +37,15 @@ class Config(metaclass=SingletonMeta):
 
         # 加载版本信息
         self.version = self._load_version(version_path)
-        # 加载默认配置
-        self.config = ConfigModel()
-        # 获取用户的配置文件路径
+        # 用户配置文件路径
         self.config_path = Path(config_path)
-        # 保存含有注释的yaml文件的路径
+        # example.yaml：既是带注释的模板，也是默认值的唯一来源
         self.example_path = Path(example_path)
-
         self.backup_path = Path(backup_path)
+
+        # 默认值全部来自 example.yaml（单一来源）；ConfigModel 只负责类型与校验，不再硬编码默认值
+        self._defaults: dict = self._load_default_config()
+        self.config = ConfigModel(**self._defaults)
 
         # 加载实际配置，此方法会根据实际配置覆盖默认配置
         self._load_config()
@@ -226,9 +227,9 @@ class Config(metaclass=SingletonMeta):
                             log.error(
                                 f"最新的备份文件 {backup_files[0].name} 无法读取到有效配置，请自行通过 {self.backup_path.name} 文件夹下其他文件恢复数据"
                             )
-                            loaded_config = ConfigModel().model_dump()
+                            loaded_config = ConfigModel(**self._defaults).model_dump()
                     else:
-                        loaded_config = ConfigModel().model_dump()
+                        loaded_config = ConfigModel(**self._defaults).model_dump()
                 if not isinstance(loaded_config.get("config_version", 0), int):
                     raise TypeError("配置文件版本号不是 int 类型")
                 if loaded_config.get("config_version", 0) < self.config.config_version:
@@ -236,7 +237,7 @@ class Config(metaclass=SingletonMeta):
                     loaded_config["config_version"] = self.config.config_version
                     self._old_version_cfg_upgrade(saved_version, loaded_config)
                 # 使用更新后的配置初始化 Config 对象
-                self.config = ConfigModel(**loaded_config)
+                self.config = ConfigModel(**{**self._defaults, **loaded_config})
                 queue_in_loaded_config = loaded_config.get("teams_active_queue")
                 if queue_in_loaded_config is None:
                     normalized_queue = self._normalize_team_queue(self.migrate_legacy_team_queue())
@@ -531,7 +532,7 @@ class Config(metaclass=SingletonMeta):
             with open(path, "r", encoding="utf-8") as file:
                 loaded_config = self.yaml.load(file)
             if loaded_config:
-                self.config = ConfigModel(**loaded_config)
+                self.config = ConfigModel(**{**self._defaults, **loaded_config})
                 queue_in_loaded_config = loaded_config.get("teams_active_queue")
                 if queue_in_loaded_config is None:
                     normalized_queue = self._normalize_team_queue(self.migrate_legacy_team_queue())
