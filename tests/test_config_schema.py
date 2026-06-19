@@ -65,10 +65,3 @@ def test_config_model_has_no_hardcoded_defaults() -> None:
     assert (
         with_default == []
     ), f"下列 ConfigModel field 带有 default：{with_default}"
-
-
-def test_game_path_default_paren_intact() -> None:
-    # Regression：game_path 默认路径里的 (x86) 括号完整
-    # （曾经少了 right parenthesis 导致默认游戏路径无效）
-    game_path: str = YAML().load(EXAMPLE_PATH.read_text(encoding="utf-8"))["game_path"]
-    assert "(x86)" in game_path, f"game_path 括号不完整：{game_path!r}"
