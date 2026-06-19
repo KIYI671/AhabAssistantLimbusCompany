@@ -1,5 +1,4 @@
 import datetime
-import re
 from pathlib import Path
 from typing import Optional
 
@@ -8,6 +7,7 @@ from ruamel.yaml import YAML
 
 from module.config import TeamSetting, cfg, theme_list
 from module.logger import log
+from utils.utils import sanitize_filename
 
 
 def generate_team_export_filename(team_num: int) -> str:
@@ -18,7 +18,7 @@ def generate_team_export_filename(team_num: int) -> str:
     date_str = datetime.date.today().isoformat()
 
     if remark_name:
-        safe_name = re.sub(r'[<>:"/\\|?*]', "_", remark_name)
+        safe_name = sanitize_filename(remark_name)
         return f"team_settings_{safe_name}_{date_str}.yaml"
     else:
         return f"team_settings_team_{team_num}_{date_str}.yaml"

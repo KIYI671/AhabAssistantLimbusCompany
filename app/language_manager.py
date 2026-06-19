@@ -30,15 +30,11 @@ retranslateUi = "retranslateUi"
 
 
 class LanguageManager(metaclass=SingletonMeta):
-    """### 语言管理器
-    ---
-    \n通过`register_component(cls)`可以直接在对应文件下注册类
-    \n通过`set_language`会触发注册过的类的`retranslateUi`方法, 如果该方法需要参数, 会且仅会传入一个参数, lang_code: `str`
-    """
+    """语言管理器：通过 register_component 注册组件，set_language 触发所有组件重新翻译。"""
 
     def __init__(self):
         self.app = QApplication.instance()
-        self.translatable_components = []  # 存储所有需要翻译的组件
+        self.translatable_components = []  # (component, needs_lang_arg) 元组
         self.settings_language = cfg.language_in_program
         self.current_lang = None
 
@@ -48,28 +44,27 @@ class LanguageManager(metaclass=SingletonMeta):
 
     def register_component(self, component):
         """注册需要翻译的组件"""
-        if component in self.translatable_components:
+        if any(c is component for c, _ in self.translatable_components):
             return
 
         if hasattr(component, retranslateUi):
-            self.translatable_components.append(component)
-            component_name = self.check_component_name(component)
-            log.debug(f"注册翻译组件: {component_name}", stacklevel=2)
+            method = getattr(component, retranslateUi)
+            needs_arg = self._method_needs_args(method)
+            self.translatable_components.append((component, needs_arg))
+            log.debug(f"注册翻译组件: {self._component_name(component)}", stacklevel=2)
         else:
-            component_name = self.check_component_name(component)
-
             log.warning(
-                f"组件 {component_name} 没有 {retranslateUi} 方法，无法翻译",
+                f"组件 {self._component_name(component)} 没有 {retranslateUi} 方法，无法翻译",
                 stacklevel=2,
             )
 
     def unregister_component(self, component):
         """注销需要翻译的组件"""
-        if component in self.translatable_components:
-            self.translatable_components.remove(component)
-        else:
-            component_name = self.check_component_name(component)
-            log.warning(f"组件 {component_name} 未注册，无法注销", stacklevel=2)
+        for i, (c, _) in enumerate(self.translatable_components):
+            if c is component:
+                self.translatable_components.pop(i)
+                return
+        log.warning(f"组件 {self._component_name(component)} 未注册，无法注销", stacklevel=2)
 
     def init_language(self):
         """初始化语言设置"""
@@ -133,53 +128,43 @@ class LanguageManager(metaclass=SingletonMeta):
         self.reload_translator(lang_code)
 
         # 更新UI
-        self.retranslate_all(lang_code)
+        self._retranslate_all(lang_code)
 
-    def retranslate_all(self, lang_code=None):
+    def _retranslate_all(self, lang_code=None):
         """更新所有注册组件的翻译"""
 
         log.debug("开始更新所有组件翻译...")
 
         # 更新所有注册的组件
-        for component in self.translatable_components:
+        for component, needs_arg in self.translatable_components:
             try:
-                if hasattr(component, retranslateUi):
-                    if self.method_needs_args(getattr(component, retranslateUi)):
-                        if lang_code is None:
-                            component_name = self.check_component_name(component)
-                            raise ValueError(f"component {component_name}.{retranslateUi} 需要参数 但是为空")
-                        component.retranslateUi(lang_code)
-                    else:
-                        component.retranslateUi()
-
+                if needs_arg:
+                    if lang_code is None:
+                        raise ValueError(f"component {self._component_name(component)}.{retranslateUi} 需要参数但为空")
+                    component.retranslateUi(lang_code)
+                else:
+                    component.retranslateUi()
             except Exception as e:
-                component_name = self.check_component_name(component)
-                log.error(f"翻译错误 {component_name}: {type(e).__name__} {str(e)}")
+                log.error(f"翻译错误 {self._component_name(component)}: {type(e).__name__} {str(e)}")
 
         log.debug("所有组件翻译更新完成")
 
-    def method_needs_args(self, method):
+    @staticmethod
+    def _method_needs_args(method):
         """检查方法是否需要参数"""
         sig = inspect.signature(method)
-        parameters = sig.parameters
-        required_params = []
-
-        for param in parameters.values():
-            if param.default == inspect.Parameter.empty and param.kind not in (
+        required_params = [
+            p for p in sig.parameters.values()
+            if p.default is inspect.Parameter.empty
+            and p.kind not in (
                 inspect.Parameter.VAR_POSITIONAL,
                 inspect.Parameter.VAR_KEYWORD,
-            ):
-                # 排除可变参数
-                required_params.append(param)
-
-        if required_params:
-            if required_params[0].name == "self" or required_params[0].name == "cls":
-                required_params = required_params[1:]
-
+            )  # 排除可变参数
+        ]
+        if required_params and required_params[0].name in ("self", "cls"):
+            required_params = required_params[1:]
         return len(required_params) > 0
 
-    def check_component_name(self, component) -> str:
-        if component.objectName():
-            return component.objectName()
-        else:
-            return component
+    @staticmethod
+    def _component_name(component) -> str:
+        return component.objectName() or str(component)
