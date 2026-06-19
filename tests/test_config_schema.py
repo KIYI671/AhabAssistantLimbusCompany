@@ -22,7 +22,9 @@ TYPING_PATH: Path = REPO_ROOT / "module" / "config" / "config_typing.py"
 
 def _example_keys() -> Set[str]:
     """从 example.yaml 里加载 config 字段名集合"""
-    return set(YAML().load(EXAMPLE_PATH.read_text(encoding="utf-8")))
+    data = YAML().load(EXAMPLE_PATH.read_text(encoding="utf-8"))
+    assert isinstance(data, dict), f"example.yaml 顶层应为 mapping，实际为 {type(data).__name__}"
+    return set(data.keys())
 
 
 def _config_model_fields() -> List[ast.AnnAssign]:
