@@ -4,6 +4,7 @@ import re
 from PySide6.QtCore import Qt, Signal
 from PySide6.QtGui import QPixmap
 from PySide6.QtWidgets import (
+    QApplication,
     QFileDialog,
     QFrame,
     QGridLayout,
@@ -32,14 +33,16 @@ from qframelesswindow import FramelessDialog, StandardTitleBar
 from ruamel.yaml import YAML
 
 from app.base_tools import BaseSpinBox
-from app.card.messagebox_custom import BaseInfoBar, MessageBoxConfirm
+from app.card.messagebox_custom import BaseInfoBar, MessageBoxConfirm, MessageBoxEdit
 from app.language_manager import LanguageManager
 from module import THEME_PACK_LIST_EXAMPLE_PATH
 from module.config import cfg, theme_list
 from module.config.theme_pack_import_export import (
     export_theme_pack_weight,
+    export_theme_pack_weight_to_base64,
     generate_theme_pack_export_filename,
     import_theme_pack_weight,
+    import_theme_pack_weight_from_base64,
 )
 
 # 英文key到中文名称的映射表（普通模式）
@@ -609,6 +612,17 @@ class ThemePackSettingDialog(FramelessDialog):
         self.import_button.clicked.connect(self.on_import_settings)
         self.import_button.setVisible(self.is_team_specific)
 
+        # 配置码导入导出按钮
+        self.copy_code_button = PushButton(FIF.SHARE, self.tr("导出配置码"))
+        self.copy_code_button.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        self.copy_code_button.clicked.connect(self.on_export_code)
+        self.copy_code_button.setVisible(self.is_team_specific)
+
+        self.paste_code_button = PushButton(FIF.EDIT, self.tr("导入配置码"))
+        self.paste_code_button.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        self.paste_code_button.clicked.connect(self.on_import_code)
+        self.paste_code_button.setVisible(self.is_team_specific)
+
         # 主要操作按钮
         self.save_button = PrimaryPushButton(self.tr("保存并关闭"), self)
         self.save_button.setFocusPolicy(Qt.FocusPolicy.NoFocus)
@@ -621,6 +635,8 @@ class ThemePackSettingDialog(FramelessDialog):
         self.button_layout.addWidget(self.batch_menu_button)
         self.button_layout.addWidget(self.export_button)
         self.button_layout.addWidget(self.import_button)
+        self.button_layout.addWidget(self.copy_code_button)
+        self.button_layout.addWidget(self.paste_code_button)
         self.button_layout.addStretch()
         self.button_layout.addWidget(self.save_button)
         self.button_layout.addWidget(self.close_button)
@@ -1003,6 +1019,59 @@ class ThemePackSettingDialog(FramelessDialog):
                 duration=3000,
                 parent=self,
             )
+
+    # ---- 配置码导入导出（新增）----
+    def on_export_code(self):
+        """导出主题包权重为配置码并复制到剪贴板"""
+        if not self.is_team_specific:
+            return
+        theme_list.save_config(path=self.save_path, config_data=self.config_data)
+        team_num = self._extract_team_num_from_path()
+        code = export_theme_pack_weight_to_base64(team_num)
+        if code:
+            QApplication.clipboard().setText(code)
+            BaseInfoBar.success(title=self.tr("导出成功"), content=self.tr("配置码已复制到剪贴板"),
+                orient=Qt.Orientation.Horizontal, isClosable=True,
+                position=InfoBarPosition.TOP, duration=3000, parent=self)
+        else:
+            BaseInfoBar.error(title=self.tr("导出失败"), content=self.tr("无法导出配置码"),
+                orient=Qt.Orientation.Horizontal, isClosable=True,
+                position=InfoBarPosition.TOP, duration=3000, parent=self)
+
+    def on_import_code(self):
+        """从配置码导入主题包权重"""
+        if not self.is_team_specific:
+            return
+        clipboard_text = QApplication.clipboard().text().strip()
+        dialog = MessageBoxEdit(self.tr("导入配置码"), clipboard_text if clipboard_text else "", self)
+        if not dialog.exec():
+            return
+        code = dialog.getText()
+        if not code or not code.strip():
+            return
+        confirm = MessageBoxConfirm(self.tr("确认导入"), self.tr("导入将覆盖当前主题包权重设置"), self.window())
+        if not confirm.exec():
+            return
+        team_num = self._extract_team_num_from_path()
+        if import_theme_pack_weight_from_base64(code.strip(), team_num):
+            self.config_data.clear()
+            reloaded = theme_list.load_config(self.save_path)
+            self.config_data.update(copy.deepcopy(reloaded))
+            normal_imported = reloaded.get("theme_pack_list_cn" if self.is_cn else "theme_pack_list", {})
+            hard_imported = reloaded.get("theme_pack_list_hard_cn" if self.is_cn else "theme_pack_list_hard", {})
+            self.preferred_threshold_spinbox.spin_box.setValue(int(reloaded.get("preferred_thresholds", 0)))
+            for k, v in normal_imported.items():
+                if k in self.normal_cards: self.normal_cards[k].update_weight(v)
+            for k, v in hard_imported.items():
+                if k in self.hard_cards: self.hard_cards[k].update_weight(v)
+            self._has_unsaved_changes = False
+            BaseInfoBar.success(title=self.tr("导入成功"), content=self.tr("主题包权重已导入"),
+                orient=Qt.Orientation.Horizontal, isClosable=True,
+                position=InfoBarPosition.TOP, duration=3000, parent=self)
+        else:
+            BaseInfoBar.error(title=self.tr("导入失败"), content=self.tr("无法解析配置码"),
+                orient=Qt.Orientation.Horizontal, isClosable=True,
+                position=InfoBarPosition.TOP, duration=3000, parent=self)
 
     def save_and_close(self):
         """保存配置到文件并关闭对话框"""

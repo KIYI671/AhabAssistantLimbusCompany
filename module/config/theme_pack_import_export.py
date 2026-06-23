@@ -1,3 +1,4 @@
+import base64
 import datetime
 import re
 from pathlib import Path
@@ -135,4 +136,82 @@ def import_theme_pack_weight(file_path: str, team_num: int) -> bool:
         return True
     except Exception as e:
         log.error(f"导入主题包权重失败: {e}")
+        return False
+
+
+# =============================================================================
+# 配置码（Base64）导入/导出 —— 将权重 YAML 编码为 Base64 字符串，方便剪贴板分享
+# =============================================================================
+
+
+def export_theme_pack_weight_to_base64(team_num: int) -> str | None:
+    """导出主题包权重为配置码字符串
+
+    Args:
+        team_num: 队伍编号
+
+    Returns:
+        Base64 编码字符串，失败返回 None
+    """
+    try:
+        theme_pack_weight_path = theme_list.build_team_weight_path(team_num)
+        if not Path(theme_pack_weight_path).exists():
+            log.error(f"队伍 {team_num} 的主题包权重文件未找到")
+            return None
+        with open(theme_pack_weight_path, "r", encoding="utf-8") as f:
+            yaml_content = f.read()
+        if not yaml_content.strip():
+            log.error(f"队伍 {team_num} 的主题包权重文件为空")
+            return None
+        encoded = base64.b64encode(yaml_content.encode("utf-8")).decode("ascii")
+        log.info(f"已导出队伍 {team_num} 的主题包权重为配置码")
+        return encoded
+    except Exception as e:
+        log.error(f"导出主题包权重配置码失败: {e}")
+        return None
+
+
+def import_theme_pack_weight_from_base64(base64_str: str, team_num: int) -> bool:
+    """从配置码字符串导入主题包权重
+
+    Args:
+        base64_str: Base64 编码的权重数据
+        team_num: 队伍编号
+
+    Returns:
+        成功返回 True，失败返回 False
+    """
+    try:
+        try:
+            yaml_content = base64.b64decode(base64_str).decode("utf-8")
+        except (base64.binascii.Error, UnicodeDecodeError) as e:
+            log.error(f"配置码解码失败: {e}")
+            return False
+        if not yaml_content.strip():
+            log.warning("导入的配置码数据为空")
+            return False
+        yaml = YAML()
+        import_data = yaml.load(yaml_content)
+        if not import_data:
+            log.warning("解析配置码数据后主题包权重为空")
+            return True
+        theme_pack_weight_path = theme_list.build_team_weight_path(team_num)
+        target_path = Path(theme_pack_weight_path)
+        if target_path.exists():
+            with open(theme_pack_weight_path, "r", encoding="utf-8") as f:
+                existing_data = yaml.load(f) or {}
+        else:
+            existing_data = {}
+        if isinstance(import_data, dict):
+            existing_data = _deep_merge_dicts(existing_data, import_data)
+        else:
+            log.error(f"队伍 {team_num} 的导入配置码数据不是字典")
+            return False
+        target_path.parent.mkdir(parents=True, exist_ok=True)
+        with open(theme_pack_weight_path, "w", encoding="utf-8") as f:
+            yaml.dump(existing_data, f)
+        log.info(f"已从配置码导入队伍 {team_num} 的主题包权重")
+        return True
+    except Exception as e:
+        log.error(f"从配置码导入主题包权重失败: {e}")
         return False
