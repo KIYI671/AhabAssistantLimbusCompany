@@ -346,6 +346,9 @@ def script_task() -> None | int:
     auto.clear_img_cache()
     log.debug(f"初始化图片路径: {path_manager.pic_path}")
 
+    if cfg.resonate_with_Ahab:
+        Resonate_with_Ahab()
+
     get_reward = None
     if auto.click_element("battle/turn_assets.png", take_screenshot=True):
         get_reward = battle.fight()
@@ -356,11 +359,6 @@ def script_task() -> None | int:
                 raise cannotOperateGameError("启动后未能进入主界面，请手动检查后重试")
         elif startup_wait_result == StartupMainMenuWaitResult.TIMEOUT:
             raise cannotOperateGameError("启动等待主界面超时，请手动检查后重试")
-        elif startup_wait_result != StartupMainMenuWaitResult.MAIN_MENU:
-            raise cannotOperateGameError("启动后主界面状态未知，请手动检查后重试")
-
-    if cfg.resonate_with_Ahab:
-        Resonate_with_Ahab()
 
     task_list = []
     # 执行日常刷本任务
