@@ -4,6 +4,7 @@ import re
 from PySide6.QtCore import Qt, Signal
 from PySide6.QtGui import QPixmap
 from PySide6.QtWidgets import (
+    QApplication,
     QFileDialog,
     QFrame,
     QGridLayout,
@@ -32,14 +33,16 @@ from qframelesswindow import FramelessDialog, StandardTitleBar
 from ruamel.yaml import YAML
 
 from app.base_tools import BaseSpinBox
-from app.card.messagebox_custom import BaseInfoBar, MessageBoxConfirm
+from app.card.messagebox_custom import BaseInfoBar, MessageBoxConfirm, MessageBoxEdit  # MessageBoxEdit 用于配置码导入（新增）
 from app.language_manager import LanguageManager
 from module import THEME_PACK_LIST_EXAMPLE_PATH
 from module.config import cfg, theme_list
 from module.config.theme_pack_import_export import (
     export_theme_pack_weight,
+    export_theme_pack_weight_to_base64,  # 新增：导出为配置码
     generate_theme_pack_export_filename,
     import_theme_pack_weight,
+    import_theme_pack_weight_from_base64,  # 新增：从配置码导入
 )
 
 # 英文key到中文名称的映射表（普通模式）
@@ -609,6 +612,19 @@ class ThemePackSettingDialog(FramelessDialog):
         self.import_button.clicked.connect(self.on_import_settings)
         self.import_button.setVisible(self.is_team_specific)
 
+        # ---- 配置码导入导出按钮（新增功能）----
+        # 将队伍主题包权重编码为 Base64 字符串，可通过剪贴板快速分享
+        self.copy_base64_button = PushButton(FIF.SHARE, self.tr("导出配置码"))
+        self.copy_base64_button.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        self.copy_base64_button.clicked.connect(self.on_copy_base64)
+        self.copy_base64_button.setVisible(self.is_team_specific)
+
+        self.paste_base64_button = PushButton(FIF.EDIT, self.tr("导入配置码"))
+        self.paste_base64_button.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        self.paste_base64_button.clicked.connect(self.on_paste_base64_import)
+        self.paste_base64_button.setVisible(self.is_team_specific)
+        # ---- 配置码按钮结束 ----
+
         # 主要操作按钮
         self.save_button = PrimaryPushButton(self.tr("保存并关闭"), self)
         self.save_button.setFocusPolicy(Qt.FocusPolicy.NoFocus)
@@ -621,6 +637,8 @@ class ThemePackSettingDialog(FramelessDialog):
         self.button_layout.addWidget(self.batch_menu_button)
         self.button_layout.addWidget(self.export_button)
         self.button_layout.addWidget(self.import_button)
+        self.button_layout.addWidget(self.copy_base64_button)  # 新增：导出配置码
+        self.button_layout.addWidget(self.paste_base64_button)  # 新增：导入配置码
         self.button_layout.addStretch()
         self.button_layout.addWidget(self.save_button)
         self.button_layout.addWidget(self.close_button)
@@ -997,6 +1015,127 @@ class ThemePackSettingDialog(FramelessDialog):
             BaseInfoBar.error(
                 title=self.tr("导入失败"),
                 content=self.tr("无法导入主题包权重，请检查文件格式和日志"),
+                orient=Qt.Orientation.Horizontal,
+                isClosable=True,
+                position=InfoBarPosition.TOP,
+                duration=3000,
+                parent=self,
+            )
+
+    # =========================================================================
+    # 以下两个方法为新增：配置码（Base64）导出/导入
+    # on_copy_base64: 将权重 YAML 编码为 Base64 并复制到剪贴板
+    # on_paste_base64_import: 从剪贴板预填键入框，解码后深度合并到权重文件
+    # =========================================================================
+
+    def on_copy_base64(self):
+        """将当前队伍的主题包权重导出为配置码并复制到剪贴板"""
+        if not self.is_team_specific:
+            return
+
+        # 先保存当前配置以确保导出获取最新数据
+        theme_list.save_config(path=self.save_path, config_data=self.config_data)
+
+        team_num = self._extract_team_num_from_path()
+        base64_str = export_theme_pack_weight_to_base64(team_num)
+
+        if base64_str:
+            clipboard = QApplication.clipboard()
+            clipboard.setText(base64_str)
+            BaseInfoBar.success(
+                title=self.tr("导出成功"),
+                content=self.tr("配置码已复制到剪贴板，可直接分享"),
+                orient=Qt.Orientation.Horizontal,
+                isClosable=True,
+                position=InfoBarPosition.TOP,
+                duration=3000,
+                parent=self,
+            )
+        else:
+            BaseInfoBar.error(
+                title=self.tr("导出失败"),
+                content=self.tr("无法导出配置码，请检查日志"),
+                orient=Qt.Orientation.Horizontal,
+                isClosable=True,
+                position=InfoBarPosition.TOP,
+                duration=3000,
+                parent=self,
+            )
+
+    def on_paste_base64_import(self):
+        """弹出键入式对话框，输入配置码来导入主题包权重"""
+        if not self.is_team_specific:
+            return
+
+        # 优先从剪贴板读取预填内容
+        clipboard = QApplication.clipboard()
+        clipboard_text = clipboard.text().strip()
+
+        # 键入式单行输入对话框
+        dialog = MessageBoxEdit(
+            self.tr("导入配置码"),
+            clipboard_text if clipboard_text else "",
+            self,
+        )
+        if not dialog.exec():
+            return
+
+        base64_str = dialog.getText()
+        if not base64_str or not base64_str.strip():
+            return
+
+        # 显示确认对话框
+        confirm = MessageBoxConfirm(
+            self.tr("确认导入"),
+            self.tr("导入将覆盖当前主题包权重设置，是否继续？"),
+            self.window(),
+        )
+
+        if not confirm.exec():
+            return
+
+        team_num = self._extract_team_num_from_path()
+        success = import_theme_pack_weight_from_base64(base64_str.strip(), team_num)
+
+        if success:
+            # 从文件重新加载配置数据
+            self.config_data.clear()
+            reloaded_config = theme_list.load_config(self.save_path)
+            self.config_data.update(copy.deepcopy(reloaded_config))
+
+            # 更新界面以反映导入的数据
+            if self.is_cn:
+                normal_imported = reloaded_config.get("theme_pack_list_cn", {})
+                hard_imported = reloaded_config.get("theme_pack_list_hard_cn", {})
+            else:
+                normal_imported = reloaded_config.get("theme_pack_list", {})
+                hard_imported = reloaded_config.get("theme_pack_list_hard", {})
+
+            self.preferred_threshold_spinbox.spin_box.setValue(int(reloaded_config.get("preferred_thresholds", 0)))
+
+            for pack_key, weight in normal_imported.items():
+                if pack_key in self.normal_cards:
+                    self.normal_cards[pack_key].update_weight(weight)
+
+            for pack_key, weight in hard_imported.items():
+                if pack_key in self.hard_cards:
+                    self.hard_cards[pack_key].update_weight(weight)
+
+            self._has_unsaved_changes = False
+
+            BaseInfoBar.success(
+                title=self.tr("导入成功"),
+                content=self.tr("主题包权重已导入并应用"),
+                orient=Qt.Orientation.Horizontal,
+                isClosable=True,
+                position=InfoBarPosition.TOP,
+                duration=3000,
+                parent=self,
+            )
+        else:
+            BaseInfoBar.error(
+                title=self.tr("导入失败"),
+                content=self.tr("无法解析配置码，请检查格式是否正确"),
                 orient=Qt.Orientation.Horizontal,
                 isClosable=True,
                 position=InfoBarPosition.TOP,
