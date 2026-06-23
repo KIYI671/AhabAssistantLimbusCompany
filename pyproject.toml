@@ -40,6 +40,7 @@ dependencies = [
 [dependency-groups]
 dev = [
     "pyinstaller>=6.16.0",
+    "pytest>=9.1.0",
     "ruff>=0.13.1",
     "watchdog",
 ]
@@ -88,3 +89,8 @@ ignore = ["E501"]
 [tool.ruff]
 line-length = 120
 target-version = "py312"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+addopts = "-ra"

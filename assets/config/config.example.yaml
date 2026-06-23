@@ -139,6 +139,7 @@ teams_order: [0] # 队伍的顺序
 mirror_keyboard_navigation: False # 使用键盘进行镜牢寻路
 
 # 队伍设置
+teams_active_queue: [] # 镜牢启用队伍的执行队列（单一事实源）
 teams:
   '1':
     team_system: 0 # 队伍使用的体系
@@ -190,6 +191,8 @@ teams:
     skill_replacement: False # 自定义技能替换
     skill_replacement_select: 0 # 技能替换设置
     skill_replacement_mode: 0 # 技能替换模式
+    observe_ego_gift: False # 观测饰品
+    observe_ego_gift_selected: [] # 已选观测饰品
     ignore_shop: [0, 0, 0, 0, 0] # 忽略商店楼层
     max_keyword_refresh: 1 # 每次商店访问时定向刷新商品的次数上限
     max_normal_refresh: 1 # 每次商店访问时普通刷新商品的次数上限

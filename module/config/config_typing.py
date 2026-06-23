@@ -196,328 +196,328 @@ class TeamSetting(BaseModel):
 class ConfigModel(BaseModel):
     """配置模型"""
 
-    config_version: int = 1781049600
+    config_version: int
     """配置文件版本号（时间戳）"""
 
-    game_title_name: str = "LimbusCompany"
+    game_title_name: str
     """游戏窗口标题"""
 
-    game_process_name: str = "LimbusCompany.exe"
+    game_process_name: str
     """游戏进程名"""
 
-    game_path: str = r"C:\Program Files (x86\Steam\steamapps\common\Limbus Company\LimbusCompany.exe"
+    game_path: str
     """游戏启动路径"""
 
-    after_completion_actions: List[str] = []
+    after_completion_actions: List[str]
     """脚本结束后的前置动作（可多选）：exit_game/exit_emulator/exit_aalc"""
 
-    after_completion_power_action: str = "none"
+    after_completion_power_action: str
     """脚本结束后的最终动作（单选）：none/sleep/hibernate/lock/shutdown"""
 
-    keep_after_completion: bool = False
+    keep_after_completion: bool
     """是否保持脚本结束后的操作"""
 
-    language_in_program: str = ""
+    language_in_program: str
     """程序语言"""
 
-    shutdown_hotkey: str = "<ctrl>+q"
+    shutdown_hotkey: str
     """关闭快捷键"""
 
-    pause_hotkey: str = "<alt>+p"
+    pause_hotkey: str
     """暂停快捷键"""
 
-    resume_hotkey: str = "<alt>+r"
+    resume_hotkey: str
     """继续快捷键"""
 
-    announcement: float = 1715990400
+    announcement: float
     """公告板时间戳"""
 
-    memory_protection: bool = False
+    memory_protection: bool
     """内存占用保护"""
 
-    background_click: bool = True
+    background_click: bool
     """是否使用后台点击"""
 
-    win_input_type: str = "background"
+    win_input_type: str
     """键鼠操控方式"""
 
-    auto_hard_mirror: bool = False
+    auto_hard_mirror: bool
     """周四自动切换困难镜牢"""
 
-    last_auto_change: float = 1715990400
+    last_auto_change: float
     """上次自动切换困难镜牢的时间戳"""
 
-    hard_mirror_chance: int = 0
+    hard_mirror_chance: int
     """困难镜牢剩余次数"""
 
-    zoom_scale: int = 0
+    zoom_scale: int
     """缩放比例"""
 
-    window_position_x: int = 0
+    window_position_x: int
     """窗口位置x"""
 
-    window_position_y: int = 0
+    window_position_y: int
     """窗口位置y"""
 
-    theme_mode: str = "AUTO"
+    theme_mode: str
     """应用主题：AUTO, LIGHT, DARK"""
 
-    autostart: bool = False
+    autostart: bool
     """自启动"""
 
-    autodaily: bool = False
+    autodaily: bool
     """启用定时执行"""
 
-    autodaily_task: List[bool] = [False] * 4
+    autodaily_task: List[bool]
     """定时任务列表"""
 
-    autodaily_task_exit: List[bool] = [False] * 7
+    autodaily_task_exit: List[bool]
     """定时任务退出列表: [exit_game, exit_aalc, sleep, hibernate, shutdown, lock, exit_emulator]"""
 
-    autodaily_time: str = "00:00"
+    autodaily_time: str
     """定时执行时间（HH:mm）"""
 
-    autodaily2: bool = False
+    autodaily2: bool
     """启用定时执行2"""
 
-    autodaily2_task: List[bool] = [False] * 4
+    autodaily2_task: List[bool]
     """定时任务2列表"""
 
-    autodaily2_task_exit: List[bool] = [False] * 7
+    autodaily2_task_exit: List[bool]
     """定时任务2退出列表: [exit_game, exit_aalc, sleep, hibernate, shutdown, lock, exit_emulator]"""
 
-    autodaily_time2: str = "00:00"
+    autodaily_time2: str
     """定时执行时间2（HH:mm）"""
 
-    autodaily3: bool = False
+    autodaily3: bool
     """启用定时执行3"""
 
-    autodaily3_task: List[bool] = [False] * 4
+    autodaily3_task: List[bool]
     """定时任务3列表"""
 
-    autodaily3_task_exit: List[bool] = [False] * 7
+    autodaily3_task_exit: List[bool]
     """定时任务3退出列表: [exit_game, exit_aalc, sleep, hibernate, shutdown, lock, exit_emulator]"""
 
-    autodaily_time3: str = "00:00"
+    autodaily_time3: str
     """定时执行时间3（HH:mm）"""
 
-    autodaily4: bool = False
+    autodaily4: bool
     """启用定时执行4"""
 
-    autodaily4_task: List[bool] = [False] * 4
+    autodaily4_task: List[bool]
     """定时任务4列表"""
 
-    autodaily4_task_exit: List[bool] = [False] * 7
+    autodaily4_task_exit: List[bool]
     """定时任务4退出列表: [exit_game, exit_aalc, sleep, hibernate, shutdown, lock, exit_emulator]"""
 
-    autodaily_time4: str = "00:00"
+    autodaily_time4: str
     """定时执行时间4（HH:mm）"""
 
-    minimize_to_tray: bool = False
+    minimize_to_tray: bool
     """最小化到托盘"""
 
-    screenshot_interval: float = 0.85
+    screenshot_interval: float
     """截图间隔时间"""
 
-    mouse_action_interval: float = 0.5
+    mouse_action_interval: float
     """鼠标操作间隔时间"""
 
-    mouse_down_duration: float = 0.1
+    mouse_down_duration: float
     """鼠标按下持续时间"""
 
-    use_post_message: bool = False
+    use_post_message: bool
     """是否使用PostMessage进行输入"""
 
-    resonate_with_Ahab: bool = False
+    resonate_with_Ahab: bool
     """是否播放亚哈语录"""
 
-    experimental_keep_screen_awake: bool = False
+    experimental_keep_screen_awake: bool
     """运行期间阻止系统与显示器休眠，任务结束自动恢复"""
 
-    simulator: bool = False
+    simulator: bool
     """是否使用模拟器"""
 
-    simulator_type: int = 0
+    simulator_type: int
     """0:mumu, 10:其他"""
 
-    simulator_port: int = 0
+    simulator_port: int
     """端口"""
 
-    mumu_instance_number: int = -1
+    mumu_instance_number: int
     """mumu模拟器的实例编号"""
 
-    start_emulator_timeout: int = 120
+    start_emulator_timeout: int
     """启动模拟器超时时间"""
 
-    adb_reconnect_on_error: bool = True
+    adb_reconnect_on_error: bool
     """ADB或minitouch连接失效时自动重连"""
 
-    check_update: bool = True
+    check_update: bool
     """检查更新"""
 
-    update_prerelease_enable: bool = False
+    update_prerelease_enable: bool
     """启用预发布版更新"""
 
-    update_source: str = "GitHub"
+    update_source: str
     """更新源"""
 
-    mirrorchyan_cdk: str = ""
+    mirrorchyan_cdk: str
     """Mirror酱 CDK"""
 
-    image_resource_sync: bool = True
+    image_resource_sync: bool
     """是否启用图片资源自动同步"""
 
-    image_resource_source: str = "Auto"
+    image_resource_source: str
     """图片资源同步源"""
 
-    default_page: int = 0
+    default_page: int
     """保存启动后的页面"""
 
-    set_windows: bool = True
+    set_windows: bool
     """是否进行自动窗口设置"""
 
-    set_win_size: int = 1080
+    set_win_size: int
     """设置使用的分辨率"""
 
-    set_win_position: str = "free"
+    set_win_position: str
     """是否自动设置窗口的位置"""
 
-    set_reduce_miscontact: bool = True
+    set_reduce_miscontact: bool
     """是否防止误触"""
 
-    select_team_by_order: bool = False
+    select_team_by_order: bool
     """是否按顺序（而非名称）选择队伍"""
 
-    daily_task: bool = False
+    daily_task: bool
     """是否进行日常本"""
 
-    set_EXP_count: int = 1
+    set_EXP_count: int
     """设置经验本的次数"""
 
-    set_thread_count: int = 3
+    set_thread_count: int
     """设置纽本的次数"""
 
-    daily_teams: int = 1
+    daily_teams: int
     """设置日常本使用的队伍"""
 
-    targeted_teaming_EXP: bool = False
+    targeted_teaming_EXP: bool
     """经验本指定队伍"""
 
-    EXP_day_1_2: int = 1
+    EXP_day_1_2: int
     """周一/二经验本队伍"""
 
-    EXP_day_3_4: int = 1
+    EXP_day_3_4: int
     """周三/四经验本队伍"""
 
-    EXP_day_5_6: int = 1
+    EXP_day_5_6: int
     """周五/六经验本队伍"""
 
-    EXP_day_7: int = 1
+    EXP_day_7: int
     """周日经验本队伍"""
 
-    targeted_teaming_thread: bool = False
+    targeted_teaming_thread: bool
     """纽本指定队伍"""
 
-    use_continuous_combat: bool = False
+    use_continuous_combat: bool
     """是否使用连续作战"""
 
-    use_continuous_combat_select: int = 1
+    use_continuous_combat_select: int
     """一场连续作战的最大次数"""
 
-    thread_day_1: int = 1
+    thread_day_1: int
     """周一纽本队伍"""
 
-    thread_day_2: int = 1
+    thread_day_2: int
     """周二纽本队伍"""
 
-    thread_day_3: int = 1
+    thread_day_3: int
     """周三纽本队伍"""
 
-    thread_day_4: int = 1
+    thread_day_4: int
     """周四纽本队伍"""
 
-    thread_day_5: int = 1
+    thread_day_5: int
     """周五纽本队伍"""
 
-    thread_day_6: int = 1
+    thread_day_6: int
     """周六纽本队伍"""
 
-    thread_day_7: int = 1
+    thread_day_7: int
     """周日纽本队伍"""
 
-    get_reward: bool = False
+    get_reward: bool
     """是否进行获取奖励"""
 
-    set_get_prize: int = 0
+    set_get_prize: int
     """奖励领取模式"""
 
-    buy_enkephalin: bool = False
+    buy_enkephalin: bool
     """是否自动购买体力"""
 
-    set_lunacy_to_enkephalin: int = 2
+    set_lunacy_to_enkephalin: int
     """购买体力次数"""
 
-    Dr_Grandet_mode: bool = False
+    Dr_Grandet_mode: bool
     """葛朗台模式"""
 
-    skip_enkephalin: bool = False
+    skip_enkephalin: bool
     """跳过换体"""
 
-    mirror: bool = False
+    mirror: bool
     """是否进行自动镜牢"""
 
-    set_mirror_count: int = 1
+    set_mirror_count: int
     """镜牢的次数"""
 
-    hard_mirror: int | bool = 0
+    hard_mirror: int | bool
     """进行困难镜牢"""
 
-    no_weekly_bonuses: int | bool = 0
+    no_weekly_bonuses: int | bool
     """不使用每周加成"""
 
-    floor_3_exit: bool = False
+    floor_3_exit: bool
     """只打三层"""
 
-    infinite_dungeons: bool = False
+    infinite_dungeons: bool
     """无限刷牢"""
 
-    save_rewards: bool = False
+    save_rewards: bool
     """保存奖励不领"""
 
-    hard_mirror_single_bonuses: bool = False
+    hard_mirror_single_bonuses: bool
     """困难镜牢使用单次加成"""
 
-    select_event_pack: bool = False
+    select_event_pack: bool
     """第五层选择活动卡包"""
 
-    skip_event_pack: bool = False
+    skip_event_pack: bool
     """第五层跳过活动卡包"""
 
-    re_claim_rewards: bool = False
+    re_claim_rewards: bool
     """再次执行领取奖励任务"""
 
-    not_skip_whitegossypium: bool = False
+    not_skip_whitegossypium: bool
     """不跳过白棉花"""
 
-    fight_to_last_man: bool = False
+    fight_to_last_man: bool
     """战斗直到全灭"""
 
-    teams_be_select_num: int = 0
+    teams_be_select_num: int
     """被选中的队伍数量"""
 
-    teams_be_select: List[bool] = [False]
+    teams_be_select: List[bool]
     """被选中的队伍"""
 
-    teams_order: List[int] = [0]
+    teams_order: List[int]
     """队伍的顺序"""
 
-    teams_active_queue: List[int] = []
+    teams_active_queue: List[int]
     """镜牢启用队伍的执行队列（单一事实源）"""
 
-    mirror_keyboard_navigation: bool = False
+    mirror_keyboard_navigation: bool
     """使用键盘进行镜牢寻路"""
 
-    teams: dict[str, TeamSetting] = {"1": TeamSetting()}
+    teams: dict[str, TeamSetting]
     """队伍设置"""
 
     @field_validator("use_continuous_combat_select")

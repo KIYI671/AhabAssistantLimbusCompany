@@ -5,6 +5,7 @@ permissions:
   actions: read
 
 on:
+  workflow_dispatch:
   pull_request:
     branches:
       - main
@@ -45,9 +46,28 @@ jobs:
             --current-run-number "${{ github.run_number }}" \
             --fallback-version "${{ github.sha }}"
 
-  # 复用既有打包流程，只替换传入的构建版本号。
+  test:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@main
+
+      - name: Setup UV for Python
+        uses: astral-sh/setup-uv@v8.1.0
+        with:
+          enable-cache: true
+          cache-dependency-glob: |
+            **/uv.lock
+
+      - name: Install dependencies
+        run: uv sync --frozen
+
+      - name: Run pytest
+        run: uv run pytest -ra
+
+  # 复用既有打包流程，只替换传入的构建版本号。测试不过就不打包。
   build:
-    needs: prepare-version
+    needs: [prepare-version, test]
     uses: ./.github/workflows/reusable-build.yml
     with:
       version: ${{ needs.prepare-version.outputs.version }}
