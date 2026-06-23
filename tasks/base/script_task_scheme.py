@@ -89,17 +89,23 @@ def onetime_mir_process(team_setting: TeamSetting, team_num: int):
     # 进行一次镜牢
     try:
         mirror_adventure = Mirror(team_setting, team_num)
-        if mirror_adventure.run():
-            del mirror_adventure
-            mirror_adventure = None
+        result = mirror_adventure.run()
+        stats = {
+            "pass_coins": mirror_adventure.pass_coins or 0,
+            "threads": mirror_adventure.threads or 0,
+            "xp_cards": mirror_adventure.xp_cards or 0,
+        }
+        del mirror_adventure
+        mirror_adventure = None
+        if result:
             back_init_menu()
             make_enkephalin_module()
-            return True
+            return True, stats
         else:
-            return False
+            return False, stats
     except Exception as e:
         log.exception(f"镜牢行动出错: {e}")
-        return False
+        return False, {"pass_coins": 0, "threads": 0, "xp_cards": 0}
 
 
 def to_get_reward():
@@ -267,6 +273,7 @@ def Mirror_task():
     if cfg.save_rewards and cfg.hard_mirror:
         mir_times = 1
     finish_times = 0
+    mirror_stats = {"pass_coins": 0, "threads": 0, "xp_cards": 0, "times": 0}
     mediator.mirror_signal.emit(0, mir_times)
     cfg.normalize_and_sync_team_state(persist=False)
     # 开始执行镜牢任务
@@ -302,7 +309,11 @@ def Mirror_task():
                 cfg.rotate_team_queue()
                 continue
         # 执行一次镜牢任务，根据执行结果进行处理
-        mirror_result = onetime_mir_process(team_setting, team_num)
+        mirror_result, stats = onetime_mir_process(team_setting, team_num)
+        mirror_stats["pass_coins"] += stats["pass_coins"]
+        mirror_stats["threads"] += stats["threads"]
+        mirror_stats["xp_cards"] += stats["xp_cards"]
+        mirror_stats["times"] += 1
         if mirror_result:
             cfg.rotate_team_queue()
             mir_times -= 1
@@ -319,6 +330,18 @@ def Mirror_task():
             log.info(msg)
             if finish_times == 1 and cfg.re_claim_rewards:  # 完成第一次镜牢后重新领取奖励
                 to_get_reward()
+
+    if mirror_stats["times"] > 0:
+        summary_parts = [f"镜牢统计: 共{mirror_stats['times']}次"]
+        if mirror_stats["pass_coins"]:
+            summary_parts.append(f"通行证经验x{mirror_stats['pass_coins']}")
+        if mirror_stats["threads"]:
+            summary_parts.append(f"纽x{mirror_stats['threads']}")
+        if mirror_stats["xp_cards"]:
+            summary_parts.append(f"经验卡x{mirror_stats['xp_cards']}")
+        summary = "  ".join(summary_parts)
+        log.info(summary)
+        mediator.mirror_stats_signal.emit(summary)
 
     mediator.mirror_bar_kill_signal.emit()
     if cfg.re_claim_rewards and finish_times > 0:

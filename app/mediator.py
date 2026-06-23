@@ -24,6 +24,7 @@ class Mediator(QObject):
     request_focus = Signal()
     mirror_signal = Signal(int, int)  # 运行的当前次数和总次数
     mirror_bar_kill_signal = Signal()
+    mirror_stats_signal = Signal(str)  # 镜牢完成后的统计数据
     hotkey_listener_stop_signal = Signal()
     hotkey_listener_start_signal = Signal()
 

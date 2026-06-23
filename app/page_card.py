@@ -29,6 +29,7 @@ from qfluentwidgets import (
 from qfluentwidgets import FluentIcon as FIF
 
 from app import *
+from app.card.messagebox_custom import BaseInfoBar
 from app.base_combination import (
     CheckBoxWithComboBox,
     LabelWithComboBox,
@@ -778,6 +779,19 @@ class PageMirror(PageCard):
         mediator.refresh_teams_order.connect(self.refresh)
         mediator.mirror_signal.connect(self.update_mirror_bar)
         mediator.mirror_bar_kill_signal.connect(self.destroy_mirror_bar)
+        mediator.mirror_stats_signal.connect(self._show_mirror_stats)
+
+    def _show_mirror_stats(self, summary: str):
+        """显示镜牢统计数据"""
+        BaseInfoBar.success(
+            title=self.tr("镜牢完成"),
+            content=summary,
+            orient=Qt.Orientation.Horizontal,
+            isClosable=True,
+            duration=8000,
+            position=InfoBarPosition.TOP,
+            parent=self,
+        )
 
     def retranslateUi(self):
         self.mirror_count.retranslateUi()
