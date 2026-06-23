@@ -1,11 +1,85 @@
+import time
+from enum import StrEnum
 from time import sleep
 
 from module.automation import auto
+from module.config import cfg
 from module.decorator.decorator import begin_and_finish_time_log
 from module.logger import log
 from tasks.base import update_model_for_retry
 from tasks.base.retry import click_title_screen_safely, ensure_simulator_game_started, retry
 from tasks.mirror.reward_card import get_reward_card
+
+
+class StartupMainMenuWaitResult(StrEnum):
+    MAIN_MENU = "main_menu"
+    RUNTIME_UI = "runtime_ui"
+    TIMEOUT = "timeout"
+
+
+def get_startup_wait_timeout_seconds() -> int:
+    key = "startup_wait_timeout_simulator" if cfg.simulator else "startup_wait_timeout_pc"
+    default = 180 if cfg.simulator else 120
+    return int(cfg.get_value(key, default))
+
+
+def handle_launch_state_once() -> bool | None:
+    if auto.find_element("base/clear_all_caches_assets.png", model="clam"):
+        if auto.click_element("base/update_confirm_assets.png"):
+            return True
+        click_title_screen_safely()
+        return True
+    if auto.find_element("base/connecting_assets.png"):
+        return True
+    if auto.find_element("base/waiting_assets.png"):
+        return True
+    if auto.find_element("base/waiting_2_assets.png"):
+        return True
+    if auto.click_element("base/only_option_assets.png", model="clam"):
+        return True
+    return None
+
+
+def wait_until_main_menu_after_launch(*, allow_restart: bool = True, max_retries: int = 3) -> StartupMainMenuWaitResult:
+    retries = 0
+    while True:
+        auto.model = "clam"
+        timeout_seconds = get_startup_wait_timeout_seconds()
+        start_time = time.time()
+        deadline = start_time + timeout_seconds
+        halfway_logged = False
+        halfway_threshold = start_time + timeout_seconds / 2
+        while True:
+            now = time.time()
+            if now > deadline:
+                break
+            if not halfway_logged and timeout_seconds >= 10 and now >= halfway_threshold:
+                log.info(f"启动后仍在等待进入主界面，已等待{int(now - start_time)}秒/{timeout_seconds}秒")
+                halfway_logged = True
+            if ensure_simulator_game_started():
+                continue
+            if auto.take_screenshot() is None:
+                continue
+            if handle_launch_state_once():
+                continue
+            if auto.click_element("home/window_assets.png") and auto.find_element("home/mail_assets.png", model="normal"):
+                return StartupMainMenuWaitResult.MAIN_MENU
+            if auto.find_element("home/back_assets.png") or auto.find_element("battle/setting_assets.png"):
+                return StartupMainMenuWaitResult.RUNTIME_UI
+            sleep(0.5)
+        log.error(f"启动等待主界面超时（{timeout_seconds}秒）")
+        if not allow_restart:
+            return StartupMainMenuWaitResult.TIMEOUT
+        retries += 1
+        if retries > max_retries:
+            log.error(f"启动等待主界面已重试 {max_retries} 次仍超时，放弃重试")
+            return StartupMainMenuWaitResult.TIMEOUT
+        from tasks.base.retry import kill_game
+        from tasks.base.script_task_scheme import init_game
+
+        log.error("启动等待主界面超时，尝试重启游戏")
+        kill_game()
+        init_game()
 
 
 @begin_and_finish_time_log(task_name="返回主界面")

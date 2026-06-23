@@ -212,6 +212,15 @@ class SettingInterface(QWidget):
             content="",
             parent=self.simulator_setting_group,
         )
+        self.startup_wait_timeout_simulator_card = PushSettingCardChance(
+            QT_TRANSLATE_NOOP("PushSettingCardChance", "修改"),
+            FIF.DATE_TIME,
+            QT_TRANSLATE_NOOP("PushSettingCardChance", "模拟器启动后等待主界面超时时间(秒)"),
+            config_name="startup_wait_timeout_simulator",
+            max_value=3600,
+            content="",
+            parent=self.simulator_setting_group,
+        )
 
         self.game_path_group = BaseSettingCardGroup(
             QT_TRANSLATE_NOOP("BaseSettingCardGroup", "启动游戏"), self.scroll_widget
@@ -221,6 +230,15 @@ class SettingInterface(QWidget):
             FIF.FOLDER,
             QT_TRANSLATE_NOOP("BasePushSettingCard", "游戏路径"),
             cfg.game_path,
+            parent=self.game_path_group,
+        )
+        self.startup_wait_timeout_pc_card = PushSettingCardChance(
+            QT_TRANSLATE_NOOP("PushSettingCardChance", "修改"),
+            FIF.DATE_TIME,
+            QT_TRANSLATE_NOOP("PushSettingCardChance", "PC启动后等待主界面超时时间(秒)"),
+            config_name="startup_wait_timeout_pc",
+            max_value=3600,
+            content="",
             parent=self.game_path_group,
         )
         self.autostart_card = SwitchSettingCard(
@@ -473,8 +491,10 @@ class SettingInterface(QWidget):
         self.simulator_setting_group.addSettingCard(self.simulator_type_setting_card)
         self.simulator_setting_group.addSettingCard(self.simulator_port_chance_card)
         self.simulator_setting_group.addSettingCard(self.start_emulator_timeout_chance_card)
+        self.simulator_setting_group.addSettingCard(self.startup_wait_timeout_simulator_card)
 
         self.game_path_group.addSettingCard(self.game_path_card)
+        self.game_path_group.addSettingCard(self.startup_wait_timeout_pc_card)
         self.game_path_group.addSettingCard(self.autostart_card)
         self.game_path_group.addSettingCard(self.minimize_to_tray_card)
 
@@ -706,7 +726,9 @@ class SettingInterface(QWidget):
         self.simulator_type_setting_card.retranslateUi()
         self.simulator_port_chance_card.retranslateUi()
         self.start_emulator_timeout_chance_card.retranslateUi()
+        self.startup_wait_timeout_simulator_card.retranslateUi()
         self.game_path_card.retranslateUi()
+        self.startup_wait_timeout_pc_card.retranslateUi()
         self.game_path_group.retranslateUi()
         self.autodaily_group.retranslateUi()
         self.personal_group.retranslateUi()
