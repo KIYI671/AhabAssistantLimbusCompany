@@ -92,6 +92,9 @@ def select_battle_team(num):
                     first_position[0],
                     first_position[1] + 100 * scale + 75 * team_order * scale,
                 )
+            log.info(f"成功找到队伍 # {num}")
+            sleep(1)
+            return True
         else:
             team_name_zh = "编队#" + str(num)
             team_name_en = [f"TEAMS #{num}", f"TEAMS#{num}", f"TFAMS#{num}"]
