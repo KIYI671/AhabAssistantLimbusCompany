@@ -1,8 +1,10 @@
 import base64
+import hashlib
 import os
 import subprocess
 import tempfile
 from datetime import datetime, time, timedelta
+from pathlib import Path
 from time import sleep
 from zoneinfo import ZoneInfo  # Python 3.9+ 内置模块
 
@@ -12,6 +14,21 @@ import win32crypt
 
 from module.config import cfg
 from module.logger import log
+
+
+def sha256_file(file_path: str | Path) -> str:
+    """计算文件的 SHA-256 哈希值（分块读取，适用于大文件）。"""
+    hasher = hashlib.sha256()
+    with open(file_path, "rb") as f:
+        for chunk in iter(lambda: f.read(1024 * 1024), b""):
+            hasher.update(chunk)
+    return hasher.hexdigest()
+
+
+def sanitize_filename(name: str) -> str:
+    """清理文件名中的非法字符（Windows）。"""
+    import re
+    return re.sub(r'[<>:"/\\|?*]', "_", name)
 
 
 def get_day_of_week():
@@ -176,14 +193,18 @@ def decrypt_string(encrypted_b64: str, entropy: bytes = b"AALC") -> str:
     return decrypted_data[1].decode("utf-8")
 
 
+_game_pid_cache: int | None = None
+
+
 def check_game_running() -> bool:
-    """检查游戏是否正在运行"""
+    """检查游戏是否正在运行（缓存 PID 以加速后续检查）"""
+    global _game_pid_cache
+
     if cfg.simulator:
         if cfg.simulator_type == 0:
             from module.automation.input_handlers.simulator.mumu_control import (
                 MumuControl,
             )
-
             return MumuControl.connection_device.check_game_alive()
         else:
             # 其他模拟器类型，使用通用的 SimulatorControl 检查
@@ -191,26 +212,34 @@ def check_game_running() -> bool:
                 from module.automation.input_handlers.simulator.simulator_control import (
                     SimulatorControl,
                 )
-
                 if SimulatorControl.connection_device is None:
                     return False
                 return SimulatorControl.connection_device.check_game_alive()
             except Exception:
                 return False
-    else:
-        import psutil
 
-        for proc in psutil.process_iter(["name"]):
-            try:
-                # 获取进程的可执行文件名（如 "notepad.exe"）
-                proc_name = proc.info["name"]
-                # 精确匹配进程名（区分大小写，取决于系统）
-                if cfg.game_process_name in proc_name:
-                    return True
-            except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
-                # 忽略已终止、无权限或僵尸进程
-                continue
+    import psutil
 
+    if _game_pid_cache is not None:
+        try:
+            if cfg.game_process_name in psutil.Process(_game_pid_cache).name():
+                return True
+        except (psutil.NoSuchProcess, psutil.AccessDenied):
+            pass  # 回退到完整扫描
+
+    for proc in psutil.process_iter(["name"]):
+        try:
+            # 获取进程的可执行文件名（如 "notepad.exe"）
+            proc_name = proc.info["name"]
+            # 精确匹配进程名（区分大小写，取决于系统）
+            if cfg.game_process_name in proc_name:
+                _game_pid_cache = proc.pid
+                return True
+        except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
+            # 忽略已终止、无权限或僵尸进程
+            continue
+
+    _game_pid_cache = None
     return False
 
 

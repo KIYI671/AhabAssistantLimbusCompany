@@ -13,6 +13,7 @@ from urllib.parse import quote, urljoin
 import requests
 
 from module.logger import log
+from utils.utils import sha256_file
 from module.resource_sync.manifest import ResourceFileEntry, ResourceManifest, ResourcePackageEntry
 from module.resource_sync.source import ResourceSource, get_default_sources
 from module.resource_sync.state import LOCAL_STATE_PATH, ResourceSyncState
@@ -132,23 +133,6 @@ class ResourceSyncService:
         self.temp_dir = Path(temp_dir)
         # 资源源定义表。
         self.sources = sources or get_default_sources()
-
-    @staticmethod
-    def _calculate_sha256(file_path: Path) -> str:
-        """计算本地文件的 SHA-256 特征码。
-
-        参数:
-            file_path: 待计算哈希的文件路径。
-
-        返回:
-            文件内容的 SHA-256 十六进制摘要。
-        """
-        hasher = hashlib.sha256()
-        # 采用分块读取，避免大文件一次性读入内存。
-        with file_path.open("rb") as file:
-            for chunk in iter(lambda: file.read(1024 * 1024), b""):
-                hasher.update(chunk)
-        return hasher.hexdigest()
 
     @staticmethod
     def _quote_repository_path(resource_path: str) -> str:
@@ -473,7 +457,7 @@ class ResourceSyncService:
             if not local_path.exists():
                 plan.files_to_add.append(entry)
                 continue
-            if self._calculate_sha256(local_path) != entry.sha256:
+            if sha256_file(local_path) != entry.sha256:
                 plan.files_to_update.append(entry)
 
         # 第三步：本地只要存在“远端清单未记录”的图片，就统一记录为待删除文件。
@@ -668,7 +652,7 @@ class ResourceSyncService:
                 extracted_path = extract_dir / entry.path
                 if not extracted_path.is_file():
                     raise ValueError(f"资源包中缺少清单要求的文件: {entry.path}")
-                if self._calculate_sha256(extracted_path) != entry.sha256:
+                if sha256_file(extracted_path) != entry.sha256:
                     raise ValueError(f"资源包内文件校验失败: {entry.path}")
 
                 target_path = self.assets_dir / entry.path
