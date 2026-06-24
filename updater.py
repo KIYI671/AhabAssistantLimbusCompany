@@ -64,8 +64,9 @@ class Updater:
             self._apply_incremental_update()
         else:
             try:
-                if os.path.exists(self.delete_folder_path):
-                    shutil.rmtree(self.delete_folder_path)
+                shutil.rmtree(self.delete_folder_path)
+            except FileNotFoundError:
+                pass
             except Exception as e:
                 print(f"删除旧资源文件失败: {e}")
             print("开始覆盖安装...")
@@ -90,18 +91,22 @@ class Updater:
             if not normalized_path:
                 continue
             full_path = os.path.join(self.cover_folder_path, normalized_path)
-            if os.path.exists(full_path):
+            try:
                 shutil.rmtree(full_path)
                 print(f"删除目录: {dir_path}")
+            except FileNotFoundError:
+                pass
 
         for file_path in changes.get("deleted", []):
             normalized_path = self._normalize_manifest_path(file_path)
             if not normalized_path:
                 continue
             full_path = os.path.join(self.cover_folder_path, normalized_path)
-            if os.path.exists(full_path):
+            try:
                 os.remove(full_path)
                 print(f"删除文件: {file_path}")
+            except FileNotFoundError:
+                pass
 
         for dir_path in changes.get("added_dir", []):
             normalized_path = self._normalize_manifest_path(dir_path)
@@ -117,10 +122,12 @@ class Updater:
                 continue
             src = os.path.join(self.extract_folder_path, normalized_path)
             dst = os.path.join(self.cover_folder_path, normalized_path)
-            if os.path.exists(src):
+            try:
                 os.makedirs(os.path.dirname(dst), exist_ok=True)
                 shutil.copy2(src, dst)
                 print(f"新增文件: {file_path}")
+            except FileNotFoundError:
+                pass
 
         for file_path in changes.get("modified", []):
             normalized_path = self._normalize_manifest_path(file_path)
@@ -128,10 +135,12 @@ class Updater:
                 continue
             src = os.path.join(self.extract_folder_path, normalized_path)
             dst = os.path.join(self.cover_folder_path, normalized_path)
-            if os.path.exists(src):
+            try:
                 os.makedirs(os.path.dirname(dst), exist_ok=True)
                 shutil.copy2(src, dst)
                 print(f"更新文件: {file_path}")
+            except FileNotFoundError:
+                pass
 
         print("增量更新完成")
 
@@ -215,12 +224,17 @@ class Updater:
         print("开始清理...")
         try:
             os.remove(self.download_file_path)
+        except FileNotFoundError:
+            pass
+        try:
             shutil.rmtree(self.extract_folder_path)
-            if os.path.exists(self.changes_file_path):
-                os.remove(self.changes_file_path)
-            print("清理完成")
-        except Exception as e:
-            print(f"清理失败: {e}")
+        except FileNotFoundError:
+            pass
+        try:
+            os.remove(self.changes_file_path)
+        except FileNotFoundError:
+            pass
+        print("清理完成")
 
     def run(self, apply_mode=False):
         """运行更新流程。"""

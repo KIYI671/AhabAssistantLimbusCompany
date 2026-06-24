@@ -13,6 +13,7 @@ import sys
 if __package__ in {None, ""}:
     sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
+from utils.utils import sha256_file
 from module.resource_sync.manifest import (
     RESOURCE_SYNC_SCHEMA_VERSION,
     ResourceFileEntry,
@@ -42,23 +43,6 @@ def _normalize_relative_path(relative_path: Path) -> str:
     """
     # 统一用正斜杠，避免不同平台路径分隔符导致 manifest_id 抖动。
     return relative_path.as_posix()
-
-
-def calculate_file_sha256(file_path: Path) -> str:
-    """计算单个文件的 SHA-256 特征码。
-
-    参数:
-        file_path: 待计算哈希的文件路径。
-
-    返回:
-        文件内容的 SHA-256 十六进制摘要。
-    """
-    hasher = hashlib.sha256()
-    # 采用分块读取，避免较大资源文件一次性加载到内存。
-    with file_path.open("rb") as file:
-        for chunk in iter(lambda: file.read(1024 * 1024), b""):
-            hasher.update(chunk)
-    return hasher.hexdigest()
 
 
 def iter_resource_files(source_dir: Path) -> list[Path]:
@@ -96,7 +80,7 @@ def collect_resource_entries(source_dir: Path) -> list[ResourceFileEntry]:
         entries.append(
             ResourceFileEntry(
                 path=relative_path,
-                sha256=calculate_file_sha256(file_path),
+                sha256=sha256_file(file_path),
                 size=file_path.stat().st_size,
             )
         )
@@ -187,7 +171,7 @@ def build_package_entry(output_manifest_path: Path, output_package_path: Path) -
     # 同步记录资源包相对路径、哈希、大小和格式，供客户端整包校验使用。
     return ResourcePackageEntry(
         path=package_relative_path,
-        sha256=calculate_file_sha256(output_package_path),
+        sha256=sha256_file(output_package_path),
         size=output_package_path.stat().st_size,
         format="7z",
     )

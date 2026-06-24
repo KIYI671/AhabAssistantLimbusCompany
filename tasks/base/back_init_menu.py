@@ -3,6 +3,7 @@ from time import sleep
 from module.automation import auto
 from module.decorator.decorator import begin_and_finish_time_log
 from module.logger import log
+from tasks.base import update_model_for_retry
 from tasks.base.retry import click_title_screen_safely, ensure_simulator_game_started, retry
 from tasks.mirror.reward_card import get_reward_card
 
@@ -13,10 +14,7 @@ def back_init_menu(*, allow_restart: bool = True):
     auto.model = "clam"
     while True:
         loop_count -= 1
-        if loop_count < 20:
-            auto.model = "normal"
-        if loop_count < 10:
-            auto.model = "aggressive"
+        update_model_for_retry(loop_count, normal_at=20, aggressive_at=10)
         if loop_count < 0:
             if not allow_restart:
                 log.warning("无法返回主界面，本次调用禁用内部重启，返回失败")
