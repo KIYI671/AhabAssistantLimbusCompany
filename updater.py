@@ -66,7 +66,7 @@ class Updater:
             try:
                 shutil.rmtree(self.delete_folder_path)
             except FileNotFoundError:
-                pass
+                print("待删除目录不存在，跳过")
             except Exception as e:
                 print(f"删除旧资源文件失败: {e}")
             print("开始覆盖安装...")
@@ -95,7 +95,7 @@ class Updater:
                 shutil.rmtree(full_path)
                 print(f"删除目录: {dir_path}")
             except FileNotFoundError:
-                pass
+                print(f"删除目录不存在: {dir_path}")
 
         for file_path in changes.get("deleted", []):
             normalized_path = self._normalize_manifest_path(file_path)
@@ -106,7 +106,7 @@ class Updater:
                 os.remove(full_path)
                 print(f"删除文件: {file_path}")
             except FileNotFoundError:
-                pass
+                print(f"删除文件不存在: {file_path}")
 
         for dir_path in changes.get("added_dir", []):
             normalized_path = self._normalize_manifest_path(dir_path)
@@ -127,7 +127,7 @@ class Updater:
                 shutil.copy2(src, dst)
                 print(f"新增文件: {file_path}")
             except FileNotFoundError:
-                pass
+                print(f"源文件不存在: {file_path}")
 
         for file_path in changes.get("modified", []):
             normalized_path = self._normalize_manifest_path(file_path)
@@ -140,7 +140,7 @@ class Updater:
                 shutil.copy2(src, dst)
                 print(f"更新文件: {file_path}")
             except FileNotFoundError:
-                pass
+                print(f"源文件不存在: {file_path}")
 
         print("增量更新完成")
 
@@ -225,15 +225,15 @@ class Updater:
         try:
             os.remove(self.download_file_path)
         except FileNotFoundError:
-            pass
+            print("下载文件不存在，跳过")
         try:
             shutil.rmtree(self.extract_folder_path)
         except FileNotFoundError:
-            pass
+            print("提取目录不存在，跳过")
         try:
             os.remove(self.changes_file_path)
         except FileNotFoundError:
-            pass
+            print("变更清单文件不存在，跳过")
         print("清理完成")
 
     def run(self, apply_mode=False):
