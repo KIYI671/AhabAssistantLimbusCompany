@@ -1,8 +1,6 @@
-import re
 import time
 from time import sleep
 
-import cv2
 import numpy as np
 
 from module.automation import auto
@@ -32,7 +30,6 @@ from tasks.mirror.search_road import (
 from tasks.mirror.select_theme_pack import select_theme_pack
 from tasks.teams.team_formation import check_team, load_team_code_in_game, select_battle_team, team_formation
 from utils.image_utils import ImageUtils
-from utils.path_manager import path_manager
 
 
 # 输出时间统计
@@ -42,33 +39,6 @@ def to_log_with_time(msg, elapsed_time):
     minutes, seconds = divmod(remainder, 60)
     time_string = f"{int(hours):02}:{int(minutes):02}:{int(seconds):02}"
     log.info(f"{msg} 总耗时:{time_string}")
-
-
-def extract_zh_floor(normalized_text):
-    for pattern in (r"第([1-5])层", r"第([1-5])层?", r"([1-5])层"):
-        match = re.search(pattern, normalized_text)
-        if match:
-            return int(match.group(1))
-    if "第" in normalized_text:
-        for char in normalized_text[normalized_text.index("第") + 1 :]:
-            if char in "12345":
-                return int(char)
-    return None
-
-
-def extract_en_floor(normalized_text):
-    for pattern in (r"floor([1-5])", r"oor([1-5])", r"([1-5])f"):
-        match = re.search(pattern, normalized_text)
-        if match:
-            return int(match.group(1))
-    anchor_index = normalized_text.find("floor")
-    if anchor_index == -1:
-        anchor_index = normalized_text.find("oor")
-    if anchor_index != -1:
-        for char in normalized_text[anchor_index:]:
-            if char in "12345":
-                return int(char)
-    return None
 
 
 class Mirror:
@@ -1528,75 +1498,29 @@ class Mirror:
         self.shop.in_shop(self.floor)
 
     def get_which_floor(self):
-        def extract_floor_from_text(ocr_text):
-            normalized_text = ocr_text.replace(" ", "").replace("\n", "").lower()
-            if path_manager.current_language == "zh_cn":
-                floor = extract_zh_floor(normalized_text)
-            elif path_manager.current_language == "en":
-                floor = extract_en_floor(normalized_text)
-            else:
-                floor = extract_zh_floor(normalized_text)
-                if floor is not None:
-                    path_manager.set_language("zh_cn")
-                else:
-                    floor = extract_en_floor(normalized_text)
-                    if floor is not None:
-                        path_manager.set_language("en")
-                        if path_manager.eliminate_zh_cn_paths():
-                            auto.clear_img_cache()
-            if floor is None:
-                return None
-            return floor if 0 < floor <= 5 else None
+        auto.click_element("mirror/road_in_mir/setting_assets.png", take_screenshot=True)
+        sleep(1)
 
-        def handle_ocr(image, stage_name):
-            ocr_result = ""
-            try:
-                result = ocr.run(image)
-                if getattr(result, "txts", None):
-                    ocr_result = "".join(result.txts)
-                floor = extract_floor_from_text(ocr_result)
-                if floor is not None:
-                    log.debug(f"对于楼层信息OCR[{stage_name}]得到：{ocr_result}")
-                    self.floor = floor
-                    self.get_floor_num = False
-                    return True, ocr_result
-            except:
-                pass
-            return False, ocr_result
+        scale = auto.screenshot.size[1] / 1440
+        floor_progress_crop = (
+            900 * scale,
+            650 * scale,
+            1700 * scale,
+            720 * scale,
+        )
+        not_passed_floors = auto.find_element(
+            "mirror/road_in_mir/not_passed_floor.png",
+            find_type="image_with_multiple_targets",
+            my_crop=floor_progress_crop,
+            take_screenshot=True,
+        )
+        not_passed_floor_count = len(not_passed_floors)
+        self.floor = 5 - not_passed_floor_count
+        log.debug(f"当前镜牢层数: {self.floor}")
+        self.get_floor_num = False
 
-        this_floor = self.floor
+        if to_window_position := auto.find_element("mirror/road_in_mir/to_window_assets.png"):
+            auto.mouse_click(to_window_position[0] - 200 * cfg.set_win_size / 1440, to_window_position[1])
+            sleep(0.2)
 
-        auto.take_screenshot(gray=False)
-        get_floor_bbox = ImageUtils.get_bbox(ImageUtils.load_image("mirror/road_in_mir/get_floor_bbox.png"))
-        previous_crop = ImageUtils.crop(np.array(auto.screenshot), get_floor_bbox)
-
-        for i in range(5):
-            auto.take_screenshot(gray=False)
-            current_crop = ImageUtils.crop(np.array(auto.screenshot), get_floor_bbox)
-            diff = cv2.absdiff(previous_crop, current_crop)
-            diff_gray = cv2.cvtColor(diff, cv2.COLOR_BGR2GRAY)
-            _, binary_img = cv2.threshold(diff_gray, 5, 255, cv2.THRESH_BINARY)
-            current_scaled = cv2.resize(current_crop, None, fx=2.5, fy=2.5, interpolation=cv2.INTER_CUBIC)
-            binary_img = cv2.resize(binary_img, None, fx=3.0, fy=3.0, interpolation=cv2.INTER_CUBIC)
-
-            floor_found = False
-            for stage_name, candidate_image in (
-                ("current", current_crop),
-                ("current_scaled", current_scaled),
-                ("binary", binary_img),
-            ):
-                floor_found, _ = handle_ocr(candidate_image, stage_name)
-                if floor_found:
-                    break
-            previous_crop = current_crop
-            if floor_found and self.floor != this_floor:
-                break
-
-        log.debug(f"识别前楼层为{this_floor}，识别后为{self.floor}")
-
-        if self.floor - 1 == self.mirror_map.floor:
-            self.mirror_map.next_floor()
-        elif self.floor == self.mirror_map.floor:
-            pass
-        else:
-            self.mirror_map.refresh_floor(self.floor)
+        self.mirror_map.refresh_floor(self.floor)
