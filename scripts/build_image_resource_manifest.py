@@ -13,7 +13,6 @@ import sys
 if __package__ in {None, ""}:
     sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from utils.utils import sha256_file
 from module.resource_sync.manifest import (
     RESOURCE_SYNC_SCHEMA_VERSION,
     ResourceFileEntry,
@@ -21,6 +20,7 @@ from module.resource_sync.manifest import (
     ResourcePackageEntry,
 )
 from utils.archive_7z import create_7z_archive
+from utils.file_utils import sha256_file
 
 # 默认扫描源代码仓库中的图片资源目录。
 DEFAULT_SOURCE_DIR = Path("assets/images")

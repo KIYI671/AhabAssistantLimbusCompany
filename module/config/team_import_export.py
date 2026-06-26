@@ -7,7 +7,7 @@ from ruamel.yaml import YAML
 
 from module.config import TeamSetting, cfg, theme_list
 from module.logger import log
-from utils.utils import sanitize_filename
+from utils.file_utils import sanitize_filename
 
 
 def generate_team_export_filename(team_num: int) -> str:

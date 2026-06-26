@@ -13,7 +13,7 @@ from urllib.parse import quote, urljoin
 import requests
 
 from module.logger import log
-from utils.utils import sha256_file
+from utils.file_utils import sha256_file
 from module.resource_sync.manifest import ResourceFileEntry, ResourceManifest, ResourcePackageEntry
 from module.resource_sync.source import ResourceSource, get_default_sources
 from module.resource_sync.state import LOCAL_STATE_PATH, ResourceSyncState

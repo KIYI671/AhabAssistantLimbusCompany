@@ -1,10 +1,8 @@
 import base64
-import hashlib
 import os
 import subprocess
 import tempfile
 from datetime import datetime, time, timedelta
-from pathlib import Path
 from time import sleep
 from zoneinfo import ZoneInfo  # Python 3.9+ 内置模块
 
@@ -14,21 +12,6 @@ import win32crypt
 
 from module.config import cfg
 from module.logger import log
-
-
-def sha256_file(file_path: str | Path) -> str:
-    """计算文件的 SHA-256 哈希值（分块读取，适用于大文件）。"""
-    hasher = hashlib.sha256()
-    with open(file_path, "rb") as f:
-        for chunk in iter(lambda: f.read(1024 * 1024), b""):
-            hasher.update(chunk)
-    return hasher.hexdigest()
-
-
-def sanitize_filename(name: str) -> str:
-    """清理文件名中的非法字符（Windows）。"""
-    import re
-    return re.sub(r'[<>:"/\\|?*]', "_", name)
 
 
 def get_day_of_week():

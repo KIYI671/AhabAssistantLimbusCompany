@@ -222,19 +222,32 @@ class Updater:
     def cleanup(self):
         """清理下载和解压的临时文件。"""
         print("开始清理...")
-        try:
-            os.remove(self.download_file_path)
-        except FileNotFoundError:
-            print("下载文件不存在，跳过")
-        try:
-            shutil.rmtree(self.extract_folder_path)
-        except FileNotFoundError:
-            print("提取目录不存在，跳过")
-        try:
-            os.remove(self.changes_file_path)
-        except FileNotFoundError:
-            print("变更清单文件不存在，跳过")
+        self._cleanup_file(self.download_file_path, "下载文件")
+        self._cleanup_tree(self.extract_folder_path, "提取目录")
+        self._cleanup_file(self.changes_file_path, "变更清单文件")
         print("清理完成")
+
+    @staticmethod
+    def _cleanup_file(path, label):
+        if not path:
+            return
+        try:
+            os.remove(path)
+        except FileNotFoundError:
+            print(f"{label}不存在，跳过")
+        except Exception as e:
+            print(f"清理{label}失败: {e}")
+
+    @staticmethod
+    def _cleanup_tree(path, label):
+        if not path:
+            return
+        try:
+            shutil.rmtree(path)
+        except FileNotFoundError:
+            print(f"{label}不存在，跳过")
+        except Exception as e:
+            print(f"清理{label}失败: {e}")
 
     def run(self, apply_mode=False):
         """运行更新流程。"""
