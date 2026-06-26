@@ -9,7 +9,7 @@ class SingletonMeta(type):
 
     # 存储创建的实例
     _instances = {}
-    _lock = threading.Lock()
+    _lock = threading.RLock()
 
     def __call__(cls, *args, **kwargs):
         # 检查类是否已经有实例
