@@ -1102,6 +1102,8 @@ class ThemePackSettingDialog(FramelessDialog):
         self.set_all_negative_action.setText(self.tr("全部设为 -5"))
         self.export_button.setText(self.tr("导出"))
         self.import_button.setText(self.tr("导入"))
+        self.copy_code_button.setText(self.tr("导出配置码"))
+        self.paste_code_button.setText(self.tr("导入配置码"))
         self.save_button.setText(self.tr("保存并关闭"))
         self.close_button.setText(self.tr("关闭"))
         for card in self.normal_cards.values():
