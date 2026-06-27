@@ -1509,7 +1509,6 @@ class Mirror:
             1700 * scale,
             720 * scale,
         )
-        # image_with_multiple_targets 不支持
         if to_window_position := auto.find_element("mirror/road_in_mir/to_window_assets.png", take_screenshot=True):
             not_passed_floors = auto.find_element(
                 "mirror/road_in_mir/not_passed_floor.png",
@@ -1527,4 +1526,3 @@ class Mirror:
             )
 
         self.mirror_map.refresh_floor(self.floor)
-        sleep(100)
