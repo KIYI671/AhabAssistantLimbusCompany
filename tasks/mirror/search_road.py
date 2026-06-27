@@ -91,12 +91,12 @@ class MirrorMap:
             sleep(1)
         return None
 
-    def next_floor(self):
-        self.floor += 1
-        self.floor_map = []
-
     def refresh_floor(self, floor):
+        if self.floor == floor:
+            return
+        log.debug(f"镜牢地图楼层缓存更新: {self.floor} -> {floor}")
         self.floor = floor
+        self.floor_map = []
 
 
 def get_node_weight(x, y):
