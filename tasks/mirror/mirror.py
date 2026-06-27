@@ -1508,20 +1508,21 @@ class Mirror:
             1700 * scale,
             720 * scale,
         )
-        not_passed_floors = auto.find_element(
-            "mirror/road_in_mir/not_passed_floor.png",
-            find_type="image_with_multiple_targets",
-            my_crop=floor_progress_crop,
-            take_screenshot=True,
-        )
-        not_passed_floor_count = len(not_passed_floors)
-        self.floor = 5 - not_passed_floor_count
-        log.debug(f"当前镜牢层数: {self.floor}")
-        self.get_floor_num = False
-
-        if to_window_position := auto.find_element("mirror/road_in_mir/to_window_assets.png"):
+        # image_with_multiple_targets 不支持
+        if to_window_position := auto.find_element("mirror/road_in_mir/to_window_assets.png", take_screenshot=True):
+            not_passed_floors = auto.find_element(
+                "mirror/road_in_mir/not_passed_floor.png",
+                find_type="image_with_multiple_targets",
+                my_crop=floor_progress_crop,
+                take_screenshot=True,
+            )
+            not_passed_floor_count = len(not_passed_floors)
+            self.floor = 5 - not_passed_floor_count
+            log.debug(f"当前镜牢层数: {self.floor}")
+            self.get_floor_num = False
             auto.mouse_action_with_pos(
                 (to_window_position[0] - 200 * cfg.set_win_size / 1440, to_window_position[1])
             )
 
         self.mirror_map.refresh_floor(self.floor)
+        sleep(100)
