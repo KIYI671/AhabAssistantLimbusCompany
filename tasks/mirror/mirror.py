@@ -1,4 +1,3 @@
-import re
 import time
 from time import sleep
 
