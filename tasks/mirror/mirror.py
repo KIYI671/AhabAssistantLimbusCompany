@@ -1524,5 +1524,4 @@ class Mirror:
             auto.mouse_action_with_pos(
                 (to_window_position[0] - 200 * cfg.set_win_size / 1440, to_window_position[1])
             )
-
-        self.mirror_map.refresh_floor(self.floor)
+            self.mirror_map.refresh_floor(self.floor)
