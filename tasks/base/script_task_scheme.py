@@ -317,9 +317,11 @@ def Mirror_task():
             mediator.mirror_signal.emit(finish_times, mir_times)
             msg = f"已完成 {finish_times} 次镜牢"
             log.info(msg)
+            if finish_times == 1 and cfg.re_claim_rewards:  # 完成第一次镜牢后重新领取奖励
+                to_get_reward()
 
     mediator.mirror_bar_kill_signal.emit()
-    if cfg.re_claim_rewards and finish_times > 0:
+    if cfg.re_claim_rewards and finish_times > 1:
         to_get_reward()
 
 
