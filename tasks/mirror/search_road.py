@@ -273,6 +273,10 @@ def search_road_from_road_map(hard_mode=False):
                 bus = bus_position
                 break
 
+    auto.take_screenshot(gray=False)
+    auto.screenshot.save(f"map/{time.strftime('%Y%m%d_%H%M%S')}.png")
+    auto.take_screenshot(gray=True)
+
     bus_pos = auto.find_element("mirror/mybus_default_distance.png")
     all_nodes = identify_nodes(bus[0])
     y_area = divide_the_area_by_y(all_nodes)
