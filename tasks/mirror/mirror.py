@@ -16,7 +16,7 @@ from module.my_error.my_error import (
     unableToFindTeamError,
 )
 from module.ocr import ocr
-from tasks import all_systems, start_gift
+from tasks import all_systems, observe_system, start_gift
 from tasks.base.back_init_menu import back_init_menu
 from tasks.base.make_enkephalin_module import make_enkephalin_module
 from tasks.base.retry import retry
@@ -960,7 +960,7 @@ class Mirror:
             if file_system == "general":
                 system_index = 10
             else:
-                system_index = [k for k, v in all_systems.items() if v == file_system][0]
+                system_index = [k for k, v in observe_system.items() if v == file_system][0]
             # 选择体系，先点一下其他体系，再点回来，重置页面
             auto.mouse_click(benchmark_point[0] + 110 * (system_index+1) * my_scale, benchmark_point[1])
             sleep(0.2)
