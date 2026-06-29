@@ -30,11 +30,7 @@ from module.system_actions import (
     execute_after_completion,
     get_after_completion_config,
 )
-from tasks.base.back_init_menu import (
-    StartupMainMenuWaitResult,
-    back_init_menu,
-    wait_until_main_menu_after_launch,
-)
+from tasks.base.back_init_menu import back_init_menu
 from tasks.base.make_enkephalin_module import (
     lunacy_to_enkephalin,
     make_enkephalin_module,
@@ -352,10 +348,6 @@ def script_task() -> None | int:
     get_reward = None
     if auto.click_element("battle/turn_assets.png", take_screenshot=True):
         get_reward = battle.fight()
-    else:
-        startup_wait_result = wait_until_main_menu_after_launch(allow_restart=True)
-        if startup_wait_result == StartupMainMenuWaitResult.TIMEOUT:
-            raise cannotOperateGameError("启动等待主界面超时，请手动检查后重试")
 
     task_list = []
     # 执行日常刷本任务

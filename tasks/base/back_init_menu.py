@@ -12,6 +12,7 @@ from tasks.base.retry import (
     click_title_screen_safely,
     ensure_simulator_game_started,
     retry,
+    should_wait_for_main_menu_after_simulator_start,
 )
 from tasks.mirror.reward_card import get_reward_card
 
@@ -20,6 +21,18 @@ class StartupMainMenuWaitResult(StrEnum):
     MAIN_MENU = "main_menu"
     RUNTIME_UI = "runtime_ui"
     TIMEOUT = "timeout"
+
+
+def _is_retry_debug_enabled():
+    return bool(cfg.get_value("debug_mode", False) and cfg.get_value("debug_retry", False))
+
+
+def _screenshot_fingerprint():
+    screenshot = getattr(auto, "screenshot", None)
+    if screenshot is None:
+        return None
+    raw = screenshot.tobytes()
+    return hash(raw[: min(len(raw), 1024)])
 
 
 def get_startup_wait_timeout_seconds() -> int:
@@ -42,11 +55,15 @@ def handle_launch_state_once() -> bool | None:
         return True
     if auto.click_element("base/only_option_assets.png", model="clam"):
         return True
+    # 镜牢入口等游戏内子界面检测：按下ESC返回主菜单
+    if auto.find_element("mirror/road_to_mir/enter_assets.png"):
+        auto.key_press("esc")
+        sleep(0.5)
+        return True
     return None
 
 
-def wait_until_main_menu_after_launch(*, allow_restart: bool = True, max_retries: int = 3) -> StartupMainMenuWaitResult:
-    retries = 0
+def wait_until_main_menu_after_launch(*, allow_restart: bool = True) -> StartupMainMenuWaitResult:
     while True:
         auto.model = "clam"
         timeout_seconds = get_startup_wait_timeout_seconds()
@@ -54,6 +71,8 @@ def wait_until_main_menu_after_launch(*, allow_restart: bool = True, max_retries
         deadline = start_time + timeout_seconds
         halfway_logged = False
         halfway_threshold = start_time + timeout_seconds / 2
+        _last_fingerprint = None
+        _stale_count = 0
         while True:
             now = time.time()
             if now > deadline:
@@ -61,12 +80,36 @@ def wait_until_main_menu_after_launch(*, allow_restart: bool = True, max_retries
             if not halfway_logged and timeout_seconds >= 10 and now >= halfway_threshold:
                 log.info(f"启动后仍在等待进入主界面，已等待{int(now - start_time)}秒/{timeout_seconds}秒")
                 halfway_logged = True
+            auto.ensure_not_stopped()
             if ensure_simulator_game_started():
+                if not should_wait_for_main_menu_after_simulator_start():
+                    return StartupMainMenuWaitResult.RUNTIME_UI
                 continue
             if auto.take_screenshot() is None:
                 continue
+
+            fingerprint = _screenshot_fingerprint()
+            if fingerprint is None:
+                _stale_count = 0
+                _last_fingerprint = None
+            elif fingerprint == _last_fingerprint:
+                _stale_count += 1
+                if _stale_count >= 3:
+                    log.warning(f"检测到截屏冻结（连续 {_stale_count} 轮画面不变），跳过本轮")
+                    if _is_runtime_ui_visible():
+                        return StartupMainMenuWaitResult.RUNTIME_UI
+                    if hasattr(auto, "key_press"):
+                        log.debug("截屏冻结且无运行时 UI 匹配，尝试按 ESC 导航")
+                        auto.key_press("esc")
+                    sleep(0.5)
+                    continue
+            else:
+                _stale_count = 0
+                _last_fingerprint = fingerprint
+
             if handle_launch_state_once():
                 continue
+
             if auto.click_element("home/window_assets.png") and auto.find_element("home/mail_assets.png", model="normal"):
                 return StartupMainMenuWaitResult.MAIN_MENU
             if _is_runtime_ui_visible():
@@ -74,10 +117,6 @@ def wait_until_main_menu_after_launch(*, allow_restart: bool = True, max_retries
             sleep(0.5)
         log.error(f"启动等待主界面超时（{timeout_seconds}秒）")
         if not allow_restart:
-            return StartupMainMenuWaitResult.TIMEOUT
-        retries += 1
-        if retries > max_retries:
-            log.error(f"启动等待主界面已重试 {max_retries} 次仍超时，放弃重试")
             return StartupMainMenuWaitResult.TIMEOUT
         from tasks.base.retry import kill_game
         from tasks.base.script_task_scheme import init_game
@@ -88,10 +127,13 @@ def wait_until_main_menu_after_launch(*, allow_restart: bool = True, max_retries
 
 
 @begin_and_finish_time_log(task_name="返回主界面")
-def back_init_menu(*, allow_restart: bool = True):
+def back_init_menu(*, allow_restart: bool = True) -> bool:
     loop_count = 30
     auto.model = "clam"
+    _last_fingerprint = None
+    _stale_count = 0
     while True:
+        auto.ensure_not_stopped()
         loop_count -= 1
         update_model_for_retry(loop_count, normal_at=20, aggressive_at=10)
         if loop_count < 0:
@@ -107,10 +149,34 @@ def back_init_menu(*, allow_restart: bool = True):
             auto.model = "clam"
             sleep(1)
             continue
+        if _is_retry_debug_enabled():
+            log.info(f"[重试调试] 返回主界面 第{30 - loop_count}次循环, 模型={auto.model}")
+
         if ensure_simulator_game_started():
-            continue
+            if should_wait_for_main_menu_after_simulator_start():
+                wait_result = wait_until_main_menu_after_launch(allow_restart=allow_restart)
+                if wait_result == StartupMainMenuWaitResult.MAIN_MENU:
+                    return True
+                if wait_result == StartupMainMenuWaitResult.RUNTIME_UI:
+                    continue
+                return False
         if retry() is False:
             return False
+
+        # 截屏冻结检测：连续 3 轮相同画面则跳过（不点击），防止 Mumu 显存刷新延迟导致的无限误触
+        fingerprint = _screenshot_fingerprint()
+        if fingerprint is None:
+            _stale_count = 0
+            _last_fingerprint = None
+        elif fingerprint == _last_fingerprint:
+            _stale_count += 1
+            if _stale_count >= 3:
+                log.warning(f"检测到截屏冻结（连续 {_stale_count} 轮画面不变），跳过本轮")
+                sleep(0.5)
+                continue
+        else:
+            _stale_count = 0
+            _last_fingerprint = fingerprint
 
         if auto.click_element("home/window_assets.png") and auto.find_element("home/mail_assets.png", model="normal"):
             return True
