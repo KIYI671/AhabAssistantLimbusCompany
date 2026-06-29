@@ -16,6 +16,28 @@ _last_title_screen_tap_time = 0.0
 _last_simulator_alive_check_time = 0.0
 
 
+def _is_runtime_ui_visible() -> bool:
+    return bool(
+        auto.find_element("battle/setting_assets.png")
+        or auto.find_element("battle/battle_finish_confirm_assets.png")
+        or auto.find_element("base/retry_countdown.png")
+        or auto.find_element("base/retry.png")
+        or auto.find_element("base/try_again.png")
+        or auto.find_element("home/back_assets.png", model="normal")
+        or auto.find_element("base/notification_close_assets.png")
+        or auto.find_element("scenes/story_skip_confirm_assets.png")
+        or auto.find_element("scenes/story_skip_assets.png")
+        or auto.find_element("scenes/story_meun_assets.png")
+        or auto.find_element("home/close_anniversary_event_assets.png")
+        or auto.find_element("mirror/road_in_mir/towindow&forfeit_confirm_assets.png")
+        or auto.find_element("mirror/road_in_mir/to_window_assets.png", threshold=0.75)
+        or auto.find_element("mirror/road_in_mir/select_encounter_reward_card_assets.png")
+        or auto.find_element("mirror/road_in_mir/legend_assets.png")
+        or auto.find_element("mirror/road_to_mir/enter_assets.png")
+        or auto.find_element("mirror/theme_pack/feature_theme_pack_assets.png")
+    )
+
+
 def ensure_simulator_game_started() -> bool:
     """模拟器模式下确认游戏仍在前台，不在时尝试拉起游戏。"""
     global _last_simulator_alive_check_time

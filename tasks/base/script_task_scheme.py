@@ -354,10 +354,7 @@ def script_task() -> None | int:
         get_reward = battle.fight()
     else:
         startup_wait_result = wait_until_main_menu_after_launch(allow_restart=True)
-        if startup_wait_result == StartupMainMenuWaitResult.RUNTIME_UI:
-            if not back_init_menu():
-                raise cannotOperateGameError("启动后未能进入主界面，请手动检查后重试")
-        elif startup_wait_result == StartupMainMenuWaitResult.TIMEOUT:
+        if startup_wait_result == StartupMainMenuWaitResult.TIMEOUT:
             raise cannotOperateGameError("启动等待主界面超时，请手动检查后重试")
 
     task_list = []

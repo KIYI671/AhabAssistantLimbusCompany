@@ -7,7 +7,12 @@ from module.config import cfg
 from module.decorator.decorator import begin_and_finish_time_log
 from module.logger import log
 from tasks.base import update_model_for_retry
-from tasks.base.retry import click_title_screen_safely, ensure_simulator_game_started, retry
+from tasks.base.retry import (
+    _is_runtime_ui_visible,
+    click_title_screen_safely,
+    ensure_simulator_game_started,
+    retry,
+)
 from tasks.mirror.reward_card import get_reward_card
 
 
@@ -64,7 +69,7 @@ def wait_until_main_menu_after_launch(*, allow_restart: bool = True, max_retries
                 continue
             if auto.click_element("home/window_assets.png") and auto.find_element("home/mail_assets.png", model="normal"):
                 return StartupMainMenuWaitResult.MAIN_MENU
-            if auto.find_element("home/back_assets.png") or auto.find_element("battle/setting_assets.png"):
+            if _is_runtime_ui_visible():
                 return StartupMainMenuWaitResult.RUNTIME_UI
             sleep(0.5)
         log.error(f"启动等待主界面超时（{timeout_seconds}秒）")
