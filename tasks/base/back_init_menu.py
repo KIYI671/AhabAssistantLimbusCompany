@@ -7,10 +7,11 @@ from tasks.base import update_model_for_retry
 from tasks.base.retry import click_title_screen_safely, ensure_simulator_game_started, retry
 from tasks.mirror.reward_card import get_reward_card
 
+LOOP_COUNT=30
 
 @begin_and_finish_time_log(task_name="返回主界面")
 def back_init_menu(*, allow_restart: bool = True):
-    loop_count = 30
+    loop_count = LOOP_COUNT
     auto.model = "clam"
     while True:
         loop_count -= 1
@@ -107,6 +108,7 @@ def back_init_menu(*, allow_restart: bool = True):
             if auto.click_element("base/update_confirm_assets.png"):
                 continue
             click_title_screen_safely()
+            loop_count = LOOP_COUNT
             continue
 
         if auto.click_element("base/only_option_assets.png", model="clam"):
