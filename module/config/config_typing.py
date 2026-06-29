@@ -463,6 +463,9 @@ class ConfigModel(BaseModel):
     skip_enkephalin: bool
     """跳过换体"""
 
+    make_enkephalin_module_only: bool
+    """独立体力换饼（不进行其他任务）"""
+
     mirror: bool
     """是否进行自动镜牢"""
 

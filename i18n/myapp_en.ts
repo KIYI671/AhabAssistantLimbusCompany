@@ -246,6 +246,16 @@
         <translation>After checking, do not perform the operation of exchanging enkephalin except for lunacy to enkephalin</translation>
     </message>
     <message>
+        <location filename="../app/page_card.py" line="377"/>
+        <source>体力换饼</source>
+        <translation>Stamina to Module Box</translation>
+    </message>
+    <message>
+        <location filename="../app/page_card.py" line="378"/>
+        <source>独立执行体力换饼，不进行其他任务</source>
+        <translation>Execute stamina to module box conversion independently, without other tasks</translation>
+    </message>
+    <message>
         <location filename="../app/page_card.py" line="421"/>
         <source>使用困难镜牢*</source>
         <translation>Hard mode*</translation>

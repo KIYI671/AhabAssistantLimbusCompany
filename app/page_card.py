@@ -371,16 +371,26 @@ class PageLunacyToEnkephalin(PageCard):
             center=False,
         )
 
+        self.make_enkephalin_module_only = BaseCheckBox(
+            "make_enkephalin_module_only",
+            None,
+            QT_TRANSLATE_NOOP("BaseCheckBox", "体力换饼"),
+            tips=QT_TRANSLATE_NOOP("BaseCheckBox", "独立执行体力换饼，不进行其他任务"),
+            center=False,
+        )
+
     def __init_layout(self):
         self.vbox_general.addWidget(self.set_lunacy_to_enkephalin)
 
         self.vbox_advanced.addWidget(self.Dr_Grandet_mode)
         self.vbox_advanced.addWidget(self.skip_enkephalin)
+        self.vbox_advanced.addWidget(self.make_enkephalin_module_only)
 
     def retranslateUi(self):
         self.set_lunacy_to_enkephalin.retranslateUi()
         self.Dr_Grandet_mode.retranslateUi()
         self.skip_enkephalin.retranslateUi()
+        self.make_enkephalin_module_only.retranslateUi()
         super().retranslateUi()
 
 
