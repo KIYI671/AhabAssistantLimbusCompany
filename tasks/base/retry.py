@@ -14,11 +14,84 @@ from utils.utils import check_game_running
 
 _last_title_screen_tap_time = 0.0
 _last_simulator_alive_check_time = 0.0
+_pending_simulator_launch_probe = False
+
+
+def _get_simulator_connection_device():
+    if cfg.simulator_type == 0:
+        from module.automation.input_handlers.simulator.mumu_control import MumuControl
+
+        return MumuControl.connection_device
+
+    from module.automation.input_handlers.simulator.simulator_control import SimulatorControl
+
+    return SimulatorControl.connection_device
+
+
+def _is_main_menu_visible() -> bool:
+    return bool(auto.find_element("home/window_assets.png") and auto.find_element("home/mail_assets.png", model="normal"))
+
+
+def _is_runtime_ui_visible() -> bool:
+    return bool(
+        auto.find_element("battle/setting_assets.png")
+        or auto.find_element("battle/battle_finish_confirm_assets.png")
+        or auto.find_element("base/retry_countdown.png")
+        or auto.find_element("base/retry.png")
+        or auto.find_element("base/try_again.png")
+        or auto.find_element("home/back_assets.png", model="normal")
+        or auto.find_element("base/back_assets.png", model="normal", threshold=0.6)
+        or auto.find_element("base/notification_close_assets.png")
+        or auto.find_element("scenes/story_skip_confirm_assets.png")
+        or auto.find_element("scenes/story_skip_assets.png")
+        or auto.find_element("scenes/story_meun_assets.png")
+        or auto.find_element("home/close_anniversary_event_assets.png")
+        or auto.find_element("mirror/road_in_mir/towindow&forfeit_confirm_assets.png", threshold=0.75)
+        or auto.find_element("mirror/road_in_mir/to_window_assets.png", threshold=0.75)
+        or auto.find_element("mirror/road_in_mir/select_encounter_reward_card_assets.png")
+        or auto.find_element("mirror/road_in_mir/legend_assets.png")
+        or auto.find_element("mirror/road_to_mir/enter_assets.png")
+        or auto.find_element("mirror/theme_pack/feature_theme_pack_assets.png")
+    )
+
+
+def should_wait_for_main_menu_after_simulator_start() -> bool:
+    global _pending_simulator_launch_probe
+
+    if not _pending_simulator_launch_probe:
+        return False
+    _pending_simulator_launch_probe = False
+
+    from tasks.base.back_init_menu import handle_launch_state_once
+
+    deadline = time.time() + 3
+    had_model = hasattr(auto, "model")
+    previous_model = getattr(auto, "model", None)
+    auto.model = "clam"
+    try:
+        while time.time() <= deadline:
+            auto.ensure_not_stopped()
+            if auto.take_screenshot() is None:
+                continue
+            if _is_main_menu_visible():
+                return True
+            if handle_launch_state_once():
+                return True
+            if _is_runtime_ui_visible():
+                return False
+            sleep(0.5)
+    finally:
+        if had_model:
+            auto.model = previous_model
+
+    return True
 
 
 def ensure_simulator_game_started() -> bool:
     """模拟器模式下确认游戏仍在前台，不在时尝试拉起游戏。"""
-    global _last_simulator_alive_check_time
+    global _last_simulator_alive_check_time, _pending_simulator_launch_probe
+
+    _pending_simulator_launch_probe = False
     if not cfg.simulator:
         return False
 
@@ -27,19 +100,7 @@ def ensure_simulator_game_started() -> bool:
         return False
     _last_simulator_alive_check_time = now
 
-    if cfg.simulator_type == 0:
-        from module.automation.input_handlers.simulator.mumu_control import (
-            MumuControl,
-        )
-
-        connection_device = MumuControl.connection_device
-    else:
-        from module.automation.input_handlers.simulator.simulator_control import (
-            SimulatorControl,
-        )
-
-        connection_device = SimulatorControl.connection_device
-
+    connection_device = _get_simulator_connection_device()
     if connection_device is None:
         return False
 
@@ -48,6 +109,7 @@ def ensure_simulator_game_started() -> bool:
 
     log.info("检测到游戏未运行或不在前台，尝试自动启动游戏")
     connection_device.start_game()
+    _pending_simulator_launch_probe = True
     sleep(3)
     return True
 
@@ -143,7 +205,10 @@ def retry():
     while True:
         if ensure_simulator_game_started():
             start_time = time.time()
-            continue
+            if should_wait_for_main_menu_after_simulator_start():
+                from tasks.base.back_init_menu import wait_until_main_menu_after_launch
+
+                return wait_until_main_menu_after_launch() == "main_menu"
         if is_windows and screen.handle.hwnd != saved_hwnd:
             # 句柄发生变化则重置初始时间, 以免误判卡死
             saved_hwnd = screen.handle.hwnd
@@ -186,11 +251,11 @@ def retry():
         break
 
 
-def restart_game():
+def restart_game() -> bool:
     """重启游戏"""
-    from tasks.base.back_init_menu import back_init_menu
+    from tasks.base.back_init_menu import wait_until_main_menu_after_launch
     from tasks.base.script_task_scheme import init_game
 
     init_game()
     sleep(3)
-    back_init_menu()
+    return wait_until_main_menu_after_launch() == "main_menu"

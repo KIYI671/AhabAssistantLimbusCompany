@@ -208,6 +208,9 @@ class ConfigModel(BaseModel):
     game_path: str
     """游戏启动路径"""
 
+    startup_wait_timeout_pc: int
+    """PC 启动游戏后等待主界面的超时时间（秒）"""
+
     after_completion_actions: List[str]
     """脚本结束后的前置动作（可多选）：exit_game/exit_emulator/exit_aalc"""
 
@@ -348,6 +351,9 @@ class ConfigModel(BaseModel):
 
     start_emulator_timeout: int
     """启动模拟器超时时间"""
+
+    startup_wait_timeout_simulator: int
+    """模拟器启动游戏后等待主界面的超时时间（秒）"""
 
     adb_reconnect_on_error: bool
     """ADB或minitouch连接失效时自动重连"""
