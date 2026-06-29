@@ -410,6 +410,10 @@ class Battle:
                     continue
                 if auto.click_element("event/skip_assets.png", times=6):
                     continue
+            if auto.find_element("mirror/road_in_mir/select_encounter_reward_card_assets.png"):
+                if infinite_battle:
+                    continue
+                break
             if not self.is_tool:
                 # 点击中心以跳过播报员播报加速结算动画
                 random_number = random.randint(-10, 10)
@@ -448,10 +452,6 @@ class Battle:
                     continue
                 break
             if auto.find_element("mirror/road_in_mir/acquire_ego_gift_card.png"):
-                if infinite_battle:
-                    continue
-                break
-            if auto.find_element("mirror/road_in_mir/select_encounter_reward_card_assets.png"):
                 if infinite_battle:
                     continue
                 break

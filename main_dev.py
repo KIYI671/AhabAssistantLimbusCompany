@@ -15,12 +15,12 @@ Features:
 - Press Ctrl+C to exit
 """
 
+import hashlib
 import os
 import subprocess
 import sys
 import threading
 import time
-import hashlib
 
 # 解决 Windows DPI 缩放问题
 from ctypes import c_void_p, windll
@@ -43,6 +43,10 @@ except (AttributeError, OSError):
             pass
 
 from module.logger import log
+from module.logger.my_log import Logger
+
+# watcher 进程自己配一份日志；它拉起的 main.py 子进程会各自再配一次。
+Logger()
 
 try:
     from watchdog.events import FileSystemEventHandler

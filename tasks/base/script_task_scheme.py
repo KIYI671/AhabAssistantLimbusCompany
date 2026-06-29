@@ -321,7 +321,7 @@ def Mirror_task():
                 to_get_reward()
 
     mediator.mirror_bar_kill_signal.emit()
-    if cfg.re_claim_rewards and finish_times > 0:
+    if cfg.re_claim_rewards and finish_times > 1:
         to_get_reward()
 
 

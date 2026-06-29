@@ -32,14 +32,19 @@ except (AttributeError, OSError):
         except Exception:
             pass
 
-from app.language_manager import LanguageManager
-from app.my_app import MainWindow
-from module.config import cfg
+# 先配好日志（给 "AALC" logger 挂 handler），再 import 会在 import 期就打日志的 app/config 模块，
+# 否则那些启动日志会丢。
 from module.logger import log
+from module.logger.my_log import Logger
 
+Logger()
 
 # 获取管理员权限
 import pyuac
+
+from app.language_manager import LanguageManager
+from app.my_app import MainWindow
+from module.config import cfg
 
 if not pyuac.isUserAdmin():
     try:

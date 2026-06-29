@@ -10,6 +10,7 @@ all_systems = {
     8: "pierce",
     9: "blunt",
 }
+observe_system = all_systems | {4: all_systems[5], 5: all_systems[4]}
 all_sinners_name = [
     "YiSang",
     "Faust",
