@@ -60,7 +60,7 @@ def click_title_screen_safely() -> None:
         return
 
     now = time.time()
-    if now - _last_title_screen_tap_time < 5:
+    if now - _last_title_screen_tap_time < 15:
         return
     _last_title_screen_tap_time = now
 
