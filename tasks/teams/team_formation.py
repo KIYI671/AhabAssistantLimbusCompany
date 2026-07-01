@@ -70,6 +70,8 @@ def select_battle_team(num):
         auto.mouse_click(1, 1)
         my_position[0] += position[0]
         my_position[1] += position[1]
+        auto.mouse_click(my_position[0], my_position[1])
+        sleep(0.5)
         for _ in range(3):
             auto.mouse_drag(my_position[0], my_position[1], dy=1333 * scale, drag_time=0.3)
         sleep(0.75)
