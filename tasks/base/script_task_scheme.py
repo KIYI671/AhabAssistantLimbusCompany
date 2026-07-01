@@ -259,6 +259,12 @@ def Buy_enkephalin():
     lunacy_to_enkephalin(times=times)
 
 
+def Make_enkephalin_module_only():
+    auto.ensure_not_stopped()
+    back_init_menu()
+    make_enkephalin_module(skip=False)
+
+
 def Mirror_task():
     # 判断执行镜牢任务的次数
     mir_times = cfg.set_mirror_count
@@ -362,6 +368,10 @@ def script_task() -> None | int:
     # 执行狂气换饼任务
     if cfg.buy_enkephalin:
         task_list.append(Buy_enkephalin)
+
+    # 执行独立体力换饼任务
+    if cfg.make_enkephalin_module_only:
+        task_list.append(Make_enkephalin_module_only)
 
     # 执行镜牢任务
     if cfg.mirror:
