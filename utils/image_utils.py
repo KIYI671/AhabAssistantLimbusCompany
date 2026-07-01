@@ -249,7 +249,7 @@ class ImageUtils:
             log.error(f"图片识别出现错误：{e}")
 
     @staticmethod
-    def match_template_with_multiple_targets(screenshot, template, threshold):
+    def match_template_with_multiple_targets(screenshot, template, threshold, min_dist=10):
         # 获取模板的宽度和高度
         w, h = ImageUtils.get_image_info(template)
         # 存储所有匹配位置的中心点
@@ -261,8 +261,6 @@ class ImageUtils:
         points = zip(*loc[::-1])
         # 对匹配结果进行排序，根据匹配度得分从高到低
         sorted_points = sorted(points, key=lambda x: res[x[1], x[0]], reverse=True)
-        # 非极大值抑制（NMS）的最小距离
-        min_dist = 10
         # 遍历排序后的匹配位置
         if sorted_points:
             for pt in sorted_points:
