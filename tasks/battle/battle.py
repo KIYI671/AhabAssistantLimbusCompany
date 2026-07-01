@@ -577,6 +577,8 @@ class Battle:
 
             auto.mouse_to_blank()
 
+            auto.key_press("enter")
+
             sleep(1)
             return True
         except Exception:
