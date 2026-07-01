@@ -517,6 +517,9 @@ class ConfigModel(BaseModel):
     mirror_keyboard_navigation: bool
     """使用键盘进行镜牢寻路"""
 
+    mirror_keyboard_simple_pathfinding: bool
+    """简单键盘寻路模式：始终按↑选择第一个节点，完全避免鼠标拖动"""
+
     teams: dict[str, TeamSetting]
     """队伍设置"""
 
