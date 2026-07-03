@@ -36,6 +36,8 @@ def get_the_timing(return_time=False):
 
 
 def get_current_enkephalin():
+    import re
+
     import cv2
     import numpy as np
 
@@ -48,27 +50,23 @@ def get_current_enkephalin():
             while auto.take_screenshot() is None:
                 continue
             sc = ImageUtils.crop(np.array(auto.screenshot), enkephalin_bbox)
-            _, binary_image = cv2.threshold(sc, 110, 255, cv2.THRESH_BINARY)
-            result = ocr.run(binary_image)
-            ocr_result = [result.txts[i] for i in range(len(result.txts))]
-            ocr_result = "".join(ocr_result)
-            ocr_result = ocr_result.lower()
-            if "/" in ocr_result:
-                ocr_result = ocr_result.split("/")
-                current_enkephalin = int(ocr_result[0])
-                return current_enkephalin
-        except:
+            # RapidOCR 容易漏掉紧贴裁剪边缘的体力数字，补黑边只影响本处 OCR 输入。
+            sc = cv2.copyMakeBorder(sc, 16, 16, 16, 16, cv2.BORDER_CONSTANT, value=0)
+            for threshold in (100, 110, 70, 60):
+                _, binary_image = cv2.threshold(sc, threshold, 255, cv2.THRESH_BINARY)
+                result = ocr.run(binary_image)
+                ocr_result = "".join(str(t) for t in result.txts or [])
+                ocr_result = ocr_result.lower().replace(" ", "")
+                if "/" in ocr_result:
+                    match = re.search(r"(\d{1,3})\s*/\s*\d{3,4}", ocr_result)
+                    if match:
+                        return int(match.group(1))
+                else:
+                    digits = re.sub(r"\D", "", ocr_result)
+                    if 0 < len(digits) <= 3:
+                        return int(digits)
+        except Exception:
             continue
-    try:
-        sc = ImageUtils.crop(np.array(auto.screenshot), enkephalin_bbox)
-        _, binary_image = cv2.threshold(sc, 150, 255, cv2.THRESH_BINARY)
-        result = ocr.run(binary_image)
-        ocr_result = [result.txts[i] for i in range(len(result.txts))]
-        ocr_result = "".join(ocr_result)
-        current_enkephalin = int(ocr_result[0])
-        return current_enkephalin
-    except:
-        pass
     return None
 
 
