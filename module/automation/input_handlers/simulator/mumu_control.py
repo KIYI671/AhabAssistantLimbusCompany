@@ -661,7 +661,7 @@ class MumuControl(AbstractInput):
             log.error("以下路径均不存在")
             for path in list_dll:
                 log.error(f"{path}")
-            raise NemuIpcIncompatible("请在AALC设置中检查您的MuMu播放器12版本和安装路径。")
+            raise NemuIpcIncompatible("请在AALC设置中检查您的MuMu模拟器12版本和安装路径。")
         else:
             log.debug(f"ipc_dll={ipc_dll} 加载成功")
 
