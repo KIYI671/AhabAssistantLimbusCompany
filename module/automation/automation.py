@@ -4,6 +4,7 @@ import random
 import time
 from ast import List
 from dataclasses import dataclass
+from enum import Enum
 from typing import Any
 
 import cv2
@@ -33,6 +34,15 @@ class TextMatchResult:
 
 class Automation(metaclass=SingletonMeta):
     """自动化管理类，用于管理与游戏窗口有关的自动化操作"""
+
+    class FindType(str, Enum):
+        """find_element方法的find_type参数枚举"""
+
+        IMAGE = "image"
+        TEXT = "text"
+        FEATURE = "feature"
+        IMAGE_WITH_MULTIPLE_TARGETS = "image_with_multiple_targets"
+        EDGE_CANNY = "edge_canny"
 
     def __init__(self, windows_title):
         self.windows_title = windows_title
@@ -277,7 +287,7 @@ class Automation(metaclass=SingletonMeta):
                 else:
                     return None
             except Exception as e:
-                log.error(f"截图失败:{e}")
+                log.exception("截图失败")
             time.sleep(1)
             if time.time() - start_time > 60:
                 log.error("截图超时，尝试重启游戏")
@@ -306,18 +316,20 @@ class Automation(metaclass=SingletonMeta):
         model=None,
         my_crop=None,
         additional_stack=0,
+        clear_cache=False,
     ):
         """
         查找元素，并根据指定的查找类型执行不同的查找策略。
         Args:
             target: 查找目标，可以是图像路径或文字。(zh_cn)->en->share
-            find_type: 查找类型，例如'image', 'text'等。
+            find_type: 查找类型，例如'image', 'text'等，具体查看FindType枚举类。
             threshold: 查找阈值，用于图像查找时的相似度匹配。
             max_retries: 最大重试次数。
             take_screenshot: 是否需要先截图。
             model: 查找的策略,'clam' 为在模板图片位置查找，'normal' 为模板图片位置扩大范围查找，'aggressive' 为全截屏区域查找
             my_crop: 用于OCR识别的已截取的部分图片
             additional_stack: 用于日志堆栈层级调整
+            clear_cache: 是否清理图片缓存，默认为False, 此处指运行时生成的图片缓存文件, 而不是加载的图片缓存
         Returns:
             查找到的元素位置，或者在图像计数查找时返回计数。
         """
@@ -331,9 +343,9 @@ class Automation(metaclass=SingletonMeta):
                 while self.take_screenshot() is None:
                     continue
             # 根据查找类型执行不同的查找策略
-            if find_type in ["image", "text"]:
+            if find_type in [self.FindType.IMAGE, self.FindType.TEXT]:
                 center = None
-                if find_type in ["image"]:
+                if find_type == self.FindType.IMAGE:
                     # 使用图像查找方法查找元素
                     center = self.find_image_element(
                         target,
@@ -342,16 +354,20 @@ class Automation(metaclass=SingletonMeta):
                         my_crop=my_crop,
                         additional_stack=additional_stack,
                     )
-                elif find_type == "text":
+                elif find_type == self.FindType.TEXT:
                     # 使用文本查找方法查找元素
                     center = self.find_text_element(target, my_crop, additional_stack=additional_stack)
                 if center:
                     return center
-            elif find_type in ["feature"]:
+            elif find_type == self.FindType.FEATURE:
                 return self.find_feature_element(target, my_crop, additional_stack=additional_stack)
-            elif find_type in ["image_with_multiple_targets"]:
+            elif find_type == self.FindType.IMAGE_WITH_MULTIPLE_TARGETS:
                 # 使用多目标图像查找方法查找元素
                 return self.find_image_with_multiple_targets(target, threshold, additional_stack=additional_stack)
+            elif find_type == self.FindType.EDGE_CANNY:
+                return self.find_edge_canny_element(
+                    target, threshold, iou_threshold=0.3, additional_stack=additional_stack, clear_cache=clear_cache
+                )
             else:
                 raise ValueError("错误的类型")
 
@@ -732,3 +748,52 @@ class Automation(metaclass=SingletonMeta):
         screenshot = screenshot[:, :, ::-1]
         screenshot = ImageUtils.crop(screenshot, crop)
         return screenshot
+
+    def find_edge_canny_element(
+        self, target: str, threshold=0.4, iou_threshold=0.3, additional_stack=0, clear_cache=False, resize=False
+    ):
+        """
+        基于边缘检测算法 Canny 寻找元素所在的坐标位置
+        寻找形状特征元素所在的坐标位置
+        一般用于查找小图标或者界面元素轮廓明显的元素
+        """
+        try:
+            template = ImageUtils.load_image(target, resize=False)
+            screenshot = np.array(self.screenshot)
+            if resize:
+                if cfg.set_win_size < 1440:
+                    screenshot = cv2.resize(
+                        screenshot,
+                        None,
+                        fx=1440 / cfg.set_win_size,
+                        fy=1440 / cfg.set_win_size,
+                        interpolation=cv2.INTER_AREA,
+                    )
+                elif cfg.set_win_size > 1440:
+                    screenshot = cv2.resize(
+                        screenshot,
+                        None,
+                        fx=cfg.set_win_size / 1440,
+                        fy=cfg.set_win_size / 1440,
+                        interpolation=cv2.INTER_AREA,
+                    )
+            target_path, file_name = target.rsplit("/", 1)
+            result = ImageUtils.find_all_icons_canny(
+                screenshot,
+                template,
+                threshold,
+                iou_threshold=iou_threshold,
+                target_path=target_path,
+                image_name=file_name.replace(".png", ""),
+                clear_cache=clear_cache,
+            )
+
+            log.debug(
+                f"匹配目标形状特征图片：{target.replace('./assets/images/', '')} 结果: 共匹配{len(result)}个位置, 目标位置："
+                + f"{[(int(det['location'][0]), int(det['location'][1]), f'score: {det["score"]:.3f}, scale: {det["scale"]:.3f}') for det in result]}",
+                stacklevel=additional_stack + 3,
+            )
+            return result
+        except Exception as e:
+            log.error(f"匹配图片形状特征失败:{e}", exc_info=True)
+            return None

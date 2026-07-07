@@ -498,6 +498,8 @@ class Battle:
         gear_left: tuple,
         skill_nums: int,
         custom_tune: Optional[Callable[[list, int, int, float], list]] = None,
+        x_offset_base: float = 220,
+        y_offset_base: float = 250,
     ) -> None:
         """计算划线的技能位置(也是守备的位置)
         专门写一个方便修改
@@ -505,8 +507,8 @@ class Battle:
         """
         scale: float = cfg.set_win_size / 1440
         skill_size: float = 161 * scale
-        x_offset: float = 220 - 4.5 * skill_nums
-        y_offset: float = 250
+        x_offset: float = x_offset_base - 4.5 * skill_nums
+        y_offset: float = y_offset_base
 
         for index in range(skill_nums):
             pos = [
@@ -618,5 +620,124 @@ class Battle:
 
             sleep(1)
             return True
+        except Exception:
+            return False
+
+    @staticmethod
+    def _defense_this_round_creature(move_back: bool = False, retry_times: int = 3) -> bool:
+        """集中遭遇战版本全员守备"""
+        # 空闲区域为屏幕的上1/3, 以中间为轴的1/2宽度
+        space_area = [
+            int(cfg.config.set_win_size * 16 / 9 * 0.25),
+            int(cfg.config.set_win_size * 16 / 9 * 0.75),
+            30,
+            int(cfg.config.set_win_size / 3),
+        ]  # x1, x2, y1, y2
+        try:
+            scale = cfg.set_win_size / 1440
+
+            skill_table_left = auto.find_element("battle/skill_table_left.png")
+            skill_table_right = auto.find_element("battle/skill_table_right.png")
+            if skill_table_left is None or skill_table_right is None:
+                random_pos = (
+                    random.randint(int(space_area[0]), int(space_area[1])),
+                    random.randint(int(space_area[2]), int(space_area[3])),
+                )
+                auto.mouse_click(*random_pos)
+                sleep(0.5)
+                skill_table_left = auto.find_element("battle/skill_table_left.png", take_screenshot=True)
+                skill_table_right = auto.find_element("battle/skill_table_right.png")
+                if skill_table_left and skill_table_right:
+                    schadenfreude = auto.find_element(
+                        "battle/schadenfreude_left.png", take_screenshot=True
+                    ) or auto.find_element("battle/schadenfreude_right.png")
+                    # 手动居中摄像头位置 以便在点击技能后自动移动摄像头至敌人
+                    auto.mouse_click(schadenfreude[0], schadenfreude[1])
+
+            skill_1 = [skill_table_left[0] + 100 * scale, skill_table_left[1]]
+            skill_end = [skill_table_right[0] - 100 * scale, skill_table_right[1]]
+
+            bbox = (skill_1[0], skill_1[1] - 15 * scale, skill_end[0], skill_1[1])
+
+            skill_nums = int((bbox[2] - bbox[0]) / (145 * scale)) + 1
+
+            skill_slots_list = []
+            Battle._calculate_skills_position(
+                skill_slots_list, skill_table_left, skill_nums, y_offset_base=0, x_offset_base=120
+            )
+            skill_list = []
+            for skill_slot in skill_slots_list:
+                auto.mouse_click(skill_slot[0], skill_slot[1])
+                if cfg.simulator:
+                    sleep(cfg.mouse_action_interval)
+                else:
+                    sleep(cfg.mouse_action_interval // 1.5)
+                skill_list.append((skill_slot[0], skill_slot[1] - 150 * scale))
+            for time in range(retry_times):
+                auto.mouse_click(*skill_list[0])
+                # 通过点击技能自动移动摄像头至敌人
+                sleep(0.5 + time)
+
+                random_pos = (
+                    random.randint(int(space_area[0]), int(space_area[1])),
+                    random.randint(int(space_area[2]), int(space_area[3])),
+                )
+                # 点击空位取消选中技能
+                auto.mouse_click(*random_pos)
+                sleep(0.3)
+                parts = []
+                parts_kind = [
+                    ("body", 0.4),
+                    ("back", 0.6),
+                    ("left_hand", 0.4),
+                    ("head", 0.4),
+                    ("left_foot", 0.4),
+                    ("right_hand", 0.4),
+                    ("tail", 0.4),
+                    ("left_eye", 0.4),
+                    ("right_eye", 0.4),
+                    ("top_plate", 0.4),
+                ]
+                auto.take_screenshot()
+                for part_name, threshold in parts_kind:
+                    part = auto.find_element(
+                        f"battle/creature_parts/{part_name}.png",
+                        find_type=auto.FindType.EDGE_CANNY,
+                        threshold=threshold,
+                    )
+                    if part:
+                        parts.extend(part)
+                        break
+                if parts:
+                    skill_num = 0
+                    part_num = 0
+                    while skill_num < len(skill_list):
+                        part_num = part_num % len(parts)
+                        part_pos = parts[part_num].get("location", (0, 0))
+                        auto.mouse_click(*skill_list[skill_num])
+                        sleep(0.3)
+                        part_scale = parts[part_num].get("scale", 1) / 0.26
+                        offset_y = int(150 * part_scale)
+                        auto.mouse_click(part_pos[0], part_pos[1] + offset_y)
+                        sleep(0.5)
+                        part_num += 1
+                        skill_num += 1
+                    auto.key_press("enter")
+                    sleep(1)
+
+                    if auto.find_element("battle/pause_assets.png", take_screenshot=True):
+                        return True
+                    else:
+                        # 没有选中所有技能从而来到这里
+                        # p键不会选中守备 从而取消选中第一排技能
+                        auto.key_press("p")
+                # 什么都没找到, 重置摄像头位置
+                schadenfreude = auto.find_element(
+                    "battle/schadenfreude_left.png", take_screenshot=True
+                ) or auto.find_element("battle/schadenfreude_right.png")
+                # 手动居中摄像头位置 以便在点击技能后自动移动摄像头至敌人
+                auto.mouse_click(schadenfreude[0], schadenfreude[1])
+                sleep(0.5)
+            return False
         except Exception:
             return False
