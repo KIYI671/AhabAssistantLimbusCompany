@@ -301,6 +301,7 @@ class Automation(metaclass=SingletonMeta):
 
                 init_game()
                 is_game_die = False
+                start_time = time.time()
 
     def find_element(
         self,
