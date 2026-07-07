@@ -305,6 +305,7 @@ class Automation(metaclass=SingletonMeta):
         take_screenshot=False,
         model=None,
         my_crop=None,
+        min_dist=10,
         additional_stack=0,
     ):
         """
@@ -316,7 +317,8 @@ class Automation(metaclass=SingletonMeta):
             max_retries: 最大重试次数。
             take_screenshot: 是否需要先截图。
             model: 查找的策略,'clam' 为在模板图片位置查找，'normal' 为模板图片位置扩大范围查找，'aggressive' 为全截屏区域查找
-            my_crop: 用于OCR识别的已截取的部分图片
+            my_crop: 用于限制图像或OCR识别范围的裁剪区域
+            min_dist: 多目标图像查找时的NMS最小距离。
             additional_stack: 用于日志堆栈层级调整
         Returns:
             查找到的元素位置，或者在图像计数查找时返回计数。
@@ -351,7 +353,9 @@ class Automation(metaclass=SingletonMeta):
                 return self.find_feature_element(target, my_crop, additional_stack=additional_stack)
             elif find_type in ["image_with_multiple_targets"]:
                 # 使用多目标图像查找方法查找元素
-                return self.find_image_with_multiple_targets(target, threshold, additional_stack=additional_stack)
+                return self.find_image_with_multiple_targets(
+                    target, threshold, my_crop=my_crop, min_dist=min_dist, additional_stack=additional_stack
+                )
             else:
                 raise ValueError("错误的类型")
 
@@ -359,7 +363,7 @@ class Automation(metaclass=SingletonMeta):
                 time.sleep(1)  # 在重试前等待一定时间
         return None
 
-    def find_image_with_multiple_targets(self, target: str, threshold, additional_stack) -> List:
+    def find_image_with_multiple_targets(self, target: str, threshold, my_crop=None, min_dist=10, additional_stack=0) -> List:
         """
         在当前截图中查找多个目标图像的位置
         """
@@ -371,7 +375,13 @@ class Automation(metaclass=SingletonMeta):
             if template is None:
                 raise ValueError("读取图片失败")
             screenshot = np.array(self.screenshot)
-            matches = ImageUtils.match_template_with_multiple_targets(screenshot, template, threshold)
+            crop_offset = (0, 0)
+            if my_crop:
+                crop_offset = (int(round(my_crop[0])), int(round(my_crop[1])))
+                screenshot = ImageUtils.crop(screenshot, my_crop)
+            matches = ImageUtils.match_template_with_multiple_targets(screenshot, template, threshold, min_dist=min_dist)
+            if crop_offset != (0, 0):
+                matches = [(x + crop_offset[0], y + crop_offset[1]) for x, y in matches]
             if len(matches) == 0:
                 log.debug(f"未找到任何目标图像{target}", stacklevel=additional_stack + 3)
                 return []
