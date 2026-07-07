@@ -295,6 +295,7 @@ class Automation(metaclass=SingletonMeta):
                 from tasks.base.script_task_scheme import init_game
 
                 init_game()
+                start_time = time.time()
 
     def find_element(
         self,
