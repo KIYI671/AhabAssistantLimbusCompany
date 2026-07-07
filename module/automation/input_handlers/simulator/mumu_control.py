@@ -621,18 +621,30 @@ class MumuControl(AbstractInput):
         )
         info = json.loads(proc.stdout)
         try:
-            return info["player_state"]
-        except:
+            if "player_state" in info:
+                return info["player_state"]
+            if info.get("is_android_started") or info.get("is_process_started"):
+                return "start_finished"
+            return "not_launched"
+        except Exception:
+            log.warning(f"get_launch_status: 解析 info 失败，无法获取启动状态，stdout={proc.stdout}")
             return "not_launched"
 
     def load_dll(self):
         nemu_folder = os.path.dirname(self.install_path)
         list_dll = [
-            # MuMuPlayer12
             os.path.abspath(os.path.join(nemu_folder, "./shell/sdk/external_renderer_ipc.dll")),
-            # MuMuPlayer12 5.0
             os.path.abspath(os.path.join(nemu_folder, "./nx_device/12.0/shell/sdk/external_renderer_ipc.dll")),
         ]
+        lib_path = self.get_nemu_client_path()
+        if lib_path:
+            list_dll.append(os.path.abspath(lib_path))
+        nx_device_root = os.path.join(nemu_folder, "nx_device")
+        if os.path.isdir(nx_device_root):
+            for entry in sorted(os.listdir(nx_device_root)):
+                candidate = os.path.join(nx_device_root, entry, "shell", "sdk", "external_renderer_ipc.dll")
+                if os.path.exists(candidate):
+                    list_dll.append(os.path.abspath(candidate))
         ipc_dll = ""
         for ipc_dll in list_dll:
             if not os.path.exists(ipc_dll):
@@ -649,7 +661,7 @@ class MumuControl(AbstractInput):
             log.error("以下路径均不存在")
             for path in list_dll:
                 log.error(f"{path}")
-            raise NemuIpcIncompatible("请在AALC设置中检查您的MuMu播放器12版本和安装路径。")
+            raise NemuIpcIncompatible("请在AALC设置中检查您的MuMu模拟器12版本和安装路径。")
         else:
             log.debug(f"ipc_dll={ipc_dll} 加载成功")
 
