@@ -212,14 +212,17 @@ class StarlightLevelSelector(QFrame):
         self.bonus_value = 0
 
         self.segment_layout = QHBoxLayout(self)
+        # 三段式按钮整体在选择框内部的左、上、右、下留白。
         self.segment_layout.setContentsMargins(0, 0, 0, 0)
+        # 星光名称、+、++ 三段之间的缝隙；0 表示三段贴合。
         self.segment_layout.setSpacing(0)
 
         self.default_button = self.__create_button(label_text, "left")
         self.level_one_button = self.__create_button("+", "middle")
         self.level_two_button = self.__create_button("++", "right")
 
-        self.segment_layout.addWidget(self.default_button, 13)
+        # 三段的宽度比例：星光名称 : + : ++ = 12 : 4 : 4。
+        self.segment_layout.addWidget(self.default_button, 12)
         self.segment_layout.addWidget(self.level_one_button, 4)
         self.segment_layout.addWidget(self.level_two_button, 4)
 
@@ -236,7 +239,9 @@ class StarlightLevelSelector(QFrame):
         else:
             button = QPushButton(text, self)
         button.setFlat(True)
+        # 允许按钮被压缩到很窄，避免文字最小宽度强行撑开布局。
         button.setMinimumWidth(0)
+        # 水平方向忽略文本推荐宽度，垂直方向填满选择框高度。
         button.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Expanding)
         button.setCheckable(True)
         button.setMouseTracking(True)
@@ -262,7 +267,9 @@ class StarlightLevelSelector(QFrame):
         painter.setRenderHint(QPainter.RenderHint.Antialiasing, True)
         colors = self.__theme_colors()
 
+        # 背景和边框绘制区域；0.5 的偏移让 1px 边框更清晰。
         rect = QRectF(self.rect()).adjusted(0.5, 0.5, -0.5, -0.5)
+        # 星光选择框的圆角半径。
         radius = 5
         path = QPainterPath()
         path.addRoundedRect(rect, radius, radius)
@@ -284,9 +291,11 @@ class StarlightLevelSelector(QFrame):
         )
         painter.restore()
 
+        # 星光选择框外边框颜色和线宽。
         painter.setPen(QPen(colors["border"], 1))
         painter.drawPath(path)
         for x in (self.level_one_button.geometry().x(), self.level_two_button.geometry().x()):
+            # + 和 ++ 左侧的竖向分割线，宽度为 1px。
             painter.fillRect(QRectF(x, 1, 1, self.height() - 2), colors["divider"])
 
     def __fill_segment(self, painter: QPainter, left: int, right: int, color: QColor):
@@ -354,12 +363,12 @@ class StarlightCard(QFrame):
         super().__init__(parent)
         self.starlight_index: int = int(class_name.split("_")[-1])
         self.bonus_value = 0
-        if team_config := cfg.config.teams.get(str(team_num)):
-            self.bonus_value = team_config.opening_bonus[self.starlight_index - 1]
+        self.bonus_value = cfg.get_team(team_num).opening_bonus[self.starlight_index - 1]
 
         self.label_text = label_text
         self.main_layout = QVBoxLayout(self)
-        self.main_layout.setContentsMargins(10, 0, 0, 0)
+        # 单个星光选择框在自己的网格单元内的左、上、右、下留白。
+        self.main_layout.setContentsMargins(0, 0, 0, 0)
         self.main_layout.setAlignment(Qt.AlignmentFlag.AlignVCenter)
         self.starlight_checkbox = StarlightLevelSelector(class_name, label_text, self)
         self.starlight_checkbox.set_state(self.bonus_value)

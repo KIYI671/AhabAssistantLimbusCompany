@@ -275,6 +275,7 @@ class FileChangeHandler(FileSystemEventHandler):
             "dist",
             "dist_release",
             "logs",
+            "team_config",
             "theme_pack_weight",
         }
         self._prime_content_hashes()

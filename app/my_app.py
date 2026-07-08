@@ -53,7 +53,6 @@ from module.after_completion_types import (
     normalize_after_completion_config,
 )
 from module.config import cfg
-from module.font_manager import font_manager
 from module.logger import log
 from module.system_actions import autodaily_exit_to_after_completion_config
 
@@ -169,10 +168,11 @@ class MainWindow(FramelessWindow):
         self.setting_interface.manualResourceSyncRequested.connect(
             self.resource_sync_coordinator.start_manual_resource_sync_check
         )
-        # self.team_setting = TeamSettingCard(self)
+        self.team_setting = TeamSettingCard(1, self)
 
         # 向 pivot 添加子界面
         self.addSubInterface(self.farming_interface, "farming_interface", "一键长草")
+        self.addSubInterface(self.team_setting, "team_setting", "队伍设置")
         if cfg.language_in_program == "zh_cn":
             self.help_interface = MarkdownViewer("./assets/doc/zh/How_to_use.md")
         else:
@@ -180,7 +180,6 @@ class MainWindow(FramelessWindow):
         self.addSubInterface(self.help_interface, "help_interface", "帮助")
         self.addSubInterface(self.tools_interface, "tools_interface", "小工具")
         self.addSubInterface(self.setting_interface, "setting_interface", "设置")
-        # self.addSubInterface(self.team_setting, 'team_setting', '队伍设置')
 
         self.HBoxLayout.addWidget(self.pivot)
         self.vBoxLayout.addSpacing(10)
@@ -488,48 +487,15 @@ class MainWindow(FramelessWindow):
         self.pivot.addItem(routeKey=objectName, text=text)
 
     def add_and_switch_to_page(self, target: str):
-        try:
-            num = int(re.search(r"team(\d+)_setting", target).group(1))
-            if "team_setting" in list(self.pivot.items.keys()):
-                list(self.pivot.items.values())[-1].click()
-                message = self.tr("存在未保存的队伍设置")
-                mediator.warning.emit(message)
-                self.pivot.setCurrentItem("team_setting")
-            else:
-                """切换页面（带越界保护）"""
-                self.addSubInterface(TeamSettingCard(num), "team_setting", self.tr("队伍设置"))
-                QTimer.singleShot(0, lambda: self.pivot.setCurrentItem("team_setting"))
-        except Exception as e:
-            log.error(f"【异常】switch_to_page 出错：{type(e).__name__}:{e}", exc_info=True)
+        num = int(re.search(r"team(\d+)_setting", target).group(1))
+        self.team_setting.set_team_num(num)
+        QTimer.singleShot(0, lambda: self.pivot.setCurrentItem("team_setting"))
 
     def close_setting_page(self):
         try:
             list(self.pivot.items.values())[0].click()
-            page = self.findChild(TeamSettingCard, "team_setting")
-
-            # 断开信号连接
-            page.disconnect_mediator()
-
-            # 注销翻译组件
-            LanguageManager().unregister_component(page)
-            LanguageManager().unregister_component(page.customize_settings_module)
-            LanguageManager().unregister_component(page.customize_info_module)
-
-            self.stackedWidget.removeWidget(page)
-            page.setParent(None)
-            page.deleteLater()
-            del page
-            self.pivot.removeWidget("team_setting")
-            font_manager.unload_font("./assets/app/fonts/ChineseFont.ttf")
         except Exception as e:
-            log.error(f"delete_team 出错：{e}")
-
-    def show_save_warning(self):
-        MessageBoxWarning(
-            self.tr("设置未保存"),
-            self.tr("存在未保存的设置，请执行保存或取消操作"),
-            self,
-        ).exec()
+            log.error(f"close_setting_page 出错：{e}")
 
     def show_warning(self, warning: str):
         MessageBoxWarning(self.tr("警告！"), warning, self).exec()
@@ -545,7 +511,6 @@ class MainWindow(FramelessWindow):
         # 连接所有可能信号
         mediator.switch_team_setting.connect(self.add_and_switch_to_page)
         mediator.close_setting.connect(self.close_setting_page)
-        mediator.save_warning.connect(self.show_save_warning)
         mediator.tasks_warning.connect(self.show_tasks_warning)
         mediator.update_progress.connect(self.set_progress_ring)
         mediator.download_complete.connect(self.download_and_install)

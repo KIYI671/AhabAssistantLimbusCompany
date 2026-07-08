@@ -88,7 +88,7 @@ For additional support regarding external scripts, please refer to [Third-Party 
 
 #### ㉑ Check to enable this formation
 
-#### ㉒ The name of the team's notes can be set at ㉖
+#### ㉒ The team's alias
 
 #### ㉓ When this formation is enabled, the order of mirror dungeons for this formation will be displayed
 
@@ -96,7 +96,7 @@ For additional support regarding external scripts, please refer to [Third-Party 
 
 #### ㉕ Add a new team
 
-#### ㉖ Set the name of the team's notes
+#### ㉖ Set the team's alias
 
 #### ㉗ Delete this team (when there is only one team, it cannot be deleted)
 

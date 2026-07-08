@@ -1900,11 +1900,6 @@ Entering a formation code will overwrite your current team configuration.</trans
         <translation>Settings</translation>
     </message>
     <message>
-        <location filename="../app/my_app.py" line="529"/>
-        <source>设置未保存</source>
-        <translation>SETTINGS UNSAVE</translation>
-    </message>
-    <message>
         <location filename="../app/my_app.py" line="303"/>
         <source>打开主窗口</source>
         <translation>Open Main Window</translation>
@@ -1935,11 +1930,6 @@ Entering a formation code will overwrite your current team configuration.</trans
         <translation>There are tools running, are you sure you want to exit the program?</translation>
     </message>
     <message>
-        <location filename="../app/my_app.py" line="530"/>
-        <source>存在未保存的设置，请执行保存或取消操作</source>
-        <translation>Didn&apos;t save settings, please do save or cancel</translation>
-    </message>
-    <message>
         <location filename="../app/my_app.py" line="624"/>
         <source>小工具</source>
         <translation>Gadget</translation>
@@ -1968,11 +1958,6 @@ Entering a formation code will overwrite your current team configuration.</trans
         <location filename="../app/my_app.py" line="535"/>
         <source>警告！</source>
         <translation>Warning！</translation>
-    </message>
-    <message>
-        <location filename="../app/my_app.py" line="496"/>
-        <source>存在未保存的队伍设置</source>
-        <translation>There are unsaved team settings</translation>
     </message>
 </context>
 <context>
@@ -2005,8 +1990,8 @@ Entering a formation code will overwrite your current team configuration.</trans
     <name>MessageBoxEdit</name>
     <message>
         <location filename="../app/base_combination.py" line="366"/>
-        <source>设置备注名</source>
-        <translation>Set a Custom Name</translation>
+        <source>设置别名</source>
+        <translation>Set Alias</translation>
     </message>
     <message>
         <location filename="../app/card/messagebox_custom.py" line="132"/>
@@ -2070,8 +2055,8 @@ Entering a formation code will overwrite your current team configuration.</trans
     <name>MirrorTeamCombination</name>
     <message>
         <location filename="../app/base_combination.py" line="386"/>
-        <source>备注名</source>
-        <translation>Nickname</translation>
+        <source>别名</source>
+        <translation>Alias</translation>
     </message>
     <message>
         <location filename="../app/page_card.py" line="406"/>
@@ -2549,6 +2534,35 @@ These fields will be populated with default values. Do you wish to continue?</tr
 <context>
     <name>TeamSettingCard</name>
     <message>
+        <location filename="../app/team_setting_card.py" line="238"/>
+        <location filename="../app/team_setting_card.py" line="646"/>
+        <source>复制</source>
+        <translation>Copy</translation>
+    </message>
+    <message>
+        <location filename="../app/team_setting_card.py" line="241"/>
+        <location filename="../app/team_setting_card.py" line="647"/>
+        <source>粘贴</source>
+        <translation>Paste</translation>
+    </message>
+    <message>
+        <location filename="../app/team_setting_card.py" line="250"/>
+        <location filename="../app/team_setting_card.py" line="648"/>
+        <source>队伍体系</source>
+        <translation>Team system</translation>
+    </message>
+    <message>
+        <location filename="../app/team_setting_card.py" line="252"/>
+        <location filename="../app/team_setting_card.py" line="651"/>
+        <source>商店策略</source>
+        <translation>Shop tactic</translation>
+    </message>
+    <message>
+        <location filename="../app/team_setting_card.py" line="613"/>
+        <source>编队</source>
+        <translation>Team </translation>
+    </message>
+    <message>
         <location filename="../app/team_setting_card.py" line="124"/>
         <location filename="../app/team_setting_card.py" line="582"/>
         <source>选择队伍名称</source>
@@ -2558,13 +2572,13 @@ These fields will be populated with default values. Do you wish to continue?</tr
         <location filename="../app/team_setting_card.py" line="125"/>
         <location filename="../app/team_setting_card.py" line="583"/>
         <source>选择队伍体系</source>
-        <translation>Select team system</translation>
+        <translation type="vanished">Select team system</translation>
     </message>
     <message>
         <location filename="../app/team_setting_card.py" line="127"/>
         <location filename="../app/team_setting_card.py" line="584"/>
         <source>选择商店策略</source>
-        <translation>Select Shop Tactic</translation>
+        <translation type="vanished">Select Shop Tactic</translation>
     </message>
     <message>
         <location filename="../app/team_setting_card.py" line="132"/>
@@ -2637,100 +2651,6 @@ These fields will be populated with default values. Do you wish to continue?</tr
         <location filename="../app/team_setting_card.py" line="597"/>
         <source>舍弃的体系</source>
         <translation>Abandoned system</translation>
-    </message>
-    <message>
-        <location filename="../app/team_setting_card.py" line="264"/>
-        <location filename="../app/team_setting_card.py" line="610"/>
-        <source>导出设置</source>
-        <translation>Export Settings</translation>
-    </message>
-    <message>
-        <location filename="../app/team_setting_card.py" line="266"/>
-        <location filename="../app/team_setting_card.py" line="611"/>
-        <source>导入设置</source>
-        <translation>Import Settings</translation>
-    </message>
-    <message>
-        <location filename="../app/team_setting_card.py" line="269"/>
-        <location filename="../app/team_setting_card.py" line="612"/>
-        <source>取消</source>
-        <translation>Cancel</translation>
-    </message>
-    <message>
-        <location filename="../app/team_setting_card.py" line="271"/>
-        <location filename="../app/team_setting_card.py" line="613"/>
-        <source>保存</source>
-        <translation>Save</translation>
-    </message>
-    <message>
-        <location filename="../app/team_setting_card.py" line="501"/>
-        <source>导出队伍设置</source>
-        <translation>Export Team Settings</translation>
-    </message>
-    <message>
-        <location filename="../app/team_setting_card.py" line="508"/>
-        <source>导出成功</source>
-        <translation>Export Successful</translation>
-    </message>
-    <message>
-        <location filename="../app/team_setting_card.py" line="509"/>
-        <source>队伍设置已导出到: </source>
-        <translation>Team settings exported to:</translation>
-    </message>
-    <message>
-        <location filename="../app/team_setting_card.py" line="518"/>
-        <source>导出失败</source>
-        <translation>Export Failed</translation>
-    </message>
-    <message>
-        <location filename="../app/team_setting_card.py" line="519"/>
-        <source>无法导出队伍设置，请检查日志</source>
-        <translation>Unable to export team settings. Please check the logs</translation>
-    </message>
-    <message>
-        <location filename="../app/team_setting_card.py" line="529"/>
-        <source>导入队伍设置</source>
-        <translation>Import Team Settings</translation>
-    </message>
-    <message>
-        <location filename="../app/team_setting_card.py" line="538"/>
-        <source>导入失败</source>
-        <translation>Import Failed</translation>
-    </message>
-    <message>
-        <location filename="../app/team_setting_card.py" line="539"/>
-        <source>无法解析导入文件，请检查文件格式</source>
-        <translation>Unable to parse the imported file. Please check the file format</translation>
-    </message>
-    <message>
-        <location filename="../app/team_setting_card.py" line="551"/>
-        <source>部分字段缺失</source>
-        <translation>Some fields are missing</translation>
-    </message>
-    <message>
-        <location filename="../app/team_setting_card.py" line="552"/>
-        <source>以下字段将使用默认值: </source>
-        <translation>The following fields will use default values:</translation>
-    </message>
-    <message>
-        <location filename="../app/team_setting_card.py" line="561"/>
-        <source>确认导入</source>
-        <translation>Confirm Import</translation>
-    </message>
-    <message>
-        <location filename="../app/team_setting_card.py" line="561"/>
-        <source>导入将覆盖当前队伍设置，是否继续？</source>
-        <translation>Importing will overwrite the current team settings. Do you wish to continue?</translation>
-    </message>
-    <message>
-        <location filename="../app/team_setting_card.py" line="570"/>
-        <source>导入成功</source>
-        <translation>Import successful</translation>
-    </message>
-    <message>
-        <location filename="../app/team_setting_card.py" line="571"/>
-        <source>队伍设置已导入并应用</source>
-        <translation>Team settings have been imported and applied</translation>
     </message>
     <message>
         <location filename="../app/team_setting_card.py" line="198"/>
