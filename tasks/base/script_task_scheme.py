@@ -39,7 +39,7 @@ from tasks.battle import battle
 from tasks.daily.get_prize import get_mail_prize, get_pass_prize
 from tasks.daily.luxcavation import EXP_luxcavation, thread_luxcavation
 from tasks.mirror.mirror import Mirror
-from tasks.teams.team_formation import select_battle_team
+from tasks.teams.team_formation import select_battle_team, team_formation
 from utils.path_manager import path_manager
 from utils.utils import calculate_the_teams, check_hard_mirror_time, get_day_of_week
 
@@ -53,6 +53,9 @@ def onetime_EXP_process(combat_count: int = 1):
         team = cfg.daily_teams
     EXP_luxcavation(combat_count)
     select_battle_team(team)
+    team_setting = cfg.get_team(team)
+    sinner_order = team_setting.sinner_order
+    team_formation(sinner_order)
     if battle.to_battle() is False:
         return False
     battle.fight(combat_count=combat_count)
@@ -69,6 +72,9 @@ def onetime_thread_process(combat_count: int = 1):
         team = cfg.daily_teams
     thread_luxcavation(combat_count)
     select_battle_team(team)
+    team_setting = cfg.get_team(team)
+    sinner_order = team_setting.sinner_order
+    team_formation(sinner_order)
     if battle.to_battle() is False:
         return False
     battle.fight(combat_count=combat_count)

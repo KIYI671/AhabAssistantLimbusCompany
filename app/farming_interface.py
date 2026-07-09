@@ -53,7 +53,7 @@ from module.system_actions import (
     set_after_completion_config,
 )
 from tasks.base.script_task_scheme import my_script_task
-from utils.utils import check_hard_mirror_time
+from utils.utils import calculate_the_teams, check_hard_mirror_time, get_day_of_week
 
 
 class AfterCompletionActionEditor(FlyoutViewBase):
@@ -531,6 +531,27 @@ class FarmingInterfaceLeft(QWidget):
         sys.exit(0)
 
     def check_setting(self):
+        if cfg.daily_task:
+            # 检查 本次 采光本使用的队伍是否配置了角色选择
+            daily_team_orders: set[int] = set()
+            if cfg.set_EXP_count > 0:
+                if cfg.targeted_teaming_EXP:
+                    daily_team_orders.add(cfg.get_value(f"EXP_day_{calculate_the_teams()}"))
+                else:
+                    daily_team_orders.add(cfg.daily_teams)
+            if cfg.set_thread_count > 0:
+                if cfg.targeted_teaming_thread:
+                    daily_team_orders.add(cfg.get_value(f"thread_day_{get_day_of_week()}"))
+                else:
+                    daily_team_orders.add(cfg.daily_teams)
+
+            for daily_team_order in sorted(daily_team_orders):
+                team_setting: TeamSetting = cfg.get_team(daily_team_order)
+                if team_setting.sinners_be_select == 0:
+                    message = self.tr("存在未配置角色选择的队伍：TEAM_{0}")
+                    mediator.warning.emit(message.format(daily_team_order))
+                    return False
+
         if cfg.mirror:
             # 判断是否启用了自动切换困牢
             if cfg.auto_hard_mirror:
