@@ -1617,8 +1617,8 @@ Entering a formation code will overwrite your current team configuration.</trans
     <name>FarmingInterfaceLeft</name>
     <message>
         <location filename="../app/farming_interface.py" line="576"/>
-        <source>存在未配置角色选择的队伍：TEAM_{0}</source>
-        <translation>There is a team with no configured role selection: TEAM_{0}</translation>
+        <source>存在未配置角色选择的编队：编队{0}</source>
+        <translation>There is a team with no configured role selection: Team {0}</translation>
     </message>
     <message>
         <location filename="../app/farming_interface.py" line="567"/>

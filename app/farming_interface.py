@@ -548,7 +548,7 @@ class FarmingInterfaceLeft(QWidget):
             for daily_team_order in sorted(daily_team_orders):
                 team_setting: TeamSetting = cfg.get_team(daily_team_order)
                 if team_setting.sinners_be_select == 0:
-                    message = self.tr("存在未配置角色选择的队伍：TEAM_{0}")
+                    message = self.tr("存在未配置角色选择的编队：编队{0}")
                     mediator.warning.emit(message.format(daily_team_order))
                     return False
 
@@ -581,7 +581,7 @@ class FarmingInterfaceLeft(QWidget):
             for active_team_order in cfg.teams_active_queue:
                 team_setting: TeamSetting = cfg.get_team(active_team_order)
                 if team_setting.sinners_be_select == 0:
-                    message = self.tr("存在未配置角色选择的队伍：TEAM_{0}")
+                    message = self.tr("存在未配置角色选择的编队：编队{0}")
                     mediator.warning.emit(message.format(active_team_order))
                     return False
 
