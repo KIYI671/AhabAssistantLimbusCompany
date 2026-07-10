@@ -24,6 +24,7 @@ from qfluentwidgets import (
     ToolTipPosition,
 )
 from qfluentwidgets import FluentIcon as FIF
+from ruamel.yaml import YAML
 
 from app import *
 from app.base_combination import (
@@ -511,8 +512,7 @@ class TeamSettingCard(QFrame):
 
     def copy_team_settings(self):
         """复制当前队伍设置（含主题包权重）到剪贴板。"""
-        yaml_str = cfg.team_config.copy_team_as_yaml(self.team_num)
-        pyperclip.copy(yaml_str)
+        pyperclip.copy(cfg.team_config.copy_team_share_code(self.team_num))
         BaseInfoBar.success(
             title=self.tr("已复制到剪切板"),
             content="",
@@ -527,7 +527,7 @@ class TeamSettingCard(QFrame):
         """从剪贴板粘贴队伍设置（含主题包权重）到当前队伍。"""
         setting = pyperclip.paste().strip()
         try:
-            cfg.team_config.paste_team_from_yaml(self.team_num, setting)
+            cfg.team_config.paste_team_share_code(self.team_num, setting)
         except ValueError:
             BaseInfoBar.error(
                 title=self.tr("剪贴板为空") if not setting else self.tr("不是合法的格式"),

@@ -36,6 +36,7 @@ from app.card.messagebox_custom import BaseInfoBar, MessageBoxConfirm
 from app.language_manager import LanguageManager
 from module import THEME_PACK_LIST_EXAMPLE_PATH
 from module.config import cfg, theme_list
+from module.config.share_code_codec import decode_theme_pack_weight, encode_theme_pack_weight
 
 # 英文key到中文名称的映射表（普通模式）
 THEME_PACK_NAME_MAP = {
@@ -914,14 +915,6 @@ class ThemePackSettingDialog(FramelessDialog):
             card.update_weight(-5)
         self._has_unsaved_changes = True
 
-    def _dump_theme_pack_weight(self, data: dict) -> str:
-        stream = YAML()
-        from io import StringIO
-
-        output = StringIO()
-        stream.dump(data, output)
-        return output.getvalue()
-
     def _apply_theme_pack_weight_to_cards(self, config_data: dict) -> None:
         if self.is_cn:
             normal_weights = config_data.get("theme_pack_list_cn", {})
@@ -941,7 +934,7 @@ class ThemePackSettingDialog(FramelessDialog):
                 self.hard_cards[pack_key].update_weight(weight)
 
     def copy_theme_pack_weight(self):
-        QApplication.clipboard().setText(self._dump_theme_pack_weight(self.config_data))
+        QApplication.clipboard().setText(encode_theme_pack_weight(self.config_data))
         BaseInfoBar.success(
             title=self.tr("已复制权重"),
             content="",
@@ -967,11 +960,8 @@ class ThemePackSettingDialog(FramelessDialog):
             return
 
         try:
-            pasted_config = YAML().load(clipboard_text) or {}
+            pasted_config = decode_theme_pack_weight(clipboard_text)
         except Exception:
-            pasted_config = {}
-
-        if not isinstance(pasted_config, dict):
             BaseInfoBar.error(
                 title=self.tr("不是合法的权重格式"),
                 content="",
@@ -982,11 +972,6 @@ class ThemePackSettingDialog(FramelessDialog):
                 parent=self,
             )
             return
-
-        if isinstance(pasted_config.get("team_setting"), dict):
-            pasted_config = pasted_config["team_setting"].get("theme_pack_weight", {})
-        elif isinstance(pasted_config.get("theme_pack_weight"), dict):
-            pasted_config = pasted_config["theme_pack_weight"]
 
         if not isinstance(pasted_config, dict) or not any(
             key in pasted_config

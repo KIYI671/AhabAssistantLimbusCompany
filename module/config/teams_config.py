@@ -1,16 +1,16 @@
 import copy
 import shutil
-from io import StringIO
 from pathlib import Path
 from time import localtime, strftime, time
 from typing import Any
 
 from pydantic import BaseModel, Field, PrivateAttr, ValidationError
-from ruamel.yaml import YAML, YAMLError
+from ruamel.yaml import YAML
 
 from module.logger import log
 
 from .config_typing import TeamSetting
+from .share_code_codec import decode_team_setting, encode_team_setting
 
 
 MAX_TEAM_COUNT = 20
@@ -159,20 +159,6 @@ class TeamConfig(BaseModel):
         with open(path, "w", encoding="utf-8") as file:
             self._yaml.dump(self._serialize_team(team_setting), file)
 
-    def _dump_yaml(self, data: dict) -> str:
-        stream = StringIO()
-        self._yaml.dump(data, stream)
-        return stream.getvalue()
-
-    def _load_yaml_text(self, text: str) -> dict:
-        try:
-            data = self._yaml.load(text)
-        except YAMLError as e:
-            raise ValueError("不是合法的队伍配置格式") from e
-        if not isinstance(data, dict):
-            raise ValueError("不是合法的队伍配置格式")
-        return data
-
     def _extract_team_setting_data(self, data: dict) -> dict:
         if isinstance(data.get("team_setting"), dict):
             team_data = dict(data["team_setting"])
@@ -246,19 +232,18 @@ class TeamConfig(BaseModel):
     def copy_team(self, team_num: int) -> dict:
         return self.load_team(team_num).model_dump()
 
+    def copy_team_share_code(self, team_num: int) -> str:
+        return encode_team_setting(self.copy_team(team_num), team_num)
+
     def paste_team(self, team_num: int, data: dict) -> TeamSetting:
         team_setting = self._normalize_team_data(team_num, {"team_setting": self._extract_team_setting_data(data)})
         self.save_team(team_num, team_setting)
         return team_setting
 
-    def copy_team_as_yaml(self, team_num: int) -> str:
-        return self._dump_yaml({"team_setting": self.copy_team(team_num)})
-
-    def paste_team_from_yaml(self, team_num: int, text: str) -> TeamSetting:
+    def paste_team_share_code(self, team_num: int, text: str) -> TeamSetting:
         if not text.strip():
             raise ValueError("队伍配置为空")
-        data = self._load_yaml_text(text)
-        return self.paste_team(team_num, data)
+        return self.paste_team(team_num, decode_team_setting(text))
 
     def get_team_theme_pack_weight(self, team_num: int) -> dict:
         return copy.deepcopy(self.load_team(team_num).theme_pack_weight)
