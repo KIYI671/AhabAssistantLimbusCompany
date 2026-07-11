@@ -145,7 +145,7 @@ def make_enkephalin_module(cancel=True, skip=True, *, task_name: str = "体力�
                 offset=False,
             ):
                 last_open_panel_click_time = now_time
-                sleep(0.5)
+                sleep(1)
             continue
         if auto.click_element(
             "enkephalin/all_in_assets.png",
@@ -166,7 +166,7 @@ def make_enkephalin_module(cancel=True, skip=True, *, task_name: str = "体力�
 def lunacy_to_enkephalin(times=0):
     make_enkephalin_module(cancel=False, skip=False, task_name="狂气换体")
     auto.click_element("enkephalin/use_lunacy_assets.png")
-    sleep(0.5)
+    sleep(1)
     Grandet = False
     while times > 0:
         auto.mouse_to_blank(move_back=False)

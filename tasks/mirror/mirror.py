@@ -782,7 +782,7 @@ class Mirror:
                         )
 
             if auto.click_element("mirror/road_to_mir/dreaming_star/dreaming_star_enter_assets.png"):
-                sleep(0.5)
+                sleep(1)
                 continue
 
             if retry() is False:
