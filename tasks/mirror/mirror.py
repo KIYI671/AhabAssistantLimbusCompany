@@ -918,7 +918,7 @@ class Mirror:
         benchmark_point = None
         if point := auto.find_element("mirror/road_to_mir/observe_ego_gift/observe_burn_assets.png", model="clam",take_screenshot=True):
             benchmark_point = point
-        elif auto.find_element("mirror/road_to_mir/observe_ego_gift/observe_bleed_assets.png", model="clam"):
+        elif point := auto.find_element("mirror/road_to_mir/observe_ego_gift/observe_bleed_assets.png", model="clam"):
             benchmark_point = (point[0] - 110 * my_scale, point[1])
 
         if not benchmark_point:
