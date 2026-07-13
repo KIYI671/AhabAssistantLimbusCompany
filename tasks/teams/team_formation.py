@@ -4,6 +4,7 @@ from module.automation import auto
 from module.config import cfg
 from module.decorator.decorator import begin_and_finish_time_log
 from module.logger import log
+from module.ocr import ocr
 
 
 # 清队
@@ -202,14 +203,37 @@ def deal_with_spills():
         pass
 
 
+_MONEY_OCR_TRANSLATION = str.maketrans(
+    {
+        "O": "0",
+        "o": "0",
+        "D": "0",
+        "Q": "0",
+        "I": "1",
+        "l": "1",
+        "Z": "2",
+        "S": "5",
+        "G": "6",
+        "B": "8",
+        "h": "4",
+    }
+)
+
+
 @begin_and_finish_time_log(task_name="检查队伍剩余战斗力")
 def check_team():
-    # 至少还有5人可以战斗
-    sinner_nums = [f"{a}/{b}" for b in range(5, 10) for a in range(5, b + 1)]
-    if auto.find_element(sinner_nums, find_type="text"):
-        return True
-    else:
+    # 只要还有至少1人可以战斗就继续
+    scale = cfg.set_win_size / 1440
+    # 选中罪人数量
+    sinner_nums_bbox = tuple(
+        int(value * scale)
+        for value in (2260, 1020, 2333, 1080)
+    )
+    result = ocr.run(auto.screenshot.crop(sinner_nums_bbox), use_det=False)
+    if not result.txts:
         return False
+    recognized_text = result.txts[0].strip().translate(_MONEY_OCR_TRANSLATION)
+    return recognized_text.isdigit() and 1 <= int(recognized_text) <= 12
 
 
 @begin_and_finish_time_log(task_name="加载编队码")

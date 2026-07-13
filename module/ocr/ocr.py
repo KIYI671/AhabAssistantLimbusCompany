@@ -26,8 +26,7 @@ class OCR(metaclass=SingletonMeta):
             },
             config_path=r"assets\config\default_rapidocr.yaml",
         )
-
-    def run(self, image: Image.Image | np.ndarray | str) -> RapidOCROutput:
+    def run(self, image: Image.Image | np.ndarray | str, *, use_det: bool = True) -> RapidOCROutput:
         """执行OCR识别，支持Image对象、文件路径和np.ndarray对象"""
         try:
             if isinstance(image, str):
@@ -56,11 +55,13 @@ class OCR(metaclass=SingletonMeta):
                     raise ValueError(f"不支持的图像通道数: {channel_count}")
             else:
                 raise ValueError(f"不支持的图像维度: {image_array.ndim}")
-
-            # 自适应均衡化(均值化后更亮)
+            # 自适应均衡化，用于常规文本检测。
             clahe = createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
             processed_image = clahe.apply(img_cv_gray)
-            results = self.engine(processed_image)
+            if use_det:
+                results = self.engine(processed_image, use_det=True, use_cls=True, use_rec=True)
+            else:
+                results = self.engine(image_array, use_det=False, use_cls=False, use_rec=True)
             self.log_results(results)
             return results
         except Exception as e:
