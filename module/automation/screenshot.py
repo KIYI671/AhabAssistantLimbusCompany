@@ -11,6 +11,7 @@ from PIL import Image
 from module.config import cfg
 from module.game_and_screen import screen
 from module.logger import log
+from module.my_error.my_error import withOutGameWinError
 
 
 class ScreenShot:
@@ -182,6 +183,8 @@ class ScreenShot:
         try:
             # 查找游戏窗口句柄
             hwnd = screen.handle.hwnd
+            if hwnd == 0:
+                raise withOutGameWinError("未找到游戏窗口句柄，无法截图")
             if screen.handle.isMinimized:
                 raise ValueError("窗口最小化，无法截图")
             elif screen.handle.isActive and screen.handle.isTransparent:
@@ -228,7 +231,7 @@ class ScreenShot:
 
             return pil_image
 
-        except pywintypes.error as e:
+        except (pywintypes.error, withOutGameWinError) as e:
             log.error(f"后台截图报错: {e}，尝试重启游戏")
             import os
 
