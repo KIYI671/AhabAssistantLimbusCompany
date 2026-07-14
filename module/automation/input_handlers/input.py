@@ -750,19 +750,22 @@ class WindowMoveInput(WinAbstractInput, metaclass=SingletonMeta):
         else:
             dx = 0
             dy = 0
-        win32gui.SetWindowPos(
-            hwnd,
-            None,
-            mouse_pos[0] - x + dx,
-            mouse_pos[1] - y + dy,
-            0,
-            0,
-            win32con.SWP_NOSIZE
-            | win32con.SWP_NOZORDER
-            | win32con.SWP_NOACTIVATE
-            | win32con.SWP_NOSENDCHANGING
-            | win32con.SWP_NOREDRAW,
-        )
+        try:
+            win32gui.SetWindowPos(
+                hwnd,
+                None,
+                mouse_pos[0] - x + dx,
+                mouse_pos[1] - y + dy,
+                0,
+                0,
+                win32con.SWP_NOSIZE
+                | win32con.SWP_NOZORDER
+                | win32con.SWP_NOACTIVATE
+                | win32con.SWP_NOSENDCHANGING
+                | win32con.SWP_NOREDRAW,
+            )
+        except Exception as e:
+            log.error(f"窗口移动点击时移动窗口失败: {e}")
 
         return original_rect[:2]
 
