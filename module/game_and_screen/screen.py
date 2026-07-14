@@ -8,7 +8,6 @@ import win32gui
 from app import mediator
 from module.config import cfg
 from module.logger import log
-from module.my_error.my_error import withOutGameWinError
 from utils.singletonmeta import SingletonMeta
 
 if TYPE_CHECKING:
@@ -24,9 +23,7 @@ class Handle:
     def __init__(self):
         self._enum_windows_list = []
 
-    def init_handle(
-        self, title: str = "LimbusCompany", class_name: str = "UnityWndClass", add_stacklevel: int = 0
-    ) -> int:
+    def init_handle(self, title: str = "LimbusCompany", class_name: str = "UnityWndClass") -> int:
         """获取窗口句柄"""
         hwnd = win32gui.FindWindow(class_name, title)
         if hwnd:
@@ -39,27 +36,23 @@ class Handle:
             except win32gui.error:
                 pass
             except Exception as e:
-                log.error(f"枚举窗口时发生错误: {e}", stacklevel=3 + add_stacklevel)
+                log.error(f"枚举窗口时发生错误: {e}", stacklevel=3)
             if self._hwnd == 0:
-                log.error("未能获取到游戏窗口", stacklevel=3 + add_stacklevel)
+                log.error("未能获取到游戏窗口", stacklevel=3)
                 log.debug(f"枚举窗口列表: {self._enum_windows_list}")
                 self._enum_windows_list.clear()
-                raise withOutGameWinError("未能获取到游戏窗口")
         return self._hwnd
 
     def _enum_windows_callback(self, hwnd, _):
         """该函数于GUI线程中返回停止信号固定触发`win32gui.error`报错, 外部调用务必捕获异常, 以防崩溃"""
         class_name = win32gui.GetClassName(hwnd)
         window_text = win32gui.GetWindowText(hwnd)
-
+        self._enum_windows_list.append(f"hwnd: {hwnd}, class_name: {class_name}, window_text: {window_text}")
         if class_name == "UnityWndClass" and window_text == "LimbusCompany":
-            self._enum_windows_list.append(f"hwnd: {hwnd}, class_name: {class_name}, window_text: {window_text}")
             log.debug(f"在枚举窗口中找到匹配的窗口: {hwnd}", stacklevel=4)
             self._hwnd = hwnd
             self._enum_windows_list.clear()
             return False  # 停止枚举
-        elif class_name == "UnityWndClass" or window_text == "LimbusCompany":
-            self._enum_windows_list.append(f"hwnd: {hwnd}, class_name: {class_name}, window_text: {window_text}")
         return True  # 继续枚举
 
     @property
@@ -69,10 +62,10 @@ class Handle:
             if cfg.config.simulator:
                 log.debug("模拟器模式下无法获取窗口句柄", stacklevel=3)
             else:
-                self.init_handle(add_stacklevel=1)
+                self.init_handle()
         elif not win32gui.IsWindow(self._hwnd):
             log.warning(f"窗口句柄无效，可能窗口已关闭，重新获取, 当前句柄为 {self._hwnd}", stacklevel=3)
-            self.init_handle(add_stacklevel=1)
+            self.init_handle()
             if win32gui.IsWindow(self._hwnd):
                 log.info(f"重新获取窗口句柄成功, 新句柄为 {self._hwnd}", stacklevel=3)
         return self._hwnd
