@@ -69,16 +69,10 @@ class Handle:
             if cfg.config.simulator:
                 log.debug("模拟器模式下无法获取窗口句柄", stacklevel=3)
             else:
-                try:
-                    self.init_handle(add_stacklevel=1)
-                except withOutGameWinError:
-                    return 0
+                self.init_handle(add_stacklevel=1)
         elif not win32gui.IsWindow(self._hwnd):
             log.warning(f"窗口句柄无效，可能窗口已关闭，重新获取, 当前句柄为 {self._hwnd}", stacklevel=3)
-            try:
-                self.init_handle(add_stacklevel=1)
-            except withOutGameWinError:
-                return 0
+            self.init_handle(add_stacklevel=1)
             if win32gui.IsWindow(self._hwnd):
                 log.info(f"重新获取窗口句柄成功, 新句柄为 {self._hwnd}", stacklevel=3)
         return self._hwnd
