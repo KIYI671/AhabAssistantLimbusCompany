@@ -505,6 +505,16 @@ class PageMirror(PageCard):
             center=False,
         )
 
+        self.mirror_keyboard_navigation.check_box.toggled.connect(
+            self._on_keyboard_navigation_toggled
+        )
+        self._on_keyboard_navigation_toggled(cfg.mirror_keyboard_navigation)
+
+    def _on_keyboard_navigation_toggled(self, checked: bool):
+        if not checked and cfg.mirror_keyboard_simple_pathfinding:
+            self.mirror_keyboard_simple_pathfinding.set_check_false()
+        self.mirror_keyboard_simple_pathfinding.set_box_enabled(checked)
+
     def __init_layout(self):
         self.vbox_general.addWidget(self.team)
 
