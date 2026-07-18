@@ -11,7 +11,6 @@ import numpy as np
 import psutil
 from PIL.Image import Image
 
-from module.my_error.my_error import withOutGameWinError
 from utils.image_utils import ImageUtils
 from utils.path_manager import path_manager
 from utils.singletonmeta import SingletonMeta
@@ -261,7 +260,6 @@ class Automation(metaclass=SingletonMeta):
         """
         start_time = time.time()
         screenshot_interval_time = cfg.screenshot_interval if cfg.screenshot_interval else 0.85
-        is_game_die = False
         while True:
             try:
                 if time.time() - self.last_screenshot_time < screenshot_interval_time:
@@ -278,13 +276,10 @@ class Automation(metaclass=SingletonMeta):
                     return result
                 else:
                     return None
-            except withOutGameWinError as e:
-                log.error(f"截图失败: {e}")
-                is_game_die = True
             except Exception as e:
                 log.error(f"截图失败:{e}")
             time.sleep(1)
-            if time.time() - start_time > 60 or is_game_die:
+            if time.time() - start_time > 60:
                 log.error("截图超时，尝试重启游戏")
                 import os
 
@@ -300,7 +295,6 @@ class Automation(metaclass=SingletonMeta):
                 from tasks.base.script_task_scheme import init_game
 
                 init_game()
-                is_game_die = False
                 start_time = time.time()
 
     def find_element(
