@@ -219,8 +219,9 @@ class Automation(metaclass=SingletonMeta):
 
         if self.last_click_time == 0:
             self.last_click_time = time.time()
-        if time.time() - self.last_click_time < interval:
-            time.sleep(interval)
+        click_wait_time = max(0, interval - (time.time() - self.last_click_time))
+        if click_wait_time > 0:
+            time.sleep(click_wait_time)
             self.last_click_time = time.time()
 
         # 计算传入的位置
