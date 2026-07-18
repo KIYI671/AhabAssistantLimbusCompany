@@ -113,13 +113,18 @@ class CaptureStd:
         os.dup2(self.writer_err, self.fderr)
         os.close(self.writer_out)
         os.close(self.writer_err)
-        sys.stdout = os.fdopen(self.fdout, "w")
-        sys.stderr = os.fdopen(self.fderr, "w")
+        self._pipe_stdout = os.fdopen(self.fdout, "w")
+        self._pipe_stderr = os.fdopen(self.fderr, "w")
+        sys.stdout = self._pipe_stdout
+        sys.stderr = self._pipe_stderr
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         sys.stdout = self._saved_stdout
         sys.stderr = self._saved_stderr
+        # 趁 fd 仍指向管道时显式冲刷并关闭临时流对象，避免其延迟回收时误关已恢复的标准流
+        self._pipe_stdout.close()
+        self._pipe_stderr.close()
         os.dup2(self.old_stdout, self.fdout)
         os.dup2(self.old_stderr, self.fderr)
         os.close(self.old_stdout)
@@ -184,7 +189,7 @@ class CaptureNemuIpc(CaptureStd):
     def check_stderr(self):
         if not self.stderr:
             return
-        getattr(self.logger, self.log_level)(f"NemuIpc stderr: {self.stderr}")
+        getattr(self.logger, self.log_level, self.logger.error)(f"NemuIpc stderr: {self.stderr}")
 
         # Calling an old MuMu12 player
         # Tested on 3.4.0
@@ -246,7 +251,7 @@ class MumuControl(AbstractInput):
         if self.exe_path:
             log.debug(f"MumuControl.__init__: exe_path 已初始化 -> {self.exe_path}")
         else:
-            log.warning("MumuControl.__init__: exe_path 未初始化, 将由 start() 异常 fallback 重试")
+            log.warning("MumuControl.__init__: exe_path 未初始化, 将在 start() 中补查, 仍失败则抛出异常")
         self.start()
         self.adb_connect()
 
@@ -419,15 +424,20 @@ class MumuControl(AbstractInput):
             if _depth >= _MAX_DEPTH:
                 log.warning(f"get_mumu_adb_port 重试耗尽 ({_MAX_DEPTH}轮)，使用默认端口计算")
                 return f"127.0.0.1:{int(self.multi_instance_number) * 32 + 16384}"
-            log.debug(f"get_mumu_adb_port 异常 (轮次{_depth + 1}/{_MAX_DEPTH}): {type(error).__name__}: {error}")
+            log.debug(f"get_mumu_adb_port 异常 (轮次{_depth + 1}/{_MAX_DEPTH}): {type(error).__name__}: {error}, 等待后重试")
+            time.sleep(3)
             return self.get_mumu_adb_port(multi_instance_number, _depth + 1)
 
     def start(self):
+        if self.exe_path is None:
+            self.mumu_control_api_backend()
+            if self.exe_path is None:
+                raise RuntimeError("未找到 MuMuManager.exe，请检查 MuMu 模拟器 12 是否已安装且版本受支持")
         log.debug(f"开始启动MUMU模拟器实例编号{self.multi_instance_number}")
         keptlive = self.get_app_keptlive()
         if keptlive:
             log.info("检测到启用了应用后台保活功能，即将关闭")
-            if self.get_launch_status(timeout=1) == "start_finished":
+            if self.get_launch_status(timeout=5) == "start_finished":
                 log.info("检测到模拟器处于启用状态，为关闭应用后台保活，需执行重启")
                 self.stop()
             self.disable_app_keptlive()
@@ -445,7 +455,7 @@ class MumuControl(AbstractInput):
         deadline = time.monotonic() + cfg.start_emulator_timeout
         while time.monotonic() < deadline:
             remaining = max(0, deadline - time.monotonic())
-            if self.get_launch_status(timeout=min(1, remaining)) != "start_finished":
+            if self.get_launch_status(timeout=min(5, remaining)) != "start_finished":
                 time.sleep(min(1, max(0, deadline - time.monotonic())))
                 continue
             log.debug("start: 模拟器启动状态确认为 start_finished")
@@ -628,7 +638,11 @@ class MumuControl(AbstractInput):
             proc = subprocess.run(cmd, **run_kwargs)
         except subprocess.TimeoutExpired:
             return "not_launched"
-        info = json.loads(proc.stdout)
+        try:
+            info = json.loads(proc.stdout)
+        except Exception:
+            log.warning(f"get_launch_status: 解析 info 失败，无法获取启动状态，stdout={proc.stdout}")
+            return "not_launched"
         try:
             if "player_state" in info:
                 return info["player_state"]
@@ -636,7 +650,7 @@ class MumuControl(AbstractInput):
                 return "start_finished"
             return "not_launched"
         except Exception:
-            log.warning(f"get_launch_status: 解析 info 失败，无法获取启动状态，stdout={proc.stdout}")
+            log.warning(f"get_launch_status: 读取 info 字段失败，info={info}")
             return "not_launched"
 
     def load_dll(self):
