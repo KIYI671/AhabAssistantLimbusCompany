@@ -8,7 +8,7 @@ def build_scroll_swipe_plan(
     dy=0,
     duration=0.3,
     escape_distance=30,
-    escape_duration=0,
+    escape_duration=0.01,
 ):
     """生成规避长按判定的滚动路径，元素为（坐标，到达该点前的耗时）。
 
