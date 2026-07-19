@@ -729,7 +729,13 @@ class FarmingInterfaceLeft(QWidget):
     def stop_script(self):
         if self.my_script and self.my_script.isRunning():
             log.debug("正在终止脚本线程...")
-            self.my_script.terminate()  # 终止线程
+            script = self.my_script
+            waiting_for_hdr_warning = script.waiting_for_hdr_warning
+            script.stop()
+            if waiting_for_hdr_warning and not script.wait(2000):
+                log.warning("等待 HDR 警告任务停止超时，强制终止线程")
+                script.terminate()
+                script.wait(500)
 
     def my_stop_shortcut(self):
         current_text = self.link_start_button.get_text()

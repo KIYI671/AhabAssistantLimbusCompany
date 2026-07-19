@@ -1,8 +1,11 @@
 import platform
 import random
 from datetime import datetime
+from threading import Event
 from time import sleep, time
 
+import win32api
+import win32con
 from playsound3 import playsound
 from PySide6.QtCore import QT_TRANSLATE_NOOP, QMutex, QThread
 
@@ -12,6 +15,7 @@ from module.automation import auto
 from module.config import TeamSetting, cfg
 from module.decorator.decorator import begin_and_finish_time_log
 from module.game_and_screen import game_process, screen
+from module.game_and_screen.hdr import get_monitor_hdr_info
 from module.logger import log
 from module.my_error.my_error import (
     backMainWinError,
@@ -173,6 +177,44 @@ def init_game():
             screen.set_win()
 
 
+def _warn_if_game_monitor_hdr_enabled() -> None:
+    if cfg.simulator or not bool(cfg.get_value("experimental_hdr_warning", True)):
+        return
+
+    hwnd = screen.handle.hwnd
+    if not hwnd:
+        log.warning("游戏窗口句柄无效，跳过 HDR 检测")
+        return
+
+    try:
+        hmonitor = win32api.MonitorFromWindow(
+            hwnd,
+            win32con.MONITOR_DEFAULTTONEAREST,
+        )
+        info = get_monitor_hdr_info(int(hmonitor))
+    except Exception as exc:
+        log.warning(f"检测游戏显示器 HDR 状态失败: {exc}")
+        return
+
+    if info is None or not info.hdr_enabled:
+        return
+
+    acknowledged = Event()
+    current_thread = QThread.currentThread()
+    current_thread.waiting_for_hdr_warning = True
+    try:
+        mediator.hdr_warning.emit(acknowledged)
+        while not acknowledged.wait(0.1):
+            if current_thread.isInterruptionRequested():
+                raise userStopError("用户主动终止程序")
+        if current_thread.isInterruptionRequested():
+            raise userStopError("用户主动终止程序")
+    finally:
+        current_thread.waiting_for_hdr_warning = False
+        if not acknowledged.is_set():
+            mediator.hdr_warning_clear.emit(acknowledged)
+
+
 def Resonate_with_Ahab():
     random_number = random.randint(1, 4)
     playsound(f"assets/audio/This_is_all_your_fault_{random_number}.mp3", block=False)
@@ -327,6 +369,7 @@ def script_task() -> None | int:
     start_time = time()
     # 获取（启动）游戏对游戏窗口进行设置
     init_game()
+    _warn_if_game_monitor_hdr_enabled()
 
     if cfg.skip_enkephalin:
         log.info("设置了跳过合成脑啡肽，将不会自动合成\nSet to skip make enkephalin, it will not to do")
@@ -415,6 +458,13 @@ class my_script_task(QThread):
         # 初始化，构造函数
         super().__init__()
         self.mutex = QMutex()
+        self.waiting_for_hdr_warning = False
+
+    def stop(self):
+        if self.waiting_for_hdr_warning:
+            self.requestInterruption()
+        else:
+            self.terminate()
 
     def run(self):
         self.mutex.lock()
