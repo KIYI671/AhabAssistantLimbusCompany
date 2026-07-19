@@ -66,6 +66,7 @@ class AbstractInput:
         """
         raise InterruptedError(f"未实现的输入方法 {self.__class__.__name__}.mouse_click_blank")
 
+    # 普通拖拽会在终点停留后再抬起，用于确实需要“拖住”的场景。
     def mouse_drag(self, x, y, drag_time=0.1, dx=0, dy=0, move_back=True) -> None:
         """鼠标从指定位置拖动到另一个位置
         Args:
@@ -77,6 +78,16 @@ class AbstractInput:
             move_back (bool): 是否在拖动后将鼠标移动回原位置
         """
         raise InterruptedError(f"未实现的输入方法 {self.__class__.__name__}.mouse_drag")
+
+    def mouse_swipe_for_scroll(self, x, y, duration=0.3, dx=0, dy=0, move_back=True) -> None:
+        """各输入适配器必须实现的列表滚动手势。
+
+        手势按下后快速脱离长按判定区域，并在到达终点后立即抬起。
+        此处是接口占位；实际输入由具体适配器实现。
+        """
+        raise InterruptedError(
+            f"输入适配器 {self.__class__.__name__} 未实现 mouse_swipe_for_scroll"
+        )
 
     def mouse_drag_down(self, x, y, reverse=1, move_back=True) -> None:
         """鼠标从指定位置向下拖动
