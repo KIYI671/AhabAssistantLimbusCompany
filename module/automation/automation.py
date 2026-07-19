@@ -87,6 +87,7 @@ class Automation(metaclass=SingletonMeta):
         self.mouse_click = self.input_handler.mouse_click
         self.mouse_click_blank = self.input_handler.mouse_click_blank
         self.mouse_drag = self.input_handler.mouse_drag
+        self.mouse_swipe_for_scroll = self.input_handler.mouse_swipe_for_scroll
         self.mouse_drag_down = self.input_handler.mouse_drag_down
         self.mouse_scroll = self.input_handler.mouse_scroll
         self.set_pause = self.input_handler.set_pause

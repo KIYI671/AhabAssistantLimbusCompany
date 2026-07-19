@@ -73,18 +73,20 @@ def select_battle_team(num):
         auto.mouse_click(my_position[0], my_position[1])
         sleep(0.5)
         for _ in range(3):
-            auto.mouse_drag(my_position[0], my_position[1], dy=1333 * scale, drag_time=0.3)
+            auto.mouse_swipe_for_scroll(
+                my_position[0], my_position[1], dy=1333 * scale, duration=0.3
+            )
         sleep(0.75)
         first_position = [position[0], position[1] + 70 * scale]
         if cfg.select_team_by_order:
             team_range = (num - 1) // 5
             team_order = (num - 1) % 5
             for _ in range(team_range):
-                auto.mouse_drag(
+                auto.mouse_swipe_for_scroll(
                     first_position[0],
                     first_position[1] + 375 * scale,
                     dy=-375 * scale,
-                    drag_time=1.5,
+                    duration=0.3,
                 )
                 sleep(1)
             if num <= 15:
@@ -108,11 +110,11 @@ def select_battle_team(num):
                     auto.mouse_action_with_pos(team_position, offset=False)
                     find = True
                     break
-                auto.mouse_drag(
+                auto.mouse_swipe_for_scroll(
                     first_position[0],
                     first_position[1] + 375 * scale,
                     dy=-385 * scale,
-                    drag_time=1.5,
+                    duration=0.3,
                 )
                 sleep(1)
                 while auto.take_screenshot() is None:
