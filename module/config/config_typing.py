@@ -10,7 +10,7 @@ class TeamSetting(BaseModel):
     """队伍使用的体系"""
 
     team_number: int = 1
-    """使用的队伍序号"""
+    """游戏内编队序号"""
 
     shop_strategy: int = 0
     """商店策略"""
@@ -168,7 +168,7 @@ class TeamSetting(BaseModel):
     max_normal_refresh: int = 1
     """每次商店普通刷新最大次数"""
 
-    remark_name: Optional[str] = None
+    alias: Optional[str] = None
     """队伍备注名"""
 
     use_custom_theme_pack_weight: bool = False
@@ -191,6 +191,9 @@ class TeamSetting(BaseModel):
 
     mirror_normal_count: int = 0
     """普通镜牢次数"""
+    
+    theme_pack_weight: dict = {}
+    """队伍自定义主题包权重"""
 
 
 class ConfigModel(BaseModel):
@@ -502,23 +505,11 @@ class ConfigModel(BaseModel):
     fight_to_last_man: bool
     """战斗直到全灭"""
 
-    teams_be_select_num: int
-    """被选中的队伍数量"""
-
-    teams_be_select: List[bool]
-    """被选中的队伍"""
-
-    teams_order: List[int]
-    """队伍的顺序"""
-
     teams_active_queue: List[int]
     """镜牢启用队伍的执行队列（单一事实源）"""
 
     mirror_keyboard_navigation: bool
     """使用键盘进行镜牢寻路"""
-
-    teams: dict[str, TeamSetting]
-    """队伍设置"""
 
     @field_validator("use_continuous_combat_select")
     @classmethod

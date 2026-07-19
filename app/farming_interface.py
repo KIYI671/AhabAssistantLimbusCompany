@@ -31,7 +31,6 @@ from app.page_card import (
     PageMirror,
     PageSetWindows,
 )
-from app.team_setting_card import TeamSettingCard
 from module.after_completion_types import (
     ACTION_EXIT_AALC,
     ACTION_EXIT_EMULATOR,
@@ -54,7 +53,7 @@ from module.system_actions import (
     set_after_completion_config,
 )
 from tasks.base.script_task_scheme import my_script_task
-from utils.utils import check_hard_mirror_time
+from utils.utils import calculate_the_teams, check_hard_mirror_time, get_day_of_week
 
 
 class AfterCompletionActionEditor(FlyoutViewBase):
@@ -532,11 +531,26 @@ class FarmingInterfaceLeft(QWidget):
         sys.exit(0)
 
     def check_setting(self):
-        # 检测是否有未保存的镜牢队伍设置
-        if self.parent().parent().findChild(TeamSettingCard):
-            list(self.parent().parent().parent().pivot.items.values())[-1].click()
-            mediator.save_warning.emit()
-            return False
+        if cfg.daily_task:
+            # 检查 本次 采光本使用的队伍是否配置了角色选择
+            daily_team_orders: set[int] = set()
+            if cfg.set_EXP_count > 0:
+                if cfg.targeted_teaming_EXP:
+                    daily_team_orders.add(cfg.get_value(f"EXP_day_{calculate_the_teams()}"))
+                else:
+                    daily_team_orders.add(cfg.daily_teams)
+            if cfg.set_thread_count > 0:
+                if cfg.targeted_teaming_thread:
+                    daily_team_orders.add(cfg.get_value(f"thread_day_{get_day_of_week()}"))
+                else:
+                    daily_team_orders.add(cfg.daily_teams)
+
+            for daily_team_order in sorted(daily_team_orders):
+                team_setting: TeamSetting = cfg.get_team(daily_team_order)
+                if team_setting.sinners_be_select == 0:
+                    message = self.tr("存在未配置角色选择的编队：编队{0}")
+                    mediator.warning.emit(message.format(daily_team_order))
+                    return False
 
         if cfg.mirror:
             # 判断是否启用了自动切换困牢
@@ -557,32 +571,25 @@ class FarmingInterfaceLeft(QWidget):
                     cfg.set_value("hard_mirror", True)
                     log.debug(f"困难镜牢模式启用中，剩余次数：{cfg.hard_mirror_chance}")
 
-            # 检查队伍配置状况
-            teams_be_select = sum(1 for team in cfg.teams_be_select if team)
-            if teams_be_select != cfg.teams_be_select_num:
-                cfg.normalize_and_sync_team_state()
-                cfg.flush()
 
-            if cfg.teams_be_select_num == 0:
+            if not cfg.teams_active_queue:
                 message = self.tr("没有启用任何队伍，请选择一个队伍进行镜牢任务")
                 mediator.warning.emit(message)
                 return False
 
             # 检测是否有未配置角色选择的队伍
-            teams_be_select = cfg.get_value("teams_be_select")
-            for index in (i for i, t in enumerate(teams_be_select) if t is True):
-                team_setting: TeamSetting = cfg.config.teams[f"{index + 1}"]
+            for active_team_order in cfg.teams_active_queue:
+                team_setting: TeamSetting = cfg.get_team(active_team_order)
                 if team_setting.sinners_be_select == 0:
-                    message = self.tr("存在未配置角色选择的队伍：TEAM_{0}")
-                    mediator.warning.emit(message.format(index + 1))
+                    message = self.tr("存在未配置角色选择的编队：编队{0}")
+                    mediator.warning.emit(message.format(active_team_order))
                     return False
 
             # 检测配置的队伍能否顺利执行
             useful = False
             hard = bool(cfg.hard_mirror)
-            teams_be_select = cfg.get_value("teams_be_select")
-            for index in (i for i, t in enumerate(teams_be_select) if t is True):
-                team_setting: TeamSetting = cfg.config.teams[f"{index + 1}"]
+            for active_team_order in cfg.teams_active_queue:
+                team_setting: TeamSetting = cfg.get_team(active_team_order)
                 if team_setting.fixed_team_use is False:
                     useful = True
                     break
@@ -645,7 +652,7 @@ class FarmingInterfaceLeft(QWidget):
             self.link_start_button.set_text("Link Start!")
             self._enable_setting(self.parent())
             self.reset_pause_resume_button()
-            mediator.refresh_teams_order.emit()
+            mediator.refresh_team_queue.emit()
             # 检查线程是否仍在运行，如果仍在运行则执行清理，否则跳过（因为脚本已自行清理）
             thread_was_running = self.my_script is not None and self.my_script.isRunning()
             self.stop_script()
@@ -659,7 +666,7 @@ class FarmingInterfaceLeft(QWidget):
         self.link_start_button.set_text("Link Start!")
         self._enable_setting(self.parent())
         self.reset_pause_resume_button()
-        mediator.refresh_teams_order.emit()
+        mediator.refresh_team_queue.emit()
         mediator.mirror_bar_kill_signal.emit()
 
     def _disable_setting(self, parent):

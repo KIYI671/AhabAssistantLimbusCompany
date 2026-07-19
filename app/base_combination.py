@@ -1,13 +1,12 @@
-import base64
 import datetime
 from typing import Callable
 
-import pyperclip
 from PySide6.QtCore import (
     QEasingCurve,
     QObject,
     QPropertyAnimation,
     QRect,
+    QSize,
     QTime,
     QUrl,
     Signal,
@@ -26,13 +25,13 @@ from PySide6.QtWidgets import (
     QGraphicsDropShadowEffect,
     QLabel,
     QPushButton,
+    QSizePolicy,
     QWidget,
 )
 from qfluentwidgets import (
     ComboBox,
     FlyoutViewBase,
     IndicatorPosition,
-    InfoBarPosition,
     LineEdit,
     MessageBox,
     PopupTeachingTip,
@@ -52,7 +51,6 @@ from qfluentwidgets import (
 from app.base_tools import *
 from app.base_tools import FluentIconBase, QIcon
 from app.card.messagebox_custom import (
-    BaseInfoBar,
     MessageBoxDate,
     MessageBoxEdit,
     MessageBoxSpinbox,
@@ -60,7 +58,6 @@ from app.card.messagebox_custom import (
 from app.language_manager import LanguageManager
 from module.font_manager import font_manager
 from module.logger import log
-from module.my_error.my_error import settingsTypeError
 from module.update.check_update import check_update
 from app.observe_ego_gift_selection import (
     OBSERVE_COL_VALUES,
@@ -258,11 +255,12 @@ class MirrorTeamCombination(QFrame):
 
         self.team_number = team_number
 
-        self.remark_name = LineEdit()
-        self.remark_name.setAlignment(Qt.AlignCenter)
-        self.remark_name.setPlaceholderText("备注名")
-        self.remark_name.setMaximumWidth(100)
-        self.remark_name.textChanged.connect(self.remark_name_changed)
+        self.alias = LineEdit()
+        self.alias.setAlignment(Qt.AlignCenter)
+        self.alias.setPlaceholderText("备注名")
+        self.alias.setMaximumWidth(100)
+        self.alias.textChanged.connect(self.alias_changed)
+        mediator.team_alias_changed.connect(self.refresh_alias_if_current_team)
 
         self.order = LineEdit()
         self.order.setAlignment(Qt.AlignCenter)
@@ -270,121 +268,29 @@ class MirrorTeamCombination(QFrame):
         self.order.setMaximumWidth(60)
 
         self.hBoxLayout.addWidget(self.box)
-        self.hBoxLayout.addWidget(self.remark_name)
+        self.hBoxLayout.addWidget(self.alias)
         self.hBoxLayout.addWidget(self.order)
         self.hBoxLayout.addWidget(self.button)
 
-        self.button.edit_name.triggered.connect(self.edit_button_clicked)
-        self.button.del_action.triggered.connect(self.delete_button_clicked)
-        self.button.copy_settings.triggered.connect(self.copy_team_settings)
-        self.button.paste_settings.triggered.connect(self.paste_team_settings)
+        self.refresh_alias()
 
-        self.refresh_remark_name()
+    def alias_changed(self, text):
+        cfg.get_team(self.team_number).alias = text
+        cfg.save_team(self.team_number)
+        mediator.team_alias_changed.emit(self.team_number)
 
-    def copy_team_settings(self):
-        setting = cfg.config.teams[f"{self.team_number}"].model_dump_json()
-        setting = "||AALC_TEAM_SETTING||" + setting  # 添加标识符
-        setting = base64.b64encode(setting.encode("utf-8")).decode("utf-8")
-        pyperclip.copy(setting)
-        BaseInfoBar.success(
-            title=QT_TRANSLATE_NOOP("BaseInfoBar", "已复制到剪切板"),
-            content="",
-            orient=Qt.Horizontal,
-            isClosable=True,
-            position=InfoBarPosition.TOP,
-            duration=500,
-            parent=self.parent().parent(),
-        )
+    def refresh_alias(self):
+        team_setting = cfg.get_team(self.team_number)
+        self.alias.blockSignals(True)
+        self.alias.setText(team_setting.alias or "")
+        self.alias.blockSignals(False)
 
-    def paste_team_settings(self):
-        setting = pyperclip.paste().strip()
-        try:
-            setting = base64.b64decode(setting).decode("utf-8")
-            if "||AALC_TEAM_SETTING||" not in setting:
-                raise settingsTypeError("不是有效的AALC设置")
-            setting = setting.replace("||AALC_TEAM_SETTING||", "", 1)
-        except settingsTypeError:
-            BaseInfoBar.error(
-                title=QT_TRANSLATE_NOOP("BaseInfoBar", "该设置不属于 AALC"),
-                content="",
-                orient=Qt.Horizontal,
-                isClosable=True,
-                position=InfoBarPosition.TOP,
-                duration=500,
-                parent=self.parent().parent(),
-            )
-            return
-        except Exception:
-            BaseInfoBar.error(
-                title=QT_TRANSLATE_NOOP("BaseInfoBar", "不是有效的 AALC 设置"),
-                content="",
-                orient=Qt.Horizontal,
-                isClosable=True,
-                position=InfoBarPosition.TOP,
-                duration=500,
-                parent=self.parent().parent(),
-            )
-            return
-
-        data: dict = cfg.yaml.load(setting)
-        from module.config import TeamSetting
-
-        try:
-            team_config = TeamSetting(**data)
-        except Exception:
-            BaseInfoBar.error(
-                title=QT_TRANSLATE_NOOP("BaseInfoBar", "导入数据失败，可能是因为设置版本过旧或过新"),
-                content="",
-                orient=Qt.Horizontal,
-                isClosable=True,
-                position=InfoBarPosition.TOP,
-                duration=500,
-                parent=self.parent().parent(),
-            )
-            return
-
-        cfg.config.teams[f"{self.team_number}"] = team_config
-        cfg.save()
-        BaseInfoBar.success(
-            title=QT_TRANSLATE_NOOP("BaseInfoBar", "已粘贴设置"),
-            content="",
-            orient=Qt.Horizontal,
-            isClosable=True,
-            position=InfoBarPosition.TOP,
-            duration=500,
-            parent=self.parent().parent(),
-        )
-
-    def remark_name_changed(self, text):
-        cfg.config.teams[f"{self.team_number}"].remark_name = text
-        cfg.save()
-
-    def edit_button_clicked(self):
-        name = cfg.config.teams[f"{self.team_number}"].remark_name
-        if name is None:
-            name = ""
-        message_box = MessageBoxEdit(QT_TRANSLATE_NOOP("MessageBoxEdit", "设置备注名"), name, self.window())
-        self.retranslateTempUi(message_box)
-        if message_box.exec():
-            new_name = str(message_box.getText())
-            cfg.config.teams[f"{self.team_number}"].remark_name = new_name
-            cfg.save()
-            self.remark_name.setText(new_name)
-
-    def delete_button_clicked(self):
-        if len(team_toggle_button_group) > 1:
-            team_toggle_button_group.remove(self.button.button)
-            mediator.delete_team_setting.emit(f"team_{self.team_number}")
-
-    def refresh_remark_name(self):
-        name = cfg.config.teams.get(f"{self.team_number}", None)
-        if name is not None:
-            name = name.remark_name
-            self.remark_name.setText(name)
+    def refresh_alias_if_current_team(self, team_number: int):
+        if team_number == self.team_number:
+            self.refresh_alias()
 
     def retranslateUi(self):
-        self.remark_name.setPlaceholderText(self.tr("备注名"))
-        self.button.retranslateUi()
+        self.alias.setPlaceholderText(self.tr("备注名"))
         if self.team_number == 1:
             self.box.check_box.setText(self.tr(self.box_text))
         elif self.team_number <= 9:
@@ -395,10 +301,6 @@ class MirrorTeamCombination(QFrame):
             text = self.box_text[:-2]
             box_text = f"{self.tr(text)}{self.team_number}"
             self.box.check_box.setText(box_text)
-
-    def retranslateTempUi(self, message_box: MessageBoxEdit):
-        message_box.retranslateUi()
-
 
 class SinnerSelect(QFrame):
     def __init__(
@@ -498,8 +400,8 @@ class SinnerSelect(QFrame):
         )
 
         # sinner card size in game: 537 x 827
-        self.setFixedHeight(239)
-        self.setFixedWidth(155)
+        # 设置min，保证缩放效果正常
+        self.setMinimumSize(134, 207)
 
         # 遮罩层
         self.mask_widget = QFrame(self)
@@ -552,7 +454,6 @@ class SinnerSelect(QFrame):
         new_y = self.raw_geom.y() - (new_height - self.raw_geom.height()) / 2
 
         self._end_geom = QRect(int(new_x), int(new_y), int(new_width), int(new_height))
-        self.setMaximumSize(int(new_width), int(new_height))
         return self._end_geom
 
     @end_geom.setter

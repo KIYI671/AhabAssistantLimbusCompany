@@ -5,7 +5,6 @@ from PySide6.QtCore import Qt, Signal
 from PySide6.QtGui import QPixmap
 from PySide6.QtWidgets import (
     QApplication,
-    QFileDialog,
     QFrame,
     QGridLayout,
     QHBoxLayout,
@@ -33,17 +32,11 @@ from qframelesswindow import FramelessDialog, StandardTitleBar
 from ruamel.yaml import YAML
 
 from app.base_tools import BaseSpinBox
-from app.card.messagebox_custom import BaseInfoBar, MessageBoxConfirm, MessageBoxEdit
+from app.card.messagebox_custom import BaseInfoBar, MessageBoxConfirm
 from app.language_manager import LanguageManager
 from module import THEME_PACK_LIST_EXAMPLE_PATH
 from module.config import cfg, theme_list
-from module.config.theme_pack_import_export import (
-    export_theme_pack_weight,
-    export_theme_pack_weight_to_base64,
-    generate_theme_pack_export_filename,
-    import_theme_pack_weight,
-    import_theme_pack_weight_from_base64,
-)
+from module.config.share_code_codec import decode_theme_pack_weight, encode_theme_pack_weight
 
 # 英文key到中文名称的映射表（普通模式）
 THEME_PACK_NAME_MAP = {
@@ -470,7 +463,15 @@ class ThemePackCard(QFrame):
 class ThemePackSettingDialog(FramelessDialog):
     """主题包权重设置对话框"""
 
-    def __init__(self, parent, config_data, save_path):
+    def __init__(
+        self,
+        parent,
+        config_data,
+        save_path=None,
+        save_callback=None,
+        is_team_specific: bool | None = None,
+        team_num: int = 0,
+    ):
         super().__init__(parent)
         self.setObjectName("ThemePackSettingDialog")
         LanguageManager().register_component(self)
@@ -501,7 +502,11 @@ class ThemePackSettingDialog(FramelessDialog):
         # 配置数据和保存路径
         self.config_data = config_data
         self.save_path = save_path
-        self.is_team_specific = self.save_path != theme_list.theme_pack_list_path
+        self.save_callback = save_callback
+        self.team_num = team_num
+        self.is_team_specific = (
+            is_team_specific if is_team_specific is not None else self.save_path != theme_list.theme_pack_list_path
+        )
 
         # 保存原始配置的副本，用于关闭时不保存恢复
         self._original_config = copy.deepcopy(self.config_data)
@@ -601,27 +606,17 @@ class ThemePackSettingDialog(FramelessDialog):
         # 连接以向上显示菜单
         self.batch_menu_button.clicked.connect(lambda: self._show_menu_upward(self.batch_menu_button, self.batch_menu))
 
-        # 导入导出按钮（仅队伍特定配置显示）
-        self.export_button = PushButton(FIF.UP, self.tr("导出"))
-        self.export_button.setFocusPolicy(Qt.FocusPolicy.NoFocus)
-        self.export_button.clicked.connect(self.on_export_settings)
-        self.export_button.setVisible(self.is_team_specific)
+        self.copy_weight_button = PushButton(self.tr("复制权重"), self)
+        self.copy_weight_button.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        self.copy_weight_button.clicked.connect(self.copy_theme_pack_weight)
 
-        self.import_button = PushButton(FIF.DOWN, self.tr("导入"))
-        self.import_button.setFocusPolicy(Qt.FocusPolicy.NoFocus)
-        self.import_button.clicked.connect(self.on_import_settings)
-        self.import_button.setVisible(self.is_team_specific)
+        self.paste_weight_button = PushButton(self.tr("粘贴权重"), self)
+        self.paste_weight_button.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        self.paste_weight_button.clicked.connect(self.paste_theme_pack_weight)
 
-        # 配置码导入导出按钮
-        self.copy_code_button = PushButton(FIF.SHARE, self.tr("导出配置码"))
-        self.copy_code_button.setFocusPolicy(Qt.FocusPolicy.NoFocus)
-        self.copy_code_button.clicked.connect(self.on_export_code)
-        self.copy_code_button.setVisible(self.is_team_specific)
-
-        self.paste_code_button = PushButton(FIF.EDIT, self.tr("导入配置码"))
-        self.paste_code_button.setFocusPolicy(Qt.FocusPolicy.NoFocus)
-        self.paste_code_button.clicked.connect(self.on_import_code)
-        self.paste_code_button.setVisible(self.is_team_specific)
+        self.reset_weight_button = PushButton(self.tr("重置权重"), self)
+        self.reset_weight_button.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        self.reset_weight_button.clicked.connect(self.reset_theme_pack_weight)
 
         # 主要操作按钮
         self.save_button = PrimaryPushButton(self.tr("保存并关闭"), self)
@@ -633,10 +628,9 @@ class ThemePackSettingDialog(FramelessDialog):
         self.close_button.clicked.connect(self.close)
 
         self.button_layout.addWidget(self.batch_menu_button)
-        self.button_layout.addWidget(self.export_button)
-        self.button_layout.addWidget(self.import_button)
-        self.button_layout.addWidget(self.copy_code_button)
-        self.button_layout.addWidget(self.paste_code_button)
+        self.button_layout.addWidget(self.copy_weight_button)
+        self.button_layout.addWidget(self.paste_weight_button)
+        self.button_layout.addWidget(self.reset_weight_button)
         self.button_layout.addStretch()
         self.button_layout.addWidget(self.save_button)
         self.button_layout.addWidget(self.close_button)
@@ -871,6 +865,19 @@ class ThemePackSettingDialog(FramelessDialog):
         # 标记有未保存的修改
         self._has_unsaved_changes = True
 
+    def reset_theme_pack_weight(self):
+        """重置当前主题包权重。"""
+        self.reset_to_default()
+        BaseInfoBar.success(
+            title=self.tr("已重置权重"),
+            content="",
+            orient=Qt.Orientation.Horizontal,
+            isClosable=True,
+            position=InfoBarPosition.TOP,
+            duration=1500,
+            parent=self,
+        )
+
     def set_to_global(self):
         """将当前配置设置为全局主题包配置（仅内存，不立即保存）。"""
         if not self.is_team_specific:
@@ -908,177 +915,125 @@ class ThemePackSettingDialog(FramelessDialog):
             card.update_weight(-5)
         self._has_unsaved_changes = True
 
+    def _apply_theme_pack_weight_to_cards(self, config_data: dict) -> None:
+        if self.is_cn:
+            normal_weights = config_data.get("theme_pack_list_cn", {})
+            hard_weights = config_data.get("theme_pack_list_hard_cn", {})
+        else:
+            normal_weights = config_data.get("theme_pack_list", {})
+            hard_weights = config_data.get("theme_pack_list_hard", {})
+
+        self.preferred_threshold_spinbox.spin_box.setValue(int(config_data.get("preferred_thresholds", 0)))
+
+        for pack_key, weight in normal_weights.items():
+            if pack_key in self.normal_cards:
+                self.normal_cards[pack_key].update_weight(weight)
+
+        for pack_key, weight in hard_weights.items():
+            if pack_key in self.hard_cards:
+                self.hard_cards[pack_key].update_weight(weight)
+
+    def copy_theme_pack_weight(self):
+        QApplication.clipboard().setText(encode_theme_pack_weight(self.config_data))
+        BaseInfoBar.success(
+            title=self.tr("已复制权重"),
+            content="",
+            orient=Qt.Orientation.Horizontal,
+            isClosable=True,
+            position=InfoBarPosition.TOP,
+            duration=1500,
+            parent=self,
+        )
+
+    def paste_theme_pack_weight(self):
+        clipboard_text = QApplication.clipboard().text().strip()
+        if not clipboard_text:
+            BaseInfoBar.error(
+                title=self.tr("剪贴板为空"),
+                content="",
+                orient=Qt.Orientation.Horizontal,
+                isClosable=True,
+                position=InfoBarPosition.TOP,
+                duration=2000,
+                parent=self,
+            )
+            return
+
+        try:
+            pasted_config = decode_theme_pack_weight(clipboard_text)
+        except Exception:
+            BaseInfoBar.error(
+                title=self.tr("不是合法的权重格式"),
+                content="",
+                orient=Qt.Orientation.Horizontal,
+                isClosable=True,
+                position=InfoBarPosition.TOP,
+                duration=2000,
+                parent=self,
+            )
+            return
+
+        if not isinstance(pasted_config, dict) or not any(
+            key in pasted_config
+            for key in ("theme_pack_list", "theme_pack_list_hard", "theme_pack_list_cn", "theme_pack_list_hard_cn")
+        ):
+            BaseInfoBar.error(
+                title=self.tr("不是合法的权重格式"),
+                content="",
+                orient=Qt.Orientation.Horizontal,
+                isClosable=True,
+                position=InfoBarPosition.TOP,
+                duration=2000,
+                parent=self,
+            )
+            return
+
+        self.config_data.clear()
+        self.config_data.update(copy.deepcopy(pasted_config))
+        self._apply_theme_pack_weight_to_cards(self.config_data)
+        self._has_unsaved_changes = True
+
+        BaseInfoBar.success(
+            title=self.tr("已粘贴权重"),
+            content="",
+            orient=Qt.Orientation.Horizontal,
+            isClosable=True,
+            position=InfoBarPosition.TOP,
+            duration=1500,
+            parent=self,
+        )
+
     def _extract_team_num_from_path(self) -> int:
         """从保存路径中提取队伍编号"""
+        if self.team_num:
+            return self.team_num
+        if not self.save_path:
+            return 0
         match = re.search(r"team_(\d+)", self.save_path)
         if match:
             return int(match.group(1))
         return 0
 
-    def on_export_settings(self):
-        """导出主题包权重到 YAML 文件"""
-        if not self.is_team_specific:
+    def _save_current_config(self):
+        if self.save_callback is not None:
+            self.save_callback(copy.deepcopy(self.config_data))
             return
-
-        team_num = self._extract_team_num_from_path()
-        default_filename = generate_theme_pack_export_filename(team_num)
-
-        file_path, _ = QFileDialog.getSaveFileName(
-            self, self.tr("导出主题包权重"), default_filename, "YAML Files (*.yaml *.yml)"
-        )
-
-        if file_path:
-            # 先保存当前配置以确保导出获取最新数据
+        if self.save_path:
             theme_list.save_config(path=self.save_path, config_data=self.config_data)
 
-            success = export_theme_pack_weight(team_num, file_path)
-            if success:
-                BaseInfoBar.success(
-                    title=self.tr("导出成功"),
-                    content=self.tr("主题包权重已导出到: ") + file_path,
-                    orient=Qt.Orientation.Horizontal,
-                    isClosable=True,
-                    position=InfoBarPosition.TOP,
-                    duration=3000,
-                    parent=self,
-                )
-            else:
-                BaseInfoBar.error(
-                    title=self.tr("导出失败"),
-                    content=self.tr("无法导出主题包权重，请检查日志"),
-                    orient=Qt.Orientation.Horizontal,
-                    isClosable=True,
-                    position=InfoBarPosition.TOP,
-                    duration=3000,
-                    parent=self,
-                )
-
-    def on_import_settings(self):
-        """从 YAML 文件导入主题包权重"""
-        if not self.is_team_specific:
-            return
-
-        file_path, _ = QFileDialog.getOpenFileName(self, self.tr("导入主题包权重"), "", "YAML Files (*.yaml *.yml)")
-
-        if not file_path:
-            return
-
-        # 显示确认对话框
-        confirm = MessageBoxConfirm(
-            self.tr("确认导入"), self.tr("导入将覆盖当前主题包权重设置，是否继续？"), self.window()
-        )
-
-        if not confirm.exec():
-            return
-
-        team_num = self._extract_team_num_from_path()
-        success = import_theme_pack_weight(file_path, team_num)
-
-        if success:
-            # 从文件重新加载配置数据
-            self.config_data.clear()
-            reloaded_config = theme_list.load_config(self.save_path)
-            self.config_data.update(copy.deepcopy(reloaded_config))
-
-            # 更新界面以反映导入的数据
-            if self.is_cn:
-                normal_imported = reloaded_config.get("theme_pack_list_cn", {})
-                hard_imported = reloaded_config.get("theme_pack_list_hard_cn", {})
-            else:
-                normal_imported = reloaded_config.get("theme_pack_list", {})
-                hard_imported = reloaded_config.get("theme_pack_list_hard", {})
-
-            self.preferred_threshold_spinbox.spin_box.setValue(int(reloaded_config.get("preferred_thresholds", 0)))
-
-            for pack_key, weight in normal_imported.items():
-                if pack_key in self.normal_cards:
-                    self.normal_cards[pack_key].update_weight(weight)
-
-            for pack_key, weight in hard_imported.items():
-                if pack_key in self.hard_cards:
-                    self.hard_cards[pack_key].update_weight(weight)
-
-            self._has_unsaved_changes = False
-
-            BaseInfoBar.success(
-                title=self.tr("导入成功"),
-                content=self.tr("主题包权重已导入并应用"),
-                orient=Qt.Orientation.Horizontal,
-                isClosable=True,
-                position=InfoBarPosition.TOP,
-                duration=3000,
-                parent=self,
-            )
-        else:
-            BaseInfoBar.error(
-                title=self.tr("导入失败"),
-                content=self.tr("无法导入主题包权重，请检查文件格式和日志"),
-                orient=Qt.Orientation.Horizontal,
-                isClosable=True,
-                position=InfoBarPosition.TOP,
-                duration=3000,
-                parent=self,
-            )
-
-    # ---- 配置码导入导出（新增）----
-    def on_export_code(self):
-        """导出主题包权重为配置码并复制到剪贴板"""
-        if not self.is_team_specific:
-            return
-        theme_list.save_config(path=self.save_path, config_data=self.config_data)
-        team_num = self._extract_team_num_from_path()
-        code = export_theme_pack_weight_to_base64(team_num)
-        if code:
-            QApplication.clipboard().setText(code)
-            BaseInfoBar.success(title=self.tr("导出成功"), content=self.tr("配置码已复制到剪贴板"),
-                orient=Qt.Orientation.Horizontal, isClosable=True,
-                position=InfoBarPosition.TOP, duration=3000, parent=self)
-        else:
-            BaseInfoBar.error(title=self.tr("导出失败"), content=self.tr("无法导出配置码"),
-                orient=Qt.Orientation.Horizontal, isClosable=True,
-                position=InfoBarPosition.TOP, duration=3000, parent=self)
-
-    def on_import_code(self):
-        """从配置码导入主题包权重"""
-        if not self.is_team_specific:
-            return
-        clipboard_text = QApplication.clipboard().text().strip()
-        dialog = MessageBoxEdit(self.tr("导入配置码"), clipboard_text if clipboard_text else "", self)
-        if not dialog.exec():
-            return
-        code = dialog.getText()
-        if not code or not code.strip():
-            return
-        confirm = MessageBoxConfirm(self.tr("确认导入"), self.tr("导入将覆盖当前主题包权重设置"), self.window())
-        if not confirm.exec():
-            return
-        team_num = self._extract_team_num_from_path()
-        if import_theme_pack_weight_from_base64(code.strip(), team_num):
-            self.config_data.clear()
-            reloaded = theme_list.load_config(self.save_path)
-            self.config_data.update(copy.deepcopy(reloaded))
-            normal_imported = reloaded.get("theme_pack_list_cn" if self.is_cn else "theme_pack_list", {})
-            hard_imported = reloaded.get("theme_pack_list_hard_cn" if self.is_cn else "theme_pack_list_hard", {})
-            self.preferred_threshold_spinbox.spin_box.setValue(int(reloaded.get("preferred_thresholds", 0)))
-            for k, v in normal_imported.items():
-                if k in self.normal_cards: self.normal_cards[k].update_weight(v)
-            for k, v in hard_imported.items():
-                if k in self.hard_cards: self.hard_cards[k].update_weight(v)
-            self._has_unsaved_changes = False
-            BaseInfoBar.success(title=self.tr("导入成功"), content=self.tr("主题包权重已导入"),
-                orient=Qt.Orientation.Horizontal, isClosable=True,
-                position=InfoBarPosition.TOP, duration=3000, parent=self)
-        else:
-            BaseInfoBar.error(title=self.tr("导入失败"), content=self.tr("无法解析配置码"),
-                orient=Qt.Orientation.Horizontal, isClosable=True,
-                position=InfoBarPosition.TOP, duration=3000, parent=self)
+    def _reload_current_config(self) -> dict:
+        if self.is_team_specific:
+            team_num = self._extract_team_num_from_path()
+            return theme_list.get_team_theme_pack_weight(team_num)
+        if self.save_path:
+            return theme_list.load_config(self.save_path) or {}
+        return copy.deepcopy(self.config_data)
 
     def save_and_close(self):
         """保存配置到文件并关闭对话框"""
-        # save_path 必须提供
-        if not self.save_path:
+        if not self.save_path and self.save_callback is None:
             return
-        theme_list.save_config(path=self.save_path, config_data=self.config_data)
+        self._save_current_config()
         self._has_unsaved_changes = False
         self._is_save_and_close = True  # 标记是保存并关闭
         self.close()
@@ -1100,10 +1055,9 @@ class ThemePackSettingDialog(FramelessDialog):
         self.reset_action.setText(self.tr("重置为默认"))
         self.set_to_global_action.setText(self.tr("拉取全局配置"))
         self.set_all_negative_action.setText(self.tr("全部设为 -5"))
-        self.export_button.setText(self.tr("导出"))
-        self.import_button.setText(self.tr("导入"))
-        self.copy_code_button.setText(self.tr("导出配置码"))
-        self.paste_code_button.setText(self.tr("导入配置码"))
+        self.copy_weight_button.setText(self.tr("复制权重"))
+        self.paste_weight_button.setText(self.tr("粘贴权重"))
+        self.reset_weight_button.setText(self.tr("重置权重"))
         self.save_button.setText(self.tr("保存并关闭"))
         self.close_button.setText(self.tr("关闭"))
         for card in self.normal_cards.values():

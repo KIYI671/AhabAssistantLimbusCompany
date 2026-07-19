@@ -10,23 +10,16 @@ from PySide6.QtGui import (
     QPainter,
     QTextDocument,
 )
-from PySide6.QtWidgets import QFileDialog, QFrame, QHBoxLayout, QVBoxLayout, QWidget
+from PySide6.QtWidgets import QFrame, QHBoxLayout, QVBoxLayout, QWidget
 from qfluentwidgets import (
-    Action,
-    InfoBar,
-    InfoBarPosition,
-    MessageBox,
     PopUpAniStackedWidget,
-    RoundMenu,
     ScrollArea,
     SmoothMode,
     TextBrowser,
-    TransparentToolButton,
     isDarkTheme,
     qconfig,
     setCustomStyleSheet,
 )
-from qfluentwidgets import FluentIcon as FIF
 
 from app import *
 from app.base_combination import (
@@ -41,8 +34,7 @@ from app.base_tools import BaseCheckBox
 from app.common.ui_config import get_theme_aware_text_browser_qss
 from app.language_manager import LanguageManager
 from app.widget.custom_segmented_widget import CustomSegmentedWidget
-from module.config import TeamSetting, cfg, theme_list
-from module.config.team_import_export import apply_team_settings, import_team_settings
+from module.config import cfg
 from module.logger import log
 
 from .markdown_it_imgdiv import imgdiv_plugin, render_div_close, render_div_open
@@ -61,9 +53,15 @@ class PageCard(QFrame):
         self.vbox_advanced = QVBoxLayout(self.page_advanced)
 
         self.scroll_general = ScrollArea(self)
+        self.scroll_general.setSmoothMode(SmoothMode.LINEAR, Qt.Orientation.Vertical)
+        self.scroll_general.scrollDelagate.verticalSmoothScroll.duration = 100
         self.scroll_general.setWidgetResizable(True)
+        self.scroll_general.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.scroll_advanced = ScrollArea(self)
+        self.scroll_advanced.setSmoothMode(SmoothMode.LINEAR, Qt.Orientation.Vertical)
+        self.scroll_advanced.scrollDelagate.verticalSmoothScroll.duration = 100
         self.scroll_advanced.setWidgetResizable(True)
+        self.scroll_advanced.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
 
         self.set_pivot()
 
@@ -410,11 +408,6 @@ class PageMirror(PageCard):
 
         self.mirror_count = MirrorSpinBox(QT_TRANSLATE_NOOP("MirrorSpinBox", "坐牢次数"), "set_mirror_count")
 
-        self.add_team = QHBoxLayout()
-        self.add_team_button = TransparentToolButton(FIF.ADD, None)
-        self.add_team_button.setMinimumWidth(200)
-        self.add_team_button.clicked.connect(self.show_team_creation_menu)
-
         self.hard_mirror = BaseCheckBox(
             "hard_mirror",
             None,
@@ -501,9 +494,6 @@ class PageMirror(PageCard):
 
     def __init_layout(self):
         self.vbox_general.addWidget(self.team)
-
-        self.add_team.addWidget(self.add_team_button)
-        self.vbox_general.addLayout(self.add_team)
 
         self.vbox_advanced.addWidget(self.hard_mirror)
         self.vbox_advanced.addWidget(self.no_weekly_bonuses)
@@ -594,188 +584,33 @@ class PageMirror(PageCard):
         cfg.normalize_and_sync_team_state(persist=False)
         self.page_general.setUpdatesEnabled(False)
         try:
+            for team in self.findChildren(MirrorTeamCombination):
+                self.vbox_general.removeWidget(team)
+                team.setParent(None)
+                team.deleteLater()
             for i in range(1, 21):
-                if self.findChild(MirrorTeamCombination, f"team_{i}") is not None:
-                    self.remove_team_card(f"team_{i}")
-                if cfg.config.teams.get(f"{i}", None) is not None:
-                    self.vbox_general.insertWidget(
-                        self.vbox_general.count() - 1,
-                        MirrorTeamCombination(i, f"the_team_{i}", f"编队{i}", None, f"team{i}_setting"),
-                    )
+                self.vbox_general.insertWidget(
+                    self.vbox_general.count(),
+                    MirrorTeamCombination(i, f"the_team_{i}", f"编队{i}", None, f"team{i}_setting"),
+                )
         finally:
             self.page_general.setUpdatesEnabled(True)
         QT_TRANSLATE_NOOP("MirrorTeamCombination", "编队")
         self.refresh()
 
-    def new_team(self):
-        number = len(team_toggle_button_group) + 1
-        if number < 20:
-            self.page_general.setUpdatesEnabled(False)
-            try:
-                newTeamComb = MirrorTeamCombination(
-                    number,
-                    f"the_team_{number}",
-                    f"编队{number}",
-                    None,
-                    f"team{number}_setting",
-                )
-
-                newTeamComb.retranslateUi()
-                self.vbox_general.insertWidget(self.vbox_general.count() - 1, newTeamComb)
-            finally:
-                self.page_general.setUpdatesEnabled(True)
-
-            if cfg.config.teams.get(f"{number}", None) is None:
-                cfg.config.teams[f"{number}"] = TeamSetting()
-                cfg.normalize_and_sync_team_state()
-                theme_list.create_team_weight_config(number)
-
-    def show_team_creation_menu(self):
-        """显示菜单，提供从头创建队伍或从文件创建的选项"""
-        menu = RoundMenu(parent=self)
-
-        create_new_action = Action(FIF.ADD, self.tr("创建空白队伍"))
-        create_new_action.triggered.connect(self.new_team)
-        menu.addAction(create_new_action)
-
-        create_from_file_action = Action(FIF.FOLDER_ADD, self.tr("从现有配置创建"))
-        create_from_file_action.triggered.connect(self.create_team_from_file)
-        menu.addAction(create_from_file_action)
-
-        # 在按钮位置显示菜单
-        menu.exec(self.add_team_button.mapToGlobal(self.add_team_button.rect().bottomLeft()))
-
-    def create_team_from_file(self):
-        """从导入的配置文件创建新队伍"""
-        # 打开文件对话框选择 YAML 文件
-        file_path, _ = QFileDialog.getOpenFileName(self, self.tr("选择队伍配置文件"), "", "YAML Files (*.yaml *.yml)")
-
-        if not file_path:
-            return
-
-        # 从文件导入队伍设置
-        team_setting, theme_pack_weight, missing_fields = import_team_settings(file_path, 1)
-
-        if team_setting is None:
-            MessageBox(self.tr("导入失败"), self.tr("无法读取配置文件，请检查文件格式是否正确。"), self).exec()
-            return
-
-        # 如果字段缺失则显示警告
-        if missing_fields:
-            missing_text = "\n- ".join(missing_fields)
-            w = MessageBox(
-                self.tr("缺少字段"),
-                self.tr(f"配置文件中缺少以下字段：\n- {missing_text}\n\n将使用默认值填充这些字段。是否继续？"),
-                self,
-            )
-            w.yesButton.setText(self.tr("继续"))
-            w.cancelButton.setText(self.tr("取消"))
-            if not w.exec():
-                return
-
-        # 自动递增到下一个可用的队伍槽位
-        existing_teams = sorted([int(k) for k in cfg.config.teams.keys()])
-
-        # 查找下一个可用槽位
-        team_num = None
-        for i in range(1, 21):
-            if i not in existing_teams:
-                team_num = i
-                break
-
-        if team_num is None:
-            MessageBox(self.tr("无可用队伍槽位"), self.tr("已达到最大队伍数量（20个），无法创建新队伍。"), self).exec()
-            return
-
-        # 应用导入的设置
-        try:
-            apply_team_settings(team_num, team_setting, theme_pack_weight)
-
-            # 添加到 teams_be_select 和 teams_order
-            while len(cfg.config.teams_be_select) < team_num:
-                cfg.config.teams_be_select.append(False)
-            while len(cfg.config.teams_order) < team_num:
-                cfg.config.teams_order.append(0)
-
-            # 刷新界面
-            self.get_setting()
-
-            InfoBar.success(
-                title=self.tr("导入成功"),
-                content=self.tr(f"已成功从文件创建队伍 {team_num}"),
-                orient=Qt.Horizontal,
-                isClosable=True,
-                position=InfoBarPosition.TOP,
-                duration=2000,
-                parent=self,
-            )
-        except Exception as e:
-            log.error(f"Failed to create team from file: {e}")
-            MessageBox(self.tr("创建失败"), self.tr(f"创建队伍时出错：{str(e)}"), self).exec()
-
-    def remove_team_card(self, target: str):
-        try:
-            team = self.findChild(MirrorTeamCombination, target)
-            if team is None:
-                return
-            self.vbox_general.removeWidget(team)
-            team.setParent(None)
-            team.deleteLater()
-            team = None
-        except Exception as e:
-            log.error(f"delete_team 出错：{e}")
-
-    def delete_team(self, target: str):
-        try:
-            team = self.findChild(MirrorTeamCombination, target)
-            if team is not None:
-                team_order_box = team.findChild(BaseCheckBox, f"the_team_{team.team_number}")
-                if team_order_box is not None:
-                    team_order_box.set_check_false()
-            number = int(target.split("_")[-1])
-            self.remove_team_card(target)
-
-            cfg.remove_team_from_queue(number)
-            cfg.config.teams.pop(f"{number}", None)
-            theme_list.delete_team_weight_config(number)
-
-            self.refresh_team_setting_card()
-        except Exception as e:
-            log.error(f"delete_team 出错：{e}")
-
-    def refresh_team_setting_card(self):
-        old_to_new = {}
-        compact_teams = {}
-        for new_index, old_index in enumerate(sorted(cfg.config.teams, key=lambda k: int(k)), start=1):
-            old_number = int(old_index)
-            old_to_new[old_number] = new_index
-            team_setting = cfg.config.teams[old_index]
-            compact_teams[f"{new_index}"] = team_setting
-            if new_index != old_number:
-                theme_list.set_team_weight_config_from_team(new_index, old_number)
-                theme_list.delete_team_weight_config(old_number)
-
-        cfg.config.teams = compact_teams
-        cfg.reindex_team_queue(old_to_new)
-
-        cfg.save()
-        self.get_setting()
-
     def refresh(self):
         mirror_teams = self.findChildren(MirrorTeamCombination)
-        teams_order = cfg.config.teams_order
+        teams_active_queue = cfg.config.teams_active_queue
         for team in mirror_teams:
             number = team.team_number
-            idx = number - 1
-            if idx < len(teams_order) and teams_order[idx] != 0:
-                team.order.setText(str(teams_order[idx]))
+            if number in teams_active_queue:
+                team.order.setText(str(teams_active_queue.index(number) + 1))
             else:
                 team.order.setText("")
 
     def connect_mediator(self):
         # 连接所有可能信号
-        mediator.delete_team_setting.connect(self.delete_team)
-        mediator.refresh_teams_order.connect(self.refresh)
+        mediator.refresh_team_queue.connect(self.refresh)
         mediator.mirror_signal.connect(self.update_mirror_bar)
         mediator.mirror_bar_kill_signal.connect(self.destroy_mirror_bar)
 
@@ -793,7 +628,6 @@ class PageMirror(PageCard):
         self.not_skip_whitegossypium.retranslateUi()
         self.fight_to_last_man.retranslateUi()
         self.mirror_keyboard_navigation.retranslateUi()
-        self.add_team_button.setToolTip(self.tr("添加队伍"))
         for child in self.findChildren(MirrorTeamCombination):
             child.retranslateUi()
 

@@ -82,6 +82,7 @@ def get_mail_prize():
             auto.click_element("mail/close_assets.png")
             break
         if auto.click_element("home/mail_assets.png"):
+            sleep(1)
             continue
         auto.mouse_to_blank()
         loop_count -= 1

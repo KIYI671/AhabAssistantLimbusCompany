@@ -4,6 +4,7 @@ from module.automation import auto
 from module.config import cfg
 from module.decorator.decorator import begin_and_finish_time_log
 from module.logger import log
+from module.ocr import ocr
 
 
 # 清队
@@ -56,76 +57,80 @@ def team_formation(sinner_team):
 @begin_and_finish_time_log(task_name="寻找队伍")
 # 找队
 def select_battle_team(num):
+    # 相邻编队高度差是75px（确信
+    # num 1 - 20
+    # 如果会拖动到顶部或底部，sleep等待回正
     scale = cfg.set_win_size / 1440
-    my_position = [0, 150 * scale]
-    find = False
     while auto.take_screenshot() is None:
         continue
+    # 关闭首次进入队伍界面时的提示
+    identify_position = None
     if auto.find_element("home/first_prompt_assets.png", model="clam") and auto.find_element(
         "home/back_assets.png", model="normal"
     ):
         auto.click_element("home/back_assets.png")
-    if identify_position := auto.find_element("teams/identify_assets.png", take_screenshot=True):
-        position = [identify_position[0] - 2150 * scale, identify_position[1] + 215 * scale]
+        identify_position = auto.find_element("teams/identify_assets.png", take_screenshot=True)
+    else:
+        identify_position = auto.find_element("teams/identify_assets.png")
+
+    if identify_position:
+        first_team_pos = (int(250 * scale), int(625 * scale))
+        second_team_pos = (int(250 * scale), int(700 * scale))
         auto.mouse_click(1, 1)
-        my_position[0] += position[0]
-        my_position[1] += position[1]
-        auto.mouse_click(my_position[0], my_position[1])
-        sleep(0.5)
+        auto.mouse_action_with_pos(second_team_pos)
+
+        # 复位
         for _ in range(3):
-            auto.mouse_drag(my_position[0], my_position[1], dy=1333 * scale, drag_time=0.3)
+            auto.mouse_drag(second_team_pos[0], second_team_pos[1], dy=1333 * scale, drag_time=0.3)
         sleep(0.75)
-        first_position = [position[0], position[1] + 70 * scale]
         if cfg.select_team_by_order:
             team_range = (num - 1) // 5
             team_order = (num - 1) % 5
             for _ in range(team_range):
                 auto.mouse_drag(
-                    first_position[0],
-                    first_position[1] + 375 * scale,
+                    first_team_pos[0],
+                    first_team_pos[1] + 375 * scale,
                     dy=-375 * scale,
-                    drag_time=1.5,
+                    drag_time=0.3,
                 )
-                sleep(1)
             if num <= 15:
-                auto.mouse_click(first_position[0], first_position[1] + 75 * team_order * scale)
+                auto.mouse_action_with_pos((first_team_pos[0], first_team_pos[1] + 75 * team_order * scale))
             else:
-                auto.mouse_click(
-                    first_position[0],
-                    first_position[1] + 100 * scale + 75 * team_order * scale,
+                
+                sleep(0.5) # 滑3次，等待编队条触底后的回正
+                auto.mouse_action_with_pos(
+                    (first_team_pos[0],
+                    first_team_pos[1] + 100 * scale + 75 * team_order * scale)
                 )
             log.info(f"成功找到队伍 # {num}")
-            sleep(1)
             return True
         else:
             team_name_zh = "编队#" + str(num)
             team_name_en = [f"TEAMS #{num}", f"TEAMS#{num}", f"TFAMS#{num}"]
-            position_bbox = (0, 0, position[0] + 130 * scale, position[1] + 600 * scale)
-            for i in range(10):
+            position_bbox = (
+                0,
+                0,
+                int(first_team_pos[0] + 130 * scale),
+                int(first_team_pos[1] + 545 * scale),
+            )
+            for attempt in range(10):
                 while auto.take_screenshot() is None:
                     continue
                 if team_position := auto.find_language_text(team_name_zh, team_name_en, my_crop=position_bbox):
                     auto.mouse_action_with_pos(team_position, offset=False)
-                    find = True
+                    log.info(f"成功找到队伍 # {num}")
+                    return True
+                if attempt == 9:
                     break
                 auto.mouse_drag(
-                    first_position[0],
-                    first_position[1] + 375 * scale,
-                    dy=-385 * scale,
-                    drag_time=1.5,
+                    first_team_pos[0],
+                    first_team_pos[1] + 375 * scale,
+                    dy=-375 * scale,
+                    drag_time=0.3,
                 )
-                sleep(1)
-                while auto.take_screenshot() is None:
-                    continue
-            if find:
-                msg = f"成功找到队伍 # {num}"
-                log.info(msg)
-                sleep(1)
-                return True
-            else:
-                msg = f"找不到队伍 # {num}"
-                log.info(msg)
-                return False
+                sleep(0.5)
+            log.info(f"找不到队伍 # {num}")
+            return False
 
 
 def deal_with_spills():
@@ -202,14 +207,37 @@ def deal_with_spills():
         pass
 
 
+_MONEY_OCR_TRANSLATION = str.maketrans(
+    {
+        "O": "0",
+        "o": "0",
+        "D": "0",
+        "Q": "0",
+        "I": "1",
+        "l": "1",
+        "Z": "2",
+        "S": "5",
+        "G": "6",
+        "B": "8",
+        "h": "4",
+    }
+)
+
+
 @begin_and_finish_time_log(task_name="检查队伍剩余战斗力")
 def check_team():
-    # 至少还有5人可以战斗
-    sinner_nums = [f"{a}/{b}" for b in range(5, 10) for a in range(5, b + 1)]
-    if auto.find_element(sinner_nums, find_type="text"):
-        return True
-    else:
+    # 只要还有至少1人可以战斗就继续
+    scale = cfg.set_win_size / 1440
+    # 选中罪人数量
+    sinner_nums_bbox = tuple(
+        int(value * scale)
+        for value in (2260, 1020, 2333, 1080)
+    )
+    result = ocr.run(auto.screenshot.crop(sinner_nums_bbox), use_det=False)
+    if not result.txts:
         return False
+    recognized_text = result.txts[0].strip().translate(_MONEY_OCR_TRANSLATION)
+    return recognized_text.isdigit() and 1 <= int(recognized_text) <= 12
 
 
 @begin_and_finish_time_log(task_name="加载编队码")

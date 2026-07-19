@@ -26,6 +26,7 @@ build.bat
 config_backup
 config.yaml*
 theme_pack_list.yaml
+/team_config/
 /theme_pack_weight/
 logs
 pythonlogs

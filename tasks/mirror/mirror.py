@@ -631,7 +631,7 @@ class Mirror:
         elapsed_time = end_time - start_time
 
         if all(self.floor_times[i] > 0 for i in range(5)):  # 判断是否完整走了五层
-            team = cfg.config.teams.get(f"{self.team_order}")
+            team = cfg.get_team(self.team_order)
             if team:
                 team_history = {
                     "total_mirror_time_hard": team.total_mirror_time_hard,
@@ -678,6 +678,7 @@ class Mirror:
                 team.mirror_hard_count = team_history.get("mirror_hard_count", 0)
                 team.total_mirror_time_normal = team_history.get("total_mirror_time_normal", [0.0, 0.0, 0.0])
                 team.mirror_normal_count = team_history.get("mirror_normal_count", 0)
+                cfg.save_team(self.team_order)
             else:
                 log.warning(f"无法找到编队{self.team_number}的历史记录，无法更新数据")
             log.debug(team_history)
@@ -781,7 +782,7 @@ class Mirror:
                         )
 
             if auto.click_element("mirror/road_to_mir/dreaming_star/dreaming_star_enter_assets.png"):
-                sleep(0.5)
+                sleep(1)
                 continue
 
             if retry() is False:
@@ -1002,7 +1003,7 @@ class Mirror:
                 log.error("无法寻得队伍")
                 raise unableToFindTeamError("无法寻得队伍，请检查队伍名称是否为默认名称")
         # 加载编队码（如果启用）
-        team_setting = cfg.config.teams.get(str(self.team_order))
+        team_setting = cfg.get_team(self.team_order)
         if team_setting and team_setting.use_team_code and team_setting.team_code:
             if not load_team_code_in_game(team_setting.team_code):
                 log.warning("编队码加载失败，继续使用当前队伍配置")

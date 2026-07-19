@@ -1,9 +1,9 @@
 import os
+
+import pyperclip
 from PySide6.QtCore import QTimer, Qt
 from PySide6.QtGui import QPixmap
 from PySide6.QtWidgets import (
-    QApplication,
-    QFileDialog,
     QFrame,
     QGridLayout,
     QHBoxLayout,
@@ -24,6 +24,7 @@ from qfluentwidgets import (
     ToolTipPosition,
 )
 from qfluentwidgets import FluentIcon as FIF
+from ruamel.yaml import YAML
 
 from app import *
 from app.base_combination import (
@@ -33,7 +34,7 @@ from app.base_combination import (
     SinnerSelect,
 )
 from app.base_tools import BaseCheckBox, BaseComboBox, BaseLabel, BaseLineEdit, BaseSettingLayout
-from app.card.messagebox_custom import BaseInfoBar, MessageBoxConfirm
+from app.card.messagebox_custom import BaseInfoBar
 from app.common.ui_config import (
     STARLIGHT_BONUS_COSTS,
     get_starlight_action_label,
@@ -42,14 +43,10 @@ from app.common.ui_config import (
 )
 from app.language_manager import LanguageManager
 from app.starlight_bonus import StarlightCard, StarlightLevelSelector
+from app.team_setting_column import TeamSettingBlankColumn
 from app.theme_pack_setting_interface import ThemePackSettingDialog
-from module.config import TeamSetting, cfg, theme_list
-from module.config.team_import_export import (
-    apply_team_settings,
-    export_team_settings,
-    generate_team_export_filename,
-    import_team_settings,
-)
+from module.config import cfg, theme_list
+from module.logger import log
 from app.observe_ego_gift_selection import (
     MAX_OBSERVE_GIFT_SELECTIONS,
     ObserveGiftSelection,
@@ -67,9 +64,11 @@ class TeamSettingCard(QFrame):
         self.__init_widget()
         self.__init_card()
         self.__init_layout()
-        # self.setStyleSheet("border: 1px solid black;")
 
-        self.team_setting = cfg.config.teams.get(f"{team_num}", TeamSetting()).model_copy(deep=True)
+        # 编队设置数据切换到当前编队team_num
+        self.team_setting = cfg.get_team(team_num)
+        self.team_setting.team_number = team_num
+        self.blank_column.set_current_team(team_num)
 
         self.read_settings()
         self.refresh_starlight_select()
@@ -79,20 +78,40 @@ class TeamSettingCard(QFrame):
         self.select_system.retranslateUi()
         self.select_shop_strategy.retranslateUi()
 
+
+    def set_team_num(self, team_num: int):
+        """切换常驻队伍设置页当前编辑的编队。"""
+        self.team_num = team_num
+        self.team_setting = cfg.get_team(team_num)
+        self.customize_settings_module.team_num = team_num
+        self.observe_ego_gift_module.team_num = team_num
+        self.customize_info_module.set_team_num(team_num)
+        self.blank_column.set_current_team(team_num)
+        self.read_settings()
+        self.refresh_starlight_select()
+
     def __init_widget(self):
         self.main_layout = QVBoxLayout(self)
+        self.main_layout.setContentsMargins(0, 0, 0, 0) # 移除页面边距
+        self.content_layout = QHBoxLayout()
+        self.blank_column = TeamSettingBlankColumn(self)
+        self.blank_column.team_selected.connect(self.set_team_num)
         self.scroll_general = ScrollArea()
+        self.scroll_general.setObjectName("teamSettingContentScroll")
         self.scroll_general.setSmoothMode(SmoothMode.LINEAR, Qt.Orientation.Vertical)
         self.scroll_general.scrollDelagate.verticalSmoothScroll.duration = 100
         self.scroll_general.setWidgetResizable(True)
         self.scroll_general.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
 
         self.page_widget = QWidget()
+        self.page_widget.setObjectName("teamSettingPageWidget")
         self.scroll_general.setWidget(self.page_widget)
 
         self.layout_ = QVBoxLayout(self.page_widget)
 
-        self.main_layout.addWidget(self.scroll_general)
+        self.content_layout.addWidget(self.blank_column)
+        self.content_layout.addWidget(self.scroll_general, 1)
+        self.main_layout.addLayout(self.content_layout, 1)
 
         self.combobox_layout = BaseSettingLayout(box_type=1)
         self.combobox_layout.setMaximumHeight(75)
@@ -121,11 +140,33 @@ class TeamSettingCard(QFrame):
         self.scroll_general.enableTransparentBackground()
 
     def __init_card(self):
-        self.select_team = LabelWithComboBox(self.tr("选择队伍名称"), "team_number", all_teams, vbox=False)
-        self.select_system = LabelWithComboBox(self.tr("选择队伍体系"), "team_system", all_systems, vbox=False)
+        self.copy_team_button = PushButton(self)
+        self.copy_team_button.setText(self.tr("复制"))
+        self.copy_team_button.clicked.connect(self.copy_team_settings)
+        self.reset_team_button = PushButton(self)
+        self.reset_team_button.setText(self.tr("重置"))
+        self.reset_team_button.clicked.connect(self.reset_team_settings)
+        self.paste_team_button = PushButton(self)
+        self.paste_team_button.setText(self.tr("粘贴"))
+        self.paste_team_button.clicked.connect(self.paste_team_settings)
+        self.team_clipboard_layout = QHBoxLayout()
+        self.team_clipboard_layout.setSpacing(8)
+        self.team_clipboard_layout.addWidget(self.copy_team_button)
+        self.team_clipboard_layout.addWidget(self.paste_team_button)
+        self.team_clipboard_layout.addWidget(self.reset_team_button)
+
+        self.select_system = LabelWithComboBox(self.tr("体系"), "team_system", all_systems, vbox=False)
         self.select_shop_strategy = LabelWithComboBox(
-            self.tr("选择商店策略"), "shop_strategy", shop_strategy, vbox=False
+            self.tr("商店策略"), "shop_strategy", shop_strategy, vbox=False
         )
+        self.alias_layout = QHBoxLayout()
+        self.alias_layout.setSpacing(10)
+        self.alias_label = BaseLabel(self.tr("备注"))
+        self.alias_input = BaseLineEdit("alias", self)
+        self.alias_input.line_edit.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.alias_input.line_edit.setPlaceholderText(f"{self.tr('编队')}{self.team_num}")
+        self.alias_layout.addWidget(self.alias_label)
+        self.alias_layout.addWidget(self.alias_input)
 
         self.sinner_YiSang = SinnerSelect(
             "YiSang",
@@ -261,18 +302,9 @@ class TeamSettingCard(QFrame):
             self.open_theme_pack_weight_dialog
         )
 
-        self.export_button = PrimaryPushButton(self.tr("导出设置"))
-        self.export_button.clicked.connect(self.on_export_settings)
-        self.import_button = PushButton(self.tr("导入设置"))
-        self.import_button.clicked.connect(self.on_import_settings)
-
-        self.cancel_button = PushButton(self.tr("取消"))
-        self.cancel_button.clicked.connect(self.cancel_team_setting)
-        self.confirm_button = PrimaryPushButton(self.tr("保存"))
-        self.confirm_button.clicked.connect(self.save_team_setting)
-
     def __init_layout(self):
-        self.combobox_layout.add(self.select_team)
+        self.combobox_layout.add(self.team_clipboard_layout)
+        self.combobox_layout.add(self.alias_layout)
         self.combobox_layout.add(self.select_system)
         self.combobox_layout.add(self.select_shop_strategy)
 
@@ -283,7 +315,8 @@ class TeamSettingCard(QFrame):
         self.sinner_layout.addWidget(self.sinner_Ryoshu, 0, 3)
         self.sinner_layout.addWidget(self.sinner_Meursault, 0, 4)
         self.sinner_layout.addWidget(self.sinner_HongLu, 0, 5)
-        self.sinner_layout.setVerticalSpacing(10)
+        self.sinner_layout.setVerticalSpacing(13) # 罪人卡片之间的垂直间距 （向下取整
+        self.sinner_layout.setHorizontalSpacing(6) # 罪人卡片之间的水平间距（向下取整
         self.sinner_layout.addWidget(self.sinner_Heathcliff, 1, 0)
         self.sinner_layout.addWidget(self.sinner_Ishmael, 1, 1)
         self.sinner_layout.addWidget(self.sinner_Rodion, 1, 2)
@@ -305,12 +338,6 @@ class TeamSettingCard(QFrame):
         self.gift_system_layout.add(self.gift_system_list_1)
         self.gift_system_layout.add(self.gift_system_list_2)
 
-        self.setting_layout.addWidget(self.export_button)
-        self.setting_layout.addWidget(self.import_button)
-        self.setting_layout.addStretch()
-        self.setting_layout.addWidget(self.cancel_button)
-        self.setting_layout.addWidget(self.confirm_button)
-
         self.layout_.addWidget(self.combobox_layout)
         self.layout_.addLayout(self.sinner_layout)
         self.layout_.addWidget(self.gift_system_layout)
@@ -325,21 +352,31 @@ class TeamSettingCard(QFrame):
         self.custom_layout.viewLayout.addWidget(self.customize_settings_module)
         self.observe_ego_gift_layout.viewLayout.addWidget(self.observe_ego_gift_module)
         self.custom_layout2.viewLayout.addWidget(self.customize_info_module)
+        self.custom_layout.setExpand(True)
+        self.observe_ego_gift_layout.setExpand(True)
+        self.custom_layout2.setExpand(True)
 
     def connect_mediator(self):
         # 连接所有可能信号
         mediator.team_setting.connect(self.setting_team)
+        mediator.team_alias_changed.connect(self.refresh_alias_input)
         mediator.sinner_be_selected.connect(self.refresh_sinner_order)
 
     def disconnect_mediator(self):
         """断开所有 mediator 信号连接"""
         mediator.team_setting.disconnect(self.setting_team)
+        mediator.team_alias_changed.disconnect(self.refresh_alias_input)
         mediator.sinner_be_selected.disconnect(self.refresh_sinner_order)
 
+
     def setting_team(self, data_dict: dict):
+        """接收UI信号，更新编队配置信息"""
         keys = list(data_dict.keys())[0]
         values = list(data_dict.values())[0]
-        if hasattr(self.team_setting, f"{keys}"):
+        if keys == "alias":
+            self.team_setting.alias = values
+            mediator.team_alias_changed.emit(self.team_num)
+        elif hasattr(self.team_setting, f"{keys}"):
             setattr(self.team_setting, keys, values)
             if keys == "team_system":
                 self.foolproof(values)
@@ -374,24 +411,18 @@ class TeamSettingCard(QFrame):
         elif "ignore_shop_" in keys:
             shop_index = int(keys.split("_")[-1]) - 1
             self.team_setting.ignore_shop[shop_index] = values
+        cfg.save_team(self.team_num)
 
-    def save_team_setting(self):
-        cfg.set_value(f"{self.team_num}", self.team_setting, config_obj=cfg.config.teams)
-        self.cancel_team_setting()
 
     def open_theme_pack_weight_dialog(self):
-        # 先确保当前队伍的自定义权重文件已创建
         team_index = int(self.team_num)
-        theme_list.create_team_weight_config(team_index)
-
-        # 尝试加载队伍自定义权重文件
-        custom_file_path = theme_list.build_team_weight_path(team_index)
-        custom_weight_config = theme_list.load_config(custom_file_path)
 
         dialog = ThemePackSettingDialog(
             self,
-            config_data=custom_weight_config,
-            save_path=custom_file_path,
+            config_data=theme_list.get_team_theme_pack_weight(team_index),
+            save_callback=lambda data: theme_list.save_team_theme_pack_weight(team_index, data),
+            is_team_specific=True,
+            team_num=team_index,
         )
         dialog.exec()
 
@@ -450,13 +481,13 @@ class TeamSettingCard(QFrame):
 
         second_system_action = self.team_setting.second_system_action
         ignore_shop = self.team_setting.ignore_shop
+        # 显示第二体系的各个选项
         for i in range(4):
-            if second_system_action[i]:
-                self.findChild(BaseCheckBox, second_system_mode[i]).set_checked(True)
+            self.findChild(BaseCheckBox, second_system_mode[i]).set_checked(bool(second_system_action[i]))
 
+        # 显示需要忽略商店的楼层
         for i in range(1, 6):
-            if ignore_shop[i - 1]:
-                self.findChild(BaseCheckBox, f"ignore_shop_{i}").set_checked(True)
+            self.findChild(BaseCheckBox, f"ignore_shop_{i}").set_checked(bool(ignore_shop[i - 1]))
 
         for checkbox in all_checkbox_config_name:
             if self.findChild(BaseCheckBox, checkbox):
@@ -464,21 +495,91 @@ class TeamSettingCard(QFrame):
 
         for combobox in all_combobox_config_name:
             if self.findChild(BaseComboBox, combobox):
-                if combobox == "team_number":
-                    self.findChild(BaseComboBox, combobox).set_options(getattr(self.team_setting, combobox) - 1)
-                else:
-                    self.findChild(BaseComboBox, combobox).set_options(getattr(self.team_setting, combobox))
-                    if combobox == "team_system":
-                        self.foolproof(getattr(self.team_setting, combobox))
+                self.findChild(BaseComboBox, combobox).set_options(getattr(self.team_setting, combobox))
+                if combobox == "team_system":
+                    self.foolproof(getattr(self.team_setting, combobox))
 
         # 读取编队码设置
         if team_code_input := self.findChild(BaseLineEdit, "team_code"):
             team_code_input.setText(self.team_setting.team_code)
 
+        self.refresh_alias_input(self.team_num)
+
         # 回显观测EGO饰品选中状态
         observe_module = self.findChild(ObserveEgoGiftModule, "ObserveEgoGiftModule")
         if observe_module:
             observe_module.load_selected(self.team_setting.observe_ego_gift_selected)
+
+    def copy_team_settings(self):
+        """复制当前队伍设置（含主题包权重）到剪贴板。"""
+        pyperclip.copy(cfg.team_config.copy_team_share_code(self.team_num))
+        BaseInfoBar.success(
+            title=self.tr("已复制到剪切板"),
+            content="",
+            orient=Qt.Horizontal,
+            isClosable=True,
+            position=InfoBarPosition.TOP,
+            duration=500,
+            parent=self.window(),
+        )
+
+    def paste_team_settings(self):
+        """从剪贴板粘贴队伍设置（含主题包权重）到当前队伍。"""
+        setting = pyperclip.paste().strip()
+        try:
+            cfg.team_config.paste_team_share_code(self.team_num, setting)
+        except ValueError:
+            BaseInfoBar.error(
+                title=self.tr("剪贴板为空") if not setting else self.tr("不是合法的格式"),
+                content="",
+                orient=Qt.Horizontal,
+                isClosable=True,
+                position=InfoBarPosition.TOP,
+                duration=500,
+                parent=self.window(),
+            )
+            return
+
+        mediator.team_alias_changed.emit(self.team_num)
+        BaseInfoBar.success(
+            title=self.tr("已粘贴设置"),
+            content="",
+            orient=Qt.Horizontal,
+            isClosable=True,
+            position=InfoBarPosition.TOP,
+            duration=500,
+            parent=self.window(),
+        )
+        self.team_setting = cfg.get_team(self.team_num)
+        self.team_setting.team_number = self.team_num
+        self.read_settings()
+        self.refresh_starlight_select()
+
+    def reset_team_settings(self):
+        """将队伍设置重置为默认值。"""
+        cfg.team_config.reset_team(self.team_num)
+        mediator.team_alias_changed.emit(self.team_num)
+        BaseInfoBar.success(
+            title=self.tr("已重置设置"),
+            content="",
+            orient=Qt.Horizontal,
+            isClosable=True,
+            position=InfoBarPosition.TOP,
+            duration=500,
+            parent=self.window(),
+        )
+        self.team_setting = cfg.get_team(self.team_num)
+        self.team_setting.team_number = self.team_num
+        self.read_settings()
+        self.refresh_starlight_select()
+
+    def refresh_alias_input(self, team_num: int):
+        if team_num != self.team_num:
+            return
+        self.team_setting = cfg.get_team(team_num)
+        if alias_input := self.findChild(BaseLineEdit, "alias"):
+            alias_input.line_edit.setPlaceholderText(f"{self.tr('编队')}{self.team_num}")
+            alias_input.setText(self.team_setting.alias or "")
 
     def foolproof(self, team_system):
         for checkbox in all_checkbox_config_name:
@@ -491,97 +592,16 @@ class TeamSettingCard(QFrame):
             check_box.set_box_enabled(False)
             setattr(self.team_setting, f"system_{all_systems_name[team_system]}", False)
 
-    def cancel_team_setting(self):
-        mediator.close_setting.emit()
-
-    def on_export_settings(self):
-        """导出队伍设置到 YAML 文件"""
-        default_filename = generate_team_export_filename(self.team_num)
-        file_path, _ = QFileDialog.getSaveFileName(
-            self, self.tr("导出队伍设置"), default_filename, "YAML Files (*.yaml *.yml)"
-        )
-
-        if file_path:
-            success = export_team_settings(self.team_num, file_path)
-            if success:
-                BaseInfoBar.success(
-                    title=self.tr("导出成功"),
-                    content=self.tr("队伍设置已导出到: ") + file_path,
-                    orient=Qt.Orientation.Horizontal,
-                    isClosable=True,
-                    position=InfoBarPosition.TOP,
-                    duration=3000,
-                    parent=self,
-                )
-            else:
-                BaseInfoBar.error(
-                    title=self.tr("导出失败"),
-                    content=self.tr("无法导出队伍设置，请检查日志"),
-                    orient=Qt.Orientation.Horizontal,
-                    isClosable=True,
-                    position=InfoBarPosition.TOP,
-                    duration=3000,
-                    parent=self,
-                )
-
-    def on_import_settings(self):
-        """从 YAML 文件导入队伍设置"""
-        file_path, _ = QFileDialog.getOpenFileName(self, self.tr("导入队伍设置"), "", "YAML Files (*.yaml *.yml)")
-
-        if not file_path:
-            return
-
-        team_setting, theme_pack_weight, missing_fields = import_team_settings(file_path, self.team_num)
-
-        if team_setting is None:
-            BaseInfoBar.error(
-                title=self.tr("导入失败"),
-                content=self.tr("无法解析导入文件，请检查文件格式"),
-                orient=Qt.Orientation.Horizontal,
-                isClosable=True,
-                position=InfoBarPosition.TOP,
-                duration=3000,
-                parent=self,
-            )
-            return
-
-        # 如果有缺失字段则显示警告
-        if missing_fields:
-            BaseInfoBar.warning(
-                title=self.tr("部分字段缺失"),
-                content=self.tr("以下字段将使用默认值: ") + ", ".join(missing_fields),
-                orient=Qt.Orientation.Horizontal,
-                isClosable=True,
-                position=InfoBarPosition.TOP,
-                duration=5000,
-                parent=self,
-            )
-
-        # 显示确认对话框
-        confirm = MessageBoxConfirm(self.tr("确认导入"), self.tr("导入将覆盖当前队伍设置，是否继续？"), self.window())
-
-        if confirm.exec():
-            apply_team_settings(self.team_num, team_setting, theme_pack_weight)
-            self.team_setting = team_setting
-            self.read_settings()
-            self.refresh_starlight_select()
-
-            BaseInfoBar.success(
-                title=self.tr("导入成功"),
-                content=self.tr("队伍设置已导入并应用"),
-                orient=Qt.Orientation.Horizontal,
-                isClosable=True,
-                position=InfoBarPosition.TOP,
-                duration=3000,
-                parent=self,
-            )
-
     def retranslateUi(self):
         self.select_system.retranslateUi()
         self.select_shop_strategy.retranslateUi()
-        self.select_team.label.label.setText(self.tr("选择队伍名称"))
-        self.select_system.label.label.setText(self.tr("选择队伍体系"))
-        self.select_shop_strategy.label.label.setText(self.tr("选择商店策略"))
+        self.copy_team_button.setText(self.tr("复制"))
+        self.reset_team_button.setText(self.tr("重置"))
+        self.paste_team_button.setText(self.tr("粘贴"))
+        self.select_system.label.label.setText(self.tr("体系"))
+        self.alias_label.label.setText(self.tr("备注"))
+        self.alias_input.line_edit.setPlaceholderText(f"{self.tr('编队')}{self.team_num}")
+        self.select_shop_strategy.label.label.setText(self.tr("商店策略"))
         self.sinner_YiSang.name_label.setText(self.tr("李箱"))
         self.sinner_Faust.name_label.setText(self.tr("浮士德"))
         self.sinner_DonQuixote.name_label.setText(self.tr("堂吉诃德"))
@@ -607,11 +627,6 @@ class TeamSettingCard(QFrame):
         self.pierce.check_box.setText(self.tr("突刺"))
         self.blunt.check_box.setText(self.tr("打击"))
 
-        self.export_button.setText(self.tr("导出设置"))
-        self.import_button.setText(self.tr("导入设置"))
-        self.cancel_button.setText(self.tr("取消"))
-        self.confirm_button.setText(self.tr("保存"))
-
 
 class CustomizeSettingsModule(QFrame):
     def __init__(self, team_num: int, parent=None):
@@ -628,21 +643,30 @@ class CustomizeSettingsModule(QFrame):
 
     def __init_widget(self):
         self.first_line_widget = QWidget()
+        self.first_line_widget.setFixedWidth(900)
         self.first_line = QHBoxLayout(self.first_line_widget)
         self.second_line_widget = QWidget()
+        self.second_line_widget.setFixedWidth(900)
         self.second_line = QHBoxLayout(self.second_line_widget)
         self.third_line_widget = QWidget()
+        self.third_line_widget.setFixedWidth(900)
         self.third_line = QHBoxLayout(self.third_line_widget)
 
         self.features_patch_widget_1 = QWidget()
+        self.features_patch_widget_1.setFixedWidth(900)
         self.features_patch_line_1 = QHBoxLayout(self.features_patch_widget_1)
 
         self.star_layout = BaseSettingLayout(box_type=2)
         self.star_layout.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+        # 星光加成外框的最大高度。
         self.star_layout.setMaximumHeight(240)
-        self.star_layout.setMaximumWidth(950)
+        # 星光加成外框的最大宽度，影响一行 5 个星光选择框可分到的总空间。
+        self.star_layout.setMaximumWidth(850)
         self.star_list = QGridLayout()
+        # 两行星光选择框之间的上下间距。
         self.star_list.setVerticalSpacing(10)
+        # 同一行内相邻星光选择框之间的左右间距。
+        self.star_list.setHorizontalSpacing(10)
 
         self.fourth_line_widget = QWidget()
         self.fourth_line = QHBoxLayout(self.fourth_line_widget)
@@ -775,7 +799,8 @@ class CustomizeSettingsModule(QFrame):
 
         self.starlight_select_all_wrapper = QWidget(self)
         select_all_layout = QVBoxLayout(self.starlight_select_all_wrapper)
-        select_all_layout.setContentsMargins(10, 0, 0, 0)
+        # 全选选择框在自己网格单元内的左、上、右、下留白。
+        select_all_layout.setContentsMargins(0, 0, 0, 0)
         select_all_layout.setAlignment(Qt.AlignmentFlag.AlignVCenter)
         select_all_layout.addWidget(self.starlight_select_all)
 
@@ -783,6 +808,7 @@ class CustomizeSettingsModule(QFrame):
 
         self.starlight_clear_button_wrapper = QWidget(self)
         clear_btn_layout = QVBoxLayout(self.starlight_clear_button_wrapper)
+        # 清空按钮在自己网格单元内的左、上、右、下留白。
         clear_btn_layout.setContentsMargins(10, 0, 0, 0)
         clear_btn_layout.setAlignment(Qt.AlignmentFlag.AlignVCenter)
         clear_btn_layout.addWidget(self.starlight_clear_button, 0, Qt.AlignmentFlag.AlignLeft)
@@ -802,6 +828,9 @@ class CustomizeSettingsModule(QFrame):
             "after_level_IV_select",
         )
         self.after_level_IV.add_items(after_fuse_level_IV)
+        self.after_level_IV.hBoxLayout.setAlignment(Qt.AlignLeft | Qt.AlignVCenter)
+        self.after_level_IV.combo_box.setFixedWidth(220)
+        self.after_level_IV.combo_box.combo_box.setFixedWidth(220)
         self.shopping_strategy = CheckBoxWithComboBox(
             "shopping_strategy",
             QT_TRANSLATE_NOOP("CheckBoxWithComboBox", "购物策略"),
@@ -809,6 +838,9 @@ class CustomizeSettingsModule(QFrame):
             "shopping_strategy_select",
         )
         self.shopping_strategy.add_items(shopping_strategy)
+        self.shopping_strategy.hBoxLayout.setAlignment(Qt.AlignLeft | Qt.AlignVCenter)
+        self.shopping_strategy.combo_box.setFixedWidth(190)
+        self.shopping_strategy.combo_box.combo_box.setFixedWidth(190)
 
         self.opening_items = CheckBoxWithComboBox(
             "opening_items",
@@ -819,6 +851,11 @@ class CustomizeSettingsModule(QFrame):
         self.opening_items.add_items(all_systems)
         self.opening_items.add_combobox("opening_items_select")
         self.opening_items.add_times_for_additional(start_gift)
+        self.opening_items.hBoxLayout.setAlignment(Qt.AlignLeft | Qt.AlignVCenter)
+        self.opening_items.combo_box.setFixedWidth(90)
+        self.opening_items.combo_box.combo_box.setFixedWidth(90)
+        self.opening_items.additional_combo_box.setFixedWidth(110)
+        self.opening_items.additional_combo_box.combo_box.setFixedWidth(110)
 
         self.second_system = CheckBoxWithComboBox(
             "second_system",
@@ -829,6 +866,11 @@ class CustomizeSettingsModule(QFrame):
         self.second_system.add_items(all_systems)
         self.second_system.add_combobox("second_system_setting")
         self.second_system.add_times_for_additional(second_systems)
+        self.second_system.hBoxLayout.setAlignment(Qt.AlignLeft | Qt.AlignVCenter)
+        self.second_system.combo_box.setFixedWidth(90)
+        self.second_system.combo_box.combo_box.setFixedWidth(90)
+        self.second_system.additional_combo_box.setFixedWidth(220)
+        self.second_system.additional_combo_box.combo_box.setFixedWidth(220)
 
         self.second_system_fuse_IV = BaseCheckBox(
             "second_system_fuse_IV", None, QT_TRANSLATE_NOOP("BaseCheckBox", "合成四级")
@@ -854,6 +896,11 @@ class CustomizeSettingsModule(QFrame):
         self.skill_replacement.add_items(skill_replacement_sinner)
         self.skill_replacement.add_combobox("skill_replacement_mode")
         self.skill_replacement.add_times_for_additional(skill_replacement_mode)
+        self.skill_replacement.hBoxLayout.setAlignment(Qt.AlignLeft | Qt.AlignVCenter)
+        self.skill_replacement.combo_box.setFixedWidth(140)
+        self.skill_replacement.combo_box.combo_box.setFixedWidth(140)
+        self.skill_replacement.additional_combo_box.setFixedWidth(90)
+        self.skill_replacement.additional_combo_box.combo_box.setFixedWidth(90)
 
         QT_TRANSLATE_NOOP("BaseLabel", "忽略商店")
         self.ignore_shop = BaseLabel("忽略商店")
@@ -917,6 +964,7 @@ class CustomizeSettingsModule(QFrame):
         self.features_patch_line_1.addWidget(self.aggressive_save_systems)
         self.features_patch_line_1.addWidget(self.defense_first_round)
 
+        # 第 0 行是全选、清空和总费用；第 1、2 行是 10 个星光选择框。
         self.star_list.addWidget(self.starlight_select_all_wrapper, 0, 0)
         self.star_list.addWidget(self.starlight_clear_button_wrapper, 0, 1)
         self.star_list.addWidget(self.starlight_total_cost_label, 0, 4, Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
@@ -1393,6 +1441,8 @@ class ObserveEgoGiftModule(QFrame):
             )
 
     def load_selected(self, selected: list[str]):
+        for system_button in self._system_buttons.values():
+            system_button.set_active(False)
         self._row_selections = parse_observe_ego_gift_values(selected)
         self._rebuild_rows()
 
@@ -1485,43 +1535,42 @@ class CustomizeInfoModule(QFrame):
 
     def get_info(self, team_num: int):
         return_dict = {}
-        team = cfg.config.teams.get(f"{team_num}")
-        if team:
-            team_total_mirror_time_hard = team.total_mirror_time_hard
-            team_total_mirror_hard_count = team.mirror_hard_count
-            team_total_mirror_time_normal = team.total_mirror_time_normal
-            team_total_mirror_normal_count = team.mirror_normal_count
+        team = cfg.get_team(team_num)
+        team_total_mirror_time_hard = team.total_mirror_time_hard
+        team_total_mirror_hard_count = team.mirror_hard_count
+        team_total_mirror_time_normal = team.total_mirror_time_normal
+        team_total_mirror_normal_count = team.mirror_normal_count
 
-            return_dict["total_count"] = team_total_mirror_hard_count + team_total_mirror_normal_count
-            return_dict["hard_count"] = team_total_mirror_hard_count
-            return_dict["normal_count"] = team_total_mirror_normal_count
-            return_dict["average_time_hard"] = (
-                team_total_mirror_time_hard[0] if len(team_total_mirror_time_hard) > 0 else 0
-            )
-            return_dict["average_time_hard_last5"] = (
-                team_total_mirror_time_hard[1] if len(team_total_mirror_time_hard) > 1 else 0
-            )
-            return_dict["average_time_hard_last10"] = (
-                team_total_mirror_time_hard[2] if len(team_total_mirror_time_hard) > 2 else 0
-            )
-            return_dict["average_time_normal"] = (
-                team_total_mirror_time_normal[0] if len(team_total_mirror_time_normal) > 0 else 0
-            )
-            return_dict["average_time_normal_last5"] = (
-                team_total_mirror_time_normal[1] if len(team_total_mirror_time_normal) > 1 else 0
-            )
-            return_dict["average_time_normal_last10"] = (
-                team_total_mirror_time_normal[2] if len(team_total_mirror_time_normal) > 2 else 0
-            )
+        return_dict["total_count"] = team_total_mirror_hard_count + team_total_mirror_normal_count
+        return_dict["hard_count"] = team_total_mirror_hard_count
+        return_dict["normal_count"] = team_total_mirror_normal_count
+        return_dict["average_time_hard"] = (
+            team_total_mirror_time_hard[0] if len(team_total_mirror_time_hard) > 0 else 0
+        )
+        return_dict["average_time_hard_last5"] = (
+            team_total_mirror_time_hard[1] if len(team_total_mirror_time_hard) > 1 else 0
+        )
+        return_dict["average_time_hard_last10"] = (
+            team_total_mirror_time_hard[2] if len(team_total_mirror_time_hard) > 2 else 0
+        )
+        return_dict["average_time_normal"] = (
+            team_total_mirror_time_normal[0] if len(team_total_mirror_time_normal) > 0 else 0
+        )
+        return_dict["average_time_normal_last5"] = (
+            team_total_mirror_time_normal[1] if len(team_total_mirror_time_normal) > 1 else 0
+        )
+        return_dict["average_time_normal_last10"] = (
+            team_total_mirror_time_normal[2] if len(team_total_mirror_time_normal) > 2 else 0
+        )
         return return_dict
 
     def clear_data(self):
-        if team := cfg.config.teams.get(f"{self.team_num}"):
-            team.total_mirror_time_hard = [0.0, 0.0, 0.0]
-            team.mirror_hard_count = 0
-            team.total_mirror_time_normal = [0.0, 0.0, 0.0]
-            team.mirror_normal_count = 0
-            cfg.save()
+        team = cfg.get_team(self.team_num)
+        team.total_mirror_time_hard = [0.0, 0.0, 0.0]
+        team.mirror_hard_count = 0
+        team.total_mirror_time_normal = [0.0, 0.0, 0.0]
+        team.mirror_normal_count = 0
+        cfg.save_team(self.team_num)
         self.fresh_data()
 
     def update_data(self):
@@ -1589,3 +1638,7 @@ class CustomizeInfoModule(QFrame):
     def fresh_data(self):
         self.info = self.get_info(self.team_num)
         self.update_data()
+
+    def set_team_num(self, team_num: int):
+        self.team_num = team_num
+        self.fresh_data()

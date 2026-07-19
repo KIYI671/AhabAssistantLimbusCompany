@@ -39,7 +39,7 @@ from tasks.battle import battle
 from tasks.daily.get_prize import get_mail_prize, get_pass_prize
 from tasks.daily.luxcavation import EXP_luxcavation, thread_luxcavation
 from tasks.mirror.mirror import Mirror
-from tasks.teams.team_formation import select_battle_team
+from tasks.teams.team_formation import select_battle_team, team_formation
 from utils.path_manager import path_manager
 from utils.utils import calculate_the_teams, check_hard_mirror_time, get_day_of_week
 
@@ -53,6 +53,9 @@ def onetime_EXP_process(combat_count: int = 1):
         team = cfg.daily_teams
     EXP_luxcavation(combat_count)
     select_battle_team(team)
+    team_setting = cfg.get_team(team)
+    sinner_order = team_setting.sinner_order
+    team_formation(sinner_order)
     if battle.to_battle() is False:
         return False
     battle.fight(combat_count=combat_count)
@@ -69,6 +72,9 @@ def onetime_thread_process(combat_count: int = 1):
         team = cfg.daily_teams
     thread_luxcavation(combat_count)
     select_battle_team(team)
+    team_setting = cfg.get_team(team)
+    sinner_order = team_setting.sinner_order
+    team_formation(sinner_order)
     if battle.to_battle() is False:
         return False
     battle.fight(combat_count=combat_count)
@@ -78,7 +84,7 @@ def onetime_thread_process(combat_count: int = 1):
 
 @begin_and_finish_time_log(task_name="一次镜牢")
 # 一次镜牢的过程
-def onetime_mir_process(team_setting: TeamSetting, team_num: int):
+def onetime_mir_process(team_setting: TeamSetting, active_team_order: int):
     # 实时检查是否需要切换到困难镜牢
     if cfg.auto_hard_mirror and check_hard_mirror_time():
         log.info("检测到新的困牢周期，实时切换困难镜牢，设置困牢次数为3")
@@ -88,7 +94,7 @@ def onetime_mir_process(team_setting: TeamSetting, team_num: int):
 
     # 进行一次镜牢
     try:
-        mirror_adventure = Mirror(team_setting, team_num)
+        mirror_adventure = Mirror(team_setting, active_team_order)
         if mirror_adventure.run():
             del mirror_adventure
             mirror_adventure = None
@@ -272,9 +278,8 @@ def Mirror_task():
         # 检测配置的队伍能否顺利执行
         useful = False
         hard = bool(cfg.hard_mirror)
-        teams_be_select = cfg.get_value("teams_be_select")
-        for index in (i for i, t in enumerate(teams_be_select) if t is True):
-            team_setting = cfg.config.teams[f"{index + 1}"]
+        for active_team_order in cfg.teams_active_queue:
+            team_setting = cfg.get_team(active_team_order)
             if team_setting.fixed_team_use is False:
                 useful = True
                 break
@@ -290,8 +295,8 @@ def Mirror_task():
         if not cfg.teams_active_queue:
             break
 
-        team_num = cfg.teams_active_queue[0]
-        team_setting = cfg.config.teams[f"{team_num}"]
+        active_team_order = cfg.teams_active_queue[0]
+        team_setting = cfg.get_team(active_team_order)
         # 如果该队伍固定了用途，且用途不符合当前情况，将队首队伍轮转到队尾
         if team_setting.fixed_team_use:
             if (team_setting.fixed_team_use_select == 0 and not cfg.hard_mirror) or (
@@ -300,7 +305,7 @@ def Mirror_task():
                 cfg.rotate_team_queue()
                 continue
         # 执行一次镜牢任务，根据执行结果进行处理
-        mirror_result = onetime_mir_process(team_setting, team_num)
+        mirror_result = onetime_mir_process(team_setting, active_team_order)
         if mirror_result:
             cfg.rotate_team_queue()
             mir_times -= 1

@@ -3,15 +3,24 @@ import os
 from module import (
     CONFIG_PATH,
     EXAMPLE_PATH,
+    TEAM_CONFIG_PATH,
     THEME_PACK_LIST_EXAMPLE_PATH,
     THEME_PACK_LIST_PATH,
     THEME_PACK_WEIGHT_PATH,
     VERSION_PATH,
 )
 from module.config.config import Config, Theme_pack_list
-from module.config.config_typing import ConfigModel, TeamSetting
+from module.config.config_typing import ConfigModel as ConfigModel
+from module.config.config_typing import TeamSetting as TeamSetting
 
-cfg = Config(VERSION_PATH, EXAMPLE_PATH, CONFIG_PATH)
+cfg = Config(
+    VERSION_PATH,
+    EXAMPLE_PATH,
+    CONFIG_PATH,
+    TEAM_CONFIG_PATH,
+    THEME_PACK_LIST_EXAMPLE_PATH,
+    THEME_PACK_WEIGHT_PATH,
+)
 
 # 复制当前环境变量，以便在不修改原始环境变量的情况下进行后续操作
 cfg.env = os.environ.copy()
@@ -22,4 +31,9 @@ cfg.env = os.environ.copy()
 # 用户代理是HTTP请求中的一部分，服务器可以使用它来识别客户端的类型和特性
 cfg.useragent = {"User-Agent": f"AhabLimbusCompany/{cfg.version}"}
 
-theme_list = Theme_pack_list(THEME_PACK_LIST_EXAMPLE_PATH, THEME_PACK_LIST_PATH, THEME_PACK_WEIGHT_PATH)
+theme_list = Theme_pack_list(
+    THEME_PACK_LIST_EXAMPLE_PATH,
+    THEME_PACK_LIST_PATH,
+    THEME_PACK_WEIGHT_PATH,
+    cfg.team_config,
+)
