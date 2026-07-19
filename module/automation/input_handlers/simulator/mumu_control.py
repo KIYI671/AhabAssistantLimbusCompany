@@ -514,14 +514,14 @@ class MumuControl(AbstractInput):
         # 获取MuMuManager.exe所在的路径
         return self.exe_path
 
-    def get_nemu_client_path(self):
+    def get_nemu_client_path(self,version):
         # 获取external_renderer_ipc.dll所在的路径
         try:
             if self.mumu_version == 5:
                 return os.path.join(
                     os.path.dirname(self.install_path),
                     "nx_device",
-                    "12.0",
+                    version,
                     "shell",
                     "sdk",
                     "external_renderer_ipc.dll",
@@ -530,7 +530,53 @@ class MumuControl(AbstractInput):
                 return os.path.join(self.install_path, "sdk", "external_renderer_ipc.dll")
         except:
             self.mumu_control_api_backend()
-            self.get_nemu_client_path()
+            self.get_nemu_client_path(version)
+
+    def get_android_version(self):
+        # 获取安卓版本
+        try:
+            log.debug("开始获取安卓版本")
+            if self.exe_path is None:
+                log.warning("get_android_version: exe_path 为 None, 将触发异常 fallback")
+                raise ValueError("exe_path is None")
+            command = f""" "{self.exe_path}" info -v {self.multi_instance_number}"""
+            no_window_flag = subprocess.CREATE_NO_WINDOW if hasattr(subprocess, "CREATE_NO_WINDOW") else 0x08000000
+            proc = subprocess.run(
+                command,
+                shell=True,
+                text=True,  # 代替 universal_newlines=True，更现代化
+                encoding="utf-8",  # 强制指定用 utf-8 编码读取输出，解决 gbk 报错
+                errors="ignore",  # 极其重要：万一有杂音字符，忽略掉而不崩溃
+                capture_output=True,
+                check=True,  # 新增：如果命令返回非零状态码则抛出异常
+                creationflags=no_window_flag,
+            )
+
+            # 检查输出是否为空
+            if not proc.stdout.strip():
+                raise ValueError("命令返回空输出")
+
+            # 尝试解析JSON
+            try:
+                output_lines = proc.stdout.strip().splitlines()
+                clean_json = "\n".join([line for line in output_lines if "Active code page" not in line])
+                proc_result = json.loads(clean_json)
+                result = proc_result.get("android_version")  # 使用get避免KeyError
+                return result
+            except json.JSONDecodeError:
+                log.error(f"JSON解析失败！原始输出: {proc.stdout}")
+                raise  # 重新抛出异常或处理
+
+        except subprocess.CalledProcessError as cmd_err:
+            log.debug(f"命令执行失败！返回码: {cmd_err.returncode}, 错误输出: {cmd_err.stderr}")
+            # 可选：根据业务需求返回默认值或重新抛出
+            return False
+        except userStopError:
+            raise
+        except Exception as e:
+            log.error(f"获取安卓版本失败：{e}", exc_info=True)  # 记录完整堆栈
+            self.mumu_control_api_backend()
+            return self.get_android_version()
 
     def get_app_keptlive(self):
         # 获取应用保活状态
@@ -632,11 +678,12 @@ class MumuControl(AbstractInput):
 
     def load_dll(self):
         nemu_folder = os.path.dirname(self.install_path)
+        version = "15.0" if self.get_android_version() == "15.0" else "12.0"
         list_dll = [
             os.path.abspath(os.path.join(nemu_folder, "./shell/sdk/external_renderer_ipc.dll")),
-            os.path.abspath(os.path.join(nemu_folder, "./nx_device/12.0/shell/sdk/external_renderer_ipc.dll")),
+            os.path.abspath(os.path.join(nemu_folder, f"./nx_device/{version}/shell/sdk/external_renderer_ipc.dll")),
         ]
-        lib_path = self.get_nemu_client_path()
+        lib_path = self.get_nemu_client_path(version)
         if lib_path:
             list_dll.append(os.path.abspath(lib_path))
         nx_device_root = os.path.join(nemu_folder, "nx_device")
@@ -645,6 +692,7 @@ class MumuControl(AbstractInput):
                 candidate = os.path.join(nx_device_root, entry, "shell", "sdk", "external_renderer_ipc.dll")
                 if os.path.exists(candidate):
                     list_dll.append(os.path.abspath(candidate))
+        list_dll = list(dict.fromkeys(list_dll))
         ipc_dll = ""
         for ipc_dll in list_dll:
             if not os.path.exists(ipc_dll):
@@ -655,6 +703,9 @@ class MumuControl(AbstractInput):
             except OSError as e:
                 log.error(e.__str__())
                 log.error(f"ipc_dll={ipc_dll} 存在, 但无法加载")
+                continue
+            except Exception as e:
+                log.error(e.__str__())
                 continue
         if not self.lib:
             log.error("NemuIpc 需要 MuMu12 版本 >= 3.8.13，请检查您的版本。")
