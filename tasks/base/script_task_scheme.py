@@ -200,19 +200,9 @@ def _warn_if_game_monitor_hdr_enabled() -> None:
         return
 
     acknowledged = Event()
-    current_thread = QThread.currentThread()
-    current_thread.waiting_for_hdr_warning = True
-    try:
-        mediator.hdr_warning.emit(acknowledged)
-        while not acknowledged.wait(0.1):
-            if current_thread.isInterruptionRequested():
-                raise userStopError("用户主动终止程序")
-        if current_thread.isInterruptionRequested():
-            raise userStopError("用户主动终止程序")
-    finally:
-        current_thread.waiting_for_hdr_warning = False
-        if not acknowledged.is_set():
-            mediator.hdr_warning_clear.emit(acknowledged)
+    log.warning("检测到游戏所在显示器已开启 HDR，可能导致图像识别问题")
+    mediator.hdr_warning.emit(acknowledged)
+    acknowledged.wait()
 
 
 def Resonate_with_Ahab():
@@ -458,13 +448,6 @@ class my_script_task(QThread):
         # 初始化，构造函数
         super().__init__()
         self.mutex = QMutex()
-        self.waiting_for_hdr_warning = False
-
-    def stop(self):
-        if self.waiting_for_hdr_warning:
-            self.requestInterruption()
-        else:
-            self.terminate()
 
     def run(self):
         self.mutex.lock()
