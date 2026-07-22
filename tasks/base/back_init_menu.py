@@ -1,4 +1,4 @@
-from time import sleep
+from time import monotonic, sleep
 
 from module.automation import auto
 from module.decorator.decorator import begin_and_finish_time_log
@@ -8,10 +8,12 @@ from tasks.base.retry import click_title_screen_safely, ensure_simulator_game_st
 from tasks.mirror.reward_card import get_reward_card
 
 LOOP_COUNT=30
+LOADING_TIMEOUT = 90
 
 @begin_and_finish_time_log(task_name="返回主界面")
 def back_init_menu(*, allow_restart: bool = True):
     loop_count = LOOP_COUNT
+    loading_started_at = None
     auto.model = "clam"
     while True:
         loop_count -= 1
@@ -83,10 +85,12 @@ def back_init_menu(*, allow_restart: bool = True):
             continue
 
         # 等待加载情况
-        if auto.find_element("base/waiting_assets.png"):
+        if auto.find_element("base/waiting_assets.png") or auto.find_element("base/waiting_2_assets.png"):
+            if loading_started_at is None:
+                loading_started_at = monotonic()
+            loop_count = LOOP_COUNT if monotonic() - loading_started_at < LOADING_TIMEOUT else 0
             continue
-        if auto.find_element("base/waiting_2_assets.png"):
-            continue
+        loading_started_at = None
 
         # 左上角有后退键
         if auto.click_element("home/back_assets.png"):
