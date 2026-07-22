@@ -58,6 +58,7 @@ resonate_with_Ahab: False # 是否播放亚哈语录
 
 # 实验性功能
 experimental_keep_screen_awake: False # 运行期间阻止系统与显示器休眠，任务结束自动恢复
+experimental_hdr_warning: True # 任务启动时检测游戏显示器 HDR 状态并提示潜在识别问题
 
 
 

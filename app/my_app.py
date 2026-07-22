@@ -534,6 +534,22 @@ class MainWindow(FramelessWindow):
     def show_warning(self, warning: str):
         MessageBoxWarning(self.tr("警告！"), warning, self).exec()
 
+    def show_hdr_warning(self, acknowledged_event):
+        try:
+            MessageBoxWarning(
+                self.tr("检测到 HDR 已开启"),
+                self.tr(
+                    "检测到游戏所在显示器已开启 HDR。开启 HDR 可能导致图像识别问题；"
+                    "如果运行中遇到识别异常，请先关闭 Windows HDR 后重试。\n\n"
+                    "如果不想再看到本通知，请在“设置 > 实验性内容”中关闭“HDR 检测警告”。"
+                ),
+                self,
+            ).exec()
+        except Exception as exc:
+            log.error(f"显示 HDR 警告失败: {exc}")
+        finally:
+            acknowledged_event.set()
+
     def show_tasks_warning(self):
         MessageBoxWarning(
             self.tr("任务设置出错"),
@@ -550,6 +566,7 @@ class MainWindow(FramelessWindow):
         mediator.update_progress.connect(self.set_progress_ring)
         mediator.download_complete.connect(self.download_and_install)
         mediator.warning.connect(self.show_warning)
+        mediator.hdr_warning.connect(self.show_hdr_warning)
         # 由任务线程发起请求、由主窗口执行前台切换，避免执行层直接耦合 UI。
         mediator.request_focus.connect(self._force_foreground)
 

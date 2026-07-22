@@ -1940,6 +1940,20 @@ Entering a formation code will overwrite your current team configuration.</trans
         <translation>Didn&apos;t save settings, please do save or cancel</translation>
     </message>
     <message>
+        <location filename="../app/my_app.py" line="543"/>
+        <source>检测到 HDR 已开启</source>
+        <translation>HDR Is Enabled</translation>
+    </message>
+    <message>
+        <location filename="../app/my_app.py" line="548"/>
+        <source>检测到游戏所在显示器已开启 HDR。开启 HDR 可能导致图像识别问题；如果运行中遇到识别异常，请先关闭 Windows HDR 后重试。
+
+如果不想再看到本通知，请在“设置 &gt; 实验性内容”中关闭“HDR 检测警告”。</source>
+        <translation>HDR is enabled on the display containing the game window. HDR may cause image recognition issues. If recognition fails, disable Windows HDR and try again.
+
+To stop seeing this notice, disable &quot;HDR detection warning&quot; under Settings &gt; Experimental.</translation>
+    </message>
+    <message>
         <location filename="../app/my_app.py" line="624"/>
         <source>小工具</source>
         <translation>Gadget</translation>
@@ -2544,6 +2558,16 @@ These fields will be populated with default values. Do you wish to continue?</tr
         <location filename="../app/setting_interface.py" line="440"/>
         <source>任务运行中阻止系统休眠与锁屏；任务结束、停止或异常退出后会自动恢复系统默认策略</source>
         <translation>Prevented from entering sleep mode or locking the screen for running</translation>
+    </message>
+    <message>
+        <location filename="../app/setting_interface.py" line="446"/>
+        <source>HDR 检测警告</source>
+        <translation>HDR detection warning</translation>
+    </message>
+    <message>
+        <location filename="../app/setting_interface.py" line="450"/>
+        <source>任务启动时检测游戏所在显示器的 HDR 状态；开启 HDR 时提示可能发生图像识别问题</source>
+        <translation>Checks HDR on the display containing the game window at task startup and warns about possible image recognition issues</translation>
     </message>
 </context>
 <context>
