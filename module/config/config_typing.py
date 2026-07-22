@@ -322,6 +322,15 @@ class ConfigModel(BaseModel):
     mouse_action_interval: float
     """鼠标操作间隔时间"""
 
+    adaptive_throttle: bool
+    """是否启用自适应节流（自动根据系统负载调整操作间隔）"""
+
+    throttle_min_interval: float
+    """自适应节流最小间隔（秒），低负载时快速执行"""
+
+    throttle_max_interval: float
+    """自适应节流最大间隔（秒），高负载时自动退让"""
+
     mouse_down_duration: float
     """鼠标按下持续时间"""
 
