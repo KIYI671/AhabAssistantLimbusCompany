@@ -498,6 +498,22 @@ class PageMirror(PageCard):
             QT_TRANSLATE_NOOP("BaseCheckBox", "使用键盘进行镜牢寻路"),
             center=False,
         )
+        self.mirror_keyboard_simple_pathfinding = BaseCheckBox(
+            "mirror_keyboard_simple_pathfinding",
+            None,
+            QT_TRANSLATE_NOOP("BaseCheckBox", "简单键盘寻路（始终按↑键，避免鼠标拖动）"),
+            center=False,
+        )
+
+        self.mirror_keyboard_navigation.check_box.toggled.connect(
+            self._on_keyboard_navigation_toggled
+        )
+        self._on_keyboard_navigation_toggled(cfg.mirror_keyboard_navigation)
+
+    def _on_keyboard_navigation_toggled(self, checked: bool):
+        if not checked and cfg.mirror_keyboard_simple_pathfinding:
+            self.mirror_keyboard_simple_pathfinding.set_check_false()
+        self.mirror_keyboard_simple_pathfinding.set_box_enabled(checked)
 
     def __init_layout(self):
         self.vbox_general.addWidget(self.team)
@@ -517,6 +533,7 @@ class PageMirror(PageCard):
         self.vbox_advanced.addWidget(self.not_skip_whitegossypium)
         self.vbox_advanced.addWidget(self.fight_to_last_man)
         self.vbox_advanced.addWidget(self.mirror_keyboard_navigation)
+        self.vbox_advanced.addWidget(self.mirror_keyboard_simple_pathfinding)
 
         self.card_layout.insertWidget(self.card_layout.count() - 1, self.mirror_count)
 
@@ -793,6 +810,7 @@ class PageMirror(PageCard):
         self.not_skip_whitegossypium.retranslateUi()
         self.fight_to_last_man.retranslateUi()
         self.mirror_keyboard_navigation.retranslateUi()
+        self.mirror_keyboard_simple_pathfinding.retranslateUi()
         self.add_team_button.setToolTip(self.tr("添加队伍"))
         for child in self.findChildren(MirrorTeamCombination):
             child.retranslateUi()

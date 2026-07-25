@@ -138,6 +138,7 @@ teams_be_select_num: 0 # 被选中的队伍数量
 teams_be_select: [False] # 被选中的队伍
 teams_order: [0] # 队伍的顺序
 mirror_keyboard_navigation: False # 使用键盘进行镜牢寻路
+mirror_keyboard_simple_pathfinding: False # 简单键盘寻路（始终按↑，避免鼠标拖动）
 
 # 队伍设置
 teams_active_queue: [] # 镜牢启用队伍的执行队列（单一事实源）

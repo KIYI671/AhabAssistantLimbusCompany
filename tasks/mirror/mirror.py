@@ -27,6 +27,7 @@ from tasks.mirror.search_road import (
     MirrorMap,
     search_road_default_distance,
     search_road_farthest_distance,
+    search_road_simple_keyboard,
 )
 from tasks.mirror.select_theme_pack import select_theme_pack
 from tasks.teams.team_formation import check_team, load_team_code_in_game, select_battle_team, team_formation
@@ -1041,6 +1042,11 @@ class Mirror:
 
     @begin_and_finish_time_log(task_name="镜牢寻路")
     def search_road(self):
+        if cfg.mirror_keyboard_simple_pathfinding:
+            if search_road_simple_keyboard():
+                return True
+            log.debug("简单键盘寻路失败，回退到常规寻路")
+
         try:
             if next_node := self.mirror_map.get_next_step():
                 if next_node is True:
