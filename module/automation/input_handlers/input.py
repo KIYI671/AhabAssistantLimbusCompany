@@ -208,17 +208,13 @@ class Input(WinAbstractInput, metaclass=SingletonMeta):
         if move_back and current_mouse_position:
             self.mouse_move(current_mouse_position)
 
-    def mouse_swipe_for_scroll(
-        self, x, y, duration=0.3, dx=0, dy=0, move_back=True
-    ) -> None:
+    def mouse_swipe_for_scroll(self, x, y, duration=0.3, dx=0, dy=0, move_back=True) -> None:
         if move_back:
             current_mouse_position = self.get_mouse_position()
 
         plan = [
             (self.pos_offset(*point), move_duration)
-            for point, move_duration in build_scroll_swipe_plan(
-                x, y, dx, dy, duration
-            )
+            for point, move_duration in build_scroll_swipe_plan(x, y, dx, dy, duration)
         ]
         pyautogui.moveTo(*plan[0][0])
         pyautogui.mouseDown()
@@ -422,9 +418,7 @@ class BackgroundInput(WinAbstractInput, metaclass=SingletonMeta):
         if move_back and current_mouse_position:
             self.mouse_move(current_mouse_position)
 
-    def mouse_swipe_for_scroll(
-        self, x, y, duration=0.3, dx=0, dy=0, move_back=True
-    ) -> None:
+    def mouse_swipe_for_scroll(self, x, y, duration=0.3, dx=0, dy=0, move_back=True) -> None:
         if move_back:
             current_mouse_position = self.get_mouse_position()
 
@@ -702,9 +696,7 @@ class WindowMoveInput(WinAbstractInput, metaclass=SingletonMeta):
         self.mouse_up(x + dx, y + dy)
         screen.handle.set_window_pos(*pos)
 
-    def mouse_swipe_for_scroll(
-        self, x, y, duration=0.3, dx=0, dy=0, move_back=True
-    ) -> None:
+    def mouse_swipe_for_scroll(self, x, y, duration=0.3, dx=0, dy=0, move_back=True) -> None:
         plan = build_scroll_swipe_plan(x, y, dx, dy, duration)
         pos = self._set_window_pos(*plan[0][0])
         self.set_active()
@@ -755,7 +747,7 @@ class WindowMoveInput(WinAbstractInput, metaclass=SingletonMeta):
         raw_pos = screen.handle.rect()[:2]
         current_x, current_y = screen.handle.mouse_pos_to_client_mouse(*self.get_mouse_position())
         accur = 7000
-        duration = int(max(duration, 0.01) * accur)
+        duration = int(max(duration, 0.02) * accur)
         dx = (target_x - current_x) / duration * 100
         dy = (target_y - current_y) / duration * 100
         steps = duration // 100
