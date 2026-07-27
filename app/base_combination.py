@@ -904,6 +904,7 @@ class PushSettingCardChance(BasePushSettingCard):
         icon: Union[str, QIcon, FluentIconBase],
         title,
         config_name: str,
+        min_value=0,
         max_value=3,
         content=None,
         on_confirm: Callable[[int], None] | None = None,
@@ -911,6 +912,7 @@ class PushSettingCardChance(BasePushSettingCard):
     ):
         super().__init__(text, icon, title, content, parent)
         self.config_name = config_name
+        self.min_value = min_value
         self.max_value = max_value
         self.on_confirm = on_confirm
         self.line_text = LineEdit()
@@ -927,6 +929,7 @@ class PushSettingCardChance(BasePushSettingCard):
             self.tr(self.title),
             config_name=self.config_name,
             parent=self.window(),
+            min_value=self.min_value,
             max_value=self.max_value,
         )
         if message_box.exec():

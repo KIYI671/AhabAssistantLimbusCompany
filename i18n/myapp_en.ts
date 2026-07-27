@@ -2426,6 +2426,7 @@ These fields will be populated with default values. Do you wish to continue?</tr
         <location filename="../app/setting_interface.py" line="142"/>
         <location filename="../app/setting_interface.py" line="198"/>
         <location filename="../app/setting_interface.py" line="207"/>
+        <location filename="../app/setting_interface.py" line="230"/>
         <source>修改</source>
         <translation>Edit</translation>
     </message>
@@ -2443,6 +2444,16 @@ These fields will be populated with default values. Do you wish to continue?</tr
         <location filename="../app/setting_interface.py" line="209"/>
         <source>仅限MUMU模拟器——启动模拟器超时时间(秒)</source>
         <translation>Start Simulator Timeout</translation>
+    </message>
+    <message>
+        <location filename="../app/setting_interface.py" line="232"/>
+        <source>任务卡死重启等待时间(秒)</source>
+        <translation>Task Stall Restart Timeout (seconds)</translation>
+    </message>
+    <message>
+        <location filename="../app/setting_interface.py" line="238"/>
+        <source>页面长时间无进展后才会重启游戏；低性能模拟器建议设置为600秒</source>
+        <translation>Restart the game only after a page remains stalled; 600 seconds is recommended for slower emulators</translation>
     </message>
 </context>
 <context>

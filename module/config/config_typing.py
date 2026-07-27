@@ -355,6 +355,9 @@ class ConfigModel(BaseModel):
     start_emulator_timeout: int
     """启动模拟器超时时间"""
 
+    task_stall_timeout: int
+    """页面长时间无进展后重启游戏的等待时间（秒）"""
+
     adb_reconnect_on_error: bool
     """ADB或minitouch连接失效时自动重连"""
 

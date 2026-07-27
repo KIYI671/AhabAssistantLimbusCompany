@@ -432,7 +432,7 @@ class MessageBoxDate(MessageBox):
 
 
 class MessageBoxSpinbox(MessageBox):
-    def __init__(self, title: str, config_name: str, parent=None, max_value=3):
+    def __init__(self, title: str, config_name: str, parent=None, min_value=0, max_value=3):
         super().__init__(title, "", parent)
 
         self.text = title
@@ -446,7 +446,7 @@ class MessageBoxSpinbox(MessageBox):
         self.box = SpinBox(self)
         initial_value = cfg.get_value(config_name, 0)
         max_int = int(max_value)
-        self.box.setMinimum(0)
+        self.box.setMinimum(int(min_value))
         self.box.setMaximum(max_int)
         self.box.setValue(int(initial_value))
 
