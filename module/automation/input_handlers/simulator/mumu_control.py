@@ -5,6 +5,7 @@ import os
 import re
 import subprocess
 import sys
+import threading
 import time
 from functools import partial
 from time import sleep
@@ -232,6 +233,7 @@ class MumuControl(AbstractInput):
 
         self.lib = None
         self._ev = asyncio.new_event_loop()
+        self._ev_lock = threading.RLock()
         self.display_id = display_id
 
         self.connect_id: int = 0
@@ -775,22 +777,25 @@ class MumuControl(AbstractInput):
             NemuIpcIncompatible:
             NemuIpcError
         """
-        result = self._ev.run_until_complete(self.ev_run_async(func, *args, **kwargs))
+        # MuMu 截图和输入共用同一个 asyncio 事件循环。重试监控会从后台线程截图，
+        # 因此必须在最底层串行化所有 NemuIpc 调用，避免并发 run_until_complete。
+        with self._ev_lock:
+            result = self._ev.run_until_complete(self.ev_run_async(func, *args, **kwargs))
 
-        err = False
-        if func.__name__ == "nemu_connect":
-            if result == 0:
-                err = True
-        else:
-            if result > 0:
-                err = True
-        # Get to actual error message printed in std
-        if err:
-            log.warning(f"调用 {func.__name__} 失败，结果={result}")
-            with CaptureNemuIpc(log):
-                result = self._ev.run_until_complete(self.ev_run_async(func, *args, **kwargs))
+            err = False
+            if func.__name__ == "nemu_connect":
+                if result == 0:
+                    err = True
+            else:
+                if result > 0:
+                    err = True
+            # Get to actual error message printed in std
+            if err:
+                log.warning(f"调用 {func.__name__} 失败，结果={result}")
+                with CaptureNemuIpc(log):
+                    result = self._ev.run_until_complete(self.ev_run_async(func, *args, **kwargs))
 
-        return result
+            return result
 
     def get_resolution(self):
         """
