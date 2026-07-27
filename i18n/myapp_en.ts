@@ -2446,6 +2446,29 @@ These fields will be populated with default values. Do you wish to continue?</tr
     </message>
 </context>
 <context>
+    <name>PushSettingCardText</name>
+    <message>
+        <location filename="../app/setting_interface.py" line="200"/>
+        <source>修改</source>
+        <translation>Edit</translation>
+    </message>
+    <message>
+        <location filename="../app/setting_interface.py" line="202"/>
+        <source>模拟器主机地址</source>
+        <translation>Emulator Host</translation>
+    </message>
+    <message>
+        <location filename="../app/setting_interface.py" line="206"/>
+        <source>其他模拟器的 ADB 主机名或 IP；远程连接时填写远程设备地址</source>
+        <translation>ADB hostname or IP for other emulators; enter the remote device address for remote connections</translation>
+    </message>
+    <message>
+        <location filename="../app/base_combination.py" line="977"/>
+        <source>配置无效</source>
+        <translation>Invalid Configuration</translation>
+    </message>
+</context>
+<context>
     <name>PushSettingCardDate</name>
     <message>
         <location filename="../app/setting_interface.py" line="136"/>
