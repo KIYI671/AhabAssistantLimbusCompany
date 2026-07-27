@@ -349,8 +349,11 @@ class ConfigModel(BaseModel):
     simulator_type: int
     """0:mumu, 10:其他"""
 
+    simulator_host: str
+    """其他模拟器的 ADB 主机名或 IP 地址"""
+
     simulator_port: int
-    """端口"""
+    """其他模拟器的 ADB 端口"""
 
     mumu_instance_number: int
     """mumu模拟器的实例编号"""

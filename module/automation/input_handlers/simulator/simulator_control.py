@@ -10,12 +10,14 @@ from adbutils.errors import AdbError
 
 from module.config import cfg
 from module.logger import log
+from utils.adb_endpoint import build_adb_endpoint
 
 from .. import AbstractInput
 from ..scroll_swipe import build_scroll_swipe_plan
 from .pyminitouch import MNTDevice
 
 T = TypeVar("T")
+ADB_CONNECT_TIMEOUT = 10.0
 
 key_list = {
     "a": 29,
@@ -170,36 +172,36 @@ class SimulatorControl(AbstractInput):
             self._call_with_reconnect("启动游戏", _start_game)
 
     def adb_connect(self):
-        # Try to connect
-        port = int(cfg.simulator_port)
-        if port <= 0:
-            raise RuntimeError("其他模拟器需要填写 ADB 端口，例如蓝叠/雷电常见为 5555")
-        for _ in range(3):
-            self.simulator_port = f"127.0.0.1:{port}"
-            msg = adb.connect(self.simulator_port)
+        """连接设置中指定的本地或远程 ADB TCP 设备。"""
+        self.simulator_port = build_adb_endpoint(cfg.simulator_host, cfg.simulator_port)
+        last_message = ""
+        for attempt in range(3):
+            msg = adb.connect(self.simulator_port, timeout=ADB_CONNECT_TIMEOUT)
+            last_message = str(msg)
             # Connected to 127.0.0.1:59865
             # Already connected to 127.0.0.1:59865
-            if "connected" in msg:
+            if "connected" in last_message.lower():
                 log.debug(f"成功连接至:{self.simulator_port},连接信息: {msg}")
-                break
-            # bad port number '598265' in '127.0.0.1:598265'
-            elif "bad port" in msg:
-                log.error(f"连接失败，端口号{self.simulator_port}不正确，可能是拼写错误或不规范")
+                return
+            log.warning(
+                f"连接模拟器失败 ({attempt + 1}/3): endpoint={self.simulator_port}, response={last_message}"
+            )
+            sleep(1)
+        raise RuntimeError(f"无法通过 ADB 连接模拟器 {self.simulator_port}: {last_message or 'ADB 未返回原因'}")
 
     def adb_disconnect(self):
+        if self.simulator_port is None:
+            return
         try:
             for _ in range(3):
                 msg = adb.disconnect(self.simulator_port)
                 # Connected to 127.0.0.1:59865
                 # Already connected to 127.0.0.1:59865
-                if "disconnected" in msg:
+                if "disconnected" in msg.lower():
                     log.debug(f"成功断开连接于:{self.simulator_port},连接信息: {msg}")
                     break
-                # bad port number '598265' in '127.0.0.1:598265'
-                elif "bad port" in msg:
-                    log.error(f"断开连接失败，端口号{self.simulator_port}不正确，可能是拼写错误或不规范")
-        except Exception:
-            pass
+        except Exception as exc:
+            log.debug(f"断开模拟器 ADB 连接失败: endpoint={self.simulator_port}, error={exc}")
 
     def get_simulator(self):
         if self.simulator_device is not None:
