@@ -316,8 +316,8 @@ class Mirror:
                 if auto.click_element("teams/none_sinner_assets.png", model="clam"):
                     self.first_battle = True
                     continue
-                # 检测罪人幸存人数是否少于10人
-                if not (
+                # 如果未开启战斗直至全灭，则检测罪人幸存人数是否少于10人
+                if not cfg.fight_to_last_man and (
                     auto.find_element("teams/12_sinner_live_assets.png")
                     or auto.find_element("teams/11_sinner_live_assets.png")
                     or auto.find_element("teams/10_sinner_live_assets.png")
