@@ -11,26 +11,26 @@ from utils.path_manager import path_manager
 
 @begin_and_finish_time_log(task_name="选择镜牢主题包")
 # 选择镜牢主题包
-def select_theme_pack(hard_switch=False, floor=None, team_num=None, use_custom_theme_pack_weight=False):
+def select_theme_pack(hard_mode=False, floor=None, team_num=None, use_custom_theme_pack_weight=False):
     loop_count = 30
     auto.model = "clam"
     scale = cfg.set_win_size / 1080
     if path_manager.current_language == "zh_cn":
         theme_pack_list_zh = theme_list.get_effective_theme_pack_list(
-            hard_switch, "zh_cn", team_num, use_custom_theme_pack_weight
+            hard_mode, "zh_cn", team_num, use_custom_theme_pack_weight
         )
         theme_pack_list_en = {}
     elif path_manager.current_language == "en":
         theme_pack_list_zh = {}
         theme_pack_list_en = theme_list.get_effective_theme_pack_list(
-            hard_switch, "en", team_num, use_custom_theme_pack_weight
+            hard_mode, "en", team_num, use_custom_theme_pack_weight
         )
     else:
         theme_pack_list_zh = theme_list.get_effective_theme_pack_list(
-            hard_switch, "zh_cn", team_num, use_custom_theme_pack_weight
+            hard_mode, "zh_cn", team_num, use_custom_theme_pack_weight
         )
         theme_pack_list_en = theme_list.get_effective_theme_pack_list(
-            hard_switch, "en", team_num, use_custom_theme_pack_weight
+            hard_mode, "en", team_num, use_custom_theme_pack_weight
         )
     refresh_times = 3
     difficulty = None
@@ -71,7 +71,7 @@ def select_theme_pack(hard_switch=False, floor=None, team_num=None, use_custom_t
             continue
 
         # 切换难度
-        if hard_switch:
+        if hard_mode:
             if auto.click_element("mirror/theme_pack/normal_assets.png"):
                 sleep(2)  # 等待卡包更新刷新动画完成
                 continue

@@ -76,7 +76,7 @@ class Mirror:
 
         self.start_time = time.time()
         self.first_battle = True  # 判断是否首次进入战斗，如果是则重新配队
-        self.hard_switch = cfg.hard_mirror
+        self.hard_mode = cfg.hard_mirror
         self.use_custom_theme_pack_weight = team_setting.use_custom_theme_pack_weight  # 是否启用自定义主题包权重
         # 统计时间
         self.find_road_total_time = 0
@@ -89,7 +89,7 @@ class Mirror:
         self.floor_times = [-9999.0 for i in range(5)]  # 负值代表缺失值
         self.LOOP_COUNT = 250
 
-        self.mirror_map = MirrorMap(hard_mode=self.hard_switch)
+        self.mirror_map = MirrorMap(hard_mode=self.hard_mode)
 
         self.pass_coins = None
 
@@ -103,7 +103,7 @@ class Mirror:
 
     def _enter_hard_mode_if_needed(self):
         if self.normal_to_hard_floor > 0 and self.floor >= self.normal_to_hard_floor:
-            self.hard_switch = True
+            self.hard_mode = True
             self.mirror_map.hard_mode = True
 
     def _update_floor_for_theme_pack(self):
@@ -251,7 +251,7 @@ class Mirror:
             if auto.find_element("mirror/theme_pack/feature_theme_pack_assets.png"):
                 sleep(2)
                 self._update_floor_for_theme_pack()
-                select_theme_pack(self.hard_switch, self.floor, self.team_order, self.use_custom_theme_pack_weight)
+                select_theme_pack(self.hard_mode, self.floor, self.team_order, self.use_custom_theme_pack_weight)
                 if self.re_formation_each_floor:
                     self.first_battle = True
                 try:
@@ -532,7 +532,7 @@ class Mirror:
                 if auto.click_element("mirror/claim_reward/claim_forfeit_assets.png", model="normal", take_screenshot=True):
                     continue
             else:
-                if self.hard_switch and cfg.save_rewards:
+                if self.hard_mode and cfg.save_rewards:
                     auto.click_element("mirror/claim_reward/claim_rewards_assets.png")
                     sleep(1)
                     pos = auto.find_element(
@@ -672,7 +672,7 @@ class Mirror:
                 last_ten = total_ten / min(count + 1, 10)
                 return [total_avr, last_five, last_ten]
 
-            if self.hard_switch:
+            if self.hard_mode:
                 team_total_battle_time_hard = team_history.get("total_mirror_time_hard", [0.0, 0.0, 0.0])
                 team_total_battle_count = team_history.get("mirror_hard_count", 0)
                 team_history["total_mirror_time_hard"] = calculate_time(
@@ -1486,7 +1486,7 @@ class Mirror:
                 model="clam",
             ):
                 continue
-            if self.hard_switch and cfg.save_rewards:
+            if self.hard_mode and cfg.save_rewards:
                 auto.click_element("mirror/claim_reward/claim_rewards_assets.png")
                 sleep(1)
                 pos = auto.find_element(
