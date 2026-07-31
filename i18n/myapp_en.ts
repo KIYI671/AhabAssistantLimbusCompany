@@ -1728,8 +1728,8 @@ Entering a formation code will overwrite your current team configuration.</trans
     <name>LabelWithComboBox</name>
     <message>
         <location filename="../app/team_setting_card.py" line="702"/>
-        <source>在第几层进入 Hard 模式</source>
-        <translation>Enter Hard Mode on Floor</translation>
+        <source>第几层转困牢</source>
+        <translation>Switch to Hard Mirror Dungeon on Floor</translation>
     </message>
     <message>
         <location filename="../app/page_card.py" line="119"/>
