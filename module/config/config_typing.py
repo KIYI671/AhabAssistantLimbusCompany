@@ -84,6 +84,9 @@ class TeamSetting(BaseModel):
     re_formation_each_floor: bool = False
     """每个楼层重新编队"""
 
+    normal_to_hard_floor: int = 0
+    """进入困难模式的楼层"""
+
     use_starlight: bool = False
     """开局星光换钱"""
 

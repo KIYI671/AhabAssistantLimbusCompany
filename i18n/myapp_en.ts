@@ -514,6 +514,11 @@ Right-click to set as permanent</translation>
 <context>
     <name>BaseComboBox</name>
     <message>
+        <location filename="../app/__init__.py" line="132"/>
+        <source>不进入</source>
+        <translation>Do not enter</translation>
+    </message>
+    <message>
         <location filename="../app/__init__.py" line="56"/>
         <source>无</source>
         <translation>None</translation>
@@ -1721,6 +1726,11 @@ Entering a formation code will overwrite your current team configuration.</trans
 </context>
 <context>
     <name>LabelWithComboBox</name>
+    <message>
+        <location filename="../app/team_setting_card.py" line="702"/>
+        <source>在第几层进入 Hard 模式</source>
+        <translation>Enter Hard Mode on Floor</translation>
+    </message>
     <message>
         <location filename="../app/page_card.py" line="119"/>
         <source>窗口分辨率</source>

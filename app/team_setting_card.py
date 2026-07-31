@@ -699,6 +699,11 @@ class CustomizeSettingsModule(QFrame):
             None,
             QT_TRANSLATE_NOOP("BaseCheckBox", "每楼层重新编队"),
         )
+        self.normal_to_hard_floor = LabelWithComboBox(
+            QT_TRANSLATE_NOOP("LabelWithComboBox", "在第几层进入 Hard 模式"),
+            "normal_to_hard_floor",
+            mirror_floor_options,
+        )
         self.use_starlight = BaseCheckBox("use_starlight", None, QT_TRANSLATE_NOOP("BaseCheckBox", "开局星光换钱"))
 
         self.aggressive_also_enhance = BaseCheckBox(
@@ -967,6 +972,7 @@ class CustomizeSettingsModule(QFrame):
 
         self.tenth_line.addWidget(self.use_custom_theme_pack_weight)
         self.tenth_line.addWidget(self.select_theme_pack_weight_button)
+        self.tenth_line.addWidget(self.normal_to_hard_floor)
         self.tenth_line.addStretch()
 
         self.eleventh_line.addWidget(self.use_team_code)
@@ -1023,6 +1029,7 @@ class CustomizeSettingsModule(QFrame):
         self.fixed_team_use.retranslateUi()
         self.reward_cards.retranslateUi()
         self.re_formation_each_floor.retranslateUi()
+        self.normal_to_hard_floor.retranslateUi()
         self.starlight_select_all.set_label_text(get_starlight_action_label(self.tr("全选"), cfg.language_in_program))
         self.starlight_clear_button.setText(get_starlight_action_label(self.tr("清空"), cfg.language_in_program))
 
