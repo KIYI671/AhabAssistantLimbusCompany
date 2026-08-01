@@ -20,6 +20,7 @@ from tasks.base.back_init_menu import back_init_menu
 from tasks.base.make_enkephalin_module import make_enkephalin_module
 from tasks.base.retry import retry
 from tasks.battle import battle
+from tasks.battle.battle import DefenseForSoloState
 from tasks.event import event_handling
 from tasks.mirror.in_shop import Shop
 from tasks.mirror.reward_card import get_reward_card
@@ -72,6 +73,7 @@ class Mirror:
         self.observe_ego_gift_selected = team_setting.observe_ego_gift_selected  # 用户选择的观测EGO饰品列表
 
         self.defense_first_round = team_setting.defense_first_round  # 是否第一回合全员防御
+        self.defense_for_solo_state = DefenseForSoloState() if team_setting.defense_for_solo else None
 
         self.start_time = time.time()
         self.first_battle = True  # 判断是否首次进入战斗，如果是则重新配队
@@ -100,6 +102,15 @@ class Mirror:
         start = time.time()
         result = fn(*args, **kwargs)
         return result, time.time() - start
+
+    def _fight(self) -> None:
+        _, elapsed = self._time_call(
+            battle.fight,
+            avoid_skill_3=self.avoid_skill_3,
+            defense_first_round=self.defense_first_round,
+            defense_for_solo_state=self.defense_for_solo_state,
+        )
+        self.battle_total_time += elapsed
 
     def road_to_mir(self):
         loop_count = 30
@@ -316,8 +327,8 @@ class Mirror:
                 if auto.click_element("teams/none_sinner_assets.png", model="clam"):
                     self.first_battle = True
                     continue
-                # 如果未开启战斗直至全灭，则检测罪人幸存人数是否少于10人
-                if not cfg.fight_to_last_man and (
+                # 如果未开启战斗直至全灭和小指良单通，则检测罪人幸存人数是否少于10人
+                if not cfg.fight_to_last_man and self.defense_for_solo_state is None and not(
                     auto.find_element("teams/12_sinner_live_assets.png")
                     or auto.find_element("teams/11_sinner_live_assets.png")
                     or auto.find_element("teams/10_sinner_live_assets.png")
@@ -342,24 +353,20 @@ class Mirror:
             if auto.find_element("battle/more_information_assets.png") or auto.find_element(
                 "battle/in_mirror_assets.png"
             ):
-                _, elapsed = self._time_call(battle.fight, self.avoid_skill_3, self.defense_first_round)
-                self.battle_total_time += elapsed
+                self._fight()
                 continue
             elif battle.identify_keyword_turn and self.LOOP_COUNT - main_loop_count < 5:
                 if auto.find_element("battle/turn_assets.png") or auto.find_element("battle/in_mirror_assets.png"):
-                    _, elapsed = self._time_call(battle.fight, self.avoid_skill_3, self.defense_first_round)
-                    self.battle_total_time += elapsed
+                    self._fight()
                     continue
             else:
                 turn_bbox = ImageUtils.get_bbox(ImageUtils.load_image("battle/turn_assets.png"))
                 turn_ocr_result = auto.find_text_element("turn", turn_bbox)
                 if turn_ocr_result is not False:
-                    _, elapsed = self._time_call(battle.fight, self.avoid_skill_3, self.defense_first_round)
-                    self.battle_total_time += elapsed
+                    self._fight()
                     continue
             if auto.find_element("battle/win_rate_card.png") and auto.find_element("battle/gear_right.png"):
-                _, elapsed = self._time_call(battle.fight, self.avoid_skill_3, self.defense_first_round)
-                self.battle_total_time += elapsed
+                self._fight()
                 continue
 
             # 镜牢星光
