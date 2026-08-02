@@ -104,6 +104,87 @@ jobs:
           name: AALC_${{ needs.prepare-version.outputs.version }}.7z
           path: release
 
+      - name: Generate release notes
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPOSITORY: ${{ github.repository }}
+          RELEASE_TAG: ${{ needs.prepare-version.outputs.version }}
+          TARGET_COMMIT: ${{ github.sha }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          releases_json="$(mktemp)"
+          notes_json="$(mktemp)"
+          notes_path="${RUNNER_TEMP}/aalc-release-notes.md"
+          trap 'rm -f "$releases_json" "$notes_json"' EXIT
+
+          gh api --paginate --slurp \
+            "repos/${REPOSITORY}/releases?per_page=100" > "$releases_json"
+
+          stable_tag="$(
+            python - "$releases_json" <<'PY'
+          import json
+          import re
+          import sys
+          from datetime import datetime
+          from pathlib import Path
+
+          pages = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+          releases = [release for page in pages for release in page]
+          pattern = re.compile(r"^[Vv]?(\d+)\.(\d+)\.(\d+)$")
+          candidates = []
+
+          for release in releases:
+              if release.get("draft") or release.get("prerelease"):
+                  continue
+              tag_name = release.get("tag_name", "")
+              match = pattern.fullmatch(tag_name)
+              published_at = release.get("published_at")
+              if not match or not published_at:
+                  continue
+              published = datetime.fromisoformat(published_at.replace("Z", "+00:00"))
+              candidates.append((tuple(int(part) for part in match.groups()), published, tag_name))
+
+          if not candidates:
+              raise SystemExit("No stable GitHub release matching Vx.y.z was found.")
+
+          print(max(candidates, key=lambda item: (item[0], item[1]))[2])
+          PY
+          )"
+
+          if [[ -z "$stable_tag" ]]; then
+            echo "The stable release tag is empty." >&2
+            exit 1
+          fi
+
+          gh api \
+            --method POST \
+            "repos/${REPOSITORY}/releases/generate-notes" \
+            -f "tag_name=${RELEASE_TAG}" \
+            -f "target_commitish=${TARGET_COMMIT}" \
+            -f "previous_tag_name=${stable_tag}" > "$notes_json"
+
+          python - "$notes_json" "$notes_path" <<'PY'
+          import json
+          import sys
+          from pathlib import Path
+
+          response = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+          body = response.get("body")
+          if not isinstance(body, str) or not body.strip():
+              raise SystemExit("GitHub returned an empty release note body.")
+
+          wrapped_body = (
+              "此版本为自动构建的预发布版本，可能存在不稳定问题，仅供测试使用。\n\n"
+              "<details>\n"
+              "<summary>完整变更列表</summary>\n\n"
+              f"{body.rstrip()}\n\n"
+              "</details>\n"
+          )
+          Path(sys.argv[2]).write_text(wrapped_body, encoding="utf-8")
+          PY
+
       - name: Create prerelease
         uses: softprops/action-gh-release@v2
         with:
@@ -112,9 +193,8 @@ jobs:
           target_commitish: ${{ github.sha }}
           prerelease: true
           make_latest: false
-          generate_release_notes: true
-          body: |
-            此版本为自动构建的预发布版本，可能存在不稳定问题，仅供测试使用。
+          generate_release_notes: false
+          body_path: ${{ runner.temp }}/aalc-release-notes.md
           files: release/AALC_${{ needs.prepare-version.outputs.version }}.7z
           fail_on_unmatched_files: true
           token: ${{ secrets.GITHUB_TOKEN }}
