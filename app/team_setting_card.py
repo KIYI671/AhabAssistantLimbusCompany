@@ -716,6 +716,26 @@ class CustomizeSettingsModule(QFrame):
             None,
             QT_TRANSLATE_NOOP("BaseCheckBox", "链接战第一回合全员防御"),
         )
+        self.defense_for_solo = BaseCheckBox(
+            "defense_for_solo",
+            None,
+            QT_TRANSLATE_NOOP("BaseCheckBox", "小指良单通杀家人"),
+            tips=QT_TRANSLATE_NOOP(
+                "BaseCheckBox",
+                "每次镜牢任务内，连续5个战斗回合全员防御",
+            ),
+        )
+        self.defense_first_round.check_box.toggled.connect(
+            lambda checked: self.defense_for_solo.set_check_false() if checked else None
+        )
+        self.defense_for_solo.check_box.toggled.connect(
+            lambda checked: self.defense_first_round.set_check_false() if checked else None
+        )
+        if (
+            self.defense_first_round.check_box.isChecked()
+            and self.defense_for_solo.check_box.isChecked()
+        ):
+            self.defense_for_solo.set_check_false()
 
         self.fixed_team_use = CheckBoxWithComboBox(
             "fixed_team_use",
@@ -916,6 +936,7 @@ class CustomizeSettingsModule(QFrame):
         self.features_patch_line_1.addWidget(self.aggressive_also_enhance)
         self.features_patch_line_1.addWidget(self.aggressive_save_systems)
         self.features_patch_line_1.addWidget(self.defense_first_round)
+        self.features_patch_line_1.addWidget(self.defense_for_solo)
 
         self.star_list.addWidget(self.starlight_select_all_wrapper, 0, 0)
         self.star_list.addWidget(self.starlight_clear_button_wrapper, 0, 1)
@@ -1020,6 +1041,7 @@ class CustomizeSettingsModule(QFrame):
         self.aggressive_also_enhance.retranslateUi()
         self.aggressive_save_systems.retranslateUi()
         self.defense_first_round.retranslateUi()
+        self.defense_for_solo.retranslateUi()
         self.fixed_team_use.retranslateUi()
         self.reward_cards.retranslateUi()
         self.re_formation_each_floor.retranslateUi()
