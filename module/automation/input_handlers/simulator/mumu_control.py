@@ -19,7 +19,6 @@ from module.my_error.my_error import userStopError
 from utils.utils import run_as_user
 
 from .. import AbstractInput
-from ..scroll_swipe import build_scroll_swipe_plan
 from . import insert_swipe
 
 usual_key_code = {
@@ -1048,12 +1047,21 @@ class MumuControl(AbstractInput):
     def mouse_swipe_for_scroll(
         self, x, y, duration=0.3, dx=0, dy=0, move_back=True
     ) -> None:
-        plan = build_scroll_swipe_plan(x, y, dx, dy, duration)
-        self.down(*plan[0][0])
-        for point, segment_duration in plan[1:]:
-            time.sleep(segment_duration)
-            self.down(*point)
-        self.up()
+        """Swipe a scrollable view through MuMu's native touch injection."""
+        points = insert_swipe(
+            p0=(x, y), p3=(x + dx, y + dy), speed=8, min_distance=1
+        )
+        self.down(x, y)
+        try:
+            for point in points:
+                self.down(*point)
+                time.sleep(0.020)
+
+            # Keep the release stationary long enough to stop list momentum, but
+            # well below mouse_drag's old 500 ms hold that could reorder a team.
+            time.sleep(0.200)
+        finally:
+            self.up()
 
     def mouse_scroll(self, direction: int = -3) -> bool:
         """占位"""
