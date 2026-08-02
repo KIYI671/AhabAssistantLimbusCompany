@@ -451,6 +451,16 @@ Right-click to set as permanent</translation>
         <translation>defense first round in normal encounters</translation>
     </message>
     <message>
+        <location filename="../app/team_setting_card.py" line="722"/>
+        <source>小指良单通杀家人</source>
+        <translation>Thumb Ryoshu solo: 5-turn defense</translation>
+    </message>
+    <message>
+        <location filename="../app/team_setting_card.py" line="726"/>
+        <source>每次镜牢任务内，连续5个战斗回合全员防御</source>
+        <translation>Defend with all units for the first 5 consecutive combat turns of each Mirror Dungeon run</translation>
+    </message>
+    <message>
         <location filename="../app/page_card.py" line="480"/>
         <source>再次领取奖励</source>
         <translation>Claim rewards again</translation>
