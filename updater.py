@@ -3,9 +3,13 @@ import os
 import shutil
 import subprocess
 import sys
-from pathlib import PurePosixPath
+from pathlib import Path, PurePosixPath
 
 import psutil
+
+
+class UpdateManifestError(ValueError):
+    """更新清单包含不能安全应用的内容。"""
 
 
 class Updater:
@@ -34,11 +38,14 @@ class Updater:
             self.download_file_path = os.path.join(self.temp_path, self.file_name)
             self.extract_folder_path = os.path.join(self.temp_path, self.file_name.rsplit(".", 1)[0])
 
+        self._incremental_update_plan = None
+
     def extract_file(self):
         """解压下载的文件。"""
         print("开始解压...")
         while True:
             try:
+                self._reset_extraction_workspace()
                 if os.path.exists(self.exe_path):
                     subprocess.run(
                         [
@@ -57,6 +64,16 @@ class Updater:
             except Exception:
                 input("解压失败，按回车键重新解压. . .多次失败请手动下载更新")
                 return False
+
+    def _reset_extraction_workspace(self):
+        """清理本次解压目标，避免复用上一次更新残留的载荷或清单。"""
+        if not self.download_file_path:
+            return
+
+        if self.extract_folder_path and os.path.isdir(self.extract_folder_path):
+            shutil.rmtree(self.extract_folder_path)
+        if self.changes_file_path and os.path.exists(self.changes_file_path):
+            os.remove(self.changes_file_path)
 
     def cover_folder(self):
         """覆盖安装最新版本的文件。"""
@@ -81,47 +98,29 @@ class Updater:
 
     def _apply_incremental_update(self):
         """根据 changes.json 执行增量更新。"""
-        with open(self.changes_file_path, "r", encoding="utf-8") as f:
-            changes = json.load(f)
+        changes = self._incremental_update_plan or self._load_incremental_update_plan()
 
         print("检测到增量更新清单，执行增量更新...")
 
-        for dir_path in changes.get("deleted_dir", []):
-            normalized_path = self._normalize_manifest_path(dir_path)
-            if not normalized_path:
-                continue
-            full_path = os.path.join(self.cover_folder_path, normalized_path)
+        for dir_path, full_path in changes["deleted_dir"]:
             try:
                 shutil.rmtree(full_path)
                 print(f"删除目录: {dir_path}")
             except FileNotFoundError:
                 print(f"删除目录不存在: {dir_path}")
 
-        for file_path in changes.get("deleted", []):
-            normalized_path = self._normalize_manifest_path(file_path)
-            if not normalized_path:
-                continue
-            full_path = os.path.join(self.cover_folder_path, normalized_path)
+        for file_path, full_path in changes["deleted"]:
             try:
                 os.remove(full_path)
                 print(f"删除文件: {file_path}")
             except FileNotFoundError:
                 print(f"删除文件不存在: {file_path}")
 
-        for dir_path in changes.get("added_dir", []):
-            normalized_path = self._normalize_manifest_path(dir_path)
-            if not normalized_path:
-                continue
-            full_path = os.path.join(self.cover_folder_path, normalized_path)
+        for dir_path, full_path in changes["added_dir"]:
             os.makedirs(full_path, exist_ok=True)
             print(f"创建目录: {dir_path}")
 
-        for file_path in changes.get("added", []):
-            normalized_path = self._normalize_manifest_path(file_path)
-            if not normalized_path:
-                continue
-            src = os.path.join(self.extract_folder_path, normalized_path)
-            dst = os.path.join(self.cover_folder_path, normalized_path)
+        for file_path, src, dst in changes["added"]:
             try:
                 os.makedirs(os.path.dirname(dst), exist_ok=True)
                 shutil.copy2(src, dst)
@@ -129,12 +128,7 @@ class Updater:
             except FileNotFoundError:
                 print(f"源文件不存在: {file_path}")
 
-        for file_path in changes.get("modified", []):
-            normalized_path = self._normalize_manifest_path(file_path)
-            if not normalized_path:
-                continue
-            src = os.path.join(self.extract_folder_path, normalized_path)
-            dst = os.path.join(self.cover_folder_path, normalized_path)
+        for file_path, src, dst in changes["modified"]:
             try:
                 os.makedirs(os.path.dirname(dst), exist_ok=True)
                 shutil.copy2(src, dst)
@@ -146,18 +140,78 @@ class Updater:
 
     def _normalize_manifest_path(self, relative_path):
         """兼容带归档根目录前缀与普通相对路径的增量清单。"""
-        parts = [part for part in PurePosixPath(relative_path.replace("\\", "/")).parts if part not in ("", ".")]
+        if not isinstance(relative_path, str) or not relative_path or "\0" in relative_path:
+            raise UpdateManifestError("更新清单包含空路径或非字符串路径")
+
+        portable_path = relative_path.replace("\\", "/")
+        if portable_path.startswith("/") or (len(portable_path) >= 2 and portable_path[1] == ":"):
+            raise UpdateManifestError(f"更新清单包含绝对路径: {relative_path}")
+
+        raw_parts = PurePosixPath(portable_path).parts
+        if any(part == ".." or ":" in part for part in raw_parts):
+            raise UpdateManifestError(f"更新清单包含非法相对路径: {relative_path}")
+
+        parts = [part for part in raw_parts if part not in ("", ".")]
         if not parts:
-            return None
+            raise UpdateManifestError("更新清单包含空路径")
 
         archive_root_name = os.path.basename(os.path.normpath(self.extract_folder_path))
-        if parts[0] == archive_root_name:
+        if os.path.normcase(parts[0]) == os.path.normcase(archive_root_name):
             parts = parts[1:]
 
         if not parts:
-            return None
+            raise UpdateManifestError("更新清单不能指向归档根目录")
 
         return os.path.join(*parts)
+
+    @staticmethod
+    def _resolve_path_within_root(root_path, relative_path):
+        """解析路径并拒绝经父目录或链接离开可信根目录的情况。"""
+        try:
+            root = Path(root_path).resolve()
+            candidate = (root / relative_path).resolve()
+        except OSError as exc:
+            raise UpdateManifestError(f"无法解析更新清单路径: {relative_path}") from exc
+        try:
+            candidate.relative_to(root)
+        except ValueError as exc:
+            raise UpdateManifestError(f"更新清单路径逃离可信根目录: {relative_path}") from exc
+        return os.fspath(candidate)
+
+    def _load_incremental_update_plan(self):
+        try:
+            with open(self.changes_file_path, "r", encoding="utf-8") as f:
+                raw_changes = json.load(f)
+        except (OSError, json.JSONDecodeError) as exc:
+            raise UpdateManifestError("无法读取更新清单") from exc
+
+        if not isinstance(raw_changes, dict):
+            raise UpdateManifestError("更新清单必须是对象")
+
+        plan = {"deleted_dir": [], "deleted": [], "added_dir": [], "added": [], "modified": []}
+        for operation, entries in raw_changes.items():
+            if operation not in plan:
+                raise UpdateManifestError(f"更新清单包含未知操作: {operation}")
+            if not isinstance(entries, list):
+                raise UpdateManifestError(f"更新清单操作 {operation} 必须是路径列表")
+
+            for original_path in entries:
+                normalized_path = self._normalize_manifest_path(original_path)
+                target_path = self._resolve_path_within_root(self.cover_folder_path, normalized_path)
+                if operation in {"added", "modified"}:
+                    source_path = self._resolve_path_within_root(self.extract_folder_path, normalized_path)
+                    plan[operation].append((original_path, source_path, target_path))
+                else:
+                    plan[operation].append((original_path, target_path))
+
+        return plan
+
+    def validate_update_payload(self):
+        """在终止应用进程前验证增量更新清单及其所有目标路径。"""
+        self._incremental_update_plan = None
+        if not os.path.exists(self.changes_file_path):
+            return
+        self._incremental_update_plan = self._load_incremental_update_plan()
 
     def _get_extracted_updater_path(self):
         return os.path.join(self.extract_folder_path, self.updater_name)
@@ -166,10 +220,6 @@ class Updater:
         return os.path.join(self.temp_path, self.apply_updater_name)
 
     def _prepare_update_payload(self, apply_mode):
-        if apply_mode and os.path.isdir(self.extract_folder_path):
-            print("检测到已解压的更新包，使用新更新器继续更新...")
-            return
-
         while True:
             if self.extract_file():
                 return
@@ -252,6 +302,11 @@ class Updater:
     def run(self, apply_mode=False):
         """运行更新流程。"""
         self._prepare_update_payload(apply_mode)
+        try:
+            self.validate_update_payload()
+        except UpdateManifestError as exc:
+            print(f"更新清单无效，已取消更新: {exc}")
+            return False
         if not apply_mode and self._handoff_to_new_updater():
             return
         self.terminate_processes()
