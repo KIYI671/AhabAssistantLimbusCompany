@@ -1533,7 +1533,7 @@ class Mirror:
                 find_type="image_with_multiple_targets",
                 my_crop=floor_progress_crop,
                 take_screenshot=True,
-                min_dist=30
+                min_dist= 80 * scale
             )
             not_passed_floor_count = len(not_passed_floors)
             self.floor = 5 - not_passed_floor_count
