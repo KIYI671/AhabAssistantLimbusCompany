@@ -4,7 +4,7 @@ from collections import deque
 from functools import lru_cache
 
 from PySide6.QtCore import QSize, Qt, QTimer, Signal
-from PySide6.QtGui import QBrush, QColor, QPainter, QPixmap
+from PySide6.QtGui import QPixmap
 from PySide6.QtWidgets import (
     QApplication,
     QFileDialog,
@@ -313,22 +313,8 @@ def load_theme_pack_preview(image_path: str) -> QPixmap:
     )
 
 
-@lru_cache(maxsize=2)
-def get_transparency_brush(dark_theme: bool) -> QBrush:
-    """返回透明区域预览使用的棋盘格画刷。"""
-    checker = QPixmap(16, 16)
-    painter = QPainter(checker)
-    first = QColor("#353535" if dark_theme else "#e8e8e8")
-    second = QColor("#4a4a4a" if dark_theme else "#cccccc")
-    painter.fillRect(0, 0, 16, 16, first)
-    painter.fillRect(0, 0, 8, 8, second)
-    painter.fillRect(8, 8, 8, 8, second)
-    painter.end()
-    return QBrush(checker)
-
-
 class ThemePackImageLabel(QLabel):
-    """在棋盘格上显示 PNG，使透明与半透明像素可见。"""
+    """显示主题包封面，透明区域直接透出卡片底色。"""
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -338,14 +324,6 @@ class ThemePackImageLabel(QLabel):
         self.setAutoFillBackground(False)
         self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
         self.setStyleSheet("background: transparent;")
-
-    def paintEvent(self, event):
-        pixmap = self.pixmap()
-        if pixmap is not None and not pixmap.isNull():
-            painter = QPainter(self)
-            painter.fillRect(self.rect(), get_transparency_brush(isDarkTheme()))
-            painter.end()
-        super().paintEvent(event)
 
 
 class ThemePackCard(QFrame):
