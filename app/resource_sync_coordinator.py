@@ -322,6 +322,13 @@ class ResourceSyncCoordinator(QObject):
             self._pending_resource_sync_apply_request = pending_request
         return started, pending_request
 
+    def _resume_pending_resource_sync_apply(self) -> bool:
+        """接力启动挂起的应用阶段，并处理启动阶段无法接力的收尾逻辑。"""
+        started, resumed_request = self._start_pending_resource_sync_apply()
+        if not started and resumed_request is not None and resumed_request["context"] == "startup_apply":
+            self._continue_startup_sequence_once()
+        return started
+
     def _on_resource_sync_progress_changed(self, value: int) -> None:
         """将资源同步进度映射到界面进度环。
 
@@ -440,6 +447,11 @@ class ResourceSyncCoordinator(QObject):
             "sync_plan": sync_plan,
         }
 
+        # 确认框会开启嵌套事件循环；用户作出选择前，检查 worker 的 finished
+        # 回调可能已经清空线程引用。此时不会再有新的 finished 信号，需要立即接力。
+        if self._resource_sync_worker is None:
+            self._resume_pending_resource_sync_apply()
+
     def _on_resource_sync_apply_finished(self, apply_result: ResourceApplyResult) -> None:
         """处理资源同步应用完成后的收尾逻辑。
 
@@ -504,9 +516,7 @@ class ResourceSyncCoordinator(QObject):
         # 第三步：若有挂起的应用请求，则在线程真正结束后接力启动应用阶段。
         if pending_request is not None:
             self._pending_resource_sync_apply_request = pending_request
-            started, resumed_request = self._start_pending_resource_sync_apply()
-            if not started and resumed_request is not None and resumed_request["context"] == "startup_apply":
-                self._continue_startup_sequence_once()
+            self._resume_pending_resource_sync_apply()
             return
 
         self._pending_resource_sync_apply_request = None
