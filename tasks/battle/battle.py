@@ -303,6 +303,7 @@ class Battle:
                 sleep(1)
                 start_time = time.time()
                 self.fail_times += 1
+                defense_for_solo_used_this_turn = False
                 if self.fail_times >= 5:
                     return False
                 continue

@@ -725,6 +725,17 @@ class CustomizeSettingsModule(QFrame):
                 "每次镜牢任务内，连续5个战斗回合全员防御",
             ),
         )
+        self.defense_first_round.check_box.toggled.connect(
+            lambda checked: self.defense_for_solo.set_check_false() if checked else None
+        )
+        self.defense_for_solo.check_box.toggled.connect(
+            lambda checked: self.defense_first_round.set_check_false() if checked else None
+        )
+        if (
+            self.defense_first_round.check_box.isChecked()
+            and self.defense_for_solo.check_box.isChecked()
+        ):
+            self.defense_for_solo.set_check_false()
 
         self.fixed_team_use = CheckBoxWithComboBox(
             "fixed_team_use",
