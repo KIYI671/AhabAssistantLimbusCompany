@@ -1,8 +1,10 @@
 import copy
 import re
+from collections import deque
+from functools import lru_cache
 
-from PySide6.QtCore import Qt, Signal
-from PySide6.QtGui import QPixmap
+from PySide6.QtCore import QSize, Qt, QTimer, Signal
+from PySide6.QtGui import QBrush, QColor, QPainter, QPixmap
 from PySide6.QtWidgets import (
     QApplication,
     QFileDialog,
@@ -44,6 +46,9 @@ from module.config.theme_pack_import_export import (
     import_theme_pack_weight,
     import_theme_pack_weight_from_base64,
 )
+
+THEME_PACK_PREVIEW_SIZE = QSize(150, 272)
+THEME_PACK_CARD_BATCH_SIZE = 5
 
 # 英文key到中文名称的映射表（普通模式）
 THEME_PACK_NAME_MAP = {
@@ -295,6 +300,54 @@ def get_image_path(pack_key, is_hard=False, is_cn=False):
     return ""
 
 
+@lru_cache(maxsize=128)
+def load_theme_pack_preview(image_path: str) -> QPixmap:
+    """加载并缓存显示尺寸的主题包预览，避免每次打开都解码原图。"""
+    pixmap = QPixmap(image_path)
+    if pixmap.isNull():
+        return pixmap
+    return pixmap.scaled(
+        THEME_PACK_PREVIEW_SIZE,
+        Qt.AspectRatioMode.KeepAspectRatio,
+        Qt.TransformationMode.SmoothTransformation,
+    )
+
+
+@lru_cache(maxsize=2)
+def get_transparency_brush(dark_theme: bool) -> QBrush:
+    """返回透明区域预览使用的棋盘格画刷。"""
+    checker = QPixmap(16, 16)
+    painter = QPainter(checker)
+    first = QColor("#353535" if dark_theme else "#e8e8e8")
+    second = QColor("#4a4a4a" if dark_theme else "#cccccc")
+    painter.fillRect(0, 0, 16, 16, first)
+    painter.fillRect(0, 0, 8, 8, second)
+    painter.fillRect(8, 8, 8, 8, second)
+    painter.end()
+    return QBrush(checker)
+
+
+class ThemePackImageLabel(QLabel):
+    """在棋盘格上显示 PNG，使透明与半透明像素可见。"""
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setFixedSize(THEME_PACK_PREVIEW_SIZE)
+        self.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.setScaledContents(False)
+        self.setAutoFillBackground(False)
+        self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
+        self.setStyleSheet("background: transparent;")
+
+    def paintEvent(self, event):
+        pixmap = self.pixmap()
+        if pixmap is not None and not pixmap.isNull():
+            painter = QPainter(self)
+            painter.fillRect(self.rect(), get_transparency_brush(isDarkTheme()))
+            painter.end()
+        super().paintEvent(event)
+
+
 class ThemePackCard(QFrame):
     """单个主题包卡片组件"""
 
@@ -321,16 +374,13 @@ class ThemePackCard(QFrame):
         self.main_layout.setContentsMargins(10, 10, 10, 10)
         self.main_layout.setSpacing(6)
 
-        # 图片标签 - 根据原始图片分辨率 170x330 按比例缩放
-        self.image_label = QLabel(self)
-        self.image_label.setFixedSize(140, 272)  # 保持 170:330 原始比例 (140*330/170≈272)
-        self.image_label.setScaledContents(True)
-        self.image_label.setAlignment(Qt.AlignCenter)
+        # 图片标签允许新版 380x690 RGBA 封面完整显示透明边缘。
+        self.image_label = ThemePackImageLabel(self)
 
         # 加载图片
         image_path = get_image_path(self.pack_key, self.is_hard, self.is_cn)
         if image_path:
-            pixmap = QPixmap(image_path)
+            pixmap = load_theme_pack_preview(image_path)
             if not pixmap.isNull():
                 self.image_label.setPixmap(pixmap)
             else:
@@ -455,8 +505,8 @@ class ThemePackCard(QFrame):
 
     def retranslateUi(self):
         self.weight_label.setText(self.tr("权重:"))
-        image_path = get_image_path(self.pack_key, self.is_hard, self.is_cn)
-        if not image_path or QPixmap(image_path).isNull():
+        pixmap = self.image_label.pixmap()
+        if pixmap is None or pixmap.isNull():
             self.image_label.setText(self.tr("无图片"))
 
     def cleanup(self):
@@ -491,6 +541,10 @@ class ThemePackSettingDialog(FramelessDialog):
 
         self.normal_cards: dict[str, ThemePackCard] = {}
         self.hard_cards: dict[str, ThemePackCard] = {}
+        self._pending_cards = deque()
+        self._card_load_timer = QTimer(self)
+        self._card_load_timer.setSingleShot(True)
+        self._card_load_timer.timeout.connect(self._load_theme_pack_batch)
 
         # 标记是否有未保存的修改
         self._has_unsaved_changes = False
@@ -508,8 +562,8 @@ class ThemePackSettingDialog(FramelessDialog):
 
         self.__init_widget()
         self.__init_layout()
-        self.load_theme_packs()
         self._apply_styles()
+        self.load_theme_packs()
 
     def __init_widget(self):
         # 主滚动区域
@@ -713,7 +767,7 @@ class ThemePackSettingDialog(FramelessDialog):
         self.hard_grid_widget.setStyleSheet(f"background-color: {bg_color};")
 
     def load_theme_packs(self):
-        """加载主题包配置并创建卡片，根据语言参数加载对应配置"""
+        """排队加载主题包卡片，让对话框先完成显示。"""
         # 根据语言参数决定加载哪种配置
         if self.is_cn:
             # 中文界面，加载中文配置
@@ -726,39 +780,57 @@ class ThemePackSettingDialog(FramelessDialog):
 
         col_count = 5  # 每行5个卡片
 
-        # 加载普通模式主题包（过滤掉 OCR 备用名称）
         row = 0
         col = 0
         for pack_key, weight in normal_packs.items():
-            # 如果是 OCR 备用名称，跳过不显示（但配置中保留）
             if self.is_cn and pack_key in CN_OCR_ALTERNATIVES:
                 continue
-            card = ThemePackCard(pack_key, weight, is_hard=False, is_cn=self.is_cn)
-            card.weight_changed.connect(self._on_weight_changed)
-            self.normal_cards[pack_key] = card
-
-            self.normal_grid_layout.addWidget(card, row, col)
+            self._pending_cards.append((pack_key, weight, False, row, col))
             col += 1
             if col >= col_count:
                 col = 0
                 row += 1
 
-        # 加载困难模式主题包（过滤掉 OCR 备用名称）
         row = 0
         col = 0
         for pack_key, weight in hard_packs.items():
-            # 如果是 OCR 备用名称，跳过不显示（但配置中保留）
             if self.is_cn and pack_key in CN_OCR_ALTERNATIVES:
                 continue
-            card = ThemePackCard(pack_key, weight, is_hard=True, is_cn=self.is_cn)
-            card.weight_changed.connect(self._on_weight_changed)
-            self.hard_cards[pack_key] = card
-
-            self.hard_grid_layout.addWidget(card, row, col)
+            self._pending_cards.append((pack_key, weight, True, row, col))
             col += 1
             if col >= col_count:
                 col = 0
                 row += 1
+
+        self._set_card_actions_enabled(False)
+        self._card_load_timer.start(0)
+
+    def _load_theme_pack_batch(self):
+        """每轮创建少量卡片，避免打开对话框前长时间阻塞 UI 线程。"""
+        for _ in range(min(THEME_PACK_CARD_BATCH_SIZE, len(self._pending_cards))):
+            pack_key, weight, is_hard, row, col = self._pending_cards.popleft()
+            card = ThemePackCard(pack_key, weight, is_hard=is_hard, is_cn=self.is_cn)
+            card.weight_changed.connect(self._on_weight_changed)
+            cards = self.hard_cards if is_hard else self.normal_cards
+            layout = self.hard_grid_layout if is_hard else self.normal_grid_layout
+            cards[pack_key] = card
+            layout.addWidget(card, row, col)
+
+        if self._pending_cards:
+            self._card_load_timer.start(0)
+        else:
+            self._set_card_actions_enabled(True)
+
+    def _set_card_actions_enabled(self, enabled: bool):
+        for widget in (
+            self.batch_menu_button,
+            self.export_button,
+            self.import_button,
+            self.copy_code_button,
+            self.paste_code_button,
+            self.save_button,
+        ):
+            widget.setEnabled(enabled)
 
     def _on_weight_changed(self, pack_key, weight, is_hard, is_cn):
         """处理权重改变事件，只更新内存中的配置，不保存到文件"""
@@ -1132,6 +1204,8 @@ class ThemePackSettingDialog(FramelessDialog):
             self.config_data.clear()
             self.config_data.update(copy.deepcopy(self._original_config))
 
+        self._card_load_timer.stop()
+        self._pending_cards.clear()
         LanguageManager().unregister_component(self)
 
         # 先断开所有信号连接，防止在清理过程中触发信号
