@@ -204,6 +204,7 @@ all_checkbox_config_name = [
     "do_not_system_fuse",
     "only_system_fuse",
     "avoid_skill_3",
+    "prioritize_skill_3",
     "re_formation_each_floor",
     "use_starlight",
     "aggressive_also_enhance",

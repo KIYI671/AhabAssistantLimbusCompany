@@ -81,6 +81,9 @@ class TeamSetting(BaseModel):
     avoid_skill_3: bool = False
     """避免使用3技能"""
 
+    prioritize_skill_3: bool = False
+    """优先使用3技能"""
+
     re_formation_each_floor: bool = False
     """每个楼层重新编队"""
 

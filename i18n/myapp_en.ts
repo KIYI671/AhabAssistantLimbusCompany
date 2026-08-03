@@ -347,6 +347,11 @@ Right-click to set as permanent</translation>
         <translation>Avoid skill 3 in normal encounters</translation>
     </message>
     <message>
+        <location filename="../app/team_setting_card.py" line="696"/>
+        <source>链接战优先使用三技能</source>
+        <translation>Prioritize skill 3 in normal encounters</translation>
+    </message>
+    <message>
         <location filename="../app/team_setting_card.py" line="700"/>
         <source>每楼层重新编队</source>
         <translation>Reteam each floor</translation>
