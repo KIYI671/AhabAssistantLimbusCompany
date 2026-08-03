@@ -795,16 +795,25 @@ class Theme_pack_list(metaclass=SingletonMeta):
         except Exception as e:
             sys.exit(f"配置文件{path}加载错误: {e}")
 
-    def _update_config(self, config: dict, new_config: dict) -> None:
-        """更新配置信息"""
+    @staticmethod
+    def _update_config(config: dict, new_config: dict) -> None:
+        """把用户配置合并到默认名单上，只沿用用户为既有关键词设置的权重。
+
+        默认名单是主题包关键词的唯一来源。关键词重命名或删除后，用户配置里的
+        旧关键词必须一并丢弃：它们仍会参与 OCR 子串匹配，且因为普通名单先于
+        困难名单合并，残留的短关键词会抢走困难侧同名系列卡包的权重。
+        """
         if config == new_config:
             return
         for key, value in new_config.items():
             if isinstance(value, dict):
-                if key not in config:
-                    config[key] = {}
+                section = config.get(key)
+                if not isinstance(section, dict):
+                    config[key] = value
+                    continue
                 for k, v in value.items():
-                    config[key][k] = v
+                    if k in section:
+                        section[k] = v
             else:
                 config[key] = value
         log.debug("主题包名单已更新")

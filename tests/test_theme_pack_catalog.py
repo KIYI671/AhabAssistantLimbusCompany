@@ -67,6 +67,28 @@ def _match(text: str, keywords: List[str]) -> Optional[str]:
     return None
 
 
+def test_user_config_merge_drops_keywords_removed_from_the_example() -> None:
+    # 关键词改名后，用户配置里的旧关键词必须丢弃：残留的短关键词仍会参与
+    # OCR 子串匹配，并抢走困难侧同名系列卡包（如 und 抢 Unbound Wrath）
+    from module.config.config import Theme_pack_list
+
+    merged = {
+        "preferred_thresholds": 0,
+        "theme_pack_list": {"nagel": 0, "devoured": 0},
+        "theme_pack_list_hard": {"excessive": -5},
+    }
+    user_config = {
+        "preferred_thresholds": 2,
+        "theme_pack_list": {"nagel": 1, "und": 0, "glutton": 0},
+        "theme_pack_list_hard": {"excessive": -5},
+    }
+    Theme_pack_list._update_config(merged, user_config)
+
+    assert merged["preferred_thresholds"] == 2
+    assert merged["theme_pack_list"] == {"nagel": 1, "devoured": 0}
+    assert merged["theme_pack_list_hard"] == {"excessive": -5}
+
+
 def test_ocr_alternatives_are_configured_on_both_sides() -> None:
     # 备用名称在 GUI 中不展示，但必须和主名称一样在 yaml 里有独立权重
     cn_keys = set(_keywords("theme_pack_list_cn", "theme_pack_list_hard_cn"))
