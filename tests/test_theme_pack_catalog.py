@@ -125,8 +125,9 @@ def test_emotion_keywords_match_their_own_theme_pack() -> None:
 
 
 def test_english_keywords_do_not_shadow_other_theme_packs() -> None:
-    # 关键词是卡包名的片段，短片段容易被别的卡包名包含
-    # nagel/crushed/repressed 三项此前分别错抢或错失匹配
+    # 关键词是卡包名的片段，短片段容易被别的卡包名包含。
+    # 下列卡包名取自游戏 EN_MirrorDungeonTheme-1.json，普通与困难同名系列成对列出，
+    # 普通名单先于困难名单合并，普通侧的片段一旦过短就会抢走困难侧的卡包。
     en_keywords = _keywords("theme_pack_list", "theme_pack_list_hard")
     for name, expected in (
         ("Nagel and Hammer", "nagel"),
@@ -135,6 +136,14 @@ def test_english_keywords_do_not_shadow_other_theme_packs() -> None:
         ("Crushers & Breakers", "crushers"),
         ("Repressed Wrath", "repressed"),
         ("Unbound Wrath", "unbound"),
+        ("Treadwheel Sloth", "treadwheel"),
+        ("Inert Sloth", "inert"),
+        ("Devoured Gluttony", "devoured"),
+        ("Excessive Gluttony", "excessive"),
+        ("Degraded Gloom", "degraded"),
+        ("Sunk Gloom", "sunk"),
+        ("Mnestic Experience", "mnestic"),
+        ("Crushing External Force", "external"),
     ):
         assert _match(name, en_keywords) == expected, name
 
@@ -176,7 +185,7 @@ def test_unknown_keyword_never_shadows_a_real_theme_pack() -> None:
     # 兜底项也在名单里参与子串匹配，不能抢走任何真实卡包
     for sections, fallback, samples in (
         (("theme_pack_list_cn", "theme_pack_list_hard_cn"), "未知", ("因情感困惑者", "经验记忆", "善意的巡礼")),
-        (("theme_pack_list", "theme_pack_list_hard"), "unknown", ("Experience Memory", "Repressed Wrath")),
+        (("theme_pack_list", "theme_pack_list_hard"), "unknown", ("Mnestic Experience", "Repressed Wrath")),
     ):
         keywords = _keywords(*sections)
         for sample in samples:

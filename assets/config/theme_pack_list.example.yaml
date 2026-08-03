@@ -24,9 +24,9 @@ theme_pack_list:
   addict: 0 # 伞妖、符人（道中无建议）
   seduct: 0 # 鸡（道中打击>突刺建议）
   dolen: 0 # 搬运、无头、苹果（道中打击>斩击建议）
-  glutton: 0 # 提灯、妖精、贝壳（道中突刺>打击>斩击建议）
+  devoured: 0 # 提灯、妖精、贝壳（道中突刺>打击>斩击建议）
   cravi: 0 # 伞妖、迷失乘客（道中突刺>斩击>打击建议）
-  gloom: 0 # 无头、蛙蛙（道中突刺>打击>斩击建议）
+  degraded: 0 # 无头、蛙蛙（道中突刺>打击>斩击建议）
   subserv: 0 # 提灯、妖精、棉花（道中打击>突刺>斩击建议）
   nsignif: 0 # 蜈蚣、导游、迷失乘客（道中斩击建议）
   judgment: 0 # 蛙蛙、玩具熊（道中打击>突刺>斩击建议）
@@ -44,7 +44,7 @@ theme_pack_list:
   violet: -5 # 请给我们爱（紫碑）
   dicers: -5 # 金笠
   repressed: -5 # 人皮预言者（压抑的暴怒）；解放的暴怒是 HARD 独有的 unbound
-  sloth: -5 # 洋流（空转的怠惰）
+  treadwheel: -5 # 洋流（空转的怠惰）
   flood: -5 # 洋流（于情感沉溺者）
   vain: -5 # 金笠
   check: -5 # 霍恩海姆；原版/复刻共用权重，仅展示复刻封面
@@ -54,14 +54,14 @@ theme_pack_list:
   dusk: -5 # BunBun虫子
   thread: -5 # 讲解员
   compassion: -5 # 明日方舟联动（善意的巡礼）
-  memory: -5 # 经验记忆
+  mnestic: -5 # 经验记忆
   unknown: -5 # 游戏更新后尚未收录的新主题包，识别不到任何关键词时的兜底权重
 
 theme_pack_list_hard:
   Theb: 10 # 鸡鸡
   b·e: 10 # 鸡鸡
   seismic: 0 # 妖精
-  extrenal: 0 # 寄居蟹、提灯、符人
+  external: 0 # 寄居蟹、提灯、符人
   thunder: 0 # 蜈蚣、迷失乘客、电羊
   sanguine: 0 # 断头鱼、玩具熊、白棉花
   dizzying: 0 # 鸡哥

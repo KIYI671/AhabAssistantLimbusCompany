@@ -69,9 +69,9 @@ THEME_PACK_NAME_MAP = {
     "addict": "沉迷的",
     "seduct": "情感困惑",
     "dolen": "情感懒",
-    "glutton": "吞噬的",
+    "devoured": "吞噬的",
     "cravi": "情感饥渴",
-    "gloom": "落的忧",
+    "degraded": "落的忧",
     "subserv": "情感屈从",
     "nsignif": "寒微",
     "judgment": "情感评判",
@@ -88,7 +88,7 @@ THEME_PACK_NAME_MAP = {
     "violet": "紫罗兰",
     "dicers": "斩切",
     "repressed": "压抑的",
-    "sloth": "空转",
+    "treadwheel": "空转",
     "flood": "沉溺者",
     "vain": "虚张声势",
     "check": "体检",
@@ -98,14 +98,14 @@ THEME_PACK_NAME_MAP = {
     "dusk": "黄昏",
     "thread": "绞丝",
     "compassion": "巡礼",
-    "memory": "经验",
+    "mnestic": "经验",
     "unknown": "未知",
 }
 
 # 英文key到中文名称的映射表（困难模式）
 THEME_PACK_HARD_NAME_MAP = {
     "seismic": "地震",
-    "extrenal": "破坏性",
+    "external": "破坏性",
     "thunder": "电闪雷鸣",
     "sanguine": "渗出的",
     "dizzying": "缭乱的",
@@ -184,9 +184,9 @@ THEME_PACK_IMAGE_MAP = {
     "addict": "Addicting Lust.png",
     "seduct": "Emotional Seduction.png",
     "dolen": "Emotional Indolence.png",
-    "glutton": "Devoured Gluttony.png",
+    "devoured": "Devoured Gluttony.png",
     "cravi": "Emotional Craving.png",
-    "gloom": "Degraded Gloom.png",
+    "degraded": "Degraded Gloom.png",
     "subserv": "Emotional Subservience.png",
     "nsignif": "Insignificant Envy.png",
     "judgment": "Emotional Judgment.png",
@@ -203,7 +203,7 @@ THEME_PACK_IMAGE_MAP = {
     "violet": "The Moon of Violet.png",
     "dicers": "Slicers & Dicers.png",
     "repressed": "Repressed Wrath.png",
-    "sloth": "Treadwheel Sloth.png",
+    "treadwheel": "Treadwheel Sloth.png",
     "flood": "Emotional Flood.png",
     "vain": "Vain Pride.png",
     "check": "LCB Regular Checkup BokGak.png",
@@ -212,16 +212,15 @@ THEME_PACK_IMAGE_MAP = {
     "Wander": "Charm,Wander,Doubt.png",
     "dusk": "The Dusk of Amber.png",
     "thread": "Twining Threads.png",
-    # 以下主题包暂无对应图片文件
     "compassion": "Pilgrimage of Compassion.png",
-    "memory": "Experience Memory.png",
+    "mnestic": "Experience Memory.png",
     "unknown": "Unknown.png",
 }
 
 # 主题包 key 到图片文件名的映射表（困难模式）
 THEME_PACK_HARD_IMAGE_MAP = {
     "seismic": "Abnormal Seismi Zone.png",
-    "extrenal": "Crushing External Force.png",
+    "external": "Crushing External Force.png",
     "thunder": "Thunder and Lightning.png",
     "sanguine": "Trickled Sanguin Blood.png",
     "dizzying": "Dizzying Waves.png",
