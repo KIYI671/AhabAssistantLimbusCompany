@@ -49,7 +49,7 @@ from module.config.theme_pack_import_export import (
 THEME_PACK_NAME_MAP = {
     "forgot": "遗忘",
     "gambl": "赌徒",
-    "und": "钉与锤",
+    "nagel": "钉与锤",
     "faith": "信仰",
     "unconf": "无作为",
     "workshop": "工坊",
@@ -76,7 +76,6 @@ THEME_PACK_NAME_MAP = {
     "nsignif": "寒微",
     "judgment": "情感评判",
     "outcast": "无归属",
-    "curshed": "当碎",
     "crushed": "当碎",
     "automated": "自动",
     "spring": "琢春",
@@ -88,7 +87,7 @@ THEME_PACK_NAME_MAP = {
     "warp": "谋杀",
     "violet": "紫罗兰",
     "dicers": "斩切",
-    "wrath": "压抑的",
+    "repressed": "压抑的",
     "sloth": "空转",
     "flood": "沉溺者",
     "vain": "虚张声势",
@@ -140,6 +139,7 @@ THEME_PACK_HARD_NAME_MAP = {
     "Blade": "刀与作",
     "Unsever": "割舍",
     "Theb": "凤·皇",
+    "b·e": "凤·皇",  # OCR 备用
 }
 
 # 中文名称到英文key的反向映射表（普通模式）
@@ -164,7 +164,7 @@ THEME_PACK_IMAGE_MAP = {
     # 普通模式主题包
     "forgot": "The Forgotten.png",
     "gambl": "Flat-broke Gamblers.png",
-    "und": "Nagel and Hammer.png",
+    "nagel": "Nagel and Hammer.png",
     "faith": "Faith & Erosion.png",
     "unconf": "The Unconfronting.png",
     "workshop": "Nest, Workshop, and Technology.png",
@@ -191,7 +191,6 @@ THEME_PACK_IMAGE_MAP = {
     "nsignif": "Insignificant Envy.png",
     "judgment": "Emotional Judgment.png",
     "outcast": "The Outcast.png",
-    "curshed": "To be Crushed.png",
     "crushed": "To be Crushed.png",
     "automated": "Automated Factory.png",
     "spring": "Spring Cultivation.png",
@@ -203,7 +202,7 @@ THEME_PACK_IMAGE_MAP = {
     "warp": "Marder on.the WARP Express BokGak.png",
     "violet": "The Moon of Violet.png",
     "dicers": "Slicers & Dicers.png",
-    "wrath": "Repressed Wrath.png",
+    "repressed": "Repressed Wrath.png",
     "sloth": "Treadwheel Sloth.png",
     "flood": "Emotional Flood.png",
     "vain": "Vain Pride.png",
@@ -256,6 +255,7 @@ THEME_PACK_HARD_IMAGE_MAP = {
     "Blade": "Blade and Artwork.png",
     "Unsever": "The Unsevering.png",
     "Theb": "The BE.png",
+    "b·e": "The BE.png",  # OCR 备用
     # 以下主题包暂无对应图片文件
     # 轨道线系列（如需支持多条线路，可添加以下映射）
     # "line2": "Line 2.png",

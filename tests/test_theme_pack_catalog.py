@@ -115,10 +115,6 @@ def test_wrath_keywords_separate_normal_and_hard_variants() -> None:
     assert _match("压抑的暴怒", cn_keywords) == "压抑的"
     assert _match("解放的暴怒", cn_keywords) == "解放的"
 
-    # 普通名单排在困难名单之前，Repressed Wrath 始终由 wrath 命中
-    en_keywords = _keywords("theme_pack_list", "theme_pack_list_hard")
-    assert _match("Repressed Wrath", en_keywords) == "wrath"
-
 
 def test_emotion_keywords_match_their_own_theme_pack() -> None:
     # 情感系卡包关键词密集，改动展示名时容易互相抢匹配
@@ -126,6 +122,41 @@ def test_emotion_keywords_match_their_own_theme_pack() -> None:
     assert _match("因情感困惑者", cn_keywords) == "情感困惑"
     assert _match("空转的怠惰", cn_keywords) == "空转"
     assert _match("于情感沉溺者", cn_keywords) == "沉溺者"
+
+
+def test_english_keywords_do_not_shadow_other_theme_packs() -> None:
+    # 关键词是卡包名的片段，短片段容易被别的卡包名包含
+    # nagel/crushed/repressed 三项此前分别错抢或错失匹配
+    en_keywords = _keywords("theme_pack_list", "theme_pack_list_hard")
+    for name, expected in (
+        ("Nagel and Hammer", "nagel"),
+        ("Thunder and Lightning", "thunder"),
+        ("To be Crushed", "crushed"),
+        ("Crushers & Breakers", "crushers"),
+        ("Repressed Wrath", "repressed"),
+        ("Unbound Wrath", "unbound"),
+    ):
+        assert _match(name, en_keywords) == expected, name
+
+
+def test_weights_match_between_languages() -> None:
+    # 同一卡包的中英默认权重必须一致，否则选包行为会随界面语言变化
+    catalog = _catalog()
+    name_map = _interface_dict("THEME_PACK_NAME_MAP")
+    hard_name_map = _interface_dict("THEME_PACK_HARD_NAME_MAP")
+    for en_section, cn_section, mapping in (
+        ("theme_pack_list", "theme_pack_list_cn", name_map),
+        ("theme_pack_list_hard", "theme_pack_list_hard_cn", hard_name_map),
+    ):
+        en_weights, cn_weights = catalog[en_section], catalog[cn_section]
+        mismatched = {
+            en_key: (weight, mapping[en_key], cn_weights[mapping[en_key]])
+            for en_key, weight in en_weights.items()
+            if en_key in mapping
+            and mapping[en_key] in cn_weights
+            and weight != cn_weights[mapping[en_key]]
+        }
+        assert mismatched == {}, f"{en_section} 与 {cn_section} 权重不一致：{mismatched}"
 
 
 def test_unknown_fallback_weight_is_configurable() -> None:
