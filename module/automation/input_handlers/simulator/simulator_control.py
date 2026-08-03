@@ -469,7 +469,7 @@ class SimulatorControl(AbstractInput):
             self.simulator_control._send_swipe_plan_in_one_batch(plan)
 
         self._call_with_reconnect(
-            "快速滑动并立即抬起",
+            "快速滑动并停顿抬起",
             _swipe,
         )
 

@@ -9,20 +9,23 @@ def build_scroll_swipe_plan(
     duration=0.3,
     escape_distance=30,
     escape_duration=0.01,
+    release_delay=0.5,
 ):
     """生成规避长按判定的滚动路径，元素为（坐标，到达该点前的耗时）。
 
     按下后先快速移动 ``escape_distance``，使游戏尽快离开长按判定区域，
-    再用剩余时间移动到终点。短距离滑动则直接移动到终点。
+    再用剩余时间移动到终点，并在抬起前短暂停顿以避免惯性移动。
+    短距离滑动则直接移动到终点。
     """
     duration = max(0, duration)
+    release_delay = max(0, release_delay)
     distance = hypot(dx, dy)
     start = (x, y)
     end = (x + dx, y + dy)
     if distance == 0:
         return [(start, 0)]
     if distance <= escape_distance:
-        return [(start, 0), (end, duration)]
+        return [(start, 0), (end, duration), (end, release_delay)]
 
     ratio = escape_distance / distance
     initial = (x + dx * ratio, y + dy * ratio)
@@ -31,4 +34,5 @@ def build_scroll_swipe_plan(
         (start, 0),
         (initial, initial_duration),
         (end, duration - initial_duration),
+        (end, release_delay),
     ]
