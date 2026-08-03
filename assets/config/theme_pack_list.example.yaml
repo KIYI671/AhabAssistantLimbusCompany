@@ -55,6 +55,7 @@ theme_pack_list:
   thread: -5 # 讲解员
   compassion: -5 # 明日方舟联动（善意的巡礼）
   memory: -5 # 经验记忆
+  unknown: -5 # 游戏更新后尚未收录的新主题包，识别不到任何关键词时的兜底权重
 
 theme_pack_list_hard:
   Theb: 10 # 鸡鸡
@@ -154,7 +155,7 @@ theme_pack_list_cn:
   绞丝: -5 #讲解员
   巡礼: -5 # 明日方舟联动（善意的巡礼）
   经验: -5 # 经验记忆
-  unknown: -5 # 未汉化的新卡包
+  未知: -5 # 游戏更新后尚未收录的新主题包，识别不到任何关键词时的兜底权重
 
 theme_pack_list_hard_cn:
   凤皇: 10 # 鸡鸡

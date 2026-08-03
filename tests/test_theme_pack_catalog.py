@@ -128,6 +128,30 @@ def test_emotion_keywords_match_their_own_theme_pack() -> None:
     assert _match("于情感沉溺者", cn_keywords) == "沉溺者"
 
 
+def test_unknown_fallback_weight_is_configurable() -> None:
+    # 识别不到任何关键词时兜底到「未知 / unknown」的权重，而不是硬编码常量
+    catalog = _catalog()
+    assert "unknown" in catalog["theme_pack_list"], "英文名单缺少 unknown 兜底项"
+    assert "未知" in catalog["theme_pack_list_cn"], "中文名单缺少未知兜底项"
+    assert catalog["theme_pack_list"]["unknown"] == catalog["theme_pack_list_cn"]["未知"]
+
+    source = (REPO_ROOT / "tasks" / "mirror" / "select_theme_pack.py").read_text(encoding="utf-8")
+    assert 'theme_pack_list_zh.get("未知"' in source, "兜底权重未从中文名单读取"
+    assert 'theme_pack_list_en.get("unknown"' in source, "兜底权重未从英文名单读取"
+    assert "theme_pack_weight = unknown_weight" in source, "未命中分支未使用兜底权重"
+
+
+def test_unknown_keyword_never_shadows_a_real_theme_pack() -> None:
+    # 兜底项也在名单里参与子串匹配，不能抢走任何真实卡包
+    for sections, fallback, samples in (
+        (("theme_pack_list_cn", "theme_pack_list_hard_cn"), "未知", ("因情感困惑者", "经验记忆", "善意的巡礼")),
+        (("theme_pack_list", "theme_pack_list_hard"), "unknown", ("Experience Memory", "Repressed Wrath")),
+    ):
+        keywords = _keywords(*sections)
+        for sample in samples:
+            assert _match(sample, keywords) != fallback, sample
+
+
 def test_configured_covers_exist() -> None:
     # 展示名和封面都以权重 key 为准，配置了封面就必须有对应图片
     for name in ("THEME_PACK_IMAGE_MAP", "THEME_PACK_HARD_IMAGE_MAP"):

@@ -100,6 +100,7 @@ THEME_PACK_NAME_MAP = {
     "thread": "绞丝",
     "compassion": "巡礼",
     "memory": "经验",
+    "unknown": "未知",
 }
 
 # 英文key到中文名称的映射表（困难模式）
@@ -215,6 +216,7 @@ THEME_PACK_IMAGE_MAP = {
     # 以下主题包暂无对应图片文件
     "compassion": "Pilgrimage of Compassion.png",
     "memory": "Experience Memory.png",
+    "unknown": "Unknown.png",
 }
 
 # 主题包 key 到图片文件名的映射表（困难模式）
