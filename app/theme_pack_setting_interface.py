@@ -67,7 +67,7 @@ THEME_PACK_NAME_MAP = {
     "crushers": "粉碎者",
     "repression": "情感压迫",
     "addict": "沉迷的",
-    "seduct": "感情困惑",
+    "seduct": "情感困惑",
     "dolen": "情感懒",
     "glutton": "吞噬的",
     "cravi": "情感饥渴",
@@ -89,8 +89,8 @@ THEME_PACK_NAME_MAP = {
     "violet": "紫罗兰",
     "dicers": "斩切",
     "wrath": "压抑的",
-    "sloth": "沉溺者",
-    "flood": "空转",
+    "sloth": "空转",
+    "flood": "沉溺者",
     "vain": "虚张声势",
     "check": "体检",
     "sweep": "清扫",
@@ -99,11 +99,11 @@ THEME_PACK_NAME_MAP = {
     "dusk": "黄昏",
     "thread": "绞丝",
     "compassion": "巡礼",
+    "memory": "经验",
 }
 
 # 英文key到中文名称的映射表（困难模式）
 THEME_PACK_HARD_NAME_MAP = {
-    "20": "奇迹复刻",
     "seismic": "地震",
     "extrenal": "破坏性",
     "thunder": "电闪雷鸣",
@@ -120,7 +120,6 @@ THEME_PACK_HARD_NAME_MAP = {
     "evil": "定义为",
     "heartb": "心意相",
     "line": "号线",
-    "repressed": "压抑的",
     "unbound": "解放的",
     "tangling": "束缚的",
     "inert": "停滞的",
@@ -149,12 +148,14 @@ CN_TO_EN_NAME_MAP = {v: k for k, v in THEME_PACK_NAME_MAP.items()}
 CN_TO_EN_HARD_NAME_MAP = {v: k for k, v in THEME_PACK_HARD_NAME_MAP.items()}
 
 # OCR 备用名称映射表（备用名称 -> 主名称）
-# 用于处理 OCR 识别误差，备用名称在 GUI 中不显示，但权重会同步更新
+# 用于处理 OCR 识别误差和零协会改名，备用名称在 GUI 中不显示，但权重会同步更新
 CN_OCR_ALTERNATIVES = {
     "海边": "海·边",  # s.e.a 主题包的 OCR 备用
     "切琢": "琢春",  # spring 主题包的 OCR 备用
     "体险": "体检",  # check 主题包的 OCR 备用
     "凤皇": "凤·皇",  # check 主题包的 OCR 备用
+    "未曾面对": "无作为",  # unconf 主题包的零协会新译名
+    "无法去爱": "无慈悲",  # unloving 主题包的零协会新译名
 }
 
 # 主题包 key 到图片文件名的映射表（普通模式）
@@ -172,7 +173,7 @@ THEME_PACK_IMAGE_MAP = {
     "certain": "A Certain World.png",
     "chick": "Hell's Chicken.png",
     "s.e.a": "ASEA.png",
-    "miracle": "Miracle in District 20.png",
+    "miracle": "Miracle in District 20 BokGak.png",
     "bullet": "Full-Stopped by a Bullet.png",
     "cleaved": "To be Cleaved.png",
     "penetra": "Piercers & Penetrators.png",
@@ -196,28 +197,28 @@ THEME_PACK_IMAGE_MAP = {
     "unloving": "The Unloving.png",
     "flowers": "Falling Flowers.png",
     "abyss": "Crawling Abyss.png",
-    "bones": "Yield My Flesh to Claim Their Bones.png",
-    "time": "Timekilling Time.png",
-    "warp": "Murder on the WARP Express.png",
+    "bones": "Vield My Flesh to Claim Their Bones BokGak.png",
+    "time": "Timekilling Time BokGak.png",
+    "warp": "Marder on.the WARP Express BokGak.png",
     "violet": "The Moon of Violet.png",
     "dicers": "Slicers & Dicers.png",
-    "wrath": "Unbound Wrath.png",
+    "wrath": "Repressed Wrath.png",
     "sloth": "Treadwheel Sloth.png",
     "flood": "Emotional Flood.png",
     "vain": "Vain Pride.png",
-    "check": "LCB Reguar Checkup.png",
-    "sweep": "Nocturnal Sweeping.png",
+    "check": "LCB Regular Checkup BokGak.png",
+    "sweep": "Nocturnal Sweeping BokGak.png",
     "Hatred": "Hatred and Despair.png",
     "Wander": "Charm,Wander,Doubt.png",
     "dusk": "The Dusk of Amber.png",
     "thread": "Twining Threads.png",
     # 以下主题包暂无对应图片文件
-    # "compassion": "The Compassion.png",  # 明日方舟联动/巡礼
+    "compassion": "Pilgrimage of Compassion.png",
+    "memory": "Experience Memory.png",
 }
 
 # 主题包 key 到图片文件名的映射表（困难模式）
 THEME_PACK_HARD_IMAGE_MAP = {
-    "20": "Miracle in District 20.png",
     "seismic": "Abnormal Seismi Zone.png",
     "extrenal": "Crushing External Force.png",
     "thunder": "Thunder and Lightning.png",
@@ -234,7 +235,6 @@ THEME_PACK_HARD_IMAGE_MAP = {
     "evil": "The Evil Defining.png",
     "heartb": "The Heartbreaking.png",
     "line": "Line 1.png",
-    "repressed": "Repressed Wrath.png",
     "unbound": "Unbound Wrath.png",
     "tangling": "Tangling Lust.png",
     "inert": "Inert Sloth.png",
