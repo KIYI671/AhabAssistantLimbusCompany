@@ -347,6 +347,11 @@ Right-click to set as permanent</translation>
         <translation>Avoid skill 3 in normal encounters</translation>
     </message>
     <message>
+        <location filename="../app/team_setting_card.py" line="696"/>
+        <source>链接战优先使用三技能</source>
+        <translation>Prioritize skill 3 in normal encounters</translation>
+    </message>
+    <message>
         <location filename="../app/team_setting_card.py" line="700"/>
         <source>每楼层重新编队</source>
         <translation>Reteam each floor</translation>
@@ -449,6 +454,16 @@ Right-click to set as permanent</translation>
         <location filename="../app/team_setting_card.py" line="717"/>
         <source>链接战第一回合全员防御</source>
         <translation>defense first round in normal encounters</translation>
+    </message>
+    <message>
+        <location filename="../app/team_setting_card.py" line="722"/>
+        <source>小指良单通杀家人</source>
+        <translation>Thumb Ryoshu solo: 5-turn defense</translation>
+    </message>
+    <message>
+        <location filename="../app/team_setting_card.py" line="726"/>
+        <source>每次镜牢任务内，连续5个战斗回合全员防御</source>
+        <translation>Defend with all units for the first 5 consecutive combat turns of each Mirror Dungeon run</translation>
     </message>
     <message>
         <location filename="../app/page_card.py" line="480"/>

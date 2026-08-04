@@ -81,6 +81,9 @@ class TeamSetting(BaseModel):
     avoid_skill_3: bool = False
     """避免使用3技能"""
 
+    prioritize_skill_3: bool = False
+    """优先使用3技能"""
+
     re_formation_each_floor: bool = False
     """每个楼层重新编队"""
 
@@ -95,6 +98,9 @@ class TeamSetting(BaseModel):
 
     defense_first_round: bool = False
     """第一回合全员防御"""
+
+    defense_for_solo: bool = False
+    """小指良单通杀家人"""
 
     fixed_team_use: bool = False
     """固定队伍用途"""

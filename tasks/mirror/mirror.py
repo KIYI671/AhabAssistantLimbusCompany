@@ -20,6 +20,7 @@ from tasks.base.back_init_menu import back_init_menu
 from tasks.base.make_enkephalin_module import make_enkephalin_module
 from tasks.base.retry import retry
 from tasks.battle import battle
+from tasks.battle.battle import DefenseForSoloState
 from tasks.event import event_handling
 from tasks.mirror.in_shop import Shop
 from tasks.mirror.reward_card import get_reward_card
@@ -52,6 +53,7 @@ class Mirror:
         self.shop = Shop(team_setting)
         self.system = all_systems[team_setting.team_system]  # 选择的体系
         self.avoid_skill_3 = team_setting.avoid_skill_3  # 是否避免使用3技能
+        self.prioritize_skill_3 = team_setting.prioritize_skill_3  # 是否优先使用3技能
         # 开局星光加成
         self.opening_bonus = team_setting.opening_bonus
         self.use_starlight = team_setting.use_starlight
@@ -72,6 +74,7 @@ class Mirror:
         self.observe_ego_gift_selected = team_setting.observe_ego_gift_selected  # 用户选择的观测EGO饰品列表
 
         self.defense_first_round = team_setting.defense_first_round  # 是否第一回合全员防御
+        self.defense_for_solo_state = DefenseForSoloState() if team_setting.defense_for_solo else None
 
         self.start_time = time.time()
         self.first_battle = True  # 判断是否首次进入战斗，如果是则重新配队
@@ -100,6 +103,16 @@ class Mirror:
         start = time.time()
         result = fn(*args, **kwargs)
         return result, time.time() - start
+
+    def _fight(self) -> None:
+        _, elapsed = self._time_call(
+            battle.fight,
+            avoid_skill_3=self.avoid_skill_3,
+            prioritize_skill_3=self.prioritize_skill_3,
+            defense_first_round=self.defense_first_round,
+            defense_for_solo_state=self.defense_for_solo_state,
+        )
+        self.battle_total_time += elapsed
 
     def road_to_mir(self):
         loop_count = 30
@@ -317,7 +330,7 @@ class Mirror:
                     self.first_battle = True
                     continue
                 # 如果未开启战斗直至全灭，则检测罪人幸存人数是否少于10人
-                if not cfg.fight_to_last_man and (
+                if not cfg.fight_to_last_man and not (
                     auto.find_element("teams/12_sinner_live_assets.png")
                     or auto.find_element("teams/11_sinner_live_assets.png")
                     or auto.find_element("teams/10_sinner_live_assets.png")
@@ -342,24 +355,20 @@ class Mirror:
             if auto.find_element("battle/more_information_assets.png") or auto.find_element(
                 "battle/in_mirror_assets.png"
             ):
-                _, elapsed = self._time_call(battle.fight, self.avoid_skill_3, self.defense_first_round)
-                self.battle_total_time += elapsed
+                self._fight()
                 continue
             elif battle.identify_keyword_turn and self.LOOP_COUNT - main_loop_count < 5:
                 if auto.find_element("battle/turn_assets.png") or auto.find_element("battle/in_mirror_assets.png"):
-                    _, elapsed = self._time_call(battle.fight, self.avoid_skill_3, self.defense_first_round)
-                    self.battle_total_time += elapsed
+                    self._fight()
                     continue
             else:
                 turn_bbox = ImageUtils.get_bbox(ImageUtils.load_image("battle/turn_assets.png"))
                 turn_ocr_result = auto.find_text_element("turn", turn_bbox)
                 if turn_ocr_result is not False:
-                    _, elapsed = self._time_call(battle.fight, self.avoid_skill_3, self.defense_first_round)
-                    self.battle_total_time += elapsed
+                    self._fight()
                     continue
             if auto.find_element("battle/win_rate_card.png") and auto.find_element("battle/gear_right.png"):
-                _, elapsed = self._time_call(battle.fight, self.avoid_skill_3, self.defense_first_round)
-                self.battle_total_time += elapsed
+                self._fight()
                 continue
 
             # 镜牢星光
@@ -1298,6 +1307,7 @@ class Mirror:
                 )
                 my_list = []
                 if len(acquire_card) == 2:
+                    gift_candidates = []
                     for button in acquire_card:
                         bbox = (
                             button[0] - 50 * my_scale,
@@ -1310,6 +1320,12 @@ class Mirror:
                             if isinstance(ocr_result, list):
                                 if len(ocr_result) >= 2:
                                     continue
+                        is_owned = bool(auto.find_language_text("已持有", "Owned", bbox))
+                        gift_candidates.append((is_owned, button))
+
+                    if gift_candidates:
+                        gift_candidates.sort(key=lambda gift: gift[0])
+                        button = gift_candidates[0][1]
                         auto.mouse_click(button[0], button[1])
                         auto.click_element(
                             "mirror/road_in_mir/acquire_ego_gift_select_assets.png",
@@ -1368,12 +1384,14 @@ class Mirror:
                             ocr_result = auto.find_language_text("白棉花", ["white", "gossypium"], bbox)
                             if ocr_result:
                                 continue
+                        is_owned = bool(auto.find_language_text("已持有", "Owned", bbox))
+                        gift_candidate = (is_owned, button)
                         if auto.find_element(
                             f"mirror/road_in_mir/acquire_ego_gift/{self.system}.png",
                             my_crop=bbox,
                             threshold=0.85,
                         ):
-                            my_list.insert(0, button)
+                            my_list.insert(0, gift_candidate)
                             system_nums += 1
                         else:
                             if self.second_system and (
@@ -1385,9 +1403,14 @@ class Mirror:
                                     my_crop=bbox,
                                     threshold=0.85,
                                 ):
-                                    my_list.insert(system_nums, button)
+                                    my_list.insert(system_nums, gift_candidate)
                                     continue
-                            my_list.append(button)
+                            my_list.append(gift_candidate)
+                    my_list.sort(key=lambda gift: gift[0])
+                    owned_gifts = sum(gift[0] for gift in my_list)
+                    my_list = [gift[1] for gift in my_list]
+                    if owned_gifts:
+                        log.debug(f"检测到{owned_gifts}个已持有EGO饰品，已降低选择优先级")
                 select_bbox = ImageUtils.get_bbox(ImageUtils.load_image("mirror/road_in_mir/ego_gift_get_bbox.png"))
                 if select_bbox:
                     select_bbox = (
@@ -1533,7 +1556,7 @@ class Mirror:
                 find_type="image_with_multiple_targets",
                 my_crop=floor_progress_crop,
                 take_screenshot=True,
-                min_dist=30
+                min_dist= 80 * scale
             )
             not_passed_floor_count = len(not_passed_floors)
             self.floor = 5 - not_passed_floor_count
