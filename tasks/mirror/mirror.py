@@ -53,6 +53,7 @@ class Mirror:
         self.shop = Shop(team_setting)
         self.system = all_systems[team_setting.team_system]  # 选择的体系
         self.avoid_skill_3 = team_setting.avoid_skill_3  # 是否避免使用3技能
+        self.prioritize_skill_3 = team_setting.prioritize_skill_3  # 是否优先使用3技能
         # 开局星光加成
         self.opening_bonus = team_setting.opening_bonus
         self.use_starlight = team_setting.use_starlight
@@ -107,6 +108,7 @@ class Mirror:
         _, elapsed = self._time_call(
             battle.fight,
             avoid_skill_3=self.avoid_skill_3,
+            prioritize_skill_3=self.prioritize_skill_3,
             defense_first_round=self.defense_first_round,
             defense_for_solo_state=self.defense_for_solo_state,
         )

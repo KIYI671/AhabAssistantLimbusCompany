@@ -694,6 +694,11 @@ class CustomizeSettingsModule(QFrame):
             None,
             QT_TRANSLATE_NOOP("BaseCheckBox", "链接战避免使用三技能"),
         )
+        self.prioritize_skill_3 = BaseCheckBox(
+            "prioritize_skill_3",
+            None,
+            QT_TRANSLATE_NOOP("BaseCheckBox", "链接战优先使用三技能"),
+        )
         self.re_formation_each_floor = BaseCheckBox(
             "re_formation_each_floor",
             None,
@@ -736,6 +741,18 @@ class CustomizeSettingsModule(QFrame):
             and self.defense_for_solo.check_box.isChecked()
         ):
             self.defense_for_solo.set_check_false()
+
+        self.avoid_skill_3.check_box.toggled.connect(
+            lambda checked: self.prioritize_skill_3.set_check_false() if checked else None
+        )
+        self.prioritize_skill_3.check_box.toggled.connect(
+            lambda checked: self.avoid_skill_3.set_check_false() if checked else None
+        )
+        if (
+            self.avoid_skill_3.check_box.isChecked()
+            and self.prioritize_skill_3.check_box.isChecked()
+        ):
+            self.prioritize_skill_3.set_check_false()
 
         self.fixed_team_use = CheckBoxWithComboBox(
             "fixed_team_use",
@@ -930,6 +947,7 @@ class CustomizeSettingsModule(QFrame):
         self.second_line.addWidget(self.only_system_fuse)
 
         self.third_line.addWidget(self.avoid_skill_3)
+        self.third_line.addWidget(self.prioritize_skill_3)
         self.third_line.addWidget(self.re_formation_each_floor)
         self.third_line.addWidget(self.use_starlight)
 
@@ -1037,6 +1055,7 @@ class CustomizeSettingsModule(QFrame):
         self.only_aggressive_fuse.retranslateUi()
         self.only_system_fuse.retranslateUi()
         self.avoid_skill_3.retranslateUi()
+        self.prioritize_skill_3.retranslateUi()
         self.use_starlight.retranslateUi()
         self.aggressive_also_enhance.retranslateUi()
         self.aggressive_save_systems.retranslateUi()
