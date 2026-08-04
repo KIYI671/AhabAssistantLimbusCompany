@@ -220,6 +220,7 @@ class Input(WinAbstractInput, metaclass=SingletonMeta):
         pyautogui.mouseDown()
         for point, move_duration in plan[1:]:
             pyautogui.moveTo(*point, duration=move_duration)
+        sleep(0.3)  # 原地停留停止列表惯性，低于长按排序判定阈值
         pyautogui.mouseUp()
 
         if move_back and current_mouse_position:
@@ -428,6 +429,7 @@ class BackgroundInput(WinAbstractInput, metaclass=SingletonMeta):
         self.mouse_down(*plan[0][0])
         for point, move_duration in plan[1:]:
             self.set_mouse_pos(*point, duration=move_duration)
+        sleep(0.3)  # 原地停留停止列表惯性，低于长按排序判定阈值
         self.mouse_up(*plan[-1][0])
 
         if move_back and current_mouse_position:
@@ -703,6 +705,7 @@ class WindowMoveInput(WinAbstractInput, metaclass=SingletonMeta):
         self.mouse_down(*plan[0][0])
         for point, move_duration in plan[1:]:
             self._window_move_to(*point, duration=move_duration)
+        sleep(0.3)  # 原地停留停止列表惯性，低于长按排序判定阈值
         self.mouse_up(*plan[-1][0])
         screen.handle.set_window_pos(*pos)
 

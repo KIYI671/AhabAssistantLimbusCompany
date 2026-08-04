@@ -82,7 +82,8 @@ class AbstractInput:
     def mouse_swipe_for_scroll(self, x, y, duration=0.3, dx=0, dy=0, move_back=True) -> None:
         """各输入适配器必须实现的列表滚动手势。
 
-        手势按下后快速脱离长按判定区域，并在到达终点后立即抬起。
+        手势按下后快速脱离长按判定区域，到达终点后短暂停留以停止列表惯性再抬起。
+        停留时长低于长按排序判定阈值，不会触发队伍拖拽排序。
         此处是接口占位；实际输入由具体适配器实现。
         """
         raise InterruptedError(

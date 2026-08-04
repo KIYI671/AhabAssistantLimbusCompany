@@ -1059,7 +1059,7 @@ class MumuControl(AbstractInput):
 
             # Keep the release stationary long enough to stop list momentum, but
             # well below mouse_drag's old 500 ms hold that could reorder a team.
-            time.sleep(0.200)
+            time.sleep(0.300)
         finally:
             self.up()
 
