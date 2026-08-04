@@ -73,7 +73,7 @@ def select_theme_pack(hard_switch=False, floor=None, team_num=None, use_custom_t
         # 切换难度
         if hard_switch:
             if auto.click_element("mirror/theme_pack/normal_assets.png"):
-                sleep(2) # 等待卡包加载动画完成
+                sleep(2)  # 等待卡包加载动画完成
                 continue
             elif difficulty == "normal":
                 normal_bbox = ImageUtils.get_bbox(ImageUtils.load_image("mirror/theme_pack/normal_assets.png"))
