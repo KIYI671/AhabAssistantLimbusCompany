@@ -114,9 +114,9 @@ def get_node_weight(x, y):
         road_node_bbox,
     ):
         return 2
-    elif auto.find_feature_element("mirror/road_in_mir/Risky Encounter.png", road_node_bbox):
+    elif auto.find_feature_element("mirror/road_in_mir/risky_encounter.png", road_node_bbox):
         return 1
-    elif auto.find_feature_element("mirror/road_in_mir/Focused_Encounter.png", road_node_bbox):
+    elif auto.find_feature_element("mirror/road_in_mir/focused_encounter.png", road_node_bbox):
         return 0
     return -5
 
@@ -388,8 +388,8 @@ def search_road_from_road_map(hard_mode=False):
     return [], []
 
 
-# battle 是常规遭遇战，boss_battle 是 Boss 战，event 是事件，Focused_Encounter 是集中遭遇战（链式战）
-# Risky Encounter 是精锐遭遇战（链式战），shop 是商店，Abnormality Focused Encounter 是异想体集中遭遇战
+# battle 是常规遭遇战，boss_battle 是 Boss 战，event 是事件，focused_encounter 是集中遭遇战（链式战）
+# risky_encounter 是精锐遭遇战（链式战），shop 是商店，abnormality_focused_encounter 是异想体集中遭遇战
 
 
 def identify_nodes(bus_x):
@@ -401,10 +401,10 @@ def identify_nodes(bus_x):
         "battle",
         "boss_battle",
         "event",
-        "Focused_Encounter",
-        "Risky Encounter",
+        "focused_encounter",
+        "risky_encounter",
         "shop",
-        "Abnormality Focused Encounter",
+        "abnormality_focused_encounter",
     ]
 
     no_flag = False  # 标记是否检测到目标（初始为 False，未检测到时设为 True）
@@ -754,10 +754,10 @@ all_node_weight = {
     "battle": 4,
     "boss_battle": 6,
     "event": 1,
-    "Focused_Encounter": 6,
-    "Risky Encounter": 7,
+    "focused_encounter": 6,
+    "risky_encounter": 7,
     "shop": 2,
-    "Abnormality Focused Encounter": 6,
+    "abnormality_focused_encounter": 6,
 }
 
 DEFAULT_WEIGHT = 999  # 默认不可达权重
