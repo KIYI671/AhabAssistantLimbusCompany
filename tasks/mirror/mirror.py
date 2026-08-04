@@ -1305,6 +1305,7 @@ class Mirror:
                 )
                 my_list = []
                 if len(acquire_card) == 2:
+                    gift_candidates = []
                     for button in acquire_card:
                         bbox = (
                             button[0] - 50 * my_scale,
@@ -1317,6 +1318,12 @@ class Mirror:
                             if isinstance(ocr_result, list):
                                 if len(ocr_result) >= 2:
                                     continue
+                        is_owned = bool(auto.find_language_text("已持有", "Owned", bbox))
+                        gift_candidates.append((is_owned, button))
+
+                    if gift_candidates:
+                        gift_candidates.sort(key=lambda gift: gift[0])
+                        button = gift_candidates[0][1]
                         auto.mouse_click(button[0], button[1])
                         auto.click_element(
                             "mirror/road_in_mir/acquire_ego_gift_select_assets.png",
@@ -1375,12 +1382,14 @@ class Mirror:
                             ocr_result = auto.find_language_text("白棉花", ["white", "gossypium"], bbox)
                             if ocr_result:
                                 continue
+                        is_owned = bool(auto.find_language_text("已持有", "Owned", bbox))
+                        gift_candidate = (is_owned, button)
                         if auto.find_element(
                             f"mirror/road_in_mir/acquire_ego_gift/{self.system}.png",
                             my_crop=bbox,
                             threshold=0.85,
                         ):
-                            my_list.insert(0, button)
+                            my_list.insert(0, gift_candidate)
                             system_nums += 1
                         else:
                             if self.second_system and (
@@ -1392,9 +1401,14 @@ class Mirror:
                                     my_crop=bbox,
                                     threshold=0.85,
                                 ):
-                                    my_list.insert(system_nums, button)
+                                    my_list.insert(system_nums, gift_candidate)
                                     continue
-                            my_list.append(button)
+                            my_list.append(gift_candidate)
+                    my_list.sort(key=lambda gift: gift[0])
+                    owned_gifts = sum(gift[0] for gift in my_list)
+                    my_list = [gift[1] for gift in my_list]
+                    if owned_gifts:
+                        log.debug(f"检测到{owned_gifts}个已持有EGO饰品，已降低选择优先级")
                 select_bbox = ImageUtils.get_bbox(ImageUtils.load_image("mirror/road_in_mir/ego_gift_get_bbox.png"))
                 if select_bbox:
                     select_bbox = (
