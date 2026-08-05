@@ -116,7 +116,6 @@ THEME_PACK_HARD_NAME_MAP = {
     "opening": "开园",
     "procession": "无尽的",
     "unchanging": "无改变",
-    "unchang": "无改变",
     "evil": "定义为",
     "heartb": "心意相",
     "line": "号线",
@@ -139,7 +138,6 @@ THEME_PACK_HARD_NAME_MAP = {
     "Blade": "刀与作",
     "Unsever": "割舍",
     "Theb": "凤·皇",
-    "b·e": "凤·皇",  # OCR 备用
 }
 
 # 中文名称到英文key的反向映射表（普通模式）
@@ -157,6 +155,22 @@ CN_OCR_ALTERNATIVES = {
     "凤皇": "凤·皇",  # check 主题包的 OCR 备用
     "未曾面对": "无作为",  # unconf 主题包的零协会新译名
     "无法去爱": "无慈悲",  # unloving 主题包的零协会新译名
+}
+
+# 英文 OCR 备用短片段（备用 key -> 主 key）
+# 英文卡包名过长时 OCR 容易识别失败，短片段作为兜底；不参与界面展示，
+# 权重随主 key 同步，且不能进 NAME_MAP（否则反向映射会覆盖主 key 导致权重不同步）
+EN_OCR_ALTERNATIVES = {
+    "nag": "nagel",  # Nagel and Hammer 的 OCR 备用
+    "shed": "crushed",  # To be Crushed 的 OCR 备用
+    "ssed": "repressed",  # Repressed Wrath 的 OCR 备用
+    "dev": "devoured",  # Devoured Gluttony 的 OCR 备用
+    "deg": "degraded",  # Degraded Gloom 的 OCR 备用
+    "tread": "treadwheel",  # Treadwheel Sloth 的 OCR 备用
+    "mne": "mnestic",  # Mnestic Experience 的 OCR 备用
+    "xte": "external",  # Crushing External Force 的 OCR 备用
+    "b·e": "Theb",  # The BE 的 OCR 备用
+    "unch": "unchanging",  # The Unchanging 的 OCR 短片段兜底
 }
 
 # 主题包 key 到图片文件名的映射表（普通模式）
@@ -231,7 +245,6 @@ THEME_PACK_HARD_IMAGE_MAP = {
     "opening": "La Manchaland Reopening.png",
     "procession": "The Infinite Procession.png",
     "unchanging": "The Unchanging.png",
-    "unchang": "The Unchanging.png",
     "evil": "The Evil Defining.png",
     "heartb": "The Heartbreaking.png",
     "line": "Line 1.png",
@@ -254,7 +267,6 @@ THEME_PACK_HARD_IMAGE_MAP = {
     "Blade": "Blade and Artwork.png",
     "Unsever": "The Unsevering.png",
     "Theb": "The BE.png",
-    "b·e": "The BE.png",  # OCR 备用
     # 以下主题包暂无对应图片文件
     # 轨道线系列（如需支持多条线路，可添加以下映射）
     # "line2": "Line 2.png",
@@ -734,6 +746,8 @@ class ThemePackSettingDialog(FramelessDialog):
             # 如果是 OCR 备用名称，跳过不显示（但配置中保留）
             if self.is_cn and pack_key in CN_OCR_ALTERNATIVES:
                 continue
+            if not self.is_cn and pack_key in EN_OCR_ALTERNATIVES:
+                continue
             card = ThemePackCard(pack_key, weight, is_hard=False, is_cn=self.is_cn)
             card.weight_changed.connect(self._on_weight_changed)
             self.normal_cards[pack_key] = card
@@ -750,6 +764,8 @@ class ThemePackSettingDialog(FramelessDialog):
         for pack_key, weight in hard_packs.items():
             # 如果是 OCR 备用名称，跳过不显示（但配置中保留）
             if self.is_cn and pack_key in CN_OCR_ALTERNATIVES:
+                continue
+            if not self.is_cn and pack_key in EN_OCR_ALTERNATIVES:
                 continue
             card = ThemePackCard(pack_key, weight, is_hard=True, is_cn=self.is_cn)
             card.weight_changed.connect(self._on_weight_changed)
@@ -806,9 +822,26 @@ class ThemePackSettingDialog(FramelessDialog):
             en_key = reverse_map.get(pack_key_str)
             if en_key and en_key in en_config:
                 en_config[en_key] = weight
+                # 同时检查该英文 key 是否有 OCR 备用短片段，一并更新
+                for alt_key, main_key in EN_OCR_ALTERNATIVES.items():
+                    if main_key == en_key and alt_key in en_config:
+                        en_config[alt_key] = weight
         else:
             # 当前是英文界面，pack_key 是英文 key
             en_config[pack_key_str] = weight
+
+            # 检查是否有英文 OCR 备用短片段，如果有则同步更新
+            if pack_key_str in EN_OCR_ALTERNATIVES:
+                # pack_key 是备用短片段，找到主 key 并更新
+                main_key = EN_OCR_ALTERNATIVES[pack_key_str]
+                if main_key in en_config:
+                    en_config[main_key] = weight
+            else:
+                # pack_key 是主 key，检查是否有备用短片段需要同步更新
+                for alt_key, main_key in EN_OCR_ALTERNATIVES.items():
+                    if main_key == pack_key_str and alt_key in en_config:
+                        en_config[alt_key] = weight
+
             # 找到对应的英文 key 并更新中文配置
             cn_key = name_map.get(pack_key_str)
             if cn_key and cn_key in cn_config:

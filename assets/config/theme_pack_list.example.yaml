@@ -5,6 +5,7 @@ theme_pack_list:
   forgot: 0 # G 公司（道中斩击建议）
   gambl: 0 # 沙锤姐（道中斩击建议）
   nagel: 0 # N 大锤（道中打击建议）
+  nag: 0 # N 大锤；英文 OCR 短片段兜底
   faith: 0 # N 狗、蛇（道中打击建议）
   unconf: 0 # 烤冷面（道中打击建议）
   workshop: 0 # 工坊（道中突刺、打击建议）
@@ -25,14 +26,17 @@ theme_pack_list:
   seduct: 0 # 鸡（道中打击>突刺建议）
   dolen: 0 # 搬运、无头、苹果（道中打击>斩击建议）
   devoured: 0 # 提灯、妖精、贝壳（道中突刺>打击>斩击建议）
+  dev: 0 # 提灯、妖精、贝壳；英文 OCR 短片段兜底
   cravi: 0 # 伞妖、迷失乘客（道中突刺>斩击>打击建议）
   degraded: 0 # 无头、蛙蛙（道中突刺>打击>斩击建议）
+  deg: 0 # 无头、蛙蛙；英文 OCR 短片段兜底
   subserv: 0 # 提灯、妖精、棉花（道中打击>突刺>斩击建议）
   nsignif: 0 # 蜈蚣、导游、迷失乘客（道中斩击建议）
   judgment: 0 # 蛙蛙、玩具熊（道中打击>突刺>斩击建议）
 
   outcast: -1 # 终末日历（道中打击建议）
   crushed: -1 # 挨打（道中打击建议）
+  shed: -1 # 挨打；英文 OCR 短片段兜底
   automated: -2 # 挨打（道中打击建议）
   spring: -4 # 卫
   unloving: -5 # 芭芭雅嘎（道中斩击建议）
@@ -44,7 +48,9 @@ theme_pack_list:
   violet: -5 # 请给我们爱（紫碑）
   dicers: -5 # 金笠
   repressed: -5 # 人皮预言者（压抑的暴怒）；解放的暴怒是 HARD 独有的 unbound
+  ssed: -5 # 人皮预言者；英文 OCR 短片段兜底
   treadwheel: -5 # 洋流（空转的怠惰）
+  tread: -5 # 洋流；英文 OCR 短片段兜底
   flood: -5 # 洋流（于情感沉溺者）
   vain: -5 # 金笠
   check: -5 # 霍恩海姆；原版/复刻共用权重，仅展示复刻封面
@@ -55,13 +61,15 @@ theme_pack_list:
   thread: -5 # 讲解员
   compassion: -5 # 明日方舟联动（善意的巡礼）
   mnestic: -5 # 经验记忆
+  mne: -5 # 经验记忆；英文 OCR 短片段兜底
   unknown: -5 # 游戏更新后尚未收录的新主题包，识别不到任何关键词时的兜底权重
 
 theme_pack_list_hard:
-  Theb: 10 # 鸡鸡
-  b·e: 10 # 鸡鸡
+  Theb: 10 # 鸡鸡；隐藏主题包，保留既有支持
+  b·e: 10 # 鸡鸡；OCR 备用
   seismic: 0 # 妖精
   external: 0 # 寄居蟹、提灯、符人
+  xte: 0 # 寄居蟹、提灯、符人；英文 OCR 短片段兜底
   thunder: 0 # 蜈蚣、迷失乘客、电羊
   sanguine: 0 # 断头鱼、玩具熊、白棉花
   dizzying: 0 # 鸡哥
@@ -73,7 +81,7 @@ theme_pack_list_hard:
   opening: -2 # 血魔
   procession: -2 # 血魔
   unchanging: -5 # 东朗
-  unchang: -5 # 山茶花
+  unch: -5 # 东朗；英文 OCR 短片段兜底
   evil: -5 # 亚哈
   heartb: -5 # 狼夫
   line: -5 #轨道

@@ -170,6 +170,73 @@ def test_english_keywords_do_not_shadow_other_theme_packs() -> None:
         assert _match(name, en_keywords) == expected, name
 
 
+def test_english_ocr_fallbacks_are_configured_on_both_sides() -> None:
+    # 英文 OCR 短片段兜底与中文侧（海边/切琢/凤皇）同构：yaml 里紧跟主
+    # 关键词配置独立权重。备用 key 不能进 NAME_MAP，否则反向映射会被它
+    # 覆盖，主 key 的权重不再随中文界面调整而同步（Theb/b·e 先例）
+    catalog = _catalog()
+    name_maps = {
+        False: _interface_dict("THEME_PACK_NAME_MAP"),
+        True: _interface_dict("THEME_PACK_HARD_NAME_MAP"),
+    }
+    for fallback, main in _interface_dict("EN_OCR_ALTERNATIVES").items():
+        hard = main in catalog["theme_pack_list_hard"]
+        weights = catalog["theme_pack_list_hard" if hard else "theme_pack_list"]
+        assert main in weights, f"英文 OCR 主关键词 {main} 未在 yaml 中配置权重"
+        assert fallback in weights, f"英文 OCR 兜底 {fallback} 未在 yaml 中配置权重"
+        assert weights[fallback] == weights[main], f"英文 OCR 兜底 {fallback} 与主关键词 {main} 权重不一致"
+        assert fallback not in name_maps[hard], f"英文 OCR 兜底 {fallback} 不应进入 NAME_MAP"
+
+
+def test_english_ocr_fallbacks_are_short_unique_fragments() -> None:
+    # 兜底片段必须比主关键词短，且只出现在自己卡包的英文名里，
+    # 否则会像修掉的 und/wrath 一样抢走别的卡包
+    image_maps = {
+        **_interface_dict("THEME_PACK_IMAGE_MAP"),
+        **_interface_dict("THEME_PACK_HARD_IMAGE_MAP"),
+    }
+    english_names = {
+        key: Path(filename).stem.lower().replace(" ", "")
+        for key, filename in image_maps.items()
+    }
+    english_names["mnestic"] = "mnesticexperience"
+
+    for fallback, main in _interface_dict("EN_OCR_ALTERNATIVES").items():
+        assert len(fallback) < len(main), f"英文 OCR 兜底 {fallback} 没有缩短关键词"
+        if "·" in fallback:
+            # 带点号的兜底只匹配 OCR 误识别，官方卡包名里不会出现点号
+            assert not any(fallback in name for name in english_names.values()), (
+                f"英文 OCR 兜底 {fallback} 不应出现在任何官方卡包名中"
+            )
+        else:
+            fallback_names = {name for name in english_names.values() if fallback in name}
+            main_names = {name for name in english_names.values() if main in name}
+            assert fallback_names == main_names and fallback_names, (
+                f"英文 OCR 兜底 {fallback} 不是主关键词 {main} 的专属片段：{fallback_names}"
+            )
+
+
+def test_english_keywords_do_not_cover_each_other() -> None:
+    # 除设计内的主备对（EN_OCR_ALTERNATIVES）外，任意两个英文关键词不得
+    # 互为子串：过短的片段会抢走别的卡包（und/wrath 教训）。后续新增短链
+    # 与其他关键词冲突时，此测试会先报出未登记或缺失的覆盖关系
+    keywords = _keywords("theme_pack_list", "theme_pack_list_hard")
+    expected_covers = {
+        frozenset((fallback, main))
+        for fallback, main in _interface_dict("EN_OCR_ALTERNATIVES").items()
+        if fallback.lower() in main.lower() or main.lower() in fallback.lower()
+    }
+    covers = set()
+    for index, first in enumerate(keywords):
+        for second in keywords[index + 1:]:
+            if first.lower() in second.lower() or second.lower() in first.lower():
+                covers.add(frozenset((first, second)))
+    assert covers == expected_covers, (
+        f"英文关键词存在未登记的覆盖关系：{covers - expected_covers}；"
+        f"登记但实际不覆盖：{expected_covers - covers}"
+    )
+
+
 def test_weights_match_between_languages() -> None:
     # 同一卡包的中英默认权重必须一致，否则选包行为会随界面语言变化
     catalog = _catalog()
