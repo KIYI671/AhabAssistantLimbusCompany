@@ -15,7 +15,7 @@ from utils.singletonmeta import SingletonMeta
 from ...game_and_screen import screen
 from ...logger import log
 from . import AbstractInput
-from .scroll_swipe import build_scroll_swipe_plan
+from .scroll_swipe import build_windows_scroll_swipe_plan
 
 key_list = {
     "a": 0x41,
@@ -212,14 +212,19 @@ class Input(WinAbstractInput, metaclass=SingletonMeta):
         if move_back:
             current_mouse_position = self.get_mouse_position()
 
+        raw_plan, settle_duration = build_windows_scroll_swipe_plan(
+            x, y, dx, dy, duration
+        )
         plan = [
             (self.pos_offset(*point), move_duration)
-            for point, move_duration in build_scroll_swipe_plan(x, y, dx, dy, duration)
+            for point, move_duration in raw_plan
         ]
         pyautogui.moveTo(*plan[0][0])
         pyautogui.mouseDown()
         for point, move_duration in plan[1:]:
             pyautogui.moveTo(*point, duration=move_duration)
+        if settle_duration:
+            sleep(settle_duration)
         pyautogui.mouseUp()
 
         if move_back and current_mouse_position:
@@ -422,12 +427,16 @@ class BackgroundInput(WinAbstractInput, metaclass=SingletonMeta):
         if move_back:
             current_mouse_position = self.get_mouse_position()
 
-        plan = build_scroll_swipe_plan(x, y, dx, dy, duration)
+        plan, settle_duration = build_windows_scroll_swipe_plan(
+            x, y, dx, dy, duration
+        )
         self.set_mouse_pos(*plan[0][0])
         self.set_active()
         self.mouse_down(*plan[0][0])
         for point, move_duration in plan[1:]:
             self.set_mouse_pos(*point, duration=move_duration)
+        if settle_duration:
+            sleep(settle_duration)
         self.mouse_up(*plan[-1][0])
 
         if move_back and current_mouse_position:
@@ -697,12 +706,16 @@ class WindowMoveInput(WinAbstractInput, metaclass=SingletonMeta):
         screen.handle.set_window_pos(*pos)
 
     def mouse_swipe_for_scroll(self, x, y, duration=0.3, dx=0, dy=0, move_back=True) -> None:
-        plan = build_scroll_swipe_plan(x, y, dx, dy, duration)
+        plan, settle_duration = build_windows_scroll_swipe_plan(
+            x, y, dx, dy, duration
+        )
         pos = self._set_window_pos(*plan[0][0])
         self.set_active()
         self.mouse_down(*plan[0][0])
         for point, move_duration in plan[1:]:
             self._window_move_to(*point, duration=move_duration)
+        if settle_duration:
+            sleep(settle_duration)
         self.mouse_up(*plan[-1][0])
         screen.handle.set_window_pos(*pos)
 

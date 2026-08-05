@@ -5,6 +5,14 @@ from module.config import cfg
 from module.decorator.decorator import begin_and_finish_time_log
 from module.logger import log
 
+SIMULATOR_ORDERED_TEAM_PAGE_SWIPE_DISTANCE = 375
+WINDOWS_ORDERED_TEAM_PAGE_SWIPE_DISTANCE = 400
+NAMED_TEAM_PAGE_SWIPE_DISTANCE = 385
+TEAM_LIST_RESET_BOTTOM_MARGIN = 60
+ORDERED_TEAM_PAGE_SIZE = 5
+ORDERED_TEAM_COUNT = 20
+ORDERED_TEAM_VISIBLE_ROWS = 6
+
 
 # 清队
 def clean_team():
@@ -53,6 +61,25 @@ def team_formation(sinner_team):
         sleep(cfg.mouse_action_interval)
 
 
+def _ordered_team_page_swipe_distance():
+    if not cfg.simulator:
+        return WINDOWS_ORDERED_TEAM_PAGE_SWIPE_DISTANCE
+    return SIMULATOR_ORDERED_TEAM_PAGE_SWIPE_DISTANCE
+
+
+def _team_list_reset_swipe_distance(start_y, window_height, scale):
+    """Return a downward reset distance whose endpoint stays inside the client."""
+    return max(0, window_height - start_y - TEAM_LIST_RESET_BOTTOM_MARGIN * scale)
+
+
+def _ordered_team_location(num):
+    page_count = (num - 1) // ORDERED_TEAM_PAGE_SIZE
+    logical_page_start = page_count * ORDERED_TEAM_PAGE_SIZE + 1
+    last_page_start = ORDERED_TEAM_COUNT - ORDERED_TEAM_VISIBLE_ROWS + 1
+    visible_page_start = min(logical_page_start, last_page_start)
+    return page_count, num - visible_page_start
+
+
 @begin_and_finish_time_log(task_name="寻找队伍")
 # 找队
 def select_battle_team(num):
@@ -72,30 +99,29 @@ def select_battle_team(num):
         my_position[1] += position[1]
         auto.mouse_click(my_position[0], my_position[1])
         sleep(0.5)
+        reset_distance = _team_list_reset_swipe_distance(
+            my_position[1], cfg.set_win_size, scale
+        )
         for _ in range(3):
             auto.mouse_swipe_for_scroll(
-                my_position[0], my_position[1], dy=1333 * scale, duration=0.3
+                my_position[0], my_position[1], dy=reset_distance, duration=0.3
             )
         sleep(0.75)
         first_position = [position[0], position[1] + 70 * scale]
         if cfg.select_team_by_order:
-            team_range = (num - 1) // 5
-            team_order = (num - 1) % 5
+            team_range, team_order = _ordered_team_location(num)
+            ordered_page_distance = _ordered_team_page_swipe_distance()
             for _ in range(team_range):
                 auto.mouse_swipe_for_scroll(
                     first_position[0],
                     first_position[1] + 375 * scale,
-                    dy=-375 * scale,
+                    dy=-ordered_page_distance * scale,
                     duration=0.3,
                 )
                 sleep(1)
-            if num <= 15:
-                auto.mouse_click(first_position[0], first_position[1] + 75 * team_order * scale)
-            else:
-                auto.mouse_click(
-                    first_position[0],
-                    first_position[1] + 100 * scale + 75 * team_order * scale,
-                )
+            auto.mouse_click(
+                first_position[0], first_position[1] + 75 * team_order * scale
+            )
             log.info(f"成功找到队伍 # {num}")
             sleep(1)
             return True
@@ -113,7 +139,7 @@ def select_battle_team(num):
                 auto.mouse_swipe_for_scroll(
                     first_position[0],
                     first_position[1] + 375 * scale,
-                    dy=-385 * scale,
+                    dy=-NAMED_TEAM_PAGE_SWIPE_DISTANCE * scale,
                     duration=0.3,
                 )
                 sleep(1)
