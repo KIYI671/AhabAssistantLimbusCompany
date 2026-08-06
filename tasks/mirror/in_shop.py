@@ -1,3 +1,4 @@
+import time
 from time import sleep
 
 from PIL import Image
@@ -14,6 +15,8 @@ from utils.image_utils import ImageUtils
 
 
 class Shop:
+    SHOP_GRID_CROP_1440 = (1080, 300, 2300, 1000)
+
     def __init__(self, team_setting: TeamSetting):
         self.system = all_systems[team_setting.team_system]  # 队伍体系
         self.sinner_team = team_setting.sinner_order  # 选择的罪人序列
@@ -70,6 +73,35 @@ class Shop:
     class RestartGame(Exception):
         pass
 
+    @classmethod
+    def _shop_grid_crop(cls):
+        scale = cfg.set_win_size / 1440
+        return tuple(value * scale for value in cls.SHOP_GRID_CROP_1440)
+
+    def _wait_for_shop_refresh(self, initial_sample) -> bool:
+        return auto.wait_until_region_stable(
+            self._shop_grid_crop(),
+            timeout=3.0,
+            poll_interval=0.25,
+            stable_samples=2,
+            pixel_delta_threshold=12,
+            max_changed_ratio=0.02,
+            initial_sample=initial_sample,
+            require_change=True,
+        )
+
+    def _wait_for_power_up_confirmation(self, timeout: float = 3.5) -> bool:
+        """等待强化确认窗口关闭，网络异常仍交给统一重试逻辑处理。"""
+        deadline = time.monotonic() + timeout
+        while time.monotonic() < deadline:
+            # retry() 会刷新截图，并在 CONNECTING 存在时持续等待。
+            if retry() is False:
+                raise self.RestartGame()
+            if not auto.find_element("mirror/shop/power_up_confirm_assets.png"):
+                return True
+        log.warning("饰品升级确认窗口长时间未关闭，停止本次升级以避免重复扣费")
+        return False
+
     def ego_gift_to_power_up(self):
         loop_count = 30
         auto.model = "clam"
@@ -83,9 +115,8 @@ class Shop:
                 sleep(0.5)
                 if auto.click_element("mirror/shop/power_up_confirm_assets.png", take_screenshot=True) is False:
                     return True
-                sleep(3)
-                if retry() is False:
-                    raise self.RestartGame()
+                if self._wait_for_power_up_confirmation() is False:
+                    return False
             if auto.find_element("mirror/shop/power_up_confirm_assets.png"):
                 return False
             loop_count -= 1
@@ -296,6 +327,7 @@ class Shop:
                 log.warning("无法读取剩余金钱，跳过本次刷新")
             elif keyword_refresh_count < self.max_keyword_refresh and my_remaining_money >= 300:
                 auto.mouse_click_blank(times=3)
+                refresh_initial_sample = auto.get_region_sample(self._shop_grid_crop())
                 if auto.click_element("mirror/shop/refresh_keyword_assets.png"):
                     sleep(1)
                     auto.click_element(
@@ -324,8 +356,10 @@ class Shop:
                             break
                     keyword_refresh_count += 1
                     auto.mouse_click_blank()
-                    sleep(3)
-                    if retry() is False:
+                    refresh_stable = self._wait_for_shop_refresh(refresh_initial_sample)
+                    if not refresh_stable:
+                        log.debug("关键词刷新区域在 3 秒内未确认稳定，使用最后一帧继续检查")
+                    if retry(skip_first_screenshot=refresh_stable) is False:
                         raise self.RestartGame()
                     if self.skill_replacement and self.replacement < 3:
                         self.replacement_skill()
@@ -333,10 +367,13 @@ class Shop:
 
             if normal_refresh_count < self.max_normal_refresh and my_remaining_money >= 200:
                 auto.mouse_click_blank(times=3)
+                refresh_initial_sample = auto.get_region_sample(self._shop_grid_crop())
                 if auto.click_element("mirror/shop/refresh_assets.png"):
                     normal_refresh_count += 1
-                    sleep(3)
-                    if retry() is False:
+                    refresh_stable = self._wait_for_shop_refresh(refresh_initial_sample)
+                    if not refresh_stable:
+                        log.debug("普通刷新区域在 3 秒内未确认稳定，使用最后一帧继续检查")
+                    if retry(skip_first_screenshot=refresh_stable) is False:
                         raise self.RestartGame()
                     if self.skill_replacement and self.replacement < 3:
                         self.replacement_skill()

@@ -2,8 +2,6 @@ import re
 import time
 from time import sleep
 
-import numpy as np
-
 from module.automation import auto
 from module.config import TeamSetting, cfg
 from module.decorator.decorator import begin_and_finish_time_log
@@ -249,7 +247,6 @@ class Mirror:
 
             # 选择楼层主题包的情况
             if auto.find_element("mirror/theme_pack/feature_theme_pack_assets.png"):
-                sleep(2)
                 select_theme_pack(self.hard_switch, self.floor, self.team_order, self.use_custom_theme_pack_weight)
                 if self.re_formation_each_floor:
                     self.first_battle = True
@@ -568,7 +565,7 @@ class Mirror:
                     coins_bbox = ImageUtils.get_bbox(ImageUtils.load_image("mirror/claim_reward/coins_bbox.png"))
                     for _ in range(5):
                         try:
-                            sc = ImageUtils.crop(np.array(auto.screenshot), coins_bbox)
+                            sc = ImageUtils.crop(auto.get_screenshot_array(), coins_bbox)
                             result = ocr.run(sc)
                             ocr_result = [result.txts[i] for i in range(len(result.txts))]
                             ocr_result = "".join(ocr_result)
@@ -590,7 +587,7 @@ class Mirror:
                                         coins_pos[0] + 100 * scale,
                                         coins_pos[1] + 40 * scale,
                                     ]
-                                    sc = ImageUtils.crop(np.array(auto.screenshot), coins_bbox)
+                                    sc = ImageUtils.crop(auto.get_screenshot_array(), coins_bbox)
                                     result = ocr.run(sc)
                                     ocr_result = [result.txts[i] for i in range(len(result.txts))]
                                     ocr_result = "".join(ocr_result)

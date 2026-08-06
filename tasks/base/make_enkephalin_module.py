@@ -37,7 +37,6 @@ def get_the_timing(return_time=False):
 
 def get_current_enkephalin():
     import cv2
-    import numpy as np
 
     from module.ocr import ocr
     from utils.image_utils import ImageUtils
@@ -47,7 +46,7 @@ def get_current_enkephalin():
         try:
             while auto.take_screenshot() is None:
                 continue
-            sc = ImageUtils.crop(np.array(auto.screenshot), enkephalin_bbox)
+            sc = ImageUtils.crop(auto.get_screenshot_array(), enkephalin_bbox)
             _, binary_image = cv2.threshold(sc, 110, 255, cv2.THRESH_BINARY)
             result = ocr.run(binary_image)
             ocr_result = [result.txts[i] for i in range(len(result.txts))]
@@ -60,7 +59,7 @@ def get_current_enkephalin():
         except:
             continue
     try:
-        sc = ImageUtils.crop(np.array(auto.screenshot), enkephalin_bbox)
+        sc = ImageUtils.crop(auto.get_screenshot_array(), enkephalin_bbox)
         _, binary_image = cv2.threshold(sc, 150, 255, cv2.THRESH_BINARY)
         result = ocr.run(binary_image)
         ocr_result = [result.txts[i] for i in range(len(result.txts))]
