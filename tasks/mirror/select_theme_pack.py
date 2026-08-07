@@ -75,6 +75,7 @@ def select_theme_pack(hard_switch=False, floor=None, team_num=None, use_custom_t
         # 切换难度
         if hard_switch:
             if auto.click_element("mirror/theme_pack/normal_assets.png"):
+                sleep(2)  # 等待卡包加载动画完成
                 continue
             elif difficulty == "normal":
                 normal_bbox = ImageUtils.get_bbox(ImageUtils.load_image("mirror/theme_pack/normal_assets.png"))
@@ -82,8 +83,11 @@ def select_theme_pack(hard_switch=False, floor=None, team_num=None, use_custom_t
                     (normal_bbox[0] + normal_bbox[2]) // 2,
                     (normal_bbox[1] + normal_bbox[3]) // 2,
                 )
+                sleep(2) # 等待卡包加载动画完成
+                continue
         else:
             if auto.click_element("mirror/theme_pack/hard_assets.png"):
+                sleep(2) # 等待卡包加载动画完成
                 continue
             elif difficulty == "hard":
                 hard_bbox = ImageUtils.get_bbox(ImageUtils.load_image("mirror/theme_pack/hard_assets.png"))
@@ -91,6 +95,8 @@ def select_theme_pack(hard_switch=False, floor=None, team_num=None, use_custom_t
                     (hard_bbox[0] + hard_bbox[2]) // 2,
                     (hard_bbox[1] + hard_bbox[3]) // 2,
                 )
+                sleep(2) # 等待卡包加载动画完成
+                continue
 
         try:
             if floor == 4 and cfg.select_event_pack:
