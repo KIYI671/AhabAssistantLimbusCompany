@@ -904,6 +904,7 @@ class PushSettingCardChance(BasePushSettingCard):
         icon: Union[str, QIcon, FluentIconBase],
         title,
         config_name: str,
+        min_value=0,
         max_value=3,
         content=None,
         on_confirm: Callable[[int], None] | None = None,
@@ -911,6 +912,7 @@ class PushSettingCardChance(BasePushSettingCard):
     ):
         super().__init__(text, icon, title, content, parent)
         self.config_name = config_name
+        self.min_value = min_value
         self.max_value = max_value
         self.on_confirm = on_confirm
         self.line_text = LineEdit()
@@ -927,6 +929,7 @@ class PushSettingCardChance(BasePushSettingCard):
             self.tr(self.title),
             config_name=self.config_name,
             parent=self.window(),
+            min_value=self.min_value,
             max_value=self.max_value,
         )
         if message_box.exec():
@@ -935,6 +938,47 @@ class PushSettingCardChance(BasePushSettingCard):
             self.line_text.setText(str(new_value))
             if self.on_confirm:
                 self.on_confirm(new_value)
+
+
+class PushSettingCardText(BasePushSettingCard):
+    def __init__(
+        self,
+        text,
+        icon: Union[str, QIcon, FluentIconBase],
+        title,
+        config_name: str,
+        content=None,
+        validator: Callable[[str], str] | None = None,
+        parent=None,
+    ):
+        super().__init__(text, icon, title, content, parent)
+        self.config_name = config_name
+        self.validator = validator
+        self.line_text = LineEdit()
+        self.line_text.setAlignment(Qt.AlignCenter)
+        self.line_text.setReadOnly(True)
+        self.line_text.setMaximumWidth(180)
+        self.line_text.setText(str(cfg.get_value(self.config_name)))
+        current_count = self.hBoxLayout.count()
+        self.hBoxLayout.insertWidget(current_count - 2, self.line_text)
+        self.button.clicked.connect(self.__onclicked)
+
+    def __onclicked(self):
+        current_value = str(cfg.get_value(self.config_name, ""))
+        message_box = MessageBoxEdit(self.tr(self.title), current_value, self.window())
+        if not message_box.exec():
+            return
+
+        new_value = message_box.getText().strip()
+        try:
+            if self.validator is not None:
+                new_value = self.validator(new_value)
+        except ValueError as exc:
+            MessageBox(self.tr("配置无效"), str(exc), self.window()).exec()
+            return
+
+        cfg.set_value(self.config_name, new_value)
+        self.line_text.setText(new_value)
 
 
 class AutoDailyView(FlyoutViewBase):

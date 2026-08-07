@@ -31,6 +31,7 @@ from app.base_combination import (
     PushSettingCardChance,
     PushSettingCardDate,
     PushSettingCardMirrorchyan,
+    PushSettingCardText,
     SwitchSettingCard,
 )
 from app.card.messagebox_custom import BaseInfoBar
@@ -39,6 +40,7 @@ from app.language_manager import SUPPORTED_LANG_NAME, LanguageManager
 from app.theme_pack_setting_interface import ThemePackSettingDialog
 from app.widget.setting_nav import SettingNav
 from module.config import cfg, theme_list
+from utils.adb_endpoint import normalize_adb_host
 from utils.schedule_helper import ScheduleHelper
 
 
@@ -194,6 +196,18 @@ class SettingInterface(QWidget):
             },
             parent=self.simulator_setting_group,
         )
+        self.simulator_host_setting_card = PushSettingCardText(
+            QT_TRANSLATE_NOOP("PushSettingCardText", "修改"),
+            FIF.CONNECT,
+            QT_TRANSLATE_NOOP("PushSettingCardText", "模拟器主机地址"),
+            config_name="simulator_host",
+            content=QT_TRANSLATE_NOOP(
+                "PushSettingCardText",
+                "其他模拟器的 ADB 主机名或 IP；远程连接时填写远程设备地址",
+            ),
+            validator=normalize_adb_host,
+            parent=self.simulator_setting_group,
+        )
         self.simulator_port_chance_card = PushSettingCardChance(
             QT_TRANSLATE_NOOP("PushSettingCardChance", "修改"),
             FIF.TRAIN,
@@ -210,6 +224,19 @@ class SettingInterface(QWidget):
             config_name="start_emulator_timeout",
             max_value=3600,
             content="",
+            parent=self.simulator_setting_group,
+        )
+        self.task_stall_timeout_chance_card = PushSettingCardChance(
+            QT_TRANSLATE_NOOP("PushSettingCardChance", "修改"),
+            FIF.TRAIN,
+            QT_TRANSLATE_NOOP("PushSettingCardChance", "任务卡死重启等待时间(秒)"),
+            config_name="task_stall_timeout",
+            min_value=30,
+            max_value=3600,
+            content=QT_TRANSLATE_NOOP(
+                "PushSettingCardChance",
+                "页面长时间无进展后才会重启游戏；低性能模拟器建议设置为600秒",
+            ),
             parent=self.simulator_setting_group,
         )
 
@@ -481,8 +508,10 @@ class SettingInterface(QWidget):
 
         self.simulator_setting_group.addSettingCard(self.simulator_setting_card)
         self.simulator_setting_group.addSettingCard(self.simulator_type_setting_card)
+        self.simulator_setting_group.addSettingCard(self.simulator_host_setting_card)
         self.simulator_setting_group.addSettingCard(self.simulator_port_chance_card)
         self.simulator_setting_group.addSettingCard(self.start_emulator_timeout_chance_card)
+        self.simulator_setting_group.addSettingCard(self.task_stall_timeout_chance_card)
 
         self.game_path_group.addSettingCard(self.game_path_card)
         self.game_path_group.addSettingCard(self.autostart_card)
@@ -715,8 +744,10 @@ class SettingInterface(QWidget):
         self.simulator_setting_group.retranslateUi()
         self.simulator_setting_card.retranslateUi()
         self.simulator_type_setting_card.retranslateUi()
+        self.simulator_host_setting_card.retranslateUi()
         self.simulator_port_chance_card.retranslateUi()
         self.start_emulator_timeout_chance_card.retranslateUi()
+        self.task_stall_timeout_chance_card.retranslateUi()
         self.game_path_card.retranslateUi()
         self.game_path_group.retranslateUi()
         self.autodaily_group.retranslateUi()

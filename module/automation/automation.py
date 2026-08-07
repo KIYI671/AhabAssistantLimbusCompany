@@ -1,6 +1,7 @@
 import gc
 import math
 import random
+import threading
 import time
 from ast import List
 from dataclasses import dataclass
@@ -38,6 +39,10 @@ class Automation(metaclass=SingletonMeta):
         self.windows_title = windows_title
         self.screenshot = None
         self.input_handler = AbstractInput()
+        self._screenshot_lock = threading.RLock()
+        self._input_lock = threading.RLock()
+        self._interaction_gate = threading.Event()
+        self._interaction_gate.set()
 
         self.init_input()
 
@@ -84,19 +89,70 @@ class Automation(metaclass=SingletonMeta):
 
             self.input_handler = BackgroundInput()
         assert isinstance(self.input_handler, AbstractInput), "输入处理器必须是AbstractInput的实例"
-        self.mouse_click = self.input_handler.mouse_click
-        self.mouse_click_blank = self.input_handler.mouse_click_blank
-        self.mouse_drag = self.input_handler.mouse_drag
-        self.mouse_swipe_for_scroll = self.input_handler.mouse_swipe_for_scroll
-        self.mouse_drag_down = self.input_handler.mouse_drag_down
-        self.mouse_scroll = self.input_handler.mouse_scroll
         self.set_pause = self.input_handler.set_pause
         self.wait_pause = self.input_handler.wait_pause
-        self.mouse_to_blank = self.input_handler.mouse_to_blank
-        self.mouse_drag_link = self.input_handler.mouse_drag_link
-        self.key_press = self.input_handler.key_press
-        self.input_text = self.input_handler.input_text
         self.memory_protection = cfg.memory_protection
+
+    def suspend_interactions(self) -> None:
+        """暂时阻止业务线程继续点击。"""
+        self._interaction_gate.clear()
+
+    def resume_interactions(self) -> None:
+        """恢复业务线程点击。"""
+        self._interaction_gate.set()
+
+    def _run_business_interaction(self, method_name: str, *args, **kwargs):
+        """在交互门放行且取得输入锁后执行一次业务输入。
+
+        交互门可能在等待输入锁期间被监控线程关闭，因此取得锁后需要再次确认。
+        """
+        while True:
+            self._interaction_gate.wait()
+            with self._input_lock:
+                if not self._interaction_gate.is_set():
+                    continue
+                method = getattr(self.input_handler, method_name)
+                return method(*args, **kwargs)
+
+    def mouse_click(self, x, y, times=1):
+        return self._run_business_interaction("mouse_click", x, y, times=times)
+
+    def mouse_click_blank(self, *args, **kwargs):
+        return self._run_business_interaction("mouse_click_blank", *args, **kwargs)
+
+    def mouse_drag(self, *args, **kwargs):
+        return self._run_business_interaction("mouse_drag", *args, **kwargs)
+
+    def mouse_swipe_for_scroll(self, *args, **kwargs):
+        return self._run_business_interaction("mouse_swipe_for_scroll", *args, **kwargs)
+
+    def mouse_drag_down(self, *args, **kwargs):
+        return self._run_business_interaction("mouse_drag_down", *args, **kwargs)
+
+    def mouse_scroll(self, *args, **kwargs):
+        return self._run_business_interaction("mouse_scroll", *args, **kwargs)
+
+    def mouse_to_blank(self, *args, **kwargs):
+        return self._run_business_interaction("mouse_to_blank", *args, **kwargs)
+
+    def mouse_drag_link(self, *args, **kwargs):
+        return self._run_business_interaction("mouse_drag_link", *args, **kwargs)
+
+    def key_press(self, *args, **kwargs):
+        return self._run_business_interaction("key_press", *args, **kwargs)
+
+    def input_text(self, *args, **kwargs):
+        return self._run_business_interaction("input_text", *args, **kwargs)
+
+    def monitor_mouse_click(self, x, y, times=1):
+        """由系统监控线程点击，不等待该监控线程设置的互斥门。"""
+        with self._input_lock:
+            return self.input_handler.mouse_click(x, y, times=times)
+
+    def take_monitor_screenshot(self, gray: bool = True) -> Image | None:
+        """获取监控截图，不覆盖业务线程当前使用的截图。"""
+        with self._screenshot_lock:
+            return ScreenShot.take_screenshot(gray)
 
     def check_pause(self) -> bool:
         """
@@ -224,6 +280,7 @@ class Automation(metaclass=SingletonMeta):
         time.sleep(wait_time)
 
         # 计算传入的位置
+        self._interaction_gate.wait()
         x, y = self.calculate_click_position(coordinates, offset)
 
         # 定义鼠标操作映射
@@ -269,7 +326,8 @@ class Automation(metaclass=SingletonMeta):
                     )
                     time.sleep(wait_time)
 
-                result = ScreenShot.take_screenshot(gray)
+                with self._screenshot_lock:
+                    result = ScreenShot.take_screenshot(gray)
                 if result:
                     self.screenshot = result
                     self.last_screenshot_time = time.time()
