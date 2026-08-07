@@ -54,7 +54,7 @@ THEME_PACK_CARD_BATCH_SIZE = 5
 THEME_PACK_NAME_MAP = {
     "forgot": "遗忘",
     "gambl": "赌徒",
-    "und": "钉与锤",
+    "nagel": "钉与锤",
     "faith": "信仰",
     "unconf": "无作为",
     "workshop": "工坊",
@@ -72,16 +72,15 @@ THEME_PACK_NAME_MAP = {
     "crushers": "粉碎者",
     "repression": "情感压迫",
     "addict": "沉迷的",
-    "seduct": "感情困惑",
+    "seduct": "情感困惑",
     "dolen": "情感懒",
-    "glutton": "吞噬的",
+    "devoured": "吞噬的",
     "cravi": "情感饥渴",
-    "gloom": "落的忧",
+    "degraded": "落的忧",
     "subserv": "情感屈从",
     "nsignif": "寒微",
     "judgment": "情感评判",
     "outcast": "无归属",
-    "curshed": "当碎",
     "crushed": "当碎",
     "automated": "自动",
     "spring": "琢春",
@@ -93,9 +92,9 @@ THEME_PACK_NAME_MAP = {
     "warp": "谋杀",
     "violet": "紫罗兰",
     "dicers": "斩切",
-    "wrath": "压抑的",
-    "sloth": "沉溺者",
-    "flood": "空转",
+    "repressed": "压抑的",
+    "treadwheel": "空转",
+    "flood": "沉溺者",
     "vain": "虚张声势",
     "check": "体检",
     "sweep": "清扫",
@@ -104,13 +103,14 @@ THEME_PACK_NAME_MAP = {
     "dusk": "黄昏",
     "thread": "绞丝",
     "compassion": "巡礼",
+    "mnestic": "经验",
+    "unknown": "未知",
 }
 
 # 英文key到中文名称的映射表（困难模式）
 THEME_PACK_HARD_NAME_MAP = {
-    "20": "奇迹复刻",
     "seismic": "地震",
-    "extrenal": "破坏性",
+    "external": "破坏性",
     "thunder": "电闪雷鸣",
     "sanguine": "渗出的",
     "dizzying": "缭乱的",
@@ -121,11 +121,9 @@ THEME_PACK_HARD_NAME_MAP = {
     "opening": "开园",
     "procession": "无尽的",
     "unchanging": "无改变",
-    "unchang": "无改变",
     "evil": "定义为",
     "heartb": "心意相",
     "line": "号线",
-    "repressed": "压抑的",
     "unbound": "解放的",
     "tangling": "束缚的",
     "inert": "停滞的",
@@ -154,12 +152,30 @@ CN_TO_EN_NAME_MAP = {v: k for k, v in THEME_PACK_NAME_MAP.items()}
 CN_TO_EN_HARD_NAME_MAP = {v: k for k, v in THEME_PACK_HARD_NAME_MAP.items()}
 
 # OCR 备用名称映射表（备用名称 -> 主名称）
-# 用于处理 OCR 识别误差，备用名称在 GUI 中不显示，但权重会同步更新
+# 用于处理 OCR 识别误差和零协会改名，备用名称在 GUI 中不显示，但权重会同步更新
 CN_OCR_ALTERNATIVES = {
     "海边": "海·边",  # s.e.a 主题包的 OCR 备用
     "切琢": "琢春",  # spring 主题包的 OCR 备用
     "体险": "体检",  # check 主题包的 OCR 备用
     "凤皇": "凤·皇",  # check 主题包的 OCR 备用
+    "未曾面对": "无作为",  # unconf 主题包的零协会新译名
+    "无法去爱": "无慈悲",  # unloving 主题包的零协会新译名
+}
+
+# 英文 OCR 备用短片段（备用 key -> 主 key）
+# 英文卡包名过长时 OCR 容易识别失败，短片段作为兜底；不参与界面展示，
+# 权重随主 key 同步，且不能进 NAME_MAP（否则反向映射会覆盖主 key 导致权重不同步）
+EN_OCR_ALTERNATIVES = {
+    "nag": "nagel",  # Nagel and Hammer 的 OCR 备用
+    "shed": "crushed",  # To be Crushed 的 OCR 备用
+    "ssed": "repressed",  # Repressed Wrath 的 OCR 备用
+    "dev": "devoured",  # Devoured Gluttony 的 OCR 备用
+    "deg": "degraded",  # Degraded Gloom 的 OCR 备用
+    "tread": "treadwheel",  # Treadwheel Sloth 的 OCR 备用
+    "mne": "mnestic",  # Mnestic Experience 的 OCR 备用
+    "xte": "external",  # Crushing External Force 的 OCR 备用
+    "b·e": "Theb",  # The BE 的 OCR 备用
+    "unch": "unchanging",  # The Unchanging 的 OCR 短片段兜底
 }
 
 # 主题包 key 到图片文件名的映射表（普通模式）
@@ -167,7 +183,7 @@ THEME_PACK_IMAGE_MAP = {
     # 普通模式主题包
     "forgot": "The Forgotten.png",
     "gambl": "Flat-broke Gamblers.png",
-    "und": "Nagel and Hammer.png",
+    "nagel": "Nagel and Hammer.png",
     "faith": "Faith & Erosion.png",
     "unconf": "The Unconfronting.png",
     "workshop": "Nest, Workshop, and Technology.png",
@@ -177,7 +193,7 @@ THEME_PACK_IMAGE_MAP = {
     "certain": "A Certain World.png",
     "chick": "Hell's Chicken.png",
     "s.e.a": "ASEA.png",
-    "miracle": "Miracle in District 20.png",
+    "miracle": "Miracle in District 20 BokGak.png",
     "bullet": "Full-Stopped by a Bullet.png",
     "cleaved": "To be Cleaved.png",
     "penetra": "Piercers & Penetrators.png",
@@ -187,44 +203,43 @@ THEME_PACK_IMAGE_MAP = {
     "addict": "Addicting Lust.png",
     "seduct": "Emotional Seduction.png",
     "dolen": "Emotional Indolence.png",
-    "glutton": "Devoured Gluttony.png",
+    "devoured": "Devoured Gluttony.png",
     "cravi": "Emotional Craving.png",
-    "gloom": "Degraded Gloom.png",
+    "degraded": "Degraded Gloom.png",
     "subserv": "Emotional Subservience.png",
     "nsignif": "Insignificant Envy.png",
     "judgment": "Emotional Judgment.png",
     "outcast": "The Outcast.png",
-    "curshed": "To be Crushed.png",
     "crushed": "To be Crushed.png",
     "automated": "Automated Factory.png",
     "spring": "Spring Cultivation.png",
     "unloving": "The Unloving.png",
     "flowers": "Falling Flowers.png",
     "abyss": "Crawling Abyss.png",
-    "bones": "Yield My Flesh to Claim Their Bones.png",
-    "time": "Timekilling Time.png",
-    "warp": "Murder on the WARP Express.png",
+    "bones": "Vield My Flesh to Claim Their Bones BokGak.png",
+    "time": "Timekilling Time BokGak.png",
+    "warp": "Marder on.the WARP Express BokGak.png",
     "violet": "The Moon of Violet.png",
     "dicers": "Slicers & Dicers.png",
-    "wrath": "Unbound Wrath.png",
-    "sloth": "Treadwheel Sloth.png",
+    "repressed": "Repressed Wrath.png",
+    "treadwheel": "Treadwheel Sloth.png",
     "flood": "Emotional Flood.png",
     "vain": "Vain Pride.png",
-    "check": "LCB Reguar Checkup.png",
-    "sweep": "Nocturnal Sweeping.png",
+    "check": "LCB Regular Checkup BokGak.png",
+    "sweep": "Nocturnal Sweeping BokGak.png",
     "Hatred": "Hatred and Despair.png",
     "Wander": "Charm,Wander,Doubt.png",
     "dusk": "The Dusk of Amber.png",
     "thread": "Twining Threads.png",
-    # 以下主题包暂无对应图片文件
-    # "compassion": "The Compassion.png",  # 明日方舟联动/巡礼
+    "compassion": "Pilgrimage of Compassion.png",
+    "mnestic": "Experience Memory.png",
+    "unknown": "Unknown.png",
 }
 
 # 主题包 key 到图片文件名的映射表（困难模式）
 THEME_PACK_HARD_IMAGE_MAP = {
-    "20": "Miracle in District 20.png",
     "seismic": "Abnormal Seismi Zone.png",
-    "extrenal": "Crushing External Force.png",
+    "external": "Crushing External Force.png",
     "thunder": "Thunder and Lightning.png",
     "sanguine": "Trickled Sanguin Blood.png",
     "dizzying": "Dizzying Waves.png",
@@ -235,11 +250,9 @@ THEME_PACK_HARD_IMAGE_MAP = {
     "opening": "La Manchaland Reopening.png",
     "procession": "The Infinite Procession.png",
     "unchanging": "The Unchanging.png",
-    "unchang": "The Unchanging.png",
     "evil": "The Evil Defining.png",
     "heartb": "The Heartbreaking.png",
     "line": "Line 1.png",
-    "repressed": "Repressed Wrath.png",
     "unbound": "Unbound Wrath.png",
     "tangling": "Tangling Lust.png",
     "inert": "Inert Sloth.png",
@@ -763,6 +776,8 @@ class ThemePackSettingDialog(FramelessDialog):
         for pack_key, weight in normal_packs.items():
             if self.is_cn and pack_key in CN_OCR_ALTERNATIVES:
                 continue
+            if not self.is_cn and pack_key in EN_OCR_ALTERNATIVES:
+                continue
             self._pending_cards.append((pack_key, weight, False, row, col))
             col += 1
             if col >= col_count:
@@ -773,6 +788,8 @@ class ThemePackSettingDialog(FramelessDialog):
         col = 0
         for pack_key, weight in hard_packs.items():
             if self.is_cn and pack_key in CN_OCR_ALTERNATIVES:
+                continue
+            if not self.is_cn and pack_key in EN_OCR_ALTERNATIVES:
                 continue
             self._pending_cards.append((pack_key, weight, True, row, col))
             col += 1
@@ -855,9 +872,26 @@ class ThemePackSettingDialog(FramelessDialog):
             en_key = reverse_map.get(pack_key_str)
             if en_key and en_key in en_config:
                 en_config[en_key] = weight
+                # 同时检查该英文 key 是否有 OCR 备用短片段，一并更新
+                for alt_key, main_key in EN_OCR_ALTERNATIVES.items():
+                    if main_key == en_key and alt_key in en_config:
+                        en_config[alt_key] = weight
         else:
             # 当前是英文界面，pack_key 是英文 key
             en_config[pack_key_str] = weight
+
+            # 检查是否有英文 OCR 备用短片段，如果有则同步更新
+            if pack_key_str in EN_OCR_ALTERNATIVES:
+                # pack_key 是备用短片段，找到主 key 并更新
+                main_key = EN_OCR_ALTERNATIVES[pack_key_str]
+                if main_key in en_config:
+                    en_config[main_key] = weight
+            else:
+                # pack_key 是主 key，检查是否有备用短片段需要同步更新
+                for alt_key, main_key in EN_OCR_ALTERNATIVES.items():
+                    if main_key == pack_key_str and alt_key in en_config:
+                        en_config[alt_key] = weight
+
             # 找到对应的英文 key 并更新中文配置
             cn_key = name_map.get(pack_key_str)
             if cn_key and cn_key in cn_config:
