@@ -6,7 +6,6 @@ from time import sleep
 from typing import Callable, Optional
 
 import cv2
-import numpy as np
 
 from module.automation import auto
 from module.config import cfg
@@ -282,7 +281,8 @@ class Battle:
 
             # 如果正在交战过程
             if auto.find_element("battle/pause_assets.png"):
-                sleep(2 * waiting)  # 战斗播片中增大间隔
+                # take_screenshot() 已按 screenshot_interval 限速。这里不再叠加
+                # 2 * waiting，避免动画结束后仍额外等待数秒；该分支只读不点击。
                 chance = self.INIT_CHANCE
                 first_turn = False
                 defense_for_solo_used_this_turn = False
@@ -341,7 +341,7 @@ class Battle:
             # 更新回合数
             if infinite_battle and defense_on_turn1:
                 try:
-                    sc = ImageUtils.crop(np.array(auto.screenshot), turn_ocr_bbox)
+                    sc = ImageUtils.crop(auto.get_screenshot_array(), turn_ocr_bbox)
                     result = ocr.run(sc)
                     ocr_result = [result.txts[i] for i in range(len(result.txts))]
                     ocr_result = "".join(ocr_result)
@@ -360,7 +360,7 @@ class Battle:
                 # 如果多次识别不到战斗界面
                 try:
                     turn_bbox = ImageUtils.get_bbox(ImageUtils.load_image("battle/turn_assets.png"))
-                    sc = ImageUtils.crop(np.array(auto.screenshot), turn_bbox)
+                    sc = ImageUtils.crop(auto.get_screenshot_array(), turn_bbox)
                     sc = cv2.inRange(sc, 50, 255)
                     result = ocr.run(sc)
                     ocr_result = [result.txts[i] for i in range(len(result.txts))]
@@ -392,7 +392,7 @@ class Battle:
                     auto.mouse_to_blank()
                 try:
                     turn_bbox = ImageUtils.get_bbox(ImageUtils.load_image("battle/turn_assets.png"))
-                    sc = ImageUtils.crop(np.array(auto.screenshot), turn_bbox)
+                    sc = ImageUtils.crop(auto.get_screenshot_array(), turn_bbox)
                     sc = cv2.inRange(sc, 50, 255)
                     result = ocr.run(sc)
                     ocr_result = [result.txts[i] for i in range(len(result.txts))]

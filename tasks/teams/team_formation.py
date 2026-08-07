@@ -171,7 +171,7 @@ def deal_with_spills():
         sinner_nums_bbox[2],
         sinner_nums_bbox[3] - 115 * scale,
     )
-    sc = ImageUtils.crop(np.array(auto.screenshot), sinner_nums_bbox)
+    sc = ImageUtils.crop(auto.get_screenshot_array(), sinner_nums_bbox)
     sc = cv2.bitwise_not(sc)
     mask = cv2.inRange(sc, 220, 255)
     mask = cv2.bitwise_not(mask)
@@ -203,7 +203,7 @@ def deal_with_spills():
                             selected[0] + 40 * scale,
                             selected[1] - 30 * scale,
                         )
-                        sc2 = ImageUtils.crop(np.array(auto.screenshot), order_bbox)
+                        sc2 = ImageUtils.crop(auto.get_screenshot_array(), order_bbox)
                         background2 = np.zeros((300, 300), dtype=np.uint8)
                         h, w = sc2.shape[:2]
                         y_off = (300 - h) // 2
