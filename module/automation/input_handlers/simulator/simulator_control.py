@@ -18,6 +18,8 @@ from .pyminitouch import MNTDevice
 
 T = TypeVar("T")
 ADB_CONNECT_TIMEOUT = 10.0
+ADB_GAME_STATE_TIMEOUT = 5.0
+ADB_GAME_START_TIMEOUT = 15.0
 
 key_list = {
     "a": 29,
@@ -156,7 +158,26 @@ class SimulatorControl(AbstractInput):
         def _start_game():
             if self.simulator_device is None:
                 self.get_simulator()
-            self.simulator_device.app_start(self.game_package_name)
+            activities = self.simulator_device.shell(
+                ["dumpsys", "activity", "activities"],
+                timeout=ADB_GAME_STATE_TIMEOUT,
+            )
+            foreground_pattern = rf"mResumedActivity:.*\s{re.escape(self.game_package_name)}/"
+            if re.search(foreground_pattern, activities):
+                log.debug("游戏已在模拟器前台运行，跳过重复启动")
+                return
+
+            self.simulator_device.shell(
+                [
+                    "monkey",
+                    "-p",
+                    self.game_package_name,
+                    "-c",
+                    "android.intent.category.LAUNCHER",
+                    "1",
+                ],
+                timeout=ADB_GAME_START_TIMEOUT,
+            )
 
         try:
             self._call_with_reconnect("启动游戏", _start_game)

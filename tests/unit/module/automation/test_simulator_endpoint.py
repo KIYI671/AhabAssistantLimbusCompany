@@ -70,3 +70,53 @@ def test_simulator_control_reports_remote_connection_failure(monkeypatch) -> Non
 
     with pytest.raises(RuntimeError, match=r"remote\.example\.com:5555"):
         control.adb_connect()
+
+
+def test_start_game_skips_launch_when_game_is_already_foreground() -> None:
+    calls = []
+
+    def shell(command, timeout):
+        calls.append((command, timeout))
+        return (
+            "mResumedActivity: ActivityRecord{123 u0 "
+            "com.ProjectMoon.LimbusCompany/.LimbusCompanyActivity t17}"
+        )
+
+    control = simulator_control.SimulatorControl.__new__(simulator_control.SimulatorControl)
+    control.simulator_device = SimpleNamespace(shell=shell)
+    control.game_package_name = "com.ProjectMoon.LimbusCompany"
+
+    control.start_game()
+
+    assert calls == [
+        (["dumpsys", "activity", "activities"], simulator_control.ADB_GAME_STATE_TIMEOUT)
+    ]
+
+
+def test_start_game_uses_bounded_adb_launch_when_game_is_not_foreground() -> None:
+    calls = []
+
+    def shell(command, timeout):
+        calls.append((command, timeout))
+        return "mResumedActivity: ActivityRecord{123 u0 com.android.launcher/.Launcher t1}"
+
+    control = simulator_control.SimulatorControl.__new__(simulator_control.SimulatorControl)
+    control.simulator_device = SimpleNamespace(shell=shell)
+    control.game_package_name = "com.ProjectMoon.LimbusCompany"
+
+    control.start_game()
+
+    assert calls == [
+        (["dumpsys", "activity", "activities"], simulator_control.ADB_GAME_STATE_TIMEOUT),
+        (
+            [
+                "monkey",
+                "-p",
+                "com.ProjectMoon.LimbusCompany",
+                "-c",
+                "android.intent.category.LAUNCHER",
+                "1",
+            ],
+            simulator_control.ADB_GAME_START_TIMEOUT,
+        ),
+    ]
