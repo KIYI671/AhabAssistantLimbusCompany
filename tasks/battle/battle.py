@@ -16,6 +16,7 @@ from module.ocr import ocr
 from tasks import sins
 from tasks.base.retry import handle_server_error_dialog, retry
 from tasks.event import event_handling
+from tasks.event.event_handling import resolve_event_page
 from utils.image_utils import ImageUtils
 from utils.utils import find_skill3
 
@@ -492,6 +493,18 @@ class Battle:
                 if auto.click_element("event/commence_assets.png"):
                     continue
                 if auto.click_element("event/skip_assets.png", times=6):
+                    continue
+                event_resolution = resolve_event_page(auto.get_ocr_entries())
+                if event_resolution is not None:
+                    if event_resolution.state == "advance" and event_resolution.position is not None:
+                        auto.mouse_click(*event_resolution.position)
+                        log.debug(f"OCR 推进日常事件页: {event_resolution.reason}")
+                    elif event_resolution.state == "advance":
+                        log.warning("OCR 事件推进缺少按钮坐标，按等待处理")
+                    else:
+                        log.debug("事件判定结果动画中，等待推进按钮出现")
+                    chance = self.INIT_CHANCE
+                    sleep(waiting)
                     continue
             if auto.find_element("mirror/road_in_mir/select_encounter_reward_card_assets.png"):
                 if infinite_battle:

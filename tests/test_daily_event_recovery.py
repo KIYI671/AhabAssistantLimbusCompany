@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import importlib
+
 import pytest
 
 from tasks.event_page import resolve_event_page
@@ -102,3 +104,144 @@ def test_resolve_event_page_normalizes_whitespace() -> None:
     assert result is not None
     assert result.state == "advance"
     assert result.position == (720, 820)
+
+
+class _FightEventAuto:
+    def __init__(self, ocr_frames: list[list[tuple[str, tuple[int, int, int, int]]]]) -> None:
+        self._ocr_frames = ocr_frames
+        self._frame = 0
+        self.clicks: list[tuple[int, int]] = []
+
+    def take_screenshot(self) -> object:
+        self._frame += 1
+        return object()
+
+    def get_restore_time(self) -> None:
+        return None
+
+    def find_element(self, *_args, **_kwargs) -> bool:
+        return False
+
+    def click_element(self, *_args, **_kwargs) -> bool:
+        return False
+
+    def find_language_text(self, zh_text: str, _en_text: str) -> tuple[int, int] | bool:
+        if self._frame > len(self._ocr_frames):
+            if zh_text == "战斗胜利":
+                return 700, 700
+            if zh_text == "确认":
+                return 1400, 700
+        return False
+
+    def get_ocr_entries(self) -> list[tuple[str, tuple[int, int, int, int]]]:
+        if self._frame <= len(self._ocr_frames):
+            return self._ocr_frames[self._frame - 1]
+        return []
+
+    def mouse_click(self, x: int, y: int, **_kwargs) -> None:
+        self.clicks.append((x, y))
+
+    def mouse_to_blank(self) -> None:
+        return None
+
+
+def _run_daily_event_fight(
+    monkeypatch: pytest.MonkeyPatch,
+    ocr_frames: list[list[tuple[str, tuple[int, int, int, int]]]],
+    *,
+    init_chance: int | None = None,
+) -> tuple[_FightEventAuto, list[None], list[None]]:
+    battle_module = importlib.import_module("tasks.battle.battle")
+    retry_calls: list[None] = []
+    back_init_menu_calls: list[None] = []
+    fake_auto = _FightEventAuto(ocr_frames)
+
+    monkeypatch.setattr(battle_module, "auto", fake_auto)
+    monkeypatch.setattr(battle_module, "sleep", lambda _seconds: None)
+    monkeypatch.setattr(
+        battle_module,
+        "retry",
+        lambda: retry_calls.append(None) or True,
+    )
+    back_init_menu_module = importlib.import_module("tasks.base.back_init_menu")
+    monkeypatch.setattr(
+        back_init_menu_module,
+        "back_init_menu",
+        lambda: back_init_menu_calls.append(None) or False,
+    )
+
+    battle = battle_module.Battle(is_tool=True)
+    if init_chance is not None:
+        battle.INIT_CHANCE = init_chance
+    battle.fight()
+    return fake_auto, retry_calls, back_init_menu_calls
+
+
+def test_fight_advances_daily_event_result_from_ocr_then_settles(monkeypatch) -> None:
+    fake_auto, retry_calls, back_init_menu_calls = _run_daily_event_fight(
+        monkeypatch,
+        [
+            [
+                _entry("判定成功", (500, 200, 700, 240)),
+                _entry("继续", (680, 800, 760, 840)),
+            ]
+        ],
+    )
+
+    assert fake_auto.clicks == [(720, 820), (1400, 700)]
+    assert retry_calls == []
+    assert back_init_menu_calls == []
+
+
+def test_fight_waits_for_daily_event_result_button_without_retry(monkeypatch) -> None:
+    fake_auto, retry_calls, back_init_menu_calls = _run_daily_event_fight(
+        monkeypatch,
+        [
+            [_entry("判定成功", (500, 200, 700, 240))],
+            [
+                _entry("判定成功", (500, 200, 700, 240)),
+                _entry("继续", (680, 800, 760, 840)),
+            ],
+        ],
+    )
+
+    assert fake_auto.clicks == [(720, 820), (1400, 700)]
+    assert retry_calls == []
+    assert back_init_menu_calls == []
+
+
+def test_fight_wait_result_resets_exhausted_chance_before_settlement(monkeypatch) -> None:
+    fake_auto, retry_calls, back_init_menu_calls = _run_daily_event_fight(
+        monkeypatch,
+        [
+            [],
+            [_entry("判定成功", (500, 200, 700, 240))],
+            [],
+        ],
+        init_chance=1,
+    )
+
+    assert fake_auto.clicks == [(1400, 700)]
+    # 非事件帧会走现有循环末尾的无副作用重试检查，然后才减少 chance。
+    assert retry_calls == [None, None]
+    assert back_init_menu_calls == []
+
+
+def test_fight_advance_result_resets_exhausted_chance_before_settlement(monkeypatch) -> None:
+    fake_auto, retry_calls, back_init_menu_calls = _run_daily_event_fight(
+        monkeypatch,
+        [
+            [],
+            [
+                _entry("判定成功", (500, 200, 700, 240)),
+                _entry("继续", (680, 800, 760, 840)),
+            ],
+            [],
+        ],
+        init_chance=1,
+    )
+
+    assert fake_auto.clicks == [(720, 820), (1400, 700)]
+    # 非事件帧会走现有循环末尾的无副作用重试检查，然后才减少 chance。
+    assert retry_calls == [None, None]
+    assert back_init_menu_calls == []
