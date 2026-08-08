@@ -1,3 +1,4 @@
+import re
 from time import sleep
 
 from module.automation import auto
@@ -80,6 +81,20 @@ def _ordered_team_location(num):
     return page_count, num - visible_page_start
 
 
+def find_named_team_position(num: int, text_positions: dict[str, list[float]]) -> list[float] | bool:
+    """从 OCR 结果中精确查找指定编号的编队名称。"""
+    expected = str(num)
+    patterns = (
+        rf"编队\s*#\s*{expected}(?!\d)",
+        rf"(?:TEAMS|TFAMS)\s*#\s*{expected}(?!\d)",
+    )
+    for text, position in text_positions.items():
+        normalized = text.replace(" ", "")
+        if any(re.search(pattern, normalized, flags=re.IGNORECASE) for pattern in patterns):
+            return position
+    return False
+
+
 @begin_and_finish_time_log(task_name="寻找队伍")
 # 找队
 def select_battle_team(num):
@@ -126,13 +141,12 @@ def select_battle_team(num):
             sleep(1)
             return True
         else:
-            team_name_zh = "编队#" + str(num)
-            team_name_en = [f"TEAMS #{num}", f"TEAMS#{num}", f"TFAMS#{num}"]
             position_bbox = (0, 0, position[0] + 130 * scale, position[1] + 600 * scale)
             for i in range(10):
                 while auto.take_screenshot() is None:
                     continue
-                if team_position := auto.find_language_text(team_name_zh, team_name_en, my_crop=position_bbox):
+                text_positions = auto.get_text_positions(my_crop=position_bbox)
+                if team_position := find_named_team_position(num, text_positions):
                     auto.mouse_action_with_pos(team_position, offset=False)
                     find = True
                     break
