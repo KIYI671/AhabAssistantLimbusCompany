@@ -37,6 +37,7 @@ class Automation(metaclass=SingletonMeta):
     def __init__(self, windows_title):
         self.windows_title = windows_title
         self.screenshot = None
+        self.color_screenshot = None
         self.input_handler = AbstractInput()
 
         self.init_input()
@@ -251,13 +252,14 @@ class Automation(metaclass=SingletonMeta):
         return True
 
     def take_screenshot(self, gray: bool = True) -> Image | None:
-        """
-        截取当前屏幕并返回图像对象。
-        Args:
-            gray (bool): 是否将图像转换为灰度图，默认为True。
-        Returns:
-            Image: 截取当前屏幕的图像对象
-        """
+        """截取当前屏幕并返回图像对象。"""
+        return self._take_screenshot(gray=gray, keep_color=False)
+
+    def take_screenshot_with_color(self) -> Image | None:
+        """截取彩色帧，同时保留供模板匹配使用的灰度帧。"""
+        return self._take_screenshot(gray=True, keep_color=True)
+
+    def _take_screenshot(self, gray: bool, keep_color: bool) -> Image | None:
         start_time = time.time()
         screenshot_interval_time = cfg.screenshot_interval if cfg.screenshot_interval else 0.85
         while True:
@@ -269,13 +271,16 @@ class Automation(metaclass=SingletonMeta):
                     )
                     time.sleep(wait_time)
 
-                result = ScreenShot.take_screenshot(gray)
+                result = ScreenShot.take_screenshot(False if keep_color else gray)
                 if result:
-                    self.screenshot = result
+                    if keep_color:
+                        self.color_screenshot = result.convert("RGB")
+                        self.screenshot = self.color_screenshot.convert("L")
+                    else:
+                        self.screenshot = result
                     self.last_screenshot_time = time.time()
-                    return result
-                else:
-                    return None
+                    return self.screenshot
+                return None
             except Exception as e:
                 log.error(f"截图失败:{e}")
             time.sleep(1)
@@ -290,7 +295,7 @@ class Automation(metaclass=SingletonMeta):
                 try:
                     _, pid = win32process.GetWindowThreadProcessId(screen.handle.hwnd)
                     os.system(f"taskkill /F /PID {pid}")
-                except:
+                except Exception:
                     pass
                 from tasks.base.script_task_scheme import init_game
 
@@ -433,6 +438,35 @@ class Automation(metaclass=SingletonMeta):
         ocr_dict = {text: position for text, position in zip(ocr_text_list, ocr_position_list)}
         log.debug(f"识别到文本及其坐标：{ocr_dict}", stacklevel=additional_stack + 3)
         return ocr_dict
+
+    def get_ocr_entries(self) -> list[tuple[str, tuple[int, int, int, int]]]:
+        """返回当前截图中的 OCR 文本及其规范化外接矩形。"""
+        if self.screenshot is None:
+            return []
+
+        ocr_result = ocr.run(self.screenshot)
+        if not ocr_result.txts or len(ocr_result.boxes) == 0:
+            return []
+
+        entries = []
+        for text, box in zip(ocr_result.txts, ocr_result.boxes):
+            points = np.asarray(box)
+            if points.size == 0:
+                continue
+            x_values = points[:, 0]
+            y_values = points[:, 1]
+            entries.append(
+                (
+                    text,
+                    (
+                        int(x_values.min()),
+                        int(y_values.min()),
+                        int(x_values.max()),
+                        int(y_values.max()),
+                    ),
+                )
+            )
+        return entries
 
     def _find_target_in_ocr_dict(self, target, ocr_dict, all_text=False):
         if ocr_dict == {}:
