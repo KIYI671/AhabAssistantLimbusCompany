@@ -3,6 +3,22 @@ import time
 from module.automation import auto
 from module.config import cfg
 from module.logger import log
+from tasks.event_page import (
+    EventPageResolution,
+    OcrBounds,
+    OcrEntry,
+    _entry_center,
+    resolve_event_page,
+)
+
+__all__ = [
+    "EventHandling",
+    "EventPageResolution",
+    "OcrBounds",
+    "OcrEntry",
+    "_entry_center",
+    "resolve_event_page",
+]
 
 
 class EventHandling:
