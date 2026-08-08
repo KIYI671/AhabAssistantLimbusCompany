@@ -271,6 +271,8 @@ def _run_daily_group(process_fn, times, max_times, use_continuous_combat):
 
 def Daily_task_wrapper(get_reward=None):
     def wrapper():
+        back_init_menu()
+        make_enkephalin_module()
         exp_times = cfg.set_EXP_count
         if get_reward and get_reward == "EXP":
             exp_times -= 1

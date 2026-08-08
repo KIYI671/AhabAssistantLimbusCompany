@@ -62,7 +62,17 @@ def test_daily_groups_initialize_after_each_enabled_group(monkeypatch) -> None:
 
     scheme.Daily_task_wrapper()()
 
-    assert calls == ["exp", "exp", "home", "enkephalin", "thread", "home", "enkephalin"]
+    assert calls == [
+        "home",
+        "enkephalin",
+        "exp",
+        "exp",
+        "home",
+        "enkephalin",
+        "thread",
+        "home",
+        "enkephalin",
+    ]
 
 
 @pytest.mark.parametrize(
