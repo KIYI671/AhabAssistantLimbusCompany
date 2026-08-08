@@ -62,8 +62,6 @@ def onetime_EXP_process(combat_count: int = 1):
     if battle.to_battle() is False:
         return False
     battle.fight(combat_count=combat_count)
-    back_init_menu()
-    make_enkephalin_module()
 
 
 @begin_and_finish_time_log(task_name="一次纽本")
@@ -80,8 +78,6 @@ def onetime_thread_process(combat_count: int = 1):
     if battle.to_battle() is False:
         return False
     battle.fight(combat_count=combat_count)
-    back_init_menu()
-    make_enkephalin_module()
 
 
 @begin_and_finish_time_log(task_name="一次镜牢")
@@ -260,29 +256,31 @@ def _batch_combat(process_fn, times, max_times):
         process_fn(last)
 
 
-def _single_combat_run(exp_times, thread_times):
-    for _ in range(exp_times):
-        onetime_EXP_process()
-    for _ in range(thread_times):
-        onetime_thread_process()
+def _run_daily_group(process_fn, times, max_times, use_continuous_combat):
+    """完成一个日常项目的所有场次后，统一返回主界面并换饼。"""
+    if times <= 0:
+        return
+    if use_continuous_combat:
+        _batch_combat(process_fn, times, max_times)
+    else:
+        for _ in range(times):
+            process_fn()
+    back_init_menu()
+    make_enkephalin_module()
 
 
 def Daily_task_wrapper(get_reward=None):
     def wrapper():
-        back_init_menu()
-        make_enkephalin_module()
         exp_times = cfg.set_EXP_count
         if get_reward and get_reward == "EXP":
             exp_times -= 1
         thread_times = cfg.set_thread_count
         if get_reward and get_reward == "thread":
             thread_times -= 1
-        if cfg.config.use_continuous_combat and cfg.use_continuous_combat_select > 0:
-            max_times = cfg.use_continuous_combat_select
-            _batch_combat(onetime_EXP_process, exp_times, max_times)
-            _batch_combat(onetime_thread_process, thread_times, max_times)
-        else:
-            _single_combat_run(exp_times, thread_times)
+        use_continuous_combat = cfg.config.use_continuous_combat and cfg.use_continuous_combat_select > 0
+        max_times = cfg.use_continuous_combat_select
+        _run_daily_group(onetime_EXP_process, exp_times, max_times, use_continuous_combat)
+        _run_daily_group(onetime_thread_process, thread_times, max_times, use_continuous_combat)
 
     return wrapper
 
