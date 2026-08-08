@@ -29,12 +29,13 @@ def test_find_named_team_position_supports_english_and_ocr_fallback_names() -> N
     assert find_named_team_position(2, {"TEAMS #20": [100, 200]}) is False
 
 
-def test_find_named_team_position_uses_the_exact_number_when_custom_font_garbles_the_prefix() -> None:
+def test_find_named_team_position_rejects_preset_with_the_requested_number() -> None:
     text_positions = {
-        "���#10": [155, 586],
-        "Ԥ��#1": [154, 221],
-        "���#11": [155, 631],
+        "预设#1": [162.5, 220.5],
+        "编队#2": [163.0, 434.0],
+        "编队#10": [155.0, 586.0],
     }
 
-    assert find_named_team_position(1, text_positions) == [154, 221]
-    assert find_named_team_position(10, text_positions) == [155, 586]
+    assert find_named_team_position(1, text_positions) is False
+    assert find_named_team_position(2, text_positions) == [163.0, 434.0]
+    assert find_named_team_position(10, text_positions) == [155.0, 586.0]

@@ -82,11 +82,13 @@ def _ordered_team_location(num):
 
 
 def find_named_team_position(num: int, text_positions: dict[str, list[float]]) -> list[float] | bool:
-    """从 OCR 结果中精确查找指定编号的编队名称。"""
+    """从 OCR 结果中查找指定编号的编队名称，并排除预设项。"""
     expected = str(num)
     pattern = rf"#\s*{expected}(?!\d)"
     for text, position in text_positions.items():
         normalized = text.replace(" ", "")
+        if re.search(r"预设|preset", normalized, flags=re.IGNORECASE):
+            continue
         if re.search(pattern, normalized, flags=re.IGNORECASE):
             return position
     return False
