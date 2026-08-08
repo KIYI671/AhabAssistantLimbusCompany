@@ -4,7 +4,7 @@ import importlib
 
 import pytest
 
-from tasks.event_page import resolve_event_page
+from tasks.event_page import EventPageResolution, resolve_event_page
 
 
 def _entry(text: str, bounds: tuple[int, int, int, int]) -> tuple[str, tuple[int, int, int, int]]:
@@ -245,3 +245,208 @@ def test_fight_advance_result_resets_exhausted_chance_before_settlement(monkeypa
     # 非事件帧会走现有循环末尾的无副作用重试检查，然后才减少 chance。
     assert retry_calls == [None, None]
     assert back_init_menu_calls == []
+
+
+class _BackInitMenuEventAuto:
+    model = ""
+
+    def __init__(
+        self,
+        ocr_frames: list[list[tuple[str, tuple[int, int, int, int]]]],
+        *,
+        home_after_event: bool = False,
+        home_at_ocr_call: int | None = None,
+    ) -> None:
+        self._ocr_frames = ocr_frames
+        self._home_after_event = home_after_event
+        self._home_at_ocr_call = home_at_ocr_call
+        self._ocr_calls = 0
+        self.clicks: list[tuple[int, int]] = []
+        self.blank_clicks = 0
+        self.key_presses: list[str] = []
+
+    def get_ocr_entries(self) -> list[tuple[str, tuple[int, int, int, int]]]:
+        frame_index = min(self._ocr_calls, len(self._ocr_frames) - 1)
+        self._ocr_calls += 1
+        return self._ocr_frames[frame_index]
+
+    def _is_home_ready(self) -> bool:
+        if not self._home_after_event:
+            return False
+        if self._home_at_ocr_call is not None:
+            return self._ocr_calls >= self._home_at_ocr_call
+        return self._ocr_calls > 1
+
+    def click_element(self, asset: str, **_kwargs) -> bool:
+        return asset == "home/window_assets.png" and self._is_home_ready()
+
+    def find_element(self, asset: str, **_kwargs) -> bool:
+        return asset == "home/mail_assets.png" and self._is_home_ready()
+
+    def mouse_click(self, x: int, y: int, **_kwargs) -> None:
+        self.clicks.append((x, y))
+
+    def mouse_click_blank(self) -> None:
+        self.blank_clicks += 1
+
+    def key_press(self, key: str) -> None:
+        self.key_presses.append(key)
+
+
+def test_back_init_menu_advances_event_page_before_returning_home(monkeypatch) -> None:
+    back_init_menu_module = importlib.import_module("tasks.base.back_init_menu")
+    fake_auto = _BackInitMenuEventAuto(
+        [
+            [
+                _entry("判定成功", (500, 200, 700, 240)),
+                _entry("继续", (680, 800, 760, 840)),
+            ],
+            [],
+        ],
+        home_after_event=True,
+    )
+    monkeypatch.setattr(back_init_menu_module, "auto", fake_auto)
+    monkeypatch.setattr(back_init_menu_module, "ensure_simulator_game_started", lambda: False)
+    monkeypatch.setattr(back_init_menu_module, "retry", lambda: True)
+    monkeypatch.setattr(back_init_menu_module, "sleep", lambda _seconds: None)
+
+    assert back_init_menu_module.back_init_menu(allow_restart=False) is True
+    assert fake_auto.clicks == [(720, 820)]
+    assert fake_auto.blank_clicks == 0
+    assert fake_auto.key_presses == []
+
+
+def test_back_init_menu_stops_after_event_wait_timeout_without_restart(monkeypatch) -> None:
+    back_init_menu_module = importlib.import_module("tasks.base.back_init_menu")
+    fake_auto = _BackInitMenuEventAuto([[_entry("判定成功", (500, 200, 700, 240))]])
+    restart_calls: list[str] = []
+    clock = iter((0.0, 0.0, 61.0))
+
+    monkeypatch.setattr(back_init_menu_module, "auto", fake_auto)
+    monkeypatch.setattr(back_init_menu_module, "ensure_simulator_game_started", lambda: False)
+    monkeypatch.setattr(back_init_menu_module, "retry", lambda: True)
+    monkeypatch.setattr(back_init_menu_module, "sleep", lambda _seconds: None)
+    monkeypatch.setattr(back_init_menu_module, "monotonic", lambda: next(clock))
+    monkeypatch.setattr(back_init_menu_module, "kill_game", lambda: restart_calls.append("kill"), raising=False)
+    monkeypatch.setattr(back_init_menu_module, "restart_game", lambda: restart_calls.append("restart"), raising=False)
+
+    assert back_init_menu_module.back_init_menu(allow_restart=False) is False
+    assert restart_calls == []
+    assert fake_auto.clicks == []
+    assert fake_auto.blank_clicks == 0
+    assert fake_auto.key_presses == []
+
+
+def test_back_init_menu_resets_event_wait_after_allowed_restart(monkeypatch) -> None:
+    back_init_menu_module = importlib.import_module("tasks.base.back_init_menu")
+    retry_module = importlib.import_module("tasks.base.retry")
+    fake_auto = _BackInitMenuEventAuto(
+        [
+            [_entry("判定成功", (500, 200, 700, 240))],
+            [_entry("判定成功", (500, 200, 700, 240))],
+            [_entry("判定成功", (500, 200, 700, 240))],
+            [],
+        ],
+        home_after_event=True,
+    )
+    restart_calls: list[str] = []
+    clock = iter((0.0, 0.0, 61.0, 62.0, 62.0))
+
+    monkeypatch.setattr(back_init_menu_module, "auto", fake_auto)
+    monkeypatch.setattr(back_init_menu_module, "ensure_simulator_game_started", lambda: False)
+    monkeypatch.setattr(back_init_menu_module, "retry", lambda: True)
+    monkeypatch.setattr(back_init_menu_module, "sleep", lambda _seconds: None)
+    monkeypatch.setattr(back_init_menu_module, "monotonic", lambda: next(clock))
+    monkeypatch.setattr(retry_module, "kill_game", lambda: restart_calls.append("kill"))
+    monkeypatch.setattr(retry_module, "restart_game", lambda: restart_calls.append("restart"))
+
+    assert back_init_menu_module.back_init_menu() is True
+    assert restart_calls == ["kill", "restart"]
+
+
+def _configure_back_init_menu_event_dependencies(
+    monkeypatch: pytest.MonkeyPatch,
+    back_init_menu_module,
+    fake_auto: _BackInitMenuEventAuto,
+) -> None:
+    monkeypatch.setattr(back_init_menu_module, "auto", fake_auto)
+    monkeypatch.setattr(back_init_menu_module, "ensure_simulator_game_started", lambda: False)
+    monkeypatch.setattr(back_init_menu_module, "retry", lambda: True)
+    monkeypatch.setattr(back_init_menu_module, "sleep", lambda _seconds: None)
+
+
+def test_back_init_menu_keeps_waiting_for_event_result_past_loop_budget(monkeypatch) -> None:
+    back_init_menu_module = importlib.import_module("tasks.base.back_init_menu")
+    wait_frame = [_entry("判定成功", (500, 200, 700, 240))]
+    fake_auto = _BackInitMenuEventAuto(
+        [
+            *([wait_frame] * 40),
+            [
+                _entry("判定成功", (500, 200, 700, 240)),
+                _entry("继续", (680, 800, 760, 840)),
+            ],
+            [],
+        ],
+        home_after_event=True,
+    )
+    clock = iter([0.0, 0.0, *[float(second) for second in range(1, 40)]])
+    _configure_back_init_menu_event_dependencies(monkeypatch, back_init_menu_module, fake_auto)
+    monkeypatch.setattr(back_init_menu_module, "monotonic", lambda: next(clock))
+
+    assert back_init_menu_module.back_init_menu(allow_restart=False) is True
+    assert fake_auto.clicks == [(720, 820)]
+    assert fake_auto.blank_clicks == 0
+    assert fake_auto.key_presses == []
+
+
+def test_back_init_menu_skips_event_ocr_when_server_error_recovery_fails(monkeypatch) -> None:
+    back_init_menu_module = importlib.import_module("tasks.base.back_init_menu")
+    fake_auto = _BackInitMenuEventAuto([[_entry("判定成功", (500, 200, 700, 240))]])
+    monkeypatch.setattr(back_init_menu_module, "auto", fake_auto)
+    monkeypatch.setattr(back_init_menu_module, "ensure_simulator_game_started", lambda: False)
+    monkeypatch.setattr(back_init_menu_module, "retry", lambda: False)
+
+    assert back_init_menu_module.back_init_menu(allow_restart=False) is False
+    assert fake_auto._ocr_calls == 0
+
+
+def test_back_init_menu_resets_event_wait_clock_after_non_event_frame(monkeypatch) -> None:
+    back_init_menu_module = importlib.import_module("tasks.base.back_init_menu")
+    fake_auto = _BackInitMenuEventAuto(
+        [
+            [_entry("判定成功", (500, 200, 700, 240))],
+            [],
+            [_entry("判定成功", (500, 200, 700, 240))],
+            [
+                _entry("判定成功", (500, 200, 700, 240)),
+                _entry("继续", (680, 800, 760, 840)),
+            ],
+            [],
+        ],
+        home_after_event=True,
+        home_at_ocr_call=5,
+    )
+    clock = iter((0.0, 0.0, 61.0, 61.0))
+    _configure_back_init_menu_event_dependencies(monkeypatch, back_init_menu_module, fake_auto)
+    monkeypatch.setattr(back_init_menu_module, "monotonic", lambda: next(clock))
+
+    assert back_init_menu_module.back_init_menu(allow_restart=False) is True
+    assert fake_auto.clicks == [(720, 820)]
+
+
+def test_back_init_menu_handles_advance_without_position_as_bounded_wait(monkeypatch) -> None:
+    back_init_menu_module = importlib.import_module("tasks.base.back_init_menu")
+    fake_auto = _BackInitMenuEventAuto([[]])
+    clock = iter((0.0, 0.0, 61.0))
+    _configure_back_init_menu_event_dependencies(monkeypatch, back_init_menu_module, fake_auto)
+    monkeypatch.setattr(back_init_menu_module, "monotonic", lambda: next(clock))
+    monkeypatch.setattr(
+        back_init_menu_module,
+        "resolve_event_page",
+        lambda _entries: EventPageResolution("advance", None, "damaged_result"),
+    )
+
+    assert back_init_menu_module.back_init_menu(allow_restart=False) is False
+    assert fake_auto.clicks == []
+    assert fake_auto.blank_clicks == 0
+    assert fake_auto.key_presses == []

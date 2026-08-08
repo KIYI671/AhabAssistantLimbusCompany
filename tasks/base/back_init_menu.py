@@ -5,15 +5,18 @@ from module.decorator.decorator import begin_and_finish_time_log
 from module.logger import log
 from tasks.base import update_model_for_retry
 from tasks.base.retry import click_title_screen_safely, ensure_simulator_game_started, retry
+from tasks.event.event_handling import resolve_event_page
 from tasks.mirror.reward_card import get_reward_card
 
-LOOP_COUNT=30
+LOOP_COUNT = 30
 LOADING_TIMEOUT = 90
+EVENT_PAGE_WAIT_TIMEOUT = 60
 
 @begin_and_finish_time_log(task_name="返回主界面")
 def back_init_menu(*, allow_restart: bool = True):
     loop_count = LOOP_COUNT
     loading_started_at = None
+    event_wait_started_at: float | None = None
     auto.model = "clam"
     while True:
         loop_count -= 1
@@ -27,7 +30,8 @@ def back_init_menu(*, allow_restart: bool = True):
             log.error("无法返回主界面，尝试重启游戏")
             kill_game()
             restart_game()
-            loop_count = 30
+            loop_count = LOOP_COUNT
+            event_wait_started_at = None
             auto.model = "clam"
             sleep(1)
             continue
@@ -35,6 +39,33 @@ def back_init_menu(*, allow_restart: bool = True):
             continue
         if retry() is False:
             return False
+
+        resolution = resolve_event_page(auto.get_ocr_entries())
+        if resolution is not None:
+            if resolution.state == "advance" and resolution.position is not None:
+                auto.mouse_click(*resolution.position)
+                log.debug(f"OCR推进事件页: {resolution.reason}")
+                event_wait_started_at = None
+                continue
+
+            if resolution.state == "advance":
+                log.warning("OCR事件页推进结果缺少坐标，按等待状态处理")
+            if event_wait_started_at is None:
+                event_wait_started_at = monotonic()
+            if monotonic() - event_wait_started_at < EVENT_PAGE_WAIT_TIMEOUT:
+                # 事件结果动画可持续约 40 秒；仅由单调事件时钟限制等待，
+                # 不能让通用页面恢复预算先行耗尽。
+                loop_count = LOOP_COUNT
+                log.debug("事件结果页等待推进按钮出现")
+                sleep(1)
+                continue
+            if not allow_restart:
+                log.warning("事件结果页等待推进按钮超时，返回主页失败")
+                return False
+            log.warning("事件结果页等待推进按钮超时，尝试重启游戏")
+            loop_count = 0
+            continue
+        event_wait_started_at = None
 
         if auto.click_element("home/window_assets.png") and auto.find_element("home/mail_assets.png", model="normal"):
             return True
