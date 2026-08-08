@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import importlib
+
 import numpy as np
 import pytest
 
@@ -151,3 +153,57 @@ def test_server_error_dialog_matches_the_user_reported_screenshot_layout() -> No
     assert dialog is not None
     assert dialog.close_position == (246, 339)
     assert dialog.retry_position == (498, 340)
+
+
+def test_to_battle_skips_normal_detection_when_server_error_is_handled(monkeypatch) -> None:
+    battle_module = importlib.import_module("tasks.battle.battle")
+
+    class FakeBattleAuto:
+        model = ""
+
+        def __init__(self) -> None:
+            self.screenshots = 0
+            self.find_calls = 0
+
+        def take_screenshot_with_color(self) -> object:
+            self.screenshots += 1
+            if self.screenshots == 2:
+                raise StopIteration
+            return object()
+
+        def find_element(self, *_args, **_kwargs) -> None:
+            self.find_calls += 1
+            raise AssertionError("服务器错误处理期间不应执行开始战斗识图")
+
+    fake_auto = FakeBattleAuto()
+    monkeypatch.setattr(battle_module, "auto", fake_auto)
+    monkeypatch.setattr(battle_module, "handle_server_error_dialog", lambda: True)
+
+    with pytest.raises(StopIteration):
+        battle_module.Battle.to_battle()
+
+    assert fake_auto.find_calls == 0
+
+
+def test_to_battle_returns_false_when_server_error_restarts_game(monkeypatch) -> None:
+    battle_module = importlib.import_module("tasks.battle.battle")
+
+    class FakeBattleAuto:
+        model = ""
+
+        def __init__(self) -> None:
+            self.find_calls = 0
+
+        def take_screenshot_with_color(self) -> object:
+            return object()
+
+        def find_element(self, *_args, **_kwargs) -> None:
+            self.find_calls += 1
+            raise AssertionError("重启游戏后不应执行开始战斗识图")
+
+    fake_auto = FakeBattleAuto()
+    monkeypatch.setattr(battle_module, "auto", fake_auto)
+    monkeypatch.setattr(battle_module, "handle_server_error_dialog", lambda: False)
+
+    assert battle_module.Battle.to_battle() is False
+    assert fake_auto.find_calls == 0
