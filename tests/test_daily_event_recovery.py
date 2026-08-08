@@ -4,7 +4,12 @@ import importlib
 
 import pytest
 
-from tasks.event_page import EventPageResolution, resolve_event_page
+from tasks.event_page import (
+    EventPageResolution,
+    find_event_choice_positions,
+    is_event_choice_page,
+    resolve_event_page,
+)
 
 
 def _entry(text: str, bounds: tuple[int, int, int, int]) -> tuple[str, tuple[int, int, int, int]]:
@@ -104,6 +109,363 @@ def test_resolve_event_page_normalizes_whitespace() -> None:
     assert result is not None
     assert result.state == "advance"
     assert result.position == (720, 820)
+
+
+def test_is_event_choice_page_requires_the_ocr_choice_title() -> None:
+    assert is_event_choice_page([_entry(" 选 项 ", (900, 145, 990, 173))]) is True
+    assert is_event_choice_page([_entry("第二个候选", (920, 374, 1022, 402))]) is False
+
+
+def test_find_event_choice_positions_uses_right_choice_column_only() -> None:
+    entries = [
+        _entry("选项", (900, 145, 990, 173)),
+        _entry("00:00:00:30", (120, 160, 210, 186)),
+        _entry("献上土偶。", (920, 250, 1021, 279)),
+        _entry("献上罪人。", (920, 374, 1022, 402)),
+        _entry("有很多方法可以使场面平静下来，", (120, 422, 377, 450)),
+        _entry("但供奉祭品似乎是这个异想体最喜欢的方法。", (120, 451, 487, 479)),
+        _entry("一股鲜血似乎可以将其安抚。", (120, 479, 352, 507)),
+        _entry("SKIP", (1380, 796, 1455, 824)),
+    ]
+
+    assert find_event_choice_positions(entries) == [(970, 264), (971, 388)]
+
+
+class _ChoiceFallbackAuto:
+    def __init__(
+        self,
+        ocr_frames: list[list[tuple[str, tuple[int, int, int, int]]]],
+    ) -> None:
+        self._ocr_frames = ocr_frames
+        self._frame = 0
+        self.choice_template_clicks = 0
+        self.template_call_frames: list[int] = []
+        self.click_element_calls: list[tuple[str, int]] = []
+        self.choice_page_check_frames: list[int] = []
+        self.clicks: list[tuple[int, int]] = []
+        self.sleeps: list[float] = []
+        self.template_click_result = True
+        self.choice_template_visible_frames: set[int] | None = None
+        self.choice_page_template_visible_frames: set[int] | None = None
+        self.stop_when_frames_exhausted = False
+        self.stop_when_choice_page_disappears = False
+        self.unexpected_event_actions: list[str] = []
+        self.sleep_frames: list[int] = []
+        self.click_frames: list[int] = []
+
+    def take_screenshot_with_color(self) -> object:
+        self._frame += 1
+        if self.stop_when_frames_exhausted and self._frame > len(self._ocr_frames):
+            raise StopIteration
+        return object()
+
+    def get_restore_time(self) -> None:
+        return None
+
+    def find_element(self, asset: str, **_kwargs) -> bool:
+        if asset == "event/choices_assets.png":
+            self.choice_page_check_frames.append(self._frame)
+            is_visible = self._frame <= len(self._ocr_frames) and (
+                self.choice_page_template_visible_frames is None
+                or self._frame in self.choice_page_template_visible_frames
+            )
+            if self.stop_when_choice_page_disappears and not is_visible:
+                raise StopIteration
+            return is_visible
+        if asset == "event/select_first_option_assets.png":
+            return self._frame <= len(self._ocr_frames) and (
+                self.choice_template_visible_frames is None
+                or self._frame in self.choice_template_visible_frames
+            )
+        return False
+
+    def click_element(self, asset: str, **_kwargs) -> bool:
+        self.click_element_calls.append((asset, self._frame))
+        if asset == "event/select_first_option_assets.png":
+            self.choice_template_clicks += 1
+            self.template_call_frames.append(self._frame)
+            return self.template_click_result
+        if asset.startswith("event/"):
+            self.unexpected_event_actions.append(asset)
+        return False
+
+    def find_language_text(self, zh_text: str, _en_text: str) -> tuple[int, int] | bool:
+        if self._frame > len(self._ocr_frames):
+            if zh_text == "战斗胜利":
+                return 700, 700
+            if zh_text == "确认":
+                return 1400, 700
+        return False
+
+    def get_ocr_entries(self) -> list[tuple[str, tuple[int, int, int, int]]]:
+        if self._frame <= len(self._ocr_frames):
+            return self._ocr_frames[self._frame - 1]
+        return []
+
+    def mouse_click(self, x: int, y: int, **_kwargs) -> None:
+        self.clicks.append((x, y))
+        self.click_frames.append(self._frame)
+
+    def mouse_to_blank(self) -> None:
+        return None
+
+
+def _run_choice_fallback_fight(
+    monkeypatch: pytest.MonkeyPatch,
+    ocr_frames: list[list[tuple[str, tuple[int, int, int, int]]]],
+    *,
+    template_click_result: bool = True,
+    choice_template_visible_frames: set[int] | None = None,
+    choice_page_template_visible_frames: set[int] | None = None,
+    stop_when_frames_exhausted: bool = False,
+    stop_when_choice_page_disappears: bool = False,
+    is_tool: bool = True,
+) -> _ChoiceFallbackAuto:
+    battle_module = importlib.import_module("tasks.battle.battle")
+    fake_auto = _ChoiceFallbackAuto(ocr_frames)
+    fake_auto.template_click_result = template_click_result
+    fake_auto.choice_template_visible_frames = choice_template_visible_frames
+    fake_auto.choice_page_template_visible_frames = choice_page_template_visible_frames
+    fake_auto.stop_when_frames_exhausted = stop_when_frames_exhausted
+    fake_auto.stop_when_choice_page_disappears = stop_when_choice_page_disappears
+
+    def record_sleep(seconds: float) -> None:
+        fake_auto.sleeps.append(seconds)
+        fake_auto.sleep_frames.append(fake_auto._frame)
+
+    monkeypatch.setattr(battle_module, "auto", fake_auto)
+    monkeypatch.setattr(battle_module, "handle_server_error_dialog", lambda: None)
+    monkeypatch.setattr(battle_module, "sleep", record_sleep)
+    monkeypatch.setattr(battle_module, "retry", lambda: True)
+
+    if stop_when_frames_exhausted or stop_when_choice_page_disappears:
+        with pytest.raises(StopIteration):
+            battle_module.Battle(is_tool=is_tool).fight()
+    else:
+        battle_module.Battle(is_tool=is_tool).fight()
+    return fake_auto
+
+
+def _choice_entries(*choice_entries: tuple[str, tuple[int, int, int, int]]):
+    return [
+        _entry("选项", (900, 145, 990, 173)),
+        *choice_entries,
+        _entry("左侧剧情描述", (120, 422, 377, 450)),
+        _entry("SKIP", (1380, 796, 1455, 824)),
+    ]
+
+
+def test_fight_tracks_choice_candidates_by_stable_slot_when_the_first_option_appears_late(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    first_frame = _choice_entries(_entry("第二个候选", (920, 374, 1022, 402)))
+    second_frame = _choice_entries(
+        _entry("第一个候选", (920, 250, 1021, 279)),
+        _entry("第二个候选", (920, 374, 1022, 402)),
+    )
+
+    fake_auto = _run_choice_fallback_fight(
+        monkeypatch,
+        [first_frame, second_frame],
+        template_click_result=False,
+        stop_when_frames_exhausted=True,
+    )
+
+    assert fake_auto.choice_template_clicks == 1
+    assert fake_auto.clicks == [(971, 388)]
+    assert fake_auto.click_frames == [1]
+    assert fake_auto.sleep_frames == [2]
+
+
+def test_fight_keeps_ocr_choice_state_when_choice_template_temporarily_disappears(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    choice_frame = _choice_entries(
+        _entry("第一个候选", (920, 250, 1021, 279)),
+        _entry("第二个候选", (920, 374, 1022, 402)),
+    )
+
+    fake_auto = _run_choice_fallback_fight(
+        monkeypatch,
+        [choice_frame, choice_frame],
+        template_click_result=False,
+        choice_page_template_visible_frames={1},
+        stop_when_frames_exhausted=True,
+    )
+
+    assert fake_auto.clicks == [(971, 388)]
+    assert fake_auto.unexpected_event_actions == []
+    assert fake_auto.sleep_frames == [2]
+
+
+def test_fight_never_random_clicks_while_ocr_still_identifies_choice_page(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    choice_frame = _choice_entries(
+        _entry("第一个候选", (920, 250, 1021, 279)),
+        _entry("第二个候选", (920, 374, 1022, 402)),
+    )
+
+    fake_auto = _run_choice_fallback_fight(
+        monkeypatch,
+        [choice_frame, choice_frame],
+        template_click_result=False,
+        choice_page_template_visible_frames={1},
+        stop_when_frames_exhausted=True,
+        is_tool=False,
+    )
+
+    assert fake_auto.clicks == [(971, 388)]
+    assert fake_auto.unexpected_event_actions == []
+    assert fake_auto.sleep_frames == [2]
+
+
+def test_fight_waits_for_a_new_choice_frame_after_default_template_click(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    choice_frame = _choice_entries(
+        _entry("第一个候选", (920, 250, 1021, 279)),
+        _entry("第二个候选", (920, 374, 1022, 402)),
+    )
+
+    fake_auto = _run_choice_fallback_fight(
+        monkeypatch,
+        [choice_frame, choice_frame],
+        stop_when_frames_exhausted=True,
+    )
+
+    assert fake_auto.template_call_frames == [1]
+    assert fake_auto.clicks == [(971, 388)]
+    assert fake_auto.click_frames == [2]
+    assert fake_auto.unexpected_event_actions == []
+
+
+def test_fight_does_not_try_ocr_or_other_event_actions_after_default_choice_leaves_page(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    choice_frame = _choice_entries(
+        _entry("第一个候选", (920, 250, 1021, 279)),
+        _entry("第二个候选", (920, 374, 1022, 402)),
+    )
+
+    fake_auto = _run_choice_fallback_fight(
+        monkeypatch,
+        [choice_frame, []],
+        choice_page_template_visible_frames={1},
+        stop_when_choice_page_disappears=True,
+    )
+
+    assert fake_auto.choice_page_check_frames == [1, 2]
+    assert fake_auto.template_call_frames == [1]
+    assert fake_auto.clicks == []
+    assert fake_auto.unexpected_event_actions == []
+
+
+def test_fight_does_not_click_unrelated_text_when_only_default_choice_is_ocr_visible(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    choice_frame = _choice_entries(_entry("唯一候选", (920, 250, 1021, 279)))
+
+    fake_auto = _run_choice_fallback_fight(monkeypatch, [choice_frame, choice_frame])
+
+    assert fake_auto.clicks == [(1400, 700)]
+
+
+def test_fight_marks_failed_default_choice_before_clicking_next_ocr_candidate(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    choice_frame = _choice_entries(
+        _entry("第一个候选", (920, 250, 1021, 279)),
+        _entry("第二个候选", (920, 374, 1022, 402)),
+    )
+
+    fake_auto = _run_choice_fallback_fight(
+        monkeypatch,
+        [choice_frame, choice_frame],
+        template_click_result=False,
+        stop_when_frames_exhausted=True,
+    )
+
+    assert fake_auto.template_call_frames == [1]
+    assert fake_auto.clicks == [(971, 388)]
+    assert fake_auto.click_frames == [1]
+
+
+def test_fight_skips_default_ocr_candidate_that_appears_after_template_attempt(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    candidates_frame = _choice_entries(
+        _entry("第一个候选", (920, 250, 1021, 279)),
+        _entry("第二个候选", (920, 374, 1022, 402)),
+    )
+
+    fake_auto = _run_choice_fallback_fight(
+        monkeypatch,
+        [_choice_entries(), candidates_frame],
+        template_click_result=False,
+        stop_when_frames_exhausted=True,
+    )
+
+    assert fake_auto.choice_template_clicks == 1
+    assert fake_auto.clicks == [(971, 388)]
+
+
+def test_fight_waits_after_failed_default_choice_with_one_ocr_candidate(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    choice_frame = _choice_entries(_entry("唯一候选", (920, 250, 1021, 279)))
+
+    fake_auto = _run_choice_fallback_fight(
+        monkeypatch,
+        [choice_frame, choice_frame],
+        template_click_result=False,
+        stop_when_frames_exhausted=True,
+    )
+
+    assert fake_auto.choice_template_clicks == 1
+    assert fake_auto.clicks == []
+    assert fake_auto.sleeps
+
+
+def test_fight_does_not_run_other_event_actions_when_choice_template_disappears(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    choice_frame = _choice_entries(
+        _entry("第一个候选", (920, 250, 1021, 279)),
+        _entry("第二个候选", (920, 374, 1022, 402)),
+    )
+
+    fake_auto = _run_choice_fallback_fight(
+        monkeypatch,
+        [choice_frame, choice_frame, choice_frame],
+        template_click_result=False,
+        choice_template_visible_frames={1, 2},
+        stop_when_frames_exhausted=True,
+    )
+
+    assert fake_auto.clicks == [(971, 388)]
+    assert fake_auto.unexpected_event_actions == []
+    assert fake_auto.sleeps
+
+
+def test_fight_waits_after_all_ocr_choice_candidates_are_attempted(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    choice_frame = _choice_entries(
+        _entry("第一个候选", (920, 250, 1021, 279)),
+        _entry("第二个候选", (920, 374, 1022, 402)),
+    )
+
+    fake_auto = _run_choice_fallback_fight(
+        monkeypatch,
+        [choice_frame, choice_frame, choice_frame],
+        template_click_result=False,
+        stop_when_frames_exhausted=True,
+    )
+
+    assert fake_auto.choice_template_clicks == 1
+    assert fake_auto.clicks == [(971, 388)]
+    assert fake_auto.sleeps
 
 
 class _FightEventAuto:

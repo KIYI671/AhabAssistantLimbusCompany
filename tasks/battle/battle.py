@@ -17,6 +17,7 @@ from tasks import sins
 from tasks.base.retry import handle_server_error_dialog, retry
 from tasks.event import event_handling
 from tasks.event.event_handling import resolve_event_page
+from tasks.event_page import find_event_choice_slots, is_event_choice_page
 from utils.image_utils import ImageUtils
 from utils.utils import find_skill3
 
@@ -232,7 +233,8 @@ class Battle:
         fail_count = 0
         in_mirror = False
         first_battle_reward = None
-        event_chance = 15
+        default_event_choice_attempted = False
+        attempted_event_choice_slots: set[int] = set()
         if defense_all_time:
             self.defense_all_time = defense_all_time
         if defense_on_turn1:
@@ -445,48 +447,36 @@ class Battle:
                     waiting = self._update_wait_time(waiting, False, total_count)
 
             # 如果战斗中途出现事件
-            if (
-                choice_event_handling
-                and auto.find_element("event/choices_assets.png")
-                and auto.find_element("event/select_first_option_assets.png")
-            ):
-                if event_chance > 5:
-                    auto.click_element("event/select_first_option_assets.png")
-                    event_chance -= 1
-                elif event_chance > 0:
-                    auto.click_element(
-                        "event/select_first_option_assets.png",
-                        find_type="image_with_multiple_targets",
-                    )
-                    event_chance -= 1
-                else:
-                    auto.click_element(
-                        "event/select_first_option_assets.png",
-                        find_type="image_with_multiple_targets",
-                    )
-                    finishes_bbox = ImageUtils.get_bbox(ImageUtils.load_image("event/continue_assets.png"))
-                    if auto.find_text_element(
-                        [
-                            "conti",
-                            "proc",
-                            "comme",
-                            "choices",
-                            "confirm",
-                            "行判",
-                            "始战",
-                            "继续",
-                        ],
-                        finishes_bbox,
-                    ):
-                        auto.mouse_click(
-                            (finishes_bbox[0] + finishes_bbox[2]) // 2,
-                            (finishes_bbox[1] + finishes_bbox[3]) // 2,
-                        )
-                        if infinite_battle:
-                            continue
-                        break
-                    else:
-                        event_chance = -1
+            choice_entries = auto.get_ocr_entries() if choice_event_handling else []
+            is_choice_page = choice_event_handling and (
+                auto.find_element("event/choices_assets.png")
+                or is_event_choice_page(choice_entries)
+            )
+            if is_choice_page:
+                if not default_event_choice_attempted:
+                    default_event_choice_attempted = True
+                    attempted_event_choice_slots.add(0)
+                    if auto.click_element("event/select_first_option_assets.png"):
+                        continue
+                next_choice = next(
+                    (
+                        (slot, position)
+                        for slot, position in find_event_choice_slots(choice_entries)
+                        if slot not in attempted_event_choice_slots
+                    ),
+                    None,
+                )
+                if next_choice is not None:
+                    choice_slot, next_choice_position = next_choice
+                    auto.mouse_click(*next_choice_position)
+                    attempted_event_choice_slots.add(choice_slot)
+                    log.debug("OCR 尝试日常事件的下一候选选项")
+                    continue
+                log.debug("日常事件没有可尝试的候选选项，等待页面状态变化")
+                sleep(waiting)
+                continue
+            default_event_choice_attempted = False
+            attempted_event_choice_slots.clear()
 
             if choice_event_handling and auto.find_element("event/perform_the_check_feature_assets.png"):
                 event_handling.decision_event_handling()
