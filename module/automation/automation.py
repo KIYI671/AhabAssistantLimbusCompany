@@ -540,6 +540,10 @@ class Automation(metaclass=SingletonMeta):
 
         return False
 
+    def get_text_positions(self, my_crop=None, additional_stack=0):
+        """返回当前截图 OCR 文本到中心坐标的映射。"""
+        return self._run_ocr_for_text(my_crop=my_crop, additional_stack=additional_stack)
+
     def find_text_element(self, target, my_crop=None, all_text=False, only_text=False, additional_stack=0):
         """
         寻找文本元素所在的坐标位置。
