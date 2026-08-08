@@ -107,3 +107,42 @@
 请先确认配置仍为：`select_team_by_order: true`、`daily_task: true`、`set_EXP_count: 1`、`set_thread_count: 3`、`daily_teams: 1`。
 
 测试“纽本多场 + 包含判定事件”：首选项不可用时改选其他候选项、进入判定、等待约 40 秒结果动画、OCR 点击“继续”、下一场仍能正常进入纽本，且同项目场次之间不额外回主页、项目结束才统一回主页/换饼。若失败，保存脱敏截图、OCR 条目和 `logs/debugLog.log` 的时间段，扩展共享状态解析而非新增单事件模板。
+
+---
+
+## 2026-08-09 — 实机首项灰化回归与全量状态机审计
+
+### 实机根因
+
+用户在 `C:/Users/g1582/Desktop/1786220471147.png` 反馈事件选项页卡住。`logs/debugLog.log` 显示脚本重复点击约 `(872, 245)` 的首项“献上土偶”；该项实际为灰色不可用，而第二项“献上罪人”可用。问题不是判定结果“继续”OCR，而是原选择页回退仅依据“页面仍存在”切换候选，误把未推进当作首项不可用。
+
+### 已落地的选择规则
+
+1. 每个 OCR 确认的选择页先定位右栏首项与次项。
+2. 以真实 RGB 彩色帧的 HSV 饱和度判定首项按钮是否灰化；`Automation.take_screenshot_with_color()` 已确认保存 `RGB`，可与 `cv2.COLOR_RGB2HSV` 对应。
+3. **仅当首项灰化**才点次项；首项可用时持续重试首项（模板优先，模板失配才用首项 OCR 中心），不因页面仍存在而跳项。
+4. 首项灰化但无可替代候选、OCR 不能定位候选、或同一选项页连续 8 次未推进时，明确返回 `False`；不会随机点文本、`SKIP`，也不会拖到普通战斗总超时。
+
+### 审计修复的失败传播
+
+- `Battle.fight()` 仅在普通日常实际 OCR 处理了“战斗胜利 + 确认”后才视为成功；未结算退出返回 `False`。镜牢/无限战斗原语义不变。
+- 单场经验本/纽本、分批连续战斗、日常项目、日常包装器、启动时已有战斗和顶层任务序列均传播显式 `False`；失败后不再启动下一场、另一项目、领奖、换饼、镜牢、完成 toast 或完成后操作。
+- EXP/纽本入口的一次性恢复及续费后的主页恢复都使用 `back_init_menu(allow_restart=False)`；主页恢复失败即停止本场，不会被内部重启绕过“仅恢复一次”。
+
+### 自动化验证（最终）
+
+```text
+uv run pytest
+105 passed in 1.50s
+```
+
+```text
+uv run ruff check tasks/battle/battle.py tasks/event_page.py tasks/event/event_handling.py tasks/base/back_init_menu.py tasks/daily/luxcavation.py tasks/base/script_task_scheme.py tests --ignore E722
+All checks passed!
+```
+
+还运行了 `uv run python -m compileall -q tasks module` 与 `git diff --check`，均通过。被本次修改的文件已通过 `ruff format --check`；未修改的既有 `back_init_menu.py` 与旧测试有格式历史债务，未为格式化它们扩大差异。
+
+### 待用户实机回归
+
+重新验证“纽本多场 + 判定事件”：灰色首项必须直接改选次项；首项可用不能跳项；判定结果约 40 秒后 OCR 点击“继续”；下一场重新进入纽本；本项目结束才统一主页/换饼。若再次失败，收集截图与对应日志时间段，优先修正共享状态机而非增加单事件补丁。

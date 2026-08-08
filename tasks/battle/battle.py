@@ -17,11 +17,16 @@ from tasks import sins
 from tasks.base.retry import handle_server_error_dialog, retry
 from tasks.event import event_handling
 from tasks.event.event_handling import resolve_event_page
-from tasks.event_page import find_event_choice_slots, is_event_choice_page
+from tasks.event_page import (
+    find_event_choice_slots,
+    is_event_choice_page,
+    is_first_event_choice_disabled,
+)
 from utils.image_utils import ImageUtils
 from utils.utils import find_skill3
 
 DEFENSE_FOR_SOLO_TURN_LIMIT = 5
+EVENT_CHOICE_MAX_RETRY_ATTEMPTS = 8
 
 
 def _find_daily_battle_settlement_confirmation() -> tuple[int, int] | bool:
@@ -140,9 +145,7 @@ class Battle:
             and defense_for_solo_state.remaining_turns > 0
             and not defense_for_solo_used_this_turn
         )
-        use_first_round_defense = (
-            first_turn and defense_first_round and not defense_for_solo_used_this_turn
-        )
+        use_first_round_defense = first_turn and defense_first_round and not defense_for_solo_used_this_turn
         limited_defense_succeeded = False
         if (use_limited_defense or use_first_round_defense) and auto.find_element(
             "battle/gear_left.png", threshold=0.9
@@ -178,9 +181,7 @@ class Battle:
             if auto.find_element("battle/gear_left.png", threshold=0.9):
                 msg = "使用全员防御模式开始战斗"
                 self._defense_this_round()
-        elif (avoid_skill_3 or prioritize_skill_3) and auto.find_element(
-            "battle/gear_left.png", threshold=0.9
-        ):
+        elif (avoid_skill_3 or prioritize_skill_3) and auto.find_element("battle/gear_left.png", threshold=0.9):
             use_prioritize_skill_3 = prioritize_skill_3 and not avoid_skill_3
             mode_name = "优先" if use_prioritize_skill_3 else "避免"
             msg = f"使用{mode_name}3技能模式开始战斗"
@@ -232,9 +233,9 @@ class Battle:
         total_count = 0
         fail_count = 0
         in_mirror = False
+        daily_settlement_handled = False
+        event_choice_retry_attempts = 0
         first_battle_reward = None
-        default_event_choice_attempted = False
-        attempted_event_choice_slots: set[int] = set()
         if defense_all_time:
             self.defense_all_time = defense_all_time
         if defense_on_turn1:
@@ -255,9 +256,7 @@ class Battle:
                 defense_for_solo_state=defense_for_solo_state,
                 defense_for_solo_used_this_turn=defense_for_solo_used_this_turn,
             )
-            defense_for_solo_used_this_turn = (
-                defense_for_solo_used_this_turn or limited_defense_succeeded
-            )
+            defense_for_solo_used_this_turn = defense_for_solo_used_this_turn or limited_defense_succeeded
 
         self.fail_times = 0
         while self.running:
@@ -449,35 +448,53 @@ class Battle:
             # 如果战斗中途出现事件
             choice_entries = auto.get_ocr_entries() if choice_event_handling else []
             is_choice_page = choice_event_handling and (
-                auto.find_element("event/choices_assets.png")
-                or is_event_choice_page(choice_entries)
+                auto.find_element("event/choices_assets.png") or is_event_choice_page(choice_entries)
             )
             if is_choice_page:
-                if not default_event_choice_attempted:
-                    default_event_choice_attempted = True
-                    attempted_event_choice_slots.add(0)
-                    if auto.click_element("event/select_first_option_assets.png"):
-                        continue
-                next_choice = next(
-                    (
-                        (slot, position)
-                        for slot, position in find_event_choice_slots(choice_entries)
-                        if slot not in attempted_event_choice_slots
-                    ),
+                if event_choice_retry_attempts >= EVENT_CHOICE_MAX_RETRY_ATTEMPTS:
+                    log.error("日常事件选项连续未推进，取消当前战斗")
+                    return False
+                event_choice_retry_attempts += 1
+                choice_slots = find_event_choice_slots(choice_entries)
+                first_choice = next(
+                    (position for slot, position in choice_slots if slot == 0),
                     None,
                 )
-                if next_choice is not None:
-                    choice_slot, next_choice_position = next_choice
-                    auto.mouse_click(*next_choice_position)
-                    attempted_event_choice_slots.add(choice_slot)
-                    log.debug("OCR 尝试日常事件的下一候选选项")
+                next_choice = next(
+                    ((slot, position) for slot, position in choice_slots if slot == 1),
+                    None,
+                )
+                choice_slot_spacing = (
+                    next_choice[1][1] - first_choice[1] if first_choice is not None and next_choice is not None else 0
+                )
+                first_choice_disabled = first_choice is not None and is_first_event_choice_disabled(
+                    auto.color_screenshot,
+                    first_choice,
+                    choice_slot_spacing=(choice_slot_spacing if choice_slot_spacing > 0 else 124),
+                )
+                if first_choice_disabled:
+                    if next_choice is not None:
+                        _, next_choice_position = next_choice
+                        auto.mouse_click(*next_choice_position)
+                        log.debug("首个日常事件选项灰化，OCR 选择下一候选")
+                        sleep(waiting)
+                        continue
+                    log.debug("首个日常事件选项灰化但没有可替代候选，等待页面状态变化")
+                    sleep(waiting)
                     continue
-                log.debug("日常事件没有可尝试的候选选项，等待页面状态变化")
+
+                if first_choice is not None:
+                    if not auto.click_element("event/select_first_option_assets.png"):
+                        auto.mouse_click(*first_choice)
+                        log.debug("首个日常事件选项模板失配，OCR 选择首项")
+                    # 选项仍存在时按当前帧状态重试同一可用项；绝不因页面未切换就改点次项。
+                    sleep(waiting)
+                    continue
+
+                log.debug("日常事件选项候选信息不足，等待页面状态变化")
                 sleep(waiting)
                 continue
-            default_event_choice_attempted = False
-            attempted_event_choice_slots.clear()
-
+            event_choice_retry_attempts = 0
             if choice_event_handling and auto.find_element("event/perform_the_check_feature_assets.png"):
                 event_handling.decision_event_handling()
             if choice_event_handling:
@@ -519,6 +536,8 @@ class Battle:
             daily_settlement_confirmation = _find_daily_battle_settlement_confirmation()
             mirror_settlement = in_mirror and auto.find_element("mirror/claim_reward/battle_statistics_assets.png")
             if daily_settlement_confirmation or mirror_settlement:
+                if daily_settlement_confirmation:
+                    daily_settlement_handled = True
                 sleep(1)
                 if auto.click_element("base/leave_up_assets.png"):
                     auto.click_element("base/leave_up_confirm_assets.png")
@@ -581,6 +600,9 @@ class Battle:
             match_success_rate = (1 - fail_count / total_count) * 100
         msg = f"此次战斗匹配失败次数{fail_count} 匹配总次数{total_count} 匹配成功率{match_success_rate}%"
         log.debug(msg)
+        if not infinite_battle and not in_mirror and not daily_settlement_handled:
+            log.error("普通战斗未确认日常结算便退出，取消后续日常批次")
+            return False
         if self.first_battle:
             return first_battle_reward
         else:
@@ -655,9 +677,7 @@ class Battle:
             skill_3_matches = []
             for sin_color in sins.values():
                 skill_3_matches.extend(find_skill3(sc, sin_color))
-            skill_3_indexes = {
-                round(match[0] / (145 * scale)) for match in skill_3_matches
-            }
+            skill_3_indexes = {round(match[0] / (145 * scale)) for match in skill_3_matches}
             lower_row_indexes = Battle._get_lower_row_skill_indexes(
                 skill_3_indexes,
                 skill_nums,

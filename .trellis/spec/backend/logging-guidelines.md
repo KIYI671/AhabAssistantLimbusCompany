@@ -30,7 +30,8 @@ A message must make it possible to distinguish the following outcomes:
 1. event action clicked;
 2. event result intentionally waiting for its animation;
 3. one allowed recovery invoked;
-4. recovery budget exhausted and current action stopped.
+4. choice target selected because the first button was confirmed grey, or retrying the still-enabled first choice;
+5. recovery budget exhausted and current action stopped.
 
 ## Do not log
 
@@ -44,3 +45,5 @@ A message must make it possible to distinguish the following outcomes:
 - Does every `warning` identify the fallback or bound that changed behavior?
 - Does every terminal `False` have an `error` path at its owning recovery boundary?
 - Can logs distinguish an event timeout from an ordinary missing daily entry?
+- Does a grey-choice or non-advancing-choice failure identify the bounded exit without logging raw OCR or pixels?
+- Does a terminal daily failure log before the top-level runner suppresses completion toast/actions?

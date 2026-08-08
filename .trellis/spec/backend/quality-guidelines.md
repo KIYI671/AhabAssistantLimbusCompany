@@ -32,6 +32,20 @@ Every page-recovery loop needs an explicit authority for its timeout. If a speci
 
 Keep existing templates as the preferred recognition path. OCR fallback runs only after the relevant templates did not advance the page. A generic OCR keyword without enough page context is not a safe click target.
 
+### Choice availability is a visual state, not a retry count
+
+Daily event choices have an extra safety boundary: choose a second candidate only after the **first button itself** is confirmed grey in the RGB frame. `Automation.take_screenshot_with_color()` preserves RGB, so `is_first_event_choice_disabled()` may use `cv2.COLOR_RGB2HSV`. A persistent selection page is not evidence that the first option became unavailable.
+
+```python
+if is_first_event_choice_disabled(auto.color_screenshot, first_choice, choice_slot_spacing=spacing):
+    auto.mouse_click(*second_choice)
+else:
+    # The first button is still usable: template first, then its OCR center.
+    auto.click_element("event/select_first_option_assets.png") or auto.mouse_click(*first_choice)
+```
+
+Keep a named local retry limit (`EVENT_CHOICE_MAX_RETRY_ATTEMPTS`) for a stable selection page. It must terminate to `False`; it must not consume the event-result animation budget or reset the total battle timeout.
+
 ## Forbidden patterns
 
 - **Do not** reset a total task timeout just because a UI animation is being waited on; reset only the local recognition budget when the state is known.
@@ -39,6 +53,8 @@ Keep existing templates as the preferred recognition path. OCR fallback runs onl
 - **Do not** duplicate EXP and Thread recovery budgets. Use one helper and one named maximum.
 - **Do not** put a pure parser behind a package initializer that eagerly imports the OCR runtime; this makes unit tests depend on a game runtime unnecessarily.
 - **Do not** treat a failed entry recovery as permission to proceed to team selection or battle start.
+- **Do not** use a one-time “first choice attempted” flag that makes a non-advancing choice page wait forever or changes selection to the second option without a grey-state observation.
+- **Do not** flatten a terminal `False` into `None` at a battle, daily-group, startup-resume, or top-level task boundary.
 
 ## Testing requirements
 
@@ -57,7 +73,10 @@ For daily event changes, tests must include:
 - behavior-driven mutation-sensitive coverage showing event `wait` and `advance` do not exhaust the local battle budget;
 - a 40-second event animation path and a 60-second bounded timeout path;
 - server-error priority over all normal OCR/page handling;
-- both EXP and Thread’s one-recovery success/failure/second-exhaustion paths;
+- both EXP and Thread’s one-recovery success/failure/renewal-failure/second-exhaustion paths;
+- RGB/HSV grey-choice recognition at beta, 720p, and 900p candidate spacing; grey first choice must choose the second slot, enabled first choice must retry the first slot;
+- bounded failure when selection OCR is absent or its valid target does not advance;
+- daily failure propagation through a single battle, group, wrapper, startup-resume path, and top-level task runner (including no completion toast/action);
 - original `from tasks.event import event_handling` singleton behavior when import order changes.
 
 ## Code review checklist

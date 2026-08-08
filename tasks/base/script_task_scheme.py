@@ -3,6 +3,7 @@ import random
 from datetime import datetime
 from threading import Event
 from time import sleep, time
+from typing import Callable
 
 import win32api
 import win32con
@@ -63,7 +64,10 @@ def onetime_EXP_process(combat_count: int = 1):
         return False
     if battle.to_battle() is False:
         return False
-    battle.fight(combat_count=combat_count)
+    if battle.fight(combat_count=combat_count) is False:
+        log.error("经验本战斗未完成，取消后续日常批次")
+        return False
+    return True
 
 
 @begin_and_finish_time_log(task_name="一次纽本")
@@ -81,7 +85,10 @@ def onetime_thread_process(combat_count: int = 1):
         return False
     if battle.to_battle() is False:
         return False
-    battle.fight(combat_count=combat_count)
+    if battle.fight(combat_count=combat_count) is False:
+        log.error("纽本战斗未完成，取消后续日常批次")
+        return False
+    return True
 
 
 @begin_and_finish_time_log(task_name="一次镜牢")
@@ -242,10 +249,10 @@ def _get_game_rendering_scale() -> int | None:
     return None
 
 
-def _batch_combat(process_fn, times, max_times):
-    """按 max_times 分批执行战斗"""
+def _batch_combat(process_fn, times, max_times) -> bool:
+    """按 max_times 分批执行战斗，任一批失败即停止。"""
     if times <= 0:
-        return
+        return True
     if times > max_times:
         once = max_times
         total = times // max_times
@@ -255,27 +262,36 @@ def _batch_combat(process_fn, times, max_times):
         total = 0
         last = times
     for _ in range(total):
-        process_fn(once)
-    if last > 0:
-        process_fn(last)
+        if process_fn(once) is False:
+            return False
+    if last > 0 and process_fn(last) is False:
+        return False
+    return True
 
 
-def _run_daily_group(process_fn, times, max_times, use_continuous_combat):
+def _run_daily_group(process_fn, times, max_times, use_continuous_combat) -> bool:
     """完成一个日常项目的所有场次后，统一返回主界面并换饼。"""
     if times <= 0:
-        return
+        return True
     if use_continuous_combat:
-        _batch_combat(process_fn, times, max_times)
+        completed = _batch_combat(process_fn, times, max_times)
     else:
-        for _ in range(times):
-            process_fn()
-    back_init_menu()
+        completed = all(process_fn() is not False for _ in range(times))
+    if not completed:
+        log.error("日常项目中断，跳过返回主页、换饼及后续日常项目")
+        return False
+    if back_init_menu() is False:
+        log.error("日常项目完成后未能返回主页，取消换饼及后续日常项目")
+        return False
     make_enkephalin_module()
+    return True
 
 
 def Daily_task_wrapper(get_reward=None):
     def wrapper():
-        back_init_menu()
+        if back_init_menu() is False:
+            log.error("日常任务初始化时未能返回主页，取消本次日常任务")
+            return False
         make_enkephalin_module()
         exp_times = cfg.set_EXP_count
         if get_reward and get_reward == "EXP":
@@ -285,8 +301,11 @@ def Daily_task_wrapper(get_reward=None):
             thread_times -= 1
         use_continuous_combat = cfg.config.use_continuous_combat and cfg.use_continuous_combat_select > 0
         max_times = cfg.use_continuous_combat_select
-        _run_daily_group(onetime_EXP_process, exp_times, max_times, use_continuous_combat)
-        _run_daily_group(onetime_thread_process, thread_times, max_times, use_continuous_combat)
+        if not _run_daily_group(onetime_EXP_process, exp_times, max_times, use_continuous_combat):
+            return False
+        if not _run_daily_group(onetime_thread_process, thread_times, max_times, use_continuous_combat):
+            return False
+        return True
 
     return wrapper
 
@@ -363,6 +382,15 @@ def Mirror_task():
         to_get_reward()
 
 
+def _run_task_sequence(tasks: list[tuple[str, Callable[[], object]]]) -> bool:
+    """顺序执行顶层任务；显式失败后不再触发后续副作用。"""
+    for task_name, task in tasks:
+        if task() is False:
+            log.error(f"{task_name}任务失败，取消剩余任务")
+            return False
+    return True
+
+
 def script_task() -> None | int:
     start_time = time()
     # 获取（启动）游戏对游戏窗口进行设置
@@ -388,26 +416,30 @@ def script_task() -> None | int:
     get_reward = None
     if auto.click_element("battle/turn_assets.png", take_screenshot=True):
         get_reward = battle.fight()
+        if get_reward is False:
+            log.error("启动时的未完成战斗失败，取消本次任务序列")
+            return False
 
-    task_list = []
+    task_list: list[tuple[str, Callable[[], object]]] = []
     # 执行日常刷本任务
     if cfg.daily_task:
-        task_list.append(Daily_task_wrapper(get_reward=get_reward))
+        task_list.append(("日常", Daily_task_wrapper(get_reward=get_reward)))
 
     # 执行奖励领取任务
     if cfg.get_reward:
-        task_list.append(to_get_reward)
+        task_list.append(("领奖", to_get_reward))
 
     # 执行狂气换饼任务
     if cfg.buy_enkephalin:
-        task_list.append(Buy_enkephalin)
+        task_list.append(("换饼", Buy_enkephalin))
 
     # 执行镜牢任务
     if cfg.mirror:
-        task_list.append(Mirror_task)
+        task_list.append(("镜牢", Mirror_task))
 
-    for task in task_list:
-        task()
+    if not _run_task_sequence(task_list):
+        log.error("任务序列提前失败，跳过完成提示和完成后操作")
+        return False
 
     if cfg.set_reduce_miscontact and not cfg.simulator:
         # 任务已结束，这里只恢复游戏窗口样式，避免把前台重新切回游戏。

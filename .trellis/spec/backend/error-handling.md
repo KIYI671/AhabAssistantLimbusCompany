@@ -61,6 +61,10 @@ def _recover_daily_entry(recovery_attempts: int, log_prefix: str) -> bool: ...
 | Event wait exceeds 60 seconds | `allow_restart=False`: return `False`; otherwise reuse the established restart branch. |
 | Entry recovery succeeds once | Reset entry loop state and perform one complete retry. |
 | Entry recovery is unavailable or already used | Return `False`; callers must not select a team or start battle. |
+| Choice page first button is grey | Do not invoke the first-choice template; click only the OCR-located second slot. |
+| Choice page first button is not grey | Retry only the first slot (template first, OCR fallback); never infer grey state merely because the page persisted. |
+| Choice page has no OCR candidate or does not advance repeatedly | After `EVENT_CHOICE_MAX_RETRY_ATTEMPTS`, return `False`; do not wait for the total battle timeout. |
+| Daily battle exits without `战斗胜利 + 确认` settlement | Return `False`; callers must cancel the daily group and top-level task sequence. |
 
 ### 5. Good / Base / Bad Cases
 
@@ -75,7 +79,9 @@ def _recover_daily_entry(recovery_attempts: int, log_prefix: str) -> bool: ...
 - Test all event contexts (`事件`, `判定`, `选项`) and ensure standalone/annotated “进行判定” buttons do not self-authorize.
 - Test `Battle.fight()` with an exhausted local chance: wait and advance must still reach settlement; removing either reset must fail the test.
 - Test `back_init_menu()` after 40 event-wait iterations, at 60-second timeout, after a non-event reset, and with `allow_restart=False`.
-- Parameterize EXP and Thread entry tests for one recovery success, recovery failure, and second exhaustion.
+- Parameterize EXP and Thread entry tests for one recovery success, recovery failure, renewal-recovery failure, and second exhaustion.
+- Test grey first choice → second-slot click, enabled first choice → first-slot retry, absent candidate → bounded `False`, and repeated non-advancing candidate → bounded `False`.
+- Test a battle exit without daily settlement and each propagation boundary: single daily process, group, wrapper, startup-resume path, and top-level task sequence.
 
 ### 7. Wrong vs Correct
 
@@ -103,3 +109,5 @@ The monotonic event timer, not the general navigation loop, controls event-resul
 - Do not add a per-event “土偶/罪人” template merely because one result page failed; extend the shared OCR parser with an evidence-backed semantic boundary.
 - Do not use `time.time()` for bounded UI waits that should ignore wall-clock adjustments; use `monotonic()`.
 - Do not continue to team selection or `Battle.to_battle()` after an entry function returns `False`.
+- Do not use “the choice page remained visible” as evidence that the first choice is disabled; only the current RGB/HSV button state authorizes selecting the second choice.
+- Do not emit the normal completion toast or perform completion actions after a daily task returns `False`.

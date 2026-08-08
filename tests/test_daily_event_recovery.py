@@ -2,12 +2,15 @@ from __future__ import annotations
 
 import importlib
 
+import numpy as np
 import pytest
+from PIL import Image
 
 from tasks.event_page import (
     EventPageResolution,
     find_event_choice_positions,
     is_event_choice_page,
+    is_first_event_choice_disabled,
     resolve_event_page,
 )
 
@@ -131,13 +134,91 @@ def test_find_event_choice_positions_uses_right_choice_column_only() -> None:
     assert find_event_choice_positions(entries) == [(970, 264), (971, 388)]
 
 
+@pytest.mark.parametrize(
+    ("entries", "expected_positions"),
+    [
+        (
+            [
+                _entry("选项", (720, 116, 792, 138)),
+                _entry("献上土偶。", (736, 200, 817, 223)),
+                _entry("献上罪人。", (736, 299, 818, 322)),
+                _entry("左侧剧情描述", (96, 338, 302, 360)),
+                _entry("SKIP", (1104, 637, 1164, 659)),
+            ],
+            [(776, 211), (777, 310)],
+        ),
+        (
+            [
+                _entry("选项", (750, 145, 825, 172)),
+                _entry("献上土偶。", (767, 225, 852, 251)),
+                _entry("献上罪人。", (767, 337, 853, 363)),
+                _entry("左侧剧情描述", (100, 380, 315, 405)),
+                _entry("SKIP", (1150, 716, 1215, 741)),
+            ],
+            [(809, 238), (810, 350)],
+        ),
+    ],
+)
+def test_find_event_choice_positions_preserves_two_slots_when_resolution_changes(
+    entries: list[tuple[str, tuple[int, int, int, int]]],
+    expected_positions: list[tuple[int, int]],
+) -> None:
+    assert find_event_choice_positions(entries) == expected_positions
+
+
+def _choice_button_image(color: tuple[int, int, int]) -> np.ndarray:
+    image = np.zeros((918, 1586, 3), dtype=np.uint8)
+    image[226:326, 858:1460] = color
+    return image
+
+
+def test_is_first_event_choice_disabled_requires_a_low_saturation_button() -> None:
+    first_choice = (970, 264)
+
+    assert is_first_event_choice_disabled(_choice_button_image((180, 180, 180)), first_choice)
+    assert not is_first_event_choice_disabled(_choice_button_image((220, 20, 20)), first_choice)
+
+
+def test_is_first_event_choice_disabled_accepts_pil_rgb_images() -> None:
+    image = Image.fromarray(_choice_button_image((180, 180, 180)))
+
+    assert is_first_event_choice_disabled(image, (970, 264))
+
+
+def test_is_first_event_choice_disabled_scales_button_region_from_choice_spacing() -> None:
+    scale = 0.8
+    image = np.zeros((720, 1280, 3), dtype=np.uint8)
+    image[181:261, 686:1168] = (180, 180, 180)
+
+    assert is_first_event_choice_disabled(
+        image,
+        (776, 211),
+        choice_slot_spacing=round(124 * scale),
+    )
+
+
+def test_is_first_event_choice_disabled_rejects_empty_and_out_of_bounds_images() -> None:
+    assert not is_first_event_choice_disabled(np.empty((0, 0, 3), dtype=np.uint8), (970, 264))
+    assert not is_first_event_choice_disabled(
+        np.zeros((100, 100, 3), dtype=np.uint8),
+        (970, 264),
+    )
+    assert not is_first_event_choice_disabled(
+        np.zeros((918, 1000, 3), dtype=np.uint8),
+        (970, 264),
+    )
+
+
 class _ChoiceFallbackAuto:
     def __init__(
         self,
         ocr_frames: list[list[tuple[str, tuple[int, int, int, int]]]],
+        color_frames: list[np.ndarray] | None = None,
     ) -> None:
         self._ocr_frames = ocr_frames
+        self._color_frames = color_frames or [_choice_button_image((180, 180, 180)) for _ in ocr_frames]
         self._frame = 0
+        self.color_screenshot: np.ndarray | None = None
         self.choice_template_clicks = 0
         self.template_call_frames: list[int] = []
         self.click_element_calls: list[tuple[str, int]] = []
@@ -157,6 +238,8 @@ class _ChoiceFallbackAuto:
         self._frame += 1
         if self.stop_when_frames_exhausted and self._frame > len(self._ocr_frames):
             raise StopIteration
+        if self._frame <= len(self._color_frames):
+            self.color_screenshot = self._color_frames[self._frame - 1]
         return object()
 
     def get_restore_time(self) -> None:
@@ -174,8 +257,7 @@ class _ChoiceFallbackAuto:
             return is_visible
         if asset == "event/select_first_option_assets.png":
             return self._frame <= len(self._ocr_frames) and (
-                self.choice_template_visible_frames is None
-                or self._frame in self.choice_template_visible_frames
+                self.choice_template_visible_frames is None or self._frame in self.choice_template_visible_frames
             )
         return False
 
@@ -220,9 +302,10 @@ def _run_choice_fallback_fight(
     stop_when_frames_exhausted: bool = False,
     stop_when_choice_page_disappears: bool = False,
     is_tool: bool = True,
+    color_frames: list[np.ndarray] | None = None,
 ) -> _ChoiceFallbackAuto:
     battle_module = importlib.import_module("tasks.battle.battle")
-    fake_auto = _ChoiceFallbackAuto(ocr_frames)
+    fake_auto = _ChoiceFallbackAuto(ocr_frames, color_frames)
     fake_auto.template_click_result = template_click_result
     fake_auto.choice_template_visible_frames = choice_template_visible_frames
     fake_auto.choice_page_template_visible_frames = choice_page_template_visible_frames
@@ -255,217 +338,191 @@ def _choice_entries(*choice_entries: tuple[str, tuple[int, int, int, int]]):
     ]
 
 
-def test_fight_tracks_choice_candidates_by_stable_slot_when_the_first_option_appears_late(
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
-    first_frame = _choice_entries(_entry("第二个候选", (920, 374, 1022, 402)))
-    second_frame = _choice_entries(
-        _entry("第一个候选", (920, 250, 1021, 279)),
-        _entry("第二个候选", (920, 374, 1022, 402)),
-    )
-
-    fake_auto = _run_choice_fallback_fight(
-        monkeypatch,
-        [first_frame, second_frame],
-        template_click_result=False,
-        stop_when_frames_exhausted=True,
-    )
-
-    assert fake_auto.choice_template_clicks == 1
-    assert fake_auto.clicks == [(971, 388)]
-    assert fake_auto.click_frames == [1]
-    assert fake_auto.sleep_frames == [2]
-
-
-def test_fight_keeps_ocr_choice_state_when_choice_template_temporarily_disappears(
+def test_fight_waits_without_clicking_a_second_choice_when_first_is_enabled(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     choice_frame = _choice_entries(
         _entry("第一个候选", (920, 250, 1021, 279)),
         _entry("第二个候选", (920, 374, 1022, 402)),
     )
+    enabled_button = _choice_button_image((220, 20, 20))
 
     fake_auto = _run_choice_fallback_fight(
         monkeypatch,
         [choice_frame, choice_frame],
-        template_click_result=False,
-        choice_page_template_visible_frames={1},
-        stop_when_frames_exhausted=True,
-    )
-
-    assert fake_auto.clicks == [(971, 388)]
-    assert fake_auto.unexpected_event_actions == []
-    assert fake_auto.sleep_frames == [2]
-
-
-def test_fight_never_random_clicks_while_ocr_still_identifies_choice_page(
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
-    choice_frame = _choice_entries(
-        _entry("第一个候选", (920, 250, 1021, 279)),
-        _entry("第二个候选", (920, 374, 1022, 402)),
-    )
-
-    fake_auto = _run_choice_fallback_fight(
-        monkeypatch,
-        [choice_frame, choice_frame],
-        template_click_result=False,
-        choice_page_template_visible_frames={1},
+        template_click_result=True,
         stop_when_frames_exhausted=True,
         is_tool=False,
+        color_frames=[enabled_button, enabled_button],
     )
 
-    assert fake_auto.clicks == [(971, 388)]
-    assert fake_auto.unexpected_event_actions == []
-    assert fake_auto.sleep_frames == [2]
-
-
-def test_fight_waits_for_a_new_choice_frame_after_default_template_click(
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
-    choice_frame = _choice_entries(
-        _entry("第一个候选", (920, 250, 1021, 279)),
-        _entry("第二个候选", (920, 374, 1022, 402)),
-    )
-
-    fake_auto = _run_choice_fallback_fight(
-        monkeypatch,
-        [choice_frame, choice_frame],
-        stop_when_frames_exhausted=True,
-    )
-
-    assert fake_auto.template_call_frames == [1]
-    assert fake_auto.clicks == [(971, 388)]
-    assert fake_auto.click_frames == [2]
-    assert fake_auto.unexpected_event_actions == []
-
-
-def test_fight_does_not_try_ocr_or_other_event_actions_after_default_choice_leaves_page(
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
-    choice_frame = _choice_entries(
-        _entry("第一个候选", (920, 250, 1021, 279)),
-        _entry("第二个候选", (920, 374, 1022, 402)),
-    )
-
-    fake_auto = _run_choice_fallback_fight(
-        monkeypatch,
-        [choice_frame, []],
-        choice_page_template_visible_frames={1},
-        stop_when_choice_page_disappears=True,
-    )
-
-    assert fake_auto.choice_page_check_frames == [1, 2]
-    assert fake_auto.template_call_frames == [1]
+    assert fake_auto.template_call_frames == [1, 2]
     assert fake_auto.clicks == []
     assert fake_auto.unexpected_event_actions == []
+    assert fake_auto.sleep_frames == [1, 2]
 
 
-def test_fight_does_not_click_unrelated_text_when_only_default_choice_is_ocr_visible(
+def test_fight_waits_when_only_one_choice_slot_is_visible(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     choice_frame = _choice_entries(_entry("唯一候选", (920, 250, 1021, 279)))
-
-    fake_auto = _run_choice_fallback_fight(monkeypatch, [choice_frame, choice_frame])
-
-    assert fake_auto.clicks == [(1400, 700)]
-
-
-def test_fight_marks_failed_default_choice_before_clicking_next_ocr_candidate(
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
-    choice_frame = _choice_entries(
-        _entry("第一个候选", (920, 250, 1021, 279)),
-        _entry("第二个候选", (920, 374, 1022, 402)),
-    )
+    disabled_button = _choice_button_image((180, 180, 180))
 
     fake_auto = _run_choice_fallback_fight(
         monkeypatch,
         [choice_frame, choice_frame],
         template_click_result=False,
         stop_when_frames_exhausted=True,
+        is_tool=False,
+        color_frames=[disabled_button, disabled_button],
     )
 
-    assert fake_auto.template_call_frames == [1]
+    assert fake_auto.template_call_frames == []
+    assert fake_auto.clicks == []
+    assert fake_auto.sleep_frames == [1, 2]
+
+
+def test_fight_skips_gray_first_choice_without_clicking_its_template(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    choice_frame = _choice_entries(
+        _entry("第一个候选", (920, 250, 1021, 279)),
+        _entry("第二个候选", (920, 374, 1022, 402)),
+    )
+    disabled_button = _choice_button_image((180, 180, 180))
+
+    fake_auto = _run_choice_fallback_fight(
+        monkeypatch,
+        [choice_frame],
+        stop_when_frames_exhausted=True,
+        is_tool=False,
+        color_frames=[disabled_button],
+    )
+
+    assert fake_auto.template_call_frames == []
     assert fake_auto.clicks == [(971, 388)]
     assert fake_auto.click_frames == [1]
 
 
-def test_fight_skips_default_ocr_candidate_that_appears_after_template_attempt(
+def test_fight_uses_ocr_for_an_enabled_first_choice_when_template_fails(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    candidates_frame = _choice_entries(
+    choice_frame = _choice_entries(
         _entry("第一个候选", (920, 250, 1021, 279)),
         _entry("第二个候选", (920, 374, 1022, 402)),
     )
+    enabled_button = _choice_button_image((220, 20, 20))
 
     fake_auto = _run_choice_fallback_fight(
         monkeypatch,
-        [_choice_entries(), candidates_frame],
+        [choice_frame],
         template_click_result=False,
         stop_when_frames_exhausted=True,
+        is_tool=False,
+        color_frames=[enabled_button],
     )
 
-    assert fake_auto.choice_template_clicks == 1
-    assert fake_auto.clicks == [(971, 388)]
+    assert fake_auto.template_call_frames == [1]
+    assert fake_auto.clicks == [(970, 264)]
+    assert fake_auto.click_frames == [1]
 
 
-def test_fight_waits_after_failed_default_choice_with_one_ocr_candidate(
+class _PersistentChoiceAuto(_ChoiceFallbackAuto):
+    def __init__(
+        self,
+        entries: list[tuple[str, tuple[int, int, int, int]]],
+        color: np.ndarray,
+    ) -> None:
+        super().__init__([entries], [color])
+
+    def take_screenshot_with_color(self) -> object:
+        self._frame += 1
+        self.color_screenshot = self._color_frames[0]
+        return object()
+
+    def find_element(self, asset: str, **_kwargs) -> bool:
+        return asset == "event/choices_assets.png"
+
+    def get_ocr_entries(self) -> list[tuple[str, tuple[int, int, int, int]]]:
+        return self._ocr_frames[0]
+
+    def find_language_text(self, _zh_text: str, _en_text: str) -> bool:
+        return False
+
+
+def _run_persistent_choice_fight(
+    monkeypatch: pytest.MonkeyPatch,
+    entries: list[tuple[str, tuple[int, int, int, int]]],
+    color: np.ndarray,
+) -> _PersistentChoiceAuto:
+    battle_module = importlib.import_module("tasks.battle.battle")
+    fake_auto = _PersistentChoiceAuto(entries, color)
+    fake_auto.template_click_result = False
+    monkeypatch.setattr(battle_module, "auto", fake_auto)
+    monkeypatch.setattr(battle_module, "handle_server_error_dialog", lambda: None)
+    monkeypatch.setattr(battle_module, "sleep", lambda _seconds: None)
+    monkeypatch.setattr(battle_module, "retry", lambda: True)
+    monkeypatch.setattr(battle_module, "EVENT_CHOICE_MAX_RETRY_ATTEMPTS", 2, raising=False)
+
+    assert battle_module.Battle(is_tool=False).fight() is False
+    return fake_auto
+
+
+def test_fight_stops_after_bounded_retries_when_choice_ocr_never_finds_a_target(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    choice_frame = _choice_entries(_entry("唯一候选", (920, 250, 1021, 279)))
-
-    fake_auto = _run_choice_fallback_fight(
+    fake_auto = _run_persistent_choice_fight(
         monkeypatch,
-        [choice_frame, choice_frame],
-        template_click_result=False,
-        stop_when_frames_exhausted=True,
+        [],
+        _choice_button_image((180, 180, 180)),
     )
 
-    assert fake_auto.choice_template_clicks == 1
     assert fake_auto.clicks == []
-    assert fake_auto.sleeps
+    assert fake_auto.template_call_frames == []
+    assert fake_auto._frame == 3
 
 
-def test_fight_does_not_run_other_event_actions_when_choice_template_disappears(
+def test_fight_stops_after_bounded_retries_when_enabled_choice_does_not_advance(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    entries = _choice_entries(
+        _entry("第一个候选", (920, 250, 1021, 279)),
+        _entry("第二个候选", (920, 374, 1022, 402)),
+    )
+    fake_auto = _run_persistent_choice_fight(
+        monkeypatch,
+        entries,
+        _choice_button_image((220, 20, 20)),
+    )
+
+    assert fake_auto.template_call_frames == [1, 2]
+    assert fake_auto.clicks == [(970, 264), (970, 264)]
+    assert fake_auto._frame == 3
+
+
+def test_fight_clicks_second_choice_only_after_gray_first_choice_is_confirmed(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     choice_frame = _choice_entries(
         _entry("第一个候选", (920, 250, 1021, 279)),
         _entry("第二个候选", (920, 374, 1022, 402)),
     )
+    enabled_button = _choice_button_image((220, 20, 20))
+    disabled_button = _choice_button_image((180, 180, 180))
 
     fake_auto = _run_choice_fallback_fight(
         monkeypatch,
         [choice_frame, choice_frame, choice_frame],
-        template_click_result=False,
-        choice_template_visible_frames={1, 2},
+        template_click_result=True,
         stop_when_frames_exhausted=True,
+        is_tool=False,
+        color_frames=[enabled_button, disabled_button, disabled_button],
     )
 
-    assert fake_auto.clicks == [(971, 388)]
+    assert fake_auto.template_call_frames == [1]
+    assert fake_auto.clicks == [(971, 388), (971, 388)]
+    assert fake_auto.click_frames == [2, 3]
     assert fake_auto.unexpected_event_actions == []
-    assert fake_auto.sleeps
-
-
-def test_fight_waits_after_all_ocr_choice_candidates_are_attempted(
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
-    choice_frame = _choice_entries(
-        _entry("第一个候选", (920, 250, 1021, 279)),
-        _entry("第二个候选", (920, 374, 1022, 402)),
-    )
-
-    fake_auto = _run_choice_fallback_fight(
-        monkeypatch,
-        [choice_frame, choice_frame, choice_frame],
-        template_click_result=False,
-        stop_when_frames_exhausted=True,
-    )
-
-    assert fake_auto.choice_template_clicks == 1
-    assert fake_auto.clicks == [(971, 388)]
-    assert fake_auto.sleeps
 
 
 class _FightEventAuto:
@@ -608,6 +665,27 @@ def test_fight_advance_result_resets_exhausted_chance_before_settlement(monkeypa
     # 非事件帧会走现有循环末尾的无副作用重试检查，然后才减少 chance。
     assert retry_calls == [None, None]
     assert back_init_menu_calls == []
+
+
+class _NoSettlementFightAuto(_FightEventAuto):
+    def find_language_text(self, _zh_text: str, _en_text: str) -> bool:
+        return False
+
+
+def test_fight_returns_false_when_daily_recognition_budget_exhausts_without_settlement(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    battle_module = importlib.import_module("tasks.battle.battle")
+    fake_auto = _NoSettlementFightAuto([[]])
+    monkeypatch.setattr(battle_module, "auto", fake_auto)
+    monkeypatch.setattr(battle_module, "handle_server_error_dialog", lambda: None)
+    monkeypatch.setattr(battle_module, "sleep", lambda _seconds: None)
+    monkeypatch.setattr(battle_module, "retry", lambda: True)
+
+    battle = battle_module.Battle(is_tool=True)
+    battle.INIT_CHANCE = 0
+
+    assert battle.fight() is False
 
 
 class _BackInitMenuEventAuto:
@@ -828,8 +906,7 @@ class _DailyEntryAuto:
 
     def find_element(self, asset: str, **_kwargs) -> bool:
         return asset == "teams/identify_assets.png" and (
-            self._enter_team_after_frame is not None
-            and self.frames >= self._enter_team_after_frame
+            self._enter_team_after_frame is not None and self.frames >= self._enter_team_after_frame
         )
 
     def click_element(self, *_args, **_kwargs) -> bool:
@@ -854,7 +931,7 @@ def test_luxcavation_recovers_once_then_retries_entry_search(
     monkeypatch.setattr(
         luxcavation,
         "back_init_menu",
-        lambda: recovery_calls.append("recover") or True,
+        lambda **_kwargs: recovery_calls.append("recover") or True,
         raising=False,
     )
 
@@ -878,7 +955,7 @@ def test_luxcavation_stops_when_entry_recovery_fails(
     monkeypatch.setattr(
         luxcavation,
         "back_init_menu",
-        lambda: recovery_calls.append("recover") or False,
+        lambda **_kwargs: recovery_calls.append("recover") or False,
         raising=False,
     )
 
@@ -902,10 +979,64 @@ def test_luxcavation_stops_after_second_entry_search_exhaustion(
     monkeypatch.setattr(
         luxcavation,
         "back_init_menu",
-        lambda: recovery_calls.append("recover") or True,
+        lambda **_kwargs: recovery_calls.append("recover") or True,
         raising=False,
     )
 
     assert getattr(luxcavation, entrypoint_name)() is False
     assert recovery_calls == ["recover"]
     assert fake_auto.frames == 62
+
+
+@pytest.mark.parametrize("entrypoint_name", ["EXP_luxcavation", "thread_luxcavation"])
+def test_luxcavation_recovery_disables_internal_restart(
+    monkeypatch: pytest.MonkeyPatch,
+    entrypoint_name: str,
+) -> None:
+    luxcavation = importlib.import_module("tasks.daily.luxcavation")
+    fake_auto = _DailyEntryAuto(enter_team_after_frame=None)
+    recovery_options: list[bool] = []
+
+    monkeypatch.setattr(luxcavation, "auto", fake_auto)
+    monkeypatch.setattr(luxcavation, "sleep", lambda _seconds: None)
+    monkeypatch.setattr(luxcavation, "handle_server_error_dialog", lambda: None)
+    monkeypatch.setattr(
+        luxcavation,
+        "back_init_menu",
+        lambda *, allow_restart: recovery_options.append(allow_restart) or False,
+    )
+
+    assert getattr(luxcavation, entrypoint_name)() is False
+    assert recovery_options == [False]
+
+
+class _RenewalDailyEntryAuto(_DailyEntryAuto):
+    def find_element(self, asset: str, **_kwargs) -> bool:
+        if asset in {"base/renew_confirm_assets.png", "home/drive_assets.png"}:
+            return True
+        return False
+
+    def click_element(self, asset: str, *_args, **_kwargs) -> bool:
+        return asset == "base/renew_confirm_assets.png"
+
+
+@pytest.mark.parametrize("entrypoint_name", ["EXP_luxcavation", "thread_luxcavation"])
+def test_luxcavation_stops_when_renewal_home_recovery_fails(
+    monkeypatch: pytest.MonkeyPatch,
+    entrypoint_name: str,
+) -> None:
+    luxcavation = importlib.import_module("tasks.daily.luxcavation")
+    fake_auto = _RenewalDailyEntryAuto(enter_team_after_frame=None)
+    recovery_options: list[bool] = []
+
+    monkeypatch.setattr(luxcavation, "auto", fake_auto)
+    monkeypatch.setattr(luxcavation, "sleep", lambda _seconds: None)
+    monkeypatch.setattr(luxcavation, "handle_server_error_dialog", lambda: None)
+    monkeypatch.setattr(
+        luxcavation,
+        "back_init_menu",
+        lambda *, allow_restart: recovery_options.append(allow_restart) or False,
+    )
+
+    assert getattr(luxcavation, entrypoint_name)() is False
+    assert recovery_options == [False]
