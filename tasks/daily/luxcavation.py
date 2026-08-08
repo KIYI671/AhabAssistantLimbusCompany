@@ -3,7 +3,18 @@ from time import sleep
 from module.automation import auto
 from module.config import cfg
 from module.logger import log
+from tasks.base.back_init_menu import back_init_menu
 from tasks.base.retry import handle_server_error_dialog
+
+MAX_ENTRY_RECOVERY_ATTEMPTS = 1
+
+
+def _recover_daily_entry(recovery_attempts: int, log_prefix: str) -> bool:
+    if recovery_attempts >= MAX_ENTRY_RECOVERY_ATTEMPTS:
+        log.error(f"{log_prefix}入口恢复已耗尽，取消本场")
+        return False
+    log.warning(f"{log_prefix}入口识别耗尽，尝试返回主界面后重新导航")
+    return back_init_menu()
 
 
 def _prepare_continuous_combat_count(
@@ -48,6 +59,7 @@ def _prepare_continuous_combat_count(
 
 def EXP_luxcavation(combat_count: int = 1) -> bool:
     loop_count = 30
+    recovery_attempts = 0
     auto.model = "clam"
     while True:
         # 自动截图
@@ -108,8 +120,6 @@ def EXP_luxcavation(combat_count: int = 1) -> bool:
             "home/drive_assets.png", model="normal"
         ):
             auto.click_element("base/renew_confirm_assets.png")
-            from tasks.base.back_init_menu import back_init_menu
-
             back_init_menu()
             continue
         if auto.click_element("home/drive_assets.png"):
@@ -123,8 +133,12 @@ def EXP_luxcavation(combat_count: int = 1) -> bool:
         if loop_count < 10:
             auto.model = "aggressive"
         if loop_count < 0:
-            log.error("无法进入经验本,不能进行下一步,此次经验本无效")
-            return False
+            if not _recover_daily_entry(recovery_attempts, "经验本"):
+                log.error("无法进入经验本,不能进行下一步,此次经验本无效")
+                return False
+            recovery_attempts += 1
+            loop_count = 30
+            auto.model = "clam"
 
 
 def thread_luxcavation(combat_count: int = 1) -> bool:
@@ -144,6 +158,7 @@ def thread_luxcavation(combat_count: int = 1) -> bool:
             log.debug(f"{log_prefix}第 {lv_idx + 1} 关 3 次尝试均未进入编队，降级尝试下一关")
         return False
     loop_count = 30
+    recovery_attempts = 0
     continuous_combat_set = False
     auto.model = "clam"
     while True:
@@ -239,8 +254,6 @@ def thread_luxcavation(combat_count: int = 1) -> bool:
             "home/drive_assets.png", model="normal"
         ):
             auto.click_element("base/renew_confirm_assets.png")
-            from tasks.base.back_init_menu import back_init_menu
-
             back_init_menu()
             continue
         if auto.click_element("home/drive_assets.png"):
@@ -253,5 +266,9 @@ def thread_luxcavation(combat_count: int = 1) -> bool:
         if loop_count < 10:
             auto.model = "aggressive"
         if loop_count < 0:
-            log.error("无法进入纽本,不能进行下一步,此次纽本无效")
-            return False
+            if not _recover_daily_entry(recovery_attempts, "纽本"):
+                log.error("无法进入纽本,不能进行下一步,此次纽本无效")
+                return False
+            recovery_attempts += 1
+            loop_count = 30
+            auto.model = "clam"

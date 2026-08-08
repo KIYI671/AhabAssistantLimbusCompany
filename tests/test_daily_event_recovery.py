@@ -450,3 +450,99 @@ def test_back_init_menu_handles_advance_without_position_as_bounded_wait(monkeyp
     assert fake_auto.clicks == []
     assert fake_auto.blank_clicks == 0
     assert fake_auto.key_presses == []
+
+
+class _DailyEntryAuto:
+    model = ""
+
+    def __init__(self, *, enter_team_after_frame: int | None) -> None:
+        self._enter_team_after_frame = enter_team_after_frame
+        self.frames = 0
+
+    def take_screenshot_with_color(self) -> object:
+        self.frames += 1
+        return object()
+
+    def find_element(self, asset: str, **_kwargs) -> bool:
+        return asset == "teams/identify_assets.png" and (
+            self._enter_team_after_frame is not None
+            and self.frames >= self._enter_team_after_frame
+        )
+
+    def click_element(self, *_args, **_kwargs) -> bool:
+        return False
+
+    def mouse_to_blank(self) -> None:
+        return None
+
+
+@pytest.mark.parametrize("entrypoint_name", ["EXP_luxcavation", "thread_luxcavation"])
+def test_luxcavation_recovers_once_then_retries_entry_search(
+    monkeypatch: pytest.MonkeyPatch,
+    entrypoint_name: str,
+) -> None:
+    luxcavation = importlib.import_module("tasks.daily.luxcavation")
+    fake_auto = _DailyEntryAuto(enter_team_after_frame=32)
+    recovery_calls: list[str] = []
+
+    monkeypatch.setattr(luxcavation, "auto", fake_auto)
+    monkeypatch.setattr(luxcavation, "sleep", lambda _seconds: None)
+    monkeypatch.setattr(luxcavation, "handle_server_error_dialog", lambda: None)
+    monkeypatch.setattr(
+        luxcavation,
+        "back_init_menu",
+        lambda: recovery_calls.append("recover") or True,
+        raising=False,
+    )
+
+    assert getattr(luxcavation, entrypoint_name)() is True
+    assert recovery_calls == ["recover"]
+    assert fake_auto.frames == 32
+
+
+@pytest.mark.parametrize("entrypoint_name", ["EXP_luxcavation", "thread_luxcavation"])
+def test_luxcavation_stops_when_entry_recovery_fails(
+    monkeypatch: pytest.MonkeyPatch,
+    entrypoint_name: str,
+) -> None:
+    luxcavation = importlib.import_module("tasks.daily.luxcavation")
+    fake_auto = _DailyEntryAuto(enter_team_after_frame=None)
+    recovery_calls: list[str] = []
+
+    monkeypatch.setattr(luxcavation, "auto", fake_auto)
+    monkeypatch.setattr(luxcavation, "sleep", lambda _seconds: None)
+    monkeypatch.setattr(luxcavation, "handle_server_error_dialog", lambda: None)
+    monkeypatch.setattr(
+        luxcavation,
+        "back_init_menu",
+        lambda: recovery_calls.append("recover") or False,
+        raising=False,
+    )
+
+    assert getattr(luxcavation, entrypoint_name)() is False
+    assert recovery_calls == ["recover"]
+    assert fake_auto.frames == 31
+
+
+@pytest.mark.parametrize("entrypoint_name", ["EXP_luxcavation", "thread_luxcavation"])
+def test_luxcavation_stops_after_second_entry_search_exhaustion(
+    monkeypatch: pytest.MonkeyPatch,
+    entrypoint_name: str,
+) -> None:
+    luxcavation = importlib.import_module("tasks.daily.luxcavation")
+    fake_auto = _DailyEntryAuto(enter_team_after_frame=None)
+    recovery_calls: list[str] = []
+
+    monkeypatch.setattr(luxcavation, "auto", fake_auto)
+    monkeypatch.setattr(luxcavation, "sleep", lambda _seconds: None)
+    monkeypatch.setattr(luxcavation, "handle_server_error_dialog", lambda: None)
+    monkeypatch.setattr(
+        luxcavation,
+        "back_init_menu",
+        lambda: recovery_calls.append("recover") or True,
+        raising=False,
+    )
+
+    assert getattr(luxcavation, entrypoint_name)() is False
+    assert recovery_calls == ["recover"]
+    assert fake_auto.frames == 62
