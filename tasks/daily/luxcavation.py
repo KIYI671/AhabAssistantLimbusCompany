@@ -3,6 +3,7 @@ from time import sleep
 from module.automation import auto
 from module.config import cfg
 from module.logger import log
+from tasks.base.retry import handle_server_error_dialog
 
 
 def _prepare_continuous_combat_count(
@@ -50,7 +51,10 @@ def EXP_luxcavation(combat_count: int = 1):
     auto.model = "clam"
     while True:
         # 自动截图
-        if auto.take_screenshot() is None:
+        if auto.take_screenshot_with_color() is None:
+            continue
+        server_error_result = handle_server_error_dialog()
+        if server_error_result is not None:
             continue
         if auto.find_element("teams/identify_assets.png"):
             break
@@ -144,7 +148,10 @@ def thread_luxcavation(combat_count: int = 1):
     auto.model = "clam"
     while True:
         # 自动截图
-        if auto.take_screenshot() is None:
+        if auto.take_screenshot_with_color() is None:
+            continue
+        server_error_result = handle_server_error_dialog()
+        if server_error_result is not None:
             continue
         if auto.find_element("teams/identify_assets.png"):
             break
