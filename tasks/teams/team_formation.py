@@ -84,13 +84,10 @@ def _ordered_team_location(num):
 def find_named_team_position(num: int, text_positions: dict[str, list[float]]) -> list[float] | bool:
     """从 OCR 结果中精确查找指定编号的编队名称。"""
     expected = str(num)
-    patterns = (
-        rf"编队\s*#\s*{expected}(?!\d)",
-        rf"(?:TEAMS|TFAMS)\s*#\s*{expected}(?!\d)",
-    )
+    pattern = rf"#\s*{expected}(?!\d)"
     for text, position in text_positions.items():
         normalized = text.replace(" ", "")
-        if any(re.search(pattern, normalized, flags=re.IGNORECASE) for pattern in patterns):
+        if re.search(pattern, normalized, flags=re.IGNORECASE):
             return position
     return False
 
