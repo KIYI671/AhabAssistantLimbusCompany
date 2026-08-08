@@ -2,16 +2,16 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** 让一次日常任务批次仅在开始时换饼一次，并在经验本、纽本及其重复次数之间直接切换，同时阻止预设项误选和选队失败后的空编队开战。
+**Goal:** 让经验本与纽本各自的重复场次之间直接切换，并在每个日常项目完成后只换饼一次，同时阻止预设项误选和选队失败后的空编队开战。
 
-**Architecture:** `Daily_task_wrapper()` 保持为日常批次唯一的主页初始化与换饼边界；单场经验本/纽本流程只负责进入副本、选队和战斗结算。队伍名称匹配继续容忍字体乱码的编号，但明确排除“预设/Preset”条目；日常调用方必须检查 `select_battle_team()` 的布尔结果后才能进入 `Battle.to_battle()`。
+**Architecture:** 单场经验本/纽本流程只负责进入副本、选队和战斗结算；日常调度器将经验本和纽本作为两个项目组，在每组的全部配置次数完成后执行一次既有主页导航与换饼。队伍名称匹配继续容忍字体乱码的编号，但明确排除“预设/Preset”条目；日常调用方必须检查 `select_battle_team()` 的布尔结果后才能进入 `Battle.to_battle()`。
 
 **Tech Stack:** Python、pytest、pytest monkeypatch、现有任务调度与 Automation 接口。
 
 ## Global Constraints
 
-- 日常批次入口只保留一次 `back_init_menu()` 和一次 `make_enkephalin_module()`。
-- 成功的单场经验本/纽本不执行主页导航或换饼；副本入口函数复用现有采光导航。
+- 每个日常项目组完成全部配置次数后只执行一次 `back_init_menu()` 和一次 `make_enkephalin_module()`；次数为零的项目不执行这两项操作。
+- 成功的单场经验本/纽本不执行主页导航或换饼；同项目的下一场复用现有采光导航。
 - 不改变经验本后纽本的现有执行顺序、次数计算、连续战斗拆分、领奖/镜牢调度或配置字段。
 - `find_named_team_position()` 必须拒绝已被 OCR 正常识别为“预设/Preset”的条目，但仍允许无法识别前缀时以精确编号作兜底。
 - `select_battle_team()` 返回 `False` 时，经验本与纽本流程必须立即返回 `False`，不可调用 `battle.to_battle()`。
@@ -24,9 +24,9 @@
 | 文件 | 修改目的 |
 | --- | --- |
 | `tests/test_team_name_selection.py` | 锁定“预设 #1”不能冒充目标编队，且真实编队的精确编号仍可匹配。 |
-| `tests/test_daily_team_selection.py` | 锁定选队失败不会进入开始战斗，以及日常批次仅执行一次主页初始化与换饼。 |
+| `tests/test_daily_team_selection.py` | 锁定选队失败不会进入开始战斗，以及每个日常项目只在完成全部次数后执行一次主页导航与换饼。 |
 | `tasks/teams/team_formation.py` | 在编号兜底匹配前过滤可辨认的预设项。 |
-| `tasks/base/script_task_scheme.py` | 在选队失败时中止；将主页导航和换饼从单场流程收敛到批次入口。 |
+| `tasks/base/script_task_scheme.py` | 在选队失败时中止；将主页导航和换饼从单场流程收敛到经验本/纽本项目组结束点。 |
 
 ### Task 1: 防止预设误选和空编队开战
 
@@ -170,7 +170,7 @@ git commit -m "fix: guard daily team selection failures"
 
 Expected: 所有三组测试通过，且提交仅包含预设过滤、选队失败中断及其测试。
 
-### Task 2: 将主页初始化和换饼收敛到日常批次入口
+### Task 2: 将主页初始化和换饼收敛到每个日常项目结束点
 
 **Files:**
 - Modify: `tests/test_daily_team_selection.py`
@@ -178,22 +178,22 @@ Expected: 所有三组测试通过，且提交仅包含预设过滤、选队失�
 
 **Interfaces:**
 - Consumes: `Daily_task_wrapper(get_reward=None) -> Callable[[], None]`。
-- Consumes: `onetime_EXP_process(combat_count: int = 1)` 与 `onetime_thread_process(combat_count: int = 1)`。
-- Produces: 一次日常批次只调用一次 `back_init_menu()` 与一次 `make_enkephalin_module()`；成功的单场流程不调用两者。
+- Consumes: `_single_combat_run(exp_times, thread_times)` 与 `_batch_combat(process_fn, times, max_times)`。
+- Produces: 成功的单场流程不调用主页导航或换饼；经验本组和纽本组各自在完成全部次数后调用一次 `back_init_menu()` 与 `make_enkephalin_module()`。
 
-- [ ] **Step 1: 写入批次只初始化一次的失败测试**
+- [ ] **Step 1: 写入每个日常项目结束后只初始化一次的失败测试**
 
 追加到 `tests/test_daily_team_selection.py`：
 
 ```python
-def test_daily_batch_initializes_once_and_keeps_navigation_between_runs(monkeypatch) -> None:
+def test_daily_groups_initialize_after_each_enabled_group(monkeypatch) -> None:
     scheme = importlib.import_module("tasks.base.script_task_scheme")
     calls: list[str] = []
     monkeypatch.setattr(
         scheme,
         "cfg",
         SimpleNamespace(
-            set_EXP_count=1,
+            set_EXP_count=2,
             set_thread_count=1,
             config=SimpleNamespace(use_continuous_combat=False),
             use_continuous_combat_select=1,
@@ -206,7 +206,7 @@ def test_daily_batch_initializes_once_and_keeps_navigation_between_runs(monkeypa
 
     scheme.Daily_task_wrapper()()
 
-    assert calls == ["home", "enkephalin", "exp", "thread"]
+    assert calls == ["exp", "exp", "home", "enkephalin", "thread", "home", "enkephalin"]
 ```
 
 追加单场流程的成功路径参数化测试：
@@ -255,9 +255,9 @@ Run:
 .venv/Scripts/python.exe -m pytest tests/test_daily_team_selection.py -q
 ```
 
-Expected: 新增 3 项失败。批次测试会出现额外的 `home`、`enkephalin`；单场测试会调用被替换为 `pytest.fail()` 的主页导航或换饼函数。
+Expected: 新增 3 项失败。项目组测试会在每个单场后出现 `home`、`enkephalin`；单场测试会调用被替换为 `pytest.fail()` 的主页导航或换饼函数。
 
-- [ ] **Step 3: 从两个单场流程移除重复导航**
+- [ ] **Step 3: 从两个单场流程移除重复导航，并在项目组结束后恢复一次既有导航**
 
 在 `onetime_EXP_process()` 与 `onetime_thread_process()` 的成功结算末尾，删除：
 
@@ -266,14 +266,31 @@ back_init_menu()
 make_enkephalin_module()
 ```
 
-保留 `Daily_task_wrapper()` 开头的：
+新增内部帮助函数：
 
 ```python
-back_init_menu()
-make_enkephalin_module()
+def _complete_daily_group(process_fn, times, max_times, use_continuous_combat):
+    if times <= 0:
+        return
+    if use_continuous_combat:
+        _batch_combat(process_fn, times, max_times)
+    else:
+        for _ in range(times):
+            process_fn()
+    back_init_menu()
+    make_enkephalin_module()
 ```
 
-不调整 `_single_combat_run()`、`_batch_combat()`、副本入口函数或后续任务调度。
+将 `Daily_task_wrapper()` 内的日常调用替换为：
+
+```python
+use_continuous_combat = cfg.config.use_continuous_combat and cfg.use_continuous_combat_select > 0
+max_times = cfg.use_continuous_combat_select
+_complete_daily_group(onetime_EXP_process, exp_times, max_times, use_continuous_combat)
+_complete_daily_group(onetime_thread_process, thread_times, max_times, use_continuous_combat)
+```
+
+不调整 `_batch_combat()`、副本入口函数或后续任务调度。
 
 - [ ] **Step 4: 运行相关测试并确认绿灯**
 
@@ -283,7 +300,7 @@ Run:
 .venv/Scripts/python.exe -m pytest tests/test_daily_team_selection.py tests/test_team_name_selection.py tests/test_server_error_recovery.py -q
 ```
 
-Expected: 日常批次只记录一次初始化；成功单场流程保留当前导航；选队失败仍不进战斗。
+Expected: 每个项目组只记录一次初始化；成功单场流程保留当前导航；选队失败仍不进战斗。
 
 - [ ] **Step 5: 运行完整验证并提交导航优化**
 
@@ -294,10 +311,10 @@ Run:
 .venv/Scripts/python.exe -m ruff check --ignore E722 tasks/base/script_task_scheme.py tasks/teams/team_formation.py tests/test_daily_team_selection.py tests/test_team_name_selection.py
 git diff --check
 git add tasks/base/script_task_scheme.py tests/test_daily_team_selection.py
-git commit -m "fix: keep daily navigation between runs"
+git commit -m "fix: group daily navigation between runs"
 ```
 
-Expected: 完整 pytest 为零失败；范围 ruff 通过；提交仅包含批次内导航和换饼收敛及其回归测试。
+Expected: 完整 pytest 为零失败；范围 ruff 通过；提交仅包含项目组内导航和换饼收敛及其回归测试。
 
 ### Task 3: 用本地 Steam 环境复测已配置日常任务
 
