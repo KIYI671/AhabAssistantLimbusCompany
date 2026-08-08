@@ -22,6 +22,13 @@ from utils.utils import find_skill3
 DEFENSE_FOR_SOLO_TURN_LIMIT = 5
 
 
+def _find_daily_battle_settlement_confirmation() -> tuple[int, int] | bool:
+    """返回普通日常战斗胜利结算页的确认按钮，避免镜牢模板误判抢占。"""
+    if auto.find_language_text("战斗胜利", "battle victory") is False:
+        return False
+    return auto.find_language_text("确认", "confirm")
+
+
 @dataclass
 class DefenseForSoloState:
     """一次镜牢任务内共享的连续防御回合状态。"""
@@ -500,10 +507,10 @@ class Battle:
                 auto.mouse_click(center_x - random_number, center_y + random_number, times=1)
                 sleep(0.15)
 
-            # 战斗结束，进入结算页面
-            if auto.click_element("battle/battle_finish_confirm_assets.png", click=False) or auto.find_element(
-                "mirror/claim_reward/battle_statistics_assets.png"
-            ):
+            # 战斗结束，进入结算页面。普通日常优先通过 OCR 点击确认，避免镜牢统计模板误判。
+            daily_settlement_confirmation = _find_daily_battle_settlement_confirmation()
+            mirror_settlement = in_mirror and auto.find_element("mirror/claim_reward/battle_statistics_assets.png")
+            if daily_settlement_confirmation or mirror_settlement:
                 sleep(1)
                 if auto.click_element("base/leave_up_assets.png"):
                     auto.click_element("base/leave_up_confirm_assets.png")
@@ -518,7 +525,10 @@ class Battle:
                         first_battle_reward = "EXP"
                     if auto.find_element("battle/clear_rewards_thread_assets.png"):
                         first_battle_reward = "thread"
-                auto.click_element("battle/battle_finish_confirm_assets.png")
+                if daily_settlement_confirmation:
+                    auto.mouse_click(*daily_settlement_confirmation)
+                else:
+                    auto.click_element("battle/battle_finish_confirm_assets.png")
                 if infinite_battle:
                     continue
                 break

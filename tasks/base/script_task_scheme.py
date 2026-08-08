@@ -55,8 +55,10 @@ def onetime_EXP_process(combat_count: int = 1):
         team = cfg.get_value(f"EXP_day_{calculate_the_teams()}")
     else:
         team = cfg.daily_teams
-    EXP_luxcavation(combat_count)
-    if select_battle_team(team) is False:
+    if not EXP_luxcavation(combat_count):
+        log.error("经验本未能进入编队界面，取消后续操作")
+        return False
+    if not select_battle_team(team):
         log.error(f"经验本未能选择队伍 # {team}，取消开始战斗")
         return False
     if battle.to_battle() is False:
@@ -71,8 +73,10 @@ def onetime_thread_process(combat_count: int = 1):
         team = cfg.get_value(f"thread_day_{get_day_of_week()}")
     else:
         team = cfg.daily_teams
-    thread_luxcavation(combat_count)
-    if select_battle_team(team) is False:
+    if not thread_luxcavation(combat_count):
+        log.error("纽本未能进入编队界面，取消后续操作")
+        return False
+    if not select_battle_team(team):
         log.error(f"纽本未能选择队伍 # {team}，取消开始战斗")
         return False
     if battle.to_battle() is False:

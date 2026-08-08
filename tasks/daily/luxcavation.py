@@ -46,7 +46,7 @@ def _prepare_continuous_combat_count(
     return True
 
 
-def EXP_luxcavation(combat_count: int = 1):
+def EXP_luxcavation(combat_count: int = 1) -> bool:
     loop_count = 30
     auto.model = "clam"
     while True:
@@ -57,7 +57,7 @@ def EXP_luxcavation(combat_count: int = 1):
         if server_error_result is not None:
             continue
         if auto.find_element("teams/identify_assets.png"):
-            break
+            return True
         if (
             auto.find_element("home/first_prompt_assets.png", model="clam")
             and auto.find_element("home/back_assets.png", model="normal")
@@ -124,10 +124,10 @@ def EXP_luxcavation(combat_count: int = 1):
             auto.model = "aggressive"
         if loop_count < 0:
             log.error("无法进入经验本,不能进行下一步,此次经验本无效")
-            break
+            return False
 
 
-def thread_luxcavation(combat_count: int = 1):
+def thread_luxcavation(combat_count: int = 1) -> bool:
     def _click_level_targets(level: list, log_prefix: str) -> bool:
         for lv_idx, lv in enumerate(level):
             for retry in range(3):
@@ -154,7 +154,7 @@ def thread_luxcavation(combat_count: int = 1):
         if server_error_result is not None:
             continue
         if auto.find_element("teams/identify_assets.png"):
-            break
+            return True
         if (
             auto.find_element("home/first_prompt_assets.png", model="clam")
             and auto.find_element("home/back_assets.png", model="normal")
@@ -254,4 +254,4 @@ def thread_luxcavation(combat_count: int = 1):
             auto.model = "aggressive"
         if loop_count < 0:
             log.error("无法进入纽本,不能进行下一步,此次纽本无效")
-            break
+            return False

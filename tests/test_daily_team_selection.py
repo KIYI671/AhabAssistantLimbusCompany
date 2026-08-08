@@ -98,7 +98,11 @@ def test_successful_daily_process_keeps_current_navigation(
             daily_teams=1,
         ),
     )
-    monkeypatch.setattr(scheme, entrypoint_name, lambda count: calls.append(entrypoint_name))
+    def enter_dungeon(count: int) -> bool:
+        calls.append(entrypoint_name)
+        return True
+
+    monkeypatch.setattr(scheme, entrypoint_name, enter_dungeon)
     monkeypatch.setattr(scheme, "select_battle_team", lambda team: True)
     monkeypatch.setattr(scheme.battle, "to_battle", lambda: None)
     monkeypatch.setattr(scheme.battle, "fight", lambda **kwargs: calls.append("fight"))
@@ -108,3 +112,32 @@ def test_successful_daily_process_keeps_current_navigation(
     getattr(scheme, process_name)()
 
     assert calls == [entrypoint_name, "fight"]
+
+
+@pytest.mark.parametrize(
+    ("process_name", "entrypoint_name"),
+    [
+        ("onetime_EXP_process", "EXP_luxcavation"),
+        ("onetime_thread_process", "thread_luxcavation"),
+    ],
+)
+def test_daily_process_stops_when_dungeon_entry_fails(
+    monkeypatch,
+    process_name: str,
+    entrypoint_name: str,
+) -> None:
+    scheme = importlib.import_module("tasks.base.script_task_scheme")
+    monkeypatch.setattr(
+        scheme,
+        "cfg",
+        SimpleNamespace(
+            targeted_teaming_EXP=False,
+            targeted_teaming_thread=False,
+            daily_teams=1,
+        ),
+    )
+    monkeypatch.setattr(scheme, entrypoint_name, lambda count: False)
+    monkeypatch.setattr(scheme, "select_battle_team", lambda team: pytest.fail("进本失败后不应选队"))
+    monkeypatch.setattr(scheme.battle, "to_battle", lambda: pytest.fail("进本失败后不应开始战斗"))
+
+    assert getattr(scheme, process_name)() is False
