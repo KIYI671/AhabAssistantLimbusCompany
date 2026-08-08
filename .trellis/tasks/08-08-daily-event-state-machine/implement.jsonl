@@ -1,0 +1,5 @@
+{"file": ".trellis/spec/backend/index.md", "reason": "任务涉及 Python 自动化业务层；实现时先确认该层的现有规范入口及待补齐状态。"}
+{"file": ".trellis/spec/backend/error-handling.md", "reason": "统一事件页、入口恢复和服务器错误的失败出口，避免吞掉失败后继续导航。"}
+{"file": ".trellis/spec/backend/logging-guidelines.md", "reason": "为 OCR 事件等待、恢复耗尽和取消本场选择合适日志级别，避免记录无关 OCR 内容。"}
+{"file": ".trellis/spec/backend/quality-guidelines.md", "reason": "实施前核对自动化测试、Ruff 和代码质量约束。"}
+{"file": ".trellis/spec/guides/code-reuse-thinking-guide.md", "reason": "要求事件 OCR 解析和日常入口恢复各有单一共享实现，避免复制分支。"}

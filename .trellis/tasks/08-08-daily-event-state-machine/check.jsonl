@@ -1,0 +1,5 @@
+{"file": ".trellis/spec/backend/index.md", "reason": "质量检查需要从本项目后端规范入口追溯适用约束。"}
+{"file": ".trellis/spec/backend/error-handling.md", "reason": "检查各状态是否明确处理失败、超时和禁止继续的出口。"}
+{"file": ".trellis/spec/backend/logging-guidelines.md", "reason": "检查事件恢复日志是否按 debug/warning/error 的语义记录，且没有无关敏感内容。"}
+{"file": ".trellis/spec/backend/quality-guidelines.md", "reason": "检查 pytest、Ruff、回归覆盖与禁止模式。"}
+{"file": ".trellis/spec/guides/code-reuse-thinking-guide.md", "reason": "检查 OCR 关键词和入口恢复逻辑没有在战斗、主页、经验本、纽本路径中重复实现。"}
