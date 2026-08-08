@@ -112,7 +112,7 @@ class _FightEventAuto:
         self._frame = 0
         self.clicks: list[tuple[int, int]] = []
 
-    def take_screenshot(self) -> object:
+    def take_screenshot_with_color(self) -> object:
         self._frame += 1
         return object()
 
@@ -157,6 +157,7 @@ def _run_daily_event_fight(
     fake_auto = _FightEventAuto(ocr_frames)
 
     monkeypatch.setattr(battle_module, "auto", fake_auto)
+    monkeypatch.setattr(battle_module, "handle_server_error_dialog", lambda: None)
     monkeypatch.setattr(battle_module, "sleep", lambda _seconds: None)
     monkeypatch.setattr(
         battle_module,

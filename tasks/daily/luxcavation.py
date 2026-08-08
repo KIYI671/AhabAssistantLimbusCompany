@@ -66,7 +66,9 @@ def EXP_luxcavation(combat_count: int = 1) -> bool:
         if auto.take_screenshot_with_color() is None:
             continue
         server_error_result = handle_server_error_dialog()
-        if server_error_result is not None:
+        if server_error_result is False:
+            return False
+        if server_error_result is True:
             continue
         if auto.find_element("teams/identify_assets.png"):
             return True
@@ -166,7 +168,9 @@ def thread_luxcavation(combat_count: int = 1) -> bool:
         if auto.take_screenshot_with_color() is None:
             continue
         server_error_result = handle_server_error_dialog()
-        if server_error_result is not None:
+        if server_error_result is False:
+            return False
+        if server_error_result is True:
             continue
         if auto.find_element("teams/identify_assets.png"):
             return True

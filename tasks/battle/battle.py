@@ -261,8 +261,13 @@ class Battle:
         while self.running:
             from tasks.base.retry import check_times
 
-            # 自动截图
-            if auto.take_screenshot() is None:
+            # 保留服务器错误弹窗颜色判定所需的彩色帧。
+            if auto.take_screenshot_with_color() is None:
+                continue
+            server_error_result = handle_server_error_dialog()
+            if server_error_result is False:
+                return False
+            if server_error_result is True:
                 continue
             if auto.get_restore_time() is not None:
                 start_time = max(start_time, auto.get_restore_time())

@@ -230,3 +230,92 @@ def test_to_battle_returns_false_when_server_error_restarts_game(monkeypatch) ->
 
     assert battle_module.Battle.to_battle() is False
     assert fake_auto.find_calls == 0
+
+
+class _FightServerErrorAuto:
+    def __init__(self, *, stop_after_next_frame: bool = False) -> None:
+        self.stop_after_next_frame = stop_after_next_frame
+        self.screenshots = 0
+        self.find_calls = 0
+        self.ocr_calls = 0
+
+    def take_screenshot_with_color(self) -> object:
+        self.screenshots += 1
+        if self.stop_after_next_frame and self.screenshots == 2:
+            raise StopIteration
+        return object()
+
+    def take_screenshot(self) -> object:
+        raise AssertionError("战斗服务器错误检测必须保留彩色截图")
+
+    def find_element(self, *_args, **_kwargs) -> None:
+        self.find_calls += 1
+        raise AssertionError("服务器错误处理期间不应执行普通战斗识图")
+
+    def get_ocr_entries(self) -> list[tuple[str, tuple[int, int, int, int]]]:
+        self.ocr_calls += 1
+        raise AssertionError("服务器错误处理期间不应读取事件或结算 OCR")
+
+
+def test_fight_skips_all_normal_recognition_when_server_error_is_handled(monkeypatch) -> None:
+    battle_module = importlib.import_module("tasks.battle.battle")
+    fake_auto = _FightServerErrorAuto(stop_after_next_frame=True)
+    handler_calls: list[None] = []
+
+    monkeypatch.setattr(battle_module, "auto", fake_auto)
+    monkeypatch.setattr(
+        battle_module,
+        "handle_server_error_dialog",
+        lambda: handler_calls.append(None) or True,
+    )
+
+    with pytest.raises(StopIteration):
+        battle_module.Battle(is_tool=True).fight()
+
+    assert handler_calls == [None]
+    assert fake_auto.find_calls == 0
+    assert fake_auto.ocr_calls == 0
+
+
+def test_fight_returns_false_when_server_error_restarts_game(monkeypatch) -> None:
+    battle_module = importlib.import_module("tasks.battle.battle")
+    fake_auto = _FightServerErrorAuto()
+
+    monkeypatch.setattr(battle_module, "auto", fake_auto)
+    monkeypatch.setattr(battle_module, "handle_server_error_dialog", lambda: False)
+
+    assert battle_module.Battle(is_tool=True).fight() is False
+    assert fake_auto.find_calls == 0
+    assert fake_auto.ocr_calls == 0
+
+
+@pytest.mark.parametrize("entrypoint_name", ["EXP_luxcavation", "thread_luxcavation"])
+def test_luxcavation_returns_false_when_server_error_restarts_game(
+    monkeypatch,
+    entrypoint_name: str,
+) -> None:
+    import tasks.daily.luxcavation as luxcavation
+
+    class FakeTaskAuto:
+        model = ""
+
+        def __init__(self) -> None:
+            self.find_calls = 0
+            self.screenshots = 0
+
+        def take_screenshot_with_color(self) -> object:
+            self.screenshots += 1
+            if self.screenshots == 2:
+                raise AssertionError("服务器重启后入口循环不应继续到下一帧")
+            return object()
+
+        def find_element(self, *_args, **_kwargs) -> None:
+            self.find_calls += 1
+            raise AssertionError("重启游戏后不应执行采光入口识图")
+
+    fake_auto = FakeTaskAuto()
+    monkeypatch.setattr(luxcavation, "auto", fake_auto)
+    monkeypatch.setattr(luxcavation, "handle_server_error_dialog", lambda: False)
+
+    assert getattr(luxcavation, entrypoint_name)() is False
+    assert fake_auto.find_calls == 0
