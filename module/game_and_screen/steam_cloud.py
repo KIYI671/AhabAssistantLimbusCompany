@@ -28,6 +28,8 @@ class SteamCloudDialog:
 class DesktopCapture:
     image: Any
     origin: tuple[int, int]
+    hwnd: int | None = None
+    bounds: tuple[int, int, int, int] | None = None
 
 
 def _normalized_text(text: str) -> str:
@@ -127,7 +129,32 @@ def _capture_foreground_steam_window() -> DesktopCapture | None:
     width, height = right - left, bottom - top
     if width <= 0 or height <= 0:
         return None
-    return DesktopCapture(pyautogui.screenshot(region=(left, top, width, height)), (left, top))
+    return DesktopCapture(
+        image=pyautogui.screenshot(region=(left, top, width, height)),
+        origin=(left, top),
+        hwnd=hwnd,
+        bounds=(left, top, right, bottom),
+    )
+
+
+def _foreground_capture_is_current(capture: DesktopCapture) -> bool:
+    if capture.hwnd is None or capture.bounds is None:
+        return True
+
+    import psutil
+    import win32gui
+    import win32process
+
+    if win32gui.GetForegroundWindow() != capture.hwnd or not win32gui.IsWindow(capture.hwnd):
+        return False
+    if tuple(win32gui.GetWindowRect(capture.hwnd)) != capture.bounds:
+        return False
+
+    _, process_id = win32process.GetWindowThreadProcessId(capture.hwnd)
+    try:
+        return psutil.Process(process_id).name().casefold() in {"steam.exe", "steamwebhelper.exe"}
+    except (psutil.AccessDenied, psutil.NoSuchProcess):
+        return False
 
 
 def _production_dependencies() -> tuple[Callable[[], DesktopCapture | None], Callable[[Any], Any], Callable[[int, int], None]]:
@@ -143,6 +170,7 @@ def handle_steam_cloud_sync_dialog(
     recognize: Callable[[Any], Any] | None = None,
     click: Callable[[int, int], None] | None = None,
     on_dialog_detected: Callable[[], None] | None = None,
+    validate_capture: Callable[[DesktopCapture], bool] | None = None,
 ) -> bool:
     """识别并确认唯一获授权的 Steam 云同步弹窗，成功点击时返回 ``True``。"""
     try:
@@ -160,6 +188,11 @@ def handle_steam_cloud_sync_dialog(
         dialog = resolve_steam_cloud_dialog(_entries_from_ocr_result(recognize(screenshot)))
         if dialog is None:
             return False
+
+        if isinstance(captured, DesktopCapture):
+            validator = validate_capture or _foreground_capture_is_current
+            if not validator(captured):
+                return False
 
         if on_dialog_detected is not None:
             on_dialog_detected()

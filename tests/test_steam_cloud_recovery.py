@@ -101,6 +101,20 @@ def test_handle_steam_cloud_sync_dialog_offsets_click_from_foreground_window_cap
     assert clicks == [(1594, 400)]
 
 
+def test_handle_steam_cloud_sync_dialog_skips_click_when_captured_window_loses_foreground() -> None:
+    clicks: list[tuple[int, int]] = []
+
+    handled = handle_steam_cloud_sync_dialog(
+        capture=lambda: DesktopCapture(image=object(), origin=(1000, 50), hwnd=42, bounds=(1000, 50, 1900, 600)),
+        recognize=lambda _: _reported_cloud_sync_entries(),
+        click=lambda x, y: clicks.append((x, y)),
+        validate_capture=lambda _: False,
+    )
+
+    assert handled is False
+    assert clicks == []
+
+
 def test_handle_steam_cloud_sync_dialog_consumes_confirmation_before_click_exception() -> None:
     confirmations: list[str] = []
     clicks: list[tuple[int, int]] = []
