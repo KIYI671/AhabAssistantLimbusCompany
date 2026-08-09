@@ -1,5 +1,3 @@
-import os
-import platform
 import re
 import time
 from dataclasses import dataclass
@@ -7,8 +5,6 @@ from time import sleep
 
 import cv2
 import numpy as np
-import psutil
-import win32process
 
 from module.automation import auto
 from module.config import cfg
@@ -185,7 +181,7 @@ def click_title_screen_safely() -> None:
 
 
 def kill_game():
-    """关闭游戏"""
+    """关闭游戏；Windows 路径委托公共优雅关闭逻辑。"""
     if cfg.simulator:
         if cfg.simulator_type == 0:
             from module.automation.input_handlers.simulator.mumu_control import (
@@ -200,32 +196,10 @@ def kill_game():
 
             SimulatorControl.connection_device.close_current_app()
         return
-    if platform.system() == "Windows":
-        from module.game_and_screen import screen
 
-        _, pid = win32process.GetWindowThreadProcessId(screen.handle.hwnd)
-        os.system(f"taskkill /F /PID {pid}")
-    sleep(10)
-    wait_start = time.time()
-    while True:
-        game_running = False
-        for proc in psutil.process_iter(["name"]):
-            try:
-                # 获取进程的可执行文件名（如 "notepad.exe"）
-                proc_name = proc.info["name"]
-                # 仅当遍历后找不到任何游戏进程时，才认为游戏已退出
-                if proc_name and cfg.game_process_name.lower() in proc_name.lower():
-                    game_running = True
-                    break
-            except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
-                # 忽略已终止、无权限或僵尸进程
-                continue
-        if not game_running:
-            break
-        if time.time() - wait_start > 30:
-            log.warning("等待游戏进程退出超时(30s)，继续后续流程")
-            break
-        sleep(1)
+    from module.game_and_screen import game_process
+
+    game_process.close_game()
 
 
 def check_times(start_time, timeout=90, logs=True):

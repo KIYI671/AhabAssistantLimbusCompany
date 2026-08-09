@@ -311,24 +311,28 @@ class Screen(metaclass=SingletonMeta):
         self.game = game
         self.handle = Handle()
 
-    def init_handle(self) -> bool:
+    def init_handle(self, start_if_missing: bool = True) -> bool:
         try:
             self.handle.init_handle(self.title)
-            if self.handle.hwnd == 0:
-                log.info(f"未能获取到游戏窗口: {self.title},尝试启动游戏")
-                self.game.start_game()
-                sleep(30)
-                self.handle.init_handle(self.title)
-
-            if self.handle.hwnd == 0:
-                log.error(f"未能获取到游戏窗口: {self.title}")
-                self.game.start_game()
-                return False
-            else:
+            if self.handle.hwnd:
                 return True
+            if not start_if_missing:
+                log.debug(f"未能获取到游戏窗口: {self.title}，等待当前启动请求")
+                return False
+
+            log.info(f"未能获取到游戏窗口: {self.title}，尝试启动游戏")
+            self.game.start_game()
+            sleep(30)
+            self.handle.init_handle(self.title)
+            if self.handle.hwnd:
+                return True
+
+            log.error(f"未能获取到游戏窗口: {self.title}")
+            return False
         except Exception as e:
             log.error(f"未能获取到游戏窗口: {e}")
-            self.game.start_game()
+            if start_if_missing:
+                self.game.start_game()
             return False
 
     def set_win(self) -> None:

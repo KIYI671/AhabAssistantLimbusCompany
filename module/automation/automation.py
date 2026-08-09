@@ -286,19 +286,10 @@ class Automation(metaclass=SingletonMeta):
             time.sleep(1)
             if time.time() - start_time > 60:
                 log.error("截图超时，尝试重启游戏")
-                import os
-
-                import win32process
-
-                from module.game_and_screen import screen
-
-                try:
-                    _, pid = win32process.GetWindowThreadProcessId(screen.handle.hwnd)
-                    os.system(f"taskkill /F /PID {pid}")
-                except Exception:
-                    pass
+                from module.game_and_screen import game_process
                 from tasks.base.script_task_scheme import init_game
 
+                game_process.close_game()
                 init_game()
                 start_time = time.time()
 

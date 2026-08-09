@@ -2,7 +2,7 @@ import platform
 import random
 from datetime import datetime
 from threading import Event
-from time import sleep, time
+from time import monotonic, sleep, time
 from typing import Callable
 
 import win32api
@@ -47,6 +47,9 @@ from tasks.mirror.mirror import Mirror
 from tasks.teams.team_formation import select_battle_team
 from utils.path_manager import path_manager
 from utils.utils import calculate_the_teams, check_hard_mirror_time, get_day_of_week
+
+GAME_LAUNCH_TIMEOUT_SECONDS = 120.0
+GAME_LAUNCH_POLL_INTERVAL_SECONDS = 1.0
 
 
 @begin_and_finish_time_log(task_name="一次经验本")
@@ -181,11 +184,22 @@ def init_game():
 
             SimulatorControl.connection_device.start_game()
     else:
-        game_process.start_game()
-        while not screen.init_handle():
-            sleep(10)
-        if cfg.set_windows:
-            screen.set_win()
+        if not game_process.start_game():
+            raise withOutGameWinError("无法发起游戏启动")
+
+        deadline = monotonic() + GAME_LAUNCH_TIMEOUT_SECONDS
+        while monotonic() < deadline:
+            if screen.init_handle(start_if_missing=False):
+                game_process.finish_launch_attempt()
+                if cfg.set_windows:
+                    screen.set_win()
+                return
+            game_process.handle_pending_launch()
+            sleep(GAME_LAUNCH_POLL_INTERVAL_SECONDS)
+
+        game_process.finish_launch_attempt()
+        log.error("游戏窗口启动超时，已停止本轮启动恢复")
+        raise withOutGameWinError("游戏窗口启动超时")
 
 
 def _warn_if_game_monitor_hdr_enabled() -> None:

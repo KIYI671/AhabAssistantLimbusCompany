@@ -318,6 +318,7 @@ def test_script_task_stops_before_completion_actions_when_task_sequence_fails(mo
     monkeypatch.setattr(scheme, "_run_task_sequence", lambda _tasks: False)
     monkeypatch.setattr(scheme.path_manager, "initialize_paths", lambda: None)
     monkeypatch.setattr(scheme.auto, "clear_img_cache", lambda: None)
+    monkeypatch.setattr(scheme.auto, "click_element", lambda *_args, **_kwargs: False)
     monkeypatch.setattr(
         scheme,
         "cfg",
