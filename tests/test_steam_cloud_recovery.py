@@ -11,6 +11,7 @@ import module.game_and_screen.game as game_module
 from module.game_and_screen.game import Game
 from module.game_and_screen.screen import Screen
 from module.game_and_screen.steam_cloud import (
+    DesktopCapture,
     handle_steam_cloud_sync_dialog,
     resolve_steam_cloud_dialog,
 )
@@ -85,6 +86,19 @@ def test_handle_steam_cloud_sync_dialog_clicks_only_authorized_continue_button()
 
     assert handled is True
     assert clicks == [(594, 350)]
+
+
+def test_handle_steam_cloud_sync_dialog_offsets_click_from_foreground_window_capture() -> None:
+    clicks: list[tuple[int, int]] = []
+
+    handled = handle_steam_cloud_sync_dialog(
+        capture=lambda: DesktopCapture(image=object(), origin=(1000, 50)),
+        recognize=lambda _: _reported_cloud_sync_entries(),
+        click=lambda x, y: clicks.append((x, y)),
+    )
+
+    assert handled is True
+    assert clicks == [(1594, 400)]
 
 
 def test_handle_steam_cloud_sync_dialog_consumes_confirmation_before_click_exception() -> None:

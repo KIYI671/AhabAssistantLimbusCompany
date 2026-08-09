@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import ctypes
 import logging
 from collections.abc import Callable, Iterable
 from dataclasses import dataclass
@@ -21,6 +22,12 @@ _MAX_DIALOG_HEIGHT = 600
 class SteamCloudDialog:
     continue_position: tuple[int, int]
     continue_bounds: OcrBounds
+
+
+@dataclass(frozen=True)
+class DesktopCapture:
+    image: Any
+    origin: tuple[int, int]
 
 
 def _normalized_text(text: str) -> str:
@@ -97,12 +104,38 @@ def _entries_from_ocr_result(result: Any) -> list[OcrEntry]:
     return entries
 
 
-def _production_dependencies() -> tuple[Callable[[], Any], Callable[[Any], Any], Callable[[int, int], None]]:
+def _capture_foreground_steam_window() -> DesktopCapture | None:
+    import psutil
+    import pyautogui
+    import win32gui
+    import win32process
+
+    ctypes.windll.user32.SetProcessDPIAware()
+    hwnd = win32gui.GetForegroundWindow()
+    if not hwnd or not win32gui.IsWindow(hwnd):
+        return None
+
+    _, process_id = win32process.GetWindowThreadProcessId(hwnd)
+    try:
+        process_name = psutil.Process(process_id).name().casefold()
+    except (psutil.AccessDenied, psutil.NoSuchProcess):
+        return None
+    if process_name not in {"steam.exe", "steamwebhelper.exe"}:
+        return None
+
+    left, top, right, bottom = win32gui.GetWindowRect(hwnd)
+    width, height = right - left, bottom - top
+    if width <= 0 or height <= 0:
+        return None
+    return DesktopCapture(pyautogui.screenshot(region=(left, top, width, height)), (left, top))
+
+
+def _production_dependencies() -> tuple[Callable[[], DesktopCapture | None], Callable[[Any], Any], Callable[[int, int], None]]:
     import pyautogui
 
     from module.ocr import ocr
 
-    return pyautogui.screenshot, ocr.run, pyautogui.click
+    return _capture_foreground_steam_window, ocr.run, pyautogui.click
 
 
 def handle_steam_cloud_sync_dialog(
@@ -116,9 +149,13 @@ def handle_steam_cloud_sync_dialog(
         if capture is None or recognize is None or click is None:
             capture, recognize, click = _production_dependencies()
 
-        screenshot = capture()
-        if screenshot is None:
+        captured = capture()
+        if captured is None:
             return False
+        if isinstance(captured, DesktopCapture):
+            screenshot, origin = captured.image, captured.origin
+        else:
+            screenshot, origin = captured, (0, 0)
 
         dialog = resolve_steam_cloud_dialog(_entries_from_ocr_result(recognize(screenshot)))
         if dialog is None:
@@ -126,7 +163,7 @@ def handle_steam_cloud_sync_dialog(
 
         if on_dialog_detected is not None:
             on_dialog_detected()
-        click(*dialog.continue_position)
+        click(dialog.continue_position[0] + origin[0], dialog.continue_position[1] + origin[1])
         return True
     except Exception as error:
         logging.getLogger("AALC").debug("Steam 云同步弹窗识别或确认失败: %s", type(error).__name__)
