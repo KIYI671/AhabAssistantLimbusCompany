@@ -12,6 +12,7 @@ _DIALOG_TITLE = "无法同步"
 _SAVE_BODY = "未能将您的存档"
 _CLOUD_BODY = "Steam云同步"
 _CONTINUE_BUTTON = "仍然进行游戏"
+_CANCEL_BUTTON = "取消"
 _MAX_DIALOG_WIDTH = 1000
 _MAX_DIALOG_HEIGHT = 600
 
@@ -33,30 +34,26 @@ def _valid_bounds(bounds: object) -> bool:
     return all(isinstance(value, int | float) for value in bounds) and left < right and top < bottom
 
 
-def _entry_with_text(entries: Iterable[OcrEntry], text: str) -> OcrEntry | None:
+def _entry_with_text(entries: Iterable[OcrEntry], text: str, *, exact: bool = False) -> OcrEntry | None:
     for entry_text, bounds in entries:
-        if text in _normalized_text(entry_text) and _valid_bounds(bounds):
+        normalized = _normalized_text(entry_text)
+        matches = normalized == text if exact else text in normalized
+        if matches and _valid_bounds(bounds):
             return entry_text, bounds
     return None
 
 
 def resolve_steam_cloud_dialog(entries: list[OcrEntry]) -> SteamCloudDialog | None:
     """仅在 Steam 云同步确认的完整中文签名存在时返回“仍然进行游戏”按钮。"""
-    title = _entry_with_text(entries, _DIALOG_TITLE)
+    title = _entry_with_text(entries, _DIALOG_TITLE, exact=True)
     save_body = _entry_with_text(entries, _SAVE_BODY)
     cloud_body = _entry_with_text(entries, _CLOUD_BODY)
-    continue_button = next(
-        (
-            (entry_text, bounds)
-            for entry_text, bounds in entries
-            if _normalized_text(entry_text) == _CONTINUE_BUTTON and _valid_bounds(bounds)
-        ),
-        None,
-    )
-    if title is None or save_body is None or cloud_body is None or continue_button is None:
+    continue_button = _entry_with_text(entries, _CONTINUE_BUTTON, exact=True)
+    cancel_button = _entry_with_text(entries, _CANCEL_BUTTON, exact=True)
+    if title is None or save_body is None or cloud_body is None or continue_button is None or cancel_button is None:
         return None
 
-    dialog_entries = (title, save_body, cloud_body, continue_button)
+    dialog_entries = (title, save_body, cloud_body, continue_button, cancel_button)
     left_edge = min(entry[1][0] for entry in dialog_entries)
     top_edge = min(entry[1][1] for entry in dialog_entries)
     right_edge = max(entry[1][2] for entry in dialog_entries)
@@ -65,8 +62,15 @@ def resolve_steam_cloud_dialog(entries: list[OcrEntry]) -> SteamCloudDialog | No
         return None
 
     continue_bounds = continue_button[1]
+    cancel_bounds = cancel_button[1]
     body_bottom = max(title[1][3], save_body[1][3], cloud_body[1][3])
-    if continue_bounds[1] <= body_bottom:
+    continue_center_y = (continue_bounds[1] + continue_bounds[3]) // 2
+    cancel_center_y = (cancel_bounds[1] + cancel_bounds[3]) // 2
+    if (
+        continue_bounds[1] <= body_bottom
+        or cancel_bounds[0] < continue_bounds[2]
+        or abs(cancel_center_y - continue_center_y) > 30
+    ):
         return None
 
     left, top, right, bottom = continue_bounds

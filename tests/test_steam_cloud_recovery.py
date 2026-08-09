@@ -63,6 +63,17 @@ def test_resolve_steam_cloud_dialog_rejects_evidence_from_separate_desktop_regio
     assert resolve_steam_cloud_dialog(entries) is None
 
 
+def test_resolve_steam_cloud_dialog_rejects_adjacent_window_button_and_nonexact_title() -> None:
+    adjacent_button = _reported_cloud_sync_entries()
+    adjacent_button[3] = _entry("仍然进行游戏", (700, 330, 848, 371))
+    adjacent_button[4] = _entry("其他窗口", (867, 330, 1017, 371))
+    nonexact_title = _reported_cloud_sync_entries()
+    nonexact_title[0] = _entry("其他无法同步提示", (157, 133, 358, 166))
+
+    assert resolve_steam_cloud_dialog(adjacent_button) is None
+    assert resolve_steam_cloud_dialog(nonexact_title) is None
+
+
 def test_handle_steam_cloud_sync_dialog_clicks_only_authorized_continue_button() -> None:
     clicks: list[tuple[int, int]] = []
 
