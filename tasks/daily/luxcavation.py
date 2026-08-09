@@ -180,12 +180,12 @@ def thread_luxcavation(combat_count: int = 1) -> bool:
         if (
             auto.find_element("home/first_prompt_assets.png", model="clam")
             and auto.find_element("home/back_assets.png", model="normal")
-            and not auto.find_element("luxcavation/thread_enter_assets.png", threshold=0.78)
+            and not auto.find_element("luxcavation/thread_enter_assets.png", threshold=0.7)
             and not auto.find_element("luxcavation/thread_consume.png")
         ):
             auto.key_press("esc")
             continue
-        if thread_enter := auto.click_element("luxcavation/thread_enter_assets.png", threshold=0.78, click=False):
+        if thread_enter := auto.click_element("luxcavation/thread_enter_assets.png", threshold=0.7, click=False):
             # 纽本连战次数框位于外层纺锤卡片，需在进入关卡列表前设置。
             if combat_count > 1 and not continuous_combat_set:
                 if not _prepare_continuous_combat_count(combat_count, "Thread"):
