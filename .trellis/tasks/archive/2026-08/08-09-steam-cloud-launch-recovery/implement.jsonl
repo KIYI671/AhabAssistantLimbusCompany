@@ -1,5 +1,0 @@
-{"file":".trellis/spec/backend/error-handling.md","reason":"Defines bounded recovery outcomes, explicit terminal exits, and monotonic timeout requirements for automation loops."}
-{"file":".trellis/spec/backend/quality-guidelines.md","reason":"Requires pure recognition boundaries, template/OCR safety ordering, and automated regression coverage for state-machine recovery."}
-{"file":".trellis/spec/backend/logging-guidelines.md","reason":"Defines state-transition logging levels and prohibits full OCR/frame dumps."}
-{"file":".trellis/spec/guides/cross-layer-thinking-guide.md","reason":"Guides the screenshot-to-OCR-to-click and launcher-to-window failure contracts across module boundaries."}
-{"file":".trellis/spec/guides/code-reuse-thinking-guide.md","reason":"Requires one shared launch/close owner rather than duplicated process control paths."}

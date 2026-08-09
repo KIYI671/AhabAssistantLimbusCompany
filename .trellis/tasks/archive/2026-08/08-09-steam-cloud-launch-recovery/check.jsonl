@@ -1,5 +1,0 @@
-{"file":".trellis/spec/backend/error-handling.md","reason":"Review every failed launch and close path has a bounded, caller-visible terminal outcome."}
-{"file":".trellis/spec/backend/quality-guidelines.md","reason":"Review pure dialog recognition, click authorization, and regression tests independent of a live Steam client."}
-{"file":".trellis/spec/backend/logging-guidelines.md","reason":"Review logs identify launch state transitions without screenshots, OCR dumps, or account data."}
-{"file":".trellis/spec/guides/cross-layer-thinking-guide.md","reason":"Review consistency from Steam desktop capture through Game and Screen to task-level error handling."}
-{"file":".trellis/spec/guides/code-reuse-thinking-guide.md","reason":"Review every Windows exit caller delegates to the one Game.close_game implementation."}
