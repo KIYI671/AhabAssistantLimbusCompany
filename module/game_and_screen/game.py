@@ -25,12 +25,21 @@ class Game(metaclass=SingletonMeta):
         self._cloud_sync_confirmation_attempted = False
         self._invalid_path_logged = False
 
+    @staticmethod
+    def _normalize_process_name(name: str) -> str:
+        """归一化进程名：小写并去掉结尾的 .exe，兼容用户配置不带扩展名。"""
+        normalized = name.casefold()
+        if normalized.endswith(".exe"):
+            normalized = normalized[:-4]
+        return normalized
+
     def check_game_alive(self):
+        target = self._normalize_process_name(self.process_name)
         for proc in psutil.process_iter(["name"]):
             try:
                 # 获取进程的可执行文件名（如 "notepad.exe"）
                 proc_name = proc.info["name"]
-                if proc_name and self.process_name.casefold() == proc_name.casefold():
+                if proc_name and target == self._normalize_process_name(proc_name):
                     self.log.debug(f"游戏已启动：{self.process_name}，进程ID：{proc.pid}")
                     return True
             except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):

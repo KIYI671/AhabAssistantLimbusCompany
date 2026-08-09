@@ -114,8 +114,19 @@ def test_resolve_event_page_normalizes_whitespace() -> None:
     assert result.position == (720, 820)
 
 
-def test_is_event_choice_page_requires_the_ocr_choice_title() -> None:
-    assert is_event_choice_page([_entry(" 选 项 ", (900, 145, 990, 173))]) is True
+def test_is_event_choice_page_requires_choice_title_and_a_candidate_slot() -> None:
+    # 仅有“选项”标题但下方没有候选槽位时不再误判为事件选项页
+    assert is_event_choice_page([_entry(" 选 项 ", (900, 145, 990, 173))]) is False
+    # “选项”标题加其下方的候选文本才判定为事件选项页
+    assert (
+        is_event_choice_page(
+            [
+                _entry("选项", (900, 145, 990, 173)),
+                _entry("献上土偶。", (920, 250, 1021, 279)),
+            ]
+        )
+        is True
+    )
     assert is_event_choice_page([_entry("第二个候选", (920, 374, 1022, 402))]) is False
 
 

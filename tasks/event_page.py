@@ -38,8 +38,10 @@ def _normalize_entries(entries: list[OcrEntry]) -> list[OcrEntry]:
 
 
 def is_event_choice_page(entries: list[OcrEntry]) -> bool:
-    """仅凭 OCR 的“选项”标题识别事件选项页。"""
-    return any(text == "选项" for text, _ in _normalize_entries(entries))
+    """识别事件选项页：需“选项”标题且其下存在候选槽位，避免仅凭“选项”文本误判。"""
+    if not any(text == "选项" for text, _ in _normalize_entries(entries)):
+        return False
+    return bool(find_event_choice_slots(entries))
 
 
 def find_event_choice_slots(entries: list[OcrEntry]) -> list[tuple[int, tuple[int, int]]]:

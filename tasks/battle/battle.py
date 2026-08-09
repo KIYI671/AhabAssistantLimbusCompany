@@ -532,11 +532,17 @@ class Battle:
                 auto.mouse_click(center_x - random_number, center_y + random_number, times=1)
                 sleep(0.15)
 
-            # 战斗结束，进入结算页面。普通日常优先通过 OCR 点击确认，避免镜牢统计模板误判。
+            # 战斗结束，进入结算页面。普通日常优先通过 OCR 点击确认，避免镜牢统计模板误判；
+            # OCR 读不出结算文字（自定义字体/超低分辨率）时回退到模板，仅非镜牢场景启用以免误判抢占。
             daily_settlement_confirmation = _find_daily_battle_settlement_confirmation()
+            daily_settlement_template = bool(
+                not in_mirror
+                and not daily_settlement_confirmation
+                and auto.click_element("battle/battle_finish_confirm_assets.png", click=False)
+            )
             mirror_settlement = in_mirror and auto.find_element("mirror/claim_reward/battle_statistics_assets.png")
-            if daily_settlement_confirmation or mirror_settlement:
-                if daily_settlement_confirmation:
+            if daily_settlement_confirmation or daily_settlement_template or mirror_settlement:
+                if daily_settlement_confirmation or daily_settlement_template:
                     daily_settlement_handled = True
                 sleep(1)
                 if auto.click_element("base/leave_up_assets.png"):

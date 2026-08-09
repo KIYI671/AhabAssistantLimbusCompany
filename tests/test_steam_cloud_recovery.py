@@ -187,6 +187,15 @@ def test_check_game_alive_matches_only_the_full_process_name_case_insensitively(
     assert game.check_game_alive() is False
 
 
+def test_check_game_alive_matches_config_without_exe_extension(monkeypatch) -> None:
+    game = _new_game()
+    game.process_name = "LimbusCompany"
+    running = SimpleNamespace(info={"name": "LimbusCompany.exe"}, pid=101)
+    monkeypatch.setattr(game_module.psutil, "process_iter", lambda _: [running])
+
+    assert game.check_game_alive() is True
+
+
 def test_start_game_uses_one_steam_request_while_launch_is_pending(monkeypatch) -> None:
     game = _new_game()
     steam_requests: list[str] = []

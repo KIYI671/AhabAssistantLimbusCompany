@@ -38,6 +38,7 @@ class Automation(metaclass=SingletonMeta):
         self.windows_title = windows_title
         self.screenshot = None
         self.color_screenshot = None
+        self._full_ocr_cache = None  # 同一帧整图 OCR 结果缓存，避免热路径重复识别
         self.input_handler = AbstractInput()
 
         self.init_input()
@@ -278,6 +279,7 @@ class Automation(metaclass=SingletonMeta):
                         self.screenshot = self.color_screenshot.convert("L")
                     else:
                         self.screenshot = result
+                    self._full_ocr_cache = None
                     self.last_screenshot_time = time.time()
                     return self.screenshot
                 return None
@@ -411,7 +413,7 @@ class Automation(metaclass=SingletonMeta):
             cropped_image = self.screenshot.crop(my_crop)
             ocr_result = ocr.run(cropped_image)
         else:
-            ocr_result = ocr.run(self.screenshot)
+            ocr_result = self._run_full_ocr()
 
         if not ocr_result.txts:
             return False if only_text else {}
@@ -430,12 +432,24 @@ class Automation(metaclass=SingletonMeta):
         log.debug(f"识别到文本及其坐标：{ocr_dict}", stacklevel=additional_stack + 3)
         return ocr_dict
 
+    def _run_full_ocr(self):
+        """对当前整张截图执行 OCR，并在同一帧内复用结果，避免热路径重复识别。
+
+        缓存在每次 ``_take_screenshot`` 刷新截图时失效；裁剪区域 OCR 不走此缓存。
+        """
+        cached = getattr(self, "_full_ocr_cache", None)
+        if cached is not None:
+            return cached
+        result = ocr.run(self.screenshot)
+        self._full_ocr_cache = result
+        return result
+
     def get_ocr_entries(self) -> list[tuple[str, tuple[int, int, int, int]]]:
         """返回当前截图中的 OCR 文本及其规范化外接矩形。"""
         if self.screenshot is None:
             return []
 
-        ocr_result = ocr.run(self.screenshot)
+        ocr_result = self._run_full_ocr()
         if not ocr_result.txts or len(ocr_result.boxes) == 0:
             return []
 

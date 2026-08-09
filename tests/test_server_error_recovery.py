@@ -132,6 +132,35 @@ def test_get_ocr_entries_accepts_rapidocr_numpy_boxes(monkeypatch) -> None:
     assert automation.get_ocr_entries() == [("服务器发生错误。", (10, 20, 30, 40))]
 
 
+def test_full_frame_ocr_is_cached_until_screenshot_refresh(monkeypatch) -> None:
+    automation = object.__new__(Automation)
+    automation.screenshot = object()
+    automation._full_ocr_cache = None
+    runs: list[int] = []
+    output = type(
+        "Output",
+        (),
+        {
+            "txts": ("确认",),
+            "boxes": np.array([[[10, 20], [30, 20], [30, 40], [10, 40]]]),
+        },
+    )()
+
+    def fake_run(_):
+        runs.append(1)
+        return output
+
+    monkeypatch.setattr("module.automation.automation.ocr.run", fake_run)
+
+    automation.get_ocr_entries()
+    automation.get_ocr_entries()
+    assert len(runs) == 1  # 同一帧多次调用复用缓存，仅 OCR 一次
+
+    automation._full_ocr_cache = None  # 模拟新截图刷新使缓存失效
+    automation.get_ocr_entries()
+    assert len(runs) == 2
+
+
 def test_luxcavation_stops_normal_detection_while_server_error_is_handled(monkeypatch) -> None:
     import tasks.daily.luxcavation as luxcavation
 
