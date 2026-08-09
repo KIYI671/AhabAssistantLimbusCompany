@@ -172,7 +172,18 @@ class ResourceSyncCoordinator(QObject):
         返回:
             若允许继续执行资源同步则返回 True，否则返回 False。
         """
-        # 第一步：若软件更新检查失败，则直接阻断资源同步，避免在版本状态未知时覆盖资源。
+        # 第一步：测试版不参与图片资源同步，直接放行启动链路。
+        if getattr(update_thread, "is_prerelease", False):
+            log.info(f"当前软件版本 {cfg.version} 为测试版本，跳过图片资源同步")
+            if notify_user:
+                self._show_resource_sync_infobar(
+                    level="info",
+                    title=self._window.tr("无法同步图片资源"),
+                    content=self._window.tr("当前为测试版本，不参与图片资源同步"),
+                )
+            return False
+
+        # 第二步：若软件更新检查失败，则直接阻断资源同步，避免在版本状态未知时覆盖资源。
         latest_version = update_thread.new_version or self._window.tr("未知版本")
         if status is UpdateStatus.FAILURE:
             log.warning("无法确认当前软件是否为最新版本，已跳过图片资源同步")
@@ -184,7 +195,7 @@ class ResourceSyncCoordinator(QObject):
                 )
             return False
 
-        # 第二步：若本地软件版本尚未追平最新版本，则阻断资源同步并给出原因。
+        # 第三步：若本地软件版本尚未追平最新版本，则阻断资源同步并给出原因。
         if not getattr(update_thread, "is_current_version_latest", False):
             log.info(f"当前软件版本 {cfg.version} 与最新版本 {latest_version} 不一致，已跳过图片资源同步")
             if notify_user:
