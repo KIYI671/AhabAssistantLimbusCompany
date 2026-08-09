@@ -28,6 +28,22 @@ if resolution is not None and resolution.position is not None:
 
 Every page-recovery loop needs an explicit authority for its timeout. If a specialized wait is longer than a general retry loop, the specialized monotonic timeout must keep the general budget from expiring first. A recovery retry count must be a named constant and shared across equivalent flows.
 
+Windows game launch follows the same rule: `Game.start_game()` creates one pending request, and `init_game()` owns the `monotonic()` deadline while polling `screen.init_handle(start_if_missing=False)`. A poll must never independently re-open Steam. A pending request must be cleared on window success, launch timeout, and every game-close path.
+
+### Desktop dialog authorization
+
+A desktop-wide OCR click has a stricter boundary than a game-window OCR click because unrelated windows share the frame. Keep its recognition parser pure and authorize a click only from a complete semantic **and geometric** dialog signature. For the authorized Steam cloud dialog, require all Chinese text anchors (`无法同步`, `未能将您的存档`, `Steam 云同步`, exact `仍然进行游戏`), a continuation button below the body, and a bounded shared dialog region. Consume the one allowed click attempt before invoking the desktop click API so a click exception cannot retry an irreversible action.
+
+```python
+# Good: one pending request and one authorized desktop confirmation attempt.
+def handle_pending_launch(self) -> bool:
+    if self._launch_requested_at is None or self._cloud_sync_confirmation_attempted:
+        return False
+    return handle_steam_cloud_sync_dialog(
+        on_dialog_detected=lambda: setattr(self, "_cloud_sync_confirmation_attempted", True)
+    )
+```
+
 ### Template first, OCR second
 
 Keep existing templates as the preferred recognition path. OCR fallback runs only after the relevant templates did not advance the page. A generic OCR keyword without enough page context is not a safe click target.
@@ -55,6 +71,9 @@ Keep a named local retry limit (`EVENT_CHOICE_MAX_RETRY_ATTEMPTS`) for a stable 
 - **Do not** treat a failed entry recovery as permission to proceed to team selection or battle start.
 - **Do not** use a one-time “first choice attempted” flag that makes a non-advancing choice page wait forever or changes selection to the second option without a grey-state observation.
 - **Do not** flatten a terminal `False` into `None` at a battle, daily-group, startup-resume, or top-level task boundary.
+- **Do not** make each missing-window poll launch Steam again; the launch request is state, not a retry loop iteration.
+- **Do not** use a generic desktop OCR keyword or a fixed screen coordinate to click a Steam dialog; validate its complete same-region signature first.
+- **Do not** force-kill the Windows game from individual recovery branches. Delegate to `Game.close_game()` so every caller shares normal-close waiting and the single timeout fallback.
 
 ## Testing requirements
 
@@ -78,6 +97,15 @@ For daily event changes, tests must include:
 - bounded failure when selection OCR is absent or its valid target does not advance;
 - daily failure propagation through a single battle, group, wrapper, startup-resume path, and top-level task runner (including no completion toast/action);
 - original `from tasks.event import event_handling` singleton behavior when import order changes.
+
+For Windows launch/Steam recovery changes, also test:
+
+- a pure complete dialog match, each missing anchor, cancel-only dialog, a misplaced button, and anchors split across desktop regions;
+- a pending launch does not repeat a Steam URL, including when the game process already exists but no game window is ready;
+- a click exception consumes that request's single confirmation attempt;
+- a full case-insensitive process-name match succeeds but a similarly named process does not;
+- `WM_CLOSE` occurs before the only force-kill fallback, and all Windows close wrappers delegate to `Game.close_game()`;
+- unrelated top-level task tests stub image recognition instead of reading real windows, screenshots, or processes.
 
 ## Code review checklist
 
