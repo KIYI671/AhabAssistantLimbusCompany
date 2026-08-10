@@ -40,6 +40,8 @@ class Automation(metaclass=SingletonMeta):
         self.screenshot = None
         self.input_handler = AbstractInput()
         self._screenshot_lock = threading.RLock()
+        self._latest_screenshot = None
+        self._latest_screenshot_monotonic = 0.0
         self._input_lock = threading.RLock()
         self._interaction_gate = threading.Event()
         self._interaction_gate.set()
@@ -149,10 +151,32 @@ class Automation(metaclass=SingletonMeta):
         with self._input_lock:
             return self.input_handler.mouse_click(x, y, times=times)
 
-    def take_monitor_screenshot(self, gray: bool = True) -> Image | None:
-        """获取监控截图，不覆盖业务线程当前使用的截图。"""
+    def _remember_screenshot(self, screenshot: Image | None) -> None:
+        if screenshot is None:
+            return
+        self._latest_screenshot = screenshot
+        self._latest_screenshot_monotonic = time.monotonic()
+
+    def invalidate_screenshot_cache(self) -> None:
+        """让监控线程在下一轮检查时获取新截图。"""
         with self._screenshot_lock:
-            return ScreenShot.take_screenshot(gray)
+            self._latest_screenshot_monotonic = 0.0
+
+    def take_monitor_screenshot(self, gray: bool = True, max_age: float = 0.0) -> Image | None:
+        """获取监控截图，优先复用业务线程的最近帧且不覆盖业务截图。"""
+        with self._screenshot_lock:
+            if (
+                self._latest_screenshot is not None
+                and max_age > 0
+                and time.monotonic() - self._latest_screenshot_monotonic <= max_age
+            ):
+                if gray and self._latest_screenshot.mode != "L":
+                    return self._latest_screenshot.convert("L")
+                return self._latest_screenshot
+
+            screenshot = ScreenShot.take_screenshot(gray)
+            self._remember_screenshot(screenshot)
+            return screenshot
 
     def check_pause(self) -> bool:
         """
@@ -328,6 +352,7 @@ class Automation(metaclass=SingletonMeta):
 
                 with self._screenshot_lock:
                     result = ScreenShot.take_screenshot(gray)
+                    self._remember_screenshot(result)
                 if result:
                     self.screenshot = result
                     self.last_screenshot_time = time.time()

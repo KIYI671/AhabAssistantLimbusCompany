@@ -15,9 +15,15 @@ class RetryMonitor:
     RETRY_TEMPLATE = "base/retry.png"
     TEMPLATE_PATHS = ("default/en", "default/zh_cn")
 
-    def __init__(self, poll_interval: float = 0.5, click_cooldown: float = 2.0):
+    def __init__(
+        self,
+        poll_interval: float = 0.5,
+        click_cooldown: float = 2.0,
+        screenshot_max_age: float = 3.0,
+    ):
         self.poll_interval = poll_interval
         self.click_cooldown = click_cooldown
+        self.screenshot_max_age = screenshot_max_age
         self._stop_event = threading.Event()
         self._lifecycle_lock = threading.Lock()
         self._thread: threading.Thread | None = None
@@ -93,7 +99,7 @@ class RetryMonitor:
     def check_once(self, screenshot=None) -> bool:
         """检查一次重试弹窗，返回本轮是否执行了点击。"""
         if screenshot is None:
-            screenshot = auto.take_monitor_screenshot()
+            screenshot = auto.take_monitor_screenshot(max_age=self.screenshot_max_age)
         if screenshot is None:
             return False
         if auto.check_pause() and not self._handling_retry:
@@ -124,6 +130,7 @@ class RetryMonitor:
             return False
 
         auto.monitor_mouse_click(retry_position[0], retry_position[1])
+        auto.invalidate_screenshot_cache()
         self._last_click_time = now
         log.warning(f"检测到服务器错误弹窗，监控线程已点击重试: {retry_position}")
         return True

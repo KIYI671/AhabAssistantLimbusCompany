@@ -14,6 +14,7 @@ def test_check_once_clicks_strict_retry_match(monkeypatch) -> None:
         monitor_mouse_click=lambda x, y: clicks.append((x, y)),
         suspend_interactions=lambda: gates.append("suspend"),
         resume_interactions=lambda: gates.append("resume"),
+        invalidate_screenshot_cache=lambda: None,
     )
     monitor = retry_monitor.RetryMonitor(click_cooldown=0)
     monitor._templates = (np.zeros((2, 2), dtype=np.uint8),)
@@ -32,6 +33,7 @@ def test_check_once_does_not_click_while_task_is_paused(monkeypatch) -> None:
         monitor_mouse_click=lambda *_args: (_ for _ in ()).throw(AssertionError("must not click")),
         suspend_interactions=lambda: None,
         resume_interactions=lambda: None,
+        invalidate_screenshot_cache=lambda: None,
     )
     monitor = retry_monitor.RetryMonitor(click_cooldown=0)
 
@@ -52,6 +54,7 @@ def test_check_once_resumes_business_after_two_clear_frames(monkeypatch) -> None
         monitor_mouse_click=lambda _x, _y: None,
         suspend_interactions=lambda: gates.append("suspend"),
         resume_interactions=lambda: gates.append("resume"),
+        invalidate_screenshot_cache=lambda: None,
     )
     monitor = retry_monitor.RetryMonitor(click_cooldown=0)
 
