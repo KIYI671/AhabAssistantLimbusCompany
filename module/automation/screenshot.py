@@ -11,7 +11,7 @@ from PIL import Image
 from module.config import cfg
 from module.game_and_screen import screen
 from module.logger import log
-from module.my_error.my_error import withOutGameWinError
+from module.my_error.my_error import userStopError, withOutGameWinError
 
 
 class ScreenShot:
@@ -28,12 +28,16 @@ class ScreenShot:
             if cfg.simulator_type == 0:
                 try:
                     return ScreenShot.mumu_screenshot(gray)
+                except userStopError:
+                    raise
                 except Exception as e:
                     log.debug(f"MUMU截图报错 {type(e).__name__}: {e}")
                     return None
-            elif cfg.simulator_type == 10:
+            else:
                 try:
                     return ScreenShot.adb_screenshot(gray)
+                except userStopError:
+                    raise
                 except Exception as e:
                     log.debug(f"adb截图报错 {type(e).__name__}: {e}")
                     return None
@@ -353,12 +357,12 @@ class ScreenShot:
             SimulatorControl,
         )
 
-        if SimulatorControl.connection_device is not None:
-            image = SimulatorControl.connection_device.screenshot()
-            image = Image.fromarray(image)
-            if gray:
-                image = image.convert("L")
-            return image
-        else:
-            log.error("未连接到adb设备")
-            raise ConnectionError("未连接到adb设备")
+        if SimulatorControl.connection_device is None:
+            log.warning("ADB 连接对象已丢失，正在重新初始化模拟器连接")
+            SimulatorControl()
+
+        image = SimulatorControl.connection_device.screenshot()
+        image = Image.fromarray(image)
+        if gray:
+            image = image.convert("L")
+        return image

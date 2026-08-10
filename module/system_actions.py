@@ -188,7 +188,8 @@ def _action_exit_emulator() -> None:
     if not cfg.get_value("simulator", False):
         log.info("跳过退出模拟器：当前未启用模拟器模式")
         return
-    if cfg.get_value("simulator_type", 0) == 0:
+    simulator_type = cfg.get_value("simulator_type", 0)
+    if simulator_type == 0:
         from module.automation.input_handlers.simulator.mumu_control import (
             MumuControl,
         )
@@ -198,6 +199,16 @@ def _action_exit_emulator() -> None:
             log.info("已执行：退出 MuMu 模拟器")
         else:
             log.info("跳过退出 MuMu：未建立连接")
+    elif simulator_type == 1:
+        from module.automation.input_handlers.simulator.simulator_control import (
+            SimulatorControl,
+        )
+
+        if SimulatorControl.connection_device is not None:
+            SimulatorControl.connection_device.close_simulator()
+            log.info("已执行：退出 BlueStacks 5 模拟器")
+        else:
+            log.info("跳过退出 BlueStacks 5：未建立连接")
     else:
         log.error("退出模拟器失败：暂不支持非 MuMu 模拟器的整机关闭")
 
