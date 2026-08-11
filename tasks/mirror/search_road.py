@@ -26,6 +26,7 @@ NODE_FEATURE_WEIGHTS = (
 )
 NODE_FEATURE_TARGETS = tuple((target, min_matches) for target, min_matches, _ in NODE_FEATURE_WEIGHTS)
 NODE_FEATURE_WEIGHT_BY_TARGET = {target: weight for target, _, weight in NODE_FEATURE_WEIGHTS}
+ROAD_DIRECTIONS = ("M", "D", "U")
 
 
 @lru_cache(maxsize=1)
@@ -91,38 +92,62 @@ class MirrorMap:
             sleep(1)
             return _keyboard_enter_succeeded()
 
-        if next_position := self._get_next_position(next_step):
+        for direction, next_position in self._get_next_positions(next_step):
+            if direction != next_step:
+                log.debug(f"规划方向 {next_step} 未进入节点，尝试屏幕内备用方向 {direction}")
             auto.mouse_click(next_position[0], next_position[1])
-            sleep(1.25)
-            if auto.click_element("mirror/road_in_mir/enter_assets.png", take_screenshot=True):
+            if self._wait_and_enter_node():
+                if direction != next_step:
+                    self.floor_map = []
                 return True
-        if auto.click_element("mirror/mybus_default_distance.png", take_screenshot=True):
-            sleep(1.25)
-            if auto.click_element("mirror/road_in_mir/enter_assets.png", take_screenshot=True):
+
+        # 保留旧逻辑中的巴士兜底；仍失败时由调用方进入最近节点法。
+        if auto.click_element("mirror/mybus_default_distance.png"):
+            if self._wait_and_enter_node():
+                self.floor_map = []
                 return True
         return False
 
-    def _get_next_position(self, direction):
+    @staticmethod
+    def _wait_and_enter_node(timeout=1.5, poll_interval=0.15):
+        """高频轮询节点确认按钮，出现后立即点击。"""
+        deadline = time.monotonic() + timeout
+        while time.monotonic() < deadline:
+            if auto.take_screenshot(interval=poll_interval) is None:
+                continue
+            if auto.click_element("mirror/road_in_mir/enter_assets.png"):
+                return True
+        return False
+
+    def _get_next_positions(self, preferred_direction):
         scale = cfg.set_win_size / 1440
-        three_roads = [
-            [500 * scale, 50 * scale],
-            [500 * scale, 450 * scale],
-            [500 * scale, -400 * scale],
-        ]
-        if direction == "M":
-            position = 0
-        elif direction == "D":
-            position = 1
-        elif direction == "U":
-            position = 2
-        for _ in range(3):
-            if bus_position := auto.find_element("mirror/mybus_default_distance.png", take_screenshot=True):
-                return [
-                    bus_position[0] + three_roads[position][0],
-                    bus_position[1] + three_roads[position][1],
-                ]
-            sleep(1)
-        return None
+        road_offsets = {
+            "M": (500 * scale, 50 * scale),
+            "D": (500 * scale, 450 * scale),
+            "U": (500 * scale, -400 * scale),
+        }
+        if preferred_direction not in road_offsets:
+            log.warning(f"未知的镜牢路线方向: {preferred_direction}")
+            return []
+
+        direction_order = (preferred_direction,) + tuple(
+            direction for direction in ROAD_DIRECTIONS if direction != preferred_direction
+        )
+        screen_width = cfg.set_win_size * 16 / 9
+        screen_height = cfg.set_win_size
+        # 缓存路线只在地图界面调用；用高频真实新帧定位巴士。
+        for _ in range(6):
+            if auto.take_screenshot(interval=0.15) is None:
+                continue
+            if bus_position := auto.find_element("mirror/mybus_default_distance.png"):
+                candidates = []
+                for direction in direction_order:
+                    offset_x, offset_y = road_offsets[direction]
+                    position = (bus_position[0] + offset_x, bus_position[1] + offset_y)
+                    if 0 < position[0] < screen_width and 0 < position[1] < screen_height:
+                        candidates.append((direction, position))
+                return candidates
+        return []
 
     def refresh_floor(self, floor):
         if self.floor == floor:
@@ -148,6 +173,18 @@ def get_node_weight(x, y):
     if matched_target is None:
         return -5
     return NODE_FEATURE_WEIGHT_BY_TARGET[matched_target]
+
+
+def _wait_for_map_stable(timeout=1.5) -> bool:
+    """地图拖动后等待画面连续稳定，快机器无需固定睡满。"""
+    return auto.wait_until_region_stable(
+        (0, 0, cfg.set_win_size * 16 / 9, cfg.set_win_size),
+        timeout=timeout,
+        poll_interval=0.1,
+        stable_samples=1,
+        pixel_delta_threshold=10,
+        max_changed_ratio=0.015,
+    )
 
 
 def _keyboard_enter_succeeded() -> bool:
@@ -214,8 +251,7 @@ def search_road_default_distance():
             road = road_list[0]
             if 0 < road[0] < cfg.set_win_size * 16 / 9 and 0 < road[1] < cfg.set_win_size:
                 auto.mouse_click(road[0], road[1])
-                sleep(0.75)
-                if auto.click_element("mirror/road_in_mir/enter_assets.png", take_screenshot=True):
+                if MirrorMap._wait_and_enter_node():
                     return True
     # 如果中、下两个节点没有权重3的节点，查看所有节点的权重，选择权重最大的节点进入
     if bus_position := auto.find_element("mirror/mybus_default_distance.png", take_screenshot=True):
@@ -233,7 +269,7 @@ def search_road_default_distance():
                 break
             dy = 650 * scale - bus_position[1]
             auto.mouse_drag(bus_position[0], bus_position[1], drag_time=1.5, dx=0, dy=dy)
-            sleep(1)
+            _wait_for_map_stable()
             auto.mouse_to_blank()
 
             bus_position = auto.find_element("mirror/mybus_default_distance.png", take_screenshot=True)
@@ -259,8 +295,7 @@ def search_road_default_distance():
         for road in road_list:
             if 0 < road[0] < cfg.set_win_size * 16 / 9 and 0 < road[1] < cfg.set_win_size:
                 auto.mouse_click(road[0], road[1])
-                sleep(0.75)
-                if auto.click_element("mirror/road_in_mir/enter_assets.png", take_screenshot=True):
+                if MirrorMap._wait_and_enter_node():
                     return True
     return False
 
@@ -286,11 +321,10 @@ def search_road_farthest_distance():
             road[1] += bus_position[1]
             if 0 < road[0] < cfg.set_win_size * 16 / 9 and 0 < road[1] < cfg.set_win_size:
                 auto.mouse_click(road[0], road[1])
-                sleep(0.75)
-                if auto.click_element("mirror/road_in_mir/enter_assets.png", take_screenshot=True):
+                if MirrorMap._wait_and_enter_node():
                     return True
         auto.mouse_click(bus_position[0], bus_position[1])
-        if auto.click_element("mirror/road_in_mir/enter_assets.png", take_screenshot=True):
+        if MirrorMap._wait_and_enter_node():
             return True
     return False
 
@@ -302,8 +336,7 @@ def search_road_from_road_map(hard_mode=False):
     bus = None
 
     if auto.click_element("mirror/mybus_default_distance.png", take_screenshot=True):
-        sleep(0.75)
-        if auto.click_element("mirror/road_in_mir/enter_assets.png", take_screenshot=True):
+        if MirrorMap._wait_and_enter_node():
             return True, True
 
     if bus_position := auto.find_element("mirror/mybus_default_distance.png", take_screenshot=True):
@@ -324,7 +357,7 @@ def search_road_from_road_map(hard_mode=False):
             dx = 80 * scale - bus_position[0]
             dy = 690 * scale - bus_position[1]
             auto.mouse_drag(bus_position[0], bus_position[1], drag_time=1.5, dx=dx, dy=dy)
-            sleep(0.5)
+            _wait_for_map_stable()
             auto.mouse_to_blank()
 
             bus_position = auto.find_element("mirror/mybus_default_distance.png", take_screenshot=True)
@@ -389,7 +422,7 @@ def search_road_from_road_map(hard_mode=False):
                 dx = 550 * scale - bus_position[0]
                 dy = set_y_position - bus_position[1]
                 auto.mouse_drag(bus_position[0], bus_position[1], drag_time=1.5, dx=dx, dy=dy)
-                sleep(0.5)
+                _wait_for_map_stable()
                 auto.mouse_to_blank()
 
                 bus_position = auto.find_element("mirror/mybus_default_distance.png", take_screenshot=True)

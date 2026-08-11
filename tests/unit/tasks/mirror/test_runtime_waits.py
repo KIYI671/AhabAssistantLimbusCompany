@@ -10,6 +10,11 @@ class _ConfirmationAuto:
     def __init__(self, confirm_visible):
         self._confirm_visible = iter(confirm_visible)
         self.find_calls = 0
+        self.screenshot_intervals = []
+
+    def take_screenshot(self, interval=None):
+        self.screenshot_intervals.append(interval)
+        return object()
 
     def find_element(self, path):
         assert path == "mirror/shop/power_up_confirm_assets.png"
@@ -57,20 +62,26 @@ class _ThemePackReadyAuto:
 
 def test_power_up_wait_returns_as_soon_as_confirmation_closes(monkeypatch):
     fake_auto = _ConfirmationAuto([True, False])
+    retry_calls = []
     monkeypatch.setattr(in_shop, "auto", fake_auto)
-    monkeypatch.setattr(in_shop, "retry", lambda: None)
+    monkeypatch.setattr(in_shop, "retry", lambda **kwargs: retry_calls.append(kwargs))
     shop = object.__new__(in_shop.Shop)
 
     assert shop._wait_for_power_up_confirmation(timeout=1.0) is True
     assert fake_auto.find_calls == 2
+    assert fake_auto.screenshot_intervals == [0.15, 0.15]
+    assert retry_calls == [{"skip_first_screenshot": True}, {"skip_first_screenshot": True}]
 
 
 def test_power_up_wait_stops_when_connection_retry_fails(monkeypatch):
-    monkeypatch.setattr(in_shop, "retry", lambda: False)
+    fake_auto = _ConfirmationAuto([True])
+    monkeypatch.setattr(in_shop, "auto", fake_auto)
+    monkeypatch.setattr(in_shop, "retry", lambda **_kwargs: False)
     shop = object.__new__(in_shop.Shop)
 
     with pytest.raises(in_shop.Shop.RestartGame):
         shop._wait_for_power_up_confirmation(timeout=1.0)
+    assert fake_auto.screenshot_intervals == [0.15]
 
 
 def test_shop_refresh_wait_uses_scaled_grid_and_fast_local_polling(monkeypatch):
@@ -92,7 +103,7 @@ def test_shop_refresh_wait_uses_scaled_grid_and_fast_local_polling(monkeypatch):
             (540.0, 150.0, 1150.0, 500.0),
             {
                 "timeout": 3.0,
-                "poll_interval": 0.25,
+                "poll_interval": 0.15,
                 "stable_samples": 2,
                 "pixel_delta_threshold": 12,
                 "max_changed_ratio": 0.02,

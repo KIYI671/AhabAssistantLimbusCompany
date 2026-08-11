@@ -1044,7 +1044,11 @@ class Mirror:
                 loop_count -= 1
                 continue
 
-        time.sleep(3)
+        auto.wait_for_element(
+            "mirror/mybus_default_distance.png",
+            timeout=3.0,
+            poll_interval=0.15,
+        )
 
     @begin_and_finish_time_log(task_name="镜牢寻路")
     def search_road(self):
@@ -1069,7 +1073,6 @@ class Mirror:
                 while auto.take_screenshot() is None:
                     continue
                 if search_road_default_distance():
-                    sleep(1)
                     return True
                 if auto.click_element("mirror/road_in_mir/enter_assets.png"):
                     return True
@@ -1081,7 +1084,6 @@ class Mirror:
                 while auto.take_screenshot() is None:
                     continue
                 if search_road_farthest_distance():
-                    sleep(1)
                     return True
                 if retry() is False:
                     return False
@@ -1286,8 +1288,12 @@ class Mirror:
             sleep(cfg.mouse_action_interval)
             auto.mouse_click(pos[0], pos[1] - 500 * my_scale)
             sleep(cfg.mouse_action_interval)
-            auto.click_element("mirror/road_in_mir/acquire_ego_gift_select_assets.png", model="normal")
-            time.sleep(2)
+            auto.wait_for_element(
+                "mirror/road_in_mir/acquire_ego_gift_select_assets.png",
+                timeout=1.5,
+                click=True,
+                model="normal",
+            )
             if retry() is False:
                 return False
             return
@@ -1324,11 +1330,12 @@ class Mirror:
                         gift_candidates.sort(key=lambda gift: gift[0])
                         button = gift_candidates[0][1]
                         auto.mouse_click(button[0], button[1])
-                        auto.click_element(
+                        auto.wait_for_element(
                             "mirror/road_in_mir/acquire_ego_gift_select_assets.png",
+                            timeout=1.5,
+                            click=True,
                             model="normal",
                         )
-                        time.sleep(2)
                         if retry() is False:
                             return False
                         return
@@ -1344,27 +1351,26 @@ class Mirror:
                             ocr_result = auto.find_language_text("白棉花", ["white", "gossypium"], bbox)
                             if isinstance(ocr_result, list):
                                 if len(ocr_result) >= 2:
-                                    time.sleep(1)
-                                    auto.click_element(
+                                    auto.wait_for_element(
                                         "mirror/road_in_mir/refuse_gift_assets.png",
-                                        take_screenshot=True,
+                                        timeout=1.5,
+                                        click=True,
                                     )
-                                    sleep(1)
-                                    auto.click_element(
+                                    auto.wait_for_element(
                                         "mirror/road_in_mir/refuse_gift_confirm_assets.png",
-                                        take_screenshot=True,
+                                        timeout=1.5,
+                                        click=True,
                                     )
-                                    time.sleep(2)
                                     if retry() is False:
                                         return False
                                     return
                         auto.mouse_click(button[0], button[1])
-                        time.sleep(1)
-                        auto.click_element(
+                        auto.wait_for_element(
                             "mirror/road_in_mir/acquire_ego_gift_select_assets.png",
+                            timeout=1.5,
+                            click=True,
                             model="normal",
                         )
-                        time.sleep(2)
                         if retry() is False:
                             return False
                         return
@@ -1420,11 +1426,12 @@ class Mirror:
                     for gift in my_list[:1]:
                         auto.mouse_click(gift[0], gift[1])
                         sleep(cfg.mouse_action_interval)
-                    auto.click_element(
+                    auto.wait_for_element(
                         "mirror/road_in_mir/acquire_ego_gift_select_assets.png",
+                        timeout=1.5,
+                        click=True,
                         model="normal",
                     )
-                    time.sleep(2)
                     if retry() is False:
                         return False
                     return
@@ -1432,11 +1439,12 @@ class Mirror:
                     for gift in my_list[:2]:
                         auto.mouse_click(gift[0], gift[1])
                         sleep(cfg.mouse_action_interval)
-                    auto.click_element(
+                    auto.wait_for_element(
                         "mirror/road_in_mir/acquire_ego_gift_select_assets.png",
+                        timeout=1.5,
+                        click=True,
                         model="normal",
                     )
-                    time.sleep(2)
                     if retry() is False:
                         return False
                     return
@@ -1444,11 +1452,12 @@ class Mirror:
                     for gift in my_list:
                         auto.mouse_click(gift[0], gift[1])
                         sleep(cfg.mouse_action_interval)
-                    auto.click_element(
+                    auto.wait_for_element(
                         "mirror/road_in_mir/acquire_ego_gift_select_assets.png",
+                        timeout=1.5,
+                        click=True,
                         model="normal",
                     )
-                    time.sleep(2)
                     if retry() is False:
                         return False
                     return
