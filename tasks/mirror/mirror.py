@@ -1241,8 +1241,12 @@ class Mirror:
             ):
                 auto.click_element("event/select_first_option_assets.png")
                 event_chance -= 1
-            if auto.find_element("event/perform_the_check_feature_assets.png"):
-                event_handling.decision_event_handling()
+            if auto.find_element(
+                "event/perform_the_check_feature_assets.png",
+                threshold=0.75,
+            ) and event_handling.decision_event_handling():
+                # 输入后立即刷新画面，避免继续在已失效的判定帧上匹配其它按钮。
+                continue
             if auto.click_element("event/continue_assets.png"):
                 continue
             if auto.click_element("event/proceed_assets.png"):
