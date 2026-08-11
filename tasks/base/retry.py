@@ -131,16 +131,21 @@ def check_times(start_time, timeout=90, logs=True):
         return False
 
 
-def retry(skip_first_screenshot: bool = False):
+def retry(skip_first_screenshot: bool | None = None):
     """重试连接。
 
-    默认每轮刷新截图；调用方刚完成可靠截图时，可复用首帧，后续重试仍会正常刷新。
+    默认根据自动化层的脏帧状态决定是否复用首帧；截图后没有输入动作则无需重复截图。
+    后续网络重试仍会正常刷新。
 
     Args:
-        skip_first_screenshot: 复用当前截图进行第一次检查。
+        skip_first_screenshot: True 强制复用，False 强制刷新，None 自动判断。
     """
     start_time = time.time()
-    reuse_current_frame = skip_first_screenshot
+    if skip_first_screenshot is None:
+        can_reuse = getattr(auto, "can_reuse_current_frame", None)
+        reuse_current_frame = bool(can_reuse and can_reuse())
+    else:
+        reuse_current_frame = skip_first_screenshot
     is_windows = not cfg.config.simulator
     if is_windows:
         saved_hwnd = screen.handle.hwnd

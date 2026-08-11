@@ -7,6 +7,10 @@ retry_module = importlib.import_module("tasks.base.retry")
 class _RetryAuto:
     def __init__(self):
         self.screenshot_calls = 0
+        self.frame_reusable = False
+
+    def can_reuse_current_frame(self):
+        return self.frame_reusable
 
     def get_restore_time(self):
         return 0
@@ -39,8 +43,16 @@ def test_retry_reuses_a_fresh_current_frame_when_requested(monkeypatch):
     assert fake_auto.screenshot_calls == 0
 
 
-def test_retry_keeps_fresh_screenshot_as_the_default(monkeypatch):
+def test_retry_refreshes_a_dirty_frame_by_default(monkeypatch):
     fake_auto = _prepare_retry(monkeypatch)
 
     assert retry_module.retry() is None
     assert fake_auto.screenshot_calls == 1
+
+
+def test_retry_automatically_reuses_an_unchanged_frame(monkeypatch):
+    fake_auto = _prepare_retry(monkeypatch)
+    fake_auto.frame_reusable = True
+
+    assert retry_module.retry() is None
+    assert fake_auto.screenshot_calls == 0

@@ -15,6 +15,7 @@ def _make_automation(image):
     instance.img_cache = {}
     instance.memory_protection = False
     instance._last_memory_check_time = 0.0
+    instance.model = "clam"
     instance._reset_frame_cache(image)
     return instance
 
@@ -136,13 +137,173 @@ def test_screenshot_call_can_use_a_short_local_interval_without_changing_config(
     sleeps = []
     configured_interval = automation_module.cfg.screenshot_interval
 
-    monkeypatch.setattr(automation_module.time, "time", lambda: 10.0)
+    times = iter([9.95, 10.0, 10.15, 10.15])
+    monkeypatch.setattr(automation_module.time, "monotonic", lambda: next(times))
     monkeypatch.setattr(automation_module.time, "sleep", sleeps.append)
     monkeypatch.setattr(automation_module.ScreenShot, "take_screenshot", lambda gray: image)
 
     assert instance.take_screenshot(interval=0.25) is image
     assert sleeps == [pytest.approx(0.15)]
     assert automation_module.cfg.screenshot_interval == configured_interval
+    assert instance.can_reuse_current_frame()
+
+
+def test_successful_input_marks_the_current_frame_dirty():
+    instance = _make_automation(Image.fromarray(np.zeros((4, 4), dtype=np.uint8)))
+    instance._frame_dirty = False
+    wrapped = instance._mark_frame_dirty_after(lambda: True)
+
+    assert wrapped() is True
+    assert not instance.can_reuse_current_frame()
+
+
+def test_failed_input_does_not_invalidate_the_current_frame():
+    instance = _make_automation(Image.fromarray(np.zeros((4, 4), dtype=np.uint8)))
+    instance._frame_dirty = False
+    wrapped = instance._mark_frame_dirty_after(lambda: False)
+
+    assert wrapped() is False
+    assert instance.can_reuse_current_frame()
+
+
+def test_old_frame_is_not_reused_even_without_input(monkeypatch):
+    instance = _make_automation(Image.fromarray(np.zeros((4, 4), dtype=np.uint8)))
+    instance._frame_dirty = False
+    instance.last_screenshot_time = 10.0
+    monkeypatch.setattr(automation_module.time, "monotonic", lambda: 10.6)
+
+    assert not instance.can_reuse_current_frame(max_age=0.5)
+
+
+def test_click_cooldown_blocks_only_the_same_target(monkeypatch):
+    instance = _make_automation(Image.fromarray(np.zeros((4, 4), dtype=np.uint8)))
+    instance._last_target_action_time = {}
+    actions = []
+    times = iter([10.0, 10.1, 10.1])
+
+    monkeypatch.setattr(instance, "find_element", lambda *_args, **_kwargs: (1, 2))
+    monkeypatch.setattr(instance, "mouse_action_with_pos", lambda *args, **_kwargs: actions.append(args) or True)
+    monkeypatch.setattr(automation_module.time, "monotonic", lambda: next(times))
+
+    assert instance.click_element("first.png", interval=0.5)
+    assert not instance.click_element("first.png", interval=0.5)
+    assert instance.click_element("second.png", interval=0.5)
+    assert len(actions) == 2
+
+
+def test_click_cooldown_allows_the_same_target_after_expiry(monkeypatch):
+    instance = _make_automation(Image.fromarray(np.zeros((4, 4), dtype=np.uint8)))
+    instance._last_target_action_time = {}
+    actions = []
+    times = iter([10.0, 10.6, 10.6])
+
+    monkeypatch.setattr(instance, "find_element", lambda *_args, **_kwargs: (1, 2))
+    monkeypatch.setattr(instance, "mouse_action_with_pos", lambda *args, **_kwargs: actions.append(args) or True)
+    monkeypatch.setattr(automation_module.time, "monotonic", lambda: next(times))
+
+    assert instance.click_element("target.png", interval=0.5)
+    assert instance.click_element("target.png", interval=0.5)
+    assert len(actions) == 2
+
+
+def test_first_mouse_action_does_not_wait_for_a_nonexistent_previous_click(monkeypatch):
+    instance = _make_automation(Image.fromarray(np.zeros((4, 4), dtype=np.uint8)))
+    instance.last_click_time = 0
+    clicks = []
+    sleeps = []
+
+    monkeypatch.setattr(instance, "calculate_click_position", lambda *_args: (1, 2))
+    monkeypatch.setattr(
+        instance,
+        "mouse_click",
+        lambda x, y, times=1: clicks.append((x, y, times)),
+        raising=False,
+    )
+    monkeypatch.setattr(instance, "mouse_drag", lambda *_args, **_kwargs: None, raising=False)
+    monkeypatch.setattr(instance, "mouse_drag_down", lambda *_args, **_kwargs: None, raising=False)
+    monkeypatch.setattr(instance, "mouse_scroll", lambda *_args, **_kwargs: None, raising=False)
+    monkeypatch.setattr(automation_module.time, "monotonic", lambda: 10.0)
+    monkeypatch.setattr(automation_module.time, "sleep", sleeps.append)
+
+    assert instance.mouse_action_with_pos((1, 2), interval=0.2)
+    assert clicks == [(1, 2, 1)]
+    assert sleeps == []
+    assert instance.last_click_time == 10.0
+
+
+def test_later_mouse_action_waits_only_for_remaining_cooldown(monkeypatch):
+    instance = _make_automation(Image.fromarray(np.zeros((4, 4), dtype=np.uint8)))
+    instance.last_click_time = 9.9
+    sleeps = []
+    times = iter([10.0, 10.2])
+
+    monkeypatch.setattr(instance, "calculate_click_position", lambda *_args: (1, 2))
+    monkeypatch.setattr(instance, "mouse_click", lambda *_args, **_kwargs: None, raising=False)
+    monkeypatch.setattr(instance, "mouse_drag", lambda *_args, **_kwargs: None, raising=False)
+    monkeypatch.setattr(instance, "mouse_drag_down", lambda *_args, **_kwargs: None, raising=False)
+    monkeypatch.setattr(instance, "mouse_scroll", lambda *_args, **_kwargs: None, raising=False)
+    monkeypatch.setattr(automation_module.time, "monotonic", lambda: next(times))
+    monkeypatch.setattr(automation_module.time, "sleep", sleeps.append)
+
+    assert instance.mouse_action_with_pos((1, 2), interval=0.2)
+    assert sleeps == [pytest.approx(0.1)]
+    assert instance.last_click_time == 10.2
+
+
+def test_mouse_action_does_not_yield_after_cooldown_has_elapsed(monkeypatch):
+    instance = _make_automation(Image.fromarray(np.zeros((4, 4), dtype=np.uint8)))
+    instance.last_click_time = 9.0
+    sleeps = []
+    times = iter([10.0, 10.0])
+
+    monkeypatch.setattr(instance, "calculate_click_position", lambda *_args: (1, 2))
+    monkeypatch.setattr(instance, "mouse_click", lambda *_args, **_kwargs: None, raising=False)
+    monkeypatch.setattr(instance, "mouse_drag", lambda *_args, **_kwargs: None, raising=False)
+    monkeypatch.setattr(instance, "mouse_drag_down", lambda *_args, **_kwargs: None, raising=False)
+    monkeypatch.setattr(instance, "mouse_scroll", lambda *_args, **_kwargs: None, raising=False)
+    monkeypatch.setattr(automation_module.time, "monotonic", lambda: next(times))
+    monkeypatch.setattr(automation_module.time, "sleep", sleeps.append)
+
+    assert instance.mouse_action_with_pos((1, 2), interval=0.2)
+    assert sleeps == []
+
+
+def test_wait_for_element_polls_new_frames_until_target_appears(monkeypatch):
+    instance = _make_automation(Image.fromarray(np.zeros((4, 4), dtype=np.uint8)))
+    instance._frame_dirty = True
+    clock = [0.0]
+    screenshots = []
+    find_calls = [0]
+
+    def take_screenshot(gray=True, interval=None):
+        del gray
+        clock[0] += interval
+        screenshots.append(interval)
+        instance._frame_dirty = False
+        return instance.screenshot
+
+    def find_element(*_args, **_kwargs):
+        find_calls[0] += 1
+        return (1, 2) if find_calls[0] == 3 else None
+
+    monkeypatch.setattr(instance, "take_screenshot", take_screenshot)
+    monkeypatch.setattr(instance, "find_element", find_element)
+    monkeypatch.setattr(automation_module.time, "monotonic", lambda: clock[0])
+
+    assert instance.wait_for_element("target.png", timeout=1.0, poll_interval=0.1) == (1, 2)
+    assert screenshots == [0.1, 0.1, 0.1]
+
+
+def test_wait_for_element_reuses_a_clean_current_frame(monkeypatch):
+    instance = _make_automation(Image.fromarray(np.zeros((4, 4), dtype=np.uint8)))
+    instance._frame_dirty = False
+    screenshots = []
+
+    monkeypatch.setattr(instance, "take_screenshot", lambda **_kwargs: screenshots.append(True))
+    monkeypatch.setattr(instance, "find_element", lambda *_args, **_kwargs: (1, 2))
+
+    assert instance.wait_for_element("target.png") == (1, 2)
+    assert screenshots == []
 
 
 def test_region_stability_waits_for_change_then_consecutive_stable_samples(monkeypatch):

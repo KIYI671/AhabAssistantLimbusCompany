@@ -4,6 +4,7 @@ import random
 import time
 from ast import List
 from dataclasses import dataclass
+from functools import wraps
 from typing import Any
 
 import cv2
@@ -39,6 +40,8 @@ class Automation(metaclass=SingletonMeta):
     def __init__(self, windows_title):
         self.windows_title = windows_title
         self.screenshot = None
+        self._frame_dirty = True
+        self._last_target_action_time = {}
         self.input_handler = AbstractInput()
 
         self.init_input()
@@ -91,19 +94,40 @@ class Automation(metaclass=SingletonMeta):
 
             self.input_handler = BackgroundInput()
         assert isinstance(self.input_handler, AbstractInput), "输入处理器必须是AbstractInput的实例"
-        self.mouse_click = self.input_handler.mouse_click
-        self.mouse_click_blank = self.input_handler.mouse_click_blank
-        self.mouse_drag = self.input_handler.mouse_drag
-        self.mouse_swipe_for_scroll = self.input_handler.mouse_swipe_for_scroll
-        self.mouse_drag_down = self.input_handler.mouse_drag_down
-        self.mouse_scroll = self.input_handler.mouse_scroll
+        self.mouse_click = self._mark_frame_dirty_after(self.input_handler.mouse_click)
+        self.mouse_click_blank = self._mark_frame_dirty_after(self.input_handler.mouse_click_blank)
+        self.mouse_drag = self._mark_frame_dirty_after(self.input_handler.mouse_drag)
+        self.mouse_swipe_for_scroll = self._mark_frame_dirty_after(self.input_handler.mouse_swipe_for_scroll)
+        self.mouse_drag_down = self._mark_frame_dirty_after(self.input_handler.mouse_drag_down)
+        self.mouse_scroll = self._mark_frame_dirty_after(self.input_handler.mouse_scroll)
         self.set_pause = self.input_handler.set_pause
         self.wait_pause = self.input_handler.wait_pause
         self.mouse_to_blank = self.input_handler.mouse_to_blank
-        self.mouse_drag_link = self.input_handler.mouse_drag_link
-        self.key_press = self.input_handler.key_press
-        self.input_text = self.input_handler.input_text
+        self.mouse_drag_link = self._mark_frame_dirty_after(self.input_handler.mouse_drag_link)
+        self.key_press = self._mark_frame_dirty_after(self.input_handler.key_press)
+        self.input_text = self._mark_frame_dirty_after(self.input_handler.input_text)
         self.memory_protection = cfg.memory_protection
+
+    def _mark_frame_dirty_after(self, action):
+        """输入成功后使当前截图失效，供状态循环安全复用未变化的帧。"""
+
+        @wraps(action)
+        def wrapped(*args, **kwargs):
+            result = action(*args, **kwargs)
+            if result is not False:
+                self._frame_dirty = True
+            return result
+
+        return wrapped
+
+    def can_reuse_current_frame(self, max_age: float = 0.5) -> bool:
+        """当前截图存在、足够新，且截图后没有执行可能改变画面的输入动作。"""
+        if self.screenshot is None or getattr(self, "_frame_dirty", True):
+            return False
+        last_screenshot = getattr(self, "last_screenshot_time", None)
+        if last_screenshot is None:
+            return True
+        return time.monotonic() - last_screenshot <= max(0.0, float(max_age))
 
     def check_pause(self) -> bool:
         """
@@ -140,7 +164,10 @@ class Automation(metaclass=SingletonMeta):
         drag_time=None,
         interval=0.5,
     ):
-        """查找并点击屏幕上的元素"""
+        """查找并点击屏幕上的元素。
+
+        ``interval`` 是同一目标的独立冷却；不同目标只受全局物理输入间隔限制。
+        """
         if model is None:
             model = self.model
         coordinates = self.find_element(
@@ -155,7 +182,10 @@ class Automation(metaclass=SingletonMeta):
         )
         if coordinates:
             if click:
-                return self.mouse_action_with_pos(
+                cooldown_key = self._click_cooldown_key(target, find_type, action)
+                if self._target_action_is_cooling_down(cooldown_key, interval):
+                    return False
+                result = self.mouse_action_with_pos(
                     coordinates,
                     offset,
                     action,
@@ -164,10 +194,49 @@ class Automation(metaclass=SingletonMeta):
                     dx,
                     dy,
                     find_type,
-                    interval,
+                    None,
                 )
+                if result:
+                    self._record_target_action(cooldown_key)
+                return result
             return coordinates
         return False
+
+    @classmethod
+    def _freeze_click_target(cls, target):
+        if isinstance(target, dict):
+            return tuple(sorted((str(key), cls._freeze_click_target(value)) for key, value in target.items()))
+        if isinstance(target, (list, tuple)):
+            return tuple(cls._freeze_click_target(value) for value in target)
+        try:
+            hash(target)
+        except TypeError:
+            return repr(target)
+        return target
+
+    @classmethod
+    def _click_cooldown_key(cls, target, find_type, action):
+        return find_type, action, cls._freeze_click_target(target)
+
+    def _target_action_is_cooling_down(self, key, cooldown) -> bool:
+        cooldown = max(0.0, float(cooldown or 0.0))
+        if cooldown == 0:
+            return False
+        last_action = getattr(self, "_last_target_action_time", {}).get(key)
+        return last_action is not None and time.monotonic() - last_action < cooldown
+
+    def _record_target_action(self, key) -> None:
+        actions = getattr(self, "_last_target_action_time", None)
+        if actions is None:
+            actions = self._last_target_action_time = {}
+        now = time.monotonic()
+        actions[key] = now
+        if len(actions) > 512:
+            cutoff = now - 60
+            actions = {target: timestamp for target, timestamp in actions.items() if timestamp > cutoff}
+            if len(actions) > 512:
+                actions = dict(sorted(actions.items(), key=lambda item: item[1], reverse=True)[:256])
+            self._last_target_action_time = actions
 
     def calculate_click_position(self, coordinates, offset=True):
         """
@@ -195,7 +264,7 @@ class Automation(metaclass=SingletonMeta):
         dx=0,
         dy=0,
         find_type=None,
-        interval=0.5,
+        interval=None,
     ) -> bool:
         """
         在指定坐标上执行点击操作
@@ -222,13 +291,16 @@ class Automation(metaclass=SingletonMeta):
                 )
             return True
 
-        if cfg.mouse_action_interval and interval == 0.5:
-            interval = cfg.mouse_action_interval
+        if interval is None:
+            interval = max(0.0, float(cfg.mouse_action_interval or 0.0))
+        else:
+            interval = max(0.0, float(interval))
 
-        if self.last_click_time == 0:
-            self.last_click_time = time.time()
-        wait_time = max(0, interval - (time.time() - self.last_click_time))
-        time.sleep(wait_time)
+        if self.last_click_time:
+            elapsed = time.monotonic() - self.last_click_time
+            remaining = interval - elapsed
+            if remaining > 0:
+                time.sleep(remaining)
 
         # 计算传入的位置
         x, y = self.calculate_click_position(coordinates, offset)
@@ -250,7 +322,7 @@ class Automation(metaclass=SingletonMeta):
                 self.mouse_drag_down(x, y)
             elif action == "scroll":
                 self.mouse_scroll()
-            self.last_click_time = time.time()
+            self.last_click_time = time.monotonic()
         else:
             # 如果操作类型未知，抛出异常
             raise ValueError(f"未知的操作类型{action}")
@@ -266,30 +338,28 @@ class Automation(metaclass=SingletonMeta):
         Returns:
             Image: 截取当前屏幕的图像对象
         """
-        start_time = time.time()
-        configured_interval = cfg.screenshot_interval if cfg.screenshot_interval else 0.85
+        start_time = time.monotonic()
+        configured_interval = cfg.screenshot_interval if cfg.screenshot_interval else 0.15
         screenshot_interval_time = configured_interval if interval is None else max(0.0, float(interval))
         while True:
             try:
-                if time.time() - self.last_screenshot_time < screenshot_interval_time:
-                    wait_time = max(
-                        screenshot_interval_time - (time.time() - self.last_screenshot_time),
-                        0,
-                    )
-                    time.sleep(wait_time)
+                elapsed = time.monotonic() - self.last_screenshot_time
+                if elapsed < screenshot_interval_time:
+                    time.sleep(screenshot_interval_time - elapsed)
 
                 result = ScreenShot.take_screenshot(gray)
                 if result:
                     self.screenshot = result
                     self._reset_frame_cache(result)
-                    self.last_screenshot_time = time.time()
+                    self._frame_dirty = False
+                    self.last_screenshot_time = time.monotonic()
                     return result
                 else:
                     return None
             except Exception as e:
                 log.error(f"截图失败:{e}")
             time.sleep(1)
-            if time.time() - start_time > 60:
+            if time.monotonic() - start_time > 60:
                 log.error("截图超时，尝试重启游戏")
                 import os
 
@@ -305,7 +375,7 @@ class Automation(metaclass=SingletonMeta):
                 from tasks.base.script_task_scheme import init_game
 
                 init_game()
-                start_time = time.time()
+                start_time = time.monotonic()
 
     def _reset_frame_cache(self, screenshot=None) -> None:
         """在截图变化时清除只对当前帧有效的派生数据。"""
@@ -406,6 +476,58 @@ class Automation(metaclass=SingletonMeta):
                     consecutive_stable = 0
 
             previous = current
+
+        return False
+
+    def wait_for_element(
+        self,
+        target,
+        *,
+        timeout: float = 2.0,
+        poll_interval: float = 0.15,
+        click: bool = False,
+        find_type: str = "image",
+        threshold: float = 0.8,
+        model=None,
+        my_crop=None,
+        offset=True,
+        action="click",
+        times=1,
+        interval=0.5,
+    ):
+        """在连续新帧上等待目标，出现即返回或点击，不固定睡满动画时长。"""
+        deadline = time.monotonic() + max(0.0, float(timeout))
+        reuse_current = self.can_reuse_current_frame()
+
+        while time.monotonic() < deadline:
+            if reuse_current:
+                reuse_current = False
+            elif self.take_screenshot(interval=poll_interval) is None:
+                continue
+
+            position = self.find_element(
+                target,
+                find_type=find_type,
+                threshold=threshold,
+                model=model,
+                my_crop=my_crop,
+            )
+            if not position:
+                continue
+            if not click:
+                return position
+            if self.click_element(
+                target,
+                find_type=find_type,
+                threshold=threshold,
+                model=model,
+                my_crop=my_crop,
+                offset=offset,
+                action=action,
+                times=times,
+                interval=interval,
+            ):
+                return True
 
         return False
 
