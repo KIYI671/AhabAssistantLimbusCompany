@@ -584,9 +584,22 @@ class SimulatorControl(AbstractInput):
         if self.simulator_bluestacks:
             end_x = max(1, min(x + dx, self.simulator_max_x - 1))
             end_y = max(1, min(y + dy, self.simulator_max_y - 1))
-            plan = build_scroll_swipe_plan(
-                x, y, end_x - x, end_y - y, duration
+            duration_ms = max(1, round(duration * 1000))
+            command = [
+                "input",
+                "swipe",
+                str(round(x)),
+                str(round(y)),
+                str(round(end_x)),
+                str(round(end_y)),
+                str(duration_ms),
+            ]
+
+            self._call_with_reconnect(
+                "蓝叠原生快速滑动",
+                lambda: self.simulator_device.shell(command),
             )
+            return
         else:
             plan = [
                 (self._scale(*point), move_duration)

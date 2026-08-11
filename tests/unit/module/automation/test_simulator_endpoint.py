@@ -120,3 +120,17 @@ def test_start_game_uses_bounded_adb_launch_when_game_is_not_foreground() -> Non
             simulator_control.ADB_GAME_START_TIMEOUT,
         ),
     ]
+
+
+def test_bluestacks_scroll_uses_native_android_swipe() -> None:
+    commands = []
+    control = simulator_control.SimulatorControl.__new__(simulator_control.SimulatorControl)
+    control.simulator_device = SimpleNamespace(shell=lambda command: commands.append(command))
+    control.simulator_bluestacks = True
+    control.simulator_max_x = 1920
+    control.simulator_max_y = 1080
+    control._call_with_reconnect = lambda _name, action: action()
+
+    control.mouse_swipe_for_scroll(188, 540, duration=0.3, dy=495)
+
+    assert commands == [["input", "swipe", "188", "540", "188", "1035", "300"]]
