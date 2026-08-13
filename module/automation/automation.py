@@ -22,6 +22,10 @@ from ..ocr import ocr
 from .input_handlers.input import AbstractInput
 from .screenshot import ScreenShot
 
+# ponytail: 交互门最长关闭时间。监控线程卡在持久弹窗上时,超时放行业务输入,
+# 恢复 retry() 等流程的卡死看门狗(kill_game/restart_game)。
+GATE_WAIT_TIMEOUT = 30.0
+
 
 @dataclass(frozen=True)
 class TextMatchResult:
@@ -103,18 +107,32 @@ class Automation(metaclass=SingletonMeta):
         """恢复业务线程点击。"""
         self._interaction_gate.set()
 
+    def reset_safety_locks(self) -> None:
+        """线程被强制终止后换新锁,清除可能残留的持有状态。
+
+        仅应在 my_script_task.terminate() 等硬杀路径调用:被杀线程持有的
+        RLock 计数不会释放,不换锁则后续任务取锁永久阻塞。
+        """
+        self._input_lock = threading.RLock()
+        self._screenshot_lock = threading.RLock()
+
     def _run_business_interaction(self, method_name: str, *args, **kwargs):
         """在交互门放行且取得输入锁后执行一次业务输入。
 
         交互门可能在等待输入锁期间被监控线程关闭，因此取得锁后需要再次确认。
+        门连续关闭超过 GATE_WAIT_TIMEOUT 时视为监控卡在持久弹窗上，放行业务
+        输入，让业务流程自身的卡死兜底(如 check_times)得以继续运行。
         """
         while True:
-            self._interaction_gate.wait()
+            gate_open = self._interaction_gate.wait(timeout=GATE_WAIT_TIMEOUT)
             with self._input_lock:
-                if not self._interaction_gate.is_set():
-                    continue
-                method = getattr(self.input_handler, method_name)
-                return method(*args, **kwargs)
+                if gate_open and self._interaction_gate.is_set():
+                    method = getattr(self.input_handler, method_name)
+                    return method(*args, **kwargs)
+                if not gate_open:
+                    method = getattr(self.input_handler, method_name)
+                    return method(*args, **kwargs)
+                # gate_open 但等待输入锁期间门被关闭:重新等待
 
     def mouse_click(self, x, y, times=1):
         return self._run_business_interaction("mouse_click", x, y, times=times)
@@ -304,7 +322,7 @@ class Automation(metaclass=SingletonMeta):
         time.sleep(wait_time)
 
         # 计算传入的位置
-        self._interaction_gate.wait()
+        self._interaction_gate.wait(timeout=GATE_WAIT_TIMEOUT)
         x, y = self.calculate_click_position(coordinates, offset)
 
         # 定义鼠标操作映射

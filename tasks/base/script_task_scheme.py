@@ -482,6 +482,8 @@ class my_script_task(QThread):
     def terminate(self):
         retry_monitor.stop()
         super().terminate()
+        # TerminateThread 不会释放被杀线程持有的 RLock,换新锁防止后续任务取锁永久阻塞
+        auto.reset_safety_locks()
 
     """def stop(self):
         self.running=False
