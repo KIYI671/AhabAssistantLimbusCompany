@@ -79,6 +79,8 @@ class UpdateThread(QThread):
         current_version = parse(cfg.version.lstrip("Vv"))
         latest_version = parse(version.lstrip("Vv"))
         self.is_current_version_latest = current_version == latest_version
+        # 记录本地版本是否为预发布版（alpha/beta/rc），供资源同步门禁跳过测试版。
+        self.is_prerelease = current_version.is_prerelease
         return current_version, latest_version
 
     def _build_release_note_content(self, raw_content: str) -> str:
