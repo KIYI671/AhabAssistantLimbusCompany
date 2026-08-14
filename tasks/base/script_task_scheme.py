@@ -427,6 +427,9 @@ def script_task() -> None | int:
 
     should_exit_aalc = False
     if platform.system() == "Windows":
+        # 收尾动作可能主动关闭游戏或模拟器。先停止截图监控，避免设备消失
+        # 被误判为断链并触发自动恢复，重新拉起刚关闭的模拟器。
+        retry_monitor.stop()
         actions, power_action = get_after_completion_config()
         try:
             should_exit_aalc = execute_after_completion(actions, power_action)
