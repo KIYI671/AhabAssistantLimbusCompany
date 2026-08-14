@@ -358,10 +358,9 @@ class ScreenShot:
         )
 
         if SimulatorControl.connection_device is None:
-            log.warning("ADB 连接对象已丢失，正在重新初始化模拟器连接")
-            SimulatorControl()
-
-        image = SimulatorControl.connection_device.screenshot()
+            log.warning("ADB 连接对象已丢失，正在等待或重新初始化模拟器连接")
+        connection = SimulatorControl.get_connection()
+        image = connection.screenshot()
         image = Image.fromarray(image)
         if gray:
             image = image.convert("L")
