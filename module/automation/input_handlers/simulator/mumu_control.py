@@ -236,6 +236,7 @@ class MumuControl(AbstractInput):
         self._ev = asyncio.new_event_loop()
         self._ev_lock = threading.RLock()
         self._screenshot_executor = ThreadPoolExecutor(max_workers=1, thread_name_prefix="AALC-MuMuCapture")
+        self._screenshot_state_lock = threading.Lock()
         self._pending_screenshot = None
         self.display_id = display_id
 
@@ -881,10 +882,11 @@ class MumuControl(AbstractInput):
         if self.height == 0:
             self.get_resolution()
 
-        future = getattr(self, "_pending_screenshot", None)
-        if future is None:
-            future = self._get_screenshot_executor().submit(self._capture_display)
-            self._pending_screenshot = future
+        with self._screenshot_state_lock:
+            future = self._pending_screenshot
+            if future is None:
+                future = self._get_screenshot_executor().submit(self._capture_display)
+                self._pending_screenshot = future
 
         timeout = max(0.0, float(timeout))
         try:
@@ -893,10 +895,14 @@ class MumuControl(AbstractInput):
             # 不取消：运行中的 ctypes 调用无法安全终止。下一轮继续等待并复用其有效结果。
             raise TimeoutError(f"MuMu截图超过 {timeout:.2f}s，等待同一个 IPC 调用完成") from exc
         except Exception:
-            self._pending_screenshot = None
+            with self._screenshot_state_lock:
+                if self._pending_screenshot is future:
+                    self._pending_screenshot = None
             raise
         else:
-            self._pending_screenshot = None
+            with self._screenshot_state_lock:
+                if self._pending_screenshot is future:
+                    self._pending_screenshot = None
             return image
 
     def down(self, x, y):
