@@ -39,6 +39,7 @@ from tasks.base.make_enkephalin_module import (
     lunacy_to_enkephalin,
     make_enkephalin_module,
 )
+from tasks.base.retry_monitor import retry_monitor
 from tasks.battle import battle
 from tasks.daily.get_prize import get_mail_prize, get_pass_prize
 from tasks.daily.luxcavation import EXP_luxcavation, thread_luxcavation
@@ -372,6 +373,7 @@ def script_task() -> None | int:
     path_manager.initialize_paths()
     auto.clear_img_cache()
     log.debug(f"初始化图片路径: {path_manager.pic_path}")
+    retry_monitor.start()
 
     if cfg.resonate_with_Ahab:
         Resonate_with_Ahab()
@@ -472,9 +474,16 @@ class my_script_task(QThread):
             self.exception = e
             log.exception("脚本线程执行失败")
         finally:
+            retry_monitor.stop()
             self.mutex.unlock()
 
         mediator.script_finished.emit()
+
+    def terminate(self):
+        retry_monitor.stop()
+        super().terminate()
+        # TerminateThread 不会释放被杀线程持有的 RLock,换新锁防止后续任务取锁永久阻塞
+        auto.reset_safety_locks()
 
     """def stop(self):
         self.running=False
