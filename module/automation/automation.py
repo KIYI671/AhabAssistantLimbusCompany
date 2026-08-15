@@ -1,10 +1,10 @@
 import gc
 import math
 import random
+import threading
 import time
 from ast import List
 from dataclasses import dataclass
-from functools import wraps
 from typing import Any
 
 import cv2
@@ -23,6 +23,9 @@ from .input_handlers.input import AbstractInput
 from .screenshot import ScreenShot
 
 _FRAME_CACHE_MISS = object()
+# ponytail: 交互门最长关闭时间。监控线程卡在持久弹窗上时,超时放行业务输入,
+# 恢复 retry() 等流程的卡死看门狗(kill_game/restart_game)。
+GATE_WAIT_TIMEOUT = 30.0
 
 
 @dataclass(frozen=True)
@@ -43,6 +46,12 @@ class Automation(metaclass=SingletonMeta):
         self._frame_dirty = True
         self._last_target_action_time = {}
         self.input_handler = AbstractInput()
+        self._screenshot_lock = threading.RLock()
+        self._latest_screenshot = None
+        self._latest_screenshot_monotonic = 0.0
+        self._input_lock = threading.RLock()
+        self._interaction_gate = threading.Event()
+        self._interaction_gate.set()
 
         self.init_input()
 
@@ -94,31 +103,19 @@ class Automation(metaclass=SingletonMeta):
 
             self.input_handler = BackgroundInput()
         assert isinstance(self.input_handler, AbstractInput), "输入处理器必须是AbstractInput的实例"
-        self.mouse_click = self._mark_frame_dirty_after(self.input_handler.mouse_click)
-        self.mouse_click_blank = self._mark_frame_dirty_after(self.input_handler.mouse_click_blank)
-        self.mouse_drag = self._mark_frame_dirty_after(self.input_handler.mouse_drag)
-        self.mouse_swipe_for_scroll = self._mark_frame_dirty_after(self.input_handler.mouse_swipe_for_scroll)
-        self.mouse_drag_down = self._mark_frame_dirty_after(self.input_handler.mouse_drag_down)
-        self.mouse_scroll = self._mark_frame_dirty_after(self.input_handler.mouse_scroll)
         self.set_pause = self.input_handler.set_pause
         self.wait_pause = self.input_handler.wait_pause
-        self.mouse_to_blank = self.input_handler.mouse_to_blank
-        self.mouse_drag_link = self._mark_frame_dirty_after(self.input_handler.mouse_drag_link)
-        self.key_press = self._mark_frame_dirty_after(self.input_handler.key_press)
-        self.input_text = self._mark_frame_dirty_after(self.input_handler.input_text)
         self.memory_protection = cfg.memory_protection
 
-    def _mark_frame_dirty_after(self, action):
-        """输入成功后使当前截图失效，供状态循环安全复用未变化的帧。"""
-
-        @wraps(action)
-        def wrapped(*args, **kwargs):
-            result = action(*args, **kwargs)
-            if result is not False:
-                self._frame_dirty = True
-            return result
-
-        return wrapped
+    def _mark_frame_dirty(self) -> None:
+        """输入后同时失效业务帧和监控线程可复用的最近帧。"""
+        self._frame_dirty = True
+        screenshot_lock = getattr(self, "_screenshot_lock", None)
+        if screenshot_lock is None:
+            self._latest_screenshot_monotonic = 0.0
+            return
+        with screenshot_lock:
+            self._latest_screenshot_monotonic = 0.0
 
     def can_reuse_current_frame(self, max_age: float = 0.5) -> bool:
         """当前截图存在、足够新，且截图后没有执行可能改变画面的输入动作。"""
@@ -128,6 +125,106 @@ class Automation(metaclass=SingletonMeta):
         if last_screenshot is None:
             return True
         return time.monotonic() - last_screenshot <= max(0.0, float(max_age))
+
+    def suspend_interactions(self) -> None:
+        """暂时阻止业务线程继续点击。"""
+        self._interaction_gate.clear()
+
+    def resume_interactions(self) -> None:
+        """恢复业务线程点击。"""
+        self._interaction_gate.set()
+
+    def reset_safety_locks(self) -> None:
+        """线程被强制终止后换新锁,清除可能残留的持有状态。
+
+        仅应在 my_script_task.terminate() 等硬杀路径调用:被杀线程持有的
+        RLock 计数不会释放,不换锁则后续任务取锁永久阻塞。
+        """
+        self._input_lock = threading.RLock()
+        self._screenshot_lock = threading.RLock()
+
+    def _run_input_and_mark_frame_dirty(self, method_name: str, *args, **kwargs):
+        method = getattr(self.input_handler, method_name)
+        result = method(*args, **kwargs)
+        if result is not False:
+            self._mark_frame_dirty()
+        return result
+
+    def _run_business_interaction(self, method_name: str, *args, **kwargs):
+        """在交互门放行且取得输入锁后执行一次业务输入。
+
+        交互门可能在等待输入锁期间被监控线程关闭，因此取得锁后需要再次确认。
+        门连续关闭超过 GATE_WAIT_TIMEOUT 时视为监控卡在持久弹窗上，放行业务
+        输入，让业务流程自身的卡死兜底(如 check_times)得以继续运行。
+        """
+        while True:
+            gate_open = self._interaction_gate.wait(timeout=GATE_WAIT_TIMEOUT)
+            with self._input_lock:
+                if gate_open and not self._interaction_gate.is_set():
+                    # 等待输入锁期间门被关闭：重新等待。
+                    continue
+                return self._run_input_and_mark_frame_dirty(method_name, *args, **kwargs)
+
+    def mouse_click(self, x, y, times=1):
+        return self._run_business_interaction("mouse_click", x, y, times=times)
+
+    def mouse_click_blank(self, *args, **kwargs):
+        return self._run_business_interaction("mouse_click_blank", *args, **kwargs)
+
+    def mouse_drag(self, *args, **kwargs):
+        return self._run_business_interaction("mouse_drag", *args, **kwargs)
+
+    def mouse_swipe_for_scroll(self, *args, **kwargs):
+        return self._run_business_interaction("mouse_swipe_for_scroll", *args, **kwargs)
+
+    def mouse_drag_down(self, *args, **kwargs):
+        return self._run_business_interaction("mouse_drag_down", *args, **kwargs)
+
+    def mouse_scroll(self, *args, **kwargs):
+        return self._run_business_interaction("mouse_scroll", *args, **kwargs)
+
+    def mouse_to_blank(self, *args, **kwargs):
+        return self._run_business_interaction("mouse_to_blank", *args, **kwargs)
+
+    def mouse_drag_link(self, *args, **kwargs):
+        return self._run_business_interaction("mouse_drag_link", *args, **kwargs)
+
+    def key_press(self, *args, **kwargs):
+        return self._run_business_interaction("key_press", *args, **kwargs)
+
+    def input_text(self, *args, **kwargs):
+        return self._run_business_interaction("input_text", *args, **kwargs)
+
+    def monitor_mouse_click(self, x, y, times=1):
+        """由系统监控线程点击，不等待该监控线程设置的互斥门。"""
+        with self._input_lock:
+            return self._run_input_and_mark_frame_dirty("mouse_click", x, y, times=times)
+
+    def _remember_screenshot(self, screenshot: Image | None) -> None:
+        if screenshot is None:
+            return
+        self._latest_screenshot = screenshot
+        self._latest_screenshot_monotonic = time.monotonic()
+
+    def invalidate_screenshot_cache(self) -> None:
+        """让业务线程与监控线程在下一轮检查时都获取新截图。"""
+        self._mark_frame_dirty()
+
+    def take_monitor_screenshot(self, gray: bool = True, max_age: float = 0.0) -> Image | None:
+        """获取监控截图，优先复用业务线程的最近帧且不覆盖业务截图。"""
+        with self._input_lock, self._screenshot_lock:
+            if (
+                self._latest_screenshot is not None
+                and max_age > 0
+                and time.monotonic() - self._latest_screenshot_monotonic <= max_age
+            ):
+                if gray and self._latest_screenshot.mode != "L":
+                    return self._latest_screenshot.convert("L")
+                return self._latest_screenshot
+
+            screenshot = ScreenShot.take_screenshot(gray)
+            self._remember_screenshot(screenshot)
+            return screenshot
 
     def check_pause(self) -> bool:
         """
@@ -303,6 +400,7 @@ class Automation(metaclass=SingletonMeta):
                 time.sleep(remaining)
 
         # 计算传入的位置
+        self._interaction_gate.wait(timeout=GATE_WAIT_TIMEOUT)
         x, y = self.calculate_click_position(coordinates, offset)
 
         # 定义鼠标操作映射
@@ -347,14 +445,16 @@ class Automation(metaclass=SingletonMeta):
                 if elapsed < screenshot_interval_time:
                     time.sleep(screenshot_interval_time - elapsed)
 
-                result = ScreenShot.take_screenshot(gray)
-                if result:
-                    self.screenshot = result
-                    self._reset_frame_cache(result)
-                    self._frame_dirty = False
-                    self.last_screenshot_time = time.monotonic()
-                    return result
-                else:
+                # 与输入使用相同的加锁顺序，避免截图完成后、提交干净帧前被监控线程点击。
+                with self._input_lock, self._screenshot_lock:
+                    result = ScreenShot.take_screenshot(gray)
+                    self._remember_screenshot(result)
+                    if result:
+                        self.screenshot = result
+                        self._reset_frame_cache(result)
+                        self._frame_dirty = False
+                        self.last_screenshot_time = time.monotonic()
+                        return result
                     return None
             except Exception as e:
                 log.error(f"截图失败:{e}")

@@ -12,6 +12,13 @@ Automation = automation_module.Automation
 def _make_automation(image):
     instance = object.__new__(Automation)
     instance.screenshot = image
+    instance._frame_dirty = True
+    instance._screenshot_lock = automation_module.threading.RLock()
+    instance._input_lock = automation_module.threading.RLock()
+    instance._interaction_gate = automation_module.threading.Event()
+    instance._interaction_gate.set()
+    instance._latest_screenshot = image
+    instance._latest_screenshot_monotonic = 0.0
     instance.img_cache = {}
     instance.memory_protection = False
     instance._last_memory_check_time = 0.0
@@ -137,7 +144,7 @@ def test_screenshot_call_can_use_a_short_local_interval_without_changing_config(
     sleeps = []
     configured_interval = automation_module.cfg.screenshot_interval
 
-    times = iter([9.95, 10.0, 10.15, 10.15])
+    times = iter([9.95, 10.0, 10.15, 10.15, 10.15])
     monkeypatch.setattr(automation_module.time, "monotonic", lambda: next(times))
     monkeypatch.setattr(automation_module.time, "sleep", sleeps.append)
     monkeypatch.setattr(automation_module.ScreenShot, "take_screenshot", lambda gray: image)
@@ -148,22 +155,40 @@ def test_screenshot_call_can_use_a_short_local_interval_without_changing_config(
     assert instance.can_reuse_current_frame()
 
 
-def test_successful_input_marks_the_current_frame_dirty():
+def test_successful_business_input_invalidates_business_and_monitor_frames():
     instance = _make_automation(Image.fromarray(np.zeros((4, 4), dtype=np.uint8)))
+    instance.input_handler = SimpleNamespace(mouse_click=lambda *_args, **_kwargs: True)
     instance._frame_dirty = False
-    wrapped = instance._mark_frame_dirty_after(lambda: True)
+    instance._latest_screenshot_monotonic = 10.0
 
-    assert wrapped() is True
-    assert not instance.can_reuse_current_frame()
+    assert instance.mouse_click(1, 2)
+    assert instance._frame_dirty is True
+    assert instance._latest_screenshot_monotonic == 0.0
 
 
-def test_failed_input_does_not_invalidate_the_current_frame():
+def test_failed_business_input_does_not_invalidate_frames():
     instance = _make_automation(Image.fromarray(np.zeros((4, 4), dtype=np.uint8)))
+    instance.input_handler = SimpleNamespace(mouse_click=lambda *_args, **_kwargs: False)
     instance._frame_dirty = False
-    wrapped = instance._mark_frame_dirty_after(lambda: False)
+    instance._latest_screenshot_monotonic = 10.0
 
-    assert wrapped() is False
+    assert instance.mouse_click(1, 2) is False
     assert instance.can_reuse_current_frame()
+    assert instance._latest_screenshot_monotonic == 10.0
+
+
+def test_monitor_input_bypasses_closed_gate_and_invalidates_frames():
+    instance = _make_automation(Image.fromarray(np.zeros((4, 4), dtype=np.uint8)))
+    calls = []
+    instance.input_handler = SimpleNamespace(mouse_click=lambda *args, **kwargs: calls.append((args, kwargs)) or True)
+    instance._interaction_gate.clear()
+    instance._frame_dirty = False
+    instance._latest_screenshot_monotonic = 10.0
+
+    assert instance.monitor_mouse_click(3, 4, times=2)
+    assert calls == [((3, 4), {"times": 2})]
+    assert instance._frame_dirty is True
+    assert instance._latest_screenshot_monotonic == 0.0
 
 
 def test_old_frame_is_not_reused_even_without_input(monkeypatch):

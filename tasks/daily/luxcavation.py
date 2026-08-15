@@ -151,19 +151,20 @@ def thread_luxcavation(combat_count: int = 1):
         if (
             auto.find_element("home/first_prompt_assets.png", model="clam")
             and auto.find_element("home/back_assets.png", model="normal")
-            and not auto.find_element("luxcavation/thread_enter_assets.png", threshold=0.78)
+            and not auto.find_element("luxcavation/thread_enter_up80_assets.png")
             and not auto.find_element("luxcavation/thread_consume.png")
         ):
             auto.key_press("esc")
             continue
-        if thread_enter := auto.click_element("luxcavation/thread_enter_assets.png", threshold=0.78, click=False):
+        if thread_enter := auto.click_element("luxcavation/thread_enter_up80_assets.png", click=False):
+            scale = cfg.set_win_size / 1440
             # 纽本连战次数框位于外层纺锤卡片，需在进入关卡列表前设置。
             if combat_count > 1 and not continuous_combat_set:
                 if not _prepare_continuous_combat_count(combat_count, "Thread"):
                     log.debug("纽本连续战斗设置失败，重新检测")
                     continue
                 continuous_combat_set = True
-            auto.mouse_click(thread_enter[0], thread_enter[1])
+            auto.mouse_click(thread_enter[0], thread_enter[1] + 80 * scale)
             sleep(0.5)
             if pos := auto.find_element("luxcavation/thread_consume.png", take_screenshot=True):
                 if scroll_bar := auto.find_element("luxcavation/thread_scroll_bar.png"):
@@ -177,7 +178,6 @@ def thread_luxcavation(combat_count: int = 1):
                     find_type="image_with_multiple_targets",
                     take_screenshot=True,
                 )
-                scale = cfg.set_win_size / 1440
                 # 只识别右半屏幕
                 min_x = cfg.set_win_size / 2
                 level = sorted([(x, y) for x, y in level if x >= min_x], key=lambda p: p[1], reverse=True)
