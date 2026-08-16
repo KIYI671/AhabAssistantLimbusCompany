@@ -256,6 +256,8 @@ class Updater:
         print("开始终止进程...")
         install_root = os.path.normcase(os.path.abspath(self.cover_folder_path)) + os.sep
         for proc in psutil.process_iter(attrs=["pid", "name"]):
+            if proc.pid == os.getpid():
+                continue  # 更新器自身位于 update_temp（安装根目录内），不能杀自己
             try:
                 exe_path = proc.exe()
             except (psutil.AccessDenied, psutil.NoSuchProcess):
