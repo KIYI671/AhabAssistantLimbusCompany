@@ -215,6 +215,9 @@ class CaptureNemuIpc(CaptureStd):
 class MumuControl(AbstractInput):
     connection_device = None
 
+    # 截图在途超过该时长视为卡死（正常截图远小于此值），届时弃用旧调用链并换新重试
+    _SCREENSHOT_STUCK_DEADLINE = 10.0
+
     @staticmethod
     def clean_connect():
         if MumuControl.connection_device is None:
@@ -238,6 +241,7 @@ class MumuControl(AbstractInput):
         self._screenshot_executor = ThreadPoolExecutor(max_workers=1, thread_name_prefix="AALC-MuMuCapture")
         self._screenshot_state_lock = threading.Lock()
         self._pending_screenshot = None
+        self._screenshot_pending_since = 0.0
         self.display_id = display_id
 
         self.connect_id: int = 0
@@ -780,8 +784,8 @@ class MumuControl(AbstractInput):
             NemuIpcIncompatible:
             NemuIpcError
         """
-        # MuMu 截图和输入共用同一个 asyncio 事件循环。重试监控会从后台线程截图，
-        # 因此必须在最底层串行化所有 NemuIpc 调用，避免并发 run_until_complete。
+        # 输入等 NemuIpc 调用共用同一个 asyncio 事件循环，必须在最底层串行化，
+        # 避免并发 run_until_complete；截图同样经本锁与其他调用互斥。
         with self._ev_lock:
             result = self._ev.run_until_complete(self.ev_run_async(func, *args, **kwargs))
 
@@ -842,6 +846,32 @@ class MumuControl(AbstractInput):
             )
         return executor
 
+    def _swap_stuck_capture_state(self):
+        """弃用疑似卡死的截图调用链：换执行器与全局IPC锁，让后续调用立即重新尝试。
+
+        卡死的旧线程会永久泄漏并持有旧锁；进程退出时 concurrent.futures 会对工作线程
+        无超时 join，若 DLL 调用持续不返回，只能杀掉 MuMu 进程使其返回。
+        """
+        self._screenshot_executor = ThreadPoolExecutor(
+            max_workers=1,
+            thread_name_prefix="AALC-MuMuCapture",
+        )
+        self._ev_lock = threading.RLock()
+        log.warning("MuMu截图疑似卡死，已更换执行器与IPC锁，后续截图将重新尝试")
+
+    def _swap_stuck_capture_state_if_needed(self):
+        """在途截图超过卡死阈值则换血。必须先于 connect()/get_resolution() 调用，
+        否则这些 ev_run_sync 调用会堵在被卡死线程持有的旧锁上，永远到不了换血逻辑。
+        """
+        with self._screenshot_state_lock:
+            future = self._pending_screenshot
+            if (
+                future is not None
+                and time.monotonic() - self._screenshot_pending_since > self._SCREENSHOT_STUCK_DEADLINE
+            ):
+                self._swap_stuck_capture_state()
+                self._pending_screenshot = None
+
     def _capture_display(self):
         """在专用单线程执行器内完成一次原生截图，并与其他 NemuIpc 调用串行。"""
         width = self.width
@@ -873,9 +903,10 @@ class MumuControl(AbstractInput):
     def screenshot(self, timeout=0.5):
         """
         Returns:
-            np.ndarray: Image array in RGBA color space
-                Note that image is upside down
+            np.ndarray: Image array in RGB color space, already flipped upright
         """
+        self._swap_stuck_capture_state_if_needed()
+
         if self.connect_id == 0:
             self.connect()
 
@@ -887,6 +918,7 @@ class MumuControl(AbstractInput):
             if future is None:
                 future = self._get_screenshot_executor().submit(self._capture_display)
                 self._pending_screenshot = future
+                self._screenshot_pending_since = time.monotonic()
 
         timeout = max(0.0, float(timeout))
         try:
