@@ -498,7 +498,8 @@ class MumuControl(AbstractInput):
                 str(self.multi_instance_number),
                 "shutdown",
             ]
-            subprocess.run(command)
+            no_window_flag = subprocess.CREATE_NO_WINDOW if hasattr(subprocess, "CREATE_NO_WINDOW") else 0x08000000
+            subprocess.run(command, creationflags=no_window_flag)
             log.debug(f"MUMU模拟器编号{self.multi_instance_number}关闭完成")
         except userStopError:
             raise
