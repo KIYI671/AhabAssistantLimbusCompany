@@ -20,10 +20,10 @@ from qfluentwidgets import (
     PushButton,
     ScrollArea,
     SmoothMode,
-    Theme,
     ToolButton,
     ToolTipFilter,
     ToolTipPosition,
+    isDarkTheme,
     qconfig,
 )
 from qfluentwidgets import FluentIcon as FIF
@@ -1115,11 +1115,11 @@ class SystemIconButton(QLabel):
         self.setAlignment(Qt.AlignCenter)
         self.setCursor(Qt.PointingHandCursor)
         qconfig.themeChanged.connect(self._refresh_style)
-        self._refresh_style(qconfig.theme)
+        self._refresh_style()
 
-    def _refresh_style(self, theme: Theme):
+    def _refresh_style(self, theme=None):
         is_text_mode = self._force_text or self._normal_pixmap.isNull()
-        text_style = f"font-size: 12px; color: {'white' if theme == Theme.DARK else 'black'};" if is_text_mode else ""
+        text_style = f"font-size: 12px; color: {'white' if isDarkTheme() else 'black'};" if is_text_mode else ""
         if self._active:
             self.setStyleSheet(
                 f"border: 2px solid rgba(128,128,128,0.45); border-radius: 6px; background-color: transparent;{text_style}"
