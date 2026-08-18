@@ -13,3 +13,10 @@ def test_theme_pack_fuzzy_matching_repairs_common_ocr_errors():
         result = automation._find_fuzzy_target_in_ocr_dict(targets, {ocr_text: [0, 0]})
         assert result is not None
         assert result.text == expected
+
+
+def test_non_dict_language_text_keeps_false_on_miss():
+    automation = object.__new__(Automation)
+    automation._run_ocr_for_text = lambda **_: {"other": [0, 0]}
+
+    assert automation.find_language_text("dead", "dead") is False

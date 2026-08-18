@@ -613,18 +613,21 @@ class Automation(metaclass=SingletonMeta):
             文本命中结果，返回格式同 find_text_element；未命中返回 False。
         """
         ocr_dict = self._run_ocr_for_text(my_crop=my_crop, additional_stack=additional_stack)
-        ocr_text = " ".join(ocr_dict)
-        log.info(f"主题卡包原始OCR结果：{ocr_text}")
+        is_dict_target = isinstance(zh_text, dict) or isinstance(en_text, dict)
+        if is_dict_target:
+            ocr_text = " ".join(ocr_dict)
+            log.info(f"主题卡包原始OCR结果：{ocr_text}")
 
         def match(target):
             result = self._find_target_in_ocr_dict(target, ocr_dict, all_text=all_text)
-            if result is False or result is None:
+            if isinstance(target, dict) and result is None:
                 result = self._find_fuzzy_target_in_ocr_dict(target, ocr_dict)
             return result
 
         def finish(result):
-            matched = result.text if isinstance(result, TextMatchResult) else "unknown"
-            log.info(f"主题卡包模糊匹配结果：{matched}")
+            if is_dict_target:
+                matched = result.text if isinstance(result, TextMatchResult) else "unknown"
+                log.info(f"主题卡包模糊匹配结果：{matched}")
             return result
 
         if ocr_dict == {}:
