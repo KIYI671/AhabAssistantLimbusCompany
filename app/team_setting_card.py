@@ -57,6 +57,7 @@ from app.observe_ego_gift_selection import (
     parse_observe_ego_gift_values,
     serialize_observe_ego_gift_values,
 )
+from qfluentwidgets import qconfig, Theme
 
 
 class TeamSettingCard(QFrame):
@@ -1114,11 +1115,12 @@ class SystemIconButton(QLabel):
         self.setFixedSize(54, 54)
         self.setAlignment(Qt.AlignCenter)
         self.setCursor(Qt.PointingHandCursor)
-        self._refresh_style()
+        qconfig.themeChanged.connect(self._refresh_style)
+        self._refresh_style(qconfig.theme)
 
-    def _refresh_style(self):
+    def _refresh_style(self, theme: Theme):
         is_text_mode = self._force_text or self._normal_pixmap.isNull()
-        text_style = "font-size: 12px; color: palette(text);" if is_text_mode else ""
+        text_style = f"font-size: 12px; color: {'white' if theme == Theme.DARK else 'black'};" if is_text_mode else ""
         if self._active:
             self.setStyleSheet(
                 f"border: 2px solid rgba(128,128,128,0.45); border-radius: 6px; background-color: transparent;{text_style}"

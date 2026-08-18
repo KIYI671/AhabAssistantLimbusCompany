@@ -1568,10 +1568,10 @@ class ObserveGiftSelectionRow(QFrame):
         self.layout_.setSpacing(18)
         self.layout_.setAlignment(Qt.AlignLeft)
 
-        self.system_label = QLabel()
-        self.level_label = QLabel()
-        self.row_label = QLabel()
-        self.col_label = QLabel()
+        self.system_label = BodyLabel()
+        self.level_label = BodyLabel()
+        self.row_label = BodyLabel()
+        self.col_label = BodyLabel()
 
         self.system_combo = ComboBox(self)
         self.level_combo = ComboBox(self)
