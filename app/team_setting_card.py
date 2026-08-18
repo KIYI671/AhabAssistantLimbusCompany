@@ -731,6 +731,8 @@ class CustomizeSettingsModule(QFrame):
         )
         self.defense_for_solo_turns = BaseComboBox("defense_for_solo_turns", combo_box_width=60)
         self.defense_for_solo_turns.add_items({str(turn): turn for turn in range(1, 6)})
+        self.defense_for_solo_turns.set_box_enabled(self.defense_for_solo.check_box.isChecked())
+        self.defense_for_solo.check_box.toggled.connect(self.defense_for_solo_turns.set_box_enabled)
         self.defense_first_round.check_box.toggled.connect(
             lambda checked: self.defense_for_solo.set_check_false() if checked else None
         )
