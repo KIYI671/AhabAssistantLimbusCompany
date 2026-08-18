@@ -5,6 +5,7 @@ import threading
 import time
 from ast import List
 from dataclasses import dataclass
+from difflib import SequenceMatcher
 from typing import Any
 
 import cv2
@@ -557,6 +558,33 @@ class Automation(metaclass=SingletonMeta):
             return None
         return False
 
+    @staticmethod
+    def _fuzzy_substring_ratio(target: str, text: str) -> float:
+        target = "".join(char for char in target.casefold() if char.isalnum())
+        text = "".join(char for char in text.casefold() if char.isalnum())
+        if not target or not text:
+            return 0.0
+        min_length = max(1, min(len(text), len(target) - 1))
+        max_length = min(len(text), len(target) + 1)
+        return max(
+            SequenceMatcher(None, target, text[start : start + length]).ratio()
+            for length in range(min_length, max_length + 1)
+            for start in range(len(text) - length + 1)
+        )
+
+    def _find_fuzzy_target_in_ocr_dict(self, target, ocr_dict, threshold=0.75):
+        if not isinstance(target, dict):
+            return None
+        best = None
+        best_score = 0.0
+        for key, value in target.items():
+            for text, position in ocr_dict.items():
+                score = self._fuzzy_substring_ratio(str(key), text)
+                if score > best_score:
+                    best = TextMatchResult(value=value, text=str(key), position=position)
+                    best_score = score
+        return best if best_score >= threshold else None
+
     def find_language_text(
         self,
         zh_text,
@@ -564,6 +592,8 @@ class Automation(metaclass=SingletonMeta):
         my_crop=None,
         all_text=False,
         additional_stack=0,
+        fuzzy=False,
+        fuzzy_threshold=0.75,
     ):
         """
         按当前语言状态查找中英文文本，并在语言未知时用命中结果同步语言。
@@ -585,27 +615,42 @@ class Automation(metaclass=SingletonMeta):
             文本命中结果，返回格式同 find_text_element；未命中返回 False。
         """
         ocr_dict = self._run_ocr_for_text(my_crop=my_crop, additional_stack=additional_stack)
+        if fuzzy:
+            log.info(f"主题卡包实际OCR结果：{list(ocr_dict)}")
+
+        def match(target):
+            result = self._find_target_in_ocr_dict(target, ocr_dict, all_text=all_text)
+            if fuzzy and (result is False or result is None):
+                result = self._find_fuzzy_target_in_ocr_dict(target, ocr_dict, fuzzy_threshold)
+            return result
+
+        def finish(result):
+            if fuzzy:
+                matched = result.text if isinstance(result, TextMatchResult) else "unknown"
+                log.info(f"主题卡包模糊匹配处理后的结果：{matched}")
+            return result
+
         if ocr_dict == {}:
-            return False
+            return finish(False)
 
         if path_manager.current_language == "zh_cn":
-            return self._find_target_in_ocr_dict(zh_text, ocr_dict, all_text=all_text)
+            return finish(match(zh_text))
         if path_manager.current_language == "en":
-            return self._find_target_in_ocr_dict(en_text, ocr_dict, all_text=all_text)
+            return finish(match(en_text))
 
-        zh_result = self._find_target_in_ocr_dict(zh_text, ocr_dict, all_text=all_text)
+        zh_result = match(zh_text)
         if zh_result is not False and zh_result is not None:
             path_manager.set_language("zh_cn", log_stacklevel=additional_stack + 4)
-            return zh_result
+            return finish(zh_result)
 
-        en_result = self._find_target_in_ocr_dict(en_text, ocr_dict, all_text=all_text)
+        en_result = match(en_text)
         if en_result is not False and en_result is not None:
             path_manager.set_language("en", log_stacklevel=additional_stack + 4)
             if path_manager.eliminate_zh_cn_paths():
                 self.clear_img_cache()
-            return en_result
+            return finish(en_result)
 
-        return False
+        return finish(False)
 
     def find_text_element(self, target, my_crop=None, all_text=False, only_text=False, additional_stack=0):
         """
