@@ -122,18 +122,29 @@ class Battle:
             and defense_for_solo_state.remaining_turns > 0
             and not defense_for_solo_used_this_turn
         )
-        use_first_round_defense = (
-            first_turn and defense_first_round and not defense_for_solo_used_this_turn
-        )
+        use_first_round_defense = first_turn and defense_first_round and not defense_for_solo_used_this_turn
         limited_defense_succeeded = False
-        if (use_limited_defense or use_first_round_defense) and auto.find_element(
-            "battle/gear_left.png", threshold=0.9
+        is_creature_battle = False
+        defense_solotion = self._defense_this_round
+        if (
+            use_limited_defense
+            or use_first_round_defense
+            or avoid_skill_3
+            or prioritize_skill_3
+            or self.defense_all_time
         ):
+            is_creature_battle = not auto.find_element("battle/gear_left.png", threshold=0.9) and (
+                auto.find_element("battle/schadenfreude_left.png")
+                or auto.find_element("battle/schadenfreude_right.png")
+            )
+            defense_solotion = self._defense_this_round_creature if is_creature_battle else self._defense_this_round
+
+        if use_limited_defense or use_first_round_defense:
             if use_limited_defense:
                 msg = f"小指良单通连续防御（剩余{defense_for_solo_state.remaining_turns}回合），开始战斗"
             else:
                 msg = "第一回合全员防御，开始战斗"
-            if self._defense_this_round() is False:
+            if defense_solotion() is False:
                 if use_limited_defense:
                     msg = "小指良单通连续防御失败，本回合改为P+Enter"
                 else:
@@ -153,12 +164,9 @@ class Battle:
                 sleep(0.5)
                 auto.key_press("enter")
         elif self.defense_all_time:
-            if auto.find_element("battle/gear_left.png", threshold=0.9):
-                msg = "使用全员防御模式开始战斗"
-                self._defense_this_round()
-        elif (avoid_skill_3 or prioritize_skill_3) and auto.find_element(
-            "battle/gear_left.png", threshold=0.9
-        ):
+            msg = "使用全员防御模式开始战斗"
+            defense_solotion()
+        elif avoid_skill_3 or prioritize_skill_3:
             use_prioritize_skill_3 = prioritize_skill_3 and not avoid_skill_3
             mode_name = "优先" if use_prioritize_skill_3 else "避免"
             msg = f"使用{mode_name}3技能模式开始战斗"
