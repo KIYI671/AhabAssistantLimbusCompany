@@ -1,5 +1,6 @@
 import os
-from PySide6.QtCore import QTimer, Qt
+
+from PySide6.QtCore import Qt, QTimer
 from PySide6.QtGui import QPixmap
 from PySide6.QtWidgets import (
     QApplication,
@@ -22,6 +23,8 @@ from qfluentwidgets import (
     ToolButton,
     ToolTipFilter,
     ToolTipPosition,
+    isDarkTheme,
+    qconfig,
 )
 from qfluentwidgets import FluentIcon as FIF
 
@@ -41,6 +44,13 @@ from app.common.ui_config import (
     get_starlight_total_cost_qss,
 )
 from app.language_manager import LanguageManager
+from app.observe_ego_gift_selection import (
+    MAX_OBSERVE_GIFT_SELECTIONS,
+    ObserveGiftSelection,
+    ensure_placeholder_row,
+    parse_observe_ego_gift_values,
+    serialize_observe_ego_gift_values,
+)
 from app.starlight_bonus import StarlightCard, StarlightLevelSelector
 from app.theme_pack_setting_interface import ThemePackSettingDialog
 from module.config import TeamSetting, cfg, theme_list
@@ -49,13 +59,6 @@ from module.config.team_import_export import (
     export_team_settings,
     generate_team_export_filename,
     import_team_settings,
-)
-from app.observe_ego_gift_selection import (
-    MAX_OBSERVE_GIFT_SELECTIONS,
-    ObserveGiftSelection,
-    ensure_placeholder_row,
-    parse_observe_ego_gift_values,
-    serialize_observe_ego_gift_values,
 )
 
 
@@ -739,10 +742,7 @@ class CustomizeSettingsModule(QFrame):
         self.defense_for_solo.check_box.toggled.connect(
             lambda checked: self.defense_first_round.set_check_false() if checked else None
         )
-        if (
-            self.defense_first_round.check_box.isChecked()
-            and self.defense_for_solo.check_box.isChecked()
-        ):
+        if self.defense_first_round.check_box.isChecked() and self.defense_for_solo.check_box.isChecked():
             self.defense_for_solo.set_check_false()
 
         self.avoid_skill_3.check_box.toggled.connect(
@@ -751,10 +751,7 @@ class CustomizeSettingsModule(QFrame):
         self.prioritize_skill_3.check_box.toggled.connect(
             lambda checked: self.avoid_skill_3.set_check_false() if checked else None
         )
-        if (
-            self.avoid_skill_3.check_box.isChecked()
-            and self.prioritize_skill_3.check_box.isChecked()
-        ):
+        if self.avoid_skill_3.check_box.isChecked() and self.prioritize_skill_3.check_box.isChecked():
             self.prioritize_skill_3.set_check_false()
 
         self.fixed_team_use = CheckBoxWithComboBox(
@@ -962,7 +959,9 @@ class CustomizeSettingsModule(QFrame):
 
         self.star_list.addWidget(self.starlight_select_all_wrapper, 0, 0)
         self.star_list.addWidget(self.starlight_clear_button_wrapper, 0, 1)
-        self.star_list.addWidget(self.starlight_total_cost_label, 0, 4, Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
+        self.star_list.addWidget(
+            self.starlight_total_cost_label, 0, 4, Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter
+        )
 
         self.star_list.addWidget(self.starlight_1, 1, 0)
         self.star_list.addWidget(self.starlight_2, 1, 1)
@@ -1038,6 +1037,7 @@ class CustomizeSettingsModule(QFrame):
     def _apply_total_cost_style(self):
         from qfluentwidgets import setCustomStyleSheet
         from app.starlight_bonus import _register_custom_style_widget
+
         _register_custom_style_widget(self.starlight_total_cost_label)
         light_qss, dark_qss = get_starlight_total_cost_qss()
         setCustomStyleSheet(self.starlight_total_cost_label, light_qss, dark_qss)
@@ -1114,11 +1114,12 @@ class SystemIconButton(QLabel):
         self.setFixedSize(54, 54)
         self.setAlignment(Qt.AlignCenter)
         self.setCursor(Qt.PointingHandCursor)
+        qconfig.themeChanged.connect(self._refresh_style)
         self._refresh_style()
 
-    def _refresh_style(self):
+    def _refresh_style(self, theme=None):
         is_text_mode = self._force_text or self._normal_pixmap.isNull()
-        text_style = "font-size: 12px; color: palette(text);" if is_text_mode else ""
+        text_style = f"font-size: 12px; color: {'white' if isDarkTheme() else 'black'};" if is_text_mode else ""
         if self._active:
             self.setStyleSheet(
                 f"border: 2px solid rgba(128,128,128,0.45); border-radius: 6px; background-color: transparent;{text_style}"
@@ -1329,7 +1330,9 @@ class ObserveEgoGiftModule(QFrame):
         return ensure_placeholder_row(rows, max_completed=MAX_OBSERVE_GIFT_SELECTIONS)
 
     def _emit_selected_rows(self):
-        mediator.team_setting.emit({"observe_ego_gift_selected": serialize_observe_ego_gift_values(self._row_selections)})
+        mediator.team_setting.emit(
+            {"observe_ego_gift_selected": serialize_observe_ego_gift_values(self._row_selections)}
+        )
 
     def _rebuild_rows(self, target_row_index: int | None = None, emit: bool = False):
         while self.selection_rows_layout.count():
