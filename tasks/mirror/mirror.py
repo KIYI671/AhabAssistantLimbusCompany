@@ -74,7 +74,7 @@ class Mirror:
         self.observe_ego_gift_selected = team_setting.observe_ego_gift_selected  # 用户选择的观测EGO饰品列表
 
         self.defense_first_round = team_setting.defense_first_round  # 是否第一回合全员防御
-        self.defense_for_solo_state = DefenseForSoloState() if team_setting.defense_for_solo else None
+        self.defense_for_solo_state = DefenseForSoloState(team_setting.defense_for_solo_turns) if team_setting.defense_for_solo else None
 
         self.start_time = time.time()
         self.first_battle = True  # 判断是否首次进入战斗，如果是则重新配队

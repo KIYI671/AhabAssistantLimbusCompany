@@ -471,6 +471,8 @@ class TeamSettingCard(QFrame):
                     if combobox == "team_system":
                         self.foolproof(getattr(self.team_setting, combobox))
 
+        self.findChild(BaseComboBox, "defense_for_solo_turns").set_options(self.team_setting.defense_for_solo_turns - 1)
+
         # 读取编队码设置
         if team_code_input := self.findChild(BaseLineEdit, "team_code"):
             team_code_input.setText(self.team_setting.team_code)
@@ -725,11 +727,10 @@ class CustomizeSettingsModule(QFrame):
             "defense_for_solo",
             None,
             QT_TRANSLATE_NOOP("BaseCheckBox", "小指良单通杀家人"),
-            tips=QT_TRANSLATE_NOOP(
-                "BaseCheckBox",
-                "每次镜牢任务内，连续5个战斗回合全员防御",
-            ),
+            tips=QT_TRANSLATE_NOOP("BaseCheckBox", "每次镜牢任务内，连续指定回合数全员防御"),
         )
+        self.defense_for_solo_turns = BaseComboBox("defense_for_solo_turns", combo_box_width=60)
+        self.defense_for_solo_turns.add_items({str(turn): turn for turn in range(1, 6)})
         self.defense_first_round.check_box.toggled.connect(
             lambda checked: self.defense_for_solo.set_check_false() if checked else None
         )
@@ -955,6 +956,7 @@ class CustomizeSettingsModule(QFrame):
         self.features_patch_line_1.addWidget(self.aggressive_save_systems)
         self.features_patch_line_1.addWidget(self.defense_first_round)
         self.features_patch_line_1.addWidget(self.defense_for_solo)
+        self.features_patch_line_1.addWidget(self.defense_for_solo_turns)
 
         self.star_list.addWidget(self.starlight_select_all_wrapper, 0, 0)
         self.star_list.addWidget(self.starlight_clear_button_wrapper, 0, 1)

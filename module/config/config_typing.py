@@ -102,6 +102,9 @@ class TeamSetting(BaseModel):
     defense_for_solo: bool = False
     """小指良单通杀家人"""
 
+    defense_for_solo_turns: int = 5
+    """小指良连续全员防御回合数"""
+
     fixed_team_use: bool = False
     """固定队伍用途"""
 
@@ -197,7 +200,6 @@ class TeamSetting(BaseModel):
 
     mirror_normal_count: int = 0
     """普通镜牢次数"""
-
 
 class ConfigModel(BaseModel):
     """配置模型"""
