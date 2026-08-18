@@ -955,7 +955,7 @@ class CustomizeSettingsModule(QFrame):
         self.features_patch_line_1.addWidget(self.aggressive_save_systems)
         self.features_patch_line_1.addWidget(self.defense_first_round)
         self.features_patch_line_1.addWidget(self.defense_for_solo)
-        self.features_patch_line_1.addWidget(self.defense_for_solo_turns)
+        self.defense_for_solo.hBoxLayout.addWidget(self.defense_for_solo_turns, alignment=Qt.AlignmentFlag.AlignLeft)
 
         self.star_list.addWidget(self.starlight_select_all_wrapper, 0, 0)
         self.star_list.addWidget(self.starlight_clear_button_wrapper, 0, 1)
