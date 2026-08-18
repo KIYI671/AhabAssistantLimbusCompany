@@ -81,6 +81,9 @@ class TeamSetting(BaseModel):
     avoid_skill_3: bool = False
     """避免使用3技能"""
 
+    prioritize_skill_3: bool = False
+    """优先使用3技能"""
+
     re_formation_each_floor: bool = False
     """每个楼层重新编队"""
 
@@ -95,6 +98,12 @@ class TeamSetting(BaseModel):
 
     defense_first_round: bool = False
     """第一回合全员防御"""
+
+    defense_for_solo: bool = False
+    """小指良单通杀家人"""
+
+    defense_for_solo_turns: int = 5
+    """小指良连续全员防御回合数"""
 
     fixed_team_use: bool = False
     """固定队伍用途"""
@@ -191,7 +200,6 @@ class TeamSetting(BaseModel):
 
     mirror_normal_count: int = 0
     """普通镜牢次数"""
-
 
 class ConfigModel(BaseModel):
     """配置模型"""
@@ -333,6 +341,9 @@ class ConfigModel(BaseModel):
 
     experimental_keep_screen_awake: bool
     """运行期间阻止系统与显示器休眠，任务结束自动恢复"""
+
+    experimental_hdr_warning: bool
+    """任务启动时检测游戏显示器 HDR 状态并提示潜在识别问题"""
 
     simulator: bool
     """是否使用模拟器"""
@@ -516,6 +527,9 @@ class ConfigModel(BaseModel):
 
     mirror_keyboard_navigation: bool
     """使用键盘进行镜牢寻路"""
+
+    mirror_keyboard_simple_pathfinding: bool
+    """简单键盘寻路模式：始终按↑选择第一个节点，完全避免鼠标拖动"""
 
     teams: dict[str, TeamSetting]
     """队伍设置"""

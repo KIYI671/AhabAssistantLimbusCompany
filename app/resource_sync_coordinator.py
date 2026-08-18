@@ -172,7 +172,18 @@ class ResourceSyncCoordinator(QObject):
         返回:
             若允许继续执行资源同步则返回 True，否则返回 False。
         """
-        # 第一步：若软件更新检查失败，则直接阻断资源同步，避免在版本状态未知时覆盖资源。
+        # 第一步：测试版不参与图片资源同步，直接放行启动链路。
+        if getattr(update_thread, "is_prerelease", False):
+            log.info(f"当前软件版本 {cfg.version} 为测试版本，跳过图片资源同步")
+            if notify_user:
+                self._show_resource_sync_infobar(
+                    level="info",
+                    title=self._window.tr("无法同步图片资源"),
+                    content=self._window.tr("当前为测试版本，不参与图片资源同步"),
+                )
+            return False
+
+        # 第二步：若软件更新检查失败，则直接阻断资源同步，避免在版本状态未知时覆盖资源。
         latest_version = update_thread.new_version or self._window.tr("未知版本")
         if status is UpdateStatus.FAILURE:
             log.warning("无法确认当前软件是否为最新版本，已跳过图片资源同步")
@@ -184,7 +195,7 @@ class ResourceSyncCoordinator(QObject):
                 )
             return False
 
-        # 第二步：若本地软件版本尚未追平最新版本，则阻断资源同步并给出原因。
+        # 第三步：若本地软件版本尚未追平最新版本，则阻断资源同步并给出原因。
         if not getattr(update_thread, "is_current_version_latest", False):
             log.info(f"当前软件版本 {cfg.version} 与最新版本 {latest_version} 不一致，已跳过图片资源同步")
             if notify_user:
@@ -322,6 +333,13 @@ class ResourceSyncCoordinator(QObject):
             self._pending_resource_sync_apply_request = pending_request
         return started, pending_request
 
+    def _resume_pending_resource_sync_apply(self) -> bool:
+        """接力启动挂起的应用阶段，并处理启动阶段无法接力的收尾逻辑。"""
+        started, resumed_request = self._start_pending_resource_sync_apply()
+        if not started and resumed_request is not None and resumed_request["context"] == "startup_apply":
+            self._continue_startup_sequence_once()
+        return started
+
     def _on_resource_sync_progress_changed(self, value: int) -> None:
         """将资源同步进度映射到界面进度环。
 
@@ -440,6 +458,11 @@ class ResourceSyncCoordinator(QObject):
             "sync_plan": sync_plan,
         }
 
+        # 确认框会开启嵌套事件循环；用户作出选择前，检查 worker 的 finished
+        # 回调可能已经清空线程引用。此时不会再有新的 finished 信号，需要立即接力。
+        if self._resource_sync_worker is None:
+            self._resume_pending_resource_sync_apply()
+
     def _on_resource_sync_apply_finished(self, apply_result: ResourceApplyResult) -> None:
         """处理资源同步应用完成后的收尾逻辑。
 
@@ -504,9 +527,7 @@ class ResourceSyncCoordinator(QObject):
         # 第三步：若有挂起的应用请求，则在线程真正结束后接力启动应用阶段。
         if pending_request is not None:
             self._pending_resource_sync_apply_request = pending_request
-            started, resumed_request = self._start_pending_resource_sync_apply()
-            if not started and resumed_request is not None and resumed_request["context"] == "startup_apply":
-                self._continue_startup_sequence_once()
+            self._resume_pending_resource_sync_apply()
             return
 
         self._pending_resource_sync_apply_request = None

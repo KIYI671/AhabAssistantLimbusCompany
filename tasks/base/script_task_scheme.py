@@ -1,8 +1,11 @@
 import platform
 import random
 from datetime import datetime
+from threading import Event
 from time import sleep, time
 
+import win32api
+import win32con
 from playsound3 import playsound
 from PySide6.QtCore import QT_TRANSLATE_NOOP, QMutex, QThread
 
@@ -12,6 +15,7 @@ from module.automation import auto
 from module.config import TeamSetting, cfg
 from module.decorator.decorator import begin_and_finish_time_log
 from module.game_and_screen import game_process, screen
+from module.game_and_screen.hdr import get_monitor_hdr_info
 from module.logger import log
 from module.my_error.my_error import (
     backMainWinError,
@@ -35,6 +39,7 @@ from tasks.base.make_enkephalin_module import (
     lunacy_to_enkephalin,
     make_enkephalin_module,
 )
+from tasks.base.retry_monitor import retry_monitor
 from tasks.battle import battle
 from tasks.daily.get_prize import get_mail_prize, get_pass_prize
 from tasks.daily.luxcavation import EXP_luxcavation, thread_luxcavation
@@ -173,6 +178,34 @@ def init_game():
             screen.set_win()
 
 
+def _warn_if_game_monitor_hdr_enabled() -> None:
+    if cfg.simulator or not bool(cfg.get_value("experimental_hdr_warning", True)):
+        return
+
+    hwnd = screen.handle.hwnd
+    if not hwnd:
+        log.warning("游戏窗口句柄无效，跳过 HDR 检测")
+        return
+
+    try:
+        hmonitor = win32api.MonitorFromWindow(
+            hwnd,
+            win32con.MONITOR_DEFAULTTONEAREST,
+        )
+        info = get_monitor_hdr_info(int(hmonitor))
+    except Exception as exc:
+        log.warning(f"检测游戏显示器 HDR 状态失败: {exc}")
+        return
+
+    if info is None or not info.hdr_enabled:
+        return
+
+    acknowledged = Event()
+    log.warning("检测到游戏所在显示器已开启 HDR，可能导致图像识别问题")
+    mediator.hdr_warning.emit(acknowledged)
+    acknowledged.wait()
+
+
 def Resonate_with_Ahab():
     random_number = random.randint(1, 4)
     playsound(f"assets/audio/This_is_all_your_fault_{random_number}.mp3", block=False)
@@ -253,8 +286,6 @@ def Daily_task_wrapper(get_reward=None):
 
 def Buy_enkephalin():
     times = cfg.set_lunacy_to_enkephalin
-    if times == 0:
-        return
     back_init_menu()
     lunacy_to_enkephalin(times=times)
 
@@ -329,6 +360,7 @@ def script_task() -> None | int:
     start_time = time()
     # 获取（启动）游戏对游戏窗口进行设置
     init_game()
+    _warn_if_game_monitor_hdr_enabled()
 
     if cfg.skip_enkephalin:
         log.info("设置了跳过合成脑啡肽，将不会自动合成\nSet to skip make enkephalin, it will not to do")
@@ -341,6 +373,7 @@ def script_task() -> None | int:
     path_manager.initialize_paths()
     auto.clear_img_cache()
     log.debug(f"初始化图片路径: {path_manager.pic_path}")
+    retry_monitor.start()
 
     if cfg.resonate_with_Ahab:
         Resonate_with_Ahab()
@@ -394,6 +427,9 @@ def script_task() -> None | int:
 
     should_exit_aalc = False
     if platform.system() == "Windows":
+        # 收尾动作可能主动关闭游戏或模拟器。先停止截图监控，避免设备消失
+        # 被误判为断链并触发自动恢复，重新拉起刚关闭的模拟器。
+        retry_monitor.stop()
         actions, power_action = get_after_completion_config()
         try:
             should_exit_aalc = execute_after_completion(actions, power_action)
@@ -441,9 +477,16 @@ class my_script_task(QThread):
             self.exception = e
             log.exception("脚本线程执行失败")
         finally:
+            retry_monitor.stop()
             self.mutex.unlock()
 
         mediator.script_finished.emit()
+
+    def terminate(self):
+        retry_monitor.stop()
+        super().terminate()
+        # TerminateThread 不会释放被杀线程持有的 RLock,换新锁防止后续任务取锁永久阻塞
+        auto.reset_safety_locks()
 
     """def stop(self):
         self.running=False

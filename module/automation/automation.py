@@ -1,6 +1,7 @@
 import gc
 import math
 import random
+import threading
 import time
 from ast import List
 from dataclasses import dataclass
@@ -21,6 +22,10 @@ from ..logger import log
 from ..ocr import ocr
 from .input_handlers.input import AbstractInput
 from .screenshot import ScreenShot
+
+# ponytail: 交互门最长关闭时间。监控线程卡在持久弹窗上时,超时放行业务输入,
+# 恢复 retry() 等流程的卡死看门狗(kill_game/restart_game)。
+GATE_WAIT_TIMEOUT = 30.0
 
 
 @dataclass(frozen=True)
@@ -48,6 +53,12 @@ class Automation(metaclass=SingletonMeta):
         self.windows_title = windows_title
         self.screenshot = None
         self.input_handler = AbstractInput()
+        self._screenshot_lock = threading.RLock()
+        self._latest_screenshot = None
+        self._latest_screenshot_monotonic = 0.0
+        self._input_lock = threading.RLock()
+        self._interaction_gate = threading.Event()
+        self._interaction_gate.set()
 
         self.init_input()
 
@@ -94,18 +105,106 @@ class Automation(metaclass=SingletonMeta):
 
             self.input_handler = BackgroundInput()
         assert isinstance(self.input_handler, AbstractInput), "输入处理器必须是AbstractInput的实例"
-        self.mouse_click = self.input_handler.mouse_click
-        self.mouse_click_blank = self.input_handler.mouse_click_blank
-        self.mouse_drag = self.input_handler.mouse_drag
-        self.mouse_drag_down = self.input_handler.mouse_drag_down
-        self.mouse_scroll = self.input_handler.mouse_scroll
         self.set_pause = self.input_handler.set_pause
         self.wait_pause = self.input_handler.wait_pause
-        self.mouse_to_blank = self.input_handler.mouse_to_blank
-        self.mouse_drag_link = self.input_handler.mouse_drag_link
-        self.key_press = self.input_handler.key_press
-        self.input_text = self.input_handler.input_text
         self.memory_protection = cfg.memory_protection
+
+    def suspend_interactions(self) -> None:
+        """暂时阻止业务线程继续点击。"""
+        self._interaction_gate.clear()
+
+    def resume_interactions(self) -> None:
+        """恢复业务线程点击。"""
+        self._interaction_gate.set()
+
+    def reset_safety_locks(self) -> None:
+        """线程被强制终止后换新锁,清除可能残留的持有状态。
+
+        仅应在 my_script_task.terminate() 等硬杀路径调用:被杀线程持有的
+        RLock 计数不会释放,不换锁则后续任务取锁永久阻塞。
+        """
+        self._input_lock = threading.RLock()
+        self._screenshot_lock = threading.RLock()
+
+    def _run_business_interaction(self, method_name: str, *args, **kwargs):
+        """在交互门放行且取得输入锁后执行一次业务输入。
+
+        交互门可能在等待输入锁期间被监控线程关闭，因此取得锁后需要再次确认。
+        门连续关闭超过 GATE_WAIT_TIMEOUT 时视为监控卡在持久弹窗上，放行业务
+        输入，让业务流程自身的卡死兜底(如 check_times)得以继续运行。
+        """
+        while True:
+            gate_open = self._interaction_gate.wait(timeout=GATE_WAIT_TIMEOUT)
+            with self._input_lock:
+                if gate_open and self._interaction_gate.is_set():
+                    method = getattr(self.input_handler, method_name)
+                    return method(*args, **kwargs)
+                if not gate_open:
+                    method = getattr(self.input_handler, method_name)
+                    return method(*args, **kwargs)
+                # gate_open 但等待输入锁期间门被关闭:重新等待
+
+    def mouse_click(self, x, y, times=1):
+        return self._run_business_interaction("mouse_click", x, y, times=times)
+
+    def mouse_click_blank(self, *args, **kwargs):
+        return self._run_business_interaction("mouse_click_blank", *args, **kwargs)
+
+    def mouse_drag(self, *args, **kwargs):
+        return self._run_business_interaction("mouse_drag", *args, **kwargs)
+
+    def mouse_swipe_for_scroll(self, *args, **kwargs):
+        return self._run_business_interaction("mouse_swipe_for_scroll", *args, **kwargs)
+
+    def mouse_drag_down(self, *args, **kwargs):
+        return self._run_business_interaction("mouse_drag_down", *args, **kwargs)
+
+    def mouse_scroll(self, *args, **kwargs):
+        return self._run_business_interaction("mouse_scroll", *args, **kwargs)
+
+    def mouse_to_blank(self, *args, **kwargs):
+        return self._run_business_interaction("mouse_to_blank", *args, **kwargs)
+
+    def mouse_drag_link(self, *args, **kwargs):
+        return self._run_business_interaction("mouse_drag_link", *args, **kwargs)
+
+    def key_press(self, *args, **kwargs):
+        return self._run_business_interaction("key_press", *args, **kwargs)
+
+    def input_text(self, *args, **kwargs):
+        return self._run_business_interaction("input_text", *args, **kwargs)
+
+    def monitor_mouse_click(self, x, y, times=1):
+        """由系统监控线程点击，不等待该监控线程设置的互斥门。"""
+        with self._input_lock:
+            return self.input_handler.mouse_click(x, y, times=times)
+
+    def _remember_screenshot(self, screenshot: Image | None) -> None:
+        if screenshot is None:
+            return
+        self._latest_screenshot = screenshot
+        self._latest_screenshot_monotonic = time.monotonic()
+
+    def invalidate_screenshot_cache(self) -> None:
+        """让监控线程在下一轮检查时获取新截图。"""
+        with self._screenshot_lock:
+            self._latest_screenshot_monotonic = 0.0
+
+    def take_monitor_screenshot(self, gray: bool = True, max_age: float = 0.0) -> Image | None:
+        """获取监控截图，优先复用业务线程的最近帧且不覆盖业务截图。"""
+        with self._screenshot_lock:
+            if (
+                self._latest_screenshot is not None
+                and max_age > 0
+                and time.monotonic() - self._latest_screenshot_monotonic <= max_age
+            ):
+                if gray and self._latest_screenshot.mode != "L":
+                    return self._latest_screenshot.convert("L")
+                return self._latest_screenshot
+
+            screenshot = ScreenShot.take_screenshot(gray)
+            self._remember_screenshot(screenshot)
+            return screenshot
 
     def check_pause(self) -> bool:
         """
@@ -229,11 +328,11 @@ class Automation(metaclass=SingletonMeta):
 
         if self.last_click_time == 0:
             self.last_click_time = time.time()
-        if time.time() - self.last_click_time < interval:
-            time.sleep(interval)
-            self.last_click_time = time.time()
+        wait_time = max(0, interval - (time.time() - self.last_click_time))
+        time.sleep(wait_time)
 
         # 计算传入的位置
+        self._interaction_gate.wait(timeout=GATE_WAIT_TIMEOUT)
         x, y = self.calculate_click_position(coordinates, offset)
 
         # 定义鼠标操作映射
@@ -279,7 +378,9 @@ class Automation(metaclass=SingletonMeta):
                     )
                     time.sleep(wait_time)
 
-                result = ScreenShot.take_screenshot(gray)
+                with self._screenshot_lock:
+                    result = ScreenShot.take_screenshot(gray)
+                    self._remember_screenshot(result)
                 if result:
                     self.screenshot = result
                     self.last_screenshot_time = time.time()
@@ -305,6 +406,7 @@ class Automation(metaclass=SingletonMeta):
                 from tasks.base.script_task_scheme import init_game
 
                 init_game()
+                start_time = time.time()
 
     def find_element(
         self,
@@ -315,6 +417,7 @@ class Automation(metaclass=SingletonMeta):
         take_screenshot=False,
         model=None,
         my_crop=None,
+        min_dist=10,
         additional_stack=0,
         clear_cache=False,
     ):
@@ -327,7 +430,8 @@ class Automation(metaclass=SingletonMeta):
             max_retries: 最大重试次数。
             take_screenshot: 是否需要先截图。
             model: 查找的策略,'clam' 为在模板图片位置查找，'normal' 为模板图片位置扩大范围查找，'aggressive' 为全截屏区域查找
-            my_crop: 用于OCR识别的已截取的部分图片
+            my_crop: 用于限制图像或OCR识别范围的裁剪区域
+            min_dist: 多目标图像查找时的NMS最小距离。
             additional_stack: 用于日志堆栈层级调整
             clear_cache: 是否清理图片缓存，默认为False, 此处指运行时生成的图片缓存文件, 而不是加载的图片缓存
         Returns:
@@ -363,7 +467,9 @@ class Automation(metaclass=SingletonMeta):
                 return self.find_feature_element(target, my_crop, additional_stack=additional_stack)
             elif find_type == self.FindType.IMAGE_WITH_MULTIPLE_TARGETS:
                 # 使用多目标图像查找方法查找元素
-                return self.find_image_with_multiple_targets(target, threshold, additional_stack=additional_stack)
+                return self.find_image_with_multiple_targets(
+                    target, threshold, my_crop=my_crop, min_dist=min_dist, additional_stack=additional_stack
+                )
             elif find_type == self.FindType.EDGE_CANNY:
                 return self.find_edge_canny_element(
                     target, threshold, iou_threshold=0.3, additional_stack=additional_stack, clear_cache=clear_cache
@@ -375,7 +481,9 @@ class Automation(metaclass=SingletonMeta):
                 time.sleep(1)  # 在重试前等待一定时间
         return None
 
-    def find_image_with_multiple_targets(self, target: str, threshold, additional_stack) -> List:
+    def find_image_with_multiple_targets(
+        self, target: str, threshold, my_crop=None, min_dist=10, additional_stack=0
+    ) -> List:
         """
         在当前截图中查找多个目标图像的位置
         """
@@ -387,7 +495,15 @@ class Automation(metaclass=SingletonMeta):
             if template is None:
                 raise ValueError("读取图片失败")
             screenshot = np.array(self.screenshot)
-            matches = ImageUtils.match_template_with_multiple_targets(screenshot, template, threshold)
+            crop_offset = (0, 0)
+            if my_crop:
+                crop_offset = (int(round(my_crop[0])), int(round(my_crop[1])))
+                screenshot = ImageUtils.crop(screenshot, my_crop)
+            matches = ImageUtils.match_template_with_multiple_targets(
+                screenshot, template, threshold, min_dist=min_dist
+            )
+            if crop_offset != (0, 0):
+                matches = [(x + crop_offset[0], y + crop_offset[1]) for x, y in matches]
             if len(matches) == 0:
                 log.debug(f"未找到任何目标图像{target}", stacklevel=additional_stack + 3)
                 return []

@@ -441,6 +441,16 @@ class SettingInterface(QWidget):
             config_name="experimental_keep_screen_awake",
             parent=self.experimental_group,
         )
+        self.hdr_warning_card = SwitchSettingCard(
+            FIF.BRIGHTNESS,
+            QT_TRANSLATE_NOOP("SwitchSettingCard", "HDR 检测警告"),
+            QT_TRANSLATE_NOOP(
+                "SwitchSettingCard",
+                "任务启动时检测游戏所在显示器的 HDR 状态；开启 HDR 时提示可能发生图像识别问题",
+            ),
+            config_name="experimental_hdr_warning",
+            parent=self.experimental_group,
+        )
 
     def _on_hard_mirror_chance_confirm(self, _: int) -> None:
         """手动调整困难模式次数后，同步刷新自动切换时间戳。
@@ -501,6 +511,7 @@ class SettingInterface(QWidget):
         self.about_group.addSettingCard(self.discord_group_card)
         self.about_group.addSettingCard(self.feedback_card)
 
+        self.experimental_group.addSettingCard(self.hdr_warning_card)
         self.experimental_group.addSettingCard(self.keep_screen_awake_card)
 
         # 再把各个分组按页面顺序加入主滚动布局。
@@ -733,6 +744,7 @@ class SettingInterface(QWidget):
         self.discord_group_card.retranslateUi()
         self.feedback_card.retranslateUi()
         self.experimental_group.retranslateUi()
+        self.hdr_warning_card.retranslateUi()
         self.keep_screen_awake_card.retranslateUi()
 
     def __onThemeCardChanged(self):

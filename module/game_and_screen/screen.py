@@ -47,12 +47,15 @@ class Handle:
         """该函数于GUI线程中返回停止信号固定触发`win32gui.error`报错, 外部调用务必捕获异常, 以防崩溃"""
         class_name = win32gui.GetClassName(hwnd)
         window_text = win32gui.GetWindowText(hwnd)
-        self._enum_windows_list.append(f"hwnd: {hwnd}, class_name: {class_name}, window_text: {window_text}")
+
         if class_name == "UnityWndClass" and window_text == "LimbusCompany":
+            self._enum_windows_list.append(f"hwnd: {hwnd}, class_name: {class_name}, window_text: {window_text}")
             log.debug(f"在枚举窗口中找到匹配的窗口: {hwnd}", stacklevel=4)
             self._hwnd = hwnd
             self._enum_windows_list.clear()
             return False  # 停止枚举
+        elif class_name == "UnityWndClass" or window_text == "LimbusCompany":
+            self._enum_windows_list.append(f"hwnd: {hwnd}, class_name: {class_name}, window_text: {window_text}")
         return True  # 继续枚举
 
     @property

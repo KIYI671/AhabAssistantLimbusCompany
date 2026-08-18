@@ -15,6 +15,7 @@ from utils.singletonmeta import SingletonMeta
 from ...game_and_screen import screen
 from ...logger import log
 from . import AbstractInput
+from .scroll_swipe import build_windows_scroll_swipe_plan
 
 key_list = {
     "a": 0x41,
@@ -202,6 +203,28 @@ class Input(WinAbstractInput, metaclass=SingletonMeta):
             sleep(drag_time * 0.3)
         else:
             sleep(0.5)
+        pyautogui.mouseUp()
+
+        if move_back and current_mouse_position:
+            self.mouse_move(current_mouse_position)
+
+    def mouse_swipe_for_scroll(self, x, y, duration=0.3, dx=0, dy=0, move_back=True) -> None:
+        if move_back:
+            current_mouse_position = self.get_mouse_position()
+
+        raw_plan, settle_duration = build_windows_scroll_swipe_plan(
+            x, y, dx, dy, duration
+        )
+        plan = [
+            (self.pos_offset(*point), move_duration)
+            for point, move_duration in raw_plan
+        ]
+        pyautogui.moveTo(*plan[0][0])
+        pyautogui.mouseDown()
+        for point, move_duration in plan[1:]:
+            pyautogui.moveTo(*point, duration=move_duration)
+        if settle_duration:
+            sleep(settle_duration)
         pyautogui.mouseUp()
 
         if move_back and current_mouse_position:
@@ -396,6 +419,25 @@ class BackgroundInput(WinAbstractInput, metaclass=SingletonMeta):
         else:
             sleep(0.5)
         self.mouse_up(x + dx, y + dy)
+
+        if move_back and current_mouse_position:
+            self.mouse_move(current_mouse_position)
+
+    def mouse_swipe_for_scroll(self, x, y, duration=0.3, dx=0, dy=0, move_back=True) -> None:
+        if move_back:
+            current_mouse_position = self.get_mouse_position()
+
+        plan, settle_duration = build_windows_scroll_swipe_plan(
+            x, y, dx, dy, duration
+        )
+        self.set_mouse_pos(*plan[0][0])
+        self.set_active()
+        self.mouse_down(*plan[0][0])
+        for point, move_duration in plan[1:]:
+            self.set_mouse_pos(*point, duration=move_duration)
+        if settle_duration:
+            sleep(settle_duration)
+        self.mouse_up(*plan[-1][0])
 
         if move_back and current_mouse_position:
             self.mouse_move(current_mouse_position)
@@ -663,6 +705,20 @@ class WindowMoveInput(WinAbstractInput, metaclass=SingletonMeta):
         self.mouse_up(x + dx, y + dy)
         screen.handle.set_window_pos(*pos)
 
+    def mouse_swipe_for_scroll(self, x, y, duration=0.3, dx=0, dy=0, move_back=True) -> None:
+        plan, settle_duration = build_windows_scroll_swipe_plan(
+            x, y, dx, dy, duration
+        )
+        pos = self._set_window_pos(*plan[0][0])
+        self.set_active()
+        self.mouse_down(*plan[0][0])
+        for point, move_duration in plan[1:]:
+            self._window_move_to(*point, duration=move_duration)
+        if settle_duration:
+            sleep(settle_duration)
+        self.mouse_up(*plan[-1][0])
+        screen.handle.set_window_pos(*pos)
+
     def mouse_drag_down(self, x, y, reverse=1, move_back=True) -> None:
         scale = cfg.set_win_size / 1080
         self.set_active()
@@ -704,7 +760,7 @@ class WindowMoveInput(WinAbstractInput, metaclass=SingletonMeta):
         raw_pos = screen.handle.rect()[:2]
         current_x, current_y = screen.handle.mouse_pos_to_client_mouse(*self.get_mouse_position())
         accur = 7000
-        duration = int(max(duration, 0.01) * accur)
+        duration = int(max(duration, 0.02) * accur)
         dx = (target_x - current_x) / duration * 100
         dy = (target_y - current_y) / duration * 100
         steps = duration // 100
@@ -750,19 +806,22 @@ class WindowMoveInput(WinAbstractInput, metaclass=SingletonMeta):
         else:
             dx = 0
             dy = 0
-        win32gui.SetWindowPos(
-            hwnd,
-            None,
-            mouse_pos[0] - x + dx,
-            mouse_pos[1] - y + dy,
-            0,
-            0,
-            win32con.SWP_NOSIZE
-            | win32con.SWP_NOZORDER
-            | win32con.SWP_NOACTIVATE
-            | win32con.SWP_NOSENDCHANGING
-            | win32con.SWP_NOREDRAW,
-        )
+        try:
+            win32gui.SetWindowPos(
+                hwnd,
+                None,
+                mouse_pos[0] - x + dx,
+                mouse_pos[1] - y + dy,
+                0,
+                0,
+                win32con.SWP_NOSIZE
+                | win32con.SWP_NOZORDER
+                | win32con.SWP_NOACTIVATE
+                | win32con.SWP_NOSENDCHANGING
+                | win32con.SWP_NOREDRAW,
+            )
+        except Exception as e:
+            log.error(f"窗口移动点击时移动窗口失败: {e}")
 
         return original_rect[:2]
 

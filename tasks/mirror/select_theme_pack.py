@@ -32,6 +32,8 @@ def select_theme_pack(hard_switch=False, floor=None, team_num=None, use_custom_t
         theme_pack_list_en = theme_list.get_effective_theme_pack_list(
             hard_switch, "en", team_num, use_custom_theme_pack_weight
         )
+    # 游戏更新后新增的主题包尚未收录时的兜底权重，取自「未知 / unknown」配置项
+    unknown_weight = int(theme_pack_list_zh.get("未知", theme_pack_list_en.get("unknown", -5)))
     refresh_times = 3
     difficulty = None
     if auto.find_element("mirror/road_in_mir/legend_assets.png", take_screenshot=True):
@@ -73,6 +75,7 @@ def select_theme_pack(hard_switch=False, floor=None, team_num=None, use_custom_t
         # 切换难度
         if hard_switch:
             if auto.click_element("mirror/theme_pack/normal_assets.png"):
+                sleep(2)  # 等待卡包加载动画完成
                 continue
             elif difficulty == "normal":
                 normal_bbox = ImageUtils.get_bbox(ImageUtils.load_image("mirror/theme_pack/normal_assets.png"))
@@ -80,8 +83,11 @@ def select_theme_pack(hard_switch=False, floor=None, team_num=None, use_custom_t
                     (normal_bbox[0] + normal_bbox[2]) // 2,
                     (normal_bbox[1] + normal_bbox[3]) // 2,
                 )
+                sleep(2) # 等待卡包加载动画完成
+                continue
         else:
             if auto.click_element("mirror/theme_pack/hard_assets.png"):
+                sleep(2) # 等待卡包加载动画完成
                 continue
             elif difficulty == "hard":
                 hard_bbox = ImageUtils.get_bbox(ImageUtils.load_image("mirror/theme_pack/hard_assets.png"))
@@ -89,6 +95,8 @@ def select_theme_pack(hard_switch=False, floor=None, team_num=None, use_custom_t
                     (hard_bbox[0] + hard_bbox[2]) // 2,
                     (hard_bbox[1] + hard_bbox[3]) // 2,
                 )
+                sleep(2) # 等待卡包加载动画完成
+                continue
 
         try:
             if floor == 4 and cfg.select_event_pack:
@@ -128,7 +136,7 @@ def select_theme_pack(hard_switch=False, floor=None, team_num=None, use_custom_t
                         theme_pack_weight = result.value
                         theme_pack_name = result.text
                     else:
-                        theme_pack_weight = -5
+                        theme_pack_weight = unknown_weight
                         theme_pack_name = "unknown"
 
                     weight_list.append(theme_pack_weight)  # 采用最大值的形式，权重越大，优先级越高

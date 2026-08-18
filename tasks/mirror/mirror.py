@@ -2,7 +2,6 @@ import re
 import time
 from time import sleep
 
-import cv2
 import numpy as np
 
 from module.automation import auto
@@ -21,6 +20,7 @@ from tasks.base.back_init_menu import back_init_menu
 from tasks.base.make_enkephalin_module import make_enkephalin_module
 from tasks.base.retry import retry
 from tasks.battle import battle
+from tasks.battle.battle import DefenseForSoloState
 from tasks.event import event_handling
 from tasks.mirror.in_shop import Shop
 from tasks.mirror.reward_card import get_reward_card
@@ -28,11 +28,11 @@ from tasks.mirror.search_road import (
     MirrorMap,
     search_road_default_distance,
     search_road_farthest_distance,
+    search_road_simple_keyboard,
 )
 from tasks.mirror.select_theme_pack import select_theme_pack
 from tasks.teams.team_formation import check_team, load_team_code_in_game, select_battle_team, team_formation
 from utils.image_utils import ImageUtils
-from utils.path_manager import path_manager
 
 
 # 输出时间统计
@@ -44,33 +44,6 @@ def to_log_with_time(msg, elapsed_time):
     log.info(f"{msg} 总耗时:{time_string}")
 
 
-def extract_zh_floor(normalized_text):
-    for pattern in (r"第([1-5])层", r"第([1-5])层?", r"([1-5])层"):
-        match = re.search(pattern, normalized_text)
-        if match:
-            return int(match.group(1))
-    if "第" in normalized_text:
-        for char in normalized_text[normalized_text.index("第") + 1 :]:
-            if char in "12345":
-                return int(char)
-    return None
-
-
-def extract_en_floor(normalized_text):
-    for pattern in (r"floor([1-5])", r"oor([1-5])", r"([1-5])f"):
-        match = re.search(pattern, normalized_text)
-        if match:
-            return int(match.group(1))
-    anchor_index = normalized_text.find("floor")
-    if anchor_index == -1:
-        anchor_index = normalized_text.find("oor")
-    if anchor_index != -1:
-        for char in normalized_text[anchor_index:]:
-            if char in "12345":
-                return int(char)
-    return None
-
-
 class Mirror:
     def __init__(self, team_setting: TeamSetting, team_num: int):
         self.logger = log
@@ -80,6 +53,7 @@ class Mirror:
         self.shop = Shop(team_setting)
         self.system = all_systems[team_setting.team_system]  # 选择的体系
         self.avoid_skill_3 = team_setting.avoid_skill_3  # 是否避免使用3技能
+        self.prioritize_skill_3 = team_setting.prioritize_skill_3  # 是否优先使用3技能
         # 开局星光加成
         self.opening_bonus = team_setting.opening_bonus
         self.use_starlight = team_setting.use_starlight
@@ -100,6 +74,7 @@ class Mirror:
         self.observe_ego_gift_selected = team_setting.observe_ego_gift_selected  # 用户选择的观测EGO饰品列表
 
         self.defense_first_round = team_setting.defense_first_round  # 是否第一回合全员防御
+        self.defense_for_solo_state = DefenseForSoloState(team_setting.defense_for_solo_turns) if team_setting.defense_for_solo else None
 
         self.start_time = time.time()
         self.first_battle = True  # 判断是否首次进入战斗，如果是则重新配队
@@ -122,6 +97,22 @@ class Mirror:
         self.pass_coins = None
 
         self.bequest_from_the_previous_game = False
+
+    def _time_call(self, fn, *args, **kwargs):
+        """调用 fn 并返回 (result, elapsed_time)，用于显式计时替代装饰器返回值。"""
+        start = time.time()
+        result = fn(*args, **kwargs)
+        return result, time.time() - start
+
+    def _fight(self) -> None:
+        _, elapsed = self._time_call(
+            battle.fight,
+            avoid_skill_3=self.avoid_skill_3,
+            prioritize_skill_3=self.prioritize_skill_3,
+            defense_first_round=self.defense_first_round,
+            defense_for_solo_state=self.defense_for_solo_state,
+        )
+        self.battle_total_time += elapsed
 
     def road_to_mir(self):
         loop_count = 30
@@ -309,7 +300,8 @@ class Mirror:
                 while auto.take_screenshot() is None:
                     continue
                 if auto.find_element("mirror/road_in_mir/legend_assets.png"):
-                    self.find_road_total_time += self.search_road()
+                    _, elapsed = self._time_call(self.search_road)
+                    self.find_road_total_time += elapsed
                 continue
 
             # 进入节点
@@ -337,8 +329,8 @@ class Mirror:
                 if auto.click_element("teams/none_sinner_assets.png", model="clam"):
                     self.first_battle = True
                     continue
-                # 检测罪人幸存人数是否少于10人
-                if not (
+                # 如果未开启战斗直至全灭，则检测罪人幸存人数是否少于10人
+                if not cfg.fight_to_last_man and not (
                     auto.find_element("teams/12_sinner_live_assets.png")
                     or auto.find_element("teams/11_sinner_live_assets.png")
                     or auto.find_element("teams/10_sinner_live_assets.png")
@@ -363,20 +355,20 @@ class Mirror:
             if auto.find_element("battle/more_information_assets.png") or auto.find_element(
                 "battle/in_mirror_assets.png"
             ):
-                self.battle_total_time += battle.fight(self.avoid_skill_3, self.defense_first_round)
+                self._fight()
                 continue
             elif battle.identify_keyword_turn and self.LOOP_COUNT - main_loop_count < 5:
                 if auto.find_element("battle/turn_assets.png") or auto.find_element("battle/in_mirror_assets.png"):
-                    self.battle_total_time += battle.fight(self.avoid_skill_3, self.defense_first_round)
+                    self._fight()
                     continue
             else:
                 turn_bbox = ImageUtils.get_bbox(ImageUtils.load_image("battle/turn_assets.png"))
                 turn_ocr_result = auto.find_text_element("turn", turn_bbox)
                 if turn_ocr_result is not False:
-                    self.battle_total_time += battle.fight(self.avoid_skill_3, self.defense_first_round)
+                    self._fight()
                     continue
             if auto.find_element("battle/win_rate_card.png") and auto.find_element("battle/gear_right.png"):
-                self.battle_total_time += battle.fight(self.avoid_skill_3, self.defense_first_round)
+                self._fight()
                 continue
 
             # 镜牢星光
@@ -413,7 +405,8 @@ class Mirror:
 
             # 商店事件
             if auto.find_element("mirror/shop/shop_coins_assets.png"):
-                self.shop_total_time += self.in_shop()
+                _, elapsed = self._time_call(self.in_shop)
+                self.shop_total_time += elapsed
                 continue
 
             # 选择奖励卡
@@ -935,7 +928,7 @@ class Mirror:
         benchmark_point = None
         if point := auto.find_element("mirror/road_to_mir/observe_ego_gift/observe_burn_assets.png", model="clam",take_screenshot=True):
             benchmark_point = point
-        elif auto.find_element("mirror/road_to_mir/observe_ego_gift/observe_bleed_assets.png", model="clam"):
+        elif point := auto.find_element("mirror/road_to_mir/observe_ego_gift/observe_bleed_assets.png", model="clam"):
             benchmark_point = (point[0] - 110 * my_scale, point[1])
 
         if not benchmark_point:
@@ -1058,6 +1051,11 @@ class Mirror:
 
     @begin_and_finish_time_log(task_name="镜牢寻路")
     def search_road(self):
+        if cfg.mirror_keyboard_simple_pathfinding:
+            if search_road_simple_keyboard():
+                return True
+            log.debug("简单键盘寻路失败，回退到常规寻路")
+
         try:
             if next_node := self.mirror_map.get_next_step():
                 if next_node is True:
@@ -1243,8 +1241,12 @@ class Mirror:
             ):
                 auto.click_element("event/select_first_option_assets.png")
                 event_chance -= 1
-            if auto.find_element("event/perform_the_check_feature_assets.png"):
-                event_handling.decision_event_handling()
+            if auto.find_element(
+                "event/perform_the_check_feature_assets.png",
+                threshold=0.75,
+            ) and event_handling.decision_event_handling():
+                # 输入后立即刷新画面，避免继续在已失效的判定帧上匹配其它按钮。
+                continue
             if auto.click_element("event/continue_assets.png"):
                 continue
             if auto.click_element("event/proceed_assets.png"):
@@ -1309,6 +1311,7 @@ class Mirror:
                 )
                 my_list = []
                 if len(acquire_card) == 2:
+                    gift_candidates = []
                     for button in acquire_card:
                         bbox = (
                             button[0] - 50 * my_scale,
@@ -1321,6 +1324,12 @@ class Mirror:
                             if isinstance(ocr_result, list):
                                 if len(ocr_result) >= 2:
                                     continue
+                        is_owned = bool(auto.find_language_text("已持有", "Owned", bbox))
+                        gift_candidates.append((is_owned, button))
+
+                    if gift_candidates:
+                        gift_candidates.sort(key=lambda gift: gift[0])
+                        button = gift_candidates[0][1]
                         auto.mouse_click(button[0], button[1])
                         auto.click_element(
                             "mirror/road_in_mir/acquire_ego_gift_select_assets.png",
@@ -1379,12 +1388,14 @@ class Mirror:
                             ocr_result = auto.find_language_text("白棉花", ["white", "gossypium"], bbox)
                             if ocr_result:
                                 continue
+                        is_owned = bool(auto.find_language_text("已持有", "Owned", bbox))
+                        gift_candidate = (is_owned, button)
                         if auto.find_element(
                             f"mirror/road_in_mir/acquire_ego_gift/{self.system}.png",
                             my_crop=bbox,
                             threshold=0.85,
                         ):
-                            my_list.insert(0, button)
+                            my_list.insert(0, gift_candidate)
                             system_nums += 1
                         else:
                             if self.second_system and (
@@ -1396,9 +1407,14 @@ class Mirror:
                                     my_crop=bbox,
                                     threshold=0.85,
                                 ):
-                                    my_list.insert(system_nums, button)
+                                    my_list.insert(system_nums, gift_candidate)
                                     continue
-                            my_list.append(button)
+                            my_list.append(gift_candidate)
+                    my_list.sort(key=lambda gift: gift[0])
+                    owned_gifts = sum(gift[0] for gift in my_list)
+                    my_list = [gift[1] for gift in my_list]
+                    if owned_gifts:
+                        log.debug(f"检测到{owned_gifts}个已持有EGO饰品，已降低选择优先级")
                 select_bbox = ImageUtils.get_bbox(ImageUtils.load_image("mirror/road_in_mir/ego_gift_get_bbox.png"))
                 if select_bbox:
                     select_bbox = (
@@ -1528,75 +1544,29 @@ class Mirror:
         self.shop.in_shop(self.floor)
 
     def get_which_floor(self):
-        def extract_floor_from_text(ocr_text):
-            normalized_text = ocr_text.replace(" ", "").replace("\n", "").lower()
-            if path_manager.current_language == "zh_cn":
-                floor = extract_zh_floor(normalized_text)
-            elif path_manager.current_language == "en":
-                floor = extract_en_floor(normalized_text)
-            else:
-                floor = extract_zh_floor(normalized_text)
-                if floor is not None:
-                    path_manager.set_language("zh_cn")
-                else:
-                    floor = extract_en_floor(normalized_text)
-                    if floor is not None:
-                        path_manager.set_language("en")
-                        if path_manager.eliminate_zh_cn_paths():
-                            auto.clear_img_cache()
-            if floor is None:
-                return None
-            return floor if 0 < floor <= 5 else None
+        auto.click_element("mirror/road_in_mir/setting_assets.png", take_screenshot=True)
+        sleep(1)
 
-        def handle_ocr(image, stage_name):
-            ocr_result = ""
-            try:
-                result = ocr.run(image)
-                if getattr(result, "txts", None):
-                    ocr_result = "".join(result.txts)
-                floor = extract_floor_from_text(ocr_result)
-                if floor is not None:
-                    log.debug(f"对于楼层信息OCR[{stage_name}]得到：{ocr_result}")
-                    self.floor = floor
-                    self.get_floor_num = False
-                    return True, ocr_result
-            except:
-                pass
-            return False, ocr_result
-
-        this_floor = self.floor
-
-        auto.take_screenshot(gray=False)
-        get_floor_bbox = ImageUtils.get_bbox(ImageUtils.load_image("mirror/road_in_mir/get_floor_bbox.png"))
-        previous_crop = ImageUtils.crop(np.array(auto.screenshot), get_floor_bbox)
-
-        for i in range(5):
-            auto.take_screenshot(gray=False)
-            current_crop = ImageUtils.crop(np.array(auto.screenshot), get_floor_bbox)
-            diff = cv2.absdiff(previous_crop, current_crop)
-            diff_gray = cv2.cvtColor(diff, cv2.COLOR_BGR2GRAY)
-            _, binary_img = cv2.threshold(diff_gray, 5, 255, cv2.THRESH_BINARY)
-            current_scaled = cv2.resize(current_crop, None, fx=2.5, fy=2.5, interpolation=cv2.INTER_CUBIC)
-            binary_img = cv2.resize(binary_img, None, fx=3.0, fy=3.0, interpolation=cv2.INTER_CUBIC)
-
-            floor_found = False
-            for stage_name, candidate_image in (
-                ("current", current_crop),
-                ("current_scaled", current_scaled),
-                ("binary", binary_img),
-            ):
-                floor_found, _ = handle_ocr(candidate_image, stage_name)
-                if floor_found:
-                    break
-            previous_crop = current_crop
-            if floor_found and self.floor != this_floor:
-                break
-
-        log.debug(f"识别前楼层为{this_floor}，识别后为{self.floor}")
-
-        if self.floor - 1 == self.mirror_map.floor:
-            self.mirror_map.next_floor()
-        elif self.floor == self.mirror_map.floor:
-            pass
-        else:
+        scale = cfg.set_win_size / 1440
+        floor_progress_crop = (
+            900 * scale,
+            650 * scale,
+            1700 * scale,
+            720 * scale,
+        )
+        if to_window_position := auto.find_element("mirror/road_in_mir/to_window_assets.png", take_screenshot=True):
+            not_passed_floors = auto.find_element(
+                "mirror/road_in_mir/not_passed_floor.png",
+                find_type="image_with_multiple_targets",
+                my_crop=floor_progress_crop,
+                take_screenshot=True,
+                min_dist= 80 * scale
+            )
+            not_passed_floor_count = len(not_passed_floors)
+            self.floor = 5 - not_passed_floor_count
+            log.debug(f"当前镜牢层数: {self.floor}")
+            self.get_floor_num = False
+            auto.mouse_action_with_pos(
+                (to_window_position[0] - 200 * cfg.set_win_size / 1440, to_window_position[1])
+            )
             self.mirror_map.refresh_floor(self.floor)

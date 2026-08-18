@@ -51,12 +51,8 @@ class MirrorMap:
                 auto.key_press("down")
             elif next_step == "M":
                 auto.key_press("right")
-            sleep(0.5)
-            auto.key_press("enter")
-            sleep(1.25)
-            if auto.click_element("mirror/road_in_mir/enter_assets.png", take_screenshot=True):
-                return True
-            return True
+            sleep(1)
+            return _keyboard_enter_succeeded()
 
         if next_position := self._get_next_position(next_step):
             auto.mouse_click(next_position[0], next_position[1])
@@ -91,12 +87,12 @@ class MirrorMap:
             sleep(1)
         return None
 
-    def next_floor(self):
-        self.floor += 1
-        self.floor_map = []
-
     def refresh_floor(self, floor):
+        if self.floor == floor:
+            return
+        log.debug(f"镜牢地图楼层缓存更新: {self.floor} -> {floor}")
         self.floor = floor
+        self.floor_map = []
 
 
 def get_node_weight(x, y):
@@ -116,11 +112,46 @@ def get_node_weight(x, y):
         road_node_bbox,
     ):
         return 2
-    elif auto.find_feature_element("mirror/road_in_mir/hard_battle.png", road_node_bbox):
+    elif auto.find_feature_element("mirror/road_in_mir/risky_encounter.png", road_node_bbox):
         return 1
-    elif auto.find_feature_element("mirror/road_in_mir/hard_battle2.png", road_node_bbox):
+    elif auto.find_feature_element("mirror/road_in_mir/focused_encounter.png", road_node_bbox):
         return 0
     return -5
+
+
+def _keyboard_enter_succeeded() -> bool:
+    """检测键盘寻路按键后是否成功进入下一节点。
+
+    成功条件：点击到"进入"按钮。
+    """
+    if auto.click_element("mirror/road_in_mir/enter_assets.png", take_screenshot=True):
+        return True
+    return False
+
+
+# 简单键盘寻路：始终按↑选择第一个节点，完全避免鼠标拖动
+def search_road_simple_keyboard():
+    """最简单寻路策略：不进行路线规划/相机对齐/节点识别，仅按↑键选择第一个节点。
+
+    适用于 Steam 环境下鼠标拖动地图导致卡死的场景，依赖 mirror_keyboard_navigation。
+    """
+    if not cfg.mirror_keyboard_navigation:
+        log.warning("简单键盘寻路需要启用键盘寻路模式")
+        return False
+
+    auto.mouse_to_blank()
+    sleep(0.3)
+
+    for attempt in range(2):
+        log.debug(f"简单键盘寻路: 第 {attempt + 1} 次尝试按↑")
+        auto.key_press("up")
+        sleep(1)
+
+        if _keyboard_enter_succeeded():
+            return True
+
+    log.debug("简单键盘寻路失败，需回退到常规寻路")
+    return False
 
 
 # 在默认缩放情况下，进行镜牢寻路
@@ -351,8 +382,8 @@ def search_road_from_road_map(hard_mode=False):
     return [], []
 
 
-# battle 是常规遭遇战，boss_battle 是boss战，event 是事件，hard_battle 是集中遭遇战（非拉链），hard_battle_2 是精锐遭遇战（有拉链）
-# shop 是商店，small_boss_battle 是异想体遭遇战
+# battle 是常规遭遇战，boss_battle 是 Boss 战，event 是事件，focused_encounter 是集中遭遇战（链式战）
+# risky_encounter 是精锐遭遇战（链式战），shop 是商店，abnormality_focused_encounter 是异想体集中遭遇战
 
 
 def identify_nodes(bus_x):
@@ -364,10 +395,10 @@ def identify_nodes(bus_x):
         "battle",
         "boss_battle",
         "event",
-        "hard_battle",
-        "hard_battle_2",
+        "focused_encounter",
+        "risky_encounter",
         "shop",
-        "small_boss_battle",
+        "abnormality_focused_encounter",
     ]
 
     no_flag = False  # 标记是否检测到目标（初始为 False，未检测到时设为 True）
@@ -714,13 +745,13 @@ import heapq
 from enum import Enum
 
 all_node_weight = {
-    "battle": 30,
-    "boss_battle": 1,
-    "event": 18,
-    "hard_battle": 75,
-    "hard_battle_2": 100,
-    "shop": 1,
-    "small_boss_battle": 999,
+    "battle": 4,
+    "boss_battle": 6,
+    "event": 1,
+    "focused_encounter": 6,
+    "risky_encounter": 7,
+    "shop": 2,
+    "abnormality_focused_encounter": 6,
 }
 
 DEFAULT_WEIGHT = 999  # 默认不可达权重

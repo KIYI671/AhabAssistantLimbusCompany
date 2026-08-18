@@ -181,6 +181,17 @@ class MNTDevice(object):
 
         _builder.publish(self.connection)
 
+    def _normalize_touch_coordinates(self, x, y):
+        """将屏幕像素坐标规格化为 minitouch 使用的整数坐标。"""
+        if (
+            int(self.connection.max_x) > 1440
+            and self.real_width != 0
+            and self.real_height != 0
+        ):
+            x = (x / self.real_width) * int(self.connection.max_x)
+            y = (y / self.real_height) * int(self.connection.max_y)
+        return int(x), int(y)
+
     def swipe(self, points, pressure=100, duration=None, no_down=None, no_up=None):
         """
         swipe between points, one by one
@@ -193,18 +204,6 @@ class MNTDevice(object):
         :return:
         """
 
-        def transform_xy(x, y):
-            """
-            将屏幕像素坐标转换为 Minitouch 逻辑坐标
-            """
-            if self.real_width == 0 or self.real_height == 0:
-                # Fallback if resolution fetching failed
-                return x, y
-            target_x = int((x / self.real_width) * int(self.connection.max_x))
-            target_y = int((y / self.real_height) * int(self.connection.max_y))
-
-            return target_x, target_y
-
         points = [list(map(int, each_point)) for each_point in points]
 
         _builder = CommandBuilder()
@@ -213,16 +212,14 @@ class MNTDevice(object):
         # tap the first point
         if not no_down:
             x, y = points.pop(0)
-            if int(self.connection.max_x) > 1440:
-                x, y = transform_xy(x, y)
+            x, y = self._normalize_touch_coordinates(x, y)
             _builder.down(point_id, x, y, pressure)
             _builder.publish(self.connection)
 
         # start swiping
         for each_point in points:
             x, y = each_point
-            if int(self.connection.max_x) > 1440:
-                x, y = transform_xy(x, y)
+            x, y = self._normalize_touch_coordinates(x, y)
             _builder.move(point_id, x, y, pressure)
 
             # add delay between points
@@ -236,6 +233,34 @@ class MNTDevice(object):
         if not no_up:
             _builder.up(point_id)
             _builder.publish(self.connection)
+
+    def _send_swipe_plan_in_one_batch(self, plan, pressure=100):
+        '''将滑动计划作为一批连续的按下、移动、抬起指令发送。'''
+        if not plan:
+            return
+
+        builder = CommandBuilder()
+        point_id = 0
+        (start_x, start_y), _ = plan[0]
+        builder.down(
+            point_id,
+            *self._normalize_touch_coordinates(start_x, start_y),
+            pressure,
+        )
+        builder.commit()
+
+        for (x, y), duration in plan[1:]:
+            if duration:
+                builder.wait(round(duration * 1000))
+            builder.move(
+                point_id,
+                *self._normalize_touch_coordinates(x, y),
+                pressure,
+            )
+            builder.commit()
+
+        builder.up(point_id)
+        builder.publish(self.connection)
 
     def up(self, contact_id: int = 0):
         """

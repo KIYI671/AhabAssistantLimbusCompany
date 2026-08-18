@@ -15,7 +15,7 @@ def begin_and_finish_time_log(task_name, calculate_time=True):
             start_time = time.time()
 
             # 真正函数
-            func(*args, **kw)
+            result = func(*args, **kw)
 
             # 计时结束
             end_time = time.time()
@@ -33,7 +33,7 @@ def begin_and_finish_time_log(task_name, calculate_time=True):
                 time_msg = msg + " 耗时:" + time_string
                 log.debug(time_msg, stacklevel=2)  # 让日志显示调用该装饰器的函数名和行号,而不是装饰器内的wrapper
 
-            return elapsed_time
+            return result
 
         return wrapper
 

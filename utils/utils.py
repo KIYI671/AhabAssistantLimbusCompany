@@ -232,12 +232,13 @@ def run_as_user(command: list[str], timeout: int = 30):
     """
     task_name = "TempNonAdminTask"
     bat_path = None
+    vbs_path = None
 
     no_window_flag = subprocess.CREATE_NO_WINDOW if hasattr(subprocess, "CREATE_NO_WINDOW") else 0x08000000
 
     def run_cmd(cmd: str, ignore_error: bool = False):
         try:
-            res = subprocess.run(cmd, shell=True, capture_output=True, text=True, timeout=10)
+            res = subprocess.run(cmd, shell=True, capture_output=True, text=True, timeout=10, creationflags=no_window_flag)
             if res.returncode != 0 and not ignore_error:
                 log.debug(f"命令执行失败: {cmd}\n错误: {res.stderr.strip()}")
             return res
@@ -254,15 +255,18 @@ def run_as_user(command: list[str], timeout: int = 30):
         # 1. 预清理：强制删除旧任务 (/f)
         run_cmd(f'schtasks /delete /tn "{task_name}" /f', ignore_error=True)
 
-        # 2. 创建临时批处理文件
+        # 2. 创建临时批处理文件，并用 vbs 隐藏窗口启动
         with tempfile.NamedTemporaryFile(delete=False, suffix=".bat", mode="w", encoding="gbk") as bat:
             bat.write(f"@echo off\n{subprocess.list2cmdline(command)}\nexit\n")
             bat_path = bat.name
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".vbs", mode="w", encoding="ascii") as vbs:
+            vbs.write(f'CreateObject("WScript.Shell").Run "cmd.exe /c ""{bat_path}""", 0, False\n')
+            vbs_path = vbs.name
 
         # 3. 创建任务
         username = os.environ.get("USERNAME")
         create_cmd = (
-            f'schtasks /create /f /tn "{task_name}" /sc once /st 23:59 /ru "{username}" /tr "cmd.exe /c \'{bat_path}\'"'
+            f'schtasks /create /f /tn "{task_name}" /sc once /st 23:59 /ru "{username}" /tr "wscript.exe \'{vbs_path}\'"'
         )
         create_result = run_cmd(create_cmd)
         if create_result is None or create_result.returncode != 0:
@@ -292,6 +296,11 @@ def run_as_user(command: list[str], timeout: int = 30):
         if isinstance(bat_path, (str, bytes, os.PathLike)) and os.path.exists(bat_path):
             try:
                 os.unlink(bat_path)
+            except OSError as e:
+                log.debug(f"任务: {command} 尝试删除临时脚本失败: {e}")
+        if isinstance(vbs_path, (str, bytes, os.PathLike)) and os.path.exists(vbs_path):
+            try:
+                os.unlink(vbs_path)
             except OSError as e:
                 log.debug(f"任务: {command} 尝试删除临时脚本失败: {e}")
 
