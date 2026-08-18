@@ -592,7 +592,6 @@ class Automation(metaclass=SingletonMeta):
         my_crop=None,
         all_text=False,
         additional_stack=0,
-        fuzzy_threshold=0.75,
     ):
         """
         按当前语言状态查找中英文文本，并在语言未知时用命中结果同步语言。
@@ -620,7 +619,7 @@ class Automation(metaclass=SingletonMeta):
         def match(target):
             result = self._find_target_in_ocr_dict(target, ocr_dict, all_text=all_text)
             if result is False or result is None:
-                result = self._find_fuzzy_target_in_ocr_dict(target, ocr_dict, fuzzy_threshold)
+                result = self._find_fuzzy_target_in_ocr_dict(target, ocr_dict)
             return result
 
         def finish(result):
