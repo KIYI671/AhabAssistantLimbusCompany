@@ -220,6 +220,10 @@ class Updater:
         return os.path.join(self.temp_path, self.apply_updater_name)
 
     def _prepare_update_payload(self, apply_mode):
+        # 引导进程已解压过同一归档（handoff 只发生在解压成功后），apply 模式直接复用，避免重复解压。
+        if apply_mode and os.path.isdir(self.extract_folder_path) and os.listdir(self.extract_folder_path):
+            print("复用引导进程的解压结果...")
+            return
         while True:
             if self.extract_file():
                 return
