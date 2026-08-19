@@ -1248,6 +1248,11 @@ Right-click to set as permanent</translation>
         <translation>MUMU Simulator</translation>
     </message>
     <message>
+        <location filename="../app/setting_interface.py" line="195"/>
+        <source>BlueStacks 5</source>
+        <translation>BlueStacks 5</translation>
+    </message>
+    <message>
         <location filename="../app/setting_interface.py" line="193"/>
         <source>其他模拟器</source>
         <translation>Others</translation>
@@ -2456,8 +2461,41 @@ These fields will be populated with default values. Do you wish to continue?</tr
     </message>
     <message>
         <location filename="../app/setting_interface.py" line="209"/>
-        <source>仅限MUMU模拟器——启动模拟器超时时间(秒)</source>
+        <source>MuMu/蓝叠启动模拟器超时时间(秒)</source>
         <translation>Start Simulator Timeout</translation>
+    </message>
+</context>
+<context>
+    <name>PushSettingCardText</name>
+    <message>
+        <location filename="../app/setting_interface.py" line="200"/>
+        <source>修改</source>
+        <translation>Edit</translation>
+    </message>
+    <message>
+        <location filename="../app/setting_interface.py" line="203"/>
+        <source>蓝叠实例名</source>
+        <translation>BlueStacks Instance</translation>
+    </message>
+    <message>
+        <location filename="../app/setting_interface.py" line="207"/>
+        <source>可留空自动选择；多开时填写内部实例名，例如 Pie64</source>
+        <translation>Leave blank for auto-selection; for multiple instances, enter the internal name, such as Pie64</translation>
+    </message>
+    <message>
+        <location filename="../app/setting_interface.py" line="202"/>
+        <source>模拟器主机地址</source>
+        <translation>Emulator Host</translation>
+    </message>
+    <message>
+        <location filename="../app/setting_interface.py" line="206"/>
+        <source>蓝叠或其他模拟器的 ADB 主机名/IP；远程连接时填写远程设备地址</source>
+        <translation>ADB hostname/IP for BlueStacks or other emulators; enter the remote device address for remote connections</translation>
+    </message>
+    <message>
+        <location filename="../app/base_combination.py" line="977"/>
+        <source>配置无效</source>
+        <translation>Invalid Configuration</translation>
     </message>
 </context>
 <context>
