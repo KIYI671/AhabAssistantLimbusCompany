@@ -45,6 +45,12 @@ def to_log_with_time(msg, elapsed_time):
 
 
 class Mirror:
+    BATTLE_STATISTICS_THRESHOLD = 0.85
+    CLAIM_REWARDS_RESULT_THRESHOLD = 0.70
+    CLAIM_FORFEIT_THRESHOLD = 0.42
+    REWARD_LOADING_THRESHOLD = 0.85
+    REWARD_LOADING_TIMEOUT = 90.0
+
     def __init__(self, team_setting: TeamSetting, team_num: int):
         self.logger = log
         self.team_order = team_num
@@ -116,6 +122,64 @@ class Mirror:
             defense_for_solo_state=self.defense_for_solo_state,
         )
         self.battle_total_time += elapsed
+
+    def _finish_battle_statistics(self) -> bool:
+        """识别位置发生偏移的战斗结算页，并进入对应奖励流程。"""
+        if not auto.find_element(
+            "mirror/claim_reward/battle_statistics_assets.png",
+            threshold=self.BATTLE_STATISTICS_THRESHOLD,
+            model="aggressive",
+        ):
+            return False
+
+        # 战败结算页的确认按钮与奖励按钮位置相近，但当前 UI 相似度只有
+        # 约 0.718。这里已有结算页特征作为前置门禁，可安全使用专用阈值。
+        if not auto.click_element(
+            "mirror/claim_reward/claim_rewards_assets.png",
+            threshold=self.CLAIM_REWARDS_RESULT_THRESHOLD,
+            model="aggressive",
+        ):
+            claim_rewards_bbox = ImageUtils.get_bbox(
+                ImageUtils.load_image("mirror/claim_reward/claim_rewards_assets.png")
+            )
+            auto.mouse_click(
+                (claim_rewards_bbox[0] + claim_rewards_bbox[2]) / 2,
+                (claim_rewards_bbox[1] + claim_rewards_bbox[3]) / 2,
+            )
+        return True
+
+    def _click_claim_forfeit(self) -> bool:
+        """等待并点击战败奖励页的放弃按钮，兼容当前 UI 的低对比度图标。"""
+        deadline = time.monotonic() + 1.5
+        while time.monotonic() < deadline:
+            if auto.click_element(
+                "mirror/claim_reward/claim_forfeit_assets.png",
+                threshold=self.CLAIM_FORFEIT_THRESHOLD,
+                model="normal",
+                take_screenshot=True,
+            ):
+                return True
+        return False
+
+    def _reward_loading_state(self, started_at: float | None) -> tuple[bool, float | None, bool]:
+        """识别奖励后的加载页，并返回加载起点与是否超时。"""
+        loading = auto.find_element(
+            "base/waiting_assets.png",
+            threshold=self.REWARD_LOADING_THRESHOLD,
+            model="normal",
+        ) or auto.find_element(
+            "base/waiting_2_assets.png",
+            threshold=self.REWARD_LOADING_THRESHOLD,
+            model="normal",
+        )
+        if not loading:
+            return False, None, False
+
+        now = time.monotonic()
+        if started_at is None:
+            started_at = now
+            log.debug("检测到镜牢奖励后的加载页，暂停奖励错误计数")
+        return True, started_at, now - started_at >= self.REWARD_LOADING_TIMEOUT
 
     def road_to_mir(self):
         loop_count = 30
@@ -224,15 +288,7 @@ class Mirror:
                     continue
 
             # 镜牢结束领取奖励
-            if auto.find_element("mirror/claim_reward/battle_statistics_assets.png"):
-                if auto.click_element("mirror/claim_reward/claim_rewards_assets.png") is False:
-                    claim_rewards_bbox = ImageUtils.get_bbox(
-                        ImageUtils.load_image("mirror/claim_reward/claim_rewards_assets.png")
-                    )
-                    auto.mouse_click(
-                        (claim_rewards_bbox[0] + claim_rewards_bbox[2]) / 2,
-                        (claim_rewards_bbox[1] + claim_rewards_bbox[3]) / 2,
-                    )
+            if self._finish_battle_statistics():
                 break
             if auto.find_element("mirror/claim_reward/claim_rewards_assets.png") and auto.find_element(
                 "mirror/claim_reward/complete_mirror_100%_assets.png"
@@ -490,6 +546,8 @@ class Mirror:
         main_loop_count = 20
         auto.model = "clam"
         failed = None
+        completion_confirmed = False
+        reward_loading_started_at = None
         while True:
             # 自动截图
             if auto.take_screenshot() is None:
@@ -505,10 +563,26 @@ class Mirror:
                 "mirror/claim_reward/clear_assets.png"
             ):
                 failed = False
+                completion_confirmed = True
                 log.debug("镜牢完成度100%，能够正常领取奖励")
             # 如果回到主界面，退出循环
             if auto.find_element("home/drive_assets.png"):
                 break
+
+            is_loading, reward_loading_started_at, loading_timed_out = self._reward_loading_state(
+                reward_loading_started_at
+            )
+            if is_loading:
+                if loading_timed_out:
+                    if completion_confirmed:
+                        log.warning("镜牢奖励后加载超过90秒，完成状态已确认，先记录本局结果")
+                        break
+                    raise cannotOperateGameError("镜牢奖励后加载超时,请手动操作重试")
+                main_loop_count = 20
+                auto.model = "clam"
+                continue
+            reward_loading_started_at = None
+
             if auto.click_element("battle/battle_finish_confirm_assets.png"):
                 continue
             if auto.click_element("mirror/claim_reward/rewards_acquired_assets.png"):
@@ -530,8 +604,9 @@ class Mirror:
                     failed = False
                     continue
                 if auto.click_element("mirror/claim_reward/claim_rewards_assets.png"):
-                    sleep(1)
-                if auto.click_element("mirror/claim_reward/claim_forfeit_assets.png", model="normal", take_screenshot=True):
+                    if self._click_claim_forfeit():
+                        continue
+                elif self._click_claim_forfeit():
                     continue
             else:
                 if self.hard_switch and cfg.save_rewards:
@@ -1474,10 +1549,26 @@ class Mirror:
     def get_reward_in_road(self):
         main_loop_count = 20
         auto.model = "clam"
+        reward_loading_started_at = None
         while True:
             if auto.take_screenshot() is None:
                 auto.mouse_to_blank()
                 continue
+            if auto.find_element("home/drive_assets.png"):
+                return True
+
+            is_loading, reward_loading_started_at, loading_timed_out = self._reward_loading_state(
+                reward_loading_started_at
+            )
+            if is_loading:
+                if loading_timed_out:
+                    log.warning("历史镜牢奖励后加载超过90秒，结束奖励等待")
+                    return True
+                main_loop_count = 20
+                auto.model = "clam"
+                continue
+            reward_loading_started_at = None
+
             # 如果回到主界面，退出循环
             if auto.click_element("mirror/claim_reward/rewards_acquired_assets.png"):
                 return True
