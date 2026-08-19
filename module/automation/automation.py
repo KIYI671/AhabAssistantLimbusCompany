@@ -21,6 +21,7 @@ from ..logger import log
 from ..ocr import ocr
 from .input_handlers.input import AbstractInput
 from .screenshot import ScreenShot
+from .throttle import AdaptiveThrottle, ThrottleConfig
 
 # ponytail: 交互门最长关闭时间。监控线程卡在持久弹窗上时,超时放行业务输入,
 # 恢复 retry() 等流程的卡死看门狗(kill_game/restart_game)。
@@ -56,6 +57,18 @@ class Automation(metaclass=SingletonMeta):
         self.last_screenshot_time = 0
         self.last_click_time = 0
         self.model = "clam"
+
+        # 自适应节流器
+        self._screenshot_throttle = AdaptiveThrottle(ThrottleConfig(
+            enabled=cfg.adaptive_throttle,
+            min_interval_ms=int(cfg.throttle_min_interval * 1000),
+            max_interval_ms=int(cfg.throttle_max_interval * 1000),
+        ))
+        self._click_throttle = AdaptiveThrottle(ThrottleConfig(
+            enabled=cfg.adaptive_throttle,
+            min_interval_ms=int(cfg.throttle_min_interval * 1000),
+            max_interval_ms=int(cfg.throttle_max_interval * 1000),
+        ))
 
     def init_input(self):
         """初始化输入处理器，将输入操作如点击、拖动等绑定至实例变量"""
@@ -316,6 +329,9 @@ class Automation(metaclass=SingletonMeta):
         if cfg.mouse_action_interval and interval == 0.5:
             interval = cfg.mouse_action_interval
 
+        # 自适应节流：取代固定间隔 sleep
+        self._click_throttle.wait()
+
         if self.last_click_time == 0:
             self.last_click_time = time.time()
         wait_time = max(0, interval - (time.time() - self.last_click_time))
@@ -361,6 +377,9 @@ class Automation(metaclass=SingletonMeta):
         screenshot_interval_time = cfg.screenshot_interval if cfg.screenshot_interval else 0.85
         while True:
             try:
+                # 自适应节流：取代固定间隔 sleep
+                self._screenshot_throttle.wait()
+
                 if time.time() - self.last_screenshot_time < screenshot_interval_time:
                     wait_time = max(
                         screenshot_interval_time - (time.time() - self.last_screenshot_time),
