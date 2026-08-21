@@ -1,19 +1,24 @@
-from tasks.mirror.search_road import Position, RouteGraph
+from tasks.mirror.search_road import RouteGraph, Row
 
 
-def test_road_x_mapping_connects_the_actual_later_layers() -> None:
+def test_template_connections_keep_their_actual_column_numbers() -> None:
     graph = RouteGraph(
         [
             [["event", (300, 560)]],
-            [["event", (600, 560)]],
-            [["boss_battle", (900, 300)]],
+            [["event", (820, 560)]],
+            [["boss_battle", (1340, 123)]],
         ],
-        initial_bus_pos=Position.MID,
-        hard_mode=True,
+        bus_row=Row.MID,
+        bus_position=(100, 560),
     )
 
-    # 第一、二段均为直路；只检测到第三段斜线时，不应把它错配给第一段。
-    graph.init_road([[['UP', (750, 430)]]], bus_x=100, bus_y=560)
+    graph.init_road(
+        [
+            (1, Row.MID, Row.MID),
+            (2, Row.MID, Row.MID),
+            (3, Row.MID, Row.TOP),
+        ]
+    )
 
     weight, path = graph.find_min_weight_route()
 
@@ -25,13 +30,19 @@ def test_internal_boss_misclassification_is_not_used_as_terminal() -> None:
     graph = RouteGraph(
         [
             [["boss_battle", (300, 560)]],
-            [["battle", (600, 560)]],
-            [["boss_battle", (900, 560)]],
+            [["battle", (820, 560)]],
+            [["boss_battle", (1340, 560)]],
         ],
-        initial_bus_pos=Position.MID,
-        hard_mode=True,
+        bus_row=Row.MID,
+        bus_position=(100, 560),
     )
-    graph.init_road([], bus_x=100, bus_y=560)
+    graph.init_road(
+        [
+            (1, Row.MID, Row.MID),
+            (2, Row.MID, Row.MID),
+            (3, Row.MID, Row.MID),
+        ]
+    )
 
     _, path = graph.find_min_weight_route()
 

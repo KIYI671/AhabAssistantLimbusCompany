@@ -58,16 +58,16 @@ from app.card.messagebox_custom import (
     MessageBoxSpinbox,
 )
 from app.language_manager import LanguageManager
-from module.font_manager import font_manager
-from module.logger import log
-from module.my_error.my_error import settingsTypeError
-from module.update.check_update import check_update
 from app.observe_ego_gift_selection import (
     OBSERVE_COL_VALUES,
     OBSERVE_LEVEL_VALUES,
     OBSERVE_ROW_VALUES,
     ObserveGiftSelection,
 )
+from module.font_manager import font_manager
+from module.logger import log
+from module.my_error.my_error import settingsTypeError
+from module.update.check_update import check_update
 from utils.utils import decrypt_string, encrypt_string
 
 
@@ -97,6 +97,7 @@ class CheckBoxWithButton(QFrame):
 
     def retranslateUi(self):
         self.box.check_box.setText(self.tr(self.box_text))
+
 
 class CheckBoxWithComboBox(QFrame):
     def __init__(
@@ -1550,8 +1551,6 @@ class TextProgressBar(ProgressBar):
         return int((self.value() - self.minimum()) * 100 / (self.maximum() - self.minimum()))
 
 
-
-
 class ObserveGiftSelectionRow(QFrame):
     selectionChanged = Signal(int, object)
     removeRequested = Signal(int)
@@ -1568,10 +1567,10 @@ class ObserveGiftSelectionRow(QFrame):
         self.layout_.setSpacing(18)
         self.layout_.setAlignment(Qt.AlignLeft)
 
-        self.system_label = QLabel()
-        self.level_label = QLabel()
-        self.row_label = QLabel()
-        self.col_label = QLabel()
+        self.system_label = BodyLabel()
+        self.level_label = BodyLabel()
+        self.row_label = BodyLabel()
+        self.col_label = BodyLabel()
 
         self.system_combo = ComboBox(self)
         self.level_combo = ComboBox(self)

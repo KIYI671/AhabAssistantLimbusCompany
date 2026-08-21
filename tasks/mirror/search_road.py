@@ -3,6 +3,7 @@ from enum import Enum
 from functools import lru_cache
 from time import sleep
 
+import cv2
 import numpy as np
 
 from module.automation import auto
@@ -10,13 +11,11 @@ from module.config import cfg
 from module.logger import log
 from module.my_error.my_error import InputAttributeError
 from tasks.base.retry import retry
-from tasks.mirror.road_detection import decode_node_detections, detect_roads, prepare_node_model_input
-from tasks.mirror.route_planning import (
-    find_best_route,
-    find_furthest_class_targets,
-    map_road_groups_to_layers,
-)
+from tasks.mirror.route_planning import find_best_route, find_furthest_class_targets
 
+# 道路网格参数基于 2560×1440 游戏截图标定。
+ROAD_COLUMN_GAP = 520
+ROAD_ROW_GAP = 437
 NODE_FEATURE_WEIGHTS = (
     ("mirror/road_in_mir/shop.png", 50, 3),
     ("mirror/road_in_mir/event.png", 8, 3),
@@ -31,7 +30,7 @@ ROAD_DIRECTIONS = ("M", "D", "U")
 
 @lru_cache(maxsize=1)
 def _get_node_detector():
-    """复用模型会话，避免每次重新解析 12 MB ONNX 模型。"""
+    """复用官方新模型会话，避免每次寻路重新解析 ONNX 文件。"""
     import onnxruntime as ort
 
     session = ort.InferenceSession("./assets/model/best.onnx")
@@ -39,11 +38,11 @@ def _get_node_detector():
 
 
 def _capture_road_map_frame():
-    """截取一张彩色地图帧，同时保留自动化模块惯用的灰度截图状态。"""
+    """截取一张彩色地图帧，并保留模板匹配所需的灰度截图。"""
     screenshot = auto.take_screenshot(gray=False)
     if screenshot is None:
         return None
-    frame = np.array(screenshot)
+    frame = np.asarray(screenshot)
     auto.screenshot = screenshot.convert("L")
     return frame
 
@@ -70,6 +69,9 @@ class MirrorMap:
             self.floor_map, self.floor_nodes = search_road_from_road_map(hard_mode=self.hard_mode)
             if self.floor_map is True and self.floor_nodes is True:
                 return True
+            if self.floor_map is False:
+                self.floor_map = []
+                return False
             if not isinstance(self.floor_map, list):
                 self.floor_map = list(self.floor_map)
             self.map[f"floor{self.floor}"] = [self.floor_map[:], self.floor_nodes[:]]
@@ -101,7 +103,6 @@ class MirrorMap:
                     self.floor_map = []
                 return True
 
-        # 保留旧逻辑中的巴士兜底；仍失败时由调用方进入最近节点法。
         if auto.click_element("mirror/mybus_default_distance.png"):
             if self._wait_and_enter_node():
                 self.floor_map = []
@@ -135,7 +136,6 @@ class MirrorMap:
         )
         screen_width = cfg.set_win_size * 16 / 9
         screen_height = cfg.set_win_size
-        # 缓存路线只在地图界面调用；用高频真实新帧定位巴士。
         for _ in range(6):
             if auto.take_screenshot(interval=0.15) is None:
                 continue
@@ -332,7 +332,6 @@ def search_road_farthest_distance():
 def search_road_from_road_map(hard_mode=False):
     start_time = time.time()
     scale = cfg.set_win_size / 1440
-    road = []
     bus = None
 
     if auto.click_element("mirror/mybus_default_distance.png", take_screenshot=True):
@@ -378,25 +377,29 @@ def search_road_from_road_map(hard_mode=False):
         bus_pos = bus
     map_frame = _capture_road_map_frame()
     all_nodes = identify_nodes(bus[0], screenshot=map_frame)
+    if not all_nodes:
+        log.warning("未识别到镜牢地图节点")
+        return [], []
     y_area = divide_the_area_by_y(all_nodes)
     reset_position = False
-    initial_bus_pos = Position.MID
+    bus_row = Row.MID
     if len(y_area) == 2:
         if bus_pos[1] > y_area[0][0][1][1] + 50 * scale:
             reset_position = "Bottom"
-            initial_bus_pos = Position.BOTTOM
+            bus_row = Row.BOTTOM
         else:
             reset_position = "Top"
-            initial_bus_pos = Position.TOP
+            bus_row = Row.TOP
     elif len(y_area) == 1:
-        all_road = divide_the_area_by_x(identify_road(bus[0], screenshot=map_frame))
-        if len(all_road) == 0:
-            road = ["M"]
-        else:
-            if all_road[0][0][0] == "DOWN":
-                road = ["D"]
-            else:
-                road = ["U"]
+        nodes_column = divide_the_area_by_x(all_nodes)
+        connections = identify_road(bus, nodes_column[:1], bus_row, take_screenshot=False)
+        # 没有 Bus 到首列的连线时，无法推导下一步方向。
+        if not connections:
+            return [], []
+
+        _, source_position, target_position = connections[0]
+        row_delta = target_position.value - source_position.value
+        return [{1: "U", 0: "M", -1: "D"}[row_delta]], ["unknown"]
     if reset_position is not False:
         if reset_position == "Bottom":
             set_y_position = 1100 * scale
@@ -428,17 +431,25 @@ def search_road_from_road_map(hard_mode=False):
                 bus_position = auto.find_element("mirror/mybus_default_distance.png", take_screenshot=True)
                 if bus_position is None:
                     break
+        if bus is None:
+            log.warning("调整地图位置后未能定位巴士")
+            return [], []
         map_frame = _capture_road_map_frame()
         all_nodes = identify_nodes(bus[0], screenshot=map_frame)
+        if not all_nodes:
+            log.warning("调整地图位置后未识别到节点")
+            return [], []
 
-    if len(road) != 0:
-        return road, ["unknown"]
+    nodes_column = divide_the_area_by_x(all_nodes)
+    connections = identify_road(bus, nodes_column, bus_row, take_screenshot=False)
 
-    all_nodes_layer = divide_the_area_by_x(all_nodes)
-    all_road = divide_the_area_by_x(identify_road(bus[0], screenshot=map_frame))
-
-    route_graph = RouteGraph(all_nodes_layer, initial_bus_pos=initial_bus_pos, hard_mode=hard_mode)
-    route_graph.init_road(all_road, bus[0], bus[1])
+    route_graph = RouteGraph(
+        nodes_column,
+        bus_row=bus_row,
+        bus_position=bus,
+        hard_mode=hard_mode,
+    )
+    route_graph.init_road(connections)
 
     min_weight, path = route_graph.find_min_weight_route()
 
@@ -460,43 +471,148 @@ def search_road_from_road_map(hard_mode=False):
 
 
 def identify_nodes(bus_x, screenshot=None):
-    """识别地图节点；允许与道路检测复用同一张彩色截图。"""
+    """使用官方新模型识别节点，并允许节点与道路匹配复用同一地图帧。"""
+    model_input_height = 544
+    model_input_width = 960
+    confidence_threshold = 0.4
+    classes = [
+        "battle",
+        "boss_battle",
+        "event",
+        "focused_encounter",
+        "risky_encounter",
+        "shop",
+        "abnormality_focused_encounter",
+    ]
     if screenshot is None:
         screenshot = _capture_road_map_frame()
     if screenshot is None:
         return []
-
-    original_image = np.asarray(screenshot)
-    blob, scale = prepare_node_model_input(original_image)
-
+    original = np.asarray(screenshot)
     session, input_name = _get_node_detector()
-    outputs = session.run(None, {input_name: blob})
-    detections = decode_node_detections(outputs[0], scale)
+
+    # 等比例缩放并填充到模型输入尺寸；保留比例和偏移以便还原检测框坐标。
+    height, width = original.shape[:2]
+    image_scale = min(model_input_width / width, model_input_height / height)
+    resized_width = round(width * image_scale)
+    resized_height = round(height * image_scale)
+    resized = cv2.resize(original[:, :, :3], (resized_width, resized_height))
+    pad_x = (model_input_width - resized_width) // 2
+    pad_y = (model_input_height - resized_height) // 2
+    model_input = np.full((model_input_height, model_input_width, 3), 114, np.uint8)
+    model_input[pad_y : pad_y + resized_height, pad_x : pad_x + resized_width] = resized
+    blob = cv2.dnn.blobFromImage(
+        model_input,
+        scalefactor=1 / 255,
+        size=(model_input_width, model_input_height),
+        swapRB=False,
+    )
+
+    outputs = session.run(None, {input_name: blob})[0]
+    outputs = cv2.transpose(outputs[0])
+    boxes = []
+    scores = []
+    class_ids = []
+    # 收集超过置信度阈值的候选框，供 NMS 去除重叠检测。
+    for output in outputs:
+        _, max_score, _, (_, class_id) = cv2.minMaxLoc(output[4:])
+        if max_score < confidence_threshold:
+            continue
+        boxes.append([output[0] - output[2] / 2, output[1] - output[3] / 2, output[2], output[3]])
+        scores.append(float(max_score))
+        class_ids.append(class_id)
+
+    result_boxes = cv2.dnn.NMSBoxes(
+        boxes,
+        scores,
+        confidence_threshold,
+        0.4,
+        0.5,
+    )
+    if len(result_boxes) == 0:
+        return []
 
     node_list = []
-    bus_margin = 50 * original_image.shape[0] / 1440
-    for detection in detections:
-        x1, y1, width, height = detection["box"]
-        center_x = int((x1 + width / 2) * scale)
-        center_y = int((y1 + height / 2) * scale)
-        if center_x < bus_x + bus_margin:
-            continue
-        node_list.append([detection["class_name"], (center_x, center_y)])
+    # 将 NMS 保留框还原到截图坐标，并过滤 Bus 所在列、左侧及纵向越界的节点。
+    for result_index in result_boxes:
+        index = int(np.asarray(result_index).reshape(-1)[0])
+        x, y, box_width, box_height = (float(value) for value in boxes[index])
+        center = (
+            int((x + box_width / 2 - pad_x) / image_scale),
+            int((y + box_height / 2 - pad_y) / image_scale),
+        )
+        if center[0] >= bus_x + ROAD_COLUMN_GAP * cfg.set_win_size / 1440 / 2 and 0 <= center[1] < height:
+            node_list.append([classes[class_ids[index]], center])
     return node_list
 
 
-def identify_road(bus_x, min_length=160, merge_distance=230, screenshot=None):
-    """识别镜牢地图道路；高分辨率截图会先降至 1440p 再执行 LSD。"""
-    if screenshot is None:
-        if auto.take_screenshot() is None:
-            return []
-        screenshot = auto.get_screenshot_array()
-    return detect_roads(
-        np.asarray(screenshot),
-        bus_x,
-        min_length=min_length,
-        merge_distance=merge_distance,
-    )
+def identify_road(bus_position, nodes_column, bus_row, *, take_screenshot=True):
+    """返回相邻节点列中经模板确认的连接。"""
+    if not nodes_column:
+        return []
+    if take_screenshot and auto.take_screenshot() is None:
+        return []
+
+    scale = cfg.set_win_size / 1440
+    source_columns = [[["bus", bus_position]], *nodes_column[:-1]]
+    connections = []
+
+    # 逐对检查相邻列节点，并用方向模板确认实际存在的道路。
+    for column_number, (source_nodes, target_nodes) in enumerate(
+        zip(source_columns, nodes_column),
+        start=1,
+    ):
+        for source in source_nodes:
+            source_position = (
+                bus_row
+                if column_number == 1
+                else _position_from_y(source[1][1], bus_position, bus_row)
+            )
+
+            for target in target_nodes:
+                x_gap = target[1][0] - source[1][0]
+                if abs(x_gap - ROAD_COLUMN_GAP * scale) > ROAD_COLUMN_GAP * scale / 4:
+                    continue
+                target_position = _position_from_y(target[1][1], bus_position, bus_row)
+                if source_position is None or target_position is None:
+                    continue
+
+                row_delta = target_position.value - source_position.value
+                template = {1: "up", 0: "mid", -1: "down"}.get(row_delta)
+                if template is None:
+                    continue
+
+                midpoint = (
+                    (source[1][0] + target[1][0]) / 2,
+                    (source[1][1] + target[1][1]) / 2,
+                )
+
+                crop = (
+                    midpoint[0] - ROAD_COLUMN_GAP * scale / 2,
+                    midpoint[1] - ROAD_ROW_GAP * scale / 2,
+                    midpoint[0] + ROAD_COLUMN_GAP * scale / 2,
+                    midpoint[1] + ROAD_ROW_GAP * scale / 2,
+                )
+
+                if auto.find_element(
+                    f"mirror/road_in_mir/{template}.png",
+                    my_crop=crop,
+                    model="aggressive",
+                ):
+                    connections.append((column_number, source_position, target_position))
+
+    return connections
+
+
+def _position_from_y(y, bus_position, bus_row):
+    """把屏幕 Y 坐标映射到相对 Bus 的逻辑行。"""
+    y_gap = ROAD_ROW_GAP * cfg.set_win_size / 1440
+    position_value = bus_row.value + round((bus_position[1] - y) / y_gap)
+
+    try:
+        return Row(position_value)
+    except ValueError:
+        return None
 
 
 def divide_the_area_by_y(data):
@@ -504,7 +620,7 @@ def divide_the_area_by_y(data):
     sorted_by_y = sorted(data, key=lambda item: item[1][1])  # item[1]是坐标元组，item[1][1]是y值
 
     # 步骤2：分组（y相近的归为一组，阈值可根据需求调整）
-    tolerance = 20 * cfg.set_win_size / 1440
+    tolerance = ROAD_ROW_GAP * cfg.set_win_size / 1440 / 4
     groups = []
     for item in sorted_by_y:
         current_y = item[1][1]
@@ -528,7 +644,7 @@ def divide_the_area_by_x(data):
     sorted_by_x = sorted(data, key=lambda item: item[1][0])
 
     # 步骤2：分组（x相近的归为一组，阈值可根据需求调整）
-    tolerance = 80 * cfg.set_win_size / 1440
+    tolerance = ROAD_COLUMN_GAP * cfg.set_win_size / 1440 / 4
     groups = []
     for item in sorted_by_x:
         current_x = item[1][0]
@@ -565,24 +681,22 @@ all_node_weight = {
 }
 
 DEFAULT_WEIGHT = 999  # 默认不可达权重
-MID_LINE_THRESHOLD = 100  # 中间线偏移阈值
 
 
-class Position(Enum):
-    TOP = 1  # 上层位置
-    MID = 0  # 中层位置
-    BOTTOM = -1  # 下层位置
+class Row(Enum):
+    TOP = 1
+    MID = 0
+    BOTTOM = -1
 
 
 class Node:
-    def __init__(self, node_class: str = None, weight: float = DEFAULT_WEIGHT, center=None):
+    def __init__(self, node_class: str = None, weight: float = DEFAULT_WEIGHT):
         self.node_class = node_class  # 节点标识
         self.weight = weight  # 节点权重
-        self.center = center  # 地图坐标，用于把道路匹配到真实的相邻节点
-        self.next_nodes = []  # 指向的下一层节点列表（Node对象）
+        self.next_nodes = []  # 指向的下一列节点列表（Node对象）
 
     def add_next_node(self, next_node) -> None:
-        """添加下一层节点（自动去重）"""
+        """添加下一列节点（自动去重）"""
         if next_node not in self.next_nodes:
             self.next_nodes.append(next_node)
 
@@ -594,183 +708,115 @@ class RouteGraph:
     def __init__(
         self,
         all_nodes: list,
-        initial_bus_pos=Position.MID,
-        mid_line=560,
+        bus_row,
+        bus_position,
         hard_mode=False,
     ):
-        """
-        初始化路线图
-        """
-        self.initial_bus_pos = initial_bus_pos  # 保存初始公交位置
-        self.layer_nums = 0
-        self.layers = {}  # 存储各层节点
-        self._add_new_layer()
-        self._set_node(1, initial_bus_pos, "bus", 1)
-        self.mid_line = mid_line * cfg.set_win_size / 1080
+        """初始化三行路线图；连线由 init_road() 写入。"""
+        self.bus_row = bus_row
+        self.column_count = 0  # 当前已创建的路线图列数，包含 Bus 起始列及自动补齐的商店/Boss 列。
+        self.columns = {}
+        self._add_new_column()
+        self._set_node(1, bus_row, "bus", 1)
         self.hard_mode = hard_mode
+        self._init_node(all_nodes, bus_position)
 
-        self._init_node(all_nodes, self.mid_line)
-
-    def _add_new_layer(self):
-        self.layers[f"layer{self.layer_nums + 1}"] = {
-            Position.TOP: Node(),
-            Position.MID: Node(),
-            Position.BOTTOM: Node(),
+    def _add_new_column(self):
+        self.columns[f"column{self.column_count + 1}"] = {
+            Row.TOP: Node(),
+            Row.MID: Node(),
+            Row.BOTTOM: Node(),
         }
-        self.layer_nums += 1
+        self.column_count += 1
 
-    def _set_node(self, layer_nums, position, class_name, weight, center=None):
-        this_layer = self.layers[f"layer{layer_nums}"]
-        this_layer[position].node_class = class_name
-        this_layer[position].weight = weight
-        if center is not None:
-            this_layer[position].center = (float(center[0]), float(center[1]))
+    def _set_node(self, column_number, position, class_name, weight):
+        this_column = self.columns[f"column{column_number}"]
+        this_column[position].node_class = class_name
+        this_column[position].weight = weight
 
-    def _init_node(self, all_nodes, mid_line):
-        for layer_data in all_nodes:
-            self._add_new_layer()
-            for node_entry in layer_data:
-                vertical_pos = Position.MID
-                if node_entry[1][1] < mid_line - MID_LINE_THRESHOLD * cfg.set_win_size / 1440:
-                    vertical_pos = Position.TOP
-                elif node_entry[1][1] > mid_line + MID_LINE_THRESHOLD * cfg.set_win_size / 1440:
-                    vertical_pos = Position.BOTTOM
+    def _init_node(self, all_nodes, bus_position):
+        for column_data in all_nodes:
+            self._add_new_column()
+            for node_entry in column_data:
+                vertical_pos = _position_from_y(node_entry[1][1], bus_position, self.bus_row)
+                if vertical_pos is None:
+                    continue
                 self._set_node(
-                    self.layer_nums,
+                    self.column_count,
                     vertical_pos,
                     node_entry[0],
                     all_node_weight[node_entry[0]],
-                    node_entry[1],
                 )
-
-        for i in range(1, self.layer_nums):
-            for j in [Position.TOP, Position.MID, Position.BOTTOM]:
-                if (
-                    self.layers[f"layer{i}"][j].weight != DEFAULT_WEIGHT
-                    and self.layers[f"layer{i + 1}"][j].weight != DEFAULT_WEIGHT
-                ):
-                    self.layers[f"layer{i}"][j].add_next_node(self.layers[f"layer{i + 1}"][j])
 
         if self.hard_mode is False:
             exit_flag = False
-            for j in [Position.TOP, Position.MID, Position.BOTTOM]:
-                if self.layers[f"layer{self.layer_nums}"][j].node_class in [
+            for j in [Row.TOP, Row.MID, Row.BOTTOM]:
+                if self.columns[f"column{self.column_count}"][j].node_class in [
                     "shop",
                     "boss_battle",
                 ]:
                     exit_flag = True
                     break
             if exit_flag is False:
-                self._add_new_layer()
-                self._set_node(self.layer_nums, Position.MID, "shop", 1)
-                for j in [Position.TOP, Position.MID, Position.BOTTOM]:
-                    self.layers[f"layer{self.layer_nums - 1}"][j].add_next_node(
-                        self.layers[f"layer{self.layer_nums}"][Position.MID]
+                self._add_new_column()
+                self._set_node(self.column_count, Row.MID, "shop", 1)
+                for j in [Row.TOP, Row.MID, Row.BOTTOM]:
+                    self.columns[f"column{self.column_count - 1}"][j].add_next_node(
+                        self.columns[f"column{self.column_count}"][Row.MID]
                     )
 
             exit_flag = False
-            for j in [Position.TOP, Position.MID, Position.BOTTOM]:
-                if self.layers[f"layer{self.layer_nums}"][j].node_class in ["boss_battle"]:
+            for j in [Row.TOP, Row.MID, Row.BOTTOM]:
+                if self.columns[f"column{self.column_count}"][j].node_class in ["boss_battle"]:
                     exit_flag = True
                     break
             if exit_flag is False:
-                self._add_new_layer()
-                self._set_node(self.layer_nums, Position.MID, "boss_battle", 1)
-                for j in [Position.TOP, Position.MID, Position.BOTTOM]:
-                    self.layers[f"layer{self.layer_nums - 1}"][j].add_next_node(
-                        self.layers[f"layer{self.layer_nums}"][Position.MID]
+                self._add_new_column()
+                self._set_node(self.column_count, Row.MID, "boss_battle", 1)
+                for j in [Row.TOP, Row.MID, Row.BOTTOM]:
+                    self.columns[f"column{self.column_count - 1}"][j].add_next_node(
+                        self.columns[f"column{self.column_count}"][Row.MID]
                     )
 
-    def _layer_x_coordinates(self) -> dict[int, float]:
-        layer_x = {}
-        for layer_number in range(1, self.layer_nums + 1):
-            centers = [
-                node.center
-                for node in self.layers[f"layer{layer_number}"].values()
-                if node.center is not None
-            ]
-            if centers:
-                layer_x[layer_number] = sum(center[0] for center in centers) / len(centers)
-        return layer_x
-
-    def _connect_diagonal_road(self, road_layer: int, road) -> None:
-        if road_layer < 1 or road_layer >= self.layer_nums:
-            return
-        direction = road[0]
-        if direction not in {"UP", "DOWN"}:
-            return
-
-        position_delta = 1 if direction == "UP" else -1
-        candidates = []
-        current_layer = self.layers[f"layer{road_layer}"]
-        next_layer = self.layers[f"layer{road_layer + 1}"]
-        for current_pos in Position:
-            try:
-                next_pos = Position(current_pos.value + position_delta)
-            except ValueError:
+    def init_road(self, connections):
+        """写入图片匹配确认的连线。"""
+        for column_number, source_position, target_position in connections:
+            if self.hard_mode and column_number > 2:
                 continue
-            current_node = current_layer[current_pos]
-            next_node = next_layer[next_pos]
-            if current_node.weight == DEFAULT_WEIGHT or next_node.weight == DEFAULT_WEIGHT:
-                continue
-            if current_node.center is None or next_node.center is None:
-                continue
-            expected_y = (current_node.center[1] + next_node.center[1]) * 0.5
-            candidates.append((abs(float(road[1][1]) - expected_y), current_node, next_node))
+            source = self.columns[f"column{column_number}"][source_position]
+            target = self.columns[f"column{column_number + 1}"][target_position]
+            source.add_next_node(target)
 
-        if not candidates:
-            return
-        _, current_node, next_node = min(candidates, key=lambda candidate: candidate[0])
-        current_node.add_next_node(next_node)
-
-    def init_road(self, all_road, bus_x, bus_y):
-        self.layers["layer1"][self.initial_bus_pos].center = (float(bus_x), float(bus_y))
-        if self.hard_mode is True:
-            if len(all_road) > 2:
-                all_road = all_road[:2]
-        road_groups = [
-            layer_road
-            for layer_road in all_road
-            if layer_road and layer_road[0][1][0] >= bus_x
-        ]
-        roads_by_layer = map_road_groups_to_layers(
-            road_groups,
-            self._layer_x_coordinates(),
-        )
-        for road_layer, roads in roads_by_layer.items():
-            for road in roads:
-                self._connect_diagonal_road(road_layer, road)
-
-    def get_node_layer_info(self, node: Node) -> tuple:
-        """辅助方法：获取节点所在的层号、层内位置"""
-        for layer_key, layer_nodes in self.layers.items():
-            for pos, n in layer_nodes.items():
+    def get_node_column_info(self, node: Node) -> tuple:
+        """辅助方法：获取节点所在的列号、列内位置"""
+        for column_key, column_nodes in self.columns.items():
+            for pos, n in column_nodes.items():
                 if n == node:
-                    layer_number = int(layer_key.replace("layer", ""))
-                    return layer_key, layer_number, pos
+                    column_number = int(column_key.replace("column", ""))
+                    return column_key, column_number, pos
         return None, None, None
 
     def find_min_weight_route(self) -> tuple[float, list[Node]]:
-        """从入口到目标节点选择最优路线；原权重优先，同权重时减少战斗。"""
-        start_node = self.layers["layer1"][self.initial_bus_pos]
+        """优先总权重，再依次减少战斗数、战斗强度和路线长度。"""
+        start_node = self.columns["column1"][self.bus_row]
         end_nodes = find_furthest_class_targets(
-            [list(layer.values()) for layer in self.layers.values()],
+            [list(column.values()) for column in self.columns.values()],
             "boss_battle",
         )
 
         if not end_nodes:
-            target_layer_num = min(self.layer_nums, 3)
-            target_layer = self.layers.get(f"layer{target_layer_num}")
-            if target_layer is None:
+            target_column_number = min(self.column_count, 3)
+            target_column = self.columns.get(f"column{target_column_number}")
+            if target_column is None:
                 return float("inf"), []
-            end_nodes = list(target_layer.values())
+            end_nodes = list(target_column.values())
 
         return find_best_route(start_node, end_nodes)
 
     def get_path_directions(self, path: list[Node]) -> tuple[list[str], list[str]]:
         """
         根据路径节点列表生成移动方向列表（U/D/M）和节点类别列表
-        U: 下一个节点在当前节点上方，D: 下方，M: 同一层
+        U: 下一个节点在当前节点上方，D: 下方，M: 同一行
         返回：(方向列表, 节点类别列表)
         """
         directions = []
@@ -784,15 +830,15 @@ class RouteGraph:
             current_node = path[i]
             next_node = path[i + 1]
 
-            # 获取当前节点和下一个节点的层内位置
-            _, _, current_pos = self.get_node_layer_info(current_node)
-            _, _, next_pos = self.get_node_layer_info(next_node)
+            # 获取当前节点和下一个节点的列内行位置
+            _, _, current_pos = self.get_node_column_info(current_node)
+            _, _, next_pos = self.get_node_column_info(next_node)
 
             if next_pos.value > current_pos.value:
-                directions.append("U")  # 下一层更上层
+                directions.append("U")  # 下一列更上方
             elif next_pos.value < current_pos.value:
-                directions.append("D")  # 下一层更下层
+                directions.append("D")  # 下一列更下方
             else:
-                directions.append("M")  # 同一层
+                directions.append("M")  # 同一行
 
         return directions, class_list

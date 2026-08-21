@@ -431,6 +431,9 @@ class BaseComboBox(BaseLayout):
     def set_options(self, index):
         self.combo_box.setCurrentIndex(index)
 
+    def set_box_enabled(self, b: bool):
+        self.combo_box.setEnabled(b)
+
     def send_switch_signal(self, target: dict):
         mediator.team_setting.emit(target)
 

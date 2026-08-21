@@ -220,6 +220,10 @@ class Updater:
         return os.path.join(self.temp_path, self.apply_updater_name)
 
     def _prepare_update_payload(self, apply_mode):
+        # 引导进程已解压过同一归档（handoff 只发生在解压成功后），apply 模式直接复用，避免重复解压。
+        if apply_mode and os.path.isdir(self.extract_folder_path) and os.listdir(self.extract_folder_path):
+            print("复用引导进程的解压结果...")
+            return
         while True:
             if self.extract_file():
                 return
@@ -254,8 +258,17 @@ class Updater:
     def terminate_processes(self):
         """终止相关进程以准备更新。"""
         print("开始终止进程...")
+        install_root = os.path.normcase(os.path.abspath(self.cover_folder_path)) + os.sep
         for proc in psutil.process_iter(attrs=["pid", "name"]):
-            if proc.info["name"] in self.process_names or any(name in proc.info["name"] for name in self.process_names):
+            if proc.pid == os.getpid():
+                continue  # 更新器自身位于 update_temp（安装根目录内），不能杀自己
+            try:
+                exe_path = proc.exe()
+            except (psutil.AccessDenied, psutil.NoSuchProcess):
+                continue
+            # 覆盖 AALC 及安装目录内的附属进程（如 adb 服务），否则其可执行文件会被占用无法覆盖
+            is_install_binary = os.path.normcase(exe_path).startswith(install_root)
+            if proc.info["name"] in self.process_names or any(name in proc.info["name"] for name in self.process_names) or is_install_binary:
                 try:
                     proc.terminate()
                     try:

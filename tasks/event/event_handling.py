@@ -6,68 +6,71 @@ from module.logger import log
 
 
 class EventHandling:
-    MAX_CHANGE = -1
+    SUCCESS_LEVEL_ASSETS = (
+        "event/very_high.png",
+        "event/high.png",
+        "event/normal.png",
+        "event/low.png",
+        "event/very_low.png",
+    )
+    SUCCESS_LEVEL_PRIORITY = ("very high", "high", "normal", "low", "very low")
+    SUCCESS_LEVEL_THRESHOLD = 0.74
+    ACTION_RETRY_INTERVAL = 0.75
+    SINNER_COUNT = 12
 
     def __init__(self):
-        self.change_mode = self.MAX_CHANGE
-        self.time = time.time() - 15
-        self.times = 0
+        self.last_action_time = float("-inf")
+        self.fallback_offset = 0
 
-    def decision_event_handling(self):
-        if best_option := auto.find_element("event/very_high.png"):
-            auto.mouse_action_with_pos(best_option)
-            self.change_mode = self.MAX_CHANGE
-        elif best_option := auto.find_element("event/high.png"):
-            auto.mouse_action_with_pos(best_option)
-            self.change_mode = self.MAX_CHANGE
-        elif best_option := auto.find_element("event/normal.png"):
-            auto.mouse_action_with_pos(best_option)
-            self.change_mode = self.MAX_CHANGE
-        elif best_option := auto.find_element("event/low.png"):
-            auto.mouse_action_with_pos(best_option)
-            self.change_mode = self.MAX_CHANGE
-        elif best_option := auto.find_element("event/very_low.png"):
-            auto.mouse_action_with_pos(best_option)
-            self.change_mode = self.MAX_CHANGE
-        else:
-            if self.change_mode >= 0:
-                self.change_mode -= 1
-            else:
-                self.decision_event_handling_ocr()
+    def _can_retry(self, now: float) -> bool:
+        return now - self.last_action_time >= self.ACTION_RETRY_INTERVAL
 
-    def decision_event_handling_ocr(self):
-        now_time = time.time()
-        if now_time - self.time < 15:
-            self.time = now_time
-            self.times += 1
-        else:
-            self.times = 0
+    def decision_event_handling(self) -> bool:
+        """选择成功率最高的罪人；模板和 OCR 都失败时仍能安全轮换兜底。"""
+        now = time.monotonic()
+        if not self._can_retry(now):
+            return False
+
+        # 该方法只在“选择罪人进行判定”特征已命中后调用，因此可以使用稍低的
+        # 专用阈值，兼容 MuMu 缩放后落在默认 0.8 临界线下方的彩色成功率文字。
+        for asset in self.SUCCESS_LEVEL_ASSETS:
+            if best_option := auto.find_element(asset, threshold=self.SUCCESS_LEVEL_THRESHOLD):
+                auto.mouse_action_with_pos(best_option)
+                self.last_action_time = now
+                self.fallback_offset = 0
+                return True
+
+        return self.decision_event_handling_ocr(now=now)
+
+    def decision_event_handling_ocr(self, now: float | None = None) -> bool:
+        now = time.monotonic() if now is None else now
+        if not self._can_retry(now):
+            return False
+
+        order = 0
         try:
             ocr_data = auto.find_text_element("", only_text=True)
-            ocr_result = extract_levels(ocr_data)
-            try:
-                order = ocr_result.index("very high")
-            except:
-                try:
-                    order = ocr_result.index("high")
-                except:
-                    try:
-                        order = ocr_result.index("normal")
-                    except:
-                        try:
-                            order = ocr_result.index("low")
-                        except:
-                            order = ocr_result.index("very low")
-            scale = cfg.set_win_size / 1440
-            first_sinner = [150 * scale, 1300 * scale]
-            target_sinner = [
-                first_sinner[0] + 140 * (order + self.times) * scale,
-                first_sinner[1],
-            ]
-            auto.mouse_click(target_sinner[0], target_sinner[1])
+            levels = extract_levels(ocr_data or [])
+            order = next(
+                (levels.index(level) for level in self.SUCCESS_LEVEL_PRIORITY if level in levels),
+                0,
+            )
+            if not levels:
+                log.debug("OCR未识别到事件成功率，轮换点击底部罪人作为兜底")
         except Exception as e:
             msg = f"OCR识别事件成功率失败，错误信息：{e}"
             log.debug(msg)
+
+        scale = cfg.set_win_size / 1440
+        sinner_index = (order + self.fallback_offset) % self.SINNER_COUNT
+        target_sinner = [
+            (150 + 140 * sinner_index) * scale,
+            1300 * scale,
+        ]
+        auto.mouse_click(target_sinner[0], target_sinner[1])
+        self.last_action_time = now
+        self.fallback_offset = (self.fallback_offset + 1) % self.SINNER_COUNT
+        return True
 
 
 def is_edit_distance_one(s1, s2):
@@ -147,7 +150,7 @@ def extract_levels(data):
                         continue
 
                     substr = s[i : i + sub_len]
-                    if is_edit_distance_one(substr, level_str):
+                    if substr == level_str or is_edit_distance_one(substr, level_str):
                         levels.append(level_name)
                         i += sub_len
                         matched = True
