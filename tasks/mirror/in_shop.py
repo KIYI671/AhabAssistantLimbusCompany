@@ -1,3 +1,4 @@
+import time
 from time import sleep
 
 from PIL import Image
@@ -14,6 +15,8 @@ from utils.image_utils import ImageUtils
 
 
 class Shop:
+    SHOP_GRID_CROP_1440 = (1080, 300, 2300, 1000)
+
     def __init__(self, team_setting: TeamSetting):
         self.system = all_systems[team_setting.team_system]  # 队伍体系
         self.sinner_team = team_setting.sinner_order  # 选择的罪人序列
@@ -70,6 +73,37 @@ class Shop:
     class RestartGame(Exception):
         pass
 
+    @classmethod
+    def _shop_grid_crop(cls):
+        scale = cfg.set_win_size / 1440
+        return tuple(value * scale for value in cls.SHOP_GRID_CROP_1440)
+
+    def _wait_for_shop_refresh(self, initial_sample) -> bool:
+        return auto.wait_until_region_stable(
+            self._shop_grid_crop(),
+            timeout=3.0,
+            poll_interval=0.15,
+            stable_samples=2,
+            pixel_delta_threshold=12,
+            max_changed_ratio=0.02,
+            initial_sample=initial_sample,
+            require_change=True,
+        )
+
+    def _wait_for_power_up_confirmation(self, timeout: float = 3.5) -> bool:
+        """等待强化确认窗口关闭，网络异常仍交给统一重试逻辑处理。"""
+        deadline = time.monotonic() + timeout
+        while time.monotonic() < deadline:
+            if auto.take_screenshot(interval=0.15) is None:
+                continue
+            # 当前帧刚完成可靠截图；retry() 复用首帧，后续网络重试仍会正常刷新。
+            if retry(skip_first_screenshot=True) is False:
+                raise self.RestartGame()
+            if not auto.find_element("mirror/shop/power_up_confirm_assets.png"):
+                return True
+        log.warning("饰品升级确认窗口长时间未关闭，停止本次升级以避免重复扣费")
+        return False
+
     def ego_gift_to_power_up(self):
         loop_count = 30
         auto.model = "clam"
@@ -80,12 +114,14 @@ class Shop:
             auto.mouse_to_blank()
             if auto.click_element("mirror/shop/power_up_assets.png"):
                 auto.mouse_to_blank()
-                sleep(0.5)
-                if auto.click_element("mirror/shop/power_up_confirm_assets.png", take_screenshot=True) is False:
+                if not auto.wait_for_element(
+                    "mirror/shop/power_up_confirm_assets.png",
+                    timeout=1.5,
+                    click=True,
+                ):
                     return True
-                sleep(3)
-                if retry() is False:
-                    raise self.RestartGame()
+                if self._wait_for_power_up_confirmation() is False:
+                    return False
             if auto.find_element("mirror/shop/power_up_confirm_assets.png"):
                 return False
             loop_count -= 1
@@ -171,10 +207,10 @@ class Shop:
                             if buy_chance <= 0:
                                 auto.mouse_click_blank(times=3)
                                 break
-                        sleep(1)
-                        auto.click_element(
+                        auto.wait_for_element(
                             "mirror/road_in_mir/ego_gift_get_confirm_assets.png",
-                            take_screenshot=True,
+                            timeout=1.5,
+                            click=True,
                         )
                         while auto.take_screenshot() is None:
                             continue
@@ -185,13 +221,11 @@ class Shop:
                     self.shopping_strategy and self.shopping_strategy_select in (1, 3, 4)
                 ):
                     if auto.click_element("mirror/shop/level_IV_to_buy.png", threshold=0.82):
-                        sleep(1)
-                        while auto.take_screenshot() is None:
-                            continue
-                        if auto.click_element("mirror/shop/purchase_assets.png"):
-                            sleep(1)
-                            while auto.take_screenshot() is None:
-                                continue
+                        if auto.wait_for_element(
+                            "mirror/shop/purchase_assets.png",
+                            timeout=1.5,
+                            click=True,
+                        ):
                             if retry() is False:
                                 raise self.RestartGame()
                             auto.click_element("mirror/road_in_mir/ego_gift_get_confirm_assets.png")
@@ -201,9 +235,11 @@ class Shop:
                             auto.mouse_click_blank()
 
                     if auto.click_element("mirror/shop/level_III_to_buy.png", threshold=0.82):
-                        sleep(1)
-                        if auto.click_element("mirror/shop/purchase_assets.png", take_screenshot=True):
-                            sleep(1)
+                        if auto.wait_for_element(
+                            "mirror/shop/purchase_assets.png",
+                            timeout=1.5,
+                            click=True,
+                        ):
                             if retry() is False:
                                 raise self.RestartGame()
                             auto.click_element(
@@ -230,18 +266,21 @@ class Shop:
                 while system_gift:
                     gift = system_gift.pop(0)
                     auto.mouse_action_with_pos((gift[0], gift[1]), offset=True)
-                    sleep(1)
                     while auto.take_screenshot() is None:
                         continue
                     if self.system == "bleed" and not cfg.not_skip_whitegossypium:
                         if auto.find_language_text("白棉花", ["white", "gossypium"], all_text=True):
                             auto.mouse_click_blank(times=2)
                         sleep(1)
-                    if auto.click_element("mirror/shop/purchase_assets.png", take_screenshot=True):
-                        sleep(1)
-                        auto.click_element(
+                    if auto.wait_for_element(
+                        "mirror/shop/purchase_assets.png",
+                        timeout=1.5,
+                        click=True,
+                    ):
+                        auto.wait_for_element(
                             "mirror/road_in_mir/ego_gift_get_confirm_assets.png",
-                            take_screenshot=True,
+                            timeout=1.5,
+                            click=True,
                         )
                         complete_count += 1
                         system_gift = re_sort_points(system_gift)
@@ -264,18 +303,21 @@ class Shop:
                     while system_gift:
                         gift = system_gift.pop(0)
                         auto.mouse_action_with_pos((gift[0], gift[1]), offset=True)
-                        sleep(1)
                         while auto.take_screenshot() is None:
                             continue
                         if self.system == "bleed" and not cfg.not_skip_whitegossypium:
                             if auto.find_language_text("白棉花", ["white", "gossypium"], all_text=True):
                                 auto.mouse_click_blank(times=2)
                             sleep(1)
-                        if auto.click_element("mirror/shop/purchase_assets.png", take_screenshot=True):
-                            sleep(1)
-                            auto.click_element(
+                        if auto.wait_for_element(
+                            "mirror/shop/purchase_assets.png",
+                            timeout=1.5,
+                            click=True,
+                        ):
+                            auto.wait_for_element(
                                 "mirror/road_in_mir/ego_gift_get_confirm_assets.png",
-                                take_screenshot=True,
+                                timeout=1.5,
+                                click=True,
                             )
                             complete_count += 1
                             system_gift = re_sort_points(system_gift)
@@ -296,36 +338,42 @@ class Shop:
                 log.warning("无法读取剩余金钱，跳过本次刷新")
             elif keyword_refresh_count < self.max_keyword_refresh and my_remaining_money >= 300:
                 auto.mouse_click_blank(times=3)
+                refresh_initial_sample = auto.get_region_sample(self._shop_grid_crop())
                 if auto.click_element("mirror/shop/refresh_keyword_assets.png"):
-                    sleep(1)
-                    auto.click_element(
+                    auto.wait_for_element(
                         f"mirror/shop/keyword/keyword_{self.system}.png",
-                        take_screenshot=True,
+                        timeout=1.5,
+                        click=True,
                     )
-                    sleep(0.5)
-                    auto.click_element("mirror/shop/refresh_keyword_confirm_assets.png")
+                    auto.wait_for_element(
+                        "mirror/shop/refresh_keyword_confirm_assets.png",
+                        timeout=1.5,
+                        click=True,
+                    )
                     for _ in range(3):
                         if auto.find_element(
                             "mirror/shop/refresh_keyword_confirm_assets.png",
                             take_screenshot=True,
                         ):
                             log.debug("关键词刷新确认未生效，重试中")
-                            sleep(0.5)
-                            auto.click_element(
+                            auto.wait_for_element(
                                 f"mirror/shop/keyword/keyword_{self.system}.png",
-                                take_screenshot=True,
+                                timeout=1.0,
+                                click=True,
                             )
-                            sleep(0.5)
-                            auto.click_element(
+                            auto.wait_for_element(
                                 "mirror/shop/refresh_keyword_confirm_assets.png",
-                                take_screenshot=True,
+                                timeout=1.0,
+                                click=True,
                             )
                         else:
                             break
                     keyword_refresh_count += 1
                     auto.mouse_click_blank()
-                    sleep(3)
-                    if retry() is False:
+                    refresh_stable = self._wait_for_shop_refresh(refresh_initial_sample)
+                    if not refresh_stable:
+                        log.debug("关键词刷新区域在 3 秒内未确认稳定，使用最后一帧继续检查")
+                    if retry(skip_first_screenshot=refresh_stable) is False:
                         raise self.RestartGame()
                     if self.skill_replacement and self.replacement < 3:
                         self.replacement_skill()
@@ -333,10 +381,13 @@ class Shop:
 
             if normal_refresh_count < self.max_normal_refresh and my_remaining_money >= 200:
                 auto.mouse_click_blank(times=3)
+                refresh_initial_sample = auto.get_region_sample(self._shop_grid_crop())
                 if auto.click_element("mirror/shop/refresh_assets.png"):
                     normal_refresh_count += 1
-                    sleep(3)
-                    if retry() is False:
+                    refresh_stable = self._wait_for_shop_refresh(refresh_initial_sample)
+                    if not refresh_stable:
+                        log.debug("普通刷新区域在 3 秒内未确认稳定，使用最后一帧继续检查")
+                    if retry(skip_first_screenshot=refresh_stable) is False:
                         raise self.RestartGame()
                     if self.skill_replacement and self.replacement < 3:
                         self.replacement_skill()
@@ -495,7 +546,6 @@ class Shop:
                     "mirror/shop/enhance_and_fuse_and_sell_confirm_assets.png",
                     model="normal",
                 ):
-                    sleep(2)
                     if loop_times <= 0:
                         break
                     loop_times -= 1
@@ -505,8 +555,11 @@ class Shop:
                     raise self.RestartGame()
 
             if fuse:
-                sleep(2)
-                auto.click_element("mirror/shop/fuse_ego_gift_assets.png", take_screenshot=True)
+                auto.wait_for_element(
+                    "mirror/shop/fuse_ego_gift_assets.png",
+                    timeout=2.0,
+                    click=True,
+                )
                 continue
 
             break
