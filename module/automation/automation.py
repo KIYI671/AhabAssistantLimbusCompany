@@ -613,10 +613,7 @@ class Automation(metaclass=SingletonMeta):
             文本命中结果，返回格式同 find_text_element；未命中返回 False。
         """
         ocr_dict = self._run_ocr_for_text(my_crop=my_crop, additional_stack=additional_stack)
-        is_dict_target = isinstance(zh_text, dict) or isinstance(en_text, dict)
-        if is_dict_target:
-            ocr_text = " ".join(ocr_dict)
-            log.info(f"主题卡包原始OCR结果：{ocr_text}")
+        self.last_ocr_text = " ".join(ocr_dict)
 
         def match(target):
             result = self._find_target_in_ocr_dict(target, ocr_dict, all_text=all_text)
@@ -624,33 +621,27 @@ class Automation(metaclass=SingletonMeta):
                 result = self._find_fuzzy_target_in_ocr_dict(target, ocr_dict)
             return result
 
-        def finish(result):
-            if is_dict_target:
-                matched = result.text if isinstance(result, TextMatchResult) else "unknown"
-                log.info(f"主题卡包模糊匹配结果：{matched}")
-            return result
-
         if ocr_dict == {}:
-            return finish(False)
+            return False
 
         if path_manager.current_language == "zh_cn":
-            return finish(match(zh_text))
+            return match(zh_text)
         if path_manager.current_language == "en":
-            return finish(match(en_text))
+            return match(en_text)
 
         zh_result = match(zh_text)
         if zh_result is not False and zh_result is not None:
             path_manager.set_language("zh_cn", log_stacklevel=additional_stack + 4)
-            return finish(zh_result)
+            return zh_result
 
         en_result = match(en_text)
         if en_result is not False and en_result is not None:
             path_manager.set_language("en", log_stacklevel=additional_stack + 4)
             if path_manager.eliminate_zh_cn_paths():
                 self.clear_img_cache()
-            return finish(en_result)
+            return en_result
 
-        return finish(False)
+        return False
 
     def find_text_element(self, target, my_crop=None, all_text=False, only_text=False, additional_stack=0):
         """

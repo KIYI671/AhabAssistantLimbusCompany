@@ -121,6 +121,7 @@ def select_theme_pack(hard_switch=False, floor=None, team_num=None, use_custom_t
                 if floor == 4 and cfg.skip_event_pack:
                     all_theme_pack.sort(key=lambda pos: (pos[0], pos[1]))
                     all_theme_pack.pop(0)  # 删除最左边的卡包
+                ocr_text_list = []
                 for pack in all_theme_pack:
                     top_left = (
                         max(pack[0] - 210 * scale, 0),
@@ -132,6 +133,7 @@ def select_theme_pack(hard_switch=False, floor=None, team_num=None, use_custom_t
                     )
                     crop = (top_left[0], top_left[1], bottom_right[0], bottom_right[1])
                     result = auto.find_language_text(theme_pack_list_zh, theme_pack_list_en, crop)
+                    ocr_text_list.append(auto.last_ocr_text)
                     if isinstance(result, TextMatchResult):
                         theme_pack_weight = result.value
                         theme_pack_name = result.text
@@ -141,6 +143,9 @@ def select_theme_pack(hard_switch=False, floor=None, team_num=None, use_custom_t
 
                     weight_list.append(theme_pack_weight)  # 采用最大值的形式，权重越大，优先级越高
                     pack_name.append(theme_pack_name)
+
+                log.info(f"原始OCR结果    {'   '.join(ocr_text_list)}")
+                log.info(f"模糊匹配结果  {'   '.join(pack_name)}")
 
                 # 选择权重最大的主题包
                 max_weight = max(weight_list)
