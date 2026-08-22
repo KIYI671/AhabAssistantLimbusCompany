@@ -157,6 +157,10 @@ def make_enkephalin_module(cancel=True, skip=True, *, task_name: str = "体力�
             if auto.take_screenshot() is None:
                 continue
             auto.click_element("enkephalin/enkephalin_confirm_assets.png")
+            sleep(0.4)
+            if retry() is False:
+                log.error(f"{task_name}时因网络原因执行失败")
+                return False
             if cancel:
                 auto.click_element("enkephalin/enkephalin_cancel_assets.png")
             return True
