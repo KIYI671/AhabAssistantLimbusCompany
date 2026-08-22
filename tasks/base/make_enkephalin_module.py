@@ -160,6 +160,11 @@ def make_enkephalin_module(cancel=True, skip=True, *, task_name: str = "体力�
             if cancel:
                 auto.click_element("enkephalin/enkephalin_cancel_assets.png")
             return True
+        elif panel_visible:
+            # 如果可见换体界面但不可见全换按钮, 则说明上次操作未恢复初始界面
+            if not auto.click_element("enkephalin/enkephalin_cancel_assets.png"):
+                auto.mouse_click_blank()
+
         sleep(0.2)
         continue
 
