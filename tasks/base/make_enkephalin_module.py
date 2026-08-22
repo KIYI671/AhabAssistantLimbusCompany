@@ -184,7 +184,7 @@ def lunacy_to_enkephalin(times=0):
         2: "52",
         3: "78",
     }
-    forword = True
+    forward = True
     # 前向模式标识 处于判断当前换体次数时
     time = 1
     while time < times + 1:
@@ -199,7 +199,7 @@ def lunacy_to_enkephalin(times=0):
             break
         lunacy_asset = f"enkephalin/lunacy_spend_{used_lunacy}_assets.png"
         if auto.find_element(lunacy_asset):
-            forword = False
+            forward = False
             # 葛朗台模式
             if cfg.Dr_Grandet_mode:
                 while get_the_timing() is False:
@@ -212,15 +212,15 @@ def lunacy_to_enkephalin(times=0):
             if retry() is False:
                 log.error("狂气换体时重试失败")
                 break
-        elif not forword:
-            forword = True
+        elif not forward:
+            forward = True
             # 非前向模式时, 遇到寻找失败可能是上一次点击时出错
             # 回退至上次换体并重复执行一次
             time -= 1
             continue
         if time == times:
             # 最后一步时, 检查是否成功换体
-            if forword:
+            if forward:
                 # 如果是前向模式, 则说明换体成功, 直接退出
                 break
             # 如果是非前向模式, 则说明至少换过一次体力
