@@ -128,6 +128,11 @@ refresh_count_options = {
     "5": 5,
 }
 
+mirror_floor_options = {
+    QT_TRANSLATE_NOOP("BaseComboBox", "不进入"): 0,
+    **{str(i): i for i in range(1, 6)},
+}
+
 blank_team_setting = {}
 
 
@@ -182,6 +187,7 @@ all_combobox_config_name = [
     "skill_replacement_mode",
     "max_keyword_refresh",
     "max_normal_refresh",
+    "normal_to_hard_floor",
 ]
 
 all_checkbox_config_name = [

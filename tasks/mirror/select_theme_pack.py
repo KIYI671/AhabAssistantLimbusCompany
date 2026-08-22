@@ -11,26 +11,26 @@ from utils.path_manager import path_manager
 
 @begin_and_finish_time_log(task_name="选择镜牢主题包")
 # 选择镜牢主题包
-def select_theme_pack(hard_switch=False, floor=None, team_num=None, use_custom_theme_pack_weight=False):
+def select_theme_pack(hard_mode=False, floor=None, team_num=None, use_custom_theme_pack_weight=False):
     loop_count = 30
     auto.model = "clam"
     scale = cfg.set_win_size / 1080
     if path_manager.current_language == "zh_cn":
         theme_pack_list_zh = theme_list.get_effective_theme_pack_list(
-            hard_switch, "zh_cn", team_num, use_custom_theme_pack_weight
+            hard_mode, "zh_cn", team_num, use_custom_theme_pack_weight
         )
         theme_pack_list_en = {}
     elif path_manager.current_language == "en":
         theme_pack_list_zh = {}
         theme_pack_list_en = theme_list.get_effective_theme_pack_list(
-            hard_switch, "en", team_num, use_custom_theme_pack_weight
+            hard_mode, "en", team_num, use_custom_theme_pack_weight
         )
     else:
         theme_pack_list_zh = theme_list.get_effective_theme_pack_list(
-            hard_switch, "zh_cn", team_num, use_custom_theme_pack_weight
+            hard_mode, "zh_cn", team_num, use_custom_theme_pack_weight
         )
         theme_pack_list_en = theme_list.get_effective_theme_pack_list(
-            hard_switch, "en", team_num, use_custom_theme_pack_weight
+            hard_mode, "en", team_num, use_custom_theme_pack_weight
         )
     # 游戏更新后新增的主题包尚未收录时的兜底权重，取自「未知 / unknown」配置项
     unknown_weight = int(theme_pack_list_zh.get("未知", theme_pack_list_en.get("unknown", -5)))
@@ -73,7 +73,7 @@ def select_theme_pack(hard_switch=False, floor=None, team_num=None, use_custom_t
             continue
 
         # 切换难度
-        if hard_switch:
+        if hard_mode:
             if auto.click_element("mirror/theme_pack/normal_assets.png"):
                 sleep(2)  # 等待卡包加载动画完成
                 continue
@@ -83,11 +83,11 @@ def select_theme_pack(hard_switch=False, floor=None, team_num=None, use_custom_t
                     (normal_bbox[0] + normal_bbox[2]) // 2,
                     (normal_bbox[1] + normal_bbox[3]) // 2,
                 )
-                sleep(2) # 等待卡包加载动画完成
+                sleep(2)  # 等待卡包加载动画完成
                 continue
         else:
             if auto.click_element("mirror/theme_pack/hard_assets.png"):
-                sleep(2) # 等待卡包加载动画完成
+                sleep(2)  # 等待卡包加载动画完成
                 continue
             elif difficulty == "hard":
                 hard_bbox = ImageUtils.get_bbox(ImageUtils.load_image("mirror/theme_pack/hard_assets.png"))
@@ -95,11 +95,11 @@ def select_theme_pack(hard_switch=False, floor=None, team_num=None, use_custom_t
                     (hard_bbox[0] + hard_bbox[2]) // 2,
                     (hard_bbox[1] + hard_bbox[3]) // 2,
                 )
-                sleep(2) # 等待卡包加载动画完成
+                sleep(2)  # 等待卡包加载动画完成
                 continue
 
         try:
-            if floor == 4 and cfg.select_event_pack:
+            if floor == 5 and cfg.select_event_pack:
                 if all_theme_pack := auto.find_element(
                     "mirror/theme_pack/theme_pack_features.png",
                     find_type="image_with_multiple_targets",
@@ -118,7 +118,7 @@ def select_theme_pack(hard_switch=False, floor=None, team_num=None, use_custom_t
                 find_type="image_with_multiple_targets",
                 take_screenshot=True,
             ):
-                if floor == 4 and cfg.skip_event_pack:
+                if floor == 5 and cfg.skip_event_pack:
                     all_theme_pack.sort(key=lambda pos: (pos[0], pos[1]))
                     all_theme_pack.pop(0)  # 删除最左边的卡包
                 for pack in all_theme_pack:

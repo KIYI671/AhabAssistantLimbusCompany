@@ -170,6 +170,7 @@ teams:
     only_system_fuse: False # 只合成体系饰品
     avoid_skill_3: False # 避免使用3技能
     re_formation_each_floor: False # 每个楼层重新编队
+    normal_to_hard_floor: 0 # 进入困难模式的楼层
     use_starlight: False # 开局星光换钱
     aggressive_also_enhance: False # 激进合成期间也升级饰品
     aggressive_save_systems: False # 激进合成保留体系饰品

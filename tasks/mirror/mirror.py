@@ -65,6 +65,7 @@ class Mirror:
         self.opening_items_select = team_setting.opening_items_select
         self.opening_items_system = team_setting.opening_items_system
         self.re_formation_each_floor = team_setting.re_formation_each_floor  # 是否每层重新配队
+        self.normal_to_hard_floor = team_setting.normal_to_hard_floor
         # 第二体系
         self.second_system = team_setting.second_system  # 启用第二体系
         self.second_system_select = team_setting.second_system_select  # 选择的第二体系
@@ -81,7 +82,7 @@ class Mirror:
 
         self.start_time = time.time()
         self.first_battle = True  # 判断是否首次进入战斗，如果是则重新配队
-        self.hard_switch = cfg.hard_mirror
+        self.hard_mode = cfg.hard_mirror
         self.use_custom_theme_pack_weight = team_setting.use_custom_theme_pack_weight  # 是否启用自定义主题包权重
         # 统计时间
         self.find_road_total_time = 0
@@ -91,11 +92,10 @@ class Mirror:
         self.event_times = 0
 
         self.floor = 0
-        self.get_floor_num = True
         self.floor_times = [-9999.0 for i in range(5)]  # 负值代表缺失值
         self.LOOP_COUNT = 250
 
-        self.mirror_map = MirrorMap(hard_mode=self.hard_switch)
+        self.mirror_map = MirrorMap(hard_mode=self.hard_mode)
 
         self.pass_coins = None
 
@@ -116,6 +116,11 @@ class Mirror:
             defense_for_solo_state=self.defense_for_solo_state,
         )
         self.battle_total_time += elapsed
+
+    def _enter_hard_mode_if_needed(self):
+        if self.normal_to_hard_floor > 0 and self.floor >= self.normal_to_hard_floor:
+            self.hard_mode = True
+            self.mirror_map.hard_mode = True
 
     def road_to_mir(self):
         loop_count = 30
@@ -253,23 +258,25 @@ class Mirror:
             # 选择楼层主题包的情况
             if auto.find_element("mirror/theme_pack/feature_theme_pack_assets.png"):
                 sleep(2)
-                select_theme_pack(self.hard_switch, self.floor, self.team_order, self.use_custom_theme_pack_weight)
+                if not self.get_which_floor("mirror/theme_pack/theme_pack_setting_assets.png"):
+                    continue
+                select_theme_pack(self.hard_mode, self.floor, self.team_order, self.use_custom_theme_pack_weight)
                 if self.re_formation_each_floor:
                     self.first_battle = True
                 try:
-                    floor_num = self.floor  # 0,1,2,3,4
-                    if floor_num != 0:
-                        if self.floor_times[floor_num - 1] > 0:
-                            floor_time = time.time() - self.floor_times[floor_num - 1]
+                    floor_num = self.floor  # 1,2,3,4,5
+                    floor_index = floor_num - 1
+                    if floor_num != 1:
+                        if self.floor_times[floor_index - 1] > 0:
+                            floor_time = time.time() - self.floor_times[floor_index - 1]
                             msg = f"启动后第{self.floor}层卡包"
                         else:
                             floor_time = time.time() - self.floor_times[0]
                             msg = f"启动后第{self.floor}层卡包，该楼层时间不完整"
                         to_log_with_time(msg, floor_time)
-                    self.floor_times[floor_num] = time.time()
+                    self.floor_times[floor_index] = time.time()
                 except:
                     log.info("楼层异常，可能是OCR识别错误，本轮镜牢层间的时间记录无效")
-                self.get_floor_num = True
                 main_loop_count += 50
                 continue
 
@@ -294,7 +301,7 @@ class Mirror:
                 ):
                     break
                 retry()
-                if self.get_floor_num:
+                if self.floor == 0:
                     self.get_which_floor()
 
                 if cfg.floor_3_exit and self.floor >= 4:
@@ -534,7 +541,7 @@ class Mirror:
                 if auto.click_element("mirror/claim_reward/claim_forfeit_assets.png", model="normal", take_screenshot=True):
                     continue
             else:
-                if self.hard_switch and cfg.save_rewards:
+                if self.hard_mode and cfg.save_rewards:
                     auto.click_element("mirror/claim_reward/claim_rewards_assets.png")
                     sleep(1)
                     pos = auto.find_element(
@@ -674,7 +681,7 @@ class Mirror:
                 last_ten = total_ten / min(count + 1, 10)
                 return [total_avr, last_five, last_ten]
 
-            if self.hard_switch:
+            if self.hard_mode:
                 team_total_battle_time_hard = team_history.get("total_mirror_time_hard", [0.0, 0.0, 0.0])
                 team_total_battle_count = team_history.get("mirror_hard_count", 0)
                 team_history["total_mirror_time_hard"] = calculate_time(
@@ -1506,7 +1513,7 @@ class Mirror:
                 model="clam",
             ):
                 continue
-            if self.hard_switch and cfg.save_rewards:
+            if self.hard_mode and cfg.save_rewards:
                 auto.click_element("mirror/claim_reward/claim_rewards_assets.png")
                 sleep(1)
                 pos = auto.find_element(
@@ -1550,8 +1557,8 @@ class Mirror:
     def in_shop(self):
         self.shop.in_shop(self.floor)
 
-    def get_which_floor(self):
-        auto.click_element("mirror/road_in_mir/setting_assets.png", take_screenshot=True)
+    def get_which_floor(self, setting_assets="mirror/road_in_mir/setting_assets.png"):
+        auto.click_element(setting_assets, take_screenshot=True)
         sleep(1)
 
         scale = cfg.set_win_size / 1440
@@ -1572,8 +1579,10 @@ class Mirror:
             not_passed_floor_count = len(not_passed_floors)
             self.floor = 5 - not_passed_floor_count
             log.debug(f"当前镜牢层数: {self.floor}")
-            self.get_floor_num = False
+            self._enter_hard_mode_if_needed()
             auto.mouse_action_with_pos(
                 (to_window_position[0] - 200 * cfg.set_win_size / 1440, to_window_position[1])
             )
             self.mirror_map.refresh_floor(self.floor)
+            return True
+        return False
