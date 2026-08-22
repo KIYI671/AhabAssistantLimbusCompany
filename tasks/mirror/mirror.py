@@ -46,6 +46,7 @@ def to_log_with_time(msg, elapsed_time):
 
 class Mirror:
     def __init__(self, team_setting: TeamSetting, team_num: int):
+        team_setting = team_setting.model_copy(deep=True)  # 避免修改原始配置
         self.logger = log
         self.team_order = team_num
         self.sinner_team = team_setting.sinner_order  # 选择的罪人序列
