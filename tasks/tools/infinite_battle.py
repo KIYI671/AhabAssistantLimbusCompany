@@ -204,6 +204,7 @@ class InfiniteBattles(QWidget):
             if self.worker.isRunning():
                 self.worker.terminate()
                 self.worker.wait(1000)
+                auto.reset_safety_locks()
             self.defense_box.setDisabled(False)
             self.defense_on_turn1_box.setDisabled(False)
             self.not_choose_event_box.setDisabled(False)
@@ -242,6 +243,7 @@ class InfiniteBattles(QWidget):
             self.worker.wait(3000)  # 等待最多3秒
             if self.worker.isRunning():
                 self.worker.terminate()
+                auto.reset_safety_locks()
 
         # 资源清理
         try:
