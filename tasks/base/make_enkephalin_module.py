@@ -218,6 +218,16 @@ def lunacy_to_enkephalin(times=0):
             # 回退至上次换体并重复执行一次
             time -= 1
             continue
+        if time == times:
+            # 最后一步时, 检查是否成功换体
+            if forword:
+                # 如果是前向模式, 则说明换体成功, 直接退出
+                break
+            # 如果是非前向模式, 则说明至少换过一次体力
+            if auto.find_element(lunacy_asset):
+                # 如果仍然可见, 则说明换体失败, 继续尝试
+                continue
+
         time += 1
     auto.click_element("enkephalin/enkephalin_cancel_assets.png")
     sleep(1)
