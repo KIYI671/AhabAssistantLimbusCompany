@@ -5,6 +5,8 @@ from module.config import cfg
 from module.decorator.decorator import begin_and_finish_time_log
 from module.logger import log
 
+from .retry import retry
+
 
 def get_the_timing(return_time=False):
     if module_position := auto.find_element("enkephalin/lunacy_assets.png", take_screenshot=True):
@@ -155,9 +157,18 @@ def make_enkephalin_module(cancel=True, skip=True, *, task_name: str = "体力�
             if auto.take_screenshot() is None:
                 continue
             auto.click_element("enkephalin/enkephalin_confirm_assets.png")
+            sleep(0.4)
+            if retry() is False:
+                log.error(f"{task_name}时因网络原因执行失败")
+                return False
             if cancel:
                 auto.click_element("enkephalin/enkephalin_cancel_assets.png")
             return True
+        elif panel_visible:
+            # 如果可见换体界面但不可见全换按钮, 则说明上次操作未恢复初始界面
+            if not auto.click_element("enkephalin/enkephalin_cancel_assets.png"):
+                auto.mouse_click_blank()
+
         sleep(0.2)
         continue
 
@@ -168,12 +179,27 @@ def lunacy_to_enkephalin(times=0):
     auto.click_element("enkephalin/use_lunacy_assets.png")
     sleep(0.5)
     Grandet = False
-    while times > 0:
-        auto.mouse_to_blank(move_back=False)
-        # 自动截图
+    lunacy_map = {
+        1: "26",
+        2: "52",
+        3: "78",
+    }
+    forward = True
+    # 前向模式标识 处于判断当前换体次数时
+    time = 1
+    while time < times + 1:
         if auto.take_screenshot() is None:
-            continue
-        if times > 0 and auto.find_element("enkephalin/lunacy_spend_26_assets.png"):
+            sleep(0.5)
+            if auto.take_screenshot() is None:
+                log.error("狂气换体时截图失败")
+                break
+        used_lunacy = lunacy_map.get(time)
+        if not used_lunacy:
+            log.error(f"无法识别的狂气换体次数: {time}")
+            break
+        lunacy_asset = f"enkephalin/lunacy_spend_{used_lunacy}_assets.png"
+        if auto.find_element(lunacy_asset):
+            forward = False
             # 葛朗台模式
             if cfg.Dr_Grandet_mode:
                 while get_the_timing() is False:
@@ -183,27 +209,26 @@ def lunacy_to_enkephalin(times=0):
                 Grandet = True
             auto.click_element("enkephalin/enkephalin_confirm_assets.png")
             sleep(1)
+            if retry() is False:
+                log.error("狂气换体时重试失败")
+                break
+        elif not forward:
+            forward = True
+            # 非前向模式时, 遇到寻找失败可能是上一次点击时出错
+            # 回退至上次换体并重复执行一次
+            time -= 1
             continue
-        if times >= 2 and auto.find_element("enkephalin/lunacy_spend_52_assets.png"):
-            if cfg.Dr_Grandet_mode:
-                while get_the_timing() is False:
-                    if Grandet:
-                        break
-                    sleep(2)
-                    Grandet = True
-            auto.click_element("enkephalin/enkephalin_confirm_assets.png")
-            sleep(1)
-            continue
-        if times >= 3 and auto.find_element("enkephalin/lunacy_spend_78_assets.png"):
-            if cfg.Dr_Grandet_mode:
-                while get_the_timing() is False:
-                    if Grandet:
-                        break
-                    sleep(2)
-                    Grandet = True
-            auto.click_element("enkephalin/enkephalin_confirm_assets.png")
-            sleep(1)
-            continue
-        break
+        if time == times:
+            # 最后一步时, 检查是否成功换体
+            if forward:
+                # 如果是前向模式, 则说明换体成功, 直接退出
+                break
+            # 如果是非前向模式, 则说明至少换过一次体力
+            if auto.find_element(lunacy_asset):
+                # 如果仍然可见, 则说明换体失败, 继续尝试
+                continue
+
+        time += 1
     auto.click_element("enkephalin/enkephalin_cancel_assets.png")
+    sleep(1)
     make_enkephalin_module(skip=False)
