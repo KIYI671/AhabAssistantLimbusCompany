@@ -10,7 +10,7 @@ WINDOWS_ORDERED_TEAM_PAGE_SWIPE_DISTANCE = 400
 NAMED_TEAM_PAGE_SWIPE_DISTANCE = 385
 TEAM_LIST_RESET_BOTTOM_MARGIN = 60
 ORDERED_TEAM_PAGE_SIZE = 5
-ORDERED_TEAM_COUNT = 20
+ORDERED_TEAM_COUNT = 40
 ORDERED_TEAM_VISIBLE_ROWS = 6
 
 
@@ -101,7 +101,7 @@ def select_battle_team(num):
         auto.mouse_click(my_position[0], my_position[1])
         sleep(0.5)
         reset_distance = _team_list_reset_swipe_distance(my_position[1], cfg.set_win_size, scale)
-        for _ in range(3):
+        for _ in range(5):
             auto.mouse_swipe_for_scroll(my_position[0], my_position[1], dy=reset_distance, duration=0.3)
         sleep(0.75)
         first_position = [position[0], position[1] + 70 * scale]
