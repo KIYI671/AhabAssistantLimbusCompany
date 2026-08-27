@@ -24,7 +24,8 @@ def clean_team():
         if auto.click_element("teams/clear_selection_confirm_assets.png"):
             break
         if (identify_position := auto.find_element("teams/identify_assets.png")) and auto.mouse_action_with_pos(
-            [identify_position[0], identify_position[1] + 600 * scale]):
+            [identify_position[0], identify_position[1] + 600 * scale]
+        ):
             sleep(0.5)
             auto.take_screenshot()
             if auto.find_element("teams/clear_selection_confirm_assets.png") is None:
@@ -99,13 +100,9 @@ def select_battle_team(num):
         my_position[1] += position[1]
         auto.mouse_click(my_position[0], my_position[1])
         sleep(0.5)
-        reset_distance = _team_list_reset_swipe_distance(
-            my_position[1], cfg.set_win_size, scale
-        )
+        reset_distance = _team_list_reset_swipe_distance(my_position[1], cfg.set_win_size, scale)
         for _ in range(3):
-            auto.mouse_swipe_for_scroll(
-                my_position[0], my_position[1], dy=reset_distance, duration=0.3
-            )
+            auto.mouse_swipe_for_scroll(my_position[0], my_position[1], dy=reset_distance, duration=0.3)
         sleep(0.75)
         first_position = [position[0], position[1] + 70 * scale]
         if cfg.select_team_by_order:
@@ -119,9 +116,7 @@ def select_battle_team(num):
                     duration=0.3,
                 )
                 sleep(1)
-            auto.mouse_click(
-                first_position[0], first_position[1] + 75 * team_order * scale
-            )
+            auto.mouse_click(first_position[0], first_position[1] + 75 * team_order * scale)
             log.info(f"成功找到队伍 # {num}")
             sleep(1)
             return True
