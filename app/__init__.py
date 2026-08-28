@@ -63,7 +63,7 @@ set_after_completion_options = {
     QT_TRANSLATE_NOOP("BaseComboBox", "退出MUMU模拟器"): 7,
     QT_TRANSLATE_NOOP("BaseComboBox", "退出AALC和MUMU模拟器"): 8,
 }
-all_teams = {f"Team{i}": i for i in range(1, 21)}
+all_teams = {f"Team{i}": i for i in range(1, 41)}
 coutinuous_times = {f"{i} Times": i for i in range(1, 11)}
 all_systems = {
     QT_TRANSLATE_NOOP("BaseComboBox", "烧伤"): 0,
