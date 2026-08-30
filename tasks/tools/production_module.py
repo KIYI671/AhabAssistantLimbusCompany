@@ -27,6 +27,7 @@ from tasks.base.make_enkephalin_module import (
 )
 from tasks.base.retry import kill_game
 from tasks.tools.ui_style import apply_tool_window_theme, get_status_label_style
+from utils.path_manager import path_manager
 
 
 class ProductionWork(QThread):
@@ -58,6 +59,8 @@ class ProductionWork(QThread):
                 init_game()
                 self._init_retry_count = 0
                 self._set_win()
+                path_manager.initialize_paths(reset_eliminations=False)
+                auto.clear_img_cache()
                 self.initialization_complete.emit()
             except userStopError:
                 return
