@@ -57,7 +57,8 @@ def get_current_enkephalin():
             ocr_result = ocr_result.lower()
             if "/" in ocr_result:
                 ocr_result = ocr_result.split("/")
-                current_enkephalin = int(ocr_result[0])
+                ocr_result_int = "".join(char for char in ocr_result[0] if char.isdigit())
+                current_enkephalin = int(ocr_result_int)
                 return current_enkephalin
         except:
             continue
