@@ -101,6 +101,7 @@ class CaptureStd:
     def __init__(self):
         self.stdout = b""
         self.stderr = b""
+        self._capture_enabled = False
 
     def _redirect_stdout(self, to):
         sys.stdout.close()
@@ -113,8 +114,14 @@ class CaptureStd:
         sys.stderr = os.fdopen(self.fderr, "w")
 
     def __enter__(self):
-        self.fdout = sys.stdout.fileno()
-        self.fderr = sys.stderr.fileno()
+        try:
+            self.fdout = sys.stdout.fileno()
+            self.fderr = sys.stderr.fileno()
+        except (AttributeError, OSError, ValueError):
+            # PyInstaller GUI builds can provide no standard streams.
+            return self
+
+        self._capture_enabled = True
         self.reader_out, self.writer_out = os.pipe()
         self.reader_err, self.writer_err = os.pipe()
         self.old_stdout = os.dup(self.fdout)
@@ -127,6 +134,9 @@ class CaptureStd:
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
+        if not self._capture_enabled:
+            return
+
         self._redirect_stdout(to=self.old_stdout)
         self._redirect_stderr(to=self.old_stderr)
         os.close(self.old_stdout)
@@ -136,6 +146,7 @@ class CaptureStd:
         self.stderr = self.recvall(self.reader_err)
         os.close(self.reader_out)
         os.close(self.reader_err)
+        self._capture_enabled = False
 
     @staticmethod
     def recvall(reader, length=1024) -> bytes:
@@ -214,6 +225,8 @@ class CaptureNemuIpc(CaptureStd):
 
 class MumuControl(AbstractInput):
     connection_device = None
+    _SUPPORTED_DLL_VERSIONS = ("12.0", "15.0")
+    _NEMU_CONNECT_RETRY_THRESHOLD = 3
 
     # 截图在途超过该时长视为卡死（正常截图远小于此值），届时弃用旧调用链并换新重试
     _SCREENSHOT_STUCK_DEADLINE = 10.0
@@ -238,6 +251,9 @@ class MumuControl(AbstractInput):
         self.lib = None
         self._ev = asyncio.new_event_loop()
         self._ev_lock = threading.RLock()
+        self._dll_version = None
+        self._loaded_dll_version = None
+        self._nemu_connect_failures = 0
         self._screenshot_executor = ThreadPoolExecutor(max_workers=1, thread_name_prefix="AALC-MuMuCapture")
         self._screenshot_state_lock = threading.Lock()
         self._pending_screenshot = None
@@ -474,7 +490,13 @@ class MumuControl(AbstractInput):
             self.connect()
         except userStopError:
             raise
+        except NemuIpcError as e:
+            self._record_nemu_connect_failure()
+            log.warning(f"start: 启动过程异常 ({type(e).__name__}: {e}), 触发 fallback 重试")
+            self.mumu_control_api_backend()
+            self.start()
         except Exception as e:
+            self._nemu_connect_failures = 0
             log.warning(f"start: 启动过程异常 ({type(e).__name__}: {e}), 触发 fallback 重试")
             self.mumu_control_api_backend()
             self.start()
@@ -688,29 +710,72 @@ class MumuControl(AbstractInput):
             log.warning(f"get_launch_status: 解析 info 失败，无法获取启动状态，stdout={proc.stdout}")
             return "not_launched"
 
-    def load_dll(self):
+    @staticmethod
+    def _alternate_dll_version(version):
+        if version == "15.0":
+            return "12.0"
+        return "15.0"
+
+    def _record_nemu_connect_failure(self):
+        self._nemu_connect_failures += 1
+        if self._nemu_connect_failures < self._NEMU_CONNECT_RETRY_THRESHOLD:
+            return
+
+        current_version = self._loaded_dll_version or self._dll_version or "12.0"
+        next_version = self._alternate_dll_version(current_version)
+        self._dll_version = next_version
+        self._nemu_connect_failures = 0
+        log.warning(
+            f"连续 {self._NEMU_CONNECT_RETRY_THRESHOLD} 次 Nemu IPC 连接失败，"
+            f"切换 DLL 版本: {current_version} -> {next_version}"
+        )
+
+    def load_dll(self, preferred_version=None):
         nemu_folder = os.path.dirname(self.install_path)
-        version = "15.0" if self.get_android_version() == "15.0" else "12.0"
-        list_dll = [
-            os.path.abspath(os.path.join(nemu_folder, "./shell/sdk/external_renderer_ipc.dll")),
-            os.path.abspath(os.path.join(nemu_folder, f"./nx_device/{version}/shell/sdk/external_renderer_ipc.dll")),
-        ]
+        version = preferred_version or self._dll_version
+        if version not in self._SUPPORTED_DLL_VERSIONS:
+            version = "15.0" if self.get_android_version() == "15.0" else "12.0"
+        self._dll_version = version
+
+        candidate_paths = []
+        seen_paths = set()
+
+        def add_candidate(path, candidate_version=None):
+            normalized_path = os.path.abspath(path)
+            if normalized_path not in seen_paths:
+                seen_paths.add(normalized_path)
+                candidate_paths.append((normalized_path, candidate_version))
+
+        # Try both versioned DLLs before the legacy unversioned paths so a fallback
+        # really tests the alternate Android version first.
+        for candidate_version in (version, self._alternate_dll_version(version)):
+            add_candidate(
+                os.path.join(nemu_folder, f"./nx_device/{candidate_version}/shell/sdk/external_renderer_ipc.dll"),
+                candidate_version,
+            )
+
+        add_candidate(os.path.join(nemu_folder, "./shell/sdk/external_renderer_ipc.dll"))
         lib_path = self.get_nemu_client_path(version)
         if lib_path:
-            list_dll.append(os.path.abspath(lib_path))
+            add_candidate(lib_path)
         nx_device_root = os.path.join(nemu_folder, "nx_device")
         if os.path.isdir(nx_device_root):
             for entry in sorted(os.listdir(nx_device_root)):
                 candidate = os.path.join(nx_device_root, entry, "shell", "sdk", "external_renderer_ipc.dll")
-                if os.path.exists(candidate):
-                    list_dll.append(os.path.abspath(candidate))
-        list_dll = list(dict.fromkeys(list_dll))
+                if entry in self._SUPPORTED_DLL_VERSIONS:
+                    add_candidate(candidate, entry)
+                else:
+                    add_candidate(candidate)
+
+        self.lib = None
+        self._loaded_dll_version = None
         ipc_dll = ""
-        for ipc_dll in list_dll:
+        for ipc_dll, candidate_version in candidate_paths:
             if not os.path.exists(ipc_dll):
                 continue
             try:
                 self.lib = ctypes.CDLL(ipc_dll)
+                self._loaded_dll_version = candidate_version or version
                 break
             except OSError as e:
                 log.error(e.__str__())
@@ -722,7 +787,7 @@ class MumuControl(AbstractInput):
         if not self.lib:
             log.error("NemuIpc 需要 MuMu12 版本 >= 3.8.13，请检查您的版本。")
             log.error("以下路径均不存在")
-            for path in list_dll:
+            for path, _ in candidate_paths:
                 log.error(f"{path}")
             raise NemuIpcIncompatible("请在AALC设置中检查您的MuMu模拟器12版本和安装路径。")
         else:
@@ -739,6 +804,7 @@ class MumuControl(AbstractInput):
             raise NemuIpcError("连接失败，请检查nemu_folder是否正确，模拟器是否正在运行")
 
         self.connect_id = connect_id
+        self._nemu_connect_failures = 0
 
         MumuControl.connection_device = self
 

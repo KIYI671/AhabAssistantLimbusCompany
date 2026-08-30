@@ -297,6 +297,7 @@ def Mirror_task():
         mir_times = 9999
     if cfg.save_rewards and cfg.hard_mirror:
         mir_times = 1
+        log.info("启用了保存困牢奖励，将只执行一次困牢，并且不结算")
     finish_times = 0
     mediator.mirror_signal.emit(0, mir_times)
     cfg.normalize_and_sync_team_state(persist=False)
