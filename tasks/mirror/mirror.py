@@ -1552,7 +1552,8 @@ class Mirror:
         self.shop.in_shop(self.floor)
 
     def get_which_floor(self):
-        auto.click_element("mirror/road_in_mir/setting_assets.png", take_screenshot=True)
+        setting_button = auto.find_element("mirror/road_in_mir/setting_assets.png", take_screenshot=True)
+        auto.mouse_click(setting_button[0],setting_button[1])
         sleep(1)
 
         scale = cfg.set_win_size / 1440
@@ -1562,7 +1563,7 @@ class Mirror:
             1700 * scale,
             720 * scale,
         )
-        if to_window_position := auto.find_element("mirror/road_in_mir/to_window_assets.png", take_screenshot=True):
+        if to_window_position := auto.find_element("mirror/road_in_mir/to_window_assets.png",threshold=0.75, take_screenshot=True):
             not_passed_floors = auto.find_element(
                 "mirror/road_in_mir/not_passed_floor.png",
                 find_type="image_with_multiple_targets",
@@ -1578,3 +1579,5 @@ class Mirror:
                 (to_window_position[0] - 200 * cfg.set_win_size / 1440, to_window_position[1])
             )
             self.mirror_map.refresh_floor(self.floor)
+
+        auto.mouse_click(setting_button[0]-200 * cfg.set_win_size / 1440,setting_button[1]+200 * cfg.set_win_size / 1440)
