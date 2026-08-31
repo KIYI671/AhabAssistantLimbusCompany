@@ -31,6 +31,7 @@ from app.base_combination import (
     PushSettingCardChance,
     PushSettingCardDate,
     PushSettingCardMirrorchyan,
+    PushSettingCardText,
     SwitchSettingCard,
 )
 from app.card.messagebox_custom import BaseInfoBar
@@ -39,6 +40,7 @@ from app.language_manager import SUPPORTED_LANG_NAME, LanguageManager
 from app.theme_pack_setting_interface import ThemePackSettingDialog
 from app.widget.setting_nav import SettingNav
 from module.config import cfg, theme_list
+from utils.adb_endpoint import normalize_adb_host
 from utils.schedule_helper import ScheduleHelper
 
 
@@ -190,8 +192,32 @@ class SettingInterface(QWidget):
             QT_TRANSLATE_NOOP("ComboBoxSettingCard", "选择使用的模拟器"),
             texts={
                 QT_TRANSLATE_NOOP("ComboBoxSettingCard", "MuMu模拟器(推荐)"): 0,
+                QT_TRANSLATE_NOOP("ComboBoxSettingCard", "BlueStacks 5"): 1,
                 QT_TRANSLATE_NOOP("ComboBoxSettingCard", "其他模拟器"): 10,
             },
+            parent=self.simulator_setting_group,
+        )
+        self.bluestacks_instance_setting_card = PushSettingCardText(
+            QT_TRANSLATE_NOOP("PushSettingCardText", "修改"),
+            FIF.APPLICATION,
+            QT_TRANSLATE_NOOP("PushSettingCardText", "蓝叠实例名"),
+            config_name="bluestacks_instance_name",
+            content=QT_TRANSLATE_NOOP(
+                "PushSettingCardText",
+                "可留空自动选择；多开时填写内部实例名，例如 Pie64",
+            ),
+            parent=self.simulator_setting_group,
+        )
+        self.simulator_host_setting_card = PushSettingCardText(
+            QT_TRANSLATE_NOOP("PushSettingCardText", "修改"),
+            FIF.CONNECT,
+            QT_TRANSLATE_NOOP("PushSettingCardText", "模拟器主机地址"),
+            config_name="simulator_host",
+            content=QT_TRANSLATE_NOOP(
+                "PushSettingCardText",
+                "蓝叠或其他模拟器的 ADB 主机名/IP；远程连接时填写远程设备地址",
+            ),
+            validator=normalize_adb_host,
             parent=self.simulator_setting_group,
         )
         self.simulator_port_chance_card = PushSettingCardChance(
@@ -206,7 +232,7 @@ class SettingInterface(QWidget):
         self.start_emulator_timeout_chance_card = PushSettingCardChance(
             QT_TRANSLATE_NOOP("PushSettingCardChance", "修改"),
             FIF.TRAIN,
-            QT_TRANSLATE_NOOP("PushSettingCardChance", "仅限MUMU模拟器——启动模拟器超时时间(秒)"),
+            QT_TRANSLATE_NOOP("PushSettingCardChance", "MuMu/蓝叠启动模拟器超时时间(秒)"),
             config_name="start_emulator_timeout",
             max_value=3600,
             content="",
@@ -481,6 +507,8 @@ class SettingInterface(QWidget):
 
         self.simulator_setting_group.addSettingCard(self.simulator_setting_card)
         self.simulator_setting_group.addSettingCard(self.simulator_type_setting_card)
+        self.simulator_setting_group.addSettingCard(self.bluestacks_instance_setting_card)
+        self.simulator_setting_group.addSettingCard(self.simulator_host_setting_card)
         self.simulator_setting_group.addSettingCard(self.simulator_port_chance_card)
         self.simulator_setting_group.addSettingCard(self.start_emulator_timeout_chance_card)
 
@@ -715,6 +743,8 @@ class SettingInterface(QWidget):
         self.simulator_setting_group.retranslateUi()
         self.simulator_setting_card.retranslateUi()
         self.simulator_type_setting_card.retranslateUi()
+        self.bluestacks_instance_setting_card.retranslateUi()
+        self.simulator_host_setting_card.retranslateUi()
         self.simulator_port_chance_card.retranslateUi()
         self.start_emulator_timeout_chance_card.retranslateUi()
         self.game_path_card.retranslateUi()
