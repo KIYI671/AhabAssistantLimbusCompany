@@ -1,5 +1,6 @@
 import random
 import re
+import threading
 from time import sleep, time
 from typing import Callable, TypeVar
 
@@ -10,12 +11,25 @@ from adbutils.errors import AdbError
 
 from module.config import cfg
 from module.logger import log
+from utils.adb_endpoint import build_adb_endpoint
 
 from .. import AbstractInput
 from ..scroll_swipe import build_scroll_swipe_plan
+from .bluestacks_control import (
+    BLUESTACKS_SIMULATOR_TYPE,
+    BlueStacksLauncher,
+    is_local_adb_host,
+)
 from .pyminitouch import MNTDevice
 
 T = TypeVar("T")
+ADB_CONNECT_TIMEOUT = 10.0
+BLUESTACKS_ADB_POLL_TIMEOUT = 2.0
+ADB_GAME_STATE_TIMEOUT = 5.0
+ADB_GAME_START_TIMEOUT = 15.0
+ADB_INITIALIZATION_ERROR_LIMIT = 3
+BLUESTACKS_BOOT_ADB_ERROR_LIMIT = 3
+BLUESTACKS_BOOT_OFFLINE_GRACE_SECONDS = 30
 
 key_list = {
     "a": 29,
@@ -68,22 +82,41 @@ key_list = {
 }
 
 
+def _adb_connect_succeeded(message: str) -> bool:
+    normalized = message.strip().lower()
+    return normalized.startswith(("connected to ", "already connected to "))
+
+
+class BlueStacksAdbUnresponsiveError(RuntimeError):
+    """BlueStacks is running, but its Android ADB transport does not answer commands."""
+
+
 class SimulatorControl(AbstractInput):
     connection_device = None
+    _connection_lock = threading.RLock()
+
+    @classmethod
+    def get_connection(cls):
+        """返回唯一连接；连接重建期间等待，避免并发启动多个 minitouch。"""
+        with cls._connection_lock:
+            if cls.connection_device is None:
+                cls()
+            return cls.connection_device
 
     @staticmethod
     def clean_connect():
-        if SimulatorControl.connection_device is None:
-            return
-        try:
-            SimulatorControl.connection_device.simulator_control.stop()
-        except Exception as e:
-            log.debug(f"清理minitouch连接失败: {e}")
-        try:
-            SimulatorControl.connection_device.adb_disconnect()
-        except Exception as e:
-            log.debug(f"断开ADB连接失败: {e}")
-        SimulatorControl.connection_device = None
+        with SimulatorControl._connection_lock:
+            if SimulatorControl.connection_device is None:
+                return
+            try:
+                SimulatorControl.connection_device.simulator_control.stop()
+            except Exception as e:
+                log.debug(f"清理minitouch连接失败: {e}")
+            try:
+                SimulatorControl.connection_device.adb_disconnect()
+            except Exception as e:
+                log.debug(f"断开ADB连接失败: {e}")
+            SimulatorControl.connection_device = None
 
     def __init__(self) -> None:
         self.is_pause = False
@@ -94,16 +127,20 @@ class SimulatorControl(AbstractInput):
         self.simulator_max_y = None
         self.simulator_port = None
         self.simulator_bluestacks = False
+        self.bluestacks_launcher = None
+        self.bluestacks_instance = None
 
         self.game_package_name = "com.ProjectMoon.LimbusCompany"
 
-        self.get_simulator()
+        with SimulatorControl._connection_lock:
+            if SimulatorControl.connection_device is None:
+                self.get_simulator()
 
     @staticmethod
     def _is_recoverable_connection_error(error: Exception) -> bool:
-        message = str(error)
-        return isinstance(error, AdbError) or any(
-            marker in message
+        message = str(error).casefold()
+        return isinstance(error, (AdbError, TimeoutError, BlueStacksAdbUnresponsiveError)) or any(
+            marker.casefold() in message
             for marker in (
                 "device",
                 "not found",
@@ -115,31 +152,65 @@ class SimulatorControl(AbstractInput):
                 "截图解码失败",
                 "minitouch",
                 "Broken pipe",
+                "timed out",
+                "timeout",
+                "超时",
             )
         )
 
-    def reconnect(self, reason: str) -> bool:
-        if not bool(cfg.get_value("adb_reconnect_on_error", True)):
-            return False
+    def _is_local_bluestacks(self) -> bool:
+        return (
+            getattr(cfg, "simulator_type", 10) == BLUESTACKS_SIMULATOR_TYPE
+            and is_local_adb_host(cfg.simulator_host)
+        )
 
-        log.warning(f"检测到模拟器连接失效，正在重建ADB/minitouch连接: {reason}")
-        try:
-            if getattr(self, "simulator_control", None) is not None:
-                self.simulator_control.stop()
-        except Exception as e:
-            log.debug(f"停止旧minitouch连接失败: {e}")
-        try:
-            self.adb_disconnect()
-        except Exception as e:
-            log.debug(f"断开旧ADB连接失败: {e}")
-
+    def _clear_connection_state(self) -> None:
         self.simulator_device = None
         self.simulator_control = None
         self.simulator_port = None
         SimulatorControl.connection_device = None
-        sleep(1)
-        self.get_simulator()
-        return True
+
+    def _restart_unresponsive_local_bluestacks(self, reason: Exception) -> None:
+        launcher = self.bluestacks_launcher or BlueStacksLauncher.discover()
+        instance = self.bluestacks_instance or launcher.resolve_instance(
+            str(cfg.get_value("bluestacks_instance_name", "")),
+            int(cfg.simulator_port),
+        )
+        log.warning(
+            f"BlueStacks 5 实例 {instance.name} 的 ADB 连续无响应，"
+            f"将完整重启实例后重建连接: {reason}"
+        )
+        try:
+            if getattr(self, "simulator_control", None) is not None:
+                self.simulator_control.stop()
+        except Exception as exc:
+            log.debug(f"重启蓝叠前停止 minitouch 失败: {exc}")
+        self._clear_connection_state()
+        launcher.close(instance)
+        self.bluestacks_launcher = launcher
+        self.bluestacks_instance = instance
+        sleep(2)
+
+    def reconnect(self, reason: str) -> bool:
+        with SimulatorControl._connection_lock:
+            if not bool(cfg.get_value("adb_reconnect_on_error", True)):
+                return False
+
+            log.warning(f"检测到模拟器连接失效，正在重建ADB/minitouch连接: {reason}")
+            try:
+                if getattr(self, "simulator_control", None) is not None:
+                    self.simulator_control.stop()
+            except Exception as e:
+                log.debug(f"停止旧minitouch连接失败: {e}")
+            try:
+                self.adb_disconnect()
+            except Exception as e:
+                log.debug(f"断开旧ADB连接失败: {e}")
+
+            self._clear_connection_state()
+            sleep(1)
+            self.get_simulator()
+            return True
 
     def _call_with_reconnect(self, action: str, func: Callable[[], T]) -> T:
         try:
@@ -154,7 +225,7 @@ class SimulatorControl(AbstractInput):
         def _start_game():
             if self.simulator_device is None:
                 self.get_simulator()
-            self.simulator_device.app_start(self.game_package_name)
+            self._start_game_via_adb()
 
         try:
             self._call_with_reconnect("启动游戏", _start_game)
@@ -169,49 +240,183 @@ class SimulatorControl(AbstractInput):
             sleep(5)
             self._call_with_reconnect("启动游戏", _start_game)
 
+    def _start_game_via_adb(self) -> None:
+        activities = self.simulator_device.shell(
+            ["dumpsys", "activity", "activities"],
+            timeout=ADB_GAME_STATE_TIMEOUT,
+        )
+        foreground_pattern = rf"mResumedActivity:.*\s{re.escape(self.game_package_name)}/"
+        if re.search(foreground_pattern, activities):
+            log.debug("游戏已在模拟器前台运行，跳过重复启动")
+            return
+
+        self.simulator_device.shell(
+            [
+                "monkey",
+                "-p",
+                self.game_package_name,
+                "-c",
+                "android.intent.category.LAUNCHER",
+                "1",
+            ],
+            timeout=ADB_GAME_START_TIMEOUT,
+        )
+
+    def _wait_for_android_boot(self) -> None:
+        timeout = max(1, int(cfg.start_emulator_timeout))
+        deadline = time() + timeout
+        attempt = 0
+        consecutive_adb_errors = 0
+        last_adb_error: Exception | None = None
+        offline_since: float | None = None
+        while (remaining := deadline - time()) > 0:
+            try:
+                completed = self.simulator_device.shell(["getprop", "sys.boot_completed"], timeout=5).strip()
+                consecutive_adb_errors = 0
+                offline_since = None
+                if completed == "1":
+                    return
+            except Exception as exc:
+                consecutive_adb_errors += 1
+                last_adb_error = exc
+                is_transient_offline = "device offline" in str(exc).casefold()
+                if is_transient_offline and offline_since is None:
+                    offline_since = time()
+                offline_grace_expired = (
+                    not is_transient_offline
+                    or offline_since is None
+                    or time() - offline_since >= BLUESTACKS_BOOT_OFFLINE_GRACE_SECONDS
+                )
+                if consecutive_adb_errors >= BLUESTACKS_BOOT_ADB_ERROR_LIMIT and offline_grace_expired:
+                    raise BlueStacksAdbUnresponsiveError(
+                        "BlueStacks ADB 启动状态检查连续失败 "
+                        f"{consecutive_adb_errors} 次: {last_adb_error}"
+                    ) from exc
+            attempt += 1
+            if attempt % 10 == 0:
+                elapsed = min(timeout, int(timeout - max(remaining, 0)))
+                log.info(f"正在等待 BlueStacks 5 Android 系统就绪 ({elapsed}/{timeout}s)")
+            sleep(min(1, remaining))
+        raise RuntimeError(f"BlueStacks 5 Android 系统启动超时 ({timeout}s)")
+
     def adb_connect(self):
-        # Try to connect
+        """连接设置中指定的本地或远程 ADB TCP 设备。"""
+        host = cfg.simulator_host
         port = int(cfg.simulator_port)
-        if port <= 0:
-            raise RuntimeError("其他模拟器需要填写 ADB 端口，例如蓝叠/雷电常见为 5555")
-        for _ in range(3):
-            self.simulator_port = f"127.0.0.1:{port}"
-            msg = adb.connect(self.simulator_port)
+        should_auto_start_bluestacks = (
+            getattr(cfg, "simulator_type", 10) == BLUESTACKS_SIMULATOR_TYPE and is_local_adb_host(host)
+        )
+        if should_auto_start_bluestacks:
+            self.bluestacks_launcher = BlueStacksLauncher.discover()
+            self.bluestacks_instance = self.bluestacks_launcher.resolve_instance(
+                str(cfg.get_value("bluestacks_instance_name", "")),
+                port,
+            )
+            port = self.bluestacks_instance.adb_port
+
+        self.simulator_port = build_adb_endpoint(host, port)
+        last_message = ""
+        initial_attempts = 1 if should_auto_start_bluestacks else 3
+        for attempt in range(initial_attempts):
+            try:
+                msg = adb.connect(self.simulator_port, timeout=ADB_CONNECT_TIMEOUT)
+                last_message = str(msg)
+            except Exception as exc:
+                last_message = str(exc)
             # Connected to 127.0.0.1:59865
             # Already connected to 127.0.0.1:59865
-            if "connected" in msg:
-                log.debug(f"成功连接至:{self.simulator_port},连接信息: {msg}")
-                break
-            # bad port number '598265' in '127.0.0.1:598265'
-            elif "bad port" in msg:
-                log.error(f"连接失败，端口号{self.simulator_port}不正确，可能是拼写错误或不规范")
+            if _adb_connect_succeeded(last_message):
+                log.debug(f"成功连接至:{self.simulator_port},连接信息: {last_message}")
+                return
+            log.warning(
+                f"连接模拟器失败 ({attempt + 1}/{initial_attempts}): "
+                f"endpoint={self.simulator_port}, response={last_message}"
+            )
+            sleep(1)
+
+        if should_auto_start_bluestacks:
+            self.bluestacks_launcher.launch(self.bluestacks_instance)
+            timeout = max(1, int(cfg.start_emulator_timeout))
+            deadline = time() + timeout
+            attempt = 0
+            while (remaining := deadline - time()) > 0:
+                sleep(min(1, remaining))
+                remaining = deadline - time()
+                try:
+                    msg = adb.connect(
+                        self.simulator_port,
+                        timeout=max(0.1, min(BLUESTACKS_ADB_POLL_TIMEOUT, remaining)),
+                    )
+                    last_message = str(msg)
+                except Exception as exc:
+                    last_message = str(exc)
+                if _adb_connect_succeeded(last_message):
+                    log.info(
+                        f"BlueStacks 5 实例 {self.bluestacks_instance.name} 已启动，"
+                        f"ADB 已连接至 {self.simulator_port}"
+                    )
+                    return
+                attempt += 1
+                if attempt % 10 == 0:
+                    elapsed = min(timeout, int(timeout - max(remaining, 0)))
+                    log.info(f"正在等待 BlueStacks 5 启动 ({elapsed}/{timeout}s)")
+        raise RuntimeError(f"无法通过 ADB 连接模拟器 {self.simulator_port}: {last_message or 'ADB 未返回原因'}")
 
     def adb_disconnect(self):
+        if self.simulator_port is None:
+            return
         try:
             for _ in range(3):
                 msg = adb.disconnect(self.simulator_port)
                 # Connected to 127.0.0.1:59865
                 # Already connected to 127.0.0.1:59865
-                if "disconnected" in msg:
+                if "disconnected" in msg.lower():
                     log.debug(f"成功断开连接于:{self.simulator_port},连接信息: {msg}")
                     break
-                # bad port number '598265' in '127.0.0.1:598265'
-                elif "bad port" in msg:
-                    log.error(f"断开连接失败，端口号{self.simulator_port}不正确，可能是拼写错误或不规范")
-        except Exception:
-            pass
+        except Exception as exc:
+            log.debug(f"断开模拟器 ADB 连接失败: endpoint={self.simulator_port}, error={exc}")
+
+    def close_simulator(self) -> None:
+        """Close the selected local BlueStacks instance."""
+        if getattr(cfg, "simulator_type", 10) != BLUESTACKS_SIMULATOR_TYPE:
+            raise RuntimeError("当前模拟器类型不支持整机关闭")
+        if not is_local_adb_host(cfg.simulator_host):
+            raise RuntimeError("远程蓝叠仅支持 ADB 连接，不能关闭远程主机上的模拟器")
+
+        launcher = self.bluestacks_launcher or BlueStacksLauncher.discover()
+        instance = self.bluestacks_instance or launcher.resolve_instance(
+            str(cfg.get_value("bluestacks_instance_name", "")),
+            int(cfg.simulator_port),
+        )
+        if getattr(self, "simulator_control", None) is not None:
+            try:
+                self.simulator_control.stop()
+            except Exception as exc:
+                log.debug(f"关闭蓝叠前停止 minitouch 失败: {exc}")
+        self.adb_disconnect()
+        launcher.close(instance)
+        self.simulator_device = None
+        self.simulator_control = None
+        self.simulator_port = None
+        SimulatorControl.connection_device = None
 
     def get_simulator(self):
         if self.simulator_device is not None:
             return self.simulator_device
 
         last_error: Exception | None = None
-        for attempt in range(3):
+        restarted_unresponsive_bluestacks = False
+        adb_error_attempts = 0
+        while True:
             try:
                 if self.simulator_port is None:
                     self.adb_connect()
 
                 self.simulator_device = adb.device(self.simulator_port)
+
+                if getattr(cfg, "simulator_type", 10) == BLUESTACKS_SIMULATOR_TYPE:
+                    self._wait_for_android_boot()
+                    self._start_game_via_adb()
 
                 # 提取目标设备的序列号
                 target_serial = self.simulator_device.serial
@@ -240,16 +445,52 @@ class SimulatorControl(AbstractInput):
                 return self.simulator_device
             except AdbError as e:
                 last_error = e
-                log.error(f"获取模拟器设备失败，ADB 错误: {e}，正在尝试重新连接 ({attempt + 1}/3)")
+                adb_error_attempts += 1
+                log.error(
+                    f"获取模拟器设备失败，ADB 错误: {e}，正在尝试重新连接 "
+                    f"({adb_error_attempts}/{ADB_INITIALIZATION_ERROR_LIMIT})"
+                )
                 try:
                     self.adb_disconnect()
                 except Exception:
                     pass
                 self.simulator_device = None
                 self.simulator_port = None
+
+                if (
+                    adb_error_attempts >= ADB_INITIALIZATION_ERROR_LIMIT
+                    and not restarted_unresponsive_bluestacks
+                    and self._is_local_bluestacks()
+                ):
+                    restarted_unresponsive_bluestacks = True
+                    log.warning("检测到本地 BlueStacks ADB 无响应，连续三次重连失败")
+                    try:
+                        self._restart_unresponsive_local_bluestacks(e)
+                    except Exception as restart_error:
+                        last_error = restart_error
+                        log.error(f"重启无响应的 BlueStacks 5 实例失败: {restart_error}")
+                        break
+                    adb_error_attempts = 0
+                    continue
+
+                if adb_error_attempts >= ADB_INITIALIZATION_ERROR_LIMIT:
+                    break
                 sleep(1)
             except Exception as e:
                 last_error = e
+                if (
+                    not restarted_unresponsive_bluestacks
+                    and self._is_local_bluestacks()
+                    and self._is_recoverable_connection_error(e)
+                ):
+                    restarted_unresponsive_bluestacks = True
+                    try:
+                        self._restart_unresponsive_local_bluestacks(e)
+                    except Exception as restart_error:
+                        last_error = restart_error
+                        log.error(f"重启无响应的 BlueStacks 5 实例失败: {restart_error}")
+                        break
+                    continue
                 log.error(f"初始化模拟器时出现未知异常: {e}")
                 break
 
@@ -454,9 +695,22 @@ class SimulatorControl(AbstractInput):
         if self.simulator_bluestacks:
             end_x = max(1, min(x + dx, self.simulator_max_x - 1))
             end_y = max(1, min(y + dy, self.simulator_max_y - 1))
-            plan = build_scroll_swipe_plan(
-                x, y, end_x - x, end_y - y, duration
+            duration_ms = max(1, round(duration * 1000))
+            command = [
+                "input",
+                "swipe",
+                str(round(x)),
+                str(round(y)),
+                str(round(end_x)),
+                str(round(end_y)),
+                str(duration_ms),
+            ]
+
+            self._call_with_reconnect(
+                "蓝叠原生快速滑动",
+                lambda: self.simulator_device.shell(command),
             )
+            return
         else:
             plan = [
                 (self._scale(*point), move_duration)
