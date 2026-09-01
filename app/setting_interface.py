@@ -215,7 +215,7 @@ class SettingInterface(QWidget):
             config_name="simulator_host",
             content=QT_TRANSLATE_NOOP(
                 "PushSettingCardText",
-                "蓝叠或其他模拟器的 ADB 主机名/IP；远程连接时填写远程设备地址",
+                "模拟器的 ADB 主机名/IP，无特殊情况保持默认即可；远程连接时填写远程设备地址",
             ),
             validator=normalize_adb_host,
             parent=self.simulator_setting_group,
@@ -619,6 +619,8 @@ class SettingInterface(QWidget):
         self.__onWinInputTypeChanged()
         self.autostart_card.switchButton.checkedChanged.connect(self.__onAutostartCardChanged)
         self.theme_card.valueChanged.connect(self.__onThemeCardChanged)
+        self.simulator_type_setting_card.valueChanged.connect(self.__onSimulatorTypeChanged)
+        self.__onSimulatorTypeChanged()
 
         # 最后连接外链卡片，统一复用打开 URL 的回调工厂。
         self.github_card.clicked.connect(self.__openUrl("https://github.com/KIYI671/AhabAssistantLimbusCompany"))
@@ -694,6 +696,10 @@ class SettingInterface(QWidget):
         self.win_input_type_card.content = content
         self.win_input_type_card.setContent(content)
         self.win_input_type_card.retranslateUi()
+
+    def __onSimulatorTypeChanged(self):
+        self.bluestacks_instance_setting_card.setVisible(cfg.get_value("simulator_type") == 1)
+        self.simulator_setting_group.adjustSize()
 
     def __onZoomCardValueChanged(self):
         bar = BaseInfoBar.success(
