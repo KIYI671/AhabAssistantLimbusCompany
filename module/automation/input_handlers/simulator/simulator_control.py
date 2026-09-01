@@ -27,6 +27,7 @@ ADB_CONNECT_TIMEOUT = 10.0
 BLUESTACKS_ADB_POLL_TIMEOUT = 2.0
 ADB_GAME_STATE_TIMEOUT = 5.0
 ADB_GAME_START_TIMEOUT = 15.0
+ADB_INITIALIZATION_ERROR_LIMIT = 3
 BLUESTACKS_BOOT_ADB_ERROR_LIMIT = 3
 BLUESTACKS_BOOT_OFFLINE_GRACE_SECONDS = 30
 
@@ -405,7 +406,8 @@ class SimulatorControl(AbstractInput):
 
         last_error: Exception | None = None
         restarted_unresponsive_bluestacks = False
-        for attempt in range(3):
+        adb_error_attempts = 0
+        while True:
             try:
                 if self.simulator_port is None:
                     self.adb_connect()
@@ -443,13 +445,36 @@ class SimulatorControl(AbstractInput):
                 return self.simulator_device
             except AdbError as e:
                 last_error = e
-                log.error(f"获取模拟器设备失败，ADB 错误: {e}，正在尝试重新连接 ({attempt + 1}/3)")
+                adb_error_attempts += 1
+                log.error(
+                    f"获取模拟器设备失败，ADB 错误: {e}，正在尝试重新连接 "
+                    f"({adb_error_attempts}/{ADB_INITIALIZATION_ERROR_LIMIT})"
+                )
                 try:
                     self.adb_disconnect()
                 except Exception:
                     pass
                 self.simulator_device = None
                 self.simulator_port = None
+
+                if (
+                    adb_error_attempts >= ADB_INITIALIZATION_ERROR_LIMIT
+                    and not restarted_unresponsive_bluestacks
+                    and self._is_local_bluestacks()
+                ):
+                    restarted_unresponsive_bluestacks = True
+                    log.warning("检测到本地 BlueStacks ADB 无响应，连续三次重连失败")
+                    try:
+                        self._restart_unresponsive_local_bluestacks(e)
+                    except Exception as restart_error:
+                        last_error = restart_error
+                        log.error(f"重启无响应的 BlueStacks 5 实例失败: {restart_error}")
+                        break
+                    adb_error_attempts = 0
+                    continue
+
+                if adb_error_attempts >= ADB_INITIALIZATION_ERROR_LIMIT:
+                    break
                 sleep(1)
             except Exception as e:
                 last_error = e
