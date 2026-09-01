@@ -65,3 +65,10 @@ def test_config_model_has_no_hardcoded_defaults() -> None:
     assert (
         with_default == []
     ), f"下列 ConfigModel field 带有 default：{with_default}"
+
+
+def test_runtime_intervals_use_responsive_safe_defaults() -> None:
+    data = YAML().load(EXAMPLE_PATH.read_text(encoding="utf-8"))
+
+    assert data["screenshot_interval"] == 0.15
+    assert data["mouse_action_interval"] == 0.05
