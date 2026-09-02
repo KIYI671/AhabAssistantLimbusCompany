@@ -361,6 +361,14 @@ def handle_update_status(
 
 
 @begin_and_finish_time_log(task_name="检查更新")
+class _LinuxUpdateGateResult:
+    """Linux 下跳过更新检查时使用的占位结果：视为已是最新版本。"""
+
+    is_prerelease = False
+    is_current_version_latest = True
+    new_version = None
+
+
 def check_update(
     self,
     timeout=5,
@@ -382,6 +390,15 @@ def check_update(
         show_failure: 是否显示“检查更新失败”的提示。
         show_update_dialog: 是否显示“发现新版本”的更新弹窗。
     """
+
+    # Linux 产物没有 Windows 更新器（AALC Updater.exe），自动更新无法落地；
+    # 且更新源指向的发布包为 Windows 版本，误装会破坏 Linux 安装，因此直接跳过，
+    # 并以"已是最新版本"的结果放行调用方的后续流程（如图片资源同步门禁）。
+    if not IS_WINDOWS:
+        log.debug("Linux 版本暂不支持自动更新，请关注发布页手动下载")
+        if on_finished is not None:
+            on_finished(UpdateStatus.SUCCESS, _LinuxUpdateGateResult())
+        return
 
     # 第一步：先创建当前这一次检查专属的线程实例，避免后续再次触发检查时覆盖回调引用。
     update_thread = UpdateThread(timeout, flag)
