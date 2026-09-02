@@ -1,7 +1,6 @@
 import ctypes
 import os
 import re
-import subprocess
 import sys
 from enum import Enum
 
@@ -631,9 +630,12 @@ class MainWindow(FramelessWindow):
     def download_and_install(self, file_name):
         messages_box = MessageBoxConfirm(self.tr("更新提醒"), self.tr("下载已经完成，是否开始更新"), self.window())
         if messages_box.exec():
-            source_file = os.path.abspath("./AALC Updater.exe")
+            from module.platform_compat import IS_WINDOWS, start_detached
+
+            updater_name = "AALC Updater.exe" if IS_WINDOWS else "AALC-Updater"
+            source_file = os.path.abspath(f"./{updater_name}")
             assert_name = file_name
-            subprocess.Popen([source_file, assert_name], creationflags=subprocess.DETACHED_PROCESS)
+            start_detached([source_file, assert_name])
 
     def retranslateUi(self):
         self.pivot.setItemText("farming_interface", self.tr("一键长草"))

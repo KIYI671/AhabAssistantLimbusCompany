@@ -1,9 +1,12 @@
 from time import sleep
 from typing import TYPE_CHECKING, overload
 
-import win32api
-import win32con
-import win32gui
+from module.platform_compat import IS_WINDOWS
+
+if IS_WINDOWS:
+    import win32api
+    import win32con
+    import win32gui
 
 from app import mediator
 from module.config import cfg
@@ -12,6 +15,15 @@ from utils.singletonmeta import SingletonMeta
 
 if TYPE_CHECKING:
     from .game import Game
+
+
+def create_handle():
+    """按平台创建对应的窗口句柄管理器"""
+    if IS_WINDOWS:
+        return Handle()
+    from module.game_and_screen.x11_handle import X11Handle
+
+    return X11Handle()
 
 
 class Handle:
@@ -72,6 +84,13 @@ class Handle:
             if win32gui.IsWindow(self._hwnd):
                 log.info(f"重新获取窗口句柄成功, 新句柄为 {self._hwnd}", stacklevel=3)
         return self._hwnd
+
+    @property
+    def pid(self) -> int:
+        """游戏窗口所属进程 PID（用于结束游戏进程）"""
+        from module.platform_compat import get_window_pid_on_windows
+
+        return get_window_pid_on_windows(self.hwnd) or 0
 
     @property
     def isTransparent(self) -> bool:
@@ -194,11 +213,17 @@ class Handle:
         win32api.PostMessage(hwnd, win32con.WM_SYSKEYUP, win32con.VK_RETURN, 0xC0000001)
         return True
 
-    def restore(self) -> None:
-        """恢复窗口"""
+    def restore(self, activate: bool = False) -> None:
+        """恢复窗口
+
+        Parameters
+        ---
+        activate: bool
+            是否在恢复的同时激活窗口（对应 SW_RESTORE），默认仅显示不激活
+        """
         if self.hwnd == 0:
             return
-        win32gui.ShowWindow(self.hwnd, win32con.SW_SHOWNOACTIVATE)
+        win32gui.ShowWindow(self.hwnd, win32con.SW_RESTORE if activate else win32con.SW_SHOWNOACTIVATE)
 
     @overload
     def client_to_window(self, x: int, y: int, /) -> tuple[int, int]: ...
@@ -253,6 +278,78 @@ class Handle:
             win32con.SWP_NOSIZE | win32con.SWP_NOZORDER,
         )
 
+    def set_window_size(self, width: int, height: int) -> None:
+        """设置窗口（外框）大小，保持位置与 Z 序不变"""
+        if self.hwnd == 0:
+            return
+        win32gui.SetWindowPos(
+            self.hwnd,
+            None,
+            0,
+            0,
+            int(width),
+            int(height),
+            win32con.SWP_NOZORDER | win32con.SWP_NOMOVE,
+        )
+
+    def set_topmost(self, topmost: bool) -> None:
+        """设置窗口是否始终置顶"""
+        if self.hwnd == 0:
+            return
+        win32gui.SetWindowPos(
+            self.hwnd,
+            win32con.HWND_TOPMOST if topmost else win32con.HWND_NOTOPMOST,
+            0,
+            0,
+            0,
+            0,
+            win32con.SWP_NOMOVE | win32con.SWP_NOSIZE,
+        )
+
+    def set_decorated(self, keep_caption: bool = True) -> None:
+        """调整窗口装饰：始终移除可调整边框与最大化按钮，keep_caption 决定是否保留标题栏"""
+        if self.hwnd == 0:
+            return
+        style = win32gui.GetWindowLong(self.hwnd, win32con.GWL_STYLE)
+        style &= ~win32con.WS_THICKFRAME
+        if not keep_caption:
+            style &= ~win32con.WS_CAPTION
+            style &= ~win32con.WS_BORDER
+        style &= ~(win32con.WS_SIZEBOX | win32con.WS_MAXIMIZEBOX)
+        win32gui.SetWindowLong(self.hwnd, win32con.GWL_STYLE, style)
+        win32gui.SetWindowPos(
+            self.hwnd,
+            None,
+            0,
+            0,
+            0,
+            0,
+            win32con.SWP_NOMOVE | win32con.SWP_NOSIZE | win32con.SWP_NOZORDER | win32con.SWP_FRAMECHANGED,
+        )
+
+    def set_window_transparent(self, transparent: bool = True) -> None:
+        """设置窗口是否透明, 同时设置鼠标穿透"""
+        hwnd = self.hwnd
+        if hwnd == 0:
+            return
+        if not cfg.background_click:
+            transparent = False
+
+        ex_style = win32gui.GetWindowLong(hwnd, win32con.GWL_EXSTYLE)
+        if not (ex_style & win32con.WS_EX_LAYERED) and transparent:
+            ex_style = ex_style | win32con.WS_EX_LAYERED
+            win32gui.SetWindowLong(hwnd, win32con.GWL_EXSTYLE, ex_style)
+
+        if transparent:
+            ex_style |= win32con.WS_EX_LAYERED
+            ex_style |= win32con.WS_EX_TRANSPARENT
+            win32gui.SetLayeredWindowAttributes(hwnd, 0, 0, win32con.LWA_ALPHA)
+        else:
+            ex_style &= ~win32con.WS_EX_LAYERED
+            ex_style &= ~win32con.WS_EX_TRANSPARENT
+        win32gui.SetWindowLong(hwnd, win32con.GWL_EXSTYLE, ex_style)
+        self._transparent = transparent
+
     def bring_window_into_view(self, work_area: bool = False) -> None:
         """将窗口移动到屏幕可见区域"""
         rect = self.rect(True)
@@ -281,35 +378,12 @@ class Handle:
         if need_x != rect[0] or need_y != rect[1]:
             self.set_window_pos(x, y)
 
-    def set_window_transparent(self, transparent: bool = True) -> None:
-        """设置窗口是否透明, 同时设置鼠标穿透"""
-        hwnd = self.hwnd
-        if hwnd == 0:
-            return
-        if not cfg.background_click:
-            transparent = False
-
-        ex_style = win32gui.GetWindowLong(hwnd, win32con.GWL_EXSTYLE)
-        if not (ex_style & win32con.WS_EX_LAYERED) and transparent:
-            ex_style = ex_style | win32con.WS_EX_LAYERED
-            win32gui.SetWindowLong(hwnd, win32con.GWL_EXSTYLE, ex_style)
-
-        if transparent:
-            ex_style |= win32con.WS_EX_LAYERED
-            ex_style |= win32con.WS_EX_TRANSPARENT
-            win32gui.SetLayeredWindowAttributes(hwnd, 0, 0, win32con.LWA_ALPHA)
-        else:
-            ex_style &= ~win32con.WS_EX_LAYERED
-            ex_style &= ~win32con.WS_EX_TRANSPARENT
-        win32gui.SetWindowLong(hwnd, win32con.GWL_EXSTYLE, ex_style)
-        self._transparent = transparent
-
 
 class Screen(metaclass=SingletonMeta):
     def __init__(self, title: str, game: "Game"):
         self.title = title
         self.game = game
-        self.handle = Handle()
+        self.handle = create_handle()
 
     def init_handle(self) -> bool:
         try:
@@ -364,86 +438,33 @@ class Screen(metaclass=SingletonMeta):
 
     def reduce_miscontact(self, pos_style: str) -> None:
         """通过调整窗口置顶减少误触"""
-        # 获取适用于win32gui与win32con的窗口句柄
-        hwnd = self.handle.hwnd
-
         # 设置窗口始终置顶
         if not cfg.background_click:
-            win32gui.SetWindowPos(
-                hwnd,
-                win32con.HWND_TOPMOST,
-                0,
-                0,
-                0,
-                0,
-                win32con.SWP_NOMOVE | win32con.SWP_NOSIZE,
-            )
-        # 获取窗口的当前样式属性值
-        style = win32gui.GetWindowLong(hwnd, win32con.GWL_STYLE)
-        # 移除窗口的可调整大小的边框，使得窗口大小固定
-        style &= ~win32con.WS_THICKFRAME
-        if pos_style != "free":
-            # # 移除窗口的标题栏
-            style &= ~win32con.WS_CAPTION
-            # 移除窗口的单行边框
-            style &= ~win32con.WS_BORDER
-        # 位运算符 &= 结合按位取反操作符 ~
-        # 将 win32con.WS_SIZEBOX、win32con.WS_MAXIMIZEBOX 这常量对应的位设置为 0，
-        # 移除窗口大小调整框、最大化按钮
-        style &= ~(win32con.WS_SIZEBOX | win32con.WS_MAXIMIZEBOX)
-        # 将修改后的样式值 style 应用到窗口的样式属性上
-        win32gui.SetWindowLong(hwnd, win32con.GWL_STYLE, style)
-        win32gui.SetWindowPos(
-            hwnd,
-            None,
-            0,
-            0,
-            0,
-            0,
-            win32con.SWP_NOMOVE | win32con.SWP_NOSIZE | win32con.SWP_NOZORDER | win32con.SWP_FRAMECHANGED,
-        )
+            self.handle.set_topmost(True)
+        # 移除窗口的可调整大小的边框，使得窗口大小固定；非 free 定位时同时移除标题栏
+        self.handle.set_decorated(keep_caption=(pos_style == "free"))
         sleep(0.1)  # 确保样式修改生效
 
     def adjust_win_size(self, set_win_size: tuple[int, int] = (1920, 1080)) -> None:
         """调整窗口大小"""
-        hwnd = self.handle.hwnd
         client_width, client_height = set_win_size
 
-        # 获取当前窗口和客户区大小
-        window_rect = win32gui.GetWindowRect(hwnd)
-        client_rect = win32gui.GetClientRect(hwnd)
-        if self.handle.client_to_window(0, 0) != (0, 0):
-            # 计算边框和标题栏厚度
-            window_width = window_rect[2] - window_rect[0]
-            window_height = window_rect[3] - window_rect[1]
-            current_client_width = client_rect[2]
-            current_client_height = client_rect[3]
+        # 获取当前窗口和客户区大小，计算装饰（边框+标题栏）厚度后补偿
+        window_rect = self.handle.rect()
+        client_rect = self.handle.rect(True)
+        window_width = window_rect[2] - window_rect[0]
+        window_height = window_rect[3] - window_rect[1]
+        current_client_width = client_rect[2] - client_rect[0]
+        current_client_height = client_rect[3] - client_rect[1]
 
-            width_diff = window_width - current_client_width
-            height_diff = window_height - current_client_height
-
-            # 计算需要的窗口大小
-            required_window_width = client_width + width_diff
-            required_window_height = client_height + height_diff
-        else:
-            required_window_width = client_width
-            required_window_height = client_height
-        # 设置窗口
-        win32gui.SetWindowPos(
-            hwnd,
-            None,
-            0,
-            0,
-            required_window_width,
-            required_window_height,
-            win32con.SWP_NOZORDER | win32con.SWP_NOMOVE,
-        )
+        required_window_width = client_width + (window_width - current_client_width)
+        required_window_height = client_height + (window_height - current_client_height)
+        self.handle.set_window_size(required_window_width, required_window_height)
 
     def adjust_win_position(self, set_win_position: str = "free") -> None:
         """调整窗口位置"""
         if set_win_position == "free":
             return
-        hwnd = self.handle.hwnd
         monitor_info = self.handle.monitor_info
         is_back: bool = cfg.background_click
         left, top, right, bottom = monitor_info["Monitor"] if is_back else monitor_info["Work"]
@@ -465,7 +486,7 @@ class Screen(metaclass=SingletonMeta):
         else:
             log.error(f"未知的窗口位置选项: {set_win_position}")
             return
-        win32gui.SetWindowPos(hwnd, None, *pos, 0, 0, win32con.SWP_NOSIZE)
+        self.handle.set_window_pos(*pos)
 
     def check_win_size(self, set_win_size: int) -> None:
         """检查窗口大小是否合适，若不合适则切换全屏再切换回窗口模式"""
@@ -512,54 +533,17 @@ class Screen(metaclass=SingletonMeta):
         任务结束链路会传 activate=False，只恢复窗口样式，不重新抢占前台焦点。
         """
         try:
-            hwnd = self.handle.hwnd
             log.debug(f"开始重置游戏窗口，activate={activate}")
-            # 获取窗口的当前样式
-            style = win32gui.GetWindowLong(hwnd, win32con.GWL_STYLE)
-            # 获取窗口的当前扩展样式
-            ex_style = win32gui.GetWindowLong(hwnd, win32con.GWL_EXSTYLE)
-
             # 恢复窗口样式：标题栏、大小调整框、最大化按钮
-            style |= win32con.WS_CAPTION | win32con.WS_THICKFRAME | win32con.WS_MAXIMIZEBOX
-            # 应用修改后的样式
-            win32gui.SetWindowLong(hwnd, win32con.GWL_STYLE, style)
+            self.handle.set_decorated(keep_caption=True)
 
             # 取消始终置顶
-            ex_style &= ~win32con.WS_EX_TOPMOST
-            # 应用修改后的扩展样式
-            win32gui.SetWindowLong(hwnd, win32con.GWL_EXSTYLE, ex_style)
+            self.handle.set_topmost(False)
             self.handle.set_window_transparent(False)
-
-            # 更新窗口，使样式改变生效
-            frame_flags = win32con.SWP_FRAMECHANGED | win32con.SWP_NOMOVE | win32con.SWP_NOSIZE | win32con.SWP_NOZORDER
-            if not activate:
-                frame_flags |= win32con.SWP_NOACTIVATE
-            win32gui.SetWindowPos(
-                hwnd,
-                None,
-                0,
-                0,
-                0,
-                0,
-                frame_flags,
-            )
 
             # 恢复窗口状态
             # 结束清理只需要恢复外观，不应该把前台再交回游戏窗口。
-            show_cmd = win32con.SW_RESTORE if activate else win32con.SW_SHOWNOACTIVATE
-            win32gui.ShowWindow(hwnd, show_cmd)
-            position_flags = win32con.SWP_NOMOVE | win32con.SWP_NOSIZE
-            if not activate:
-                position_flags |= win32con.SWP_NOACTIVATE
-            win32gui.SetWindowPos(
-                hwnd,
-                win32con.HWND_NOTOPMOST,
-                0,
-                0,
-                0,
-                0,
-                position_flags,
-            )
+            self.handle.restore(activate=activate)
 
             # 获取窗口客户区的大小
             client_width = self.handle.width(client=True)
@@ -569,17 +553,9 @@ class Screen(metaclass=SingletonMeta):
             window_width = self.handle.width()
             window_height = self.handle.height()
 
-            size_flags = win32con.SWP_NOMOVE
-            if not activate:
-                size_flags |= win32con.SWP_NOACTIVATE
-            win32gui.SetWindowPos(
-                hwnd,
-                win32con.HWND_NOTOPMOST,
-                0,
-                0,
+            self.handle.set_window_size(
                 window_width * 2 - client_width,
                 window_height * 2 - client_height,
-                size_flags,
             )
         except Exception as e:
             log.error(f"重置窗口失败: {e}")

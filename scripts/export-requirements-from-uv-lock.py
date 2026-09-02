@@ -24,8 +24,11 @@ def main():
 
     filtered = []
     for line in result.stdout.splitlines():
-        # 删除macOS和Linux特供的依赖
-        if not (("darwin" in line or "linux" in line) and "sys_platform" in line):
+        # 删除 macOS/Linux 独占的依赖（形如 sys_platform == 'linux'/'darwin'）
+        # 保留跨平台环境标记（如 sys_platform != 'win32'）
+        marker = line.split(";", 1)[1] if ";" in line else ""
+        is_platform_exclusive = "sys_platform ==" in marker and ("linux" in marker or "darwin" in marker)
+        if not is_platform_exclusive:
             filtered.append(line)
 
     out_path = Path("requirements.txt")

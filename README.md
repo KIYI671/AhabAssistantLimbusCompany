@@ -78,7 +78,28 @@
 
 因为技术力不足，还搞了GUI和使用第三方OCR，所以导致文件比较大
 
-**注意**：Release基于x86_64架构，Windows系统。对于Arm架构（如苹果M系列芯片，树莓派等），RISCV架构和Mac系统，Linux系统暂不支持。如果需要在非支持的平台上运行AALC请参考**源码运行**和**构建指南**章节进行操作。也欢迎作为开发者提交PR进行多平台适配。未来根据用户需求也许会添加多平台的Release版本支持。
+**注意**：Release基于x86_64架构，Windows系统。对于Arm架构（如苹果M系列芯片，树莓派等）和RISCV架构暂不支持。
+
+### Linux 支持（实验性）
+
+Linux 平台支持已在 `feature/linux-support` 分支提供（x86_64，实验性），支持两种运行方式：
+
+1. **本机游戏模式**：通过 Steam/Proton 运行 Limbus Company，AALC 以 X11 协议定位游戏窗口并截图、输入。
+2. **模拟器模式**：通过 ADB 连接任意 Android 模拟器/设备（如 Waydroid 或远程设备），截图与输入全部走 ADB 通道。
+
+Linux 版的已知差异与要求：
+
+- 需要 **X11 会话**，或提供 XWayland 的 Wayland 会话（游戏经 Proton 默认以 X11 窗口运行）。
+  部分桌面环境（如启用输入限制的 KWin Wayland 会话）可能阻止程序注入鼠标键盘事件，遇到该问题时请改用 X11 会话或模拟器（ADB）模式。
+- 输入方式统一为前台输入（pyautogui/XTEST），设置中的“后台点击/窗口移动点击”选项在 Linux 下不生效。
+- 窗口透明与鼠标穿透（后台模式的附属功能）在 X11 下不可用，会自动跳过。
+- Windows 专属的 MuMu 模拟器 IPC 通道在 Linux 下不可用，模拟器模式请使用 ADB 连接方式（设置中的 BlueStacks/通用模拟器选项，或直接填写远程 ADB 地址）。
+- 任务完成通知使用 `notify-send`（绝大多数桌面环境自带）；防休眠使用 `systemd-inhibit`。
+- 每日定时任务通过 systemd 用户定时器实现，登录自启动通过 XDG autostart 实现。
+- 自动更新需要发布对应的 Linux 更新包；Windows 的 `AALC Updater.exe` 由 Linux 版 `AALC-Updater` 替代。
+- 运行前需安装系统依赖：`python-xlib`（pip 依赖会自动安装）、`adb`（模拟器模式需要，如 `android-tools` 包）。
+
+如果需要在非支持的平台上运行AALC请参考**源码运行**和**构建指南**章节进行操作。也欢迎作为开发者提交PR进行多平台适配。
 
 ---
 

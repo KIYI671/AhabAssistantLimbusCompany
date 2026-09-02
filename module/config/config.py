@@ -22,6 +22,12 @@ from utils.singletonmeta import SingletonMeta
 from .config_typing import ConfigModel, TeamSetting
 
 
+def _file_birth_time(path) -> float:
+    """获取文件创建时间；Linux 无 st_birthtime 时退回修改时间"""
+    stat = path.stat()
+    return getattr(stat, "st_birthtime", stat.st_mtime)
+
+
 class Config(metaclass=SingletonMeta):
     def __init__(self, version_path, example_path, config_path, backup_path: str = "config_backup"):
         self.yaml = YAML()
@@ -203,7 +209,7 @@ class Config(metaclass=SingletonMeta):
                 if self.backup_path.exists():
                     backup_files = [f for f in self.backup_path.iterdir() if f.is_file() and f.suffix == ".yaml"]
                     if backup_files:
-                        backup_files.sort(key=lambda f: f.stat().st_birthtime, reverse=True)
+                        backup_files.sort(key=lambda f: _file_birth_time(f), reverse=True)
                         log.info("配置文件不存在，存在备份配置，尝试从备份文件恢复配置")
                         self._load_config(backup_files[0])
                         return
@@ -218,7 +224,7 @@ class Config(metaclass=SingletonMeta):
                     else:
                         backup_files = []
                     if backup_files:
-                        backup_files.sort(key=lambda f: f.stat().st_birthtime, reverse=True)
+                        backup_files.sort(key=lambda f: _file_birth_time(f), reverse=True)
                         with open(backup_files[0], "r", encoding="utf-8") as backup_file:
                             loaded_config = self.yaml.load(backup_file) or {}
                         if loaded_config:
@@ -251,7 +257,7 @@ class Config(metaclass=SingletonMeta):
             if self.backup_path.exists():
                 backup_files = [f for f in self.backup_path.iterdir() if f.is_file() and f.suffix == ".yaml"]
                 if backup_files:
-                    backup_files.sort(key=lambda f: f.stat().st_birthtime, reverse=True)
+                    backup_files.sort(key=lambda f: _file_birth_time(f), reverse=True)
                     log.info("配置文件不存在，尝试从备份文件恢复配置")
                     self._load_config(backup_files[0])
                     return
@@ -264,7 +270,7 @@ class Config(metaclass=SingletonMeta):
                     if not backup_files:
                         log.error("备份目录下没有可用的备份文件，无法恢复配置")
                         raise
-                    backup_files.sort(key=lambda f: f.stat().st_birthtime, reverse=True)
+                    backup_files.sort(key=lambda f: _file_birth_time(f), reverse=True)
                     for i, backup_file in enumerate(backup_files):
                         try:
                             self._load_config(backup_file)
@@ -292,7 +298,7 @@ class Config(metaclass=SingletonMeta):
                     if not backup_files:
                         log.error("备份目录下没有可用的备份文件，无法恢复配置")
                         raise
-                    backup_files.sort(key=lambda f: f.stat().st_birthtime, reverse=True)
+                    backup_files.sort(key=lambda f: _file_birth_time(f), reverse=True)
                     for i, backup_file in enumerate(backup_files):
                         try:
                             self._load_config(backup_file)
@@ -582,16 +588,16 @@ class Config(metaclass=SingletonMeta):
         now_time = localtime(time())
         files = [f for f in self.backup_path.iterdir() if f.is_file() and f.suffix == ".yaml"]
         if files:
-            files.sort(key=lambda f: f.stat().st_birthtime)
+            files.sort(key=lambda f: _file_birth_time(f))
             # 确保上次保存的文件日期不同于今天，避免重复备份
-            latest_time = localtime(files[-1].stat().st_birthtime)
+            latest_time = localtime(_file_birth_time(files[-1]))
             if latest_time.tm_mday != now_time.tm_mday:
                 backup_file = self.backup_path / f"config_{strftime('%Y%m%d_%H%M%S', now_time)}.yaml"
                 with open(backup_file, "w", encoding="utf-8") as f:
                     self.yaml.dump(self.config.model_dump(), f)
             # 删除旧备份文件，保留最近的10个
             files = [f for f in self.backup_path.iterdir() if f.is_file() and f.suffix == ".yaml"]
-            files.sort(key=lambda f: f.stat().st_birthtime)
+            files.sort(key=lambda f: _file_birth_time(f))
             while len(files) > 10:
                 try:
                     files[0].unlink()

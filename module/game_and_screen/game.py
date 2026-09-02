@@ -58,7 +58,9 @@ class Game(metaclass=SingletonMeta):
             self.log.info("使用steam命令启动游戏")
             sleep(5)
             if not self.check_game_alive() and self.game_path_exists:
-                os.startfile(self.game_path)
+                from module.platform_compat import open_path
+
+                open_path(self.game_path)
                 self.log.info(f"游戏启动：{self.game_path}")
             return True
         except Exception as e:

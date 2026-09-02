@@ -643,7 +643,9 @@ class SettingInterface(QWidget):
     def __onOpenLogsCardClicked(self):
         import os
 
-        os.startfile(os.path.abspath("./logs"))
+        from module.platform_compat import open_path
+
+        open_path(os.path.abspath("./logs"))
 
     def __onScreenshotBenchmarkCardClicked(self):
         from module.automation.screenshot import ScreenShot

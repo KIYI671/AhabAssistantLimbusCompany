@@ -19,7 +19,8 @@ from utils.singletonmeta import SingletonMeta
 from ..config import cfg
 from ..logger import log
 from ..ocr import ocr
-from .input_handlers.input import AbstractInput
+from ..platform_compat import IS_WINDOWS
+from .input_handlers import AbstractInput
 from .screenshot import ScreenShot
 
 # ponytail: 交互门最长关闭时间。监控线程卡在持久弹窗上时,超时放行业务输入,
@@ -62,38 +63,56 @@ class Automation(metaclass=SingletonMeta):
         if self.input_handler:
             self.input_handler = None
         if cfg.simulator:
-            if cfg.simulator_type == 0:
+            if cfg.simulator_type == 0 and IS_WINDOWS:
                 from .input_handlers.simulator.mumu_control import MumuControl
 
                 log.debug("使用MuMu模拟器输入模块")
                 if MumuControl.connection_device is not None:
                     self.input_handler = MumuControl.connection_device
             else:
+                # Linux 下 MuMu 专属 IPC 不可用，与其他模拟器一样走 ADB 通道
                 from .input_handlers.simulator.simulator_control import SimulatorControl
 
                 log.debug("使用基于PyMiniTouch的通用模拟器输入模块")
                 self.input_handler = SimulatorControl.connection_device
         else:
             input_type = cfg.win_input_type
-            if input_type == "background":
+            if not IS_WINDOWS and input_type in ("background", "window_move"):
+                # Linux 无 Win32 后台消息通道，统一回退到前台输入
+                from .input_handlers.linux_input import LinuxInput
+
+                log.debug(f"Linux 下不支持 {input_type} 输入模式，使用前台输入模块")
+                self.input_handler = LinuxInput()
+            elif input_type == "background":
                 from .input_handlers.input import BackgroundInput
 
                 log.debug("使用后台点击模块")
                 self.input_handler = BackgroundInput()
             elif input_type == "foreground":
-                from .input_handlers.input import Input
+                if not IS_WINDOWS:
+                    from .input_handlers.linux_input import LinuxInput
 
-                log.debug("使用前台点击模块")
-                self.input_handler = Input()
+                    log.debug("使用前台点击模块 (Linux/pyautogui)")
+                    self.input_handler = LinuxInput()
+                else:
+                    from .input_handlers.input import Input
+
+                    log.debug("使用前台点击模块")
+                    self.input_handler = Input()
             elif input_type == "window_move":
                 from .input_handlers.input import WindowMoveInput
 
                 log.debug("使用基于窗口移动的后台点击模块")
                 self.input_handler = WindowMoveInput()
         if self.input_handler is None:
-            from .input_handlers.input import BackgroundInput
+            if IS_WINDOWS:
+                from .input_handlers.input import BackgroundInput
 
-            self.input_handler = BackgroundInput()
+                self.input_handler = BackgroundInput()
+            else:
+                from .input_handlers.linux_input import LinuxInput
+
+                self.input_handler = LinuxInput()
         assert isinstance(self.input_handler, AbstractInput), "输入处理器必须是AbstractInput的实例"
         self.set_pause = self.input_handler.set_pause
         self.wait_pause = self.input_handler.wait_pause
@@ -382,15 +401,18 @@ class Automation(metaclass=SingletonMeta):
             time.sleep(1)
             if time.time() - start_time > 60:
                 log.error("截图超时，尝试重启游戏")
-                import os
-
-                import win32process
-
                 from module.game_and_screen import screen
+                from module.platform_compat import IS_WINDOWS, kill_pid
 
                 try:
-                    _, pid = win32process.GetWindowThreadProcessId(screen.handle.hwnd)
-                    os.system(f"taskkill /F /PID {pid}")
+                    if IS_WINDOWS:
+                        import win32process
+
+                        _, pid = win32process.GetWindowThreadProcessId(screen.handle.hwnd)
+                    else:
+                        pid = screen.handle.pid
+                    if pid:
+                        kill_pid(pid)
                 except:
                     pass
                 from tasks.base.script_task_scheme import init_game

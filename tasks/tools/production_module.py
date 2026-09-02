@@ -1,8 +1,6 @@
 from datetime import datetime, timedelta
 from time import monotonic
 
-import win32con
-import win32gui
 from PySide6.QtCore import Qt, QThread, Signal
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import (
@@ -176,19 +174,8 @@ class ProductionWork(QThread):
         if cfg.simulator:
             return
         try:
-            hwnd = screen.handle.hwnd
-            if hwnd == 0 or not win32gui.IsWindow(hwnd):
-                log.debug("自动换饼跳过窗口置顶恢复：未获取到有效游戏窗口句柄")
-                return
-            win32gui.SetWindowPos(
-                hwnd,  # 目标窗口句柄
-                win32con.HWND_NOTOPMOST,  # 关键参数：取消置顶
-                0,
-                0,
-                0,
-                0,  # 忽略位置和大小（保持原样）
-                win32con.SWP_NOMOVE | win32con.SWP_NOSIZE,  # 标志位：不移动、不调整大小
-            )
+            # 通过统一的句柄接口取消置顶（Windows/Linux 实现各自处理）
+            screen.handle.set_topmost(False)
         except Exception as e:
             self.error_occurred.emit(f"窗口设置错误: {str(e)}")
 

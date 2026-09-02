@@ -1,11 +1,8 @@
-import platform
 import random
 from datetime import datetime
 from threading import Event
 from time import sleep, time
 
-import win32api
-import win32con
 from playsound3 import playsound
 from PySide6.QtCore import QT_TRANSLATE_NOOP, QMutex, QThread
 
@@ -29,6 +26,7 @@ from module.my_error.my_error import (
     withOutGameWinError,
     withOutPicError,
 )
+from module.platform_compat import IS_LINUX, IS_WINDOWS
 from module.system_actions import (
     apply_power_keep_awake,
     execute_after_completion,
@@ -127,7 +125,7 @@ def to_get_reward():
 def init_game():
     log.debug("初始化游戏")
     if cfg.simulator:
-        if cfg.simulator_type == 0:
+        if cfg.simulator_type == 0 and IS_WINDOWS:
             mumu_instance_number = 0
             if cfg.simulator_port == 0 and cfg.mumu_instance_number == -1:
                 log.info("未设置模拟器端口或实例编号，使用默认mumu模拟器")
@@ -158,7 +156,7 @@ def init_game():
             SimulatorControl()
     auto.init_input()
     if cfg.simulator:
-        if cfg.simulator_type == 0:
+        if cfg.simulator_type == 0 and IS_WINDOWS:
             from module.automation.input_handlers.simulator.mumu_control import (
                 MumuControl,
             )
@@ -179,8 +177,11 @@ def init_game():
 
 
 def _warn_if_game_monitor_hdr_enabled() -> None:
-    if cfg.simulator or not bool(cfg.get_value("experimental_hdr_warning", True)):
+    if not IS_WINDOWS or cfg.simulator or not bool(cfg.get_value("experimental_hdr_warning", True)):
         return
+
+    import win32api
+    import win32con
 
     hwnd = screen.handle.hwnd
     if not hwnd:
@@ -213,6 +214,8 @@ def Resonate_with_Ahab():
 
 def _get_game_rendering_scale() -> int | None:
     """读取非模拟器模式下 Limbus 的渲染比例设置。"""
+    if not IS_WINDOWS:
+        return None
     try:
         import json
         import winreg
@@ -427,7 +430,7 @@ def script_task() -> None | int:
         Resonate_with_Ahab()
 
     should_exit_aalc = False
-    if platform.system() == "Windows":
+    if IS_WINDOWS or IS_LINUX:
         # 收尾动作可能主动关闭游戏或模拟器。先停止截图监控，避免设备消失
         # 被误判为断链并触发自动恢复，重新拉起刚关闭的模拟器。
         retry_monitor.stop()
@@ -438,7 +441,7 @@ def script_task() -> None | int:
             log.exception("脚本结束后的操作失败")
 
     if cfg.simulator:
-        if cfg.simulator_type == 0:
+        if cfg.simulator_type == 0 and IS_WINDOWS:
             from module.automation.input_handlers.simulator.mumu_control import (
                 MumuControl,
             )

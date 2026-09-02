@@ -17,6 +17,7 @@ from app.card.messagebox_custom import BaseInfoBar, MessageBoxUpdate
 from module.config import cfg
 from module.decorator.decorator import begin_and_finish_time_log
 from module.logger import log
+from module.platform_compat import IS_WINDOWS, start_detached
 from utils.utils import decrypt_string
 
 md_renderer = MarkdownIt("gfm-like", {"html": True})
@@ -479,7 +480,7 @@ def update(assets_url):
             download_file_path = os.path.join("./update_temp", file_name)
             destination = os.path.abspath("./3rdparty")
             try:
-                if os.path.exists(exe_path):
+                if IS_WINDOWS and os.path.exists(exe_path):
                     subprocess.run(
                         [exe_path, "x", download_file_path, f"-o{destination}", "-aoa"],
                         check=True,
@@ -511,5 +512,6 @@ def start_update_thread(assets_url):
 
 
 def start_update(assert_name):
-    source_file = os.path.abspath("./AALC Updater.exe")
-    subprocess.Popen([source_file, assert_name], creationflags=subprocess.DETACHED_PROCESS)
+    updater_name = "AALC Updater.exe" if IS_WINDOWS else "AALC-Updater"
+    source_file = os.path.abspath(f"./{updater_name}")
+    start_detached([source_file, assert_name])
