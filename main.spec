@@ -43,12 +43,14 @@ if not IS_WINDOWS:
         for _lib in _glob.glob(_os.path.join(_libdir, _pattern)):
             tk_binaries.append((_lib, "."))
 
+# py7zr 在 Python 3.13 下经 backports.zstd 支持 zstd 压缩的 7z 包，
+# 该导入是动态的，PyInstaller 无法自动侦测，需显式声明。
 a = Analysis(
     ["main.py"],
     pathex=[],
     binaries=tk_binaries,
     datas=add_data,
-    hiddenimports=[],
+    hiddenimports=[] if IS_WINDOWS else ["backports.zstd"],
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
