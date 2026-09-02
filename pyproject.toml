@@ -19,6 +19,7 @@ dependencies = [
     "pyperclip",
     "python-xlib>=0.33 ; sys_platform != 'win32'",
     "mss>=10.0 ; sys_platform != 'win32'",
+    "py7zr>=0.22 ; sys_platform != 'win32'",
     "playsound3",
     "requests",
     "packaging",
