@@ -134,6 +134,13 @@ class Automation(metaclass=SingletonMeta):
         """
         self._input_lock = threading.RLock()
         self._screenshot_lock = threading.RLock()
+        if not IS_WINDOWS:
+            try:
+                from module.game_and_screen.x11_handle import reset_serialization_lock
+
+                reset_serialization_lock()
+            except ImportError:
+                pass
 
     def _run_business_interaction(self, method_name: str, *args, **kwargs):
         """在交互门放行且取得输入锁后执行一次业务输入。

@@ -389,31 +389,46 @@ class Screen(metaclass=SingletonMeta):
         try:
             self.handle.init_handle(self.title)
             if self.handle.hwnd == 0:
-                log.info(f"未能获取到游戏窗口: {self.title},尝试启动游戏")
-                self.game.start_game()
-                sleep(30)
-                self.handle.init_handle(self.title)
+                # 游戏经 Steam/Proton 冷启动时，进程与窗口的出现都可能远慢于
+                # 一次启动调用；除非游戏进程确实不存在，绝不重复拉起，
+                # 否则 Steam 会连续触发两次游戏启动。
+                if not self.game.check_game_alive():
+                    log.info(f"未能获取到游戏窗口: {self.title},尝试启动游戏")
+                    self.game.start_game()
+                    # 等待游戏进程出现（Steam 客户端先行启动时可能需要较久）
+                    for _ in range(12):
+                        if self.game.check_game_alive():
+                            break
+                        sleep(5)
+                # 等待游戏窗口出现（Unity/Proton 加载到出窗口可能需要一分钟）
+                for _ in range(12):
+                    sleep(5)
+                    self.handle.init_handle(self.title)
+                    if self.handle.hwnd != 0:
+                        break
 
             if self.handle.hwnd == 0:
                 log.error(f"未能获取到游戏窗口: {self.title}")
-                self.game.start_game()
                 return False
             else:
                 return True
         except Exception as e:
             log.error(f"未能获取到游戏窗口: {e}")
-            self.game.start_game()
             return False
 
     def set_win(self) -> None:
         """设置窗口大小与位置"""
 
         def _set_win():
+            # Linux 下没有后台消息通道，输入始终是真实鼠标点击，
+            # 无论 cfg.background_click 与否都必须把游戏窗口带到前台，
+            # 否则点击会落在遮挡游戏的其他窗口（包括本工具窗口）上
+            foreground = not cfg.background_click or not IS_WINDOWS
             # 如果窗口最小化或不可见，先将其恢复
-            if self.handle.isMinimized or (not self.handle.isActive and not cfg.background_click):
+            if self.handle.isMinimized or (not self.handle.isActive and foreground):
                 self.handle.restore()
             # 将窗口设为活动窗口
-            if not cfg.background_click:
+            if foreground:
                 self.handle.setForeground()
             self.set_win_size = cfg.set_win_size
             self.set_win_position = cfg.set_win_position
@@ -424,22 +439,35 @@ class Screen(metaclass=SingletonMeta):
                 self.adjust_win_position(self.set_win_position)
 
         _set_win()
-        while True:
+        # 有限次重试：窗口（尤其处于全屏或受窗口管理器限制时）始终达不到目标
+        # 尺寸时不能无限阻塞整个任务流程
+        target_size = (int(cfg.set_win_size * 16 / 9), cfg.set_win_size)
+        max_attempts = 30
+        for attempt in range(1, max_attempts + 1):
             try:
                 width = self.handle.width(True)
                 height = self.handle.height(True)
-                if width != int(cfg.set_win_size * 16 / 9) or height != cfg.set_win_size:
-                    _set_win()
-                    sleep(1)
-                else:
+                if (width, height) == target_size:
                     break
+                if attempt == 1:
+                    log.info(
+                        f"正在调整窗口尺寸: 当前 {width}x{height} -> 目标 {target_size[0]}x{target_size[1]}"
+                    )
+                _set_win()
+                sleep(1)
             except Exception as e:
                 log.error(f"设置窗口出错: {e}")
+                break
+        else:
+            log.warning(
+                f"窗口尺寸在 {max_attempts} 次尝试后仍未达到 {target_size[0]}x{target_size[1]}，"
+                "请检查游戏是否为窗口模式，将直接继续执行任务"
+            )
 
     def reduce_miscontact(self, pos_style: str) -> None:
         """通过调整窗口置顶减少误触"""
-        # 设置窗口始终置顶
-        if not cfg.background_click:
+        # Linux 前台点击依赖游戏窗口可见可点，始终置顶防止被遮挡
+        if not cfg.background_click or not IS_WINDOWS:
             self.handle.set_topmost(True)
         # 移除窗口的可调整大小的边框，使得窗口大小固定；非 free 定位时同时移除标题栏
         self.handle.set_decorated(keep_caption=(pos_style == "free"))

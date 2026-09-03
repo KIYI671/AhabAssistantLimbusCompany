@@ -27,6 +27,42 @@ def open_path(path: str) -> None:
         subprocess.Popen(["xdg-open", path])
 
 
+def open_uri(uri: str) -> None:
+    """调用系统协议处理器打开 URI（如 steam://rungameid/...）。
+
+    Windows 的 os.startfile 底层是 ShellExecute，能解析注册的 URL 协议；
+    Linux 下 webbrowser 会把非 http 协议直接丢给浏览器而无法唤起 Steam，
+    因此优先直接调用 steam 命令（已在运行时会转发给现有实例），
+    其次 Flatpak 版 Steam，最后 xdg-open。
+    """
+    if IS_WINDOWS:
+        os.startfile(uri)  # noqa: S606
+        return
+    if sys.platform == "darwin":
+        subprocess.Popen(["open", uri])  # noqa: S603
+        return
+    commands = []
+    steam = shutil.which("steam")
+    if steam:
+        commands.append([steam, uri])
+    if shutil.which("flatpak"):
+        commands.append(["flatpak", "run", "com.valvesoftware.Steam", uri])
+    if shutil.which("xdg-open"):
+        commands.append(["xdg-open", uri])
+    for command in commands:
+        try:
+            subprocess.Popen(  # noqa: S603
+                command,
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+                start_new_session=True,
+            )
+            return
+        except OSError:
+            continue
+    raise RuntimeError("未找到打开 steam:// 的方式，请安装 Steam 或配置协议处理器")
+
+
 def start_detached(command: list[str], cwd: str | None = None) -> subprocess.Popen:
     """以脱离当前进程的方式启动外部程序（父进程退出后子进程继续运行）。"""
     if IS_WINDOWS:
