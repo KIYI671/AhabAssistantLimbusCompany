@@ -6,7 +6,6 @@ from pathlib import Path
 from time import localtime, strftime, time
 from typing import Any, Optional
 
-import numpy as np
 from pydantic import BaseModel, ValidationError
 from ruamel.yaml import YAML, YAMLError
 
@@ -156,6 +155,22 @@ class Config(metaclass=SingletonMeta):
                 settings["remark_name"] = remark_name
                 teams[f"{i}"] = settings
             loaded_config["teams"] = teams
+        if saved_version < 1778889600:
+            teams = loaded_config.get("teams", {}) or {}
+            for team_key, settings in teams.items():
+                if settings.get("choose_opening_bonus", False):
+                    opening_bonus: list[int] = settings.get("opening_bonus")
+                    opening_bonus_level: list[int] = settings.get("opening_bonus_level")
+                    if opening_bonus_level is None:
+                        opening_bonus_level = [0] * len(opening_bonus)
+                    settings["opening_bonus"] = [
+                        bonus * (level + 1) for bonus, level in zip(opening_bonus, opening_bonus_level)
+                    ]
+                else:
+                    settings["opening_bonus"] = TeamSetting().opening_bonus.copy()
+
+                teams[team_key] = settings
+            loaded_config["teams"] = teams
         if saved_version < 1779444115:
             current_config_path = Path("config.yaml")
             suffixes = [".yaml.bak", ".yaml.backup", ".yaml.old"]
@@ -167,10 +182,6 @@ class Config(metaclass=SingletonMeta):
                     except Exception as e:
                         log.error(f"删除旧备份文件 {file} 失败: {e}")
 
-        if saved_version < 1778889600:
-            teams = loaded_config.get("teams", {}) or {}
-            for team_key, settings in list(teams.items()):
-                teams[team_key] = migrate_legacy_team_setting_data(settings)
         log.info("配置升级完成")
 
     def _load_version(self, version_path: str) -> str:
@@ -638,20 +649,6 @@ class Config(metaclass=SingletonMeta):
         if hasattr(self.config, name):
             return self.get_value(name)
         raise AttributeError(f"'{type(self).__name__}' 对象没有属性 ‘{name}'")
-
-
-def migrate_legacy_team_setting_data(data: dict) -> dict:
-    """Return team setting data with legacy starlight fields folded into opening_bonus."""
-    migrated = dict(data)
-
-    if migrated.get("choose_opening_bonus", False):
-        opening_bonus = np.array(migrated.get("opening_bonus"), dtype=int)
-        opening_bonus_level = np.array(migrated.get("opening_bonus_level"), dtype=int)
-        migrated["opening_bonus"] = (opening_bonus * (opening_bonus_level + 1)).tolist()
-    else:
-        migrated["opening_bonus"] = TeamSetting().opening_bonus.copy()
-
-    return migrated
 
 
 class Theme_pack_list(metaclass=SingletonMeta):
