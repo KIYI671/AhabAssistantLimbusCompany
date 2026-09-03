@@ -709,6 +709,15 @@ class CustomizeSettingsModule(QFrame):
             None,
             QT_TRANSLATE_NOOP("BaseCheckBox", "每楼层重新编队"),
         )
+        self.normal_to_hard_floor = LabelWithComboBox(
+            QT_TRANSLATE_NOOP("LabelWithComboBox", "第几层转困牢"),
+            "normal_to_hard_floor",
+            mirror_floor_options,
+            vbox=False,
+        )
+        self.normal_to_hard_floor.layout_.takeAt(1)
+        self.normal_to_hard_floor.label.setFixedWidth(150)
+        self.normal_to_hard_floor.combo_box.setFixedWidth(300)
         self.use_starlight = BaseCheckBox("use_starlight", None, QT_TRANSLATE_NOOP("BaseCheckBox", "开局星光换钱"))
 
         self.aggressive_also_enhance = BaseCheckBox(
@@ -761,6 +770,13 @@ class CustomizeSettingsModule(QFrame):
             "fixed_team_use_select",
         )
         self.fixed_team_use.add_items(fixed_team_use)
+        fixed_team_margins = self.fixed_team_use.hBoxLayout.contentsMargins()
+        self.normal_to_hard_floor.layout_.setContentsMargins(
+            fixed_team_margins.left(),
+            fixed_team_margins.top(),
+            fixed_team_margins.right(),
+            fixed_team_margins.bottom(),
+        )
         self.reward_cards = CheckBoxWithComboBox(
             "reward_cards",
             QT_TRANSLATE_NOOP("CheckBoxWithComboBox", "奖励卡优先度"),
@@ -979,6 +995,7 @@ class CustomizeSettingsModule(QFrame):
         self.fourth_line.addWidget(self.shopping_strategy)
 
         self.features_patch_line_2.addWidget(self.fixed_team_use)
+        self.features_patch_line_2.addWidget(self.normal_to_hard_floor)
         self.features_patch_line_2.addWidget(self.reward_cards)
 
         self.fifth_line.addWidget(self.opening_items, Qt.AlignLeft)
@@ -1068,6 +1085,7 @@ class CustomizeSettingsModule(QFrame):
         self.fixed_team_use.retranslateUi()
         self.reward_cards.retranslateUi()
         self.re_formation_each_floor.retranslateUi()
+        self.normal_to_hard_floor.retranslateUi()
         self.starlight_select_all.set_label_text(get_starlight_action_label(self.tr("全选"), cfg.language_in_program))
         self.starlight_clear_button.setText(get_starlight_action_label(self.tr("清空"), cfg.language_in_program))
 
