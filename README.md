@@ -85,7 +85,7 @@
 Linux 平台（x86_64）支持两种运行方式：
 
 1. **本机游戏模式**：通过 Steam/Proton 运行 Limbus Company，AALC 以 X11 协议定位游戏窗口并截图、输入。
-2. **模拟器模式**：通过 ADB 连接任意 Android 模拟器/设备（如 Waydroid 或远程设备），截图与输入全部走 ADB 通道。
+2. **模拟器模式**：通过 ADB 连接任意 Android 模拟器/设备（如 Waydroid 或远程设备），截图与输入全部走 ADB 通道。该模式在 Linux 下尚未经实际测试验证。
 
 Linux 版的已知差异与要求：
 
