@@ -360,7 +360,6 @@ def handle_update_status(
         )
 
 
-@begin_and_finish_time_log(task_name="检查更新")
 class _LinuxUpdateGateResult:
     """Linux 下跳过更新检查时使用的占位结果：视为已是最新版本。"""
 
@@ -369,6 +368,7 @@ class _LinuxUpdateGateResult:
     new_version = None
 
 
+@begin_and_finish_time_log(task_name="检查更新")
 def check_update(
     self,
     timeout=5,

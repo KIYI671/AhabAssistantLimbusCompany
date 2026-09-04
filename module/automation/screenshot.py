@@ -219,6 +219,13 @@ class ScreenShot:
             screenshot: 截取的屏幕截图。
         """
 
+        """# 如果move参数为True，则尝试移动鼠标到屏幕左上角
+        if move:
+            try:
+                pyautogui.moveTo(1, 1)
+            except:
+                pass"""
+
         if IS_WINDOWS:
             # 设置进程的DPI感知，以确保截图在不同DPI设置下正确显示
             windll.user32.SetProcessDPIAware()

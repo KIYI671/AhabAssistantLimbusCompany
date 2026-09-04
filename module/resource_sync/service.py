@@ -2,22 +2,22 @@
 
 from __future__ import annotations
 
-import hashlib
-import shutil
 from dataclasses import dataclass, field
 from enum import Enum
+import hashlib
 from pathlib import Path
+import shutil
 from typing import Callable
 from urllib.parse import quote, urljoin
 
 import requests
 
 from module.logger import log
+from utils.file_utils import sha256_file
 from module.resource_sync.manifest import ResourceFileEntry, ResourceManifest, ResourcePackageEntry
 from module.resource_sync.source import ResourceSource, get_default_sources
 from module.resource_sync.state import LOCAL_STATE_PATH, ResourceSyncState
 from utils.archive_7z import extract_7z_archive
-from utils.file_utils import sha256_file
 
 # 默认的本地图片资源目录。
 DEFAULT_LOCAL_IMAGES_DIR = Path("assets/images")

@@ -19,7 +19,7 @@
 </div>
 <div>
     <img alt="language" src="https://img.shields.io/badge/Language-Python-blue">
-    <img alt="platform" src="https://img.shields.io/badge/platform-Windows-blue?style=flat-square&color=4096d8">
+    <img alt="platform" src="https://img.shields.io/badge/platform-Windows%20%7C%20Linux-blue?style=flat-square&color=4096d8">
 </div>
 
 **简体中文** | [English](assets/doc/en/README_EN.md)
@@ -80,9 +80,9 @@
 
 **注意**：Release基于x86_64架构，Windows系统。对于Arm架构（如苹果M系列芯片，树莓派等）和RISCV架构暂不支持。
 
-### Linux 支持（实验性）
+### Linux 支持
 
-Linux 平台支持已在 `feature/linux-support` 分支提供（x86_64，实验性），支持两种运行方式：
+Linux 平台（x86_64）支持两种运行方式：
 
 1. **本机游戏模式**：通过 Steam/Proton 运行 Limbus Company，AALC 以 X11 协议定位游戏窗口并截图、输入。
 2. **模拟器模式**：通过 ADB 连接任意 Android 模拟器/设备（如 Waydroid 或远程设备），截图与输入全部走 ADB 通道。
