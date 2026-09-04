@@ -1,12 +1,10 @@
-"""基于 Xlib (XWayland) 的前台输入实现，接口与 Windows 版 `Input` 一致。
+"""Linux 前台输入实现，接口与 Windows 版 `Input` 一致。
 
 Linux 的 X11 协议没有 Win32 PostMessage 后台消息通道的可靠等价物
 （XSendEvent 会被 Unity/Proton 游戏忽略），因此 Linux 下统一使用前台输入。
 
-鼠标优先走 uinput 虚拟设备（内核层注入，KDE Wayland 下 XTEST 仿真移动
-会被钉在固定点、且按钮事件投递位置与 XWarpPointer 移动后的 X 光标脱钩，
-实测均不可靠）；/dev/uinput 不可写时回退 XTEST 并提示加入 input 组。
-pyautogui 仅保留键盘功能。
+X11 会话沿用 pyautogui 的鼠标路径，保证“移动到目标”和“点击目标”使用
+同一条 X11 输入连接；只有 Wayland 会话才使用下面的 uinput/XTEST 兼容路径。
 """
 
 import fcntl
@@ -18,7 +16,8 @@ from typing import overload
 
 import pyautogui
 import pyperclip
-from Xlib import X, display as xdisplay
+from Xlib import X
+from Xlib import display as xdisplay
 from Xlib.ext import xtest
 
 from module.config import cfg
@@ -30,6 +29,16 @@ from . import AbstractInput
 from .scroll_swipe import build_windows_scroll_swipe_plan
 
 pyautogui.FAILSAFE = False
+
+
+def _use_pyautogui_mouse() -> bool:
+    """X11 下沿用稳定的 pyautogui 鼠标路径；Wayland 才使用特殊注入。"""
+    session_type = os.environ.get("XDG_SESSION_TYPE", "").lower()
+    if not os.environ.get("DISPLAY"):
+        return False
+    if session_type == "wayland":
+        return False
+    return session_type == "x11" or not os.environ.get("WAYLAND_DISPLAY")
 
 # ---------------------------------------------------------------- Xlib 注入
 
@@ -320,6 +329,9 @@ class LinuxInput(AbstractInput, metaclass=SingletonMeta):
     def get_mouse_position(self) -> tuple[int, int]:
         """获取鼠标当前位置（X11 异常时返回 (0, 0)）"""
         try:
+            if _use_pyautogui_mouse():
+                pos = pyautogui.position()
+                return int(pos.x), int(pos.y)
             return _query_pointer()
         except Exception:
             log.debug("获取鼠标位置失败，返回 (0, 0)")
@@ -333,10 +345,13 @@ class LinuxInput(AbstractInput, metaclass=SingletonMeta):
         log.debug(msg, stacklevel=2)
         x, y = self.pos_offset(x, y)
         for i in range(times):
-            _abs_move(x, y)
-            time.sleep(0.05)
-            _left_click()
-            time.sleep(0.05)
+            if _use_pyautogui_mouse():
+                pyautogui.click(x, y)
+            else:
+                _abs_move(x, y)
+                time.sleep(0.05)
+                _left_click()
+                time.sleep(0.05)
 
         if move_back and current_mouse_position:
             self.mouse_move(current_mouse_position)
@@ -351,13 +366,19 @@ class LinuxInput(AbstractInput, metaclass=SingletonMeta):
 
         scale = cfg.set_win_size / 1080
         x, y = self.pos_offset(x, y)
-        _abs_move(x, y)
-        time.sleep(0.1)
-        _left_press()
-        time.sleep(0.1)
-        _abs_move(x, y + int(300 * scale * reverse))
-        time.sleep(0.4)
-        _left_release()
+        if _use_pyautogui_mouse():
+            pyautogui.moveTo(x, y)
+            pyautogui.mouseDown()
+            pyautogui.moveTo(x, y + int(300 * scale * reverse), duration=0.4)
+            pyautogui.mouseUp()
+        else:
+            _abs_move(x, y)
+            time.sleep(0.1)
+            _left_press()
+            time.sleep(0.1)
+            _abs_move(x, y + int(300 * scale * reverse))
+            time.sleep(0.4)
+            _left_release()
 
         if move_back and current_mouse_position:
             self.mouse_move(current_mouse_position)
@@ -366,16 +387,26 @@ class LinuxInput(AbstractInput, metaclass=SingletonMeta):
         if move_back:
             current_mouse_position = self.get_mouse_position()
         x, y = self.pos_offset(x, y)
-        _abs_move(x, y)
-        time.sleep(0.1)
-        _left_press()
-        time.sleep(0.1)
-        _abs_move(x + dx, y + dy)
-        if drag_time * 0.3 > 0.5:
-            time.sleep(drag_time * 0.3)
+        if _use_pyautogui_mouse():
+            pyautogui.moveTo(x, y)
+            pyautogui.mouseDown()
+            pyautogui.moveTo(x + dx, y + dy, duration=drag_time)
+            if drag_time * 0.3 > 0.5:
+                time.sleep(drag_time * 0.3)
+            else:
+                time.sleep(0.5)
+            pyautogui.mouseUp()
         else:
-            time.sleep(0.5)
-        _left_release()
+            _abs_move(x, y)
+            time.sleep(0.1)
+            _left_press()
+            time.sleep(0.1)
+            _abs_move(x + dx, y + dy)
+            if drag_time * 0.3 > 0.5:
+                time.sleep(drag_time * 0.3)
+            else:
+                time.sleep(0.5)
+            _left_release()
 
         if move_back and current_mouse_position:
             self.mouse_move(current_mouse_position)
@@ -391,15 +422,24 @@ class LinuxInput(AbstractInput, metaclass=SingletonMeta):
             (self.pos_offset(*point), move_duration)
             for point, move_duration in raw_plan
         ]
-        _abs_move(*plan[0][0])
-        time.sleep(0.1)
-        _left_press()
-        for point, move_duration in plan[1:]:
-            _abs_move(*point)
-            time.sleep(move_duration)
-        if settle_duration:
-            time.sleep(settle_duration)
-        _left_release()
+        if _use_pyautogui_mouse():
+            pyautogui.moveTo(*plan[0][0])
+            pyautogui.mouseDown()
+            for point, move_duration in plan[1:]:
+                pyautogui.moveTo(*point, duration=move_duration)
+            if settle_duration:
+                time.sleep(settle_duration)
+            pyautogui.mouseUp()
+        else:
+            _abs_move(*plan[0][0])
+            time.sleep(0.1)
+            _left_press()
+            for point, move_duration in plan[1:]:
+                _abs_move(*point)
+                time.sleep(move_duration)
+            if settle_duration:
+                time.sleep(settle_duration)
+            _left_release()
 
         if move_back and current_mouse_position:
             self.mouse_move(current_mouse_position)
@@ -410,11 +450,14 @@ class LinuxInput(AbstractInput, metaclass=SingletonMeta):
         else:
             msg = "鼠标滚动滚轮，拉近界面"
         log.debug(msg, stacklevel=2)
-        button = 4 if direction > 0 else 5
-        for _ in range(abs(direction) or 1):
-            _button_press(button)
-            _button_release(button)
-            time.sleep(0.05)
+        if _use_pyautogui_mouse():
+            pyautogui.scroll(direction)
+        else:
+            button = 4 if direction > 0 else 5
+            for _ in range(abs(direction) or 1):
+                _button_press(button)
+                _button_release(button)
+                time.sleep(0.05)
         return True
 
     def mouse_click_blank(self, coordinate=(1, 1), times=1, move_back=False) -> bool:
@@ -427,9 +470,12 @@ class LinuxInput(AbstractInput, metaclass=SingletonMeta):
         y = coordinate[1] + random.randint(0, 10)
         x, y = self.pos_offset(x, y)
         for i in range(times):
-            _abs_move(x, y)
-            time.sleep(0.05)
-            _left_click()
+            if _use_pyautogui_mouse():
+                pyautogui.click(x, y)
+            else:
+                _abs_move(x, y)
+                time.sleep(0.05)
+                _left_click()
 
         if move_back and current_mouse_position:
             self.mouse_move(current_mouse_position)
@@ -445,7 +491,10 @@ class LinuxInput(AbstractInput, metaclass=SingletonMeta):
         log.debug(msg, stacklevel=2)
         # 移动到游戏窗口内的空白角，而不是屏幕 (1,1)
         x, y = self.pos_offset(*coordinate)
-        _abs_move(x, y)
+        if _use_pyautogui_mouse():
+            pyautogui.moveTo(x, y)
+        else:
+            _abs_move(x, y)
 
         if move_back and current_mouse_position:
             self.mouse_move(current_mouse_position)
@@ -457,7 +506,10 @@ class LinuxInput(AbstractInput, metaclass=SingletonMeta):
         Args:
             coordinate (tuple): 坐标元组 (x, y)
         """
-        _abs_move(int(coordinate[0]), int(coordinate[1]))
+        if _use_pyautogui_mouse():
+            pyautogui.moveTo(int(coordinate[0]), int(coordinate[1]))
+        else:
+            _abs_move(int(coordinate[0]), int(coordinate[1]))
         self.wait_pause()
 
     def mouse_drag_link(self, position: list, drag_time=0.1, move_back=False) -> None:
@@ -465,14 +517,22 @@ class LinuxInput(AbstractInput, metaclass=SingletonMeta):
             current_mouse_position = self.get_mouse_position()
 
         x, y = self.pos_offset(position[0][0], position[0][1])
-        _abs_move(x, y)
-        time.sleep(0.1)
-        _left_press()
-        for pos in position:
-            x, y = self.pos_offset(pos[0], pos[1])
+        if _use_pyautogui_mouse():
+            pyautogui.moveTo(x, y)
+            pyautogui.mouseDown()
+            for pos in position:
+                x, y = self.pos_offset(pos[0], pos[1])
+                pyautogui.moveTo(x, y, duration=drag_time)
+            pyautogui.mouseUp()
+        else:
             _abs_move(x, y)
-            time.sleep(drag_time)
-        _left_release()
+            time.sleep(0.1)
+            _left_press()
+            for pos in position:
+                x, y = self.pos_offset(pos[0], pos[1])
+                _abs_move(x, y)
+                time.sleep(drag_time)
+            _left_release()
 
         if move_back and current_mouse_position:
             self.mouse_move(current_mouse_position)
