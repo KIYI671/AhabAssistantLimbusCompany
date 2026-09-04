@@ -88,7 +88,6 @@ class X11Handle(Handle):
             log.error(f"无法连接 X 显示服务器（请确认 X11/XWayland 会话）: {e}")
         self._enum_windows_list: list[str] = []
         self._content_offset_cache: dict[tuple[int, int], int] = {}
-        self._content_offset_cache: dict[tuple[int, int], int] = {}
 
     # ------------------------------------------------------------------ 基础
     @property

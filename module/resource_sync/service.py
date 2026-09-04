@@ -2,22 +2,22 @@
 
 from __future__ import annotations
 
+import hashlib
+import shutil
 from dataclasses import dataclass, field
 from enum import Enum
-import hashlib
 from pathlib import Path
-import shutil
 from typing import Callable
 from urllib.parse import quote, urljoin
 
 import requests
 
 from module.logger import log
-from utils.file_utils import sha256_file
 from module.resource_sync.manifest import ResourceFileEntry, ResourceManifest, ResourcePackageEntry
 from module.resource_sync.source import ResourceSource, get_default_sources
 from module.resource_sync.state import LOCAL_STATE_PATH, ResourceSyncState
 from utils.archive_7z import extract_7z_archive
+from utils.file_utils import sha256_file
 
 # 默认的本地图片资源目录。
 DEFAULT_LOCAL_IMAGES_DIR = Path("assets/images")
@@ -27,6 +27,22 @@ DEFAULT_LOCAL_STATE_PATH = Path(LOCAL_STATE_PATH)
 DEFAULT_TEMP_DIR = Path("update_temp")
 # 网络请求超时时间，单位为秒。
 DEFAULT_REQUEST_TIMEOUT = 10
+
+# 这些图片由程序核心流程直接引用，并随应用本体发布。资源仓库的清单可能
+# 因为软件版本或发布同步延迟暂时落后于程序代码；在这种情况下删除本地
+# 文件会让镜牢寻路失去连线/楼层识别模板，且无法通过普通资源更新恢复。
+# 路径均相对于 assets/images/。
+PROTECTED_CORE_IMAGE_RESOURCES = frozenset(
+    {
+        "default/share/mirror/road_in_mir/down.png",
+        "default/share/mirror/road_in_mir/focused_encounter.png",
+        "default/share/mirror/road_in_mir/mid.png",
+        "default/share/mirror/road_in_mir/not_passed_floor.png",
+        "default/share/mirror/road_in_mir/risky_encounter.png",
+        "default/share/mirror/road_in_mir/up.png",
+        "dark/share/mirror/road_in_mir/not_passed_floor.png",
+    }
+)
 
 
 class ResourceCheckStatus(Enum):
@@ -460,8 +476,23 @@ class ResourceSyncService:
             if sha256_file(local_path) != entry.sha256:
                 plan.files_to_update.append(entry)
 
-        # 第三步：本地只要存在“远端清单未记录”的图片，就统一记录为待删除文件。
-        plan.files_to_delete = sorted(relative_path for relative_path in local_files if relative_path not in remote_entries)
+        # 第三步：仅删除远端清单明确移除、且不属于应用核心流程的本地图片。
+        # 远端资源仓库与程序版本可能短暂不同步，核心模板必须留在本地。
+        protected_missing = sorted(
+            relative_path
+            for relative_path in local_files & PROTECTED_CORE_IMAGE_RESOURCES
+            if relative_path not in remote_entries
+        )
+        if protected_missing:
+            log.warning(
+                "远端图片清单缺少应用核心资源，已跳过删除: %s",
+                ", ".join(protected_missing),
+            )
+        plan.files_to_delete = sorted(
+            relative_path
+            for relative_path in local_files
+            if relative_path not in remote_entries and relative_path not in PROTECTED_CORE_IMAGE_RESOURCES
+        )
 
         # 第四步：输出汇总日志，方便右侧日志栏和问题排查复用。
         log.debug(
@@ -604,7 +635,17 @@ class ResourceSyncService:
         # 第一步：整理下载条目和删除目标，为应用阶段做准备。
         download_entries = sync_plan.download_entries
         has_download_entries = bool(download_entries)
-        deletion_candidates = list(sync_plan.files_to_delete)
+        protected_deletions = sorted(set(sync_plan.files_to_delete) & PROTECTED_CORE_IMAGE_RESOURCES)
+        if protected_deletions:
+            log.warning(
+                "同步计划包含应用核心资源删除项，已跳过删除: %s",
+                ", ".join(protected_deletions),
+            )
+        deletion_candidates = [
+            relative_path
+            for relative_path in sync_plan.files_to_delete
+            if relative_path not in PROTECTED_CORE_IMAGE_RESOURCES
+        ]
         package_entry = self._ensure_package_metadata(check_result.remote_manifest) if has_download_entries else None
 
         # 第二步：仅在存在新增或变更文件时，才准备资源包下载与解压环境。

@@ -128,6 +128,13 @@ class ResourceSyncCoordinator(QObject):
         from module.platform_compat import IS_WINDOWS
 
         if not IS_WINDOWS:
+            # 未发布的开发构建通常携带比远端资源仓库更新的内置图片。此时
+            # 自动同步可能把新代码依赖的模板当成“远端多余文件”删除。
+            version = str(getattr(cfg, "version", "")).strip().lower()
+            if trigger == "startup" and version in {"", "dev", "default version"}:
+                log.warning("当前为未发布的开发版本，跳过启动阶段图片资源同步")
+                self._continue_startup_sequence_once()
+                return
             log.debug("Linux 版本无需软件更新门禁，直接继续图片资源同步")
             if trigger == "startup":
                 self._start_resource_sync_on_startup()
