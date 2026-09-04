@@ -80,21 +80,61 @@ class ScreenShot:
         else:
             # Linux/X11：优先直接读取游戏窗口内容（窗口被遮挡时通常仍有效），
             # 失败后回退到全屏捕获再裁剪。
+            if not ScreenShot._linux_window_is_ready():
+                return None
             try:
-                return ScreenShot.take_screenshot_x11(gray)
+                image = ScreenShot.take_screenshot_x11(gray)
+                if ScreenShot._linux_frame_is_usable(image):
+                    return image
+                # 冷启动时 X11 窗口可能已经创建，但游戏还没有开始绘制。
+                # 空帧不能交给识别流程，否则 back_init_menu 会退回到默认的
+                # (1, 1) 点击分支。
+                log.debug("Linux 游戏窗口尚未绘制有效画面，等待下一帧")
+                return None
             except Exception as e:
                 log.debug(f"X11窗口截图失败，尝试全屏捕获，错误信息：{e}")
             try:
-                return ScreenShot.take_screenshot_mss(gray)
+                image = ScreenShot.take_screenshot_mss(gray)
+                if ScreenShot._linux_frame_is_usable(image):
+                    return image
+                log.debug("Linux 全屏截图为空，等待游戏画面就绪")
+                return None
             except Exception as e:
                 msg = f"mss全屏截图失败，尝试使用pyautogui截图，错误信息：{e}"
                 log.debug(msg)
                 try:
-                    return ScreenShot.take_screenshot_pyautogui(gray)
+                    image = ScreenShot.take_screenshot_pyautogui(gray)
+                    if ScreenShot._linux_frame_is_usable(image):
+                        return image
+                    log.debug("Linux pyautogui截图为空，等待游戏画面就绪")
+                    return None
                 except Exception as e2:
                     msg = f"pyautogui截图失败，错误信息：{e2}"
                     log.debug(msg)
                     return None
+
+    @staticmethod
+    def _linux_window_is_ready() -> bool:
+        """判断 Linux 下游戏窗口是否已有可用的客户区。"""
+        try:
+            left, top, right, bottom = screen.handle.rect(True)
+        except Exception as e:
+            log.debug(f"读取 Linux 游戏窗口区域失败，等待窗口就绪: {e}")
+            return False
+        if right <= left or bottom <= top:
+            log.debug("Linux 游戏窗口区域无效，等待窗口就绪")
+            return False
+        return True
+
+    @staticmethod
+    def _linux_frame_is_usable(image: Image.Image | None) -> bool:
+        """过滤窗口已出现但尚未绘制的空帧，避免误触发默认点击。"""
+        if image is None or image.width <= 0 or image.height <= 0:
+            return False
+        try:
+            return image.convert("L").getbbox() is not None
+        except Exception:
+            return False
 
     @staticmethod
     def take_screenshot_x11(gray: bool = True) -> Image.Image:

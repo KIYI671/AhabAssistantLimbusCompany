@@ -169,6 +169,15 @@ def init_game():
 
             SimulatorControl.connection_device.start_game()
     else:
+        if IS_LINUX:
+            # Linux/Proton 的启动链可能在数秒后才出现进程；由
+            # screen.init_handle() 统一负责首次启动，避免这里先启动一次、
+            # init_handle() 再因暂时看不到进程而重复拉起 Steam。
+            while not screen.init_handle():
+                sleep(10)
+            if cfg.set_windows:
+                screen.set_win()
+            return
         game_process.start_game()
         while not screen.init_handle():
             sleep(10)

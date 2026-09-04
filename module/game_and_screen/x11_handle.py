@@ -187,7 +187,7 @@ class X11Handle(Handle):
     # ------------------------------------------------------------------ 查找
     @_serialized
     def init_handle(self, title: str = "LimbusCompany", class_name: str = "UnityWndClass") -> int:
-        """获取窗口句柄。优先精确匹配标题，其次模糊匹配 Limbus 相关类名/标题。"""
+        """获取窗口句柄。Linux 下只接受精确的游戏标题或明确的游戏类名。"""
         self._hwnd = 0
         self._enum_windows_list.clear()
         try:
@@ -196,16 +196,19 @@ class X11Handle(Handle):
             log.error(f"枚举窗口时发生错误: {e}")
             candidates = []
 
-        title_l = (title or "").strip().lower()
-        # 精确标题匹配
+        title_l = self._normalize_window_name(title)
+        # 游戏可能显示为 "LimbusCompany" 或 "Limbus Company"；只做格式归一化
+        # 后的精确匹配，不能使用 substring，否则 AALC 自己的标题也会命中。
         for info in candidates:
-            if title_l and info["title"].strip().lower() == title_l:
+            if title_l and self._normalize_window_name(info["title"]) == title_l:
                 self._hwnd = info["wid"]
                 break
-        # 模糊匹配：类名或标题含 limbus
+
+        # 某些 Wine 窗口没有标题，只暴露包含 Limbus 的 WM_CLASS；仅在标题
+        # 为空时启用此兜底，避免匹配 AALC/浏览器标题中的 “Limbus Company”。
         if self._hwnd == 0:
             for info in candidates:
-                if "limbus" in info["cls"].lower() or "limbus" in info["title"].lower():
+                if not info["title"].strip() and "limbus" in info["cls"].casefold():
                     self._hwnd = info["wid"]
                     break
 
@@ -219,6 +222,11 @@ class X11Handle(Handle):
             log.error("未能获取到游戏窗口", stacklevel=3)
             log.debug(f"枚举窗口列表: {self._enum_windows_list}", stacklevel=3)
         return self._hwnd
+
+    @staticmethod
+    def _normalize_window_name(value: str) -> str:
+        """归一化 X11 窗口标题，兼容游戏标题中的空格和大小写差异。"""
+        return "".join(char for char in (value or "").casefold() if char.isalnum())
 
     def _enum_windows(self) -> list[dict]:
         """遍历窗口树收集窗口信息。

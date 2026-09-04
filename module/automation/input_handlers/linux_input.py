@@ -310,6 +310,16 @@ def _left_click() -> None:
 class LinuxInput(AbstractInput, metaclass=SingletonMeta):
     """基于 Xlib/uinput 的输入类, 仅支持前台操作"""
 
+    @staticmethod
+    def _window_is_ready() -> bool:
+        """窗口重建或冷启动期间不允许把点击坐标退化到屏幕 (1, 1)。"""
+        try:
+            left, top, right, bottom = screen.handle.rect(True)
+        except Exception as e:
+            log.debug(f"读取 Linux 游戏窗口区域失败，跳过输入: {e}")
+            return False
+        return right > left and bottom > top
+
     @overload
     def pos_offset(self, x: int, y: int) -> tuple[int, int]: ...
     @overload
@@ -338,6 +348,9 @@ class LinuxInput(AbstractInput, metaclass=SingletonMeta):
             return (0, 0)
 
     def mouse_click(self, x, y, times=1, move_back=False) -> bool:
+        if not self._window_is_ready():
+            log.debug("Linux 游戏窗口尚未就绪，跳过鼠标点击")
+            return False
         if move_back:
             current_mouse_position = self.get_mouse_position()
 
@@ -348,7 +361,11 @@ class LinuxInput(AbstractInput, metaclass=SingletonMeta):
             if _use_pyautogui_mouse():
                 pyautogui.click(x, y)
             else:
-                _abs_move(x, y)
+                # Wayland 下如果绝对移动失败，继续发送按钮事件会在当前光标位置
+                # 点击（冷启动时通常就是屏幕左上角），因此必须放弃本次点击。
+                if not _abs_move(x, y):
+                    log.debug(f"Linux 鼠标无法移动到目标位置 ({x}, {y})，跳过点击")
+                    return False
                 time.sleep(0.05)
                 _left_click()
                 time.sleep(0.05)
@@ -466,6 +483,9 @@ class LinuxInput(AbstractInput, metaclass=SingletonMeta):
         return True
 
     def mouse_click_blank(self, coordinate=(1, 1), times=1, move_back=False) -> bool:
+        if not self._window_is_ready():
+            log.debug("Linux 游戏窗口尚未就绪，跳过空白位置点击")
+            return False
         if move_back:
             current_mouse_position = self.get_mouse_position()
 
@@ -478,7 +498,9 @@ class LinuxInput(AbstractInput, metaclass=SingletonMeta):
             if _use_pyautogui_mouse():
                 pyautogui.click(x, y)
             else:
-                _abs_move(x, y)
+                if not _abs_move(x, y):
+                    log.debug(f"Linux 鼠标无法移动到空白位置 ({x}, {y})，跳过点击")
+                    return False
                 time.sleep(0.05)
                 _left_click()
 
