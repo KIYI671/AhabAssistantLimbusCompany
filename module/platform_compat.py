@@ -15,16 +15,65 @@ IS_WINDOWS = os.name == "nt"
 IS_LINUX = sys.platform.startswith("linux")
 
 
+def _external_process_environment() -> dict[str, str]:
+    """为系统外部程序恢复宿主环境，避免继承 PyInstaller 的动态库路径。"""
+    env = os.environ.copy()
+    for library_path in ("LD_LIBRARY_PATH", "DYLD_LIBRARY_PATH", "DYLD_FALLBACK_LIBRARY_PATH"):
+        original_name = f"{library_path}_ORIG"
+        original_value = env.pop(original_name, None)
+        if original_value is not None:
+            if original_value:
+                env[library_path] = original_value
+            else:
+                env.pop(library_path, None)
+        elif getattr(sys, "frozen", False):
+            env.pop(library_path, None)
+    return env
+
+
 def open_path(path: str) -> None:
     """用系统默认方式打开文件或目录（资源管理器/浏览器等）。"""
     if IS_WINDOWS:
         os.startfile(path)  # noqa: S606
     elif sys.platform == "darwin":
-        subprocess.Popen(["open", path])
+        subprocess.Popen(["open", path], env=_external_process_environment())
     else:
         if shutil.which("xdg-open") is None:
             raise RuntimeError("未找到 xdg-open，无法打开路径")
-        subprocess.Popen(["xdg-open", path])
+        subprocess.Popen(["xdg-open", path], env=_external_process_environment())
+
+
+def open_url(url: str) -> bool:
+    """用系统默认浏览器打开网页，返回是否成功启动打开命令。"""
+    if IS_WINDOWS:
+        os.startfile(url)  # noqa: S606
+        return True
+
+    if sys.platform == "darwin":
+        commands = [["open", url]]
+    else:
+        commands = []
+        xdg_open = shutil.which("xdg-open")
+        if xdg_open:
+            commands.append([xdg_open, url])
+        gio = shutil.which("gio")
+        if gio:
+            commands.append([gio, "open", url])
+
+    for command in commands:
+        try:
+            subprocess.Popen(  # noqa: S603
+                command,
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+                start_new_session=True,
+                env=_external_process_environment(),
+            )
+            return True
+        except OSError:
+            continue
+
+    return False
 
 
 def open_uri(uri: str) -> None:
@@ -39,7 +88,7 @@ def open_uri(uri: str) -> None:
         os.startfile(uri)  # noqa: S606
         return
     if sys.platform == "darwin":
-        subprocess.Popen(["open", uri])  # noqa: S603
+        subprocess.Popen(["open", uri], env=_external_process_environment())  # noqa: S603
         return
     commands = []
     steam = shutil.which("steam")
@@ -56,6 +105,7 @@ def open_uri(uri: str) -> None:
                 stdout=subprocess.DEVNULL,
                 stderr=subprocess.DEVNULL,
                 start_new_session=True,
+                env=_external_process_environment(),
             )
             return
         except OSError:

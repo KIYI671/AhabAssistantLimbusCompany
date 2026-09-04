@@ -1,7 +1,6 @@
 import datetime
 
-from PySide6.QtCore import QT_TRANSLATE_NOOP, QPoint, Qt, QUrl, Signal
-from PySide6.QtGui import QDesktopServices
+from PySide6.QtCore import QT_TRANSLATE_NOOP, QPoint, Qt, Signal
 from PySide6.QtWidgets import (
     QFileDialog,
     QHBoxLayout,
@@ -723,7 +722,12 @@ class SettingInterface(QWidget):
             helper.unregister_task(TASK_NAME)
 
     def __openUrl(self, url):
-        return lambda: QDesktopServices.openUrl(QUrl(url))
+        def open_url():
+            from module.platform_compat import open_url as open_external_url
+
+            open_external_url(url)
+
+        return open_url
 
     def __onThemePackCardClicked(self):
         """打开主题包权重配置对话框"""
