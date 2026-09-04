@@ -152,7 +152,7 @@ class X11Handle(Handle):
             from module.config import cfg
 
             scale = int(cfg.set_win_size) / 1440
-            gray = cv2.cvtColor(np.asarray(img.convert("L")), cv2.COLOR_GRAY2GRAY)
+            gray = np.asarray(img.convert("L"))
         except Exception as e:
             log.debug(f"内容区偏移探测失败: {e}")
             return self._heuristic_offset(geo_height)

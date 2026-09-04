@@ -351,13 +351,18 @@ class LinuxInput(AbstractInput, metaclass=SingletonMeta):
 
         scale = cfg.set_win_size / 1080
         x, y = self.pos_offset(x, y)
-        _abs_move(x, y)
+        _warp(x, y)
         time.sleep(0.1)
-        _left_press()
+        _button_press()
         time.sleep(0.1)
-        _abs_move(x, y + int(300 * scale * reverse))
-        time.sleep(0.4)
-        _left_release()
+        # 分步移动：Unity/wine 对瞬移式拖拽可能不识别，需要连续的运动事件
+        distance = int(300 * scale * reverse)
+        steps = 8
+        for i in range(1, steps + 1):
+            _warp(x, y + int(distance * i / steps))
+            time.sleep(0.04)
+        time.sleep(0.2)
+        _button_release()
 
         if move_back and current_mouse_position:
             self.mouse_move(current_mouse_position)

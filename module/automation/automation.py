@@ -816,6 +816,10 @@ class Automation(metaclass=SingletonMeta):
                     log.debug(f"当前系统内存总占用率: {current_percent}%，释放图片缓存")
                     self.clear_img_cache()
 
+            if self.screenshot is None:
+                log.error("尚未截图，无法识别图片（请先执行 take_screenshot）")
+                return None
+
             existing_paths = ImageUtils.existing_image_paths(target)
             if not existing_paths:
                 log.error(f"未找到图片： {target} ")

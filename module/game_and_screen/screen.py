@@ -418,12 +418,17 @@ class Screen(metaclass=SingletonMeta):
 
     def set_win(self) -> None:
         """设置窗口大小与位置"""
+        if not IS_WINDOWS:
+            self._set_win_linux()
+            return
+        self._set_win_windows()
+
+    def _set_win_windows(self) -> None:
+        """Windows：按客户区尺寸调整窗口并有限次重试"""
 
         def _set_win():
-            # Linux 下没有后台消息通道，输入始终是真实鼠标点击，
-            # 无论 cfg.background_click 与否都必须把游戏窗口带到前台，
-            # 否则点击会落在遮挡游戏的其他窗口（包括本工具窗口）上
-            foreground = not cfg.background_click or not IS_WINDOWS
+            # 后台点击模式（PostMessage）无需窗口在前台
+            foreground = not cfg.background_click
             # 如果窗口最小化或不可见，先将其恢复
             if self.handle.isMinimized or (not self.handle.isActive and foreground):
                 self.handle.restore()
@@ -463,6 +468,54 @@ class Screen(metaclass=SingletonMeta):
                 f"窗口尺寸在 {max_attempts} 次尝试后仍未达到 {target_size[0]}x{target_size[1]}，"
                 "请检查游戏是否为窗口模式，将直接继续执行任务"
             )
+
+    def _set_win_linux(self) -> None:
+        """Linux：把游戏画布（游戏实际渲染区域）调整到目标分辨率。
+
+        Wine/Proton 可能把自绘标题栏画进客户区，导致客户区高度 ≠ 游戏画布
+        高度，且每次启动行为不一致；画布不是 16:9 目标尺寸时游戏 UI 会重排，
+        模板全部无法对齐。因此按候选客户区高度依次调整窗口，并用内容探测
+        （模板匹配）确认画布恰为目标分辨率。
+        """
+        if self.handle.isMinimized or not self.handle.isActive:
+            self.handle.restore(activate=True)
+        self.handle.setForeground()
+        if not cfg.set_windows:
+            return
+        self.handle.set_topmost(True)
+
+        # 全屏下窗口尺寸请求无效，先模拟 Alt+Enter 切回窗口模式
+        try:
+            if (
+                self.handle.width() >= self.handle.monitor_size()[0]
+                and self.handle.height() >= self.handle.monitor_size()[1]
+            ):
+                self.handle.switchFullScreenMode()
+                sleep(1)
+        except Exception as e:
+            log.debug(f"全屏检测失败: {e}")
+
+        target_h = int(cfg.set_win_size)
+        target_w = int(target_h * 16 / 9)
+        content_offset_cache = getattr(self.handle, "_content_offset_cache", None)
+        for client_h in (target_h + 50, target_h, target_h + 80, target_h + 30):
+            self.handle.set_window_size(target_w, client_h)
+            sleep(1.2)
+            img = self.handle.capture_window_image()
+            if img is None or content_offset_cache is None:
+                continue
+            offset = content_offset_cache.get((target_w, client_h))
+            if offset is not None and client_h - offset == target_h:
+                log.info(
+                    f"游戏画布已对齐目标分辨率: 客户区 {target_w}x{client_h}，内容区偏移 {offset}"
+                )
+                break
+        else:
+            log.warning(
+                f"未能把游戏画布对齐到 {target_w}x{target_h}（Wine 标题栏宽度不定），"
+                "将继续执行任务；若识别异常，请把游戏窗口手动调整为窗口模式后重试"
+            )
+        sleep(0.3)
 
     def reduce_miscontact(self, pos_style: str) -> None:
         """通过调整窗口置顶减少误触"""
