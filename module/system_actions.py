@@ -1,5 +1,5 @@
 import ctypes
-import os
+import shutil
 import subprocess
 import threading
 from collections.abc import Iterable
@@ -19,6 +19,7 @@ from module.after_completion_types import (
 )
 from module.config import cfg
 from module.logger import log
+from module.platform_compat import IS_LINUX, IS_WINDOWS
 
 # SetThreadExecutionState 常量
 _ES_CONTINUOUS = 0x80000000
@@ -27,6 +28,8 @@ _ES_DISPLAY_REQUIRED = 0x00000002
 _power_keep_awake_lock = threading.Lock()
 # SetThreadExecutionState 绑定调用线程，因此这里不能用单个全局 depth 表达状态。
 _power_keep_awake_depths: dict[int, int] = {}
+# Linux 下以 systemd-inhibit 子进程持有抑制锁
+_linux_inhibit_process: subprocess.Popen | None = None
 
 
 def _set_thread_execution_state(state: int) -> None:
@@ -108,24 +111,44 @@ def autodaily_exit_to_after_completion_config(exit_setting: list[bool] | tuple[b
 
 def apply_power_keep_awake(enable: bool) -> None:
     """
-    使用 SetThreadExecutionState 阻止系统休眠和关闭显示器。
-    状态绑定在调用线程上，线程结束时由 Windows 自动回收，无需手动 CloseHandle。
-    这里按线程维护深度计数，避免跨线程共享全局状态导致错误释放。
+    阻止系统休眠和关闭显示器。
+    - Windows: 使用 SetThreadExecutionState。状态绑定在调用线程上，线程结束时由
+      Windows 自动回收，无需手动 CloseHandle。按线程维护深度计数，避免跨线程
+      共享全局状态导致错误释放。
+    - Linux: 通过 systemd-inhibit 子进程持有 sleep/idle 抑制锁，深度归零时结束子进程。
     """
-    if os.name != "nt":
+    global _linux_inhibit_process
+
+    if not IS_WINDOWS and not IS_LINUX:
         return
 
     try:
         if enable:
             previous_depth, _ = _update_keep_awake_depth(1)
             if previous_depth == 0:
-                state = _ES_CONTINUOUS | _ES_SYSTEM_REQUIRED | _ES_DISPLAY_REQUIRED
-                _set_thread_execution_state(state)
+                if IS_WINDOWS:
+                    state = _ES_CONTINUOUS | _ES_SYSTEM_REQUIRED | _ES_DISPLAY_REQUIRED
+                    _set_thread_execution_state(state)
+                else:
+                    if shutil.which("systemd-inhibit"):
+                        _linux_inhibit_process = subprocess.Popen(  # noqa: S603
+                            ["systemd-inhibit", "--what=sleep:idle", "sleep", "infinity"],
+                            stdout=subprocess.DEVNULL,
+                            stderr=subprocess.DEVNULL,
+                        )
+                    else:
+                        log.warning("未找到 systemd-inhibit，无法阻止系统休眠/息屏")
                 log.info("已启用运行时防息屏和保持显示器常亮")
         else:
             previous_depth, current_depth = _update_keep_awake_depth(-1)
             if previous_depth > 0 and current_depth == 0:
-                _set_thread_execution_state(_ES_CONTINUOUS)
+                if IS_WINDOWS:
+                    _set_thread_execution_state(_ES_CONTINUOUS)
+                else:
+                    proc = _linux_inhibit_process
+                    _linux_inhibit_process = None
+                    if proc is not None and proc.poll() is None:
+                        proc.terminate()
                 log.info("已恢复系统默认息屏策略")
     except Exception:
         log.exception("设置防息屏状态失败")
@@ -133,13 +156,10 @@ def apply_power_keep_awake(enable: bool) -> None:
 
 def _action_exit_game() -> None:
     from module.game_and_screen import game_process, screen
-
-    if os.name != "nt":
-        log.info("跳过退出游戏：仅支持 Windows")
-        return
+    from module.platform_compat import IS_WINDOWS, kill_pid, kill_process_by_name
 
     if cfg.get_value("simulator", False):
-        if cfg.get_value("simulator_type", 0) == 0:
+        if cfg.get_value("simulator_type", 0) == 0 and IS_WINDOWS:
             from module.automation.input_handlers.simulator.mumu_control import (
                 MumuControl,
             )
@@ -161,22 +181,14 @@ def _action_exit_game() -> None:
         return
 
     try:
-        hwnd = getattr(screen.handle, "hwnd", 0)
-        if hwnd:
-            try:
-                import win32process
-            except ImportError:
-                win32process = None
-            if win32process is not None:
-                _, pid = win32process.GetWindowThreadProcessId(hwnd)
-                ret = _run_command(["taskkill", "/F", "/PID", str(pid)])
-                if ret == 0:
-                    log.info("已执行：退出游戏")
-                    return
+        # 优先按窗口反查进程，失败时按进程名兜底
+        pid = getattr(screen.handle, "pid", 0)
+        if pid and kill_pid(pid):
+            log.info("已执行：退出游戏")
+            return
         # 兜底：按进程名结束
         game_process_name = cfg.get_value("game_process_name", "")
-        ret = _run_command(["taskkill", "/F", "/IM", game_process_name])
-        if ret == 0:
+        if kill_process_by_name(game_process_name):
             log.info("已执行：退出游戏（进程名兜底）")
         else:
             log.warning("退出游戏失败：未找到可关闭进程或权限不足")
@@ -189,7 +201,7 @@ def _action_exit_emulator() -> None:
         log.info("跳过退出模拟器：当前未启用模拟器模式")
         return
     simulator_type = cfg.get_value("simulator_type", 0)
-    if simulator_type == 0:
+    if simulator_type == 0 and IS_WINDOWS:
         from module.automation.input_handlers.simulator.mumu_control import (
             MumuControl,
         )
@@ -217,22 +229,40 @@ def _action_power(power_action: str) -> None:
     if power_action == POWER_ACTION_NONE:
         return
     if power_action == POWER_ACTION_SLEEP:
-        if _run_command(["rundll32.exe", "powrprof.dll,SetSuspendState", "Sleep"]) == 0:
+        if IS_WINDOWS:
+            ok = _run_command(["rundll32.exe", "powrprof.dll,SetSuspendState", "Sleep"]) == 0
+        else:
+            ok = _run_command(["systemctl", "suspend"]) == 0
+        if ok:
             log.info("已执行：睡眠")
         return
     if power_action == POWER_ACTION_HIBERNATE:
-        if _run_command(["rundll32.exe", "powrprof.dll,SetSuspendState", "Hibernate"]) == 0:
+        if IS_WINDOWS:
+            ok = _run_command(["rundll32.exe", "powrprof.dll,SetSuspendState", "Hibernate"]) == 0
+        else:
+            ok = _run_command(["systemctl", "hibernate"]) == 0
+        if ok:
             log.info("已执行：休眠")
         return
     if power_action == POWER_ACTION_SHUTDOWN:
-        if _run_command(["shutdown", "/s", "/t", "30"]) == 0:
-            log.info("已执行：关机（30 秒后）")
+        if IS_WINDOWS:
+            ok = _run_command(["shutdown", "/s", "/t", "30"]) == 0
+        else:
+            ok = _run_command(["shutdown", "-h", "+1"]) == 0
+        if ok:
+            log.info("已执行：关机（稍后）")
         return
     if power_action == POWER_ACTION_LOCK:
-        if ctypes.windll.user32.LockWorkStation() == 0:
-            log.warning("执行锁屏失败：LockWorkStation 返回 0")
+        if IS_WINDOWS:
+            if ctypes.windll.user32.LockWorkStation() == 0:
+                log.warning("执行锁屏失败：LockWorkStation 返回 0")
+            else:
+                log.info("已执行：锁屏")
         else:
-            log.info("已执行：锁屏")
+            if _run_command(["loginctl", "lock-session"]) == 0:
+                log.info("已执行：锁屏")
+            else:
+                log.warning("执行锁屏失败：loginctl 不可用或返回错误")
         return
     log.warning(f"未知电源动作: {power_action}")
 
@@ -242,7 +272,7 @@ def execute_after_completion(actions: Iterable[str], power_action: str) -> bool:
     执行结束后动作。
     返回值表示是否需要退出 AALC（由 exit_aalc 动作决定）。
     """
-    if os.name != "nt":
+    if not IS_WINDOWS and not IS_LINUX:
         return False
 
     normalized_actions = normalize_after_actions(actions)

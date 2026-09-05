@@ -49,6 +49,7 @@ from module.game_and_screen import screen
 from module.hotkey_listener import ExactGlobalHotKeys
 from module.logger import log
 from module.logger.my_log import ui_log_dispatcher
+from module.platform_compat import IS_WINDOWS
 from module.system_actions import (
     get_after_completion_config,
     set_after_completion_config,
@@ -620,7 +621,7 @@ class FarmingInterfaceLeft(QWidget):
                 # 手动停止时仍需恢复游戏窗口，但这里不再要求抢前台。
                 screen.reset_win(activate=False)
             else:
-                if cfg.simulator_type == 0:
+                if cfg.simulator_type == 0 and IS_WINDOWS:
                     from module.automation.input_handlers.simulator.mumu_control import (
                         MumuControl,
                     )

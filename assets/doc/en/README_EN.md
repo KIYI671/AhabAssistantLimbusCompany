@@ -86,7 +86,7 @@ Click [Releases](https://github.com/KIYI671/AhabAssistantLimbusCompany/releases)
 Because of the lack of technical power, I also engaged in GUI and used third-party OCR, so the file size is relatively
 large
 
-**Note**: The Release is based on the x86_64 architecture for Windows systems. It currently does not support Arm architecture (such as Apple M-series chips, Raspberry Pi, etc.), RISCV architecture, Mac systems, or Linux systems. If you need to run AALC on unsupported platforms, please refer to the **Run the source code** and **Build guide**. Contributions as a developer to submit PRs for multi-platform adaptation are also welcome. In the future, multi-platform Release version support may be added based on user demand.
+**Note**: The Release is based on the x86_64 architecture for Windows systems. It currently does not support Arm architecture (such as Apple M-series chips, Raspberry Pi, etc.), RISCV architecture, or Mac systems. Linux (x86_64) is supported by running from source (see the Linux section in the Chinese README). If you need to run AALC on unsupported platforms, please refer to the **Run the source code** and **Build guide**. Contributions as a developer to submit PRs for multi-platform adaptation are also welcome. In the future, multi-platform Release version support may be added based on user demand.
 
 ---
 
