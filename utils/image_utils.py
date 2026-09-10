@@ -284,26 +284,28 @@ class ImageUtils:
         return image_array.shape[::-1]
 
     @staticmethod
-    def feature_matching(template_img, target_img, min_matches=8):
-        # 读取图像并进行预处理
-
-        template = cv2.resize(template_img, None, fx=2, fy=2, interpolation=cv2.INTER_LINEAR)
-        target = cv2.resize(target_img, None, fx=2, fy=2, interpolation=cv2.INTER_LINEAR)
-
-        # 使用ORB特征检测器
+    def extract_orb_features(image):
+        """提取 ORB 关键点和描述符，供多个模板复用同一份目标图特征。"""
+        image = cv2.resize(image, None, fx=2, fy=2, interpolation=cv2.INTER_LINEAR)
         orb = cv2.ORB_create(nfeatures=1000, scaleFactor=1.2, edgeThreshold=10)
+        return orb.detectAndCompute(image, None)
 
-        # 检测关键点和描述符
-        kp1, des1 = orb.detectAndCompute(template, None)
-        kp2, des2 = orb.detectAndCompute(target, None)
+    @staticmethod
+    def match_orb_features(template_features, target_features, min_matches=8):
+        """匹配两组已提取的 ORB 特征。"""
+        kp1, des1 = template_features
+        kp2, des2 = target_features
+        if des1 is None or des2 is None or len(des1) < 2 or len(des2) < 2:
+            return False, 0
 
-        # 使用FLANN匹配器
         FLANN_INDEX_LSH = 6
         index_params = dict(algorithm=FLANN_INDEX_LSH, table_number=6, key_size=12, multi_probe_level=1)
         search_params = dict(checks=50)
         flann = cv2.FlannBasedMatcher(index_params, search_params)
-
-        matches = flann.knnMatch(des1, des2, k=2)
+        try:
+            matches = flann.knnMatch(des1, des2, k=2)
+        except cv2.error:
+            return False, 0
 
         # 比率测试
         good_matches = []
@@ -319,7 +321,12 @@ class ImageUtils:
             dst_pts = np.float32([kp2[m.trainIdx].pt for m in good_matches])
 
             # 计算单应性矩阵
-            M, mask = cv2.findHomography(src_pts, dst_pts, cv2.RANSAC, 5.0)
+            try:
+                _, mask = cv2.findHomography(src_pts, dst_pts, cv2.RANSAC, 5.0)
+            except cv2.error:
+                return False, len(good_matches)
+            if mask is None:
+                return False, len(good_matches)
 
             # 计算匹配置信度评分
             inlier_ratio = np.sum(mask) / len(mask)
@@ -329,3 +336,10 @@ class ImageUtils:
             return True, len(good_matches)
         else:
             return False, len(good_matches)
+
+    @staticmethod
+    def feature_matching(template_img, target_img, min_matches=8):
+        """兼容原有单模板接口；批量匹配时应直接复用提取后的特征。"""
+        template_features = ImageUtils.extract_orb_features(template_img)
+        target_features = ImageUtils.extract_orb_features(target_img)
+        return ImageUtils.match_orb_features(template_features, target_features, min_matches)

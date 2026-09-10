@@ -139,6 +139,9 @@ class PageSetWindows(PageCard):
             QT_TRANSLATE_NOOP("LabelWithSpinBox", "鼠标活动间隔"),
             "mouse_action_interval",
             double=True,
+            min_value=0.0,
+            min_step=0.01,
+            tips="不同输入动作之间的最小物理间隔；同一按钮由程序独立防止重复点击",
         )
         self.mouse_down_duration = LabelWithSpinBox(
             QT_TRANSLATE_NOOP("LabelWithSpinBox", "鼠标按下持续时间"),

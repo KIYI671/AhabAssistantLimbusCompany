@@ -49,8 +49,8 @@ after_completion_actions: [] # 脚本结束后的前置动作（可多选）：e
 after_completion_power_action: "none" # 脚本结束后的最终动作（单选）：none/sleep/hibernate/lock/shutdown
 
 # 脚本运行速度设置
-screenshot_interval: 0.85 # 截图间隔时间
-mouse_action_interval: 0.5 # 鼠标操作间隔时间
+screenshot_interval: 0.15 # 状态轮询最小截图间隔
+mouse_action_interval: 0.05 # 不同输入动作之间的最小物理间隔；同一目标另有独立防重复冷却
 mouse_down_duration: 0.1 # 鼠标按下持续时间
 use_post_message: False # 是否使用PostMessage进行输入
 

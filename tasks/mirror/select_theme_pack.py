@@ -1,3 +1,4 @@
+import time
 from time import sleep
 
 from module.automation import TextMatchResult, auto
@@ -6,6 +7,57 @@ from module.decorator.decorator import begin_and_finish_time_log
 from module.logger import log
 from tasks.base.back_init_menu import back_init_menu
 from utils.path_manager import path_manager
+
+
+def _wait_for_theme_pack_transition(timeout: float = 3.0) -> bool:
+    """等待主题包界面离开；截图器负责限速，超时后交还镜牢主循环兜底。"""
+    deadline = time.monotonic() + timeout
+    while time.monotonic() < deadline:
+        if auto.take_screenshot() is None:
+            continue
+        if auto.find_element("mirror/road_in_mir/legend_assets.png"):
+            return True
+        if not auto.find_element("mirror/theme_pack/feature_theme_pack_assets.png"):
+            return True
+    log.debug("主题包选择后的界面转换等待超时，交由镜牢主循环继续识别")
+    return False
+
+
+
+
+def _theme_pack_positions_are_stable(previous, current, tolerance: float) -> bool:
+    if previous is None or len(previous) != len(current):
+        return False
+    return all(
+        abs(old[0] - new[0]) <= tolerance and abs(old[1] - new[1]) <= tolerance
+        for old, new in zip(previous, current)
+    )
+
+
+def _wait_for_theme_pack_ready(expected_difficulty_asset: str, timeout: float = 4.0) -> bool:
+    """等待难度切换完成且卡包停止移动，避免动画中误选旧位置。"""
+    deadline = time.monotonic() + timeout
+    previous_positions = None
+    tolerance = max(2.0, 4.0 * cfg.set_win_size / 1440)
+    while time.monotonic() < deadline:
+        if auto.take_screenshot() is None:
+            continue
+        if not auto.find_element(expected_difficulty_asset):
+            previous_positions = None
+            continue
+        positions = auto.find_image_with_multiple_targets(
+            "mirror/theme_pack/theme_pack_features.png",
+            0.8,
+        )
+        if not positions:
+            previous_positions = None
+            continue
+        positions = sorted(positions, key=lambda pos: (pos[0], pos[1]))
+        if _theme_pack_positions_are_stable(previous_positions, positions, tolerance):
+            return True
+        previous_positions = positions
+    log.warning("主题包难度切换后长时间未稳定，交由主循环重新识别")
+    return False
 
 
 def get_theme_pack_difficulty():
@@ -26,7 +78,7 @@ def switch_theme_pack_difficulty(hard_mode=False):
     if not auto.click_element(f"mirror/theme_pack/{current}_assets.png"):
         log.info("无法确认当前镜牢主题包难度，继续选择主题包")
         return
-    sleep(2)  # 等待难度切换动画结束及主题包重新加载
+    _wait_for_theme_pack_ready("mirror/theme_pack/" + target + "_assets.png")
     switched = get_theme_pack_difficulty()
     log.info(f"镜牢主题包难度切换{'成功' if switched == target else '失败'}: {current} -> {switched}")
 
@@ -73,7 +125,7 @@ def select_theme_pack(hard_mode=False, floor=None, team_num=None, use_custom_the
                     all_theme_pack.sort(key=lambda pos: (pos[0], pos[1]))
                     auto.mouse_drag_down(all_theme_pack[0][0], all_theme_pack[0][1])
                     log.debug(f"选择卡包: {all_theme_pack[0]}")
-                    sleep(3)
+                    _wait_for_theme_pack_transition()
                     msg = "此次主题包选择了最左边的（活动）卡包"
                     log.info(msg)
                     return
@@ -117,7 +169,7 @@ def select_theme_pack(hard_mode=False, floor=None, team_num=None, use_custom_the
                     pack = all_theme_pack[max_index]
                     auto.mouse_drag_down(pack[0], pack[1])
                     log.debug(f"选择卡包: {pack}")
-                    sleep(3)
+                    _wait_for_theme_pack_transition()
                     msg = f"此次选择卡包关键词：{pack_name[max_index]}"
                     log.info(msg)
                     return
@@ -142,7 +194,7 @@ def select_theme_pack(hard_mode=False, floor=None, team_num=None, use_custom_the
                 pack = all_theme_pack[max_index]
                 auto.mouse_drag_down(pack[0], pack[1])
                 log.debug(f"选择卡包: {pack}")
-                sleep(3)
+                _wait_for_theme_pack_transition()
                 log.debug("无匹配最低阈值的主题包，选择最高权重主题包")
                 msg = f"无匹配最低阈值的主题包，选择最高权重主题包\n此次选择卡包关键词：{pack_name[max_index]}"
                 log.info(msg)
