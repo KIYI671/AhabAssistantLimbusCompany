@@ -405,6 +405,7 @@ class FarmingInterfaceLeft(QWidget):
         self.setObjectName("FarmingInterfaceLeft")
 
         self.my_script = None
+        self._manual_stop_pending = False
 
         self.__init_widget()
         self.__init_card()
@@ -616,51 +617,41 @@ class FarmingInterfaceLeft(QWidget):
             self._disable_setting(self.parent())
             self.create_and_start_script()
         else:
-            if cfg.set_reduce_miscontact and cfg.simulator is False:
-                # 手动停止时仍需恢复游戏窗口，但这里不再要求抢前台。
-                screen.reset_win(activate=False)
-            else:
-                if cfg.simulator_type == 0:
-                    from module.automation.input_handlers.simulator.mumu_control import (
-                        MumuControl,
-                    )
-
-                    while True:
-                        try:
-                            MumuControl.clean_connect()
-                            break
-                        except Exception:
-                            continue
-                else:
-                    from module.automation.input_handlers.simulator.simulator_control import (
-                        SimulatorControl,
-                    )
-
-                    while True:
-                        try:
-                            SimulatorControl.clean_connect()
-                            break
-                        except Exception:
-                            continue
-            self.link_start_button.set_text("Link Start!")
-            self._enable_setting(self.parent())
-            self.reset_pause_resume_button()
-            mediator.refresh_teams_order.emit()
-            # 检查线程是否仍在运行，如果仍在运行则执行清理，否则跳过（因为脚本已自行清理）
-            thread_was_running = self.my_script is not None and self.my_script.isRunning()
+            self._manual_stop_pending = True
+            self.link_start_button.set_text(self.tr("正在停止..."))
+            self.link_start_button.button.setEnabled(False)
             self.stop_script()
-            if thread_was_running:
-                auto.clear_img_cache()
-            mediator.mirror_bar_kill_signal.emit()
 
     def _on_script_finished(self):
         # 自然结束只做 UI 收尾；不要复用“手动停止”入口，否则会重复触发窗口清理。
         log.debug("脚本自然结束，执行 UI 收尾，不再重复重置游戏窗口")
+        if self._manual_stop_pending:
+            self._cleanup_after_manual_stop()
+            self._manual_stop_pending = False
         self.link_start_button.set_text("Link Start!")
+        self.link_start_button.button.setEnabled(True)
         self._enable_setting(self.parent())
         self.reset_pause_resume_button()
         mediator.refresh_teams_order.emit()
         mediator.mirror_bar_kill_signal.emit()
+
+    def _cleanup_after_manual_stop(self):
+        """Release native resources only after the worker thread has exited."""
+        if cfg.set_reduce_miscontact and not cfg.simulator:
+            screen.reset_win(activate=False)
+        elif cfg.simulator:
+            try:
+                if cfg.simulator_type == 0:
+                    from module.automation.input_handlers.simulator.mumu_control import MumuControl
+
+                    MumuControl.clean_connect()
+                else:
+                    from module.automation.input_handlers.simulator.simulator_control import SimulatorControl
+
+                    SimulatorControl.clean_connect()
+            except Exception:
+                log.exception("停止任务后清理模拟器连接失败")
+        auto.clear_img_cache()
 
     def _disable_setting(self, parent):
         for child in parent.children():
@@ -719,6 +710,8 @@ class FarmingInterfaceLeft(QWidget):
             self.my_script = my_script_task()
             # 设置脚本线程为守护(当程序被关闭，一起停止)
             self.my_script.daemon = True
+            self._manual_stop_pending = False
+            self.my_script.finished.connect(mediator.script_finished.emit)
             self.my_script.start()
         except Exception as e:
             log.error(f"启动脚本失败: {e}")
@@ -728,8 +721,8 @@ class FarmingInterfaceLeft(QWidget):
 
     def stop_script(self):
         if self.my_script and self.my_script.isRunning():
-            log.debug("正在终止脚本线程...")
-            self.my_script.terminate()  # 终止线程
+            log.debug("正在请求脚本线程安全停止...")
+            self.my_script.request_stop()
 
     def my_stop_shortcut(self):
         current_text = self.link_start_button.get_text()

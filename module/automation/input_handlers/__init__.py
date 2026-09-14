@@ -1,6 +1,7 @@
 from time import sleep, time
 
 from module.logger import log
+from module.task_control import raise_if_stop_requested
 
 
 class AbstractInput:
@@ -30,6 +31,7 @@ class AbstractInput:
         """
         pause_identity = False
         while self.is_pause:
+            raise_if_stop_requested()
             if pause_identity is not False:
                 log.info("AALC 已暂停")
                 pause_identity = True

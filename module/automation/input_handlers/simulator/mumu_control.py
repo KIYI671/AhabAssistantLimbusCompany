@@ -19,6 +19,7 @@ from adbutils import AdbError, adb
 from module.config import cfg
 from module.logger import log
 from module.my_error.my_error import userStopError
+from module.task_control import raise_if_stop_requested
 from utils.utils import run_as_user
 
 from .. import AbstractInput
@@ -1130,6 +1131,7 @@ class MumuControl(AbstractInput):
         """
         pause_identity = False
         while self.is_pause:
+            raise_if_stop_requested()
             if pause_identity is not False:
                 log.info("AALC 已暂停")
                 pause_identity = True
