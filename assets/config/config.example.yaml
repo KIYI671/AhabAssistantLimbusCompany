@@ -70,6 +70,7 @@ simulator_port: 0 # 其他模拟器的ADB端口
 mumu_instance_number: -1 # mumu模拟器的实例编号
 bluestacks_instance_name: "" # 蓝叠内部实例名，如 Pie64；留空时按端口或唯一实例自动选择
 start_emulator_timeout: 120 # 启动模拟器超时时间
+task_stall_timeout: 90 # 默认卡死重启等待秒数；低性能模拟器可调大，如600
 adb_reconnect_on_error: True # ADB或minitouch连接失效时自动重连
 
 # 自动更新
