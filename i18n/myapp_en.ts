@@ -3199,4 +3199,15 @@ Update Logs:</translation>
         <translation>All Tasks Done</translation>
     </message>
 </context>
+<context>
+    <name>PushSettingCardChance</name>
+    <message>
+        <source>任务卡死重启等待时间(秒)</source>
+        <translation>Task stall restart timeout (seconds)</translation>
+    </message>
+    <message>
+        <source>页面长时间无进展后才会重启游戏；低性能模拟器建议设置为600秒</source>
+        <translation>Restart after prolonged lack of progress; 600 seconds is recommended for slower emulators.</translation>
+    </message>
+</context>
 </TS>
