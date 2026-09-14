@@ -54,6 +54,7 @@ class Automation(metaclass=SingletonMeta):
         self.init_input()
 
         self.img_cache = {}
+        self._unavailable_feature_templates: set[str] = set()
         self.last_screenshot_time = 0
         self.last_click_time = 0
         self.model = "clam"
@@ -636,8 +637,23 @@ class Automation(metaclass=SingletonMeta):
         寻找特征元素所在的坐标位置
         """
         try:
+            unavailable_templates = getattr(self, "_unavailable_feature_templates", None)
+            if unavailable_templates is None:
+                unavailable_templates = set()
+                self._unavailable_feature_templates = unavailable_templates
+            if target in unavailable_templates:
+                return None
+
             template = ImageUtils.load_image(target, resize=False)
+            if template is None or not isinstance(template, np.ndarray) or template.size == 0:
+                unavailable_templates.add(target)
+                return None
+
+            if self.screenshot is None:
+                return None
             screenshot = np.array(self.screenshot)
+            if screenshot.size == 0 or screenshot.ndim < 2 or 0 in screenshot.shape[:2]:
+                return None
             if cfg.set_win_size < 1440:
                 screenshot = cv2.resize(
                     screenshot,
@@ -677,6 +693,7 @@ class Automation(metaclass=SingletonMeta):
     def clear_img_cache(self) -> None:
         """清除图片缓存"""
         self.img_cache.clear()
+        self._unavailable_feature_templates.clear()
         gc.collect()  # 强制垃圾回收，清理内存
         log.debug("图片缓存已清除", stacklevel=2)
 
