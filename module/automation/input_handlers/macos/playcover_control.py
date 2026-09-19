@@ -141,6 +141,9 @@ class PlayCoverControl(AbstractInput):
                 self._device_size: tuple[int, int] | None = None
                 PlayCoverControl.connection_device = self
                 log.info(f"PlayCover (MaaTools) 控制器就绪: {self.host}:{self.port}")
+                # AALC 启动（导入期建连接）就预热按键注入，见 macos_keyboard.warm_up：
+                # 游戏没启动时跳过，下次 init_game 重建连接时会再试一次。
+                macos_keyboard.warm_up_in_background(self.host, self.port)
 
     # ---------- 底层连接 ----------
 

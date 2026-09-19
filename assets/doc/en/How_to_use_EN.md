@@ -189,6 +189,10 @@ In the Settings screen, turn on the "Use Emulator" option, and it is recommended
   current team configuration without interrupting the task; set up the team manually in game if you need it, or use the
   emulator background mode (ADB) described above).
 
+#### Known limitations
+
+- Playover has limited support for OAuth logins due to signature-related issues: it does not support Sign in with Apple, and for Google logins, the user is required to log in again upon restarting the game.
+
 ### Third-Party Script Support
 
 ## Command Line Launch

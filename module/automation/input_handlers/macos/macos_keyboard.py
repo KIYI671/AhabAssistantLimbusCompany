@@ -10,6 +10,9 @@ PlayTools 注入的进程里、直接读硬件键盘：把合成键盘事件投�
   ``available()`` 为 False，调用方回退到触摸。
 - 只维护确实要用的按键（见 ``KEYCODES``）：Enter（确认/开始回合）、P（自动选择技能）、
   ESC（返回/暂停）。其余按键（方向键、文本）继续走触摸兜底。
+- 启动预热：AALC 启动时先投一次游戏未绑定的 F13（``warm_up``），把「解析游戏进程」与
+  「macOS 首次跨进程投递的隐私检查」这两笔一次性成本提前付掉 —— 否则战斗里首次注入比
+  后续慢一倍以上，P 与 Enter 之间仅隔 0.5s，会被拖到回合开不起来。
 """
 
 import os
@@ -46,12 +49,17 @@ KEYCODES: dict[str, int] = {
 _KEY_PRESS_INTERVAL = 0.05
 """keyDown 与 keyUp 的间隔：PlayTools 按 keyDown/keyUp 成对处理按下与释放。"""
 
+_WARMUP_KEYCODE = 105
+"""预热用的按键：macOS 虚拟键码 F13。游戏没有绑定该键，投递只为把首次注入的成本提前付掉。"""
+
 _LOCAL_HOSTS = frozenset({"127.0.0.1", "localhost", "::1", "0.0.0.0"})
 _PLAYCOVER_APPS_MARKER = "/io.playcover.PlayCover/Applications/"
 
 _pid_cache: dict[tuple[str, int], int] = {}
 _cache_lock = threading.RLock()
 _warned_no_permission = False
+_warmup_lock = threading.RLock()
+_warmed_up = False
 
 
 def available() -> bool:
@@ -137,6 +145,14 @@ def game_pid(host: str, port: int) -> int | None:
         return pid
 
 
+def _post_keycode(pid: int, keycode: int) -> None:
+    """把一次按键（keyDown + keyUp）投递给目标进程。"""
+    source = Quartz.CGEventSourceCreate(Quartz.kCGEventSourceStateHIDSystemState)
+    for down in (True, False):
+        Quartz.CGEventPostToPid(pid, Quartz.CGEventCreateKeyboardEvent(source, keycode, down))
+        sleep(_KEY_PRESS_INTERVAL)
+
+
 def press(key: str, host: str, port: int) -> bool:
     """向游戏进程注入一次按键（keyDown + keyUp）；不支持或不可用时返回 False。"""
     global _warned_no_permission
@@ -154,9 +170,45 @@ def press(key: str, host: str, port: int) -> bool:
     pid = game_pid(host, port)
     if pid is None:
         return False
-    source = Quartz.CGEventSourceCreate(Quartz.kCGEventSourceStateHIDSystemState)
-    for down in (True, False):
-        Quartz.CGEventPostToPid(pid, Quartz.CGEventCreateKeyboardEvent(source, keycode, down))
-        sleep(_KEY_PRESS_INTERVAL)
+    _post_keycode(pid, keycode)
     log.debug(f"注入按键 {key}(keyCode={keycode}) -> pid={pid}")
     return True
+
+
+def warm_up(host: str, port: int) -> bool:
+    """预热按键注入：AALC 启动时先注一次键，把「首次注入」的一次性成本提前付掉。
+
+    首次注入比后续慢得多，因为要现付两笔一次性成本：反查游戏 pid（起一次 lsof，
+    失败还要枚举 NSWorkspace），以及 macOS 首次跨进程投递事件时的隐私检查（实测
+    首次约 350ms，之后每次约 140ms）。战斗中 P 与 Enter 之间只隔 0.5s，首次注入
+    变慢会把这一对拆开、回合开不起来。启动时先投一次游戏未绑定的 F13，pid 也顺带
+    缓存好，之后战斗里的首次注入就与后续注入同速了。
+
+    游戏没启动（定位不到进程）或没授权时直接跳过并返回 False，调用方可在下次设备
+    初始化时再试；成功后本进程内不再重复注入。
+    """
+    global _warmed_up
+    with _warmup_lock:
+        if _warmed_up:
+            return True
+        if not available():
+            log.debug("跳过按键注入预热：不可用（非 macOS 或缺辅助功能权限）")
+            return False
+        pid = game_pid(host, port)
+        if pid is None:
+            log.debug("跳过按键注入预热：未定位到 PlayCover 游戏进程")
+            return False
+        _post_keycode(pid, _WARMUP_KEYCODE)
+        _warmed_up = True
+        log.info(f"按键注入预热完成（F13 -> pid={pid}），战斗内首次 P/Enter 不再付解析与授权开销")
+        return True
+
+
+def warm_up_in_background(host: str, port: int) -> None:
+    """后台线程里跑一次预热：启动路径不该为它多等一次 lsof 与隐私检查。"""
+    threading.Thread(
+        target=warm_up,
+        args=(host, port),
+        name="keyboard-warmup",
+        daemon=True,
+    ).start()
