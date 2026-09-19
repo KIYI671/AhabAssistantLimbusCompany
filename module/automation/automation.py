@@ -676,6 +676,8 @@ class Automation(metaclass=SingletonMeta):
                 elif cfg.set_win_size > 1440:
                     pic_crop = [int(i * cfg.set_win_size / 1440) for i in pic_crop]
                 screenshot = ImageUtils.crop(screenshot, pic_crop)
+                if screenshot.size == 0 or screenshot.ndim < 2 or 0 in screenshot.shape[:2]:
+                    return None
             result, num_matches = ImageUtils.feature_matching(template, screenshot, min_matches)
             log.debug(
                 f"匹配目标特征图片：{target.replace('./assets/images/', '')}结果{result}, 找到 {num_matches} 个匹配点",
