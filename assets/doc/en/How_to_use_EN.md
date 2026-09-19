@@ -159,8 +159,9 @@ In the Settings screen, turn on the "Use Emulator" option, and it is recommended
 - Screenshots and input go through ADB (screencap / minitouch), same as on Windows. Start the emulator manually and keep
   its ADB enabled; the script will not launch the emulator process itself.
 - The packaged build (`AALC.app`) keeps configuration, logs and image resources in the data directory
-  `~/Library/Application Support/AALC`, so replacing `AALC.app` to upgrade keeps your settings. Before the first launch
-  you have to clear the download quarantine flag as described in the README (`xattr -dr com.apple.quarantine`).
+  `~/Library/Application Support/AALC`, so replacing `AALC.app` to upgrade keeps your settings. The macOS build is
+  neither signed nor notarized: run `xattr -cr /Applications/AALC.app` once before the first launch, as described in
+  the README.
 
 #### PlayCover (Apple Silicon, no Android emulator needed)
 

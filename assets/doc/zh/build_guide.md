@@ -47,7 +47,7 @@ pyinstaller main_mac.spec
 3. 压缩要用 `ditto`（`zip` 命令会破坏 `.app` 内的软链接）：
    `ditto -c -k --sequesterRsrc --keepParent AALC.app AALC_<version>_macos_$(uname -m).zip`
 
-macOS 包没有签名与公证，用户首次打开前需要去掉下载隔离标记（`xattr -dr com.apple.quarantine AALC.app`）。
+macOS 包没有签名与公证，用户首次打开会被 Gatekeeper 拦下，需要按 README 执行一次 `xattr -cr /Applications/AALC.app`。
 
 打包版的运行时数据目录是 `~/Library/Application Support/AALC`（见 `utils/app_data_dir.py`）：包内只放只读资源，配置、日志、图片资源都写到数据目录，因此替换 `AALC.app` 升级不丢配置，应用也不能往包内写文件（写包内文件会破坏签名封印，导致系统授权反复失效）。
 

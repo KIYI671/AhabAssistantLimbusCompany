@@ -47,7 +47,7 @@ After `dist/AALC.app` is produced, the remaining packaging steps are the ones `s
 3. Archive with `ditto` (`zip` breaks the symlinks inside a `.app`):
    `ditto -c -k --sequesterRsrc --keepParent AALC.app AALC_<version>_macos_$(uname -m).zip`
 
-The macOS build is unsigned and not notarized, so users must clear the download quarantine flag before the first launch (`xattr -dr com.apple.quarantine AALC.app`).
+The macOS build is unsigned and not notarized, so Gatekeeper blocks the first launch; users run `xattr -cr /Applications/AALC.app` once, as described in the README.
 
 The packaged app keeps its runtime data in `~/Library/Application Support/AALC` (see `utils/app_data_dir.py`): the bundle only holds read-only resources, while configuration, logs and image resources live in the data directory. Replacing `AALC.app` to upgrade therefore keeps user settings, and the app never writes inside the bundle (that would invalidate the signature seal and make the system permissions expire).
 

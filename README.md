@@ -80,20 +80,17 @@
 
 **注意**：Release基于x86_64架构，Windows系统；另有macOS（Apple Silicon / arm64）版本，见下方说明。对于Arm架构Linux设备（如树莓派），RISCV架构和Intel芯片的Mac暂无Release。如果需要在非支持的平台上运行AALC请参考**源码运行**和**构建指南**章节进行操作，也欢迎作为开发者提交PR进行多平台适配。
 
-> **macOS 打包版（Apple Silicon）**：下载 Release 里命名为 `AALC_<版本>_macos_arm64.zip` 的文件，解压得到 `AALC.app`。
 >
-> 1. 把 `AALC.app` 放到 `/Applications` 或 `~/Applications` 等**有写入权限**的目录。
-> 2. **首次打开前**在「终端」执行一次（路径按实际位置替换）：`xattr -dr com.apple.quarantine /Applications/AALC.app`。
->    打包版没有签名与公证，不去掉下载隔离标记会被 Gatekeeper 拦下；直接右键「打开」虽然能启动，但系统会以只读的随机路径运行应用（App Translocation），数据无法保存。
-> 3. 打开 AALC.app，在 系统设置 → 隐私与安全性 里给 **AALC.app** 授予屏幕录制与辅助功能权限（前台模式截图/输入、PlayCover 键盘注入需要）。
-> 4. 配置、日志、图片资源都在数据目录 `~/Library/Application Support/AALC`（首次启动时从应用内复制过去，约 90 MB）；因此**替换 AALC.app 升级不会丢配置**。程序内检查到新版本后会把更新包下载到该目录的 `update_temp` 并在访达里定位，手动解压替换 `AALC.app` 即可（macOS 暂不提供自动更新器）。
-> 5. 使用模拟器（ADB）或 PlayCover 需要 `adb`：`brew install android-platform-tools`；打包版已把 `/opt/homebrew/bin`、`/usr/local/bin` 加入 PATH。
+> **macOS 版没有签名与公证**，首次打开会被 Gatekeeper 拦下（提示「无法验证开发者」或「已损坏」），把它放到 `/Applications` 或 `~/Applications` 后执行一次：
+>
+> ```bash
+> xattr -cr /Applications/AALC.app
+> ```
+>
+> 1. 打开 AALC.app，在 系统设置 → 隐私与安全性 里给 **AALC.app** 授予屏幕录制与辅助功能权限（前台模式截图/输入、PlayCover 键盘注入需要）。
+> 2. 配置、日志、图片资源都在数据目录 `~/Library/Application Support/AALC`（首次启动时从应用内复制过去，约 90 MB）；因此**替换 AALC.app 升级不会丢配置**。程序内检查到新版本后会把更新包下载到该目录的 `update_temp` 并在访达里定位，手动解压替换 `AALC.app` 即可（macOS 暂不提供自动更新器）。
+> 3. 使用模拟器（ADB）或 PlayCover 需要 `adb`：`brew install android-platform-tools`；打包版已把 `/opt/homebrew/bin`、`/usr/local/bin` 加入 PATH。
 
-> macOS（Apple Silicon/Intel）：自源码运行已可用（GUI 正常）。依赖 Windows API 的能力在 macOS 上不可用：后台点击/截图（win32）、窗口句柄管理、HDR 检测、计划任务、Toast 通知与管理员提权。安装依赖时 `uv sync` 或 `pip install -r requirements.txt` 会自动跳过 Windows 专用包（pywin32/pyuac/windows-toasts）。首次运行 GUI 时请在 系统设置 → 隐私与安全性 中为终端授予屏幕录制与辅助功能权限，前台模式（pyautogui）的输入与截图才可生效。
->
-> **macOS 上运行自动化：使用模拟器后台模式**。在 设置 → 模拟器设置 中开启「使用模拟器」，类型选择「其他模拟器」(10)，并按模拟器的实际 ADB 地址填写主机/端口（本机一般为 `127.0.0.1:16384`（MuMu 多开按实例 +32 递增）或 `127.0.0.1:5555`，可用 `adb devices` 确认）。截图与输入均走 ADB（screencap / minitouch），与 Windows 行为一致。MuMu(0)/BlueStacks 5(1) 为 Windows 桌面驱动，macOS 上不可用，请选择「其他」。模拟器需手动启动并保持 ADB 开启，脚本不会自动拉起模拟器进程。
->
-> 也可走 **PlayCover** 直连 iOS 版游戏：在 PlayCover 中启用 MaaTools（游戏窗口标题显示 `[localhost:1717]`），AALC 类型选「PlayCover (MaaTools)」(20)、主机 `127.0.0.1`、端口 `1717`，截图与触摸经 MaaTools TCP 协议直接作用于游戏窗口，无需 Android 模拟器。键盘方面（MaaTools 协议没有键盘指令）：**Enter / P / ESC** 通过 `CGEventPostToPid` 直接注入游戏进程，游戏不必在前台、也不影响你同时用电脑；这需要在 系统设置 → 隐私与安全性 → 辅助功能 中勾选**运行 AALC 的程序**（源码运行即终端，打包版即 `AALC.app`），未授权时这三个键自动回退为触摸操作。方向键与文本输入仍走触摸兜底（见使用说明）。
 
 ---
 
