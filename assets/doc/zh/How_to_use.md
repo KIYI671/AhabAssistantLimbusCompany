@@ -149,6 +149,7 @@
 - MuMu(0) 与 BlueStacks 5(1) 的驱动依赖 Windows（注册表/MuMuManager.exe），macOS 上不可用，选择后无法连接。
 - 主机/端口填写模拟器的 ADB 地址：macOS 本机一般为 `127.0.0.1:16384`（MuMu 多开按实例 +32 递增）或 `127.0.0.1:5555`；不确定时在模拟器内执行 `adb devices` 确认。
 - 截图与输入走 ADB（screencap / minitouch），与 Windows 行为一致；模拟器需手动启动并保持 ADB 开启，脚本不会自动拉起模拟器进程。
+- 打包版（`AALC.app`）的配置、日志、图片资源在数据目录 `~/Library/Application Support/AALC`，替换 `AALC.app` 升级不会丢配置；首次打开前需要按 README 去掉下载隔离标记（`xattr -dr com.apple.quarantine`）。
 
 #### PlayCover（Apple Silicon，无需 Android 模拟器）
 

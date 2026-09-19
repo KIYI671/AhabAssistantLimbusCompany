@@ -2004,6 +2004,24 @@ To stop seeing this notice, disable &quot;HDR detection warning&quot; under Sett
         <translation>Download completed, would you like to start updating</translation>
     </message>
     <message>
+        <location filename="../app/my_app.py" line="650"/>
+        <source>更新包已下载</source>
+        <translation>Update package downloaded</translation>
+    </message>
+    <message>
+        <location filename="../app/my_app.py" line="655"/>
+        <source>更新包已保存到：
+{path}
+
+请退出 AALC，解压更新包，用新的 AALC.app 替换原来的应用后重新启动。
+设置、日志和图片资源保存在数据目录里，替换应用不会丢失。</source>
+        <translation>Update package saved to:
+{path}
+
+Quit AALC, unzip the package, replace the old app with the new AALC.app, then start it again.
+Settings, logs and image resources live in the data directory and survive the replacement.</translation>
+    </message>
+    <message>
         <location filename="../app/my_app.py" line="555"/>
         <source>任务设置出错</source>
         <translation>Task settings are incorrect</translation>

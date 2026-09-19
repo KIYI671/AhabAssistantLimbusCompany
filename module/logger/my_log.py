@@ -1,6 +1,5 @@
 import logging
 import os
-import sys
 from collections import deque
 from copy import deepcopy
 from pathlib import Path
@@ -19,7 +18,9 @@ from utils.singletonmeta import SingletonMeta
 class TranslationFormatter(colorlog.ColoredFormatter):
     """自定义日志格式化器，用于日志消息国际化"""
 
-    project_root = Path(sys._MEIPASS) if hasattr(sys, "_MEIPASS") else Path.cwd()
+    # 打包后应用自身的模块路径是相对的（PyInstaller 会把 co_filename 改写成 app/my_app.py 这类形式），
+    # 只有相对进程的工作目录（程序目录 / macOS 的数据目录）才能还原成简短路径。
+    project_root = Path.cwd()
 
     def format(self, record):
         record.msg = QApplication.translate("Logger", str(record.msg))

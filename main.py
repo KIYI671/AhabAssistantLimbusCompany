@@ -9,10 +9,46 @@ import threading
 # 此处仅清除当前进程的环境变量，不影响系统设置和其他进程。
 _ORIG_SSLKEYLOGFILE = os.environ.pop("SSLKEYLOGFILE", None)
 
-# 将当前工作目录设置为程序所在的目录，确保无论从哪里执行，其工作目录都正确设置为程序本身的位置，避免路径错误。
-os.chdir(
+
+def _abort_startup(title: str, message: str) -> None:
+    """启动阶段的致命错误：此时日志系统还没就绪，直接弹窗说明原因后退出。"""
+    sys.stderr.write(f"{title}: {message}\n")
+    from PySide6.QtWidgets import QApplication, QMessageBox
+
+    QApplication([])
+    QMessageBox.critical(None, title, message)
+    sys.exit(1)
+
+
+# 程序所在目录：打包后是 exe 所在目录，源码运行是仓库根目录
+APP_DIR = (
     os.path.dirname(sys.executable) if getattr(sys, "frozen", False) else os.path.dirname(os.path.abspath(__file__))
 )
+
+# macOS 的 .app 从「访达」启动时只继承 launchd 的最小 PATH（/usr/bin:/bin:/usr/sbin:/sbin），
+# 找不到 Homebrew 安装的 adb 等外部命令，这里补上常见的安装位置。
+if sys.platform == "darwin":
+    for _bin_dir in ("/opt/homebrew/bin", "/usr/local/bin"):
+        if os.path.isdir(_bin_dir) and _bin_dir not in os.environ.get("PATH", "").split(os.pathsep):
+            os.environ["PATH"] = _bin_dir + os.pathsep + os.environ.get("PATH", "")
+
+# 将当前工作目录设置为程序的数据目录，确保相对路径（配置、日志、图片资源）都指向可写位置。
+# macOS 打包版的数据目录在 ~/Library/Application Support/AALC，程序目录只当只读资源来源，
+# 详见 utils/app_data_dir.py。
+WORK_DIR = APP_DIR
+if sys.platform == "darwin" and getattr(sys, "frozen", False):
+    from utils.app_data_dir import prepare_macos_data_dir
+
+    try:
+        WORK_DIR = prepare_macos_data_dir(APP_DIR)
+    except OSError as error:
+        _abort_startup(
+            "AALC 启动失败",
+            f"无法准备数据目录：\n{error}\n\n请检查磁盘剩余空间，以及「访达 → 前往文件夹 → "
+            "~/Library/Application Support」的写入权限。",
+        )
+os.chdir(WORK_DIR)
+
 # 解决 Windows DPI 缩放问题（仅 Windows；macOS 的 HiDPI 由系统与 Qt 自动处理）
 if sys.platform == "win32":
     from ctypes import c_void_p, windll

@@ -158,6 +158,9 @@ In the Settings screen, turn on the "Use Emulator" option, and it is recommended
   or `127.0.0.1:5555`; when unsure, run `adb devices` on the machine.
 - Screenshots and input go through ADB (screencap / minitouch), same as on Windows. Start the emulator manually and keep
   its ADB enabled; the script will not launch the emulator process itself.
+- The packaged build (`AALC.app`) keeps configuration, logs and image resources in the data directory
+  `~/Library/Application Support/AALC`, so replacing `AALC.app` to upgrade keeps your settings. Before the first launch
+  you have to clear the download quarantine flag as described in the README (`xattr -dr com.apple.quarantine`).
 
 #### PlayCover (Apple Silicon, no Android emulator needed)
 

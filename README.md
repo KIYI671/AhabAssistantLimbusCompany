@@ -78,7 +78,16 @@
 
 因为技术力不足，还搞了GUI和使用第三方OCR，所以导致文件比较大
 
-**注意**：Release基于x86_64架构，Windows系统。对于Arm架构（如苹果M系列芯片，树莓派等），RISCV架构和Mac系统，Linux系统暂无Release。如果需要在非支持的平台上运行AALC请参考**源码运行**和**构建指南**章节进行操作，也欢迎作为开发者提交PR进行多平台适配。未来根据用户需求也许会添加多平台的Release版本支持。
+**注意**：Release基于x86_64架构，Windows系统；另有macOS（Apple Silicon / arm64）版本，见下方说明。对于Arm架构Linux设备（如树莓派），RISCV架构和Intel芯片的Mac暂无Release。如果需要在非支持的平台上运行AALC请参考**源码运行**和**构建指南**章节进行操作，也欢迎作为开发者提交PR进行多平台适配。
+
+> **macOS 打包版（Apple Silicon）**：下载 Release 里命名为 `AALC_<版本>_macos_arm64.zip` 的文件，解压得到 `AALC.app`。
+>
+> 1. 把 `AALC.app` 放到 `/Applications` 或 `~/Applications` 等**有写入权限**的目录。
+> 2. **首次打开前**在「终端」执行一次（路径按实际位置替换）：`xattr -dr com.apple.quarantine /Applications/AALC.app`。
+>    打包版没有签名与公证，不去掉下载隔离标记会被 Gatekeeper 拦下；直接右键「打开」虽然能启动，但系统会以只读的随机路径运行应用（App Translocation），数据无法保存。
+> 3. 打开 AALC.app，在 系统设置 → 隐私与安全性 里给 **AALC.app** 授予屏幕录制与辅助功能权限（前台模式截图/输入、PlayCover 键盘注入需要）。
+> 4. 配置、日志、图片资源都在数据目录 `~/Library/Application Support/AALC`（首次启动时从应用内复制过去，约 90 MB）；因此**替换 AALC.app 升级不会丢配置**。程序内检查到新版本后会把更新包下载到该目录的 `update_temp` 并在访达里定位，手动解压替换 `AALC.app` 即可（macOS 暂不提供自动更新器）。
+> 5. 使用模拟器（ADB）或 PlayCover 需要 `adb`：`brew install android-platform-tools`；打包版已把 `/opt/homebrew/bin`、`/usr/local/bin` 加入 PATH。
 
 > macOS（Apple Silicon/Intel）：自源码运行已可用（GUI 正常）。依赖 Windows API 的能力在 macOS 上不可用：后台点击/截图（win32）、窗口句柄管理、HDR 检测、计划任务、Toast 通知与管理员提权。安装依赖时 `uv sync` 或 `pip install -r requirements.txt` 会自动跳过 Windows 专用包（pywin32/pyuac/windows-toasts）。首次运行 GUI 时请在 系统设置 → 隐私与安全性 中为终端授予屏幕录制与辅助功能权限，前台模式（pyautogui）的输入与截图才可生效。
 >
