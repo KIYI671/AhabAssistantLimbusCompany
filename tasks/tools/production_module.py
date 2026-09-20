@@ -99,7 +99,7 @@ class ProductionWork(QThread):
                     continue
                 timing = None
                 for _ in range(60):
-                    timing = get_the_timing(return_time=True)
+                    timing = get_the_timing()
                     if timing:
                         break
                 if timing is None:
