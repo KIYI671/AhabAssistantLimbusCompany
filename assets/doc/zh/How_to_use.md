@@ -153,16 +153,15 @@
 
 #### PlayCover（Apple Silicon，无需 Android 模拟器）
 
-- 需使用社区分支 [hguandl/PlayCover](https://github.com/hguandl/PlayCover)（当前为 `3.1.0.maa.N` 版本），它自带的 PlayTools 提供了 MaaTools TCP 服务：在其中安装 iOS 版游戏，打开该游戏的设置里的 **MaaTools** 开关（旁边的「端口：」默认 `1717`，可改），启动游戏后窗口标题出现 `[localhost:端口]` 即服务已就绪。
+- PlayCover需使用社区分支 [hguandl/PlayCover](https://github.com/hguandl/PlayCover)，它自带的 PlayTools 提供了 MaaTools TCP 服务
+- 在其中下载安装[脱壳的LimbusCompany](https://decrypt.day/app/id6444112366)并安装
+- 在 PlayCover 中右键LimbusCompany，选择 `设置` - `绕过`，勾选 `启用 PlayChain`、`启用绕过越狱检测`、`插入内省库`、`MaaTools`，然后点击 `好`。
+- 打开该游戏的设置里的 **MaaTools** 开关（旁边的「端口：」默认 `1717`，可改），启动游戏后窗口标题出现 `[localhost:端口]` 即服务已就绪。
 - AALC 设置 → 模拟器设置：开启「使用模拟器」，类型选 **「PlayCover (MaaTools)」(20)**，主机 `127.0.0.1`，端口填窗口标题中的端口（默认 `1717`，需与 PlayCover 里的「端口：」一致）。
-- 截图/触摸均通过 MaaTools TCP 协议直接作用于游戏窗口（原生像素），与 Windows/模拟器行为一致；游戏需在 PlayCover 中手动启动，AALC 不会自动拉起。
-- **键盘**：MaaTools 协议没有键盘指令，但游戏（PlayTools 注入的进程）直接读硬件键盘，所以 **Enter（确认/开始回合）、P（自动选择技能）、ESC（返回/暂停）** 由 AALC 用 `CGEventPostToPid` 直接注入游戏进程 —— 游戏不必在前台，也不影响你同时用电脑。需要在 系统设置 → 隐私与安全性 → 辅助功能 中勾选**运行 AALC 的程序**（源码运行 = 终端，打包版 = `AALC.app`）；未授权或注入失败时这三个键自动回退为触摸操作。
-- **开始战斗**：键盘可用时与 Windows 一致走 **P+Enter**；若识别不到回合已经开始（如游戏没吃到按键），后续回合自动改走触摸兜底（点胜率面板让游戏自动选择技能再点开始按钮，会**覆盖手动守备/链接战划线**，日志会提示）。
-- **仍走触摸兜底**：**方向键**（`mirror_keyboard_navigation` 与简单键盘寻路 → 点击寻路，日志一次性提示）、**镜牢地图缩放**（PC 的滚轮 → 双指捏合）、**文本输入**（「使用编队码」输不进编队码：记录 `编队码加载失败，继续使用当前队伍配置` 并按当前队伍配置继续执行，不中断任务；该功能使用频率低，暂不提供兜底，需要时请在游戏内手动保存/选择队伍，或改用上面的模拟器后台模式（ADB））。
 
 #### 已知限制
 
-- playover由于签名问题对oauth登录的支持有限: 无法支持apple登录、google登录之后重开游戏需要重新登录
+- playover由于签名问题对oauth登录的支持有限: 无法支持apple登录、**google登录之后，每次重开游戏需要重新登录**
 
 # 三方脚本支持
 

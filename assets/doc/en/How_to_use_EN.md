@@ -165,33 +165,15 @@ In the Settings screen, turn on the "Use Emulator" option, and it is recommended
 
 #### PlayCover (Apple Silicon, no Android emulator needed)
 
-- Use the community fork [hguandl/PlayCover](https://github.com/hguandl/PlayCover) (version `3.1.0.maa.N` or later),
-  which bundles the PlayTools build that provides the MaaTools TCP service. Install the iOS build of Limbus Company
-  there, turn on **MaaTools** in that game's settings (the "Port:" field next to it defaults to `1717`), then start the
-  game — the game window title shows `[localhost:port]` once the service is ready.
-- AALC Settings → Emulator settings: enable "Use Emulator", pick **"PlayCover (MaaTools)" (20)**, host `127.0.0.1`,
-  port = the one in the window title (default `1717`, must match the "Port:" setting in PlayCover).
-- Screenshots and touches go through the MaaTools TCP protocol straight to the game window (native pixels), same as on
-  Windows/emulators. Start the game in PlayCover manually; AALC will not launch it.
-- **Keyboard**: the MaaTools protocol has no keyboard command, but the game itself (a PlayTools-injected process) reads
-  the hardware keyboard directly, so **Enter (confirm / start round), P (auto-select skills) and ESC (back / pause)**
-  are injected into the game process by AALC with `CGEventPostToPid` — the game does not need to be focused, and you can
-  keep using your Mac meanwhile. This requires the Accessibility permission for **the program running AALC** (the
-  terminal for source runs, `AALC.app` for packaged builds) in System Settings → Privacy & Security → Accessibility;
-  without it those three keys fall back to touches automatically.
-- **Starting a round**: with the keyboard available it uses **P+Enter**, same as on Windows; if the round is not
-  detected as started (e.g. the game missed the keys), later rounds automatically use the touch fallback (tap the
-  win-rate panel so the game auto-assigns skills, then tap the start button), which **overrides manual guards /
-  chain-battle lines** (a warning is logged).
-- **Still touch-only**: **arrow keys** (`mirror_keyboard_navigation` and simple keyboard pathfinding fall back to click
-  pathfinding, logged once), **Mirror map zoom** (mouse wheel on PC becomes a two-finger pinch), and **text input**
-  ("Use team code" cannot type the code: AALC logs `编队码加载失败，继续使用当前队伍配置` and continues with the
-  current team configuration without interrupting the task; set up the team manually in game if you need it, or use the
-  emulator background mode (ADB) described above).
+- You must use the community fork of PlayCover ([hguandl/PlayCover](https://github.com/hguandl/PlayCover)); its built-in PlayTools provides the MaaTools TCP service.
+- Download and install the [decrypted Limbus Company](https://decrypt.day/app/id6444112366) from there.
+- Right-click *Limbus Company* in PlayCover, select **Settings** > **Bypass**, and check the boxes for **Enable PlayChain**, **Enable Jailbreak Detection Bypass**, **Inject Introspection Library**, and **MaaTools**, then click **OK**.
+- Toggle on **MaaTools** in the game's settings (the default port is `1717`, but this can be changed); once the game launches and the window title displays `[localhost:port]`, the service is ready.
+- In AALC Settings > Emulator Settings: enable **Use Emulator**, select **PlayCover (MaaTools) (20)** as the type, set the host to `127.0.0.1`, and enter the port shown in the window title (default `1717`; this must match the port setting in PlayCover).
 
 #### Known limitations
 
-- Playover has limited support for OAuth logins due to signature-related issues: it does not support Sign in with Apple, and for Google logins, the user is required to log in again upon restarting the game.
+- Playover has limited support for OAuth logins due to signing issues: it does not support "Sign in with Apple," and **for Google logins, you are required to log in again every time you restart the game**.
 
 ### Third-Party Script Support
 
