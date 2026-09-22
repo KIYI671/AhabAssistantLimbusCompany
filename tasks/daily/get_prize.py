@@ -12,6 +12,7 @@ from utils.image_utils import ImageUtils
 def get_pass_prize():
     loop_count = 15
     auto.model = "clam"
+    last_try = False
     while True:
         # 自动截图
         if auto.take_screenshot() is None:
@@ -34,12 +35,18 @@ def get_pass_prize():
                     (season_bbox[1] + season_bbox[3]) / 2,
                 )
                 continue
-        # else:
 
         auto.mouse_to_blank()
         loop_count -= 1
         update_model_for_retry(loop_count, normal_at=10, aggressive_at=5)
         if loop_count < 0:
+            if last_try is False:
+                from config import cfg
+                scale = cfg.set_win_size / 1440
+                mail_pos = auto.find_element("home/mail_assets.png")
+                auto.mouse_click(mail_pos[0], mail_pos[1]+200*scale)
+                loop_count+=1
+                continue
             log.error("无法收取日常/周常")
             return
     auto.click_element("pass/weekly_assets.png")
