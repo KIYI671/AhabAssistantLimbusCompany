@@ -13,7 +13,9 @@ Global:
     return_word_box: false
     return_single_char_box: false
 
-    font_path: null
+    # 本项目不做可视化，设为非空值可让 rapidocr 跳过强制下载/校验 FZYTK.TTF
+    # 该路径仅在可视化绘制时才会被打开，本项目不使用；若将来启用可视化，改成本机真实字体即可
+    font_path: "C:/Windows/Fonts/simhei.ttf"
     log_level: "info" # debug / info / warning / error / critical
 
 EngineConfig:
