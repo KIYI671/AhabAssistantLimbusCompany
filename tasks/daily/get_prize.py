@@ -28,7 +28,7 @@ def get_pass_prize():
                 continue
         else:
             season_bbox = ImageUtils.get_bbox(ImageUtils.load_image("home/season_assets.png"))
-            if auto.find_text_element("season", season_bbox):
+            if auto.find_text_element(["season","seasun"], season_bbox):
                 auto.mouse_click(
                     (season_bbox[0] + season_bbox[2]) / 2,
                     (season_bbox[1] + season_bbox[3]) / 2,
