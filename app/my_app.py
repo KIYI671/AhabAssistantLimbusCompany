@@ -55,7 +55,7 @@ from module.after_completion_types import (
 from module.config import cfg
 from module.font_manager import font_manager
 from module.logger import log
-from module.system_actions import autodaily_exit_to_after_completion_config
+from module.system_actions import autodaily_exit_to_after_completion_config, suspend_completion_actions
 
 # WinRT toast / Win32 焦点切换存在异步回跳，这里保留一次延迟补偿。
 _FOREGROUND_RETRY_DELAY_MS = 600
@@ -91,6 +91,10 @@ class TrayRoundMenu(RoundMenu):
 class MainWindow(FramelessWindow):
     def __init__(self, argv: list[str]):
         super().__init__()
+
+        self._pending_start_commands: list[list[str]] = []
+        self._scheduled_start_pending = False
+        self._scheduled_start_command: list[str] | None = None
 
         # 应用全局字体配置
         apply_font_config()
@@ -329,6 +333,15 @@ class MainWindow(FramelessWindow):
         """通过命令行参数控制程序启动行为"""
         # 初始化控制符
         log.debug(f"接收到命令行参数: {argv}")
+        if self._is_start_command(argv) and (self._has_running_script() or self._scheduled_start_pending):
+            self._pending_start_commands.append(list(argv))
+            self._suppress_current_completion_actions()
+            log.info(
+                "当前已有任务正在执行或等待启动，新的自动任务已排队（队列长度：%s）",
+                len(self._pending_start_commands),
+            )
+            return
+
         skip_arg_times = 0
         start_flag = False
         exit_flag = False
@@ -406,7 +419,56 @@ class MainWindow(FramelessWindow):
 
         if start_flag:
             log.info("开始通过命令行参数启动程序")
-            QTimer.singleShot(3000, mediator.finished_signal.emit)
+            self._scheduled_start_pending = True
+            self._scheduled_start_command = list(argv)
+            QTimer.singleShot(3000, self._emit_scheduled_start)
+
+    @staticmethod
+    def _is_start_command(argv: list[str]) -> bool:
+        return "start" in argv[1:]
+
+    def _emit_scheduled_start(self) -> None:
+        if self._has_running_script():
+            if self._scheduled_start_command is not None:
+                self._pending_start_commands.insert(0, self._scheduled_start_command)
+                self._suppress_current_completion_actions()
+                log.info(
+                    "自动任务等待启动期间检测到其他任务，已转入队列（队列长度：%s）",
+                    len(self._pending_start_commands),
+                )
+            self._scheduled_start_pending = False
+            self._scheduled_start_command = None
+            return
+
+        self._scheduled_start_pending = False
+        self._scheduled_start_command = None
+        suspend_completion_actions(bool(self._pending_start_commands))
+        mediator.finished_signal.emit()
+        if not self._has_running_script():
+            self._schedule_next_queued_start()
+
+    def _suppress_current_completion_actions(self) -> None:
+        """队列尚有后续任务时，禁止当前任务关闭程序、模拟器或执行电源操作。"""
+        suspend_completion_actions(True)
+
+    def _schedule_next_queued_start(self) -> None:
+        if self._pending_start_commands:
+            QTimer.singleShot(250, self._start_next_queued_command)
+        elif not self._scheduled_start_pending:
+            suspend_completion_actions(False)
+
+    def _start_next_queued_command(self) -> None:
+        if not self._pending_start_commands:
+            return
+        if self._has_running_script() or self._scheduled_start_pending:
+            QTimer.singleShot(250, self._start_next_queued_command)
+            return
+
+        argv = self._pending_start_commands.pop(0)
+        log.info("当前任务已结束，开始执行排队的自动任务（剩余：%s）", len(self._pending_start_commands))
+        self.command_start(argv)
+        if self._pending_start_commands:
+            self._suppress_current_completion_actions()
 
     def _apply_theme_styles(self):
         is_dark = isDarkTheme()
@@ -569,6 +631,7 @@ class MainWindow(FramelessWindow):
         mediator.hdr_warning.connect(self.show_hdr_warning)
         # 由任务线程发起请求、由主窗口执行前台切换，避免执行层直接耦合 UI。
         mediator.request_focus.connect(self._force_foreground)
+        mediator.script_finished.connect(self._schedule_next_queued_start)
 
     def _force_foreground(self) -> None:
         """强制将 AALC 主窗口拉至前台，绕过 Windows 焦点保护。

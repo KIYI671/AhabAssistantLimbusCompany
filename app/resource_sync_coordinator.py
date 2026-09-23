@@ -28,7 +28,6 @@ from module.update.check_update import (
 )
 
 # start 自动任务模式下，等待资源更新确认的超时时间。
-_RESOURCE_SYNC_CONFIRM_TIMEOUT_MS = 5 * 60 * 1000
 
 
 class ResourceSyncCoordinator(QObject):
@@ -566,50 +565,19 @@ class ResourceSyncCoordinator(QObject):
         )
 
     def _confirm_apply_resource_sync(self, sync_plan: ResourceSyncPlan, *, startup_context: bool) -> bool:
-        """提示用户是否立即应用检测到的图片资源更新。
-
-        参数:
-            sync_plan: 本轮资源同步计划对象。
-            startup_context: 当前确认是否发生在启动阶段。
-
-        返回:
-            用户确认应用时返回 True，否则返回 False。
-        """
-        # 第一步：先拼接同步计划摘要，生成确认框正文。
+        """自动任务跳过资源确认，手动启动仍询问是否同步。"""
+        if startup_context and self._is_auto_task_start(self._startup_argv):
+            log.info("start 自动任务跳过本次资源同步确认，继续执行任务")
+            return False
         content = self._window.tr(
             "{summary}\n是否立即同步？"
         ).format(summary=self._format_resource_sync_plan_summary(sync_plan))
-
-        # 第二步：start 自动任务模式下追加超时提示，避免阻塞无人值守启动。
-        if startup_context and self._is_auto_task_start(self._startup_argv):
-            content += self._window.tr("\n当前为 start 自动任务模式，5 分钟内未选择将默认跳过本次更新。")
-
         message_box = MessageBoxConfirm(
             self._window.tr("检测到图片资源更新"),
             content,
             self._window.window(),
         )
-
-        # 第三步：仅在 start 自动任务模式下安装超时自动拒绝逻辑。
-        timeout_timer = None
-        if startup_context and self._is_auto_task_start(self._startup_argv):
-            timeout_timer = QTimer(message_box)
-            timeout_timer.setSingleShot(True)
-
-            def _reject_on_timeout() -> None:
-                # 自动任务模式下不让确认框无限阻塞启动流程，超时后按“跳过同步”处理。
-                if message_box.isVisible():
-                    log.info("start 自动任务模式下等待图片资源更新确认超时 5 分钟，默认跳过本次同步")
-                    message_box.reject()
-
-            timeout_timer.timeout.connect(_reject_on_timeout)
-            timeout_timer.start(_RESOURCE_SYNC_CONFIRM_TIMEOUT_MS)
-
-        # 第四步：执行确认框，并在退出前清理可能存在的超时计时器。
-        accepted = bool(message_box.exec())
-        if timeout_timer is not None:
-            timeout_timer.stop()
-        return accepted
+        return bool(message_box.exec())
 
     def _show_resource_sync_infobar(self, *, level: str, title: str, content: str) -> None:
         """统一弹出资源同步相关提示，保持提示风格一致。

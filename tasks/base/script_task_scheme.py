@@ -481,8 +481,6 @@ class my_script_task(QThread):
             retry_monitor.stop()
             self.mutex.unlock()
 
-        mediator.script_finished.emit()
-
     def terminate(self):
         retry_monitor.stop()
         super().terminate()
