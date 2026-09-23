@@ -2,10 +2,12 @@
 
 from __future__ import annotations
 
-from pathlib import Path
 import shutil
 import subprocess
 import sys
+from pathlib import Path
+
+from module.platform_compat import IS_WINDOWS
 
 # 优先复用项目内置的 7za.exe，避免运行环境额外依赖系统安装的 7-Zip。
 SEVEN_ZIP_EXECUTABLE_RELATIVE_PATH = Path("assets/binary/7za.exe")
@@ -15,38 +17,36 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 SYSTEM_SEVEN_ZIP_COMMAND_CANDIDATES = ("7z", "7za")
 
 
-def _resolve_7z_executable() -> str:
+def _resolve_7z_executable() -> str | None:
     """解析当前环境可用的 7z 可执行命令。
 
     返回:
-        可直接传给 subprocess 的 7z 命令或绝对路径字符串。
+        可直接传给 subprocess 的 7z 命令或绝对路径字符串；
+        当前环境没有任何可用的 7z 工具时返回 None（调用方回退到 py7zr）。
     """
     candidate_paths: list[Path] = []
 
-    # 第一步：打包版本优先查找 exe 旁边的内置 7za.exe。
-    if getattr(sys, "frozen", False):
-        candidate_paths.append(Path(sys.executable).resolve().parent / SEVEN_ZIP_EXECUTABLE_RELATIVE_PATH)
+    # 第一步：内置 7za.exe 是 Windows 可执行文件，仅在 Windows 上考虑。
+    if IS_WINDOWS:
+        # 打包版本优先查找 exe 旁边的内置 7za.exe。
+        if getattr(sys, "frozen", False):
+            candidate_paths.append(Path(sys.executable).resolve().parent / SEVEN_ZIP_EXECUTABLE_RELATIVE_PATH)
 
-    # 第二步：源码运行时回退到仓库内的 assets/binary/7za.exe。
-    candidate_paths.append(PROJECT_ROOT / SEVEN_ZIP_EXECUTABLE_RELATIVE_PATH)
+        # 源码运行时回退到仓库内的 assets/binary/7za.exe。
+        candidate_paths.append(PROJECT_ROOT / SEVEN_ZIP_EXECUTABLE_RELATIVE_PATH)
 
-    for candidate_path in candidate_paths:
-        resolved_path = candidate_path.resolve()
-        if resolved_path.is_file():
-            return str(resolved_path)
+        for candidate_path in candidate_paths:
+            resolved_path = candidate_path.resolve()
+            if resolved_path.is_file():
+                return str(resolved_path)
 
-    # 第三步：若项目内置工具不存在，则回退到系统 PATH 中的 7z/7za 命令。
+    # 第二步：回退到系统 PATH 中的 7z/7za 命令。
     for command_name in SYSTEM_SEVEN_ZIP_COMMAND_CANDIDATES:
         executable_path = shutil.which(command_name)
         if executable_path:
             return executable_path
 
-    candidate_text = "；".join(str(path.resolve()) for path in candidate_paths)
-    raise FileNotFoundError(
-        "未找到可用的 7z 工具，请检查项目内置 7za.exe 或系统 PATH。\n"
-        f"已检查内置路径: {candidate_text}\n"
-        f"已尝试系统命令: {', '.join(SYSTEM_SEVEN_ZIP_COMMAND_CANDIDATES)}"
-    )
+    return None
 
 
 def _run_7z_command(arguments: list[str], *, cwd: Path | None = None) -> subprocess.CompletedProcess[str]:
@@ -156,12 +156,47 @@ def extract_7z_archive(archive_path: Path, extract_dir: Path) -> Path:
         shutil.rmtree(extract_dir)
     extract_dir.mkdir(parents=True, exist_ok=True)
 
-    # 第二步：先检查包内成员路径，阻止绝对路径和 .. 穿越写出。
+    # 第二步：优先使用 7z 命令行工具；不可用时（如 Linux 无内置 7za.exe）回退 py7zr。
+    seven_zip_command = _resolve_7z_executable()
+    if seven_zip_command is None:
+        return _extract_7z_archive_with_py7zr(archive_path, extract_dir)
+
+    # 第三步：先检查包内成员路径，阻止绝对路径和 .. 穿越写出。
     member_paths = _list_7z_members(archive_path)
     for member_path in member_paths:
         if member_path.is_absolute() or ".." in member_path.parts:
             raise ValueError(f"资源包包含非法路径: {member_path}")
 
-    # 第三步：执行覆盖式解压，保证同步时始终拿到完整的新包内容。
+    # 第四步：执行覆盖式解压，保证同步时始终拿到完整的新包内容。
     _run_7z_command(["x", str(archive_path.resolve()), f"-o{extract_dir.resolve()}", "-aoa", "-y"])
+    return extract_dir
+
+
+def _extract_7z_archive_with_py7zr(archive_path: Path, extract_dir: Path) -> Path:
+    """使用纯 Python 的 py7zr 安全解压 7z 资源包（无系统 7z 工具时的回退方案）。
+
+    参数:
+        archive_path: 待解压的 7z 资源包路径。
+        extract_dir: 解压输出目录。
+
+    返回:
+        解压完成后的输出目录路径。
+    """
+    import py7zr
+
+    # 第一步：重建临时解压目录，确保本次解压不受旧文件残留影响。
+    if extract_dir.exists():
+        shutil.rmtree(extract_dir)
+    extract_dir.mkdir(parents=True, exist_ok=True)
+
+    # 第二步：与命令行方案一致，先校验包内成员路径，阻止绝对路径和 .. 穿越写出。
+    with py7zr.SevenZipFile(archive_path, mode="r") as archive:
+        for member_info in archive.list():
+            member_path = Path(member_info.filename)
+            if member_path.is_absolute() or ".." in member_path.parts:
+                raise ValueError(f"资源包包含非法路径: {member_path}")
+
+        # 第三步：执行覆盖式解压。
+        archive.reset()
+        archive.extractall(path=extract_dir)
     return extract_dir

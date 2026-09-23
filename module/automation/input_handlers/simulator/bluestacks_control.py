@@ -3,14 +3,17 @@ from __future__ import annotations
 import os
 import re
 import subprocess
-import winreg
 from dataclasses import dataclass
 from pathlib import Path
 
 import psutil
 
 from module.logger import log
+from module.platform_compat import IS_WINDOWS
 from utils.adb_endpoint import normalize_adb_host
+
+if IS_WINDOWS:
+    import winreg
 
 BLUESTACKS_SIMULATOR_TYPE = 1
 _LOCAL_ADB_HOSTS = {"127.0.0.1", "::1", "localhost"}
@@ -114,6 +117,8 @@ class BlueStacksLauncher:
 
     @classmethod
     def discover(cls) -> "BlueStacksLauncher":
+        if not IS_WINDOWS:
+            raise BlueStacksError("BlueStacks 模拟器仅支持 Windows；Linux 下请改用远程 ADB 连接（如 Waydroid）")
         install_dir = ""
         user_data_dir = ""
         registry_access_modes = (winreg.KEY_READ | winreg.KEY_WOW64_64KEY, winreg.KEY_READ)

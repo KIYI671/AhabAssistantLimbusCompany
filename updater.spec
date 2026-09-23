@@ -1,4 +1,7 @@
 # -*- mode: python ; coding: utf-8 -*-
+import sys
+
+IS_WINDOWS = sys.platform == "win32"
 
 
 a = Analysis(
@@ -22,7 +25,7 @@ exe = EXE(
     a.binaries,
     a.datas,
     [],
-    name='AALC Updater',
+    name='AALC Updater' if IS_WINDOWS else 'AALC-Updater',
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
@@ -35,5 +38,5 @@ exe = EXE(
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
-    icon=['assets\\logo\\Updater.ico'],
+    icon=['assets\\logo\\Updater.ico'] if IS_WINDOWS else None,
 )

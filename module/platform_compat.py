@@ -1,0 +1,183 @@
+"""跨平台兼容层。
+
+集中平台判断与平台相关的系统调用（打开文件/目录、脱离进程启动、结束进程），
+避免各业务模块直接依赖 Windows 专属 API。
+"""
+
+import os
+import shutil
+import subprocess
+import sys
+
+IS_WINDOWS = os.name == "nt"
+"""是否为 Windows 平台（pywin32 / UAC / Toast 等能力可用）"""
+
+IS_LINUX = sys.platform.startswith("linux")
+
+
+def _external_process_environment() -> dict[str, str]:
+    """为系统外部程序恢复宿主环境，避免继承 PyInstaller 的动态库路径。"""
+    env = os.environ.copy()
+    for library_path in ("LD_LIBRARY_PATH", "DYLD_LIBRARY_PATH", "DYLD_FALLBACK_LIBRARY_PATH"):
+        original_name = f"{library_path}_ORIG"
+        original_value = env.pop(original_name, None)
+        if original_value is not None:
+            if original_value:
+                env[library_path] = original_value
+            else:
+                env.pop(library_path, None)
+        elif getattr(sys, "frozen", False):
+            env.pop(library_path, None)
+    return env
+
+
+def open_path(path: str) -> None:
+    """用系统默认方式打开文件或目录（资源管理器/浏览器等）。"""
+    if IS_WINDOWS:
+        os.startfile(path)  # noqa: S606
+    elif sys.platform == "darwin":
+        subprocess.Popen(["open", path], env=_external_process_environment())
+    else:
+        if shutil.which("xdg-open") is None:
+            raise RuntimeError("未找到 xdg-open，无法打开路径")
+        subprocess.Popen(["xdg-open", path], env=_external_process_environment())
+
+
+def open_url(url: str) -> bool:
+    """用系统默认浏览器打开网页，返回是否成功启动打开命令。"""
+    if IS_WINDOWS:
+        os.startfile(url)  # noqa: S606
+        return True
+
+    if sys.platform == "darwin":
+        commands = [["open", url]]
+    else:
+        commands = []
+        xdg_open = shutil.which("xdg-open")
+        if xdg_open:
+            commands.append([xdg_open, url])
+        gio = shutil.which("gio")
+        if gio:
+            commands.append([gio, "open", url])
+
+    for command in commands:
+        try:
+            subprocess.Popen(  # noqa: S603
+                command,
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+                start_new_session=True,
+                env=_external_process_environment(),
+            )
+            return True
+        except OSError:
+            continue
+
+    return False
+
+
+def open_uri(uri: str) -> None:
+    """调用系统协议处理器打开 URI（如 steam://rungameid/...）。
+
+    Windows 的 os.startfile 底层是 ShellExecute，能解析注册的 URL 协议；
+    Linux 下 webbrowser 会把非 http 协议直接丢给浏览器而无法唤起 Steam，
+    因此优先直接调用 steam 命令（已在运行时会转发给现有实例），
+    其次 Flatpak 版 Steam，最后 xdg-open。
+    """
+    if IS_WINDOWS:
+        os.startfile(uri)  # noqa: S606
+        return
+    if sys.platform == "darwin":
+        subprocess.Popen(["open", uri], env=_external_process_environment())  # noqa: S603
+        return
+    commands = []
+    steam = shutil.which("steam")
+    if steam:
+        commands.append([steam, uri])
+    if shutil.which("flatpak"):
+        commands.append(["flatpak", "run", "com.valvesoftware.Steam", uri])
+    if shutil.which("xdg-open"):
+        commands.append(["xdg-open", uri])
+    for command in commands:
+        try:
+            subprocess.Popen(  # noqa: S603
+                command,
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+                start_new_session=True,
+                env=_external_process_environment(),
+            )
+            return
+        except OSError:
+            continue
+    raise RuntimeError("未找到打开 steam:// 的方式，请安装 Steam 或配置协议处理器")
+
+
+def start_detached(command: list[str], cwd: str | None = None) -> subprocess.Popen:
+    """以脱离当前进程的方式启动外部程序（父进程退出后子进程继续运行）。"""
+    if IS_WINDOWS:
+        # DETACHED_PROCESS 仅在 Windows 存在；POSIX 上 creationflags 必须为 0
+        return subprocess.Popen(  # noqa: S603
+            command,
+            cwd=cwd,
+            creationflags=getattr(subprocess, "DETACHED_PROCESS", 0),
+            close_fds=True,
+        )
+    return subprocess.Popen(  # noqa: S603
+        command,
+        cwd=cwd,
+        start_new_session=True,
+    )
+
+
+def kill_pid(pid: int, force: bool = True) -> bool:
+    """尽力结束指定进程，返回是否成功。"""
+    if pid <= 0:
+        return False
+    if IS_WINDOWS:
+        return subprocess.run(  # noqa: S603
+            ["taskkill", "/F", "/PID", str(pid)] if force else ["taskkill", "/PID", str(pid)],
+            capture_output=True,
+            check=False,
+        ).returncode == 0
+    import signal
+
+    try:
+        sig = signal.SIGKILL if force else signal.SIGTERM
+        os.kill(pid, sig)
+        return True
+    except (ProcessLookupError, PermissionError):
+        return False
+
+
+def kill_process_by_name(process_name: str, force: bool = True) -> bool:
+    """按进程名结束所有匹配进程（子串匹配，大小写不敏感），返回是否至少结束一个。"""
+    import psutil
+
+    killed = False
+    target = process_name.lower()
+    for proc in psutil.process_iter(["name", "pid"]):
+        try:
+            name = proc.info["name"]
+            if name and target in name.lower():
+                if force:
+                    proc.kill()
+                else:
+                    proc.terminate()
+                killed = True
+        except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
+            continue
+    return killed
+
+
+def get_window_pid_on_windows(hwnd: int) -> int | None:
+    """Windows 下通过窗口句柄取进程 PID；非 Windows 或失败返回 None。"""
+    if not IS_WINDOWS:
+        return None
+    try:
+        import win32process
+
+        _, pid = win32process.GetWindowThreadProcessId(hwnd)
+        return pid
+    except Exception:
+        return None

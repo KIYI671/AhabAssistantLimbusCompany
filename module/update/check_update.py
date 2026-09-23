@@ -17,6 +17,7 @@ from app.card.messagebox_custom import BaseInfoBar, MessageBoxUpdate
 from module.config import cfg
 from module.decorator.decorator import begin_and_finish_time_log
 from module.logger import log
+from module.platform_compat import IS_WINDOWS, start_detached
 from utils.utils import decrypt_string
 
 md_renderer = MarkdownIt("gfm-like", {"html": True})
@@ -359,6 +360,14 @@ def handle_update_status(
         )
 
 
+class _LinuxUpdateGateResult:
+    """Linux 下跳过更新检查时使用的占位结果：视为已是最新版本。"""
+
+    is_prerelease = False
+    is_current_version_latest = True
+    new_version = None
+
+
 @begin_and_finish_time_log(task_name="检查更新")
 def check_update(
     self,
@@ -381,6 +390,15 @@ def check_update(
         show_failure: 是否显示“检查更新失败”的提示。
         show_update_dialog: 是否显示“发现新版本”的更新弹窗。
     """
+
+    # Linux 产物没有 Windows 更新器（AALC Updater.exe），自动更新无法落地；
+    # 且更新源指向的发布包为 Windows 版本，误装会破坏 Linux 安装，因此直接跳过，
+    # 并以"已是最新版本"的结果放行调用方的后续流程（如图片资源同步门禁）。
+    if not IS_WINDOWS:
+        log.debug("Linux 版本暂不支持自动更新，请关注发布页手动下载")
+        if on_finished is not None:
+            on_finished(UpdateStatus.SUCCESS, _LinuxUpdateGateResult())
+        return
 
     # 第一步：先创建当前这一次检查专属的线程实例，避免后续再次触发检查时覆盖回调引用。
     update_thread = UpdateThread(timeout, flag)
@@ -479,7 +497,7 @@ def update(assets_url):
             download_file_path = os.path.join("./update_temp", file_name)
             destination = os.path.abspath("./3rdparty")
             try:
-                if os.path.exists(exe_path):
+                if IS_WINDOWS and os.path.exists(exe_path):
                     subprocess.run(
                         [exe_path, "x", download_file_path, f"-o{destination}", "-aoa"],
                         check=True,
@@ -511,5 +529,6 @@ def start_update_thread(assets_url):
 
 
 def start_update(assert_name):
-    source_file = os.path.abspath("./AALC Updater.exe")
-    subprocess.Popen([source_file, assert_name], creationflags=subprocess.DETACHED_PROCESS)
+    updater_name = "AALC Updater.exe" if IS_WINDOWS else "AALC-Updater"
+    source_file = os.path.abspath(f"./{updater_name}")
+    start_detached([source_file, assert_name])

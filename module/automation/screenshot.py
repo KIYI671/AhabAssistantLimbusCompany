@@ -1,16 +1,21 @@
 import time
-from ctypes import windll
 
-import pyautogui
-import pywintypes
-import win32gui
-import win32ui
 from PIL import Image
 
 from module.config import cfg
-from module.game_and_screen import screen
 from module.logger import log
 from module.my_error.my_error import userStopError, withOutGameWinError
+from module.platform_compat import IS_WINDOWS
+
+if IS_WINDOWS:
+    from ctypes import windll
+
+    import pyautogui
+    import pywintypes
+    import win32gui
+    import win32ui
+
+from module.game_and_screen import screen
 
 
 class ScreenShot:
@@ -25,6 +30,16 @@ class ScreenShot:
         """
         if cfg.simulator:
             if cfg.simulator_type == 0:
+                if not IS_WINDOWS:
+                    # MuMu 模拟器及其 IPC 依赖是 Windows 专属，Linux 下回退到 ADB 通道
+                    log.debug("MuMu 模拟器为 Windows 专属功能，已回退到 ADB 截图")
+                    try:
+                        return ScreenShot.adb_screenshot(gray)
+                    except userStopError:
+                        raise
+                    except Exception as e:
+                        log.debug(f"adb截图报错 {type(e).__name__}: {e}")
+                        return None
                 try:
                     return ScreenShot.mumu_screenshot(gray)
                 except userStopError:
@@ -44,13 +59,13 @@ class ScreenShot:
             # 将窗口移动到屏幕可见区域，确保获取到完整的内容
             screen.handle.bring_window_into_view(not cfg.background_click)
 
-        if cfg.background_click:
+        if IS_WINDOWS and cfg.background_click:
             try:
                 return ScreenShot.background_screenshot(gray)
             except Exception as e:
                 log.debug(f"后台截图报错 {type(e).__name__}: {e}")
                 return None
-        else:
+        elif IS_WINDOWS:
             try:
                 return ScreenShot.take_screenshot_gdi(gray)
             except Exception as e:
@@ -62,6 +77,103 @@ class ScreenShot:
                     msg = f"pyautogui截图失败，错误信息：{e2}"
                     log.debug(msg)
                     return None
+        else:
+            # Linux/X11：优先直接读取游戏窗口内容（窗口被遮挡时通常仍有效），
+            # 失败后回退到全屏捕获再裁剪。
+            if not ScreenShot._linux_window_is_ready():
+                return None
+            try:
+                image = ScreenShot.take_screenshot_x11(gray)
+                if ScreenShot._linux_frame_is_usable(image):
+                    return image
+                # 冷启动时 X11 窗口可能已经创建，但游戏还没有开始绘制。
+                # 空帧不能交给识别流程，否则 back_init_menu 会退回到默认的
+                # (1, 1) 点击分支。
+                log.debug("Linux 游戏窗口尚未绘制有效画面，等待下一帧")
+                return None
+            except Exception as e:
+                log.debug(f"X11窗口截图失败，尝试全屏捕获，错误信息：{e}")
+            try:
+                image = ScreenShot.take_screenshot_mss(gray)
+                if ScreenShot._linux_frame_is_usable(image):
+                    return image
+                log.debug("Linux 全屏截图为空，等待游戏画面就绪")
+                return None
+            except Exception as e:
+                msg = f"mss全屏截图失败，尝试使用pyautogui截图，错误信息：{e}"
+                log.debug(msg)
+                try:
+                    image = ScreenShot.take_screenshot_pyautogui(gray)
+                    if ScreenShot._linux_frame_is_usable(image):
+                        return image
+                    log.debug("Linux pyautogui截图为空，等待游戏画面就绪")
+                    return None
+                except Exception as e2:
+                    msg = f"pyautogui截图失败，错误信息：{e2}"
+                    log.debug(msg)
+                    return None
+
+    @staticmethod
+    def _linux_window_is_ready() -> bool:
+        """判断 Linux 下游戏窗口是否已有可用的客户区。"""
+        try:
+            left, top, right, bottom = screen.handle.rect(True)
+        except Exception as e:
+            log.debug(f"读取 Linux 游戏窗口区域失败，等待窗口就绪: {e}")
+            return False
+        if right <= left or bottom <= top:
+            log.debug("Linux 游戏窗口区域无效，等待窗口就绪")
+            return False
+        return True
+
+    @staticmethod
+    def _linux_frame_is_usable(image: Image.Image | None) -> bool:
+        """过滤窗口已出现但尚未绘制的空帧，避免误触发默认点击。"""
+        if image is None or image.width <= 0 or image.height <= 0:
+            return False
+        try:
+            return image.convert("L").getbbox() is not None
+        except Exception:
+            return False
+
+    @staticmethod
+    def take_screenshot_x11(gray: bool = True) -> Image.Image:
+        """直接从 X 服务器读取游戏窗口内容"""
+        image = screen.handle.capture_window_image()
+        if image is None:
+            raise RuntimeError("窗口图像读取失败")
+        if gray:
+            image = image.convert("L")
+        return image
+
+    @staticmethod
+    def take_screenshot_mss(gray: bool = True) -> Image.Image:
+        """全屏捕获后按窗口区域裁剪（Linux 下替代 GDI BitBlt 方案）"""
+        import mss
+        import mss.tools
+
+        monitor = screen.handle.monitor_info["Monitor"]
+        left, top, right, bottom = monitor
+        width, height = right - left, bottom - top
+        if width <= 0 or height <= 0:
+            raise ValueError(f"无效的显示器区域: {monitor}")
+
+        with mss.mss() as sct:
+            raw = sct.grab({"left": left, "top": top, "width": width, "height": height})
+            image = Image.frombytes("RGB", raw.size, raw.rgb)
+
+        if gray:
+            image = image.convert("L")
+
+        win_left, win_top, win_right, win_bottom = screen.handle.rect(True)
+        crop_box = (
+            max(win_left - left, 0),
+            max(win_top - top, 0),
+            min(win_right - left, image.width),
+            min(win_bottom - top, image.height),
+        )
+        image = image.crop(crop_box)
+        return image
 
     @staticmethod
     def take_screenshot_gdi(gray: bool = True) -> Image.Image:
@@ -154,8 +266,9 @@ class ScreenShot:
             except:
                 pass"""
 
-        # 设置进程的DPI感知，以确保截图在不同DPI设置下正确显示
-        windll.user32.SetProcessDPIAware()
+        if IS_WINDOWS:
+            # 设置进程的DPI感知，以确保截图在不同DPI设置下正确显示
+            windll.user32.SetProcessDPIAware()
         # 进行全屏截图
         screenshot_temp = pyautogui.screenshot()
         if gray:

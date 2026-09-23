@@ -1,15 +1,13 @@
-import os
-import platform
 import time
 from time import sleep
 
 import psutil
-import win32process
 
 from module.automation import auto
 from module.config import cfg
 from module.game_and_screen import screen
 from module.logger import log
+from module.platform_compat import IS_WINDOWS, kill_pid
 from utils.utils import check_game_running
 
 _last_title_screen_tap_time = 0.0
@@ -27,7 +25,7 @@ def ensure_simulator_game_started() -> bool:
         return False
     _last_simulator_alive_check_time = now
 
-    if cfg.simulator_type == 0:
+    if cfg.simulator_type == 0 and IS_WINDOWS:
         from module.automation.input_handlers.simulator.mumu_control import (
             MumuControl,
         )
@@ -75,7 +73,7 @@ def click_title_screen_safely() -> None:
 def kill_game():
     """关闭游戏"""
     if cfg.simulator:
-        if cfg.simulator_type == 0:
+        if cfg.simulator_type == 0 and IS_WINDOWS:
             from module.automation.input_handlers.simulator.mumu_control import (
                 MumuControl,
             )
@@ -92,11 +90,14 @@ def kill_game():
             return
         connection_device.close_current_app()
         return
-    if platform.system() == "Windows":
-        from module.game_and_screen import screen
+    # 通过窗口句柄/进程名关闭游戏进程（Windows 与 Linux 通用逻辑）
+    pid = getattr(screen.handle, "pid", 0)
+    if pid:
+        kill_pid(pid)
+    else:
+        from module.platform_compat import kill_process_by_name
 
-        _, pid = win32process.GetWindowThreadProcessId(screen.handle.hwnd)
-        os.system(f"taskkill /F /PID {pid}")
+        kill_process_by_name(cfg.game_process_name)
     sleep(10)
     wait_start = time.time()
     while True:
