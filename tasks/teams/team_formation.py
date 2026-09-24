@@ -1,7 +1,10 @@
 from math import ceil
 from time import sleep
 
+import numpy as np
+
 from module.automation import auto
+from module.automation.input_handlers.macos.playcover_control import PLAYCOVER_SIMULATOR_TYPE
 from module.config import cfg
 from module.decorator.decorator import begin_and_finish_time_log
 from module.logger import log
@@ -14,6 +17,10 @@ ORDERED_TEAM_COUNT = 40
 ORDERED_TEAM_VISIBLE_ROWS = 6
 ORDERED_TEAM_ROW_HEIGHT = 72.5
 SIMULATOR_ORDERED_TEAM_PAGE_SWIPE_DISTANCE = 375
+PLAYCOVER_ORDERED_TEAM_PAGE_SWIPE_DISTANCE = 381
+"""PlayCover(MaaTools) 触屏拖动的滚动传导约 0.96 且有固定损耗，按 5 行实测补偿的距离。"""
+TEAM_LIST_VIEW_STABLE_THRESHOLD = 2.0
+"""列表区域相邻两次下拉的灰度平均差低于该值时，判定已滚到顶部。"""
 ORDERED_TEAM_LAST_PAGE_INDEX = (ORDERED_TEAM_COUNT - 1) // ORDERED_TEAM_PAGE_SIZE
 ORDERED_TEAM_LAST_PAGE_START = ORDERED_TEAM_COUNT - ORDERED_TEAM_VISIBLE_ROWS + 1
 ORDERED_TEAM_BOTTOM_PAGE_OFFSET = ORDERED_TEAM_ROW_HEIGHT / 2
@@ -80,10 +87,13 @@ def team_formation(sinner_team):
 def _ordered_team_page_swipe_distance(page_index=None):
     if not cfg.simulator:
         return WINDOWS_ORDERED_TEAM_PAGE_SWIPE_DISTANCE
-    if getattr(cfg, "simulator_type", 10) == 0:
+    simulator_type = getattr(cfg, "simulator_type", 10)
+    if simulator_type == 0:
         if page_index == ORDERED_TEAM_LAST_PAGE_INDEX:
             return ORDERED_TEAM_LAST_PAGE_SWIPE_DISTANCE
         return ORDERED_TEAM_PAGE_SWIPE_DISTANCE
+    if simulator_type == PLAYCOVER_SIMULATOR_TYPE:
+        return PLAYCOVER_ORDERED_TEAM_PAGE_SWIPE_DISTANCE
     return SIMULATOR_ORDERED_TEAM_PAGE_SWIPE_DISTANCE
 
 
@@ -99,6 +109,45 @@ def _team_list_reset_swipe_count(reset_distance, scale):
         - ORDERED_TEAM_BOTTOM_PAGE_OFFSET
     ) * scale
     return ceil(scroll_extent / max(reset_distance, 1))
+
+
+def _team_list_view_bbox(position, scale):
+    """编队列表所在区域（x1, y1, x2, y2），用于判断列表是否已经滚到顶部。"""
+    return (
+        0,
+        int(position[1]),
+        int(position[0] + 130 * scale),
+        int(position[1] + 600 * scale),
+    )
+
+
+def _team_list_view_unchanged(previous_view, current_view) -> bool:
+    """两次下拉后列表可视内容是否不再变化（已在最顶端，下拉被夹住）。"""
+    if previous_view is None or previous_view.shape != current_view.shape:
+        return False
+    return float(np.abs(previous_view - current_view).mean()) < TEAM_LIST_VIEW_STABLE_THRESHOLD
+
+
+def _reset_team_list_to_top(my_position, reset_distance, view_bbox):
+    """反复下拉直到列表不再变化，保证后续按序号定位是从最上面第 1 队开始数。
+
+    打开界面时游戏会把列表滚到当前所选队伍附近，只有先回到最顶端，"第 n 个队伍"才是
+    从最上面数起的第 n 行。拖动距离只有一部分传导成滚动（比例随平台/手势变化），按几何
+    距离算出的次数会不够，列表停在当前队伍附近，序号就被当成"从当前队伍数起"；多拉几次
+    没有副作用（到顶部后会被夹住），所以以下拉后列表是否还在变化为准。
+    """
+    max_swipes = _team_list_reset_swipe_count(reset_distance, 1) * 3
+    previous_view = None
+    for _ in range(max_swipes):
+        auto.mouse_swipe_for_team_scroll(my_position[0], my_position[1], dy=reset_distance, duration=0.3)
+        sleep(0.4)
+        while auto.take_screenshot() is None:
+            continue
+        current_view = np.asarray(auto.screenshot.convert("L").crop(view_bbox), dtype=np.int16)
+        if _team_list_view_unchanged(previous_view, current_view):
+            break
+        previous_view = current_view
+    sleep(0.35)
 
 
 def _ordered_team_location(num):
@@ -137,12 +186,7 @@ def select_battle_team(num):
         reset_distance = _team_list_reset_swipe_distance(
             my_position[1], cfg.set_win_size, scale
         )
-        reset_swipe_count = _team_list_reset_swipe_count(reset_distance, scale)
-        for _ in range(reset_swipe_count):
-            auto.mouse_swipe_for_team_scroll(
-                my_position[0], my_position[1], dy=reset_distance, duration=0.3
-            )
-        sleep(0.75)
+        _reset_team_list_to_top(my_position, reset_distance, _team_list_view_bbox(position, scale))
         first_position = [position[0], position[1] + 70 * scale]
         if cfg.select_team_by_order:
             team_range, team_order = _ordered_team_location(num)
@@ -281,6 +325,11 @@ def check_team():
 @begin_and_finish_time_log(task_name="加载编队码")
 def load_team_code_in_game(team_code: str) -> bool:
     """在游戏中加载编队码
+
+    依赖 `input_text` 向游戏内输入框输入文本，而触屏设备（PlayCover/MaaTools，见
+    `module/automation/input_handlers/macos/playcover_control.py`）没有文本指令，
+    该模式下本功能不可用，会返回 False，调用方按当前队伍配置继续（见
+    `assets/doc/zh/How_to_use.md` 的 PlayCover 已知缺口）。
 
     Args:
         team_code: 编队码字符串

@@ -9,28 +9,65 @@ import threading
 # 此处仅清除当前进程的环境变量，不影响系统设置和其他进程。
 _ORIG_SSLKEYLOGFILE = os.environ.pop("SSLKEYLOGFILE", None)
 
-# 将当前工作目录设置为程序所在的目录，确保无论从哪里执行，其工作目录都正确设置为程序本身的位置，避免路径错误。
-os.chdir(
+
+def _abort_startup(title: str, message: str) -> None:
+    """启动阶段的致命错误：此时日志系统还没就绪，直接弹窗说明原因后退出。"""
+    sys.stderr.write(f"{title}: {message}\n")
+    from PySide6.QtWidgets import QApplication, QMessageBox
+
+    QApplication([])
+    QMessageBox.critical(None, title, message)
+    sys.exit(1)
+
+
+# 程序所在目录：打包后是 exe 所在目录，源码运行是仓库根目录
+APP_DIR = (
     os.path.dirname(sys.executable) if getattr(sys, "frozen", False) else os.path.dirname(os.path.abspath(__file__))
 )
-# 解决 Windows DPI 缩放问题
-from ctypes import c_void_p, windll
 
-try:
-    # 1. 尝试 Win10 1703+ 的最强方案 (Per Monitor V2)
-    # -4 对应 DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2
-    windll.user32.SetProcessDpiAwarenessContext(c_void_p(-4))
-except (AttributeError, OSError):
+# macOS 的 .app 从「访达」启动时只继承 launchd 的最小 PATH（/usr/bin:/bin:/usr/sbin:/sbin），
+# 找不到 Homebrew 安装的 adb 等外部命令，这里补上常见的安装位置。
+if sys.platform == "darwin":
+    for _bin_dir in ("/opt/homebrew/bin", "/usr/local/bin"):
+        if os.path.isdir(_bin_dir) and _bin_dir not in os.environ.get("PATH", "").split(os.pathsep):
+            os.environ["PATH"] = _bin_dir + os.pathsep + os.environ.get("PATH", "")
+
+# 将当前工作目录设置为程序的数据目录，确保相对路径（配置、日志、图片资源）都指向可写位置。
+# macOS 打包版的数据目录在 ~/Library/Application Support/AALC，程序目录只当只读资源来源，
+# 详见 utils/app_data_dir.py。
+WORK_DIR = APP_DIR
+if sys.platform == "darwin" and getattr(sys, "frozen", False):
+    from utils.app_data_dir import prepare_macos_data_dir
+
     try:
-        # 2. 尝试 Win8.1+ 的方案 (Per Monitor)
-        # 2 对应 PROCESS_PER_MONITOR_DPI_AWARE
-        windll.shcore.SetProcessDpiAwareness(2)
+        WORK_DIR = prepare_macos_data_dir(APP_DIR)
+    except OSError as error:
+        _abort_startup(
+            "AALC 启动失败",
+            f"无法准备数据目录：\n{error}\n\n请检查磁盘剩余空间，以及「访达 → 前往文件夹 → "
+            "~/Library/Application Support」的写入权限。",
+        )
+os.chdir(WORK_DIR)
+
+# 解决 Windows DPI 缩放问题（仅 Windows；macOS 的 HiDPI 由系统与 Qt 自动处理）
+if sys.platform == "win32":
+    from ctypes import c_void_p, windll
+
+    try:
+        # 1. 尝试 Win10 1703+ 的最强方案 (Per Monitor V2)
+        # -4 对应 DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2
+        windll.user32.SetProcessDpiAwarenessContext(c_void_p(-4))
     except (AttributeError, OSError):
         try:
-            # 3. 最后的兜底方案 (Win7/Vista)
-            windll.user32.SetProcessDPIAware()
-        except Exception:
-            pass
+            # 2. 尝试 Win8.1+ 的方案 (Per Monitor)
+            # 2 对应 PROCESS_PER_MONITOR_DPI_AWARE
+            windll.shcore.SetProcessDpiAwareness(2)
+        except (AttributeError, OSError):
+            try:
+                # 3. 最后的兜底方案 (Win7/Vista)
+                windll.user32.SetProcessDPIAware()
+            except Exception:
+                pass
 
 # 先配好日志（给 "AALC" logger 挂 handler），再 import 会在 import 期就打日志的 app/config 模块，
 # 否则那些启动日志会丢。
@@ -39,19 +76,20 @@ from module.logger.my_log import Logger
 
 Logger()
 
-# 获取管理员权限
-import pyuac
-
 from app.language_manager import LanguageManager
 from app.my_app import MainWindow
 from module.config import cfg
 
-if not pyuac.isUserAdmin():
-    try:
-        pyuac.runAsAdmin(False)
-        sys.exit(0)
-    except Exception:
-        sys.exit(1)
+# 获取管理员权限（仅 Windows；macOS 桌面应用通常不需要提权，pyuac 依赖 pywin32 也无法在 mac 导入）
+if sys.platform == "win32":
+    import pyuac
+
+    if not pyuac.isUserAdmin():
+        try:
+            pyuac.runAsAdmin(False)
+            sys.exit(0)
+        except Exception:
+            sys.exit(1)
 
 from PySide6.QtCore import QObject, Qt, QTimer, Signal
 from PySide6.QtWidgets import QApplication

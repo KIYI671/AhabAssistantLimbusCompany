@@ -17,6 +17,7 @@ from module.after_completion_types import (
     normalize_after_completion_config,
     normalize_power_action,
 )
+from module.automation.input_handlers.macos.playcover_control import PLAYCOVER_SIMULATOR_TYPE
 from module.config import cfg
 from module.logger import log
 
@@ -146,6 +147,13 @@ def _action_exit_game() -> None:
 
             if MumuControl.connection_device is not None:
                 MumuControl.connection_device.close_current_app()
+        elif cfg.get_value("simulator_type", 0) == PLAYCOVER_SIMULATOR_TYPE:
+            from module.automation.input_handlers.macos.playcover_control import (
+                PlayCoverControl,
+            )
+
+            if PlayCoverControl.connection_device is not None:
+                PlayCoverControl.connection_device.close_current_app()
         else:
             from module.automation.input_handlers.simulator.simulator_control import (
                 SimulatorControl,
@@ -209,6 +217,8 @@ def _action_exit_emulator() -> None:
             log.info("已执行：退出 BlueStacks 5 模拟器")
         else:
             log.info("跳过退出 BlueStacks 5：未建立连接")
+    elif simulator_type == PLAYCOVER_SIMULATOR_TYPE:
+        log.info("跳过退出模拟器：PlayCover 无独立模拟器进程（如需结束请使用“退出游戏”）")
     else:
         log.error("退出模拟器失败：暂不支持非 MuMu 模拟器的整机关闭")
 

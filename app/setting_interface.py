@@ -194,6 +194,7 @@ class SettingInterface(QWidget):
                 QT_TRANSLATE_NOOP("ComboBoxSettingCard", "MuMu模拟器(推荐)"): 0,
                 QT_TRANSLATE_NOOP("ComboBoxSettingCard", "BlueStacks 5"): 1,
                 QT_TRANSLATE_NOOP("ComboBoxSettingCard", "其他模拟器"): 10,
+                QT_TRANSLATE_NOOP("ComboBoxSettingCard", "PlayCover (MaaTools)"): 20,
             },
             parent=self.simulator_setting_group,
         )
@@ -643,7 +644,7 @@ class SettingInterface(QWidget):
     def __onOpenLogsCardClicked(self):
         import os
 
-        os.startfile(os.path.abspath("./logs"))
+        QDesktopServices.openUrl(QUrl.fromLocalFile(os.path.abspath("./logs")))
 
     def __onScreenshotBenchmarkCardClicked(self):
         from module.automation.screenshot import ScreenShot

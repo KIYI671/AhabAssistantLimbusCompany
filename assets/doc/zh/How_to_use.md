@@ -143,6 +143,26 @@
 - 使用模拟器的时候，需使模拟器的分辨率与AALC中“窗口设置”里的分辨率保持一致
 - 模拟器可能会导致脚本运行缓慢，建议使用较高配置的电脑，并给予模拟器足够的内存和CPU资源
 
+### macOS 用户
+
+- AALC 在 macOS 上请使用**模拟器后台模式**：设置 → 模拟器设置 → 开启「使用模拟器」，类型选择**「其他模拟器」(10)**。
+- MuMu(0) 与 BlueStacks 5(1) 的驱动依赖 Windows（注册表/MuMuManager.exe），macOS 上不可用，选择后无法连接。
+- 主机/端口填写模拟器的 ADB 地址：macOS 本机一般为 `127.0.0.1:16384`（MuMu 多开按实例 +32 递增）或 `127.0.0.1:5555`；不确定时在模拟器内执行 `adb devices` 确认。
+- 截图与输入走 ADB（screencap / minitouch），与 Windows 行为一致；模拟器需手动启动并保持 ADB 开启，脚本不会自动拉起模拟器进程。
+- 打包版（`AALC.app`）的配置、日志、图片资源在数据目录 `~/Library/Application Support/AALC`，替换 `AALC.app` 升级不会丢配置；macOS 版无签名与公证，首次打开前按 README 执行一次 `xattr -cr /Applications/AALC.app`。
+
+#### PlayCover（Apple Silicon，无需 Android 模拟器）
+
+- PlayCover需使用社区分支 [hguandl/PlayCover](https://github.com/hguandl/PlayCover)，它自带的 PlayTools 提供了 MaaTools TCP 服务
+- 在其中下载安装[脱壳的LimbusCompany](https://decrypt.day/app/id6444112366)并安装
+- 在 PlayCover 中右键LimbusCompany，选择 `设置` - `绕过`，勾选 `启用 PlayChain`、`启用绕过越狱检测`、`插入内省库`、`MaaTools`，然后点击 `好`。
+- 打开该游戏的设置里的 **MaaTools** 开关（旁边的「端口：」默认 `1717`，可改），启动游戏后窗口标题出现 `[localhost:端口]` 即服务已就绪。
+- AALC 设置 → 模拟器设置：开启「使用模拟器」，类型选 **「PlayCover (MaaTools)」(20)**，主机 `127.0.0.1`，端口填窗口标题中的端口（默认 `1717`，需与 PlayCover 里的「端口：」一致）。
+
+#### 已知限制
+
+- playover由于签名问题对oauth登录的支持有限: 无法支持apple登录、**google登录之后，每次重开游戏需要重新登录**
+
 # 三方脚本支持
 
 ## 命令行启动

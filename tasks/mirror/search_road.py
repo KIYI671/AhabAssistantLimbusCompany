@@ -52,7 +52,7 @@ class MirrorMap:
             return False
 
     def enter_next_node(self, next_step):
-        if cfg.mirror_keyboard_navigation:
+        if cfg.mirror_keyboard_navigation and auto.supports_key("up"):
             log.debug(f"通过键盘按键寻路: {next_step}")
             if next_step == "U":
                 auto.key_press("up")
@@ -62,6 +62,9 @@ class MirrorMap:
                 auto.key_press("right")
             sleep(1)
             return _keyboard_enter_succeeded()
+        if cfg.mirror_keyboard_navigation:
+            # 该设备送不进方向键，_get_next_position 同样按 U/D/M 取点，直接走下面的点击寻路
+            _warn_keyboardless_once()
 
         if next_position := self._get_next_position(next_step):
             auto.mouse_click(next_position[0], next_position[1])
@@ -138,6 +141,20 @@ def _keyboard_enter_succeeded() -> bool:
     return False
 
 
+_keyboardless_warned = False
+
+
+def _warn_keyboardless_once() -> None:
+    """该设备送不进方向键（如 PlayCover 只支持 Enter/P/ESC），键盘寻路不可用。
+
+    每个节点都会走到这里，只提示一次避免刷屏；调用方随后回退到点击寻路。
+    """
+    global _keyboardless_warned
+    if not _keyboardless_warned:
+        log.warning("当前输入设备无法发送方向键，镜牢键盘寻路回退为点击寻路")
+        _keyboardless_warned = True
+
+
 # 简单键盘寻路：始终按↑选择第一个节点，完全避免鼠标拖动
 def search_road_simple_keyboard():
     """最简单寻路策略：不进行路线规划/相机对齐/节点识别，仅按↑键选择第一个节点。
@@ -146,6 +163,9 @@ def search_road_simple_keyboard():
     """
     if not cfg.mirror_keyboard_navigation:
         log.warning("简单键盘寻路需要启用键盘寻路模式")
+        return False
+    if not auto.supports_key("up"):
+        _warn_keyboardless_once()
         return False
 
     auto.mouse_to_blank()
