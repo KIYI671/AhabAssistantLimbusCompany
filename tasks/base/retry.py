@@ -10,6 +10,7 @@ from module.automation import auto
 from module.config import cfg
 from module.game_and_screen import screen
 from module.logger import log
+from module.task_control import raise_if_stop_requested
 from utils.utils import check_game_running
 
 _last_title_screen_tap_time = 0.0
@@ -145,6 +146,7 @@ def retry():
     if is_windows:
         saved_hwnd = screen.handle.hwnd
     while True:
+        raise_if_stop_requested()
         if ensure_simulator_game_started():
             start_time = time.time()
             continue

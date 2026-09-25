@@ -447,7 +447,12 @@ class MainWindow(FramelessWindow):
                 self.window(),
             )
             if message_box.exec():
-                self.farming_interface.interface_left.my_script.terminate()
+                script = self.farming_interface.interface_left.my_script
+                script.request_stop()
+                if not script.wait(30000):
+                    log.error("脚本未能在 30 秒内安全停止，已取消退出以避免强制终止导致崩溃")
+                    e.ignore()
+                    return
             else:
                 e.ignore()
                 return

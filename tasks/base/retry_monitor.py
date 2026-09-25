@@ -6,6 +6,7 @@ import numpy as np
 
 from module.automation import auto
 from module.logger import log
+from module.my_error.my_error import userStopError
 from utils.image_utils import ImageUtils
 
 
@@ -53,19 +54,29 @@ class RetryMonitor:
             self._thread.start()
             log.debug("通用服务器重试监控线程已启动")
 
+    def request_stop(self) -> None:
+        """Signal the monitor without blocking the UI thread."""
+        with self._lifecycle_lock:
+            self._stop_event.set()
+        auto.resume_interactions()
+
     def stop(self) -> None:
-        """停止监控并确保业务点击门恢复。"""
+        """停止监控，等待线程退出，并确保业务点击门恢复。"""
+        self.request_stop()
         with self._lifecycle_lock:
             thread = self._thread
-            self._thread = None
-            self._stop_event.set()
         if thread is not None and thread is not threading.current_thread():
             thread.join(timeout=2)
+        with self._lifecycle_lock:
+            if self._thread is thread and (thread is None or not thread.is_alive()):
+                self._thread = None
         self._handling_retry = False
         self._clear_frames = 0
-        auto.resume_interactions()
         if thread is not None:
-            log.debug("通用服务器重试监控线程已停止")
+            if thread.is_alive():
+                log.warning("通用服务器重试监控线程未能在 2 秒内停止")
+            else:
+                log.debug("通用服务器重试监控线程已停止")
 
     def _load_templates(self) -> tuple[np.ndarray, ...]:
         templates = []
@@ -139,6 +150,9 @@ class RetryMonitor:
         while not self._stop_event.wait(self.poll_interval):
             try:
                 self.check_once()
+            except userStopError:
+                auto.resume_interactions()
+                break
             except Exception:
                 log.exception("通用服务器重试监控线程处理异常")
 
