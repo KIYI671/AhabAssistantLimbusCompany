@@ -195,7 +195,7 @@ teams:
     second_system_action: [0, 0, 0, 0] # 第二体系行动模式
     skill_replacement: False # 自定义技能替换
     skill_replacement_select: 0 # 技能替换设置
-    skill_replacement_mode: 0 # 技能替换模式
+    skill_replacement_mode: 0 # 0=1→3，1=2→3，2=1→2，3=全换3（先2→3，再1→3），4=全换3（先1→3，再2→3）
     observe_ego_gift: False # 观测饰品
     observe_ego_gift_selected: [] # 已选观测饰品
     ignore_shop: [0, 0, 0, 0, 0] # 忽略商店楼层

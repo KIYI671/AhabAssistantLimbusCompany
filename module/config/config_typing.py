@@ -169,7 +169,7 @@ class TeamSetting(BaseModel):
     """技能替换设置"""
 
     skill_replacement_mode: int = 0
-    """技能替换模式"""
+    """技能替换模式：0=1→3，1=2→3，2=1→2，3=全换3（先2→3，再1→3），4=全换3（先1→3，再2→3）"""
 
     ignore_shop: List[int] = [0] * 5
     """忽略商店楼层"""
