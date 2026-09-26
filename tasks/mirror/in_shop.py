@@ -1191,6 +1191,30 @@ class Shop:
         self.fuse_aggressive_switch = False
         log.info("合成四级，切换到非激进模式")
 
+    def _replace_selected_skill(self):
+        """按配置顺序尝试技能替换；每次重新识别，避免购买后点击旧坐标。"""
+        modes = {3: (1, 0), 4: (0, 1)}.get(self.skill_replacement_mode, (self.skill_replacement_mode,))
+        for mode in modes:
+            if mode not in (0, 1, 2):
+                return
+            coins = auto.find_element(
+                "mirror/shop/skill_replacement_coins.png",
+                find_type="image_with_multiple_targets",
+                take_screenshot=True,
+            )
+            # 购买成功关闭界面或识别不完整时停止，不猜测选项位置。
+            if not coins or len(coins) != 3:
+                return
+            coins = sorted(coins, key=lambda x: x[0])
+            select_mode = 2 - mode
+            auto.mouse_click(coins[select_mode][0], coins[select_mode][1])
+            sleep(0.5)
+            auto.click_element("mirror/shop/skill_replacement_confirm_assets.png")
+            auto.click_element("mirror/shop/skill_replacement_confirm_assets.png")
+            if retry() is False:
+                raise self.RestartGame()
+            sleep(0.5)
+
     def id_skill_replacement(self, image_path):
         """
         处理普通技能替换选项。识别指定模块位置的技能替换区域，
@@ -1221,22 +1245,7 @@ class Shop:
             if auto.find_language_text(sinner_zh, sinner_en, my_crop=bbox):
                 auto.mouse_click(module_position[0], module_position[1] - 100 * my_scale)
                 sleep(0.5)
-                coins = auto.find_element(
-                    "mirror/shop/skill_replacement_coins.png",
-                    find_type="image_with_multiple_targets",
-                    take_screenshot=True,
-                )
-                if len(coins) != 3:
-                    return
-                coins = sorted(coins, key=lambda x: x[0])
-                select_mode = 3 - self.skill_replacement_mode - 1
-                auto.mouse_click(coins[select_mode][0], coins[select_mode][1])
-                sleep(0.5)
-                auto.click_element("mirror/shop/skill_replacement_confirm_assets.png")
-                auto.click_element("mirror/shop/skill_replacement_confirm_assets.png")
-                # 检测游戏是否异常，若异常则重启游戏
-                if retry() is False:
-                    raise self.RestartGame()
+                self._replace_selected_skill()
 
     def selected_id_skill_replacement(self, image_path):
         """
@@ -1275,21 +1284,7 @@ class Shop:
             sleep(0.5)
             auto.mouse_click(sinner_x[i], sinner_y)
             sleep(0.5)
-            coins = auto.find_element(
-                "mirror/shop/skill_replacement_coins.png",
-                find_type="image_with_multiple_targets",
-                take_screenshot=True,
-            )
-            if len(coins) != 3:
-                continue
-            coins = sorted(coins, key=lambda x: x[0])
-            select_mode = 3 - self.skill_replacement_mode - 1
-            auto.mouse_click(coins[select_mode][0], coins[select_mode][1])
-            sleep(0.5)
-            auto.click_element("mirror/shop/skill_replacement_confirm_assets.png")
-            auto.click_element("mirror/shop/skill_replacement_confirm_assets.png")
-            if retry() is False:
-                raise self.RestartGame()
+            self._replace_selected_skill()
         # 如果所有优先罪人都没有技能可替换，则点击返回按钮退出该界面
         auto.click_element("mirror/shop/ID_skill_replace_search_return_assets.png")
 
