@@ -494,6 +494,29 @@ class Automation(metaclass=SingletonMeta):
             log.error(f"寻找图片出错:{e}")
             return []
 
+    def find_color_regions(self, roi, mask_fn, min_area=300, min_dist=80) -> list:
+        """
+        以彩色截图执行，并将同一帧转为灰度回填 self.screenshot，避免污染后续灰度模板匹配。
+
+        Args:
+            roi: (x1, y1, x2, y2) **1440 高度基准坐标**，内部按实际截图高度自动缩放
+            mask_fn: callable(ROI的RGB ndarray) -> uint8 掩码(0/255)
+            min_area/min_dist: 透传 ImageUtils.match_color_regions
+
+        Returns:
+            list[(cx, cy, area)]: 颜色区域质心与面积；失败或无匹配返回 []
+        """
+        while self.take_screenshot(gray=False) is None:
+            continue
+        color_image = np.array(self.screenshot)
+        if self.screenshot.mode != "L":
+            self.screenshot = self.screenshot.convert("L")
+        regions = ImageUtils.match_color_regions(
+            color_image, mask_fn, roi=roi, min_area=min_area, min_dist=min_dist
+        )
+        log.debug(f"颜色匹配到{len(regions)}个区域：{regions}", stacklevel=3)
+        return regions
+
     def find_str_in_text(self, target, ocr_dict):
         """
         返回目标文本的坐标

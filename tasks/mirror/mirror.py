@@ -23,6 +23,11 @@ from tasks.battle import battle
 from tasks.battle.battle import DefenseForSoloState
 from tasks.event import event_handling
 from tasks.mirror.in_shop import Shop
+from tasks.mirror.floor_detect import (
+    FLOOR_BAND_ROI,
+    FLOOR_CLEAR_MIN_AREA,
+    clear_badge_mask,
+)
 from tasks.mirror.reward_card import get_reward_card
 from tasks.mirror.search_road import (
     MirrorMap,
@@ -304,8 +309,6 @@ class Mirror:
                 ):
                     break
                 retry()
-                if self.floor == 0:
-                    self.get_which_floor()
 
                 if cfg.floor_3_exit and self.floor >= 4:
                     continue
@@ -1166,6 +1169,9 @@ class Mirror:
         log.info(msg)
         self.first_battle = True
         self.start_time = time.time()
+        # -9999 表示"无时间戳"
+        self.floor = 0
+        self.floor_times = [-9999.0 for i in range(5)]
 
     def event_handling(self):
         # 遇到有SKIP的情况
@@ -1563,43 +1569,22 @@ class Mirror:
         self.shop.in_shop(self.floor)
 
     def get_which_floor(self, setting_assets="mirror/road_in_mir/setting_assets.png"):
+        """楼层 = CLEAR 红字母计数 + 1（面板不可用时保持原楼层不变）。"""
         setting_button = auto.find_element(setting_assets, take_screenshot=True)
-        if setting_button is None:
-            log.info("未找到镜牢楼层设置按钮，跳过楼层识别")
-            return
-        auto.mouse_action_with_pos(setting_button)
-        sleep(1)  # 等待楼层设置面板展开后再识别进度
-
-        scale = cfg.set_win_size / 1440
-        if auto.find_element(
-            "mirror/road_in_mir/to_window_assets.png", threshold=0.75, take_screenshot=True
-        ):
-            # 每个 CLEAR 标记代表一层已通关，因此当前层数为标记数加一
-            clear_floors = auto.find_element(
-                "mirror/road_in_mir/clear_floor.png",
-                find_type="image_with_multiple_targets",
-                take_screenshot=True,
-                min_dist=80 * scale,
-            )
-            if clear_floors:
-                self.floor = len(clear_floors) + 1
-                log.debug(f"当前镜牢层数: {self.floor}")
-                self.mirror_map.refresh_floor(self.floor)
-            else:
-                # CLEAR 识别失败时回退到历史的未通关楼层模板。
-                not_passed_floors = auto.find_element(
-                    "mirror/road_in_mir/not_passed_floor.png",
-                    find_type="image_with_multiple_targets",
-                    take_screenshot=True,
-                    min_dist=80 * scale,
-                )
-                if not_passed_floors:
-                    self.floor = 5 - len(not_passed_floors)
-                    log.debug(f"当前镜牢层数: {self.floor}（使用未通关楼层兜底识别）")
-                    self.mirror_map.refresh_floor(self.floor)
-                else:
-                    log.info(f"未识别到当前镜牢楼层，保留当前楼层: {self.floor}")
-        else:
-            log.info("未识别到当前镜牢楼层")
-        auto.mouse_click_blank()
-        sleep(1)  # 等待设置窗口关闭
+        if setting_button:
+            auto.mouse_action_with_pos(setting_button)
+            sleep(1)  # 等待楼层设置面板展开
+            if auto.find_element(
+                "mirror/road_in_mir/to_window_assets.png", threshold=0.75, take_screenshot=True
+            ):
+                self.floor = len(
+                    auto.find_color_regions(
+                        FLOOR_BAND_ROI,
+                        min_area=FLOOR_CLEAR_MIN_AREA,
+                        min_dist=80,
+                        mask_fn=clear_badge_mask,
+                    )
+                ) + 1
+            auto.mouse_click_blank()
+            sleep(1)  # 等待设置窗口关闭
+        self.mirror_map.refresh_floor(self.floor)
