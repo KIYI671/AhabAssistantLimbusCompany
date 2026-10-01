@@ -1,8 +1,11 @@
 from datetime import datetime, timedelta
 from time import monotonic
 
-import win32con
-import win32gui
+from module.platform_compat import IS_WINDOWS
+
+if IS_WINDOWS:
+    import win32con
+    import win32gui
 from PySide6.QtCore import Qt, QThread, Signal
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import (
@@ -176,6 +179,9 @@ class ProductionWork(QThread):
         if cfg.simulator:
             return
         try:
+            if not IS_WINDOWS:
+                screen.handle.set_topmost(False)
+                return
             hwnd = screen.handle.hwnd
             if hwnd == 0 or not win32gui.IsWindow(hwnd):
                 log.debug("自动换饼跳过窗口置顶恢复：未获取到有效游戏窗口句柄")

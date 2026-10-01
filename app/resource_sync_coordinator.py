@@ -124,6 +124,14 @@ class ResourceSyncCoordinator(QObject):
         参数:
             trigger: 当前触发场景，仅支持 startup 或 manual。
         """
+        from module.platform_compat import IS_WINDOWS
+
+        version = str(getattr(cfg, "version", "")).strip().lower()
+        if not IS_WINDOWS and trigger == "startup" and version in {"", "dev", "default version"}:
+            log.warning("当前为未发布的开发版本，跳过启动阶段图片资源同步")
+            self._continue_startup_sequence_once()
+            return
+
         # 第一步：读取软件更新提示开关，并为当前场景生成对应的门禁提示策略。
         check_update_enabled = cfg.get_value("check_update", True)
         if trigger == "startup":

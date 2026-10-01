@@ -1,4 +1,5 @@
 import base64
+import hashlib
 import os
 import subprocess
 import tempfile
@@ -8,10 +9,17 @@ from zoneinfo import ZoneInfo  # Python 3.9+ 内置模块
 
 import cv2
 import numpy as np
-import win32crypt
 
 from module.config import cfg
 from module.logger import log
+from module.platform_compat import IS_WINDOWS
+
+if IS_WINDOWS:
+    import win32crypt
+
+# Linux 回退加密的版本前缀与本地密钥文件
+_LINUX_ENC_PREFIX = "LNX1:"
+_KEY_FILE = os.path.expanduser("~/.aalc_secret_key")
 
 
 def get_day_of_week():
@@ -129,14 +137,47 @@ def check_teams_order(lst):
     return result
 
 
+def _get_linux_key() -> bytes:
+    """以 0600 权限创建持久密钥；已有配置继续使用原密钥。"""
+    try:
+        fd = os.open(_KEY_FILE, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+    except FileExistsError:
+        with open(_KEY_FILE, "rb") as file:
+            key = file.read().strip()
+        if not key:
+            raise ValueError("Linux 本地密钥文件为空")
+        return key
+    key = base64.b64encode(os.urandom(32))
+    with os.fdopen(fd, "wb") as file:
+        file.write(key)
+    return key
+
+
+def _xor_stream(data: bytes, key: bytes) -> bytes:
+    """仅用于读取旧版 LNX1 配置，新增密文使用 AES-GCM。"""
+    out = bytearray()
+    counter = 0
+    while len(out) < len(data):
+        block = hashlib.sha256(key + counter.to_bytes(8, "big")).digest()
+        out.extend(block)
+        counter += 1
+    return bytes(a ^ b for a, b in zip(data, out))
+
+
 def encrypt_string(text: str, entropy: bytes = b"AALC") -> str:
-    """使用当前Windows用户凭据加密字符串"""
+    """加密字符串。Windows 使用当前用户凭据 (DPAPI)，Linux 使用本地密钥对称加密。"""
 
     if not text:
         return ""
 
-    # 转换为字节
     data = text.encode("utf-8")
+
+    if not IS_WINDOWS:
+        from Cryptodome.Cipher import AES
+
+        cipher = AES.new(hashlib.sha256(_get_linux_key() + entropy).digest(), AES.MODE_GCM)
+        encrypted, tag = cipher.encrypt_and_digest(data)
+        return "LNX2:" + base64.b64encode(cipher.nonce + tag + encrypted).decode("utf-8")
 
     # 加密数据（只能由同一用户在同一机器上解密）
     encrypted_data = win32crypt.CryptProtectData(
@@ -152,16 +193,41 @@ def encrypt_string(text: str, entropy: bytes = b"AALC") -> str:
 
 
 def decrypt_string(encrypted_b64: str, entropy: bytes = b"AALC") -> str:
-    """使用当前Windows用户凭据解密字符串"""
+    """解密字符串（与 encrypt_string 配对）"""
     if not encrypted_b64:
         return ""
+
+    if not IS_WINDOWS and encrypted_b64.startswith("LNX2:"):
+        try:
+            from Cryptodome.Cipher import AES
+
+            data = base64.b64decode(encrypted_b64[5:], validate=True)
+            cipher = AES.new(hashlib.sha256(_get_linux_key() + entropy).digest(), AES.MODE_GCM, nonce=data[:16])
+            return cipher.decrypt_and_verify(data[32:], data[16:32]).decode("utf-8")
+        except (ValueError, OSError):
+            return encrypted_b64
+
+    if not IS_WINDOWS and encrypted_b64.startswith(_LINUX_ENC_PREFIX):
+        try:
+            encrypted = base64.b64decode(encrypted_b64[len(_LINUX_ENC_PREFIX):])
+            key = _get_linux_key() + entropy
+            return _xor_stream(encrypted, key).decode("utf-8")
+        except Exception:
+            return encrypted_b64
 
     if len(encrypted_b64) % 4 != 0:
         return encrypted_b64
     try:
         # 解码Base64
         encrypted_data = base64.b64decode(encrypted_b64)
+    except Exception:
+        return encrypted_b64
 
+    if not IS_WINDOWS:
+        # 非 Linux 前缀的密文在 Linux 上无法解密（Windows DPAPI 数据），按原样返回
+        return encrypted_b64
+
+    try:
         # 解密数据
         decrypted_data = win32crypt.CryptUnprotectData(
             encrypted_data,
@@ -184,7 +250,7 @@ def check_game_running() -> bool:
     global _game_pid_cache
 
     if cfg.simulator:
-        if cfg.simulator_type == 0:
+        if cfg.simulator_type == 0 and IS_WINDOWS:
             from module.automation.input_handlers.simulator.mumu_control import (
                 MumuControl,
             )
@@ -228,8 +294,17 @@ def check_game_running() -> bool:
 
 def run_as_user(command: list[str], timeout: int = 30):
     """
-    使用任务计划程序以当前用户身份运行命令，优化了路径转义和阻塞处理。
+    以当前用户身份运行命令。
+    Windows 上经 schtasks 绕过管理员上下文；Linux 无该隔离需求，直接启动。
     """
+    if not IS_WINDOWS:
+        try:
+            proc = subprocess.Popen(command)  # noqa: S603
+            log.debug(f"已直接启动进程, pid={proc.pid}")
+        except Exception as e:
+            log.error(f"启动命令失败: {command}, 错误: {e}")
+        return True
+
     task_name = "TempNonAdminTask"
     bat_path = None
     vbs_path = None

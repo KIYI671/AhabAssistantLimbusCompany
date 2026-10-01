@@ -2,7 +2,23 @@ from __future__ import annotations
 
 from collections.abc import Callable
 
-from pynput import keyboard
+from module.logger import log
+
+try:
+    from pynput import keyboard
+except ImportError:
+    keyboard = None
+
+
+class _UnavailableListener:
+    def start(self) -> None:
+        pass
+
+    def stop(self) -> None:
+        pass
+
+    def join(self, *args, **kwargs) -> None:
+        pass
 
 _MODIFIER_KEYS = {
     keyboard.Key.alt,
@@ -10,7 +26,7 @@ _MODIFIER_KEYS = {
     keyboard.Key.cmd,
     keyboard.Key.ctrl,
     keyboard.Key.shift,
-}
+} if keyboard is not None else set()
 
 
 class _ExactHotKey:
@@ -41,8 +57,11 @@ class _ExactHotKey:
         self._is_active = False
 
 
-class ExactGlobalHotKeys(keyboard.Listener):
+class ExactGlobalHotKeys(keyboard.Listener if keyboard is not None else _UnavailableListener):
     def __init__(self, hotkeys: dict[str, Callable[[], None]], *args, **kwargs):
+        if keyboard is None:
+            log.warning("全局热键不可用：无 X11 会话或缺少 pynput 依赖")
+            return
         self._pressed_keys: set[keyboard.Key | keyboard.KeyCode] = set()
         self._hotkeys = [_ExactHotKey(keyboard.HotKey.parse(hotkey), callback) for hotkey, callback in hotkeys.items()]
         super().__init__(

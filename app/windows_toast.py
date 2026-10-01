@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 try:
     from windows_toasts import (
         InteractableWindowsToaster,
@@ -10,9 +12,6 @@ try:
         ToastDuration,
         ToastImage,
         ToastImagePosition,
-        ToastInputSelectionBox,
-        ToastInputTextBox,
-        ToastSelection,
     )
 
     IMPORT_SUCCESS = True
@@ -47,7 +46,11 @@ except ImportError:
     from module.logger import log
 
 import sys
-import winreg
+
+from module.platform_compat import IS_WINDOWS
+
+if IS_WINDOWS:
+    import winreg
 from enum import Enum
 from pathlib import Path
 from typing import Callable
@@ -60,7 +63,7 @@ APPID = "AALC_Notification"
 """注册表内的应用ID"""
 APPNAME = "AALC"
 """显示的通知名称"""
-ICONPATH = r"assets\logo\my_icon.png"
+ICONPATH = "assets/logo/my_icon.png"
 """图标路径"""
 
 
@@ -100,7 +103,8 @@ def _register_toast(key_name: str = APPID, app_name: str = APPNAME, icon_path: s
 
 def unregister_toast(appId: str = APPID):
     """注销注册的通知"""
-    _unregister_toast(appId)
+    if IS_WINDOWS:
+        _unregister_toast(appId)
 
 
 def _unregister_toast(appId: str):
@@ -265,6 +269,10 @@ def send_toast(
     Returns:
         bool: 发送是否成功
     """
+    if not IS_WINDOWS:
+        from app.linux_toast import send_linux_toast
+
+        return send_linux_toast(title, msg, app_name, icon_path, template, on_activated)
     if IMPORT_SUCCESS is False:
         return True
     if template is not TemplateToast.NoneTemplate:
