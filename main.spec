@@ -3,6 +3,8 @@ from pathlib import Path
 
 import rapidocr
 import sys
+
+IS_WINDOWS = sys.platform == "win32"
 sys.modules['FixTk'] = None
 
 block_cipher = None
@@ -26,16 +28,34 @@ for v in yaml_paths:
 
 add_data = list(set(yaml_add_data + onnx_add_data))
 
+# uv 提供的 Python 可能把 Tcl/Tk 放在非标准路径，mouseinfo 运行时需要它们。
+tk_binaries = []
+if not IS_WINDOWS:
+    import sysconfig
+
+    lib_dir = Path(sysconfig.get_config_var("LIBDIR") or "")
+    tk_binaries = [(str(path), ".") for pattern in ("libtcl*.so*", "libtk*.so*") for path in lib_dir.glob(pattern)]
+
+    # Python < 3.14 的 py7zr 动态导入 backports.zstd；namespace 包需按目录收集。
+    if sys.version_info < (3, 14):
+        import importlib.util
+
+        spec = importlib.util.find_spec("backports.zstd")
+        if spec is not None and spec.submodule_search_locations:
+            add_data.append((str(Path(next(iter(spec.submodule_search_locations))).resolve()), "backports/zstd"))
+
 a = Analysis(
     ["main.py"],
     pathex=[],
-    binaries=[],
+    binaries=tk_binaries,
     datas=add_data,
     hiddenimports=[],
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
-    excludes=['FixTk', 'tcl', 'tk', '_tkinter', 'tkinter', 'Tkinter'],
+    # Windows 下排除 tk 系列减小体积；Linux 上 mouseinfo(pyautogui 依赖)强制要求
+    # tkinter，缺失会直接 sys.exit 导致打包产物静默退出，因此不能排除。
+    excludes=['FixTk', 'tcl', 'tk', '_tkinter', 'tkinter', 'Tkinter'] if IS_WINDOWS else [],
     win_no_prefer_redirects=False,
     win_private_assemblies=False,
     cipher=block_cipher,
@@ -60,8 +80,8 @@ exe = EXE(
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
-    uac_admin=True,
-    icon="./assets/logo/my_icon_256X256.ico",
+    uac_admin=IS_WINDOWS,
+    icon="./assets/logo/my_icon_256X256.ico" if IS_WINDOWS else None,
 )
 coll = COLLECT(
     exe,

@@ -19,7 +19,7 @@
 </div>
 <div>
     <img alt="language" src="https://img.shields.io/badge/Language-Python-blue">
-    <img alt="platform" src="https://img.shields.io/badge/platform-Windows-blue?style=flat-square&color=4096d8">
+    <img alt="platform" src="https://img.shields.io/badge/platform-Windows%20%7C%20Linux-blue?style=flat-square&color=4096d8">
 </div>
 
 **简体中文** | [English](assets/doc/en/README_EN.md)
@@ -78,7 +78,19 @@
 
 因为技术力不足，还搞了GUI和使用第三方OCR，所以导致文件比较大
 
-**注意**：Release基于x86_64架构，Windows系统。对于Arm架构（如苹果M系列芯片，树莓派等），RISCV架构和Mac系统，Linux系统暂不支持。如果需要在非支持的平台上运行AALC请参考**源码运行**和**构建指南**章节进行操作。也欢迎作为开发者提交PR进行多平台适配。未来根据用户需求也许会添加多平台的Release版本支持。
+**注意**：Release基于x86_64架构，Windows系统。对于Arm架构（如苹果M系列芯片，树莓派等）和RISCV架构暂不支持。
+
+### Linux 支持
+
+Linux（x86_64）可从源码运行或本地构建。本机游戏模式通过 Steam/Proton 运行 Limbus Company，使用 X11 定位窗口、截图和前台输入；请登录 **X11 桌面会话**。Wayland 输入适配单独维护，当前版本会在任务开始时提示切换至 X11。
+
+- 输入统一使用前台模式，请保持游戏窗口可见；“后台点击/窗口移动点击”、窗口透明和鼠标穿透在 Linux 下不可用。
+- 模拟器模式使用 ADB（如 Waydroid 或远程 Android 设备），尚需实际游戏流程验证；Windows 专属的 MuMu IPC 会回退到通用 ADB 通道。
+- Python 依赖通过 `uv sync` 安装；模拟器模式还需系统提供 `adb`（如 `android-tools` 包）。
+- 桌面通知使用 `notify-send`，防休眠使用 `systemd-inhibit`；每日定时任务使用 systemd 用户定时器，登录自启动使用 XDG autostart。
+- 软件更新使用 Linux 版 `AALC-Updater`，需要对应的 Linux 发布包；目前以源码运行和本地构建为主。
+
+如果需要在非支持的平台上运行AALC请参考**源码运行**和**构建指南**章节进行操作。也欢迎作为开发者提交PR进行多平台适配。
 
 ---
 
