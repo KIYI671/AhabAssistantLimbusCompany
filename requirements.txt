@@ -14,6 +14,7 @@ coloredlogs==15.0.1
 colorlog==6.9.0
 concurrent-log-handler==0.9.28
 darkdetect==0.8.0
+dbus-next==0.2.3 ; sys_platform == 'linux'
 decorator==5.2.1
 deprecation==2.1.0
 evdev==1.9.2 ; 'linux' in sys_platform

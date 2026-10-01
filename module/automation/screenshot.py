@@ -5,7 +5,7 @@ from PIL import Image
 from module.config import cfg
 from module.logger import log
 from module.my_error.my_error import userStopError, withOutGameWinError
-from module.platform_compat import IS_WINDOWS
+from module.platform_compat import IS_WINDOWS, is_wayland_session
 
 if IS_WINDOWS:
     from ctypes import windll
@@ -91,6 +91,10 @@ class ScreenShot:
                 log.debug("Linux 游戏窗口尚未绘制有效画面，等待下一帧")
                 return None
             except Exception as e:
+                if is_wayland_session():
+                    # XWayland 根窗口不能代表 Wayland 桌面，禁止使用该回退画面。
+                    log.debug(f"XWayland 游戏窗口截图失败，请保持游戏窗口可见: {e}")
+                    return None
                 log.debug(f"X11窗口截图失败，尝试全屏捕获，错误信息：{e}")
             try:
                 image = ScreenShot.take_screenshot_mss(gray)

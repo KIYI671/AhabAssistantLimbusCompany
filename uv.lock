@@ -39,6 +39,7 @@ dependencies = [
     { name = "adbutils" },
     { name = "colorlog" },
     { name = "concurrent-log-handler" },
+    { name = "dbus-next", marker = "sys_platform == 'linux'" },
     { name = "linkify-it-py" },
     { name = "markdown-it-py" },
     { name = "mdit-py-plugins" },
@@ -81,6 +82,7 @@ requires-dist = [
     { name = "adbutils", specifier = ">=2.10.2" },
     { name = "colorlog", specifier = ">=6.9.0" },
     { name = "concurrent-log-handler", specifier = ">=0.9.28" },
+    { name = "dbus-next", marker = "sys_platform == 'linux'", specifier = ">=0.2.3,<0.3" },
     { name = "linkify-it-py" },
     { name = "markdown-it-py" },
     { name = "mdit-py-plugins" },
@@ -402,6 +404,15 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/45/77/7575be73bf12dee231d0c6e60ce7fb7a7be4fcd58823374fc59a6e48262e/darkdetect-0.8.0.tar.gz", hash = "sha256:b5428e1170263eb5dea44c25dc3895edd75e6f52300986353cd63533fe7df8b1", size = 7681, upload-time = "2022-12-16T14:14:42.113Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/f2/f2/728f041460f1b9739b85ee23b45fa5a505962ea11fd85bdbe2a02b021373/darkdetect-0.8.0-py3-none-any.whl", hash = "sha256:a7509ccf517eaad92b31c214f593dbcf138ea8a43b2935406bbd565e15527a85", size = 8955, upload-time = "2022-12-16T14:14:40.92Z" },
+]
+
+[[package]]
+name = "dbus-next"
+version = "0.2.3"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/ce/45/6a40fbe886d60a8c26f480e7d12535502b5ba123814b3b9a0b002ebca198/dbus_next-0.2.3.tar.gz", hash = "sha256:f4eae26909332ada528c0a3549dda8d4f088f9b365153952a408e28023a626a5", size = 71112, upload-time = "2021-07-25T22:11:28.398Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/d2/fc/c0a3f4c4eaa5a22fbef91713474666e13d0ea2a69c84532579490a9f2cc8/dbus_next-0.2.3-py3-none-any.whl", hash = "sha256:58948f9aff9db08316734c0be2a120f6dc502124d9642f55e90ac82ffb16a18b", size = 57885, upload-time = "2021-07-25T22:11:25.466Z" },
 ]
 
 [[package]]

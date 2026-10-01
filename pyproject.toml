@@ -18,6 +18,7 @@ dependencies = [
     "pyperclip",
     "python-xlib>=0.33 ; sys_platform != 'win32'",
     "mss>=10.0 ; sys_platform != 'win32'",
+    "dbus-next>=0.2.3,<0.3 ; sys_platform == 'linux'",
     "py7zr>=0.22 ; sys_platform != 'win32'",
     "pycryptodomex>=3.23.0 ; sys_platform != 'win32'",
     "playsound3",

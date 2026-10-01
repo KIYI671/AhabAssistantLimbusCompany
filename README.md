@@ -82,8 +82,12 @@
 
 ### Linux 支持
 
-Linux（x86_64）可从源码运行或本地构建。本机游戏模式通过 Steam/Proton 运行 Limbus Company，使用 X11 定位窗口、截图和前台输入；请登录 **X11 桌面会话**。Wayland 输入适配单独维护，当前版本会在任务开始时提示切换至 X11。
+Linux（x86_64）可从源码运行或本地构建。本机游戏模式通过 Steam/Proton 运行 Limbus Company，使用 X11 定位窗口、截图和前台输入；支持 **X11 桌面会话**和提供 XWayland 的 **KDE Plasma Wayland 会话**（实验性支持，仍需完整游戏流程实测）。Wayland 的鼠标、滚轮和键盘统一使用经过系统授权的 RemoteDesktop portal。
 
+- Wayland 需安装 `xdg-desktop-portal`、`xdg-desktop-portal-kde` 和 `xorg-xwayland`（包名可能随发行版不同），再用 `uv sync` 安装 Python 依赖。
+- 首次启动任务时允许键盘、鼠标控制，并选择游戏所在显示器。授权在当前 AALC 进程中复用；取消或撤销授权会停止输入，重新启动任务可再次授权。强制停止任务会关闭会话。
+- KDE Wayland 支持按显示器逻辑尺寸换算分数缩放和多屏坐标；分辨率或缩放改变后，请重启并重新授权。游戏必须位于已授权屏幕内，且使用 XWayland 窗口；原生 Wine Wayland 窗口暂不支持定位和截图。
+- Wayland 全局快捷键使用 pynput/XWayland，可能受桌面权限限制；可通过 AALC 界面的暂停、停止按钮操作。窗口截图失败时不会回退到 XWayland 根窗口。
 - 输入统一使用前台模式，请保持游戏窗口可见；“后台点击/窗口移动点击”、窗口透明和鼠标穿透在 Linux 下不可用。
 - 模拟器模式使用 ADB（如 Waydroid 或远程 Android 设备），尚需实际游戏流程验证；Windows 专属的 MuMu IPC 会回退到通用 ADB 通道。
 - Python 依赖通过 `uv sync` 安装；模拟器模式还需系统提供 `adb`（如 `android-tools` 包）。

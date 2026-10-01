@@ -29,14 +29,20 @@ class LinuxInput(AbstractInput, metaclass=SingletonMeta):
 
     @property
     def backend(self):
+        if is_wayland_session():
+            from .wayland_backend import portal_backend
+
+            return portal_backend
         if pyautogui is None:
             raise RuntimeError("Linux 前台输入需要 X11 会话和 DISPLAY")
         return pyautogui
 
     def prepare(self) -> None:
         if is_wayland_session():
-            raise RuntimeError("此版本仅支持 X11 前台输入，请登录 X11 会话后再启动任务")
-        self.backend
+            self.backend.prepare(screen.handle.input_monitors())
+            screen.handle.setForeground()
+        else:
+            self.backend
 
     @staticmethod
     def _window_is_ready() -> bool:
