@@ -212,6 +212,8 @@ class ImageUtils:
     def match_template(screenshot, template, bbox, model="clam"):
         try:
             shape = screenshot.shape
+            if len(shape) not in (2, 3):
+                raise ValueError(f"不支持的截图维度: {shape}")
             if len(shape) == 2:
                 height, width = shape
             elif len(shape) == 3:
