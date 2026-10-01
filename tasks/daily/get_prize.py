@@ -1,6 +1,7 @@
 from time import sleep
 
 from module.automation import auto
+from module.config import cfg
 from module.decorator.decorator import begin_and_finish_time_log
 from module.logger import log
 from tasks.base import update_model_for_retry
@@ -29,7 +30,7 @@ def get_pass_prize():
                 continue
         else:
             season_bbox = ImageUtils.get_bbox(ImageUtils.load_image("home/season_assets.png"))
-            if auto.find_text_element(["season","seasun"], season_bbox):
+            if auto.find_text_element(["season", "seasun"], season_bbox):
                 auto.mouse_click(
                     (season_bbox[0] + season_bbox[2]) / 2,
                     (season_bbox[1] + season_bbox[3]) / 2,
@@ -40,13 +41,13 @@ def get_pass_prize():
         loop_count -= 1
         update_model_for_retry(loop_count, normal_at=10, aggressive_at=5)
         if loop_count < 0:
-            if last_try is False:
-                from config import cfg
+            if not last_try:
+                last_try = True
                 scale = cfg.set_win_size / 1440
-                mail_pos = auto.find_element("home/mail_assets.png")
-                auto.mouse_click(mail_pos[0], mail_pos[1]+200*scale)
-                loop_count+=1
-                continue
+                if mail_pos := auto.find_element("home/mail_assets.png"):
+                    auto.mouse_click(mail_pos[0], mail_pos[1] + 200 * scale)
+                    loop_count += 1
+                    continue
             log.error("无法收取日常/周常")
             return
     auto.click_element("pass/weekly_assets.png")
