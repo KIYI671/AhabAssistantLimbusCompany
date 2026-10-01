@@ -309,6 +309,8 @@ class Mirror:
                 ):
                     break
                 retry()
+                if self.floor == 0:
+                    self.get_which_floor()
 
                 if cfg.floor_3_exit and self.floor >= 4:
                     continue
@@ -1569,7 +1571,7 @@ class Mirror:
         self.shop.in_shop(self.floor)
 
     def get_which_floor(self, setting_assets="mirror/road_in_mir/setting_assets.png"):
-        """楼层 = CLEAR 红字母计数 + 1（面板不可用时保持原楼层不变）。"""
+        """楼层 = CLEAR 红字母计数 + 1（面板不可用或匹配出错时保持原楼层不变）。"""
         setting_button = auto.find_element(setting_assets, take_screenshot=True)
         if setting_button:
             auto.mouse_action_with_pos(setting_button)
@@ -1577,14 +1579,14 @@ class Mirror:
             if auto.find_element(
                 "mirror/road_in_mir/to_window_assets.png", threshold=0.75, take_screenshot=True
             ):
-                self.floor = len(
-                    auto.find_color_regions(
-                        FLOOR_BAND_ROI,
-                        min_area=FLOOR_CLEAR_MIN_AREA,
-                        min_dist=80,
-                        mask_fn=clear_badge_mask,
-                    )
-                ) + 1
+                clear_regions = auto.find_color_regions(
+                    FLOOR_BAND_ROI,
+                    min_area=FLOOR_CLEAR_MIN_AREA,
+                    min_dist=80,
+                    mask_fn=clear_badge_mask,
+                )
+                if clear_regions is not None:
+                    self.floor = len(clear_regions) + 1
             auto.mouse_click_blank()
             sleep(1)  # 等待设置窗口关闭
         self.mirror_map.refresh_floor(self.floor)

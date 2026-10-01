@@ -297,7 +297,7 @@ class ImageUtils:
             close_size/close_iter: 闭运算核边长与迭代次数（合并徽章内的字母笔画，0/负值关闭）
 
         Returns:
-            list[(cx, cy, area)]: 各颜色区域质心与面积；失败或无匹配返回 []
+            list[(cx, cy, area)]: 各颜色区域质心与面积；无匹配返回 []，匹配出错返回 None
         """
         try:
             # 缩放比 = 截图实际高度 / 1440，下列所有以 1440 为基准的量都按它换算
@@ -335,7 +335,7 @@ class ImageUtils:
             return merged
         except Exception as e:
             log.error(f"颜色区域匹配出错：{e}")
-            return []
+            return None
 
     @staticmethod
     def get_image_info(image_array):
