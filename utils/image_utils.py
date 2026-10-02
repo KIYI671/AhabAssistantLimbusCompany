@@ -292,7 +292,7 @@ class ImageUtils:
             mask_fn: callable(ROI的RGB ndarray) -> uint8 掩码(0/255)
             roi: (x1, y1, x2, y2) **1440 高度基准坐标**，函数内部按实际图像高度自动缩放，
                  None 为全图；返回坐标为实际图像坐标系
-            min_area: 连通域面积下限
+            min_area: 1440 高度基准下，连在一起的前景区域至少包含多少像素才保留
             min_dist: 质心合并最小距离（1440 基准，按 scale 换算）
             close_size/close_iter: 闭运算核边长与迭代次数（合并徽章内的字母笔画，0/负值关闭）
 

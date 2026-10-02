@@ -494,12 +494,10 @@ class Automation(metaclass=SingletonMeta):
             log.error(f"寻找图片出错:{e}")
             return []
 
-    def find_color_regions(self, roi, mask_fn, min_area=300, min_dist=80) -> list | None:
+    def find_regions_by_color(self, roi, mask_fn, min_area=300, min_dist=80) -> list | None:
         """
-        以彩色截图执行，并将同一帧转为灰度回填 self.screenshot，避免污染后续灰度模板匹配。
-
         Args:
-            roi: (x1, y1, x2, y2) **1440 高度基准坐标**，内部按实际截图高度自动缩放
+            roi: (x1, y1, x2, y2) 1440 高度基准坐标，内部按实际截图高度自动缩放
             mask_fn: callable(ROI的RGB ndarray) -> uint8 掩码(0/255)
             min_area/min_dist: 透传 ImageUtils.match_color_regions
 
