@@ -98,6 +98,7 @@ class Mirror:
         self.floor_times = [None] * 5  # None 表示这一层还没记录开始时间。
         self.current_floor_start_time = None  # 当前层开始计时的时刻，不依赖楼层识别结果。
         self.current_floor_time_complete = False  # 从卡包页开始计时才是完整的。
+        self.floor_detect_failed = False  # 本层楼层识别已失败，进入新的层前不再重试。
         self.LOOP_COUNT = 250
 
         self.mirror_map = MirrorMap(hard_mode=self.hard_mode)
@@ -281,6 +282,8 @@ class Mirror:
                 sleep(2)  # 等待主题包页面加载完成再打开楼层设置
                 previous_floor = self.floor
                 self.floor = get_floor(self.floor, "mirror/theme_pack/theme_pack_setting_assets.png")
+                # 进入新的层：重置识别状态；本次失败则本层内（地图页）不再重试。
+                self.floor_detect_failed = self.floor == 0
                 self.mirror_map.refresh_floor(self.floor, reset=True)
                 self._enter_hard_mode_if_needed()
                 switch_theme_pack_difficulty(self.hard_mode)
@@ -336,8 +339,10 @@ class Mirror:
                 ):
                     break
                 retry()
-                if self.floor == 0:
+                # 楼层未知且本层尚未识别失败才尝试；失败后不再重试，等进入新的层（卡包页）再识别。
+                if self.floor == 0 and not self.floor_detect_failed:
                     self.floor = get_floor(self.floor)
+                    self.floor_detect_failed = self.floor == 0
                     self.mirror_map.refresh_floor(self.floor)
 
                 if cfg.floor_3_exit and self.floor >= 4:
@@ -1200,6 +1205,7 @@ class Mirror:
         self.floor_times = [None] * 5
         self.current_floor_start_time = None
         self.current_floor_time_complete = False
+        self.floor_detect_failed = False
 
     def event_handling(self):
         # 遇到有SKIP的情况

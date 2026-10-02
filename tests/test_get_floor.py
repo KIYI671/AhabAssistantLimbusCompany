@@ -220,6 +220,7 @@ def test_theme_pack_checks_floor_before_map_and_continues_when_unknown(detected_
         floor_times=[None] * 5,
         current_floor_start_time=None,
         current_floor_time_complete=False,
+        floor_detect_failed=False,
         _log_floor_time=Mock(),
     )
     run = _load_function(
@@ -243,6 +244,7 @@ def test_theme_pack_checks_floor_before_map_and_continues_when_unknown(detected_
     assert mirror.floor == detected_floor
     assert mirror.current_floor_start_time == 1
     assert mirror.current_floor_time_complete is True
+    assert mirror.floor_detect_failed == (detected_floor == 0)
     if detected_floor == 0:
         assert mirror.floor_times == [None] * 5
     assert not any(call.args[0].endswith("legend_assets.png") for call in auto.find_element.call_args_list)
@@ -262,6 +264,7 @@ def test_map_checks_unknown_floor_before_searching(initial_floor, detected_floor
         mirror_map=Mock(),
         current_floor_start_time=None,
         current_floor_time_complete=False,
+        floor_detect_failed=False,
     )
     get_floor = Mock(return_value=detected_floor)
     mirror.search_road = Mock(side_effect=Halt)
@@ -300,7 +303,7 @@ def test_map_checks_unknown_floor_before_searching(initial_floor, detected_floor
     assert mirror.search_road.call_count == int(not exits)
 
 
-def test_map_keeps_searching_when_floor_recognition_repeatedly_fails():
+def test_map_skips_retry_after_failed_detection_and_keeps_searching():
     class Halt(Exception):
         pass
 
@@ -312,6 +315,7 @@ def test_map_keeps_searching_when_floor_recognition_repeatedly_fails():
         search_road=Mock(side_effect=[True, True, Halt()]),
         current_floor_start_time=None,
         current_floor_time_complete=False,
+        floor_detect_failed=False,
     )
     mirror._time_call = lambda fn: (fn(), 0)
     get_floor = Mock(return_value=0)
@@ -333,8 +337,11 @@ def test_map_keeps_searching_when_floor_recognition_repeatedly_fails():
     )
     with pytest.raises(Halt):
         run(mirror)
-    assert get_floor.call_count == mirror.search_road.call_count == 3
+    # 首次识别失败后本层内不再重试，但寻路不受影响。
+    assert get_floor.call_count == 1
+    assert mirror.search_road.call_count == 3
     assert mirror.floor == 0
+    assert mirror.floor_detect_failed is True
     assert mirror.current_floor_start_time == 1
     assert mirror.current_floor_time_complete is False
 
@@ -434,6 +441,7 @@ def test_run_times_unknown_floor_and_recovers_complete_timing_on_next_card(start
         floor_times=[None] * 5,
         current_floor_start_time=None,
         current_floor_time_complete=False,
+        floor_detect_failed=False,
         LOOP_COUNT=250,
         mirror_map=Mock(),
         _enter_hard_mode_if_needed=Mock(),
@@ -533,13 +541,19 @@ def test_restart_resets_floor_timing():
         "tasks/mirror/mirror.py", "re_start", auto=auto, log=Mock(), time=SimpleNamespace(time=lambda: 200)
     )
     mirror = SimpleNamespace(
-        start_time=50, floor=3, floor_times=[100] * 5, current_floor_start_time=100, current_floor_time_complete=True
+        start_time=50,
+        floor=3,
+        floor_times=[100] * 5,
+        current_floor_start_time=100,
+        current_floor_time_complete=True,
+        floor_detect_failed=True,
     )
     restart(mirror)
     assert mirror.floor == 0
     assert mirror.floor_times == [None] * 5
     assert mirror.current_floor_start_time is None
     assert mirror.current_floor_time_complete is False
+    assert mirror.floor_detect_failed is False
 
 
 @pytest.mark.parametrize("hard, first_card_unknown", [(False, False), (True, False), (False, True), (True, True)])
@@ -558,6 +572,7 @@ def test_whole_run_history_requires_all_five_card_starts(hard, first_card_unknow
         floor_times=[None] * 5,
         current_floor_start_time=None,
         current_floor_time_complete=False,
+        floor_detect_failed=False,
         LOOP_COUNT=250,
         mirror_map=Mock(),
         _enter_hard_mode_if_needed=Mock(),
@@ -614,7 +629,7 @@ def test_whole_run_history_requires_all_five_card_starts(hard, first_card_unknow
         return True
 
     def detect(*args):
-        # 卡包页识别失败后，地图页恢复楼层，但不能补写缺失的卡包开始记录。
+        # 首层卡包页识别失败后本层内不再重试，楼层保持未知直到下一层卡包页再识别。
         if first_card_unknown and state.floor == 1 and state.page == "card":
             return 0
         return state.floor
