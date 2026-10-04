@@ -154,7 +154,7 @@ def retry():
             start_time = time.time()
         if auto.get_restore_time() is not None:
             start_time = max(start_time, auto.get_restore_time())
-        if check_times(start_time):
+        if check_times(start_time, timeout=cfg.retry_timeout):
             return False
         if auto.take_screenshot() is None:
             continue

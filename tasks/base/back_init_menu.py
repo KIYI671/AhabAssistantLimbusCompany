@@ -1,6 +1,7 @@
 from time import monotonic, sleep
 
 from module.automation import auto
+from module.config import cfg
 from module.decorator.decorator import begin_and_finish_time_log
 from module.logger import log
 from tasks.base import update_model_for_retry
@@ -8,17 +9,17 @@ from tasks.base.retry import click_title_screen_safely, ensure_simulator_game_st
 from tasks.mirror.reward_card import get_reward_card
 
 LOOP_COUNT=30
-LOADING_TIMEOUT = 90
 
 @begin_and_finish_time_log(task_name="返回主界面")
 def back_init_menu(*, allow_restart: bool = True):
     loop_count = LOOP_COUNT
-    loading_started_at = None
+    started_at = monotonic()
     auto.model = "clam"
     while True:
         loop_count -= 1
         update_model_for_retry(loop_count, normal_at=20, aggressive_at=10)
-        if loop_count < 0:
+        # 同一次返回流程累计尝试次数；30轮用尽且达到用户设置的超时才触发恢复。
+        if loop_count < 0 and monotonic() - started_at >= cfg.retry_timeout:
             if not allow_restart:
                 log.warning("无法返回主界面，本次调用禁用内部重启，返回失败")
                 return False
@@ -30,6 +31,7 @@ def back_init_menu(*, allow_restart: bool = True):
             loop_count = 30
             auto.model = "clam"
             sleep(1)
+            started_at = monotonic()
             continue
         if ensure_simulator_game_started():
             continue
@@ -63,6 +65,7 @@ def back_init_menu(*, allow_restart: bool = True):
                 log.warning("检测到维护提示且本次调用禁用内部重启，返回失败")
                 return False
             restart_game()
+            started_at = monotonic()
             continue
 
         if auto.click_element("mirror/road_in_mir/towindow&forfeit_confirm_assets.png"):
@@ -84,13 +87,8 @@ def back_init_menu(*, allow_restart: bool = True):
         if auto.click_element("scenes/story_meun_assets.png"):
             continue
 
-        # 等待加载情况
         if auto.find_element("base/waiting_assets.png") or auto.find_element("base/waiting_2_assets.png"):
-            if loading_started_at is None:
-                loading_started_at = monotonic()
-            loop_count = LOOP_COUNT if monotonic() - loading_started_at < LOADING_TIMEOUT else 0
             continue
-        loading_started_at = None
 
         # 左上角有后退键
         if auto.click_element("home/back_assets.png"):
@@ -112,7 +110,6 @@ def back_init_menu(*, allow_restart: bool = True):
             if auto.click_element("base/update_confirm_assets.png"):
                 continue
             click_title_screen_safely()
-            loop_count = LOOP_COUNT
             continue
 
         if auto.click_element("base/only_option_assets.png", model="clam"):

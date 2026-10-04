@@ -34,7 +34,7 @@ from app.base_combination import (
     PushSettingCardText,
     SwitchSettingCard,
 )
-from app.card.messagebox_custom import BaseInfoBar
+from app.card.messagebox_custom import BaseInfoBar, MessageBoxSpinbox
 from app.common.ui_config import get_setting_interface_qss
 from app.language_manager import SUPPORTED_LANG_NAME, LanguageManager
 from app.theme_pack_setting_interface import ThemePackSettingDialog
@@ -456,6 +456,17 @@ class SettingInterface(QWidget):
         self.experimental_group = BaseSettingCardGroup(
             QT_TRANSLATE_NOOP("BaseSettingCardGroup", "实验性内容"), self.scroll_widget
         )
+        self.retry_timeout_card = PushSettingCardChance(
+            QT_TRANSLATE_NOOP("PushSettingCardChance", "修改"),
+            FIF.DATE_TIME,
+            QT_TRANSLATE_NOOP("PushSettingCardChance", "卡死超时时间（秒）"),
+            config_name="retry_timeout",
+            max_value=86400,
+            content=QT_TRANSLATE_NOOP("PushSettingCardChance", "默认 90 秒；仅用于通用连接重试和返回主界面流程"),
+            parent=self.experimental_group,
+        )
+        self.retry_timeout_card.button.clicked.disconnect()
+        self.retry_timeout_card.button.clicked.connect(self._on_retry_timeout_edit)
 
         self.keep_screen_awake_card = SwitchSettingCard(
             FIF.VIEW,
@@ -477,6 +488,19 @@ class SettingInterface(QWidget):
             config_name="experimental_hdr_warning",
             parent=self.experimental_group,
         )
+
+    def _on_retry_timeout_edit(self):
+        message_box = MessageBoxSpinbox(
+            self.retry_timeout_card.tr(self.retry_timeout_card.title),
+            config_name="retry_timeout",
+            parent=self.window(),
+            max_value=86400,
+        )
+        message_box.box.setMinimum(1)
+        if message_box.exec():
+            value = int(message_box.getValue())
+            cfg.set_value("retry_timeout", value)
+            self.retry_timeout_card.line_text.setText(str(value))
 
     def _on_hard_mirror_chance_confirm(self, _: int) -> None:
         """手动调整困难模式次数后，同步刷新自动切换时间戳。
@@ -539,6 +563,7 @@ class SettingInterface(QWidget):
         self.about_group.addSettingCard(self.discord_group_card)
         self.about_group.addSettingCard(self.feedback_card)
 
+        self.experimental_group.addSettingCard(self.retry_timeout_card)
         self.experimental_group.addSettingCard(self.hdr_warning_card)
         self.experimental_group.addSettingCard(self.keep_screen_awake_card)
 
@@ -780,6 +805,7 @@ class SettingInterface(QWidget):
         self.discord_group_card.retranslateUi()
         self.feedback_card.retranslateUi()
         self.experimental_group.retranslateUi()
+        self.retry_timeout_card.retranslateUi()
         self.hdr_warning_card.retranslateUi()
         self.keep_screen_awake_card.retranslateUi()
 

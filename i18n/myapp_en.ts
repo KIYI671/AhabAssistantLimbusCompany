@@ -2453,6 +2453,14 @@ These fields will be populated with default values. Do you wish to continue?</tr
 <context>
     <name>PushSettingCardChance</name>
     <message>
+        <source>卡死超时时间（秒）</source>
+        <translation>Stall timeout (seconds)</translation>
+    </message>
+    <message>
+        <source>默认 90 秒；仅用于通用连接重试和返回主界面流程</source>
+        <translation>Default: 90 seconds. Only applies to general connection retries and returning to the main menu</translation>
+    </message>
+    <message>
         <location filename="../app/setting_interface.py" line="149"/>
         <source>第一次运行请手动设定，之后将自动修改</source>
         <translation>Please set it manually for the first run, it will be automatically modified afterwards</translation>

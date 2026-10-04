@@ -243,6 +243,9 @@ class ConfigModel(BaseModel):
     announcement: float
     """公告板时间戳"""
 
+    retry_timeout: int
+    """仅用于通用连接重试和返回主界面流程的超时（秒）"""
+
     memory_protection: bool
     """内存占用保护"""
 
@@ -542,6 +545,13 @@ class ConfigModel(BaseModel):
 
     teams: dict[str, TeamSetting]
     """队伍设置"""
+
+    @field_validator("retry_timeout")
+    @classmethod
+    def _validate_retry_timeout(cls, value: int) -> int:
+        if value < 1:
+            raise ValueError("retry_timeout must be at least 1")
+        return value
 
     @field_validator("use_continuous_combat_select")
     @classmethod
