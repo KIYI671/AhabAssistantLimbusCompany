@@ -208,6 +208,7 @@ def test_theme_pack_checks_floor_before_map_and_continues_when_unknown(detected_
     )
     get_floor = Mock(return_value=detected_floor)
     select_theme_pack = Mock()
+    switch_difficulty = Mock()
     mirror = SimpleNamespace(
         floor=0,
         LOOP_COUNT=250,
@@ -217,7 +218,7 @@ def test_theme_pack_checks_floor_before_map_and_continues_when_unknown(detected_
         team_order=1,
         use_custom_theme_pack_weight=False,
         re_formation_each_floor=False,
-        floor_times=[None] * 5,
+        theme_pack_timing_start_count=0,
         current_floor_start_time=None,
         current_floor_time_complete=False,
         floor_detect_failed=False,
@@ -230,7 +231,7 @@ def test_theme_pack_checks_floor_before_map_and_continues_when_unknown(detected_
         cfg=SimpleNamespace(floor_3_exit=False),
         retry=lambda: True,
         get_floor=get_floor,
-        switch_theme_pack_difficulty=Mock(),
+        switch_theme_pack_difficulty=switch_difficulty,
         select_theme_pack=select_theme_pack,
         to_log_with_time=Mock(),
         time=SimpleNamespace(time=lambda: 1),
@@ -245,8 +246,9 @@ def test_theme_pack_checks_floor_before_map_and_continues_when_unknown(detected_
     assert mirror.current_floor_start_time == 1
     assert mirror.current_floor_time_complete is True
     assert mirror.floor_detect_failed == (detected_floor == 0)
-    if detected_floor == 0:
-        assert mirror.floor_times == [None] * 5
+    assert mirror.theme_pack_timing_start_count == 1
+    assert switch_difficulty.call_count == int(detected_floor > 0)
+    assert mirror._enter_hard_mode_if_needed.call_count == int(detected_floor > 0)
     assert not any(call.args[0].endswith("legend_assets.png") for call in auto.find_element.call_args_list)
 
 
@@ -430,7 +432,29 @@ def test_floor_timing_does_not_invent_start_time():
 
 @pytest.mark.parametrize(
     "start_page, detected_floor",
-    [("card", 0), ("card", 2), ("map", 0), ("map", 2), ("reward", 0), ("legacy_reward", 0)],
+    [
+        ("card", 0),
+        ("card", 2),
+        ("card_retry", 0),
+        ("card_retry", 2),
+        ("map", 0),
+        ("map", 2),
+        ("reward", 0),
+        ("legacy_reward", 0),
+        ("gift_confirm", 0),
+        ("event_effect", 0),
+        ("node", 0),
+        ("event", 0),
+        ("shop", 0),
+        ("reward_card", 0),
+        ("battle", 0),
+        ("battle_ocr", 0),
+        ("battle_cards", 0),
+        ("formation", 0),
+        ("prep_star", 0),
+        ("prep_gift", 0),
+        ("prep_observe", 0),
+    ],
 )
 def test_run_times_unknown_floor_and_recovers_complete_timing_on_next_card(start_page, detected_floor):
     state = SimpleNamespace(page=start_page, now=100, cards=0)
@@ -438,7 +462,7 @@ def test_run_times_unknown_floor_and_recovers_complete_timing_on_next_card(start
     log_floor_time = _load_function("tasks/mirror/mirror.py", "_log_floor_time", to_log_with_time=timings)
     mirror = SimpleNamespace(
         floor=0,
-        floor_times=[None] * 5,
+        theme_pack_timing_start_count=0,
         current_floor_start_time=None,
         current_floor_time_complete=False,
         floor_detect_failed=False,
@@ -456,12 +480,30 @@ def test_run_times_unknown_floor_and_recovers_complete_timing_on_next_card(start
         shop_total_time=0,
         find_road_total_time=0,
         system="test",
+        first_battle=True,
+        sinner_team=[],
+        reward_cards=False,
     )
     mirror._log_floor_time = lambda end, floor: log_floor_time(mirror, end, floor)
 
     def find(name, *args, **kwargs):
+        features = {
+            "gift_confirm": ["mirror/road_in_mir/ego_gift_get_confirm_assets.png"],
+            "event_effect": ["mirror/road_in_mir/event_effect_button.png"],
+            "node": ["mirror/road_in_mir/enter_assets.png"],
+            "event": ["event/skip_assets.png"],
+            "shop": ["mirror/shop/shop_coins_assets.png"],
+            "reward_card": ["mirror/road_in_mir/select_encounter_reward_card_assets.png"],
+            "battle": ["battle/more_information_assets.png"],
+            "battle_cards": ["battle/win_rate_card.png", "battle/gear_right.png"],
+            "formation": ["teams/identify_assets.png"],
+            "prep_star": ["mirror/road_to_mir/dreaming_star/coins_assets.png"],
+            "prep_gift": ["mirror/road_to_mir/activate_gift_search_on_assets.png"],
+            "prep_observe": ["mirror/road_to_mir/observe_ego_gift/observe_bleed_assets.png"],
+        }
         return (
-            (name.endswith("feature_theme_pack_assets.png") and state.page == "card")
+            name in features.get(state.page, [])
+            or (name.endswith("feature_theme_pack_assets.png") and state.page in {"card", "card_retry"})
             or (name.endswith("legend_assets.png") and state.page == "map")
             or (name.endswith("battle_statistics_assets.png") and state.page == "reward")
             or (name.endswith("complete_mirror_100%_assets.png") and state.page in {"reward", "home", "legacy_reward"})
@@ -470,6 +512,11 @@ def test_run_times_unknown_floor_and_recovers_complete_timing_on_next_card(start
         )
 
     def click(name, *args, **kwargs):
+        if state.page in {"gift_confirm", "event_effect", "node"} and find(name):
+            finish_page()
+            return True
+        if state.page == "event" and name == "event/skip_assets.png":
+            return True
         if name.endswith("claim_rewards_assets.png") and state.page == "reward":
             state.page = "home"
             state.now = 190
@@ -478,8 +525,15 @@ def test_run_times_unknown_floor_and_recovers_complete_timing_on_next_card(start
 
     def select(*args):
         state.cards += 1
-        if start_page == "card" and state.cards == 1:
+        if start_page in {"card", "card_retry"} and state.cards == 1:
             state.now = 110
+            if start_page == "card_retry":
+                state.page = "loading"
+            else:
+                state.page = "map"
+        elif start_page == "card_retry" and state.cards == 2:
+            state.now = 120
+            state.page = "map"
         else:
             state.now = 160
             state.page = "reward"
@@ -491,6 +545,17 @@ def test_run_times_unknown_floor_and_recovers_complete_timing_on_next_card(start
 
     mirror.search_road = search
 
+    def finish_page(*args):
+        state.page = "card"
+        state.now = 150
+
+    mirror._fight = finish_page
+    mirror.event_handling = finish_page
+    mirror.in_shop = finish_page
+    mirror.enter_mir_with_star = finish_page
+    mirror.select_init_ego_gift = finish_page
+    mirror.select_observe_ego_gift = finish_page
+
     def claim_legacy_reward():
         state.page = "home"
         state.now = 190
@@ -501,6 +566,9 @@ def test_run_times_unknown_floor_and_recovers_complete_timing_on_next_card(start
     auto.take_screenshot.return_value = True
     auto.find_element.side_effect = find
     auto.click_element.side_effect = click
+    auto.find_text_element.side_effect = lambda *args, **kwargs: state.page == "battle_ocr"
+    auto.find_language_text.return_value = False
+    auto.mouse_click_blank.side_effect = lambda *args, **kwargs: setattr(state, "page", "card_retry")
     get_floor = Mock(side_effect=[detected_floor, 0])
     run = _load_function(
         "tasks/mirror/mirror.py",
@@ -512,6 +580,10 @@ def test_run_times_unknown_floor_and_recovers_complete_timing_on_next_card(start
         get_floor=get_floor,
         switch_theme_pack_difficulty=Mock(),
         select_theme_pack=select,
+        get_reward_card=finish_page,
+        team_formation=finish_page,
+        battle=SimpleNamespace(fail_times=0, identify_keyword_turn=False),
+        ImageUtils=SimpleNamespace(get_bbox=lambda image: (0, 0, 1, 1), load_image=lambda name: None),
         to_log_with_time=timings,
         time=SimpleNamespace(time=lambda: state.now),
         sleep=lambda seconds: None,
@@ -521,16 +593,21 @@ def test_run_times_unknown_floor_and_recovers_complete_timing_on_next_card(start
     if start_page in {"reward", "legacy_reward"}:
         assert floor_logs == [call("楼层未知，计时不完整", 90)]
         get_floor.assert_not_called()
+    elif start_page.startswith("prep_"):
+        assert floor_logs == [call("楼层未知", 30)]
     else:
         label = f"第{detected_floor}层" if detected_floor else "楼层未知"
-        duration = 50 if start_page == "card" else 60
-        if start_page == "map":
+        duration = 50 if start_page in {"card", "card_retry"} else 60
+        if start_page not in {"card", "card_retry"}:
             label += "，计时不完整"
         assert floor_logs == [call(label, duration), call("楼层未知", 30)]
         assert mirror.current_floor_time_complete is True
     assert mirror.floor == 0
-    if detected_floor == 0 or start_page != "card":
-        assert mirror.floor_times == [None] * 5
+    expected_starts = (
+        0 if start_page in {"reward", "legacy_reward"} else 2 if start_page in {"card", "card_retry"} else 1
+    )
+    assert mirror.theme_pack_timing_start_count == expected_starts
+    assert get_floor.call_count == expected_starts + int(start_page == "map")
 
 
 def test_restart_resets_floor_timing():
@@ -543,23 +620,25 @@ def test_restart_resets_floor_timing():
     mirror = SimpleNamespace(
         start_time=50,
         floor=3,
-        floor_times=[100] * 5,
+        theme_pack_timing_start_count=3,
         current_floor_start_time=100,
         current_floor_time_complete=True,
         floor_detect_failed=True,
     )
     restart(mirror)
     assert mirror.floor == 0
-    assert mirror.floor_times == [None] * 5
+    assert mirror.theme_pack_timing_start_count == 0
     assert mirror.current_floor_start_time is None
     assert mirror.current_floor_time_complete is False
     assert mirror.floor_detect_failed is False
 
 
-@pytest.mark.parametrize("hard, first_card_unknown", [(False, False), (True, False), (False, True), (True, True)])
+@pytest.mark.parametrize("hard", [False, True])
+@pytest.mark.parametrize("unknown_floors", ["none", "first", "all"])
 @pytest.mark.parametrize("from_home", [False, True])
-def test_whole_run_history_requires_all_five_card_starts(hard, first_card_unknown, from_home):
-    state = SimpleNamespace(page="home" if from_home else "card", floor=1, now=100)
+@pytest.mark.parametrize("start_floor", [1, 3])
+def test_whole_run_history_requires_all_five_card_starts(hard, unknown_floors, from_home, start_floor):
+    state = SimpleNamespace(page="home" if from_home else "card", floor=start_floor, now=100)
     timings = Mock()
     team = SimpleNamespace(
         total_mirror_time_normal=[100.0] * 3,
@@ -569,7 +648,7 @@ def test_whole_run_history_requires_all_five_card_starts(hard, first_card_unknow
     )
     mirror = SimpleNamespace(
         floor=0,
-        floor_times=[None] * 5,
+        theme_pack_timing_start_count=0,
         current_floor_start_time=None,
         current_floor_time_complete=False,
         floor_detect_failed=False,
@@ -630,7 +709,7 @@ def test_whole_run_history_requires_all_five_card_starts(hard, first_card_unknow
 
     def detect(*args):
         # 首层卡包页识别失败后本层内不再重试，楼层保持未知直到下一层卡包页再识别。
-        if first_card_unknown and state.floor == 1 and state.page == "card":
+        if unknown_floors == "all" or (unknown_floors == "first" and state.floor == start_floor):
             return 0
         return state.floor
 
@@ -670,16 +749,17 @@ def test_whole_run_history_requires_all_five_card_starts(hard, first_card_unknow
         sleep=lambda seconds: None,
     )
     assert run(mirror) is True
-    assert [c.args[1] for c in timings.call_args_list if c.args[0].startswith(("第", "楼层未知"))] == [60] * 4 + [80]
-    timings.assert_any_call("此次镜牢使用test体系队伍", 330 + (25 if from_home else 0))
-    if first_card_unknown:
-        assert mirror.floor_times[0] is None
+    assert [c.args[1] for c in timings.call_args_list if c.args[0].startswith(("第", "楼层未知"))] == [60] * (
+        5 - start_floor
+    ) + [80]
+    total = (6 - start_floor) * 60 + 30 + (25 if from_home else 0)
+    timings.assert_any_call("此次镜牢使用test体系队伍", total)
+    assert mirror.theme_pack_timing_start_count == 6 - start_floor
+    if start_floor > 1:
         assert (team.mirror_normal_count, team.mirror_hard_count) == (3, 2)
         assert team.total_mirror_time_normal == [100.0] * 3
         assert team.total_mirror_time_hard == [200.0] * 3
     else:
-        assert all(start is not None for start in mirror.floor_times)
         assert (team.mirror_normal_count, team.mirror_hard_count) == ((3, 3) if hard else (4, 2))
-        total = 330 + (25 if from_home else 0)
         expected = (200 * 2 + total) / 3 if hard else (100 * 3 + total) / 4
         assert (team.total_mirror_time_hard if hard else team.total_mirror_time_normal) == [expected] * 3

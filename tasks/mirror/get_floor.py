@@ -30,7 +30,8 @@ def clear_badge_mask(roi_rgb):
 # 说明：
 # - 设置页面：未进入的层都是暗菱形，进入的层是金色菱形，通过的层会在金色菱形中添加 红色CLEAR
 #   -> 计数+1=当前层，精确。
-#   卡包界面每次识别，地图页仅在楼层未知时识别。
+#   每层只识别一次：优先在卡包页；中途启动时在首次到达的地图页识别。
+#   失败返回 0，由调用方记住本层已识别，继续运行，下一层再识别。
 
 
 def get_floor(previous_floor=0, setting_assets="mirror/road_in_mir/setting_assets.png") -> int:
