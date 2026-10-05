@@ -33,6 +33,7 @@ from tasks.mirror.search_road import (
 from tasks.mirror.select_theme_pack import select_theme_pack, switch_theme_pack_difficulty
 from tasks.teams.team_formation import check_team, load_team_code_in_game, select_battle_team, team_formation
 from utils.image_utils import ImageUtils
+from utils.mirror_floor import floor_from_clear_markers, floor_from_not_passed_markers
 
 
 # 输出时间统计
@@ -659,57 +660,61 @@ class Mirror:
         end_time = time.time()
         elapsed_time = end_time - start_time
 
-        if all(self.floor_times[i] > 0 for i in range(5)):  # 判断是否完整走了五层
-            team = cfg.config.teams.get(f"{self.team_order}")
-            if team:
-                team_history = {
-                    "total_mirror_time_hard": team.total_mirror_time_hard,
-                    "mirror_hard_count": team.mirror_hard_count,
-                    "total_mirror_time_normal": team.total_mirror_time_normal,
-                    "mirror_normal_count": team.mirror_normal_count,
-                }
-            else:
-                team_history = {}
+        # 本局已正常结算即可计入统计：失败局已在上方 return。
+        # 这里用的是与「已完成 N 次镜牢」进度条相同的成功信号（run() 走到这里），
+        # 保证统计数据与进度条始终一致。
+        # 原先这里要求 5 个楼层时间戳齐全，但 floor_times 由楼层识别写入；
+        # 一旦识别失败就永远凑不齐 5 个，导致次数与平均用时停留在初始值。
+        team = cfg.config.teams.get(f"{self.team_order}")
+        if team:
+            team_history = {
+                "total_mirror_time_hard": team.total_mirror_time_hard,
+                "mirror_hard_count": team.mirror_hard_count,
+                "total_mirror_time_normal": team.total_mirror_time_normal,
+                "mirror_normal_count": team.mirror_normal_count,
+            }
+        else:
+            team_history = {}
 
-            def calculate_time(time_list, elapsed_time, count):
-                """计算新的平均时间"""
-                total_avr = time_list[0] if len(time_list) > 0 else 0
-                last_five = time_list[1] if len(time_list) > 1 else 0
-                last_ten = time_list[2] if len(time_list) > 2 else 0
+        def calculate_time(time_list, elapsed_time, count):
+            """计算新的平均时间"""
+            total_avr = time_list[0] if len(time_list) > 0 else 0
+            last_five = time_list[1] if len(time_list) > 1 else 0
+            last_ten = time_list[2] if len(time_list) > 2 else 0
 
-                total_time = total_avr * count + elapsed_time
-                total_five = last_five * min(count, 4) + elapsed_time
-                total_ten = last_ten * min(count, 9) + elapsed_time
+            total_time = total_avr * count + elapsed_time
+            total_five = last_five * min(count, 4) + elapsed_time
+            total_ten = last_ten * min(count, 9) + elapsed_time
 
-                total_avr = total_time / (count + 1)
-                last_five = total_five / min(count + 1, 5)
-                last_ten = total_ten / min(count + 1, 10)
-                return [total_avr, last_five, last_ten]
+            total_avr = total_time / (count + 1)
+            last_five = total_five / min(count + 1, 5)
+            last_ten = total_ten / min(count + 1, 10)
+            return [total_avr, last_five, last_ten]
 
-            if self.hard_reward_eligible:
-                team_total_battle_time_hard = team_history.get("total_mirror_time_hard", [0.0, 0.0, 0.0])
-                team_total_battle_count = team_history.get("mirror_hard_count", 0)
-                team_history["total_mirror_time_hard"] = calculate_time(
-                    team_total_battle_time_hard, elapsed_time, team_total_battle_count
-                )
-                team_total_battle_count += 1
-                team_history["mirror_hard_count"] = team_total_battle_count
-            else:
-                team_total_battle_time_normal = team_history.get("total_mirror_time_normal", [0.0, 0.0, 0.0])
-                team_total_battle_count = team_history.get("mirror_normal_count", 0)
-                team_history["total_mirror_time_normal"] = calculate_time(
-                    team_total_battle_time_normal, elapsed_time, team_total_battle_count
-                )
-                team_total_battle_count += 1
-                team_history["mirror_normal_count"] = team_total_battle_count
-            if team:
-                team.total_mirror_time_hard = team_history.get("total_mirror_time_hard", [0.0, 0.0, 0.0])
-                team.mirror_hard_count = team_history.get("mirror_hard_count", 0)
-                team.total_mirror_time_normal = team_history.get("total_mirror_time_normal", [0.0, 0.0, 0.0])
-                team.mirror_normal_count = team_history.get("mirror_normal_count", 0)
-            else:
-                log.warning(f"无法找到编队{self.team_number}的历史记录，无法更新数据")
-            log.debug(team_history)
+        if self.hard_reward_eligible:
+            team_total_battle_time_hard = team_history.get("total_mirror_time_hard", [0.0, 0.0, 0.0])
+            team_total_battle_count = team_history.get("mirror_hard_count", 0)
+            team_history["total_mirror_time_hard"] = calculate_time(
+                team_total_battle_time_hard, elapsed_time, team_total_battle_count
+            )
+            team_total_battle_count += 1
+            team_history["mirror_hard_count"] = team_total_battle_count
+        else:
+            team_total_battle_time_normal = team_history.get("total_mirror_time_normal", [0.0, 0.0, 0.0])
+            team_total_battle_count = team_history.get("mirror_normal_count", 0)
+            team_history["total_mirror_time_normal"] = calculate_time(
+                team_total_battle_time_normal, elapsed_time, team_total_battle_count
+            )
+            team_total_battle_count += 1
+            team_history["mirror_normal_count"] = team_total_battle_count
+        if team:
+            team.total_mirror_time_hard = team_history.get("total_mirror_time_hard", [0.0, 0.0, 0.0])
+            team.mirror_hard_count = team_history.get("mirror_hard_count", 0)
+            team.total_mirror_time_normal = team_history.get("total_mirror_time_normal", [0.0, 0.0, 0.0])
+            team.mirror_normal_count = team_history.get("mirror_normal_count", 0)
+        else:
+            log.warning(f"无法找到编队{self.team_number}的历史记录，无法更新数据")
+        log.debug(team_history)
 
         try:
             last_floor_time = time.time() - self.floor_times[self.floor - 1]
@@ -1582,7 +1587,7 @@ class Mirror:
                 min_dist=80 * scale,
             )
             if clear_floors:
-                self.floor = len(clear_floors) + 1
+                self.floor = floor_from_clear_markers(len(clear_floors))
                 log.debug(f"当前镜牢层数: {self.floor}")
                 self.mirror_map.refresh_floor(self.floor)
             else:
@@ -1593,12 +1598,17 @@ class Mirror:
                     take_screenshot=True,
                     min_dist=80 * scale,
                 )
-                if not_passed_floors:
-                    self.floor = 5 - len(not_passed_floors)
-                    log.debug(f"当前镜牢层数: {self.floor}（使用未通关楼层兜底识别）")
+                # 该查找类型未匹配时返回 []（不是 None），因此标记数为 0 有两种可能：
+                # 真的位于最后一层，或者模板完全没识别到。
+                # 只有在已经确认身处镜牢（已知层数 > 0）时才把 0 标记解读为最后一层，
+                # 否则维持原行为，避免识别失败时误判成第 5 层而触发只打三层等第 5 层相关逻辑。
+                marker_count = len(not_passed_floors)
+                if marker_count > 0 or self.floor > 0:
+                    self.floor = floor_from_not_passed_markers(marker_count)
+                    log.debug(f"当前镜牢层数: {self.floor}（使用未通关楼层兜底识别，标记数 {marker_count}）")
                     self.mirror_map.refresh_floor(self.floor)
                 else:
-                    log.info(f"未识别到当前镜牢楼层，保留当前楼层: {self.floor}")
+                    log.warning(f"未识别到当前镜牢楼层，保留当前楼层: {self.floor}")
         else:
             log.info("未识别到当前镜牢楼层")
         auto.mouse_click_blank()
