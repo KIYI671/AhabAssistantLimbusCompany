@@ -96,8 +96,9 @@ class MirrorMap:
             sleep(1)
         return None
 
-    def refresh_floor(self, floor):
-        if self.floor == floor:
+    def refresh_floor(self, floor, reset=False):
+        # 卡包页进入新地图时，即使楼层仍未知，也要清空上一层路线。
+        if self.floor == floor and not reset:
             return
         log.debug(f"镜牢地图楼层缓存更新: {self.floor} -> {floor}")
         self.floor = floor

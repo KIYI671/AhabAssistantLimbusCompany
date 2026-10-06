@@ -1342,7 +1342,7 @@ class Shop:
         try:
             while True:
                 # 忽略楼层商店的情况
-                if layer <= 5 and self.ignore_shop[layer - 1]:
+                if 1 <= layer <= 5 and self.ignore_shop[layer - 1]:
                     msg = f"第{layer}楼层商店被忽略"
                     log.info(msg)
                     break

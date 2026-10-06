@@ -22,6 +22,7 @@ from tasks.base.retry import retry
 from tasks.battle import battle
 from tasks.battle.battle import DefenseForSoloState
 from tasks.event import event_handling
+from tasks.mirror.get_floor import get_floor
 from tasks.mirror.in_shop import Shop
 from tasks.mirror.reward_card import get_reward_card
 from tasks.mirror.search_road import (
@@ -94,7 +95,10 @@ class Mirror:
         self.event_times = 0
 
         self.floor = 0
-        self.floor_times = [-9999.0 for i in range(5)]  # 负值代表缺失值
+        self.theme_pack_timing_start_count = 0  # 从卡包页开始计时的次数，标识完整计时的楼层数
+        self.current_floor_start_time = None  # 当前层开始计时的时刻
+        self.current_floor_time_complete = False  # 从卡包页开始计时是完整的一层计时
+        self.floor_detect_failed = False  # 本层楼层识别已失败，进入新的层前不再重试，避免持续失败带来的卡死
         self.LOOP_COUNT = 250
 
         self.mirror_map = MirrorMap(hard_mode=self.hard_mode)
@@ -108,6 +112,15 @@ class Mirror:
         start = time.time()
         result = fn(*args, **kwargs)
         return result, time.time() - start
+
+    def _log_floor_time(self, end_time, floor):
+        """输出当前楼层的耗时"""
+        if self.current_floor_start_time is None:
+            return
+        msg = f"第{floor}层" if floor > 0 else "楼层未知"
+        if not self.current_floor_time_complete:
+            msg += "，计时不完整"
+        to_log_with_time(msg, end_time - self.current_floor_start_time)
 
     def _fight(self) -> None:
         _, elapsed = self._time_call(
@@ -148,6 +161,11 @@ class Mirror:
             if auto.find_element("mirror/shop/shop_coins_assets.png"):  # 防止卡死在商店
                 break
             if auto.find_element("mirror/road_in_mir/legend_assets.png"):
+                break
+            # 中途接续可能回到事件或奖励卡页，交给主循环处理。
+            if auto.find_element("event/skip_assets.png") or auto.find_element(
+                "mirror/road_in_mir/select_encounter_reward_card_assets.png"
+            ):
                 break
             if auto.click_element("mirror/road_to_mir/resume_assets.png"):
                 break
@@ -205,8 +223,8 @@ class Mirror:
                 break
 
     def run(self):
-        # 计时开始
-        start_time = time.time()
+        # 本次运行的开始时间
+        run_start_time = time.time()
 
         if auto.click_element("home/drive_assets.png") or auto.find_element("home/window_assets.png"):
             sleep(0.5)
@@ -214,6 +232,8 @@ class Mirror:
 
         main_loop_count = self.LOOP_COUNT
         back_menu_count = 0
+        theme_pack_active = False  # 同一卡包页选包重试时，不重复识别和重新计时。
+        preparing = False  # 新镜牢的准备过程不计入某一层的耗时。
         # 未到达奖励页不会停止
         while True:
             if main_loop_count >= 50:
@@ -261,27 +281,34 @@ class Mirror:
 
             # 选择楼层主题包的情况
             if auto.find_element("mirror/theme_pack/feature_theme_pack_assets.png"):
-                sleep(2)  # 等待主题包页面加载完成再打开楼层设置
-                self.get_which_floor("mirror/theme_pack/theme_pack_setting_assets.png")
-                self._enter_hard_mode_if_needed()
-                switch_theme_pack_difficulty(self.hard_mode)
+                new_floor = not theme_pack_active or preparing
+                if new_floor:
+                    sleep(2)  # 等待主题包页面加载完成再打开楼层设置
+                    previous_floor = self.floor
+                    self.floor = get_floor(self.floor, "mirror/theme_pack/theme_pack_setting_assets.png")
+                    self.floor_detect_failed = self.floor == 0
+                    self.mirror_map.refresh_floor(self.floor, reset=True)
+                    if self.floor > 0:
+                        self._enter_hard_mode_if_needed()
+                        switch_theme_pack_difficulty(self.hard_mode)
                 select_theme_pack(self.hard_mode, self.floor, self.team_order, self.use_custom_theme_pack_weight)
                 if self.re_formation_each_floor:
                     self.first_battle = True
-                try:
-                    if self.floor != 1:
-                        if self.floor_times[self.floor - 2] > 0:
-                            floor_time = time.time() - self.floor_times[self.floor - 2]
-                            msg = f"启动后第{self.floor}层卡包"
-                        else:
-                            floor_time = time.time() - self.floor_times[0]
-                            msg = f"启动后第{self.floor}层卡包，该楼层时间不完整"
-                        to_log_with_time(msg, floor_time)
-                    self.floor_times[self.floor - 1] = time.time()
-                except:
-                    log.info("楼层异常，可能是OCR识别错误，本轮镜牢层间的时间记录无效")
-                main_loop_count += 50
+                if new_floor:
+                    # 先输出刚结束的一层耗时，再开始新一层计时。
+                    now = time.time()
+                    self._log_floor_time(now, previous_floor)
+                    self.current_floor_start_time = now
+                    self.current_floor_time_complete = True
+                    self.theme_pack_timing_start_count += 1
+                    theme_pack_active = True
+                    preparing = False
+                    main_loop_count += 50
                 continue
+
+            # 中途启动时从脚本启动时刻计时；准备页面会清除此记录，等卡包页开始完整计时。
+            if self.current_floor_start_time is None and not preparing:
+                self.current_floor_start_time = run_start_time
 
             # 遇到选择增益事件（少见）
             if auto.click_element("mirror/road_in_mir/event_effect_button.png", threshold=0.75):
@@ -290,6 +317,7 @@ class Mirror:
 
             # 在镜牢中寻路
             if auto.find_element("mirror/road_in_mir/legend_assets.png"):
+                theme_pack_active = False
                 auto.mouse_to_blank()
                 while auto.take_screenshot() is None:
                     continue
@@ -304,8 +332,11 @@ class Mirror:
                 ):
                     break
                 retry()
-                if self.floor == 0:
-                    self.get_which_floor()
+                # 楼层未知且本层尚未识别失败才尝试；失败后不再重试，等进入新的层（卡包页）再识别。
+                if self.floor == 0 and not self.floor_detect_failed:
+                    self.floor = get_floor(self.floor)
+                    self.floor_detect_failed = self.floor == 0
+                    self.mirror_map.refresh_floor(self.floor)
 
                 if cfg.floor_3_exit and self.floor >= 4:
                     continue
@@ -323,12 +354,15 @@ class Mirror:
 
             # 选择镜牢队伍
             if auto.find_element("mirror/road_to_mir/select_team_stars_assets.png"):
+                preparing = True
+                self.current_floor_start_time = None
                 self.select_mirror_team()
                 continue
 
             if battle.fail_times >= 5:
                 battle.fail_times = 0
                 self.re_start()
+                preparing = True
                 continue
 
             # 战斗配队的情况
@@ -356,6 +390,7 @@ class Mirror:
                     # 如果还有至少5人能战斗就继续，不然就退出重开
                     if continue_mirror is False and self.first_battle is False:
                         self.re_start()
+                        preparing = True
                 if auto.click_element("battle/chaim_to_battle_assets.png") or auto.click_element(
                     "battle/normal_to_battle_assets.png"
                 ):
@@ -390,6 +425,8 @@ class Mirror:
 
             # 镜牢星光
             if auto.find_element("mirror/road_to_mir/dreaming_star/coins_assets.png", threshold=0.9):
+                preparing = True
+                self.current_floor_start_time = None
                 self.enter_mir_with_star()
                 continue
 
@@ -450,11 +487,15 @@ class Mirror:
             if auto.find_element("mirror/road_to_mir/activate_gift_search_on_assets.png") or auto.find_element(
                 "mirror/road_to_mir/activate_gift_search_off_assets.png"
             ):
+                preparing = True
+                self.current_floor_start_time = None
                 self.select_init_ego_gift()
                 continue
 
             if auto.find_element("mirror/road_to_mir/observe_ego_gift/observe_bleed_assets.png",model="clam") or auto.find_element(
                     "mirror/road_to_mir/observe_ego_gift/observe_burn_assets.png",model="clam"):
+                preparing = True
+                self.current_floor_start_time = None
                 self.select_observe_ego_gift()
                 continue
 
@@ -495,12 +536,11 @@ class Mirror:
 
         if self.bequest_from_the_previous_game:
             self.get_reward_in_road()
-            return True
 
         main_loop_count = 20
         auto.model = "clam"
         failed = None
-        while True:
+        while not self.bequest_from_the_previous_game:
             # 自动截图
             if auto.take_screenshot() is None:
                 auto.mouse_to_blank()
@@ -657,9 +697,9 @@ class Mirror:
             return False
         # 计时结束
         end_time = time.time()
-        elapsed_time = end_time - start_time
+        elapsed_time = end_time - run_start_time
 
-        if all(self.floor_times[i] > 0 for i in range(5)):  # 判断是否完整走了五层
+        if self.theme_pack_timing_start_count == 5:  # 五层都从卡包页开始计时，才更新完整一轮的耗时历史。
             team = cfg.config.teams.get(f"{self.team_order}")
             if team:
                 team_history = {
@@ -711,12 +751,10 @@ class Mirror:
                 log.warning(f"无法找到编队{self.team_number}的历史记录，无法更新数据")
             log.debug(team_history)
 
-        try:
-            last_floor_time = time.time() - self.floor_times[self.floor - 1]
-            msg = f"启动后第{self.floor}层卡包"
-            to_log_with_time(msg, last_floor_time)
-        except:
-            log.info("楼层异常，可能是OCR识别错误，本轮镜牢层间的时间记录无效")
+        # 从领奖页中途启动时，同样输出启动后这一段不完整的耗时。
+        if self.current_floor_start_time is None:
+            self.current_floor_start_time = run_start_time
+        self._log_floor_time(end_time, self.floor)
 
         # 输出战斗总时间
         msg = "此次镜牢在战斗"
@@ -1166,6 +1204,11 @@ class Mirror:
         log.info(msg)
         self.first_battle = True
         self.start_time = time.time()
+        self.floor = 0
+        self.theme_pack_timing_start_count = 0
+        self.current_floor_start_time = None
+        self.current_floor_time_complete = False
+        self.floor_detect_failed = False
 
     def event_handling(self):
         # 遇到有SKIP的情况
@@ -1228,11 +1271,6 @@ class Mirror:
                     for coordinate in coordinates:
                         auto.mouse_click(coordinate[0], coordinate[1])
                     retry()
-                else:
-                    msg = "事件卡死，尝试返回主界面"
-                    log.error(msg)
-                    back_init_menu()
-                    return
 
             # 针对不同事件进行处理，优先选???与直接获取的，再选需要判定的，再选后续事件的，最后第一个事项
             if auto.click_element("event/unknown_event.png"):
@@ -1561,45 +1599,3 @@ class Mirror:
     @begin_and_finish_time_log(task_name="镜牢商店")
     def in_shop(self):
         self.shop.in_shop(self.floor)
-
-    def get_which_floor(self, setting_assets="mirror/road_in_mir/setting_assets.png"):
-        setting_button = auto.find_element(setting_assets, take_screenshot=True)
-        if setting_button is None:
-            log.info("未找到镜牢楼层设置按钮，跳过楼层识别")
-            return
-        auto.mouse_action_with_pos(setting_button)
-        sleep(1)  # 等待楼层设置面板展开后再识别进度
-
-        scale = cfg.set_win_size / 1440
-        if auto.find_element(
-            "mirror/road_in_mir/to_window_assets.png", threshold=0.75, take_screenshot=True
-        ):
-            # 每个 CLEAR 标记代表一层已通关，因此当前层数为标记数加一
-            clear_floors = auto.find_element(
-                "mirror/road_in_mir/clear_floor.png",
-                find_type="image_with_multiple_targets",
-                take_screenshot=True,
-                min_dist=80 * scale,
-            )
-            if clear_floors:
-                self.floor = len(clear_floors) + 1
-                log.debug(f"当前镜牢层数: {self.floor}")
-                self.mirror_map.refresh_floor(self.floor)
-            else:
-                # CLEAR 识别失败时回退到历史的未通关楼层模板。
-                not_passed_floors = auto.find_element(
-                    "mirror/road_in_mir/not_passed_floor.png",
-                    find_type="image_with_multiple_targets",
-                    take_screenshot=True,
-                    min_dist=80 * scale,
-                )
-                if not_passed_floors:
-                    self.floor = 5 - len(not_passed_floors)
-                    log.debug(f"当前镜牢层数: {self.floor}（使用未通关楼层兜底识别）")
-                    self.mirror_map.refresh_floor(self.floor)
-                else:
-                    log.info(f"未识别到当前镜牢楼层，保留当前楼层: {self.floor}")
-        else:
-            log.info("未识别到当前镜牢楼层")
-        auto.mouse_click_blank()
-        sleep(1)  # 等待设置窗口关闭
