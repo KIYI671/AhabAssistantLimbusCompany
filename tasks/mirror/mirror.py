@@ -1531,25 +1531,6 @@ class Mirror:
             # 如果回到主界面，退出循环
             if auto.click_element("mirror/claim_reward/rewards_acquired_assets.png"):
                 return True
-            if cfg.no_weekly_bonuses:
-                bonuses = auto.find_element(
-                    "mirror/claim_reward/weekly_bonuses.png",
-                    find_type="image_with_multiple_targets",
-                )
-                if len(bonuses) >= 1:
-                    for _ in range(len(bonuses)):
-                        position = bonuses.pop(-1)
-                        auto.mouse_click(position[0], position[1])
-            if cfg.hard_mirror_single_bonuses:
-                bonuses = auto.find_element(
-                    "mirror/claim_reward/weekly_bonuses.png",
-                    find_type="image_with_multiple_targets",
-                )
-                bonuses = sorted(bonuses, key=lambda x: x[0])
-                if len(bonuses) > 1:
-                    for _ in range(len(bonuses) - 1):
-                        position = bonuses.pop(-1)
-                        auto.mouse_click(position[0], position[1])
             if auto.click_element(
                 "mirror/claim_reward/claim_rewards_confirm_assets.png",
                 threshold=0.75,
@@ -1569,6 +1550,27 @@ class Mirror:
                 continue
             elif auto.click_element("mirror/claim_reward/claim_rewards_assets.png"):
                 sleep(1)
+                if cfg.no_weekly_bonuses:
+                    bonuses = auto.find_element(
+                        "mirror/claim_reward/weekly_bonuses.png",
+                        find_type="image_with_multiple_targets",
+                        take_screenshot=True,
+                    )
+                    if len(bonuses) >= 1:
+                        for _ in range(len(bonuses)):
+                            position = bonuses.pop(-1)
+                            auto.mouse_click(position[0], position[1])
+                if cfg.hard_mirror_single_bonuses:
+                    bonuses = auto.find_element(
+                        "mirror/claim_reward/weekly_bonuses.png",
+                        find_type="image_with_multiple_targets",
+                        take_screenshot=True,
+                    )
+                    bonuses = sorted(bonuses, key=lambda x: x[0])
+                    if len(bonuses) > 1:
+                        for _ in range(len(bonuses) - 1):
+                            position = bonuses.pop(-1)
+                            auto.mouse_click(position[0], position[1])
                 if auto.click_element(
                     "mirror/claim_reward/use_enkephalin_assets.png",
                     take_screenshot=True,
