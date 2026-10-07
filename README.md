@@ -82,7 +82,7 @@
 
 ### Linux 支持
 
-Linux（x86_64）可从源码运行或本地构建。本机游戏模式通过 Steam/Proton 运行 Limbus Company，使用 X11 定位窗口、截图和前台输入；支持 **X11 桌面会话**和提供 XWayland 的 **KDE Plasma Wayland 会话**（实验性支持，仍需完整游戏流程实测）。Wayland 的鼠标、滚轮和键盘统一使用经过系统授权的 RemoteDesktop portal。
+Linux（x86_64）可从源码运行或本地构建。本机游戏模式通过 Steam/Proton 运行 Limbus Company，支持 **X11 桌面会话**和提供 XWayland 的 **KDE Plasma Wayland 会话**。窗口定位和截图使用 X11/XWayland；Wayland 的鼠标、滚轮和键盘统一使用经过系统授权的 RemoteDesktop portal。
 
 - Wayland 需安装 `xdg-desktop-portal`、`xdg-desktop-portal-kde` 和 `xorg-xwayland`（包名可能随发行版不同），再用 `uv sync` 安装 Python 依赖。
 - 首次启动任务时允许键盘、鼠标控制，并选择游戏所在显示器。授权在当前 AALC 进程中复用；取消或撤销授权会停止输入，重新启动任务可再次授权。强制停止任务会关闭会话。
