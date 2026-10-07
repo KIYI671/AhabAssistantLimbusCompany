@@ -100,8 +100,8 @@ class unableToFindTeamError(Exception):
         return self.errorInfo
 
 
-class userStopError(Exception):
-    """用户主动终止，不算错误，但要保持队列"""
+class userStopError(BaseException):
+    """Cooperative cancellation that ordinary error handlers must not swallow."""
 
     def __init__(self, ErrorInfo):
         super().__init__(ErrorInfo)

@@ -34,6 +34,7 @@ from module.system_actions import (
     execute_after_completion,
     get_after_completion_config,
 )
+from module.task_control import request_stop, reset_stop_request
 from tasks.base.back_init_menu import back_init_menu
 from tasks.base.make_enkephalin_module import (
     lunacy_to_enkephalin,
@@ -453,6 +454,7 @@ class my_script_task(QThread):
     def __init__(self):
         # 初始化，构造函数
         super().__init__()
+        reset_stop_request()
         self.mutex = QMutex()
 
     def run(self):
@@ -479,9 +481,15 @@ class my_script_task(QThread):
             log.exception("脚本线程执行失败")
         finally:
             retry_monitor.stop()
+            reset_stop_request()
             self.mutex.unlock()
 
-        mediator.script_finished.emit()
+    def request_stop(self):
+        """Cooperatively stop Python and native emulator operations."""
+        request_stop()
+        retry_monitor.request_stop()
+        auto.resume_interactions()
+        self.requestInterruption()
 
     def terminate(self):
         retry_monitor.stop()

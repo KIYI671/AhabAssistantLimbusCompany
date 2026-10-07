@@ -11,6 +11,7 @@ from adbutils.errors import AdbError
 
 from module.config import cfg
 from module.logger import log
+from module.task_control import raise_if_stop_requested
 from utils.adb_endpoint import build_adb_endpoint
 
 from .. import AbstractInput
@@ -193,6 +194,7 @@ class SimulatorControl(AbstractInput):
 
     def reconnect(self, reason: str) -> bool:
         with SimulatorControl._connection_lock:
+            raise_if_stop_requested()
             if not bool(cfg.get_value("adb_reconnect_on_error", True)):
                 return False
 
@@ -209,16 +211,20 @@ class SimulatorControl(AbstractInput):
 
             self._clear_connection_state()
             sleep(1)
+            raise_if_stop_requested()
             self.get_simulator()
             return True
 
     def _call_with_reconnect(self, action: str, func: Callable[[], T]) -> T:
+        raise_if_stop_requested()
         try:
             return func()
         except Exception as e:
+            raise_if_stop_requested()
             if not self._is_recoverable_connection_error(e) or not self.reconnect(f"{action}: {e}"):
                 raise
             log.info(f"模拟器连接已重建，重试操作: {action}")
+            raise_if_stop_requested()
             return func()
 
     def start_game(self):
@@ -531,6 +537,7 @@ class SimulatorControl(AbstractInput):
         """
         pause_identity = False
         while self.is_pause:
+            raise_if_stop_requested()
             if pause_identity is not False:
                 log.info("AALC 已暂停")
                 pause_identity = True
