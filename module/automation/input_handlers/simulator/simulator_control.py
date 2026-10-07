@@ -510,7 +510,7 @@ class SimulatorControl(AbstractInput):
             image = cv2.imdecode(image, cv2.IMREAD_COLOR)
             if image is None:
                 raise RuntimeError("截图解码失败")
-            return image
+            return cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
         return self._call_with_reconnect("截图", _screenshot)
 

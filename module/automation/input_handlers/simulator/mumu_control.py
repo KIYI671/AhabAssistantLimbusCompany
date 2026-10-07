@@ -969,7 +969,7 @@ class MumuControl(AbstractInput):
             raise NemuIpcError("nemu_capture_display failed during screenshot()")
 
         image = np.ctypeslib.as_array(pixels_pointer.contents).reshape((height, width, 4))
-        image = cv2.cvtColor(image, cv2.COLOR_BGRA2RGB)
+        image = cv2.cvtColor(image, cv2.COLOR_RGBA2RGB)
         cv2.flip(image, 0, dst=image)
         return image
 
