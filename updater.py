@@ -7,6 +7,8 @@ from pathlib import Path, PurePosixPath
 
 import psutil
 
+from module.platform_compat import IS_WINDOWS, start_detached
+
 
 class UpdateManifestError(ValueError):
     """更新清单包含不能安全应用的内容。"""
@@ -16,9 +18,16 @@ class Updater:
     """应用程序更新器，负责检查、下载、解压和安装最新版本的应用程序。"""
 
     def __init__(self, file_name=None):
-        self.process_names = ["AALC.exe"]
-        self.updater_name = "AALC Updater.exe"
-        self.apply_updater_name = "AALC Updater.apply.exe"
+        if IS_WINDOWS:
+            self.process_names = ["AALC.exe"]
+            self.updater_name = "AALC Updater.exe"
+            self.apply_updater_name = "AALC Updater.apply.exe"
+            self.app_name = "AALC.exe"
+        else:
+            self.process_names = ["AALC"]
+            self.updater_name = "AALC-Updater"
+            self.apply_updater_name = "AALC-Updater.apply"
+            self.app_name = "AALC"
 
         self.temp_path = os.path.abspath("./update_temp")
         os.makedirs(self.temp_path, exist_ok=True)
@@ -244,9 +253,8 @@ class Updater:
                 return False
 
             shutil.copy2(extracted_updater_path, staged_updater_path)
-            subprocess.Popen(
+            start_detached(
                 [staged_updater_path, "--apply-update", self.file_name],
-                creationflags=subprocess.DETACHED_PROCESS,
                 cwd=self.cover_folder_path,
             )
             print("已切换到新版本更新器继续更新...")
@@ -326,8 +334,12 @@ class Updater:
         self.cover_folder()
         self.cleanup()
         input("已完成更新，按回车键退出并打开软件\nThe update is complete, press enter to exit and open the software")
-        if os.system(f'cmd /c start "" "{os.path.abspath("./AALC.exe")}"'):
-            subprocess.Popen(os.path.abspath("./AALC.exe"))
+        app_path = os.path.join(self.cover_folder_path, self.app_name)
+        if IS_WINDOWS:
+            if os.system(f'cmd /c start "" "{app_path}"'):
+                subprocess.Popen(app_path)
+        else:
+            start_detached([app_path], cwd=self.cover_folder_path)
 
 
 def check_temp_dir_and_run():
@@ -346,7 +358,7 @@ def check_temp_dir_and_run():
         os.makedirs(temp_path, exist_ok=True)
         shutil.copy(file_path, destination_path)
         args = [destination_path] + sys.argv[1:]
-        subprocess.Popen(args, creationflags=subprocess.DETACHED_PROCESS)
+        start_detached(args)
         sys.exit(0)
 
     apply_mode = len(sys.argv) >= 3 and sys.argv[1] == "--apply-update"

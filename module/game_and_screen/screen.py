@@ -1,9 +1,12 @@
 from time import sleep
 from typing import TYPE_CHECKING, overload
 
-import win32api
-import win32con
-import win32gui
+from module.platform_compat import IS_WINDOWS
+
+if IS_WINDOWS:
+    import win32api
+    import win32con
+    import win32gui
 
 from app import mediator
 from module.config import cfg
@@ -72,6 +75,12 @@ class Handle:
             if win32gui.IsWindow(self._hwnd):
                 log.info(f"重新获取窗口句柄成功, 新句柄为 {self._hwnd}", stacklevel=3)
         return self._hwnd
+
+    @property
+    def pid(self) -> int:
+        from module.platform_compat import get_window_pid_on_windows
+
+        return get_window_pid_on_windows(self.hwnd) or 0
 
     @property
     def isTransparent(self) -> bool:
@@ -309,9 +318,16 @@ class Screen(metaclass=SingletonMeta):
     def __init__(self, title: str, game: "Game"):
         self.title = title
         self.game = game
-        self.handle = Handle()
+        if IS_WINDOWS:
+            self.handle = Handle()
+        else:
+            from .x11_handle import X11Handle
+
+            self.handle = X11Handle()
 
     def init_handle(self) -> bool:
+        if not IS_WINDOWS:
+            return self.handle.init_game_handle(self.title, self.game)
         try:
             self.handle.init_handle(self.title)
             if self.handle.hwnd == 0:
@@ -333,6 +349,9 @@ class Screen(metaclass=SingletonMeta):
 
     def set_win(self) -> None:
         """设置窗口大小与位置"""
+        if not IS_WINDOWS:
+            self.handle.configure_window()
+            return
 
         def _set_win():
             # 如果窗口最小化或不可见，先将其恢复
@@ -364,6 +383,11 @@ class Screen(metaclass=SingletonMeta):
 
     def reduce_miscontact(self, pos_style: str) -> None:
         """通过调整窗口置顶减少误触"""
+        if not IS_WINDOWS:
+            self.handle.set_topmost(True)
+            self.handle.set_decorated(keep_caption=(pos_style == "free"))
+            sleep(0.1)
+            return
         # 获取适用于win32gui与win32con的窗口句柄
         hwnd = self.handle.hwnd
 
@@ -406,6 +430,9 @@ class Screen(metaclass=SingletonMeta):
 
     def adjust_win_size(self, set_win_size: tuple[int, int] = (1920, 1080)) -> None:
         """调整窗口大小"""
+        if not IS_WINDOWS:
+            self.handle.set_client_size(*set_win_size)
+            return
         hwnd = self.handle.hwnd
         client_width, client_height = set_win_size
 
@@ -465,7 +492,10 @@ class Screen(metaclass=SingletonMeta):
         else:
             log.error(f"未知的窗口位置选项: {set_win_position}")
             return
-        win32gui.SetWindowPos(hwnd, None, *pos, 0, 0, win32con.SWP_NOSIZE)
+        if IS_WINDOWS:
+            win32gui.SetWindowPos(hwnd, None, *pos, 0, 0, win32con.SWP_NOSIZE)
+        else:
+            self.handle.set_window_pos(*pos)
 
     def check_win_size(self, set_win_size: int) -> None:
         """检查窗口大小是否合适，若不合适则切换全屏再切换回窗口模式"""
@@ -511,6 +541,9 @@ class Screen(metaclass=SingletonMeta):
 
         任务结束链路会传 activate=False，只恢复窗口样式，不重新抢占前台焦点。
         """
+        if not IS_WINDOWS:
+            self.handle.reset_window(activate)
+            return
         try:
             hwnd = self.handle.hwnd
             log.debug(f"开始重置游戏窗口，activate={activate}")

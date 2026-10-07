@@ -3,24 +3,33 @@
 adbutils==2.10.2
 annotated-types==0.7.0
 antlr4-python3-runtime==4.9.3
+backports-zstd==1.7.0 ; python_full_version < '3.14' and sys_platform != 'win32'
+brotli==1.2.0 ; platform_python_implementation == 'CPython' and sys_platform != 'win32'
+brotlicffi==1.2.0.2 ; platform_python_implementation == 'PyPy' and sys_platform != 'win32'
 certifi==2025.8.3
+cffi==2.1.1 ; platform_python_implementation == 'PyPy' and sys_platform != 'win32'
 charset-normalizer==3.4.3
 colorama==0.4.6 ; sys_platform == 'win32'
 coloredlogs==15.0.1
 colorlog==6.9.0
 concurrent-log-handler==0.9.28
 darkdetect==0.8.0
+dbus-next==0.2.3 ; sys_platform == 'linux'
 decorator==5.2.1
 deprecation==2.1.0
+evdev==1.9.2 ; 'linux' in sys_platform
 flatbuffers==25.2.10
 humanfriendly==10.0
 idna==3.10
+inflate64==1.0.4 ; sys_platform != 'win32'
 linkify-it-py==2.0.3
 markdown-it-py==4.0.0
 mdit-py-plugins==0.5.0
 mdurl==0.1.2
 mouseinfo==0.1.3
 mpmath==1.3.0
+mss==10.2.0 ; sys_platform != 'win32'
+multivolumefile==0.2.3 ; sys_platform != 'win32'
 numpy==2.3.3
 omegaconf==2.3.0
 onnxruntime==1.20.1
@@ -31,14 +40,19 @@ playsound3==3.2.6
 portalocker==3.2.0
 protobuf==6.32.1
 psutil==7.1.0
+py7zr==1.1.3 ; sys_platform != 'win32'
 pyautogui==0.9.54
+pybcj==1.0.8 ; sys_platform != 'win32'
 pyclipper==1.3.0.post6
+pycparser==3.0 ; implementation_name != 'PyPy' and platform_python_implementation == 'PyPy' and sys_platform != 'win32'
+pycryptodomex==3.23.0 ; sys_platform != 'win32'
 pydantic==2.12.5
 pydantic-core==2.41.5
 pygetwindow==0.0.9
 pymsgbox==2.0.1
 pynput==1.8.1
 pyperclip==1.10.0
+pyppmd==1.3.1 ; sys_platform != 'win32'
 pyreadline3==3.5.4 ; sys_platform == 'win32'
 pyrect==0.2.0
 pyscreeze==1.0.1
@@ -47,9 +61,11 @@ pyside6-addons==6.9.2
 pyside6-essentials==6.9.2
 pyside6-fluent-widgets==1.9.1
 pysidesix-frameless-window==0.7.4
+python-xlib==0.33 ; sys_platform != 'win32' or 'linux' in sys_platform
+python3-xlib==0.15 ; sys_platform == 'linux'
 pytweening==1.2.0
-pyuac==0.0.3
-pywin32==311
+pyuac==0.0.3 ; sys_platform == 'win32'
+pywin32==311 ; sys_platform == 'win32'
 pyyaml==6.0.2
 rapidocr==3.4.1
 requests==2.32.5
@@ -60,16 +76,17 @@ shapely==2.1.1
 shiboken6==6.9.2
 six==1.17.0
 sympy==1.14.0
-tee==0.0.3
+tee==0.0.3 ; sys_platform == 'win32'
+texttable==1.7.0 ; sys_platform != 'win32'
 tqdm==4.67.1
 typing-extensions==4.15.0
 typing-inspection==0.4.2
 tzdata==2025.2
 uc-micro-py==1.0.3
 urllib3==2.5.0
-windows-toasts==1.3.1
-winrt-runtime==3.2.1
-winrt-windows-data-xml-dom==3.2.1
-winrt-windows-foundation==3.2.1
-winrt-windows-foundation-collections==3.2.1
-winrt-windows-ui-notifications==3.2.1
+windows-toasts==1.3.1 ; sys_platform == 'win32'
+winrt-runtime==3.2.1 ; sys_platform == 'win32'
+winrt-windows-data-xml-dom==3.2.1 ; sys_platform == 'win32'
+winrt-windows-foundation==3.2.1 ; sys_platform == 'win32'
+winrt-windows-foundation-collections==3.2.1 ; sys_platform == 'win32'
+winrt-windows-ui-notifications==3.2.1 ; sys_platform == 'win32'

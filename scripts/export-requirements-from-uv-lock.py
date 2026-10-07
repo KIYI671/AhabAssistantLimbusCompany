@@ -2,8 +2,6 @@ import subprocess
 import sys
 from pathlib import Path
 
-# uv export --no-hashes --no-annotate --no-dev --format requirements-txt | Where-Object { -not (($_ -match "darwin" -or $_ -match "linux") -and $_ -match "sys_platform") } > requirements.txt
-
 
 def main():
     cmd = [
@@ -22,14 +20,10 @@ def main():
         print(result.stderr, file=sys.stderr)
         sys.exit(result.returncode)
 
-    filtered = []
-    for line in result.stdout.splitlines():
-        # 删除macOS和Linux特供的依赖
-        if not (("darwin" in line or "linux" in line) and "sys_platform" in line):
-            filtered.append(line)
-
+    # 项目支持 Windows/Linux，保留 Linux 依赖及平台标记，排除 macOS 独占包。
+    lines = [line for line in result.stdout.splitlines() if "sys_platform == 'darwin'" not in line.split(";", 1)[-1]]
     out_path = Path("requirements.txt")
-    out_path.write_text("\n".join(filtered) + "\n", encoding="utf-8")
+    out_path.write_bytes(("\r\n".join(lines) + "\r\n").encode("utf-8"))
 
 
 if __name__ == "__main__":
