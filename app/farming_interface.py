@@ -46,7 +46,7 @@ from module.after_completion_types import (
 from module.automation import auto
 from module.config import TeamSetting, cfg
 from module.game_and_screen import screen
-from module.hotkey_listener import ExactGlobalHotKeys
+from module.hotkey_listener import global_hotkeys
 from module.logger import log
 from module.logger.my_log import ui_log_dispatcher
 from module.system_actions import (
@@ -357,36 +357,29 @@ class FarmingInterface(QWidget):
         self.interface_left = FarmingInterfaceLeft()
         self.interface_center = FarmingInterfaceCenter()
         self.interface_right = FarmingInterfaceRight()
-        self.listener = None
         self.hbox_layout_left.addWidget(self.interface_left)
         self.hbox_layout_center.addWidget(self.interface_center)
         self.hbox_layout_right.addWidget(self.interface_right)
         # self.setStyleSheet("border: 1px solid black;")
-        # 启动快捷键监听
+        # 启动快捷键监听（与其他组件共用进程内唯一的那一个监听器）
 
-        self._listener_start()
+        self.listener_token = global_hotkeys.register(self._hotkey_map)
         mediator.hotkey_listener_stop_signal.connect(self._listener_stop)
         mediator.hotkey_listener_start_signal.connect(self._listener_start)
 
+    def _hotkey_map(self) -> dict[str, Callable[[], None]]:
+        """现取配置，快捷键改动后无需重新注册。"""
+        return {
+            cfg.shutdown_hotkey: self.my_stop_shortcut,
+            cfg.pause_hotkey: self.my_pause_and_resume,
+            cfg.resume_hotkey: self.my_pause_and_resume,
+        }
+
     def _listener_stop(self):
-        if self.listener:
-            self.listener.stop()
-            self.listener = None
+        global_hotkeys.stop()
 
     def _listener_start(self):
-        self._listener_stop()
-        try:
-            self.listener = ExactGlobalHotKeys(
-                {
-                    cfg.shutdown_hotkey: self.my_stop_shortcut,
-                    cfg.pause_hotkey: self.my_pause_and_resume,
-                    cfg.resume_hotkey: self.my_pause_and_resume,
-                }
-            )
-            self.listener.start()
-        except ValueError:
-            self.listener = None
-            log.error("快捷键监听启动失败，请确认设置的快捷键格式有效")
+        global_hotkeys.start()
 
     def my_stop_shortcut(self):
         mediator.link_start.emit()

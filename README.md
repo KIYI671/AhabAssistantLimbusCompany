@@ -78,7 +78,19 @@
 
 因为技术力不足，还搞了GUI和使用第三方OCR，所以导致文件比较大
 
-**注意**：Release基于x86_64架构，Windows系统。对于Arm架构（如苹果M系列芯片，树莓派等），RISCV架构和Mac系统，Linux系统暂不支持。如果需要在非支持的平台上运行AALC请参考**源码运行**和**构建指南**章节进行操作。也欢迎作为开发者提交PR进行多平台适配。未来根据用户需求也许会添加多平台的Release版本支持。
+**注意**：Release基于x86_64架构，Windows系统；另有macOS（Apple Silicon / arm64）版本，见下方说明。对于Arm架构Linux设备（如树莓派），RISCV架构和Intel芯片的Mac暂无Release。如果需要在非支持的平台上运行AALC请参考**源码运行**和**构建指南**章节进行操作，也欢迎作为开发者提交PR进行多平台适配。
+
+>
+> **macOS 版没有签名与公证**，首次打开会被 Gatekeeper 拦下（提示「无法验证开发者」或「已损坏」），把它放到 `/Applications` 或 `~/Applications` 后执行一次：
+>
+> ```bash
+> xattr -cr /Applications/AALC.app
+> ```
+>
+> 1. 打开 AALC.app，在 系统设置 → 隐私与安全性 里给 **AALC.app** 授予屏幕录制与辅助功能权限（前台模式截图/输入、PlayCover 键盘注入需要）。
+> 2. 配置、日志、图片资源都在数据目录 `~/Library/Application Support/AALC`（首次启动时从应用内复制过去，约 90 MB）；因此**替换 AALC.app 升级不会丢配置**。程序内检查到新版本后会把更新包下载到该目录的 `update_temp` 并在访达里定位，手动解压替换 `AALC.app` 即可（macOS 暂不提供自动更新器）。
+> 3. 使用模拟器（ADB）或 PlayCover 需要 `adb`：`brew install android-platform-tools`；打包版已把 `/opt/homebrew/bin`、`/usr/local/bin` 加入 PATH。
+
 
 ---
 
@@ -229,6 +241,11 @@ uv run main.py
 # 更新
 git pull
 ```
+
+> 终端日志默认输出 DEBUG 级别，跑起来比较吵。用环境变量调级别（进程启动前设置）：
+> `AALC_LOG_LEVEL=INFO uv run main.py`（可选 DEBUG/INFO/WARNING/ERROR/CRITICAL 或数字）。
+> `logs/debugLog.log` 仍默认记录 DEBUG，便于反馈问题时附日志；需要一起降噪时再加
+> `AALC_LOG_FILE_LEVEL=INFO`。
 
 ### 使用 pip (不包含dev工具)
 

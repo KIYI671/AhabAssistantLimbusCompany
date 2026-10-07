@@ -629,11 +629,32 @@ class MainWindow(FramelessWindow):
             self.help_interface.load_markdown(url)
 
     def download_and_install(self, file_name):
+        # macOS 没有独立的更新器进程，更新包下载完只能由用户手动替换 AALC.app
+        if sys.platform == "darwin":
+            self._install_update_macos(file_name)
+            return
+
         messages_box = MessageBoxConfirm(self.tr("更新提醒"), self.tr("下载已经完成，是否开始更新"), self.window())
         if messages_box.exec():
             source_file = os.path.abspath("./AALC Updater.exe")
             assert_name = file_name
             subprocess.Popen([source_file, assert_name], creationflags=subprocess.DETACHED_PROCESS)
+
+    def _install_update_macos(self, file_name: str) -> None:
+        """在访达里定位下载好的更新包，并提示用户手动替换 AALC.app。"""
+        archive_path = os.path.abspath(os.path.join("update_temp", file_name))
+        if os.path.exists(archive_path):
+            subprocess.Popen(["open", "-R", archive_path])
+
+        MessageBoxWarning(
+            self.tr("更新包已下载"),
+            self.tr(
+                "更新包已保存到：\n{path}\n\n"
+                "请退出 AALC，解压更新包，用新的 AALC.app 替换原来的应用后重新启动。\n"
+                "设置、日志和图片资源保存在数据目录里，替换应用不会丢失。"
+            ).format(path=archive_path),
+            self.window(),
+        ).exec()
 
     def retranslateUi(self):
         self.pivot.setItemText("farming_interface", self.tr("一键长草"))

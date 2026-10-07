@@ -21,6 +21,7 @@ from ..config import cfg
 from ..logger import log
 from ..ocr import ocr
 from .input_handlers.input import AbstractInput
+from .input_handlers.macos.playcover_control import PLAYCOVER_SIMULATOR_TYPE
 from .screenshot import ScreenShot
 
 # ponytail: 交互门最长关闭时间。监控线程卡在持久弹窗上时,超时放行业务输入,
@@ -70,6 +71,13 @@ class Automation(metaclass=SingletonMeta):
                 log.debug("使用MuMu模拟器输入模块")
                 if MumuControl.connection_device is not None:
                     self.input_handler = MumuControl.connection_device
+            elif cfg.simulator_type == PLAYCOVER_SIMULATOR_TYPE:
+                from .input_handlers.macos.playcover_control import PlayCoverControl
+
+                log.debug("使用PlayCover (MaaTools) 输入模块")
+                if PlayCoverControl.connection_device is None:
+                    PlayCoverControl()
+                self.input_handler = PlayCoverControl.connection_device
             else:
                 from .input_handlers.simulator.simulator_control import SimulatorControl
 
@@ -117,6 +125,18 @@ class Automation(metaclass=SingletonMeta):
                 method = self._run_business_interaction(name)
                 setattr(self, name, method)
         self.memory_protection = cfg.memory_protection
+
+    @property
+    def supports_keyboard(self) -> bool:
+        """当前输入设备能否把按键送达游戏。"""
+        return getattr(self.input_handler, "supports_keyboard", True)
+
+    def supports_key(self, key: str) -> bool:
+        """当前输入设备能否把指定按键送达游戏（如 PlayCover 只支持 enter/p/esc）。"""
+        supports = getattr(self.input_handler, "supports_key", None)
+        if callable(supports):
+            return bool(supports(key))
+        return bool(getattr(self.input_handler, "supports_keyboard", True))
 
     def suspend_interactions(self) -> None:
         """暂时阻止业务线程继续点击。"""
@@ -375,17 +395,23 @@ class Automation(metaclass=SingletonMeta):
             time.sleep(1)
             if time.time() - start_time > 60:
                 log.error("截图超时，尝试重启游戏")
-                import os
+                if not cfg.simulator:
+                    # 桌面模式：先结束游戏进程（仅 Windows 有窗口句柄/taskkill）
+                    try:
+                        import os
 
-                import win32process
+                        import win32process  # Windows-only
 
-                from module.game_and_screen import screen
+                        from module.game_and_screen import screen
 
-                try:
-                    _, pid = win32process.GetWindowThreadProcessId(screen.handle.hwnd)
-                    os.system(f"taskkill /F /PID {pid}")
-                except:
-                    pass
+                        try:
+                            _, pid = win32process.GetWindowThreadProcessId(screen.handle.hwnd)
+                            os.system(f"taskkill /F /PID {pid}")
+                        except Exception:
+                            pass
+                    except ImportError:
+                        pass
+                # 模拟器模式下重启动作由 init_game 通过 ADB 完成
                 from tasks.base.script_task_scheme import init_game
 
                 init_game()

@@ -21,6 +21,16 @@ from utils.utils import find_skill3
 
 DEFENSE_FOR_SOLO_TURN_LIMIT = 5
 
+# 触摸端开战（PlayCover 没有键盘时的兜底）。实机（PlayCover，1080 画布）实测：
+#   - 开始按钮就是 battle/gear_right.png 的命中中心；
+#   - 但没选技能时开始按钮是灰的、点它不会开战 —— 必须先点胜率面板触发"自动选择"（自动战斗）；
+#   - 胜率面板可点区域在 OCR "Rate" 文字右侧，实测文字中心 +(50, -10) 命中。
+_ROUND_START_POLLS = 3
+_ROUND_START_POLL_INTERVAL = 0.6
+# 开始到暂停按钮可识别之间有加载延迟，单次 sleep(1) 容易误判成没点动
+_ROUND_BUTTON_FROM_GEAR = (32, 27)  # 维护者另一套布局的按钮偏移，作为齿轮中心的备用候选
+_WIN_RATE_PANEL_FROM_LABEL = (50, -10)  # 相对 OCR "Rate" 文字中心（1080 画布实测）
+
 
 @dataclass
 class DefenseForSoloState:
@@ -107,6 +117,145 @@ class Battle:
 
         return new_time
 
+    @staticmethod
+    def _round_started() -> bool:
+        """交战播片中才会出现暂停按钮，以此判断回合是否已经开始（用刚操作完的画面）。"""
+        return auto.find_element("battle/pause_assets.png", threshold=0.75, take_screenshot=True) is not None
+
+    @staticmethod
+    def _keyboard_available() -> bool:
+        """P+Enter 能否送达游戏（PlayCover 走 CGEventPostToPid 注入，方向键类按键不算）。"""
+        return auto.supports_key("p") and auto.supports_key("enter")
+
+    @staticmethod
+    def _find_win_rate_labels() -> tuple[list | bool | None, list | bool | None]:
+        """取右侧胜率/伤害面板文字位置，返回 ``(rate, damage)``（未命中为 False/None）。
+
+        ``find_language_text`` 依赖 ``path_manager.current_language``：一旦它被误判
+        （英文界面记成 ``zh_cn``），只会去找中文的「胜率/伤害」而漏掉 ``Win Rate``/``Damage``。
+        因此失败后再用不查语言表的 ``find_text_element`` 取一次词。
+        """
+        rate = auto.find_language_text("胜率", "rate")
+        damage = auto.find_language_text("伤害", "damage")
+        if rate is False or rate is None or damage is False or damage is None:
+            rate = auto.find_text_element(["胜率", "rate"])
+            damage = auto.find_text_element(["伤害", "damage"])
+            log.debug(f"按语言取面板文字失败，改用语言无关取词：rate={rate}, damage={damage}")
+        return rate, damage
+
+    @staticmethod
+    def _click_round_start_button() -> bool:
+        """点技能条右端的圆形“开始回合”按钮（键盘送不进 P+Enter 时的开战方式）。
+
+        锚点按可用性取用，实机（PlayCover 1080 画布）实测：
+
+        1. ``battle/gear_right.png`` 的**命中中心**就是按钮本体（实测点它即可开战）；
+        2. 齿轮中心 +(32, 27)（维护者另一套布局实测的偏移，作为备用）；
+        3. OCR 面板文字推算：按钮高度 = 胜率/伤害两块文字的中间，x 在面板文字左侧
+           -217（1440 画布）。
+
+        注意：**没有技能被选中时这个按钮是灰的，怎么点都不会开战** —— 普通战斗要先
+        :meth:`_auto_select_skills`（见 :meth:`_touch_start_round`）。
+        点完逐个轮询暂停按钮确认回合真的开始（开始到暂停按钮可识别之间有加载延迟）。
+        """
+        scale = cfg.set_win_size / 1440
+        gear_scale = cfg.set_win_size / 1080
+        candidates: list[tuple[float, float, str]] = []
+
+        if gear := auto.find_element("battle/gear_right.png"):
+            candidates.append((gear[0], gear[1], "齿轮中心"))
+            candidates.append(
+                (
+                    gear[0] + _ROUND_BUTTON_FROM_GEAR[0] * gear_scale,
+                    gear[1] + _ROUND_BUTTON_FROM_GEAR[1] * gear_scale,
+                    "齿轮偏移",
+                )
+            )
+
+        rate, damage = Battle._find_win_rate_labels()
+        if rate is not False and rate is not None and damage is not False and damage is not None:
+            button_y = (rate[1] + damage[1]) / 2
+            # 位置可能因语言/字号略有偏差，向左再补候选（都在面板左侧，不会误触自动选择）
+            candidates.extend(
+                (rate[0] + dx, button_y, "OCR面板") for dx in (-217 * scale, -277 * scale, -337 * scale, -157 * scale)
+            )
+
+        if not candidates:
+            log.warning("触摸端找不到开始按钮锚点：gear_right 与面板文字均未命中")
+            return False
+
+        for index, (x, y, source) in enumerate(candidates):
+            auto.mouse_click(x, y)
+            for _ in range(_ROUND_START_POLLS):
+                sleep(_ROUND_START_POLL_INTERVAL)
+                if Battle._round_started():
+                    if index:
+                        log.debug(f"开始按钮第 {index + 1} 个候选({x:.0f},{y:.0f})命中（{source}）")
+                    return True
+        return False
+
+    @staticmethod
+    def _auto_select_skills() -> bool:
+        """点右侧胜率面板触发"自动选择"（游戏自动给所有罪人选技能）＝ 自动战斗。
+
+        PC 端 ``mouse_click_rate`` 兜底里的"点胜率卡"就是这一步；没有它，技能选择界面
+        的圆形开始按钮是灰的、点不动（实机实测）。面板可点区域在 OCR ``Rate`` 文字
+        右侧（1080 画布实测 +(50, -10) 命中）。
+        """
+        rate, _damage = Battle._find_win_rate_labels()
+        if rate is False or rate is None:
+            log.debug("未识别到胜率面板文字，无法触发自动选择")
+            return False
+        offset_scale = cfg.set_win_size / 1080
+        auto.mouse_click(
+            rate[0] + _WIN_RATE_PANEL_FROM_LABEL[0] * offset_scale,
+            rate[1] + _WIN_RATE_PANEL_FROM_LABEL[1] * offset_scale,
+        )
+        sleep(1)
+        return True
+
+    def _touch_start_round(self, keep_selection: bool) -> bool:
+        """触摸端开始当前回合。
+
+        P+Enter 在触摸端送不进游戏，只能点界面：
+
+        - ``keep_selection=True``（守备/链接战已手动选好技能）：直接点开始按钮，
+          **不碰胜率面板** —— 自动选择会覆盖手动守备/划线。
+        - ``keep_selection=False``（普通战斗，如刷经验本）：技能还没选、开始按钮是灰的，
+          必须先点胜率面板自动选择技能（自动战斗），再点开始按钮。
+        """
+        if keep_selection:
+            if self._click_round_start_button():
+                return True
+            log.warning("触摸端无法用开始按钮确认手动选择，改用胜率自动选择（会覆盖守备/划线）")
+        elif self._auto_select_skills() and self._click_round_start_button():
+            return True
+        if self._round_started():
+            return True
+        my_scale = cfg.set_win_size / 1440
+        if pos := auto.find_element("battle/win_rate_card.png", threshold=0.75):
+            pos = [pos[0] + 50 * my_scale, pos[1] - 50 * my_scale]
+            auto.mouse_click(pos[0], pos[1])
+            auto.click_element("battle/gear_right.png")
+            return True
+        log.warning("触摸端未能开始回合：开始按钮与胜率自动选择都未命中")
+        return False
+
+    def _start_battle(self, keep_selection: bool = False) -> None:
+        """结束技能选择、开始当前回合（守备/链接战这类已有手动选择的流程调用）。
+
+        键盘可用时与原来完全一致：只按 P+Enter，不做任何鼠标操作 —— 界面上的误点
+        （开始按钮 / 胜率自动选择）会把手动守备、链接战划线覆盖掉。
+        键盘无效的触摸端（PlayCover/MaaTools 的 ``key_press`` 是空实现）改用触摸
+        （见 :meth:`_touch_start_round`）。
+        """
+        auto.key_press("p")
+        sleep(0.5)
+        auto.key_press("enter")
+        if self._keyboard_available():
+            return
+        self._touch_start_round(keep_selection)
+
     def _battle_operation(
         self,
         first_turn: bool,
@@ -138,9 +287,7 @@ class Battle:
                     msg = "小指良单通连续防御失败，本回合改为P+Enter"
                 else:
                     msg = "第一回合全员防御失败，本场战斗改为P+Enter"
-                auto.key_press("p")
-                sleep(0.5)
-                auto.key_press("enter")
+                self._start_battle()
             elif use_limited_defense:
                 defense_for_solo_state.consume_turn()
                 limited_defense_succeeded = True
@@ -149,9 +296,7 @@ class Battle:
                     log.info("本次镜牢的连续防御已完成，后续回合恢复普通战斗操作")
             sleep(2)
             if not auto.find_element("battle/pause_assets.png", take_screenshot=True):
-                auto.key_press("p")
-                sleep(0.5)
-                auto.key_press("enter")
+                self._start_battle(keep_selection=True)
         elif self.defense_all_time:
             if auto.find_element("battle/gear_left.png", threshold=0.9):
                 msg = "使用全员防御模式开始战斗"
@@ -164,31 +309,32 @@ class Battle:
             msg = f"使用{mode_name}3技能模式开始战斗"
             if self._chain_battle(prioritize_skill_3=use_prioritize_skill_3) is False:
                 msg = f"使用{mode_name}三技能的链接战失败，本场战斗改为P+Enter"
-                auto.key_press("p")
-                sleep(0.5)
-                auto.key_press("enter")
+                self._start_battle()
             sleep(2)
             if not auto.find_element("battle/pause_assets.png", take_screenshot=True):
+                self._start_battle(keep_selection=True)
+        else:
+            if self._keyboard_available():
                 auto.key_press("p")
                 sleep(0.5)
                 auto.key_press("enter")
-        else:
-            auto.key_press("p")
-            sleep(0.5)
-            auto.key_press("enter")
-            msg = "使用P+Enter开始战斗"
-            if self.mouse_click_rate:
-                my_scale = cfg.set_win_size / 1440
-                if pos := auto.find_element("battle/win_rate_card.png", threshold=0.75):
-                    pos = [pos[0] + 50 * my_scale, pos[1] - 50 * my_scale]
-                    auto.mouse_click(pos[0], pos[1])
-                    auto.click_element("battle/gear_right.png")
-            else:
-                sleep(1)
-                if not auto.find_element("battle/pause_assets.png", threshold=0.75):
-                    self.mouse_click_rate = True
+                msg = "使用P+Enter开始战斗"
+                if self.mouse_click_rate:
+                    my_scale = cfg.set_win_size / 1440
+                    if pos := auto.find_element("battle/win_rate_card.png", threshold=0.75):
+                        pos = [pos[0] + 50 * my_scale, pos[1] - 50 * my_scale]
+                        auto.mouse_click(pos[0], pos[1])
+                        auto.click_element("battle/gear_right.png")
                 else:
-                    self.mouse_click_rate = False
+                    sleep(1)
+                    if not auto.find_element("battle/pause_assets.png", threshold=0.75):
+                        self.mouse_click_rate = True
+                    else:
+                        self.mouse_click_rate = False
+            else:
+                # 键盘不可用（P+Enter 送不进游戏）：点开始按钮开战（见 _touch_start_round）
+                msg = "键盘不可用，点击开始按钮开始战斗"
+                self._touch_start_round(keep_selection=False)
         log.debug(msg)
         return limited_defense_succeeded
 

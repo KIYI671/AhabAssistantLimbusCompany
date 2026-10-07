@@ -12,7 +12,7 @@ from qfluentwidgets import CheckBox, qconfig
 from module.automation import auto
 from module.config import cfg
 from module.game_and_screen import screen
-from module.hotkey_listener import ExactGlobalHotKeys
+from module.hotkey_listener import global_hotkeys
 from module.logger import log
 from tasks.battle.battle import Battle
 from tasks.tools.ui_style import apply_tool_window_theme, get_status_label_style
@@ -84,6 +84,9 @@ class BattleWorker(QThread):
 
 
 class InfiniteBattles(QWidget):
+    stop_shortcut_pressed = Signal()
+    """快捷键回调运行在监听线程，用信号切回 GUI 线程再操作窗口。"""
+
     def __init__(self):
         """初始化 InfiniteBattles 类的实例。"""
         super().__init__()
@@ -94,19 +97,9 @@ class InfiniteBattles(QWidget):
         self.setAttribute(Qt.WA_DeleteOnClose, True)
         self.setup_ui()
 
-        # 启动快捷键监听
-        try:
-            self.listener = ExactGlobalHotKeys(
-                {
-                    cfg.shutdown_hotkey: self._on_stop_shortcut,
-                }
-            )
-        except ValueError:
-            log.error("快捷键监听启动失败，请确认设置的快捷键格式有效")
-            self.listener = None
-
-        if self.listener:
-            self.listener.start()
+        # 注册到进程内唯一的快捷键监听
+        self.stop_shortcut_pressed.connect(self._on_stop_shortcut)
+        self.listener_token = global_hotkeys.register(lambda: {cfg.shutdown_hotkey: self.stop_shortcut_pressed.emit})
 
     def setup_ui(self):
         """配置窗口的基本属性和界面元素。"""
@@ -237,6 +230,10 @@ class InfiniteBattles(QWidget):
 
     def closeEvent(self, event):
         """窗口关闭时停止所有定时器和工作线程"""
+        # 先注销快捷键：窗口销毁后回调仍指向本窗口会导致崩溃
+        global_hotkeys.unregister(self.listener_token)
+        self.listener_token = None
+
         # 停止工作线程
         if hasattr(self, "worker") and self.worker:
             self.worker.stop()
@@ -250,7 +247,6 @@ class InfiniteBattles(QWidget):
             if self.worker is not None and self.worker.isRunning():
                 screen.reset_win()
                 auto.clear_img_cache()
-                self.listener.stop()
         except Exception:
             # 忽略清理异常，避免影响关闭
             pass

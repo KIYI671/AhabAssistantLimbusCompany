@@ -86,7 +86,18 @@ Click [Releases](https://github.com/KIYI671/AhabAssistantLimbusCompany/releases)
 Because of the lack of technical power, I also engaged in GUI and used third-party OCR, so the file size is relatively
 large
 
-**Note**: The Release is based on the x86_64 architecture for Windows systems. It currently does not support Arm architecture (such as Apple M-series chips, Raspberry Pi, etc.), RISCV architecture, Mac systems, or Linux systems. If you need to run AALC on unsupported platforms, please refer to the **Run the source code** and **Build guide**. Contributions as a developer to submit PRs for multi-platform adaptation are also welcome. In the future, multi-platform Release version support may be added based on user demand.
+**Note**: The Windows Release is based on the x86_64 architecture; a macOS Release (Apple Silicon / arm64) is also published, see below. There is currently no Release for Arm architecture Linux devices (such as Raspberry Pi), RISCV architecture, or Intel-based Macs. If you need to run AALC on unsupported platforms, please refer to the **Run the source code** and **Build guide** chapters. Contributions as a developer to submit PRs for multi-platform adaptation are also welcome.
+
+>
+> **The macOS build is neither signed nor notarized**, so Gatekeeper blocks the first launch ("developer cannot be verified" or "is damaged"). Move it to `/Applications` or `~/Applications` and run once:
+>
+> ```bash
+> xattr -cr /Applications/AALC.app
+> ```
+>
+> 1. Open AALC.app and grant **AALC.app** Screen Recording and Accessibility permissions in System Settings → Privacy & Security (needed for foreground-mode screenshots/input and PlayCover keyboard injection).
+> 2. Configuration, logs and image resources live in the data directory `~/Library/Application Support/AALC` (copied out of the app on first launch, about 90 MB), so **replacing AALC.app to upgrade keeps your settings**. When a new version is found, the app downloads the package into `update_temp` in that directory and reveals it in Finder; unzip it and replace `AALC.app` manually (no self-updater on macOS yet).
+> 3. Emulator (ADB) and PlayCover modes need `adb`: `brew install android-platform-tools`; the packaged app already adds `/opt/homebrew/bin` and `/usr/local/bin` to PATH.
 
 ---
 
@@ -253,6 +264,11 @@ uv run main.py
 # Update
 git pull
 ```
+
+> Terminal logs default to DEBUG and are noisy. Set the level with an environment variable before starting the
+> process: `AALC_LOG_LEVEL=INFO uv run main.py` (DEBUG/INFO/WARNING/ERROR/CRITICAL, or a number). `logs/debugLog.log`
+> still records DEBUG by default so you can attach full logs to a bug report; add `AALC_LOG_FILE_LEVEL=INFO` to quiet
+> that too.
 
 ### Using pip (Excludes dev packages)
 
