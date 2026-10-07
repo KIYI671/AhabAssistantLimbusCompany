@@ -117,7 +117,13 @@ skill_replacement_sinner = {
     QT_TRANSLATE_NOOP("BaseComboBox", "配队前7"): 2,
     QT_TRANSLATE_NOOP("BaseComboBox", "所有选中的人"): 3,
 }
-skill_replacement_mode = {"1→3": 0, "2→3": 1, "1→2": 2}
+skill_replacement_mode = {
+    "1→3": 0,
+    "2→3": 1,
+    "1→2": 2,
+    QT_TRANSLATE_NOOP("BaseComboBox", "全换3（先2→3，再1→3）"): 3,
+    QT_TRANSLATE_NOOP("BaseComboBox", "全换3（先1→3，再2→3）"): 4,
+}
 
 refresh_count_options = {
     "0": 0,

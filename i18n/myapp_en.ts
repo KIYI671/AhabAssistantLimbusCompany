@@ -534,6 +534,14 @@ Right-click to set as permanent</translation>
 <context>
     <name>BaseComboBox</name>
     <message>
+        <source>全换3（先2→3，再1→3）</source>
+        <translation>All to 3 (2→3 first, then 1→3)</translation>
+    </message>
+    <message>
+        <source>全换3（先1→3，再2→3）</source>
+        <translation>All to 3 (1→3 first, then 2→3)</translation>
+    </message>
+    <message>
         <location filename="../app/__init__.py" line="132"/>
         <source>不进入</source>
         <translation>Do not enter</translation>
