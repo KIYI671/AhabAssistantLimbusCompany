@@ -21,6 +21,8 @@ class Mediator(QObject):
     script_finished = Signal()
     kill_signal = Signal()
     pause_resume = Signal()
+    # 收尾动作抑制开关变化时广播，界面据此切换"结束后操作"摘要的显示口径。
+    completion_suppressed_changed = Signal(bool)
     # 任务线程通过信号请求主窗口抢回前台，避免跨层直接操作 UI。
     request_focus = Signal()
     mirror_signal = Signal(int, int)  # 运行的当前次数和总次数

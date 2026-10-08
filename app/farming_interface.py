@@ -20,6 +20,7 @@ from qfluentwidgets import (
     setCustomStyleSheet,
 )
 
+from app import mediator
 from app.base_combination import *
 from app.base_tools import *
 from app.common.ui_config import get_log_text_edit_qss, set_border_style
@@ -187,6 +188,11 @@ class AfterCompletionSelector(QFrame):
         self._tool_tip_text = QT_TRANSLATE_NOOP(
             "AfterCompletionSelector", "支持组合动作：退出目标后再执行电源动作，可选择仅本次或保存默认"
         )
+        self._queued_text = QT_TRANSLATE_NOOP("AfterCompletionSelector", "存在另一定时任务")
+        self._queued_tooltip_text = QT_TRANSLATE_NOOP(
+            "AfterCompletionSelector",
+            "还有排队中的自动任务，本次任务结束后不会执行收尾动作，待全部任务完成后由最后一个任务执行",
+        )
 
         self.hbox = QHBoxLayout(self)
         self.hbox.setContentsMargins(10, 5, 10, 5)
@@ -210,6 +216,10 @@ class AfterCompletionSelector(QFrame):
 
         self.edit_button.clicked.connect(self._show_editor)
         self.apply_style()
+        # 抑制状态决定摘要口径，必须在首次 refresh_from_config 之前就绪。
+        # 此刻队列逻辑尚未运行，抑制开关必为关。
+        self._completion_suppressed = False
+        mediator.completion_suppressed_changed.connect(self._on_completion_suppressed_changed)
         self.retranslateUi()
 
         qconfig.themeChangedFinished.connect(self.apply_style)
@@ -323,7 +333,17 @@ class AfterCompletionSelector(QFrame):
         # 兼容外部调用
         self._close_dialog()
 
+    def _on_completion_suppressed_changed(self, suppressed: bool) -> None:
+        """收尾动作被排队任务抑制时，摘要如实提示，而不是把配置清空成无。"""
+        self._completion_suppressed = suppressed
+        self.refresh_from_config()
+
     def refresh_from_config(self):
+        if self._completion_suppressed:
+            # 有排队任务：本次收尾不会执行，如实提示用户，配置本身保持不变。
+            self.summary.setText(self.tr(self._queued_text))
+            self.summary.setToolTip(self.tr(self._queued_tooltip_text))
+            return
         actions, power_action = get_after_completion_config()
         summary_text, full_text = self._summary_text(actions, power_action)
         self.summary.setText(summary_text)
@@ -653,6 +673,16 @@ class FarmingInterfaceLeft(QWidget):
                 auto.clear_img_cache()
             mediator.mirror_bar_kill_signal.emit()
 
+    def start_tasks_from_command(self):
+        """Start a command/scheduled task without toggling a running task to stop."""
+        if self.my_script is not None and self.my_script.isRunning():
+            log.warning("收到命令行或定时启动请求，但已有脚本正在运行，本次启动请求已安全跳过")
+            return
+        if self.link_start_button.get_text() != "Link Start!":
+            log.warning("启动按钮状态与脚本线程不一致，已恢复为空闲状态后继续定时启动")
+            self._on_script_finished()
+        self.start_and_stop_tasks()
+
     def _on_script_finished(self):
         # 自然结束只做 UI 收尾；不要复用“手动停止”入口，否则会重复触发窗口清理。
         log.debug("脚本自然结束，执行 UI 收尾，不再重复重置游戏窗口")
@@ -719,6 +749,7 @@ class FarmingInterfaceLeft(QWidget):
             self.my_script = my_script_task()
             # 设置脚本线程为守护(当程序被关闭，一起停止)
             self.my_script.daemon = True
+            self.my_script.finished.connect(mediator.script_finished.emit)
             self.my_script.start()
         except Exception as e:
             log.error(f"启动脚本失败: {e}")
@@ -768,8 +799,8 @@ class FarmingInterfaceLeft(QWidget):
         mediator.link_start.connect(self.my_stop_shortcut)
         mediator.pause_resume.connect(self.pause_or_resume_tasks)
         mediator.kill_signal.connect(self.stop_AALC)
-        # finished_signal 目前用于命令行延迟触发开始/停止按钮逻辑。
-        mediator.finished_signal.connect(self.start_and_stop_tasks)
+        # 自动任务只能启动，不能切换为停止当前任务。
+        mediator.finished_signal.connect(self.start_tasks_from_command)
         mediator.script_finished.connect(self._on_script_finished)
 
     def retranslateUi(self):
