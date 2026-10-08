@@ -20,6 +20,7 @@ from qfluentwidgets import (
     setCustomStyleSheet,
 )
 
+from app import mediator
 from app.base_combination import *
 from app.base_tools import *
 from app.common.ui_config import get_log_text_edit_qss, set_border_style
@@ -51,6 +52,7 @@ from module.logger import log
 from module.logger.my_log import ui_log_dispatcher
 from module.system_actions import (
     get_after_completion_config,
+    is_completion_actions_suspended,
     set_after_completion_config,
 )
 from tasks.base.script_task_scheme import my_script_task
@@ -187,6 +189,11 @@ class AfterCompletionSelector(QFrame):
         self._tool_tip_text = QT_TRANSLATE_NOOP(
             "AfterCompletionSelector", "支持组合动作：退出目标后再执行电源动作，可选择仅本次或保存默认"
         )
+        self._queued_text = QT_TRANSLATE_NOOP("AfterCompletionSelector", "存在另一定时任务")
+        self._queued_tooltip_text = QT_TRANSLATE_NOOP(
+            "AfterCompletionSelector",
+            "还有排队中的自动任务，本次任务结束后不会执行收尾动作，待全部任务完成后由最后一个任务执行",
+        )
 
         self.hbox = QHBoxLayout(self)
         self.hbox.setContentsMargins(10, 5, 10, 5)
@@ -210,6 +217,9 @@ class AfterCompletionSelector(QFrame):
 
         self.edit_button.clicked.connect(self._show_editor)
         self.apply_style()
+        # 抑制状态决定摘要口径，必须在首次 refresh_from_config 之前就绪。
+        self._completion_suppressed = is_completion_actions_suspended()
+        mediator.completion_suppressed_changed.connect(self._on_completion_suppressed_changed)
         self.retranslateUi()
 
         qconfig.themeChangedFinished.connect(self.apply_style)
@@ -323,7 +333,17 @@ class AfterCompletionSelector(QFrame):
         # 兼容外部调用
         self._close_dialog()
 
+    def _on_completion_suppressed_changed(self, suppressed: bool) -> None:
+        """收尾动作被排队任务抑制时，摘要如实提示，而不是把配置清空成无。"""
+        self._completion_suppressed = suppressed
+        self.refresh_from_config()
+
     def refresh_from_config(self):
+        if self._completion_suppressed:
+            # 有排队任务：本次收尾不会执行，如实提示用户，配置本身保持不变。
+            self.summary.setText(self.tr(self._queued_text))
+            self.summary.setToolTip(self.tr(self._queued_tooltip_text))
+            return
         actions, power_action = get_after_completion_config()
         summary_text, full_text = self._summary_text(actions, power_action)
         self.summary.setText(summary_text)

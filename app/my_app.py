@@ -442,20 +442,25 @@ class MainWindow(FramelessWindow):
 
         self._scheduled_start_pending = False
         self._scheduled_start_command = None
-        suspend_completion_actions(bool(self._pending_start_commands))
+        self._set_completion_actions_suspended(bool(self._pending_start_commands))
         mediator.finished_signal.emit()
         if not self._has_running_script():
             self._schedule_next_queued_start()
 
+    def _set_completion_actions_suspended(self, suspended: bool) -> None:
+        """切换收尾动作抑制开关，并广播给界面刷新结束后的操作摘要。"""
+        suspend_completion_actions(suspended)
+        mediator.completion_suppressed_changed.emit(suspended)
+
     def _suppress_current_completion_actions(self) -> None:
         """队列尚有后续任务时，禁止当前任务关闭程序、模拟器或执行电源操作。"""
-        suspend_completion_actions(True)
+        self._set_completion_actions_suspended(True)
 
     def _schedule_next_queued_start(self) -> None:
         if self._pending_start_commands:
             QTimer.singleShot(250, self._start_next_queued_command)
         elif not self._scheduled_start_pending:
-            suspend_completion_actions(False)
+            self._set_completion_actions_suspended(False)
 
     def _start_next_queued_command(self) -> None:
         if not self._pending_start_commands:

@@ -31,11 +31,16 @@ _completion_actions_suspended = threading.Event()
 
 
 def suspend_completion_actions(suspended: bool) -> None:
-    """排队期间仅抑制本次收尾动作，不修改用户保存的配置。"""
+    """排队期间仅抑制执行阶段的收尾动作，不修改用户保存的配置。"""
     if suspended:
         _completion_actions_suspended.set()
     else:
         _completion_actions_suspended.clear()
+
+
+def is_completion_actions_suspended() -> bool:
+    """当前是否处于收尾动作抑制状态（排队期间为 True），供界面初始化时查询。"""
+    return _completion_actions_suspended.is_set()
 
 
 def _set_thread_execution_state(state: int) -> None:
@@ -70,8 +75,7 @@ def _run_command(command: list[str]) -> int:
 
 
 def get_after_completion_config() -> tuple[list[str], str]:
-    if _completion_actions_suspended.is_set():
-        return [], POWER_ACTION_NONE
+    # 纯读用户配置：界面摘要与编辑器都依赖它，运行期抑制只在 execute_after_completion 生效。
     # 统一在这里做规范化，避免 UI/任务层各自处理动作协议。
     return normalize_after_completion_config(
         cfg.get_value("after_completion_actions", []),
@@ -254,6 +258,12 @@ def execute_after_completion(actions: Iterable[str], power_action: str) -> bool:
     返回值表示是否需要退出 AALC（由 exit_aalc 动作决定）。
     """
     if os.name != "nt":
+        return False
+
+    if _completion_actions_suspended.is_set():
+        # 队列中仍有等待启动的任务：整体跳过本次收尾，
+        # 避免退出 AALC / 关机 / 关模拟器打断后续排队任务。
+        log.info("仍有排队中的自动任务，跳过本次结束后的收尾动作")
         return False
 
     normalized_actions = normalize_after_actions(actions)
