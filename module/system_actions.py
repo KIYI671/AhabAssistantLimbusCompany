@@ -27,6 +27,15 @@ _ES_DISPLAY_REQUIRED = 0x00000002
 _power_keep_awake_lock = threading.Lock()
 # SetThreadExecutionState 绑定调用线程，因此这里不能用单个全局 depth 表达状态。
 _power_keep_awake_depths: dict[int, int] = {}
+_completion_actions_suspended = threading.Event()
+
+
+def suspend_completion_actions(suspended: bool) -> None:
+    """排队期间仅抑制本次收尾动作，不修改用户保存的配置。"""
+    if suspended:
+        _completion_actions_suspended.set()
+    else:
+        _completion_actions_suspended.clear()
 
 
 def _set_thread_execution_state(state: int) -> None:
@@ -61,6 +70,8 @@ def _run_command(command: list[str]) -> int:
 
 
 def get_after_completion_config() -> tuple[list[str], str]:
+    if _completion_actions_suspended.is_set():
+        return [], POWER_ACTION_NONE
     # 统一在这里做规范化，避免 UI/任务层各自处理动作协议。
     return normalize_after_completion_config(
         cfg.get_value("after_completion_actions", []),

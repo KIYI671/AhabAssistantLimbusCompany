@@ -653,6 +653,16 @@ class FarmingInterfaceLeft(QWidget):
                 auto.clear_img_cache()
             mediator.mirror_bar_kill_signal.emit()
 
+    def start_tasks_from_command(self):
+        """Start a command/scheduled task without toggling a running task to stop."""
+        if self.my_script is not None and self.my_script.isRunning():
+            log.warning("收到命令行或定时启动请求，但已有脚本正在运行，本次启动请求已安全跳过")
+            return
+        if self.link_start_button.get_text() != "Link Start!":
+            log.warning("启动按钮状态与脚本线程不一致，已恢复为空闲状态后继续定时启动")
+            self._on_script_finished()
+        self.start_and_stop_tasks()
+
     def _on_script_finished(self):
         # 自然结束只做 UI 收尾；不要复用“手动停止”入口，否则会重复触发窗口清理。
         log.debug("脚本自然结束，执行 UI 收尾，不再重复重置游戏窗口")
@@ -719,6 +729,7 @@ class FarmingInterfaceLeft(QWidget):
             self.my_script = my_script_task()
             # 设置脚本线程为守护(当程序被关闭，一起停止)
             self.my_script.daemon = True
+            self.my_script.finished.connect(mediator.script_finished.emit)
             self.my_script.start()
         except Exception as e:
             log.error(f"启动脚本失败: {e}")
@@ -768,8 +779,8 @@ class FarmingInterfaceLeft(QWidget):
         mediator.link_start.connect(self.my_stop_shortcut)
         mediator.pause_resume.connect(self.pause_or_resume_tasks)
         mediator.kill_signal.connect(self.stop_AALC)
-        # finished_signal 目前用于命令行延迟触发开始/停止按钮逻辑。
-        mediator.finished_signal.connect(self.start_and_stop_tasks)
+        # 自动任务只能启动，不能切换为停止当前任务。
+        mediator.finished_signal.connect(self.start_tasks_from_command)
         mediator.script_finished.connect(self._on_script_finished)
 
     def retranslateUi(self):
