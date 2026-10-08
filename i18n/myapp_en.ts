@@ -2479,6 +2479,14 @@ These fields will be populated with default values. Do you wish to continue?</tr
         <source>MuMu/蓝叠启动模拟器超时时间(秒)</source>
         <translation>Start Simulator Timeout</translation>
     </message>
+    <message>
+        <source>任务卡死重启等待时间(秒)</source>
+        <translation>Task stall restart timeout (seconds)</translation>
+    </message>
+    <message>
+        <source>默认流程及返回主界面超时后重启游戏；低性能模拟器可设置为600秒，显式超时不受影响</source>
+        <translation>Restart when default workflows or returning home time out. Slower emulators can use 600 seconds; explicit timeouts remain unchanged.</translation>
+    </message>
 </context>
 <context>
     <name>PushSettingCardDate</name>
@@ -3197,17 +3205,6 @@ Update Logs:</translation>
         <location filename="../tasks/base/script_task_scheme.py" line="413"/>
         <source>所有任务已完成</source>
         <translation>All Tasks Done</translation>
-    </message>
-</context>
-<context>
-    <name>PushSettingCardChance</name>
-    <message>
-        <source>任务卡死重启等待时间(秒)</source>
-        <translation>Task stall restart timeout (seconds)</translation>
-    </message>
-    <message>
-        <source>页面长时间无进展后才会重启游戏；低性能模拟器建议设置为600秒</source>
-        <translation>Restart after prolonged lack of progress; 600 seconds is recommended for slower emulators.</translation>
     </message>
 </context>
 </TS>

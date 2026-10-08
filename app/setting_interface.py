@@ -248,7 +248,7 @@ class SettingInterface(QWidget):
             max_value=3600,
             content=QT_TRANSLATE_NOOP(
                 "PushSettingCardChance",
-                "页面长时间无进展后才会重启游戏；低性能模拟器建议设置为600秒",
+                "默认流程及返回主界面超时后重启游戏；低性能模拟器可设置为600秒，显式超时不受影响",
             ),
             parent=self.simulator_setting_group,
         )
