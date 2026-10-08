@@ -2479,6 +2479,14 @@ These fields will be populated with default values. Do you wish to continue?</tr
         <source>MuMu/蓝叠启动模拟器超时时间(秒)</source>
         <translation>Start Simulator Timeout</translation>
     </message>
+    <message>
+        <source>任务卡死重启等待时间(秒)</source>
+        <translation>Task stall restart timeout (seconds)</translation>
+    </message>
+    <message>
+        <source>默认流程及返回主界面超时后重启游戏；低性能模拟器可设置为600秒，显式超时不受影响</source>
+        <translation>Restart when default workflows or returning home time out. Slower emulators can use 600 seconds; explicit timeouts remain unchanged.</translation>
+    </message>
 </context>
 <context>
     <name>PushSettingCardDate</name>
