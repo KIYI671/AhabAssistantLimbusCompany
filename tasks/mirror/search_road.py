@@ -37,6 +37,8 @@ class MirrorMap:
         if re_identify is True:
             self.floor_map, self.floor_nodes = search_road_from_road_map(hard_mode=self.hard_mode)
             if self.floor_map is True and self.floor_nodes is True:
+                # 已通过点击巴士直接进入节点，无路线可缓存；保留 True 会让下次 len() 报错
+                self.floor_map, self.floor_nodes = [], []
                 return True
             if self.floor_map is False:
                 self.floor_map = []
@@ -315,6 +317,9 @@ def search_road_from_road_map(hard_mode=False):
 
     bus_pos = auto.find_element("mirror/mybus_default_distance.png") or bus
     all_nodes = identify_nodes(bus[0])
+    if not all_nodes:  # identify_nodes() 可能返回 None（如只剩得分低于阈值的 Boss 节点）
+        log.warning("未识别到地图节点，无法规划路线")
+        return [], []
     y_area = divide_the_area_by_y(all_nodes)
     reset_position = False
     bus_row = Row.MID
@@ -446,7 +451,9 @@ def identify_nodes(bus_x):
     class_ids = []
     # 收集超过置信度阈值的候选框，供 NMS 去除重叠检测。
     for output in outputs:
-        _, max_score, _, (_, class_id) = cv2.minMaxLoc(output[4:])
+        # 一维数组用 argmax 取类别；OpenCV 5 的 minMaxLoc 对一维数组返回的位置轴不同，会使类别恒为 0
+        class_id = int(np.argmax(output[4:]))
+        max_score = float(output[4 + class_id])
         if max_score < confidence_threshold:
             continue
         boxes.append([output[0] - output[2] / 2, output[1] - output[3] / 2, output[2], output[3]])
