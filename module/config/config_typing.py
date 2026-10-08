@@ -369,7 +369,7 @@ class ConfigModel(BaseModel):
     start_emulator_timeout: int
     """启动模拟器超时时间"""
 
-    task_stall_timeout: int = 90
+    task_stall_timeout: int
     """页面无进展后的默认重启等待时间（秒）；不覆盖流程显式指定的超时"""
 
     adb_reconnect_on_error: bool
