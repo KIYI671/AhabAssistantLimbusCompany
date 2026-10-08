@@ -38,11 +38,6 @@ def suspend_completion_actions(suspended: bool) -> None:
         _completion_actions_suspended.clear()
 
 
-def is_completion_actions_suspended() -> bool:
-    """当前是否处于收尾动作抑制状态（排队期间为 True），供界面初始化时查询。"""
-    return _completion_actions_suspended.is_set()
-
-
 def _set_thread_execution_state(state: int) -> None:
     result = ctypes.windll.kernel32.SetThreadExecutionState(ctypes.c_uint32(state))
     if result == 0:

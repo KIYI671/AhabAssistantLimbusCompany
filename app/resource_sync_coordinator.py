@@ -27,8 +27,6 @@ from module.update.check_update import (
     check_update,
 )
 
-# start 自动任务模式下，等待资源更新确认的超时时间。
-
 
 class ResourceSyncCoordinator(QObject):
     """负责主窗口资源同步的 UI 编排、线程调度与启动阶段衔接。"""
@@ -543,7 +541,6 @@ class ResourceSyncCoordinator(QObject):
         返回:
             若包含 start 命令则返回 True，否则返回 False。
         """
-        # start 模式下需要给资源确认框附加超时跳过策略。
         return "start" in argv[1:]
 
     def _format_resource_sync_plan_summary(self, sync_plan: ResourceSyncPlan) -> str:

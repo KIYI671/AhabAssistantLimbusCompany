@@ -335,7 +335,7 @@ class MainWindow(FramelessWindow):
         log.debug(f"接收到命令行参数: {argv}")
         if self._is_start_command(argv) and (self._has_running_script() or self._scheduled_start_pending):
             self._pending_start_commands.append(list(argv))
-            self._suppress_current_completion_actions()
+            self._set_completion_actions_suspended(True)
             log.info(
                 "当前已有任务正在执行或等待启动，新的自动任务已排队（队列长度：%s）",
                 len(self._pending_start_commands),
@@ -431,7 +431,7 @@ class MainWindow(FramelessWindow):
         if self._has_running_script():
             if self._scheduled_start_command is not None:
                 self._pending_start_commands.insert(0, self._scheduled_start_command)
-                self._suppress_current_completion_actions()
+                self._set_completion_actions_suspended(True)
                 log.info(
                     "自动任务等待启动期间检测到其他任务，已转入队列（队列长度：%s）",
                     len(self._pending_start_commands),
@@ -448,13 +448,12 @@ class MainWindow(FramelessWindow):
             self._schedule_next_queued_start()
 
     def _set_completion_actions_suspended(self, suspended: bool) -> None:
-        """切换收尾动作抑制开关，并广播给界面刷新结束后的操作摘要。"""
+        """切换收尾动作抑制开关，并广播给界面刷新结束后的操作摘要。
+
+        队列尚有后续任务时置为 True，禁止当前任务关闭程序、模拟器或执行电源操作。
+        """
         suspend_completion_actions(suspended)
         mediator.completion_suppressed_changed.emit(suspended)
-
-    def _suppress_current_completion_actions(self) -> None:
-        """队列尚有后续任务时，禁止当前任务关闭程序、模拟器或执行电源操作。"""
-        self._set_completion_actions_suspended(True)
 
     def _schedule_next_queued_start(self) -> None:
         if self._pending_start_commands:
@@ -473,7 +472,7 @@ class MainWindow(FramelessWindow):
         log.info("当前任务已结束，开始执行排队的自动任务（剩余：%s）", len(self._pending_start_commands))
         self.command_start(argv)
         if self._pending_start_commands:
-            self._suppress_current_completion_actions()
+            self._set_completion_actions_suspended(True)
 
     def _apply_theme_styles(self):
         is_dark = isDarkTheme()

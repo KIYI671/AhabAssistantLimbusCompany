@@ -52,7 +52,6 @@ from module.logger import log
 from module.logger.my_log import ui_log_dispatcher
 from module.system_actions import (
     get_after_completion_config,
-    is_completion_actions_suspended,
     set_after_completion_config,
 )
 from tasks.base.script_task_scheme import my_script_task
@@ -218,7 +217,8 @@ class AfterCompletionSelector(QFrame):
         self.edit_button.clicked.connect(self._show_editor)
         self.apply_style()
         # 抑制状态决定摘要口径，必须在首次 refresh_from_config 之前就绪。
-        self._completion_suppressed = is_completion_actions_suspended()
+        # 此刻队列逻辑尚未运行，抑制开关必为关。
+        self._completion_suppressed = False
         mediator.completion_suppressed_changed.connect(self._on_completion_suppressed_changed)
         self.retranslateUi()
 
