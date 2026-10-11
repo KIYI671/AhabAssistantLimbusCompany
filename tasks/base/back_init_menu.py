@@ -6,6 +6,7 @@ from module.logger import log
 from tasks.base import update_model_for_retry
 from tasks.base.retry import click_title_screen_safely, ensure_simulator_game_started, retry
 from tasks.mirror.reward_card import get_reward_card
+from utils.image_utils import ImageUtils
 
 LOOP_COUNT=30
 LOADING_TIMEOUT = 90
@@ -14,6 +15,7 @@ LOADING_TIMEOUT = 90
 def back_init_menu(*, allow_restart: bool = True):
     loop_count = LOOP_COUNT
     loading_started_at = None
+    warned_no_escape = False
     auto.model = "clam"
     while True:
         loop_count -= 1
@@ -96,6 +98,17 @@ def back_init_menu(*, allow_restart: bool = True):
         if auto.click_element("home/back_assets.png"):
             continue
 
+        # 通行证（赛季）界面：领取日常/周常奖励后常停留在此界面，键盘端靠 ESC 退出。
+        # 它的返回键与 home/back_assets.png 不是同一套样式（同屏相似度仅约 0.37），识别不到，
+        # 但位置就在左上角的标准返回键槽位上，送不进 ESC 的设备按该槽位点一下即可。
+        if not auto.supports_key("esc") and (
+            auto.find_element("pass/pass_missions_assets.png") or auto.find_element("pass/weekly_assets.png")
+        ):
+            back_bbox = ImageUtils.get_bbox(ImageUtils.load_image("home/back_assets.png"))
+            auto.mouse_click((back_bbox[0] + back_bbox[2]) / 2, (back_bbox[1] + back_bbox[3]) / 2)
+            sleep(2)  # 等待界面切换动画播完，避免动画期间重复点击返回键
+            continue
+
         # 在战斗中
         if auto.click_element("battle/setting_assets.png"):
             sleep(1)
@@ -119,4 +132,16 @@ def back_init_menu(*, allow_restart: bool = True):
             continue
 
         auto.mouse_click_blank()
+        if not auto.supports_key("esc"):
+            # 送不进 ESC 的设备：上面 mirror legend 分支的齿轮点击被 legend 识别门控，
+            # 识别抖动时会漏，这里用新帧直接尝试界面上的设置/返回入口（与 luxcavation 同一模式）
+            if auto.click_element("mirror/road_in_mir/setting_assets.png", take_screenshot=True):
+                continue
+            if auto.click_element("battle/setting_assets.png", take_screenshot=True):
+                continue
+            if auto.click_element("home/back_assets.png", take_screenshot=True):
+                continue
+            if not warned_no_escape:
+                log.warning("当前输入设备送不进 ESC 且未识别到可点的设置/返回入口，界面可能卡住")
+                warned_no_escape = True
         auto.key_press("esc")

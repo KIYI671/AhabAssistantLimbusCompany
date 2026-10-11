@@ -4,10 +4,20 @@ from typing import overload
 
 import pyautogui
 import pyperclip
-import win32api
-import win32con
-import win32gui
-from pywintypes import error as PyWinTypesError
+
+try:
+    import win32api  # Windows-only
+    import win32con
+    import win32gui
+    from pywintypes import error as PyWinTypesError
+
+    _HAS_WIN32 = True
+except ImportError:
+    win32api = None  # type: ignore[assignment]
+    win32con = None  # type: ignore[assignment]
+    win32gui = None  # type: ignore[assignment]
+    PyWinTypesError = Exception
+    _HAS_WIN32 = False
 
 from module.config import cfg
 from utils.singletonmeta import SingletonMeta
@@ -54,44 +64,56 @@ key_list = {
     "7": 0x37,
     "8": 0x38,
     "9": 0x39,
-    "enter": win32con.VK_RETURN,
-    "esc": win32con.VK_ESCAPE,
-    "space": win32con.VK_SPACE,
-    "tab": win32con.VK_TAB,
-    "shift": win32con.VK_SHIFT,
-    "ctrl": win32con.VK_CONTROL,
-    "alt": win32con.VK_MENU,
-    "up": win32con.VK_UP,
-    "down": win32con.VK_DOWN,
-    "left": win32con.VK_LEFT,
-    "right": win32con.VK_RIGHT,
 }
 
-EXTENDED_KEY_VKS = frozenset(
-    {
-        win32con.VK_UP,
-        win32con.VK_DOWN,
-        win32con.VK_LEFT,
-        win32con.VK_RIGHT,
-        win32con.VK_HOME,
-        win32con.VK_END,
-        win32con.VK_PRIOR,
-        win32con.VK_NEXT,
-        win32con.VK_INSERT,
-        win32con.VK_DELETE,
-        win32con.VK_RCONTROL,
-        win32con.VK_RMENU,
-        win32con.VK_LWIN,
-        win32con.VK_RWIN,
+if _HAS_WIN32:
+    key_list.update(
+        {
+            "enter": win32con.VK_RETURN,
+            "esc": win32con.VK_ESCAPE,
+            "space": win32con.VK_SPACE,
+            "tab": win32con.VK_TAB,
+            "shift": win32con.VK_SHIFT,
+            "ctrl": win32con.VK_CONTROL,
+            "alt": win32con.VK_MENU,
+            "up": win32con.VK_UP,
+            "down": win32con.VK_DOWN,
+            "left": win32con.VK_LEFT,
+            "right": win32con.VK_RIGHT,
+        }
+    )
+
+if _HAS_WIN32:
+    EXTENDED_KEY_VKS = frozenset(
+        {
+            win32con.VK_UP,
+            win32con.VK_DOWN,
+            win32con.VK_LEFT,
+            win32con.VK_RIGHT,
+            win32con.VK_HOME,
+            win32con.VK_END,
+            win32con.VK_PRIOR,
+            win32con.VK_NEXT,
+            win32con.VK_INSERT,
+            win32con.VK_DELETE,
+            win32con.VK_RCONTROL,
+            win32con.VK_RMENU,
+            win32con.VK_LWIN,
+            win32con.VK_RWIN,
+        }
+    )
+else:
+    EXTENDED_KEY_VKS = frozenset()
+
+if _HAS_WIN32:
+    MESSAGE_KEY_WPARAMS = {
+        win32con.VK_LCONTROL: win32con.VK_CONTROL,
+        win32con.VK_RCONTROL: win32con.VK_CONTROL,
+        win32con.VK_LMENU: win32con.VK_MENU,
+        win32con.VK_RMENU: win32con.VK_MENU,
     }
-)
-
-MESSAGE_KEY_WPARAMS = {
-    win32con.VK_LCONTROL: win32con.VK_CONTROL,
-    win32con.VK_RCONTROL: win32con.VK_CONTROL,
-    win32con.VK_LMENU: win32con.VK_MENU,
-    win32con.VK_RMENU: win32con.VK_MENU,
-}
+else:
+    MESSAGE_KEY_WPARAMS = {}
 
 
 class WinAbstractInput(AbstractInput):
@@ -111,6 +133,8 @@ class WinAbstractInput(AbstractInput):
         Returns:
             tuple: 当前鼠标位置的元组 (x, y)，锁屏时返回 (0, 0)
         """
+        if win32api is None:
+            raise NotImplementedError("该输入方式仅支持 Windows（macOS 请使用前台 pyautogui 输入）")
         try:
             return win32api.GetCursorPos()
         except PyWinTypesError:
@@ -124,6 +148,8 @@ class WinAbstractInput(AbstractInput):
         Unity 6+ 会校验 scan code 和 extended flag，
         固定 0x00000001 / 0xC0000001 的消息会被忽略。
         """
+        if win32api is None:
+            raise NotImplementedError("该输入方式仅支持 Windows（macOS 请使用前台 pyautogui 输入）")
         scan = win32api.MapVirtualKey(vk, 0) & 0xFF
         extended = vk in EXTENDED_KEY_VKS
         lparam = 1 | (scan << 16)

@@ -1,12 +1,25 @@
 import time
-from ctypes import windll
+
+try:
+    from ctypes import windll
+
+    import pywintypes
+    import win32gui
+    import win32ui
+
+    _HAS_WIN32 = True
+except ImportError:
+    # macOS/Linux：GDI 截图接口不可用；pyautogui 截图路径仍然可用
+    windll = None  # type: ignore[assignment]
+    pywintypes = None  # type: ignore[assignment]
+    win32gui = None  # type: ignore[assignment]
+    win32ui = None  # type: ignore[assignment]
+    _HAS_WIN32 = False
 
 import pyautogui
-import pywintypes
-import win32gui
-import win32ui
 from PIL import Image
 
+from module.automation.input_handlers.macos.playcover_control import PLAYCOVER_SIMULATOR_TYPE
 from module.config import cfg
 from module.game_and_screen import screen
 from module.logger import log
@@ -31,6 +44,22 @@ class ScreenShot:
                     raise
                 except Exception as e:
                     log.debug(f"MUMU截图报错 {type(e).__name__}: {e}")
+                    return None
+            elif cfg.simulator_type == PLAYCOVER_SIMULATOR_TYPE:
+                from module.automation.input_handlers.macos.playcover_control import (
+                    PlayCoverControl,
+                )
+
+                try:
+                    connection = PlayCoverControl.get_connection()
+                    image = connection.screenshot()
+                    if gray:
+                        image = image.convert("L")
+                    return image
+                except userStopError:
+                    raise
+                except Exception as e:
+                    log.debug(f"PlayCover截图报错 {type(e).__name__}: {e}")
                     return None
             else:
                 try:
@@ -73,7 +102,8 @@ class ScreenShot:
             PIL.Image: 截图图像
         """
         # 设置DPI感知，避免缩放影响
-        windll.user32.SetProcessDPIAware()
+        if windll is not None:
+            windll.user32.SetProcessDPIAware()
 
         # 获取屏幕尺寸
         hdc_screen = windll.user32.GetDC(0)
@@ -155,7 +185,8 @@ class ScreenShot:
                 pass"""
 
         # 设置进程的DPI感知，以确保截图在不同DPI设置下正确显示
-        windll.user32.SetProcessDPIAware()
+        if windll is not None:
+            windll.user32.SetProcessDPIAware()
         # 进行全屏截图
         screenshot_temp = pyautogui.screenshot()
         if gray:

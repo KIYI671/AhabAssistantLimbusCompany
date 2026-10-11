@@ -4,9 +4,14 @@ import time
 from time import sleep
 
 import psutil
-import win32process
+
+try:
+    import win32process  # Windows-only
+except ImportError:
+    win32process = None  # type: ignore[assignment]
 
 from module.automation import auto
+from module.automation.input_handlers.macos.playcover_control import PLAYCOVER_SIMULATOR_TYPE
 from module.config import cfg
 from module.game_and_screen import screen
 from module.logger import log
@@ -33,6 +38,12 @@ def ensure_simulator_game_started() -> bool:
         )
 
         connection_device = MumuControl.connection_device
+    elif cfg.simulator_type == PLAYCOVER_SIMULATOR_TYPE:
+        from module.automation.input_handlers.macos.playcover_control import (
+            PlayCoverControl,
+        )
+
+        connection_device = PlayCoverControl.connection_device
     else:
         from module.automation.input_handlers.simulator.simulator_control import (
             SimulatorControl,
@@ -81,6 +92,12 @@ def kill_game():
             )
 
             connection_device = MumuControl.connection_device
+        elif cfg.simulator_type == PLAYCOVER_SIMULATOR_TYPE:
+            from module.automation.input_handlers.macos.playcover_control import (
+                PlayCoverControl,
+            )
+
+            connection_device = PlayCoverControl.connection_device
         else:
             from module.automation.input_handlers.simulator.simulator_control import (
                 SimulatorControl,

@@ -148,6 +148,33 @@ In the Settings screen, turn on the "Use Emulator" option, and it is recommended
 - Emulators may cause the script to run slowly, so it is recommended to use a higher configuration computer and give the
   emulator enough memory and CPU resources
 
+### macOS users
+
+- On macOS, use the **emulator background mode**: Settings → Emulator settings → enable "Use Emulator", and select
+  **"Other emulator" (10)** as the type.
+- The MuMu (0) and BlueStacks 5 (1) drivers depend on Windows (registry / MuMuManager.exe) and are unavailable on
+  macOS.
+- Fill in the emulator's ADB address as host/port: usually `127.0.0.1:16384` on macOS (MuMu instances increment by +32)
+  or `127.0.0.1:5555`; when unsure, run `adb devices` on the machine.
+- Screenshots and input go through ADB (screencap / minitouch), same as on Windows. Start the emulator manually and keep
+  its ADB enabled; the script will not launch the emulator process itself.
+- The packaged build (`AALC.app`) keeps configuration, logs and image resources in the data directory
+  `~/Library/Application Support/AALC`, so replacing `AALC.app` to upgrade keeps your settings. The macOS build is
+  neither signed nor notarized: run `xattr -cr /Applications/AALC.app` once before the first launch, as described in
+  the README.
+
+#### PlayCover (Apple Silicon, no Android emulator needed)
+
+- You must use the community fork of PlayCover ([hguandl/PlayCover](https://github.com/hguandl/PlayCover)); its built-in PlayTools provides the MaaTools TCP service.
+- Download and install the [decrypted Limbus Company](https://decrypt.day/app/id6444112366) from there.
+- Right-click *Limbus Company* in PlayCover, select **Settings** > **Bypass**, and check the boxes for **Enable PlayChain**, **Enable Jailbreak Detection Bypass**, **Inject Introspection Library**, and **MaaTools**, then click **OK**.
+- Toggle on **MaaTools** in the game's settings (the default port is `1717`, but this can be changed); once the game launches and the window title displays `[localhost:port]`, the service is ready.
+- In AALC Settings > Emulator Settings: enable **Use Emulator**, select **PlayCover (MaaTools) (20)** as the type, set the host to `127.0.0.1`, and enter the port shown in the window title (default `1717`; this must match the port setting in PlayCover).
+
+#### Known limitations
+
+- Playover has limited support for OAuth logins due to signing issues: it does not support "Sign in with Apple," and **for Google logins, you are required to log in again every time you restart the game**.
+
 ### Third-Party Script Support
 
 ## Command Line Launch

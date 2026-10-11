@@ -59,6 +59,9 @@ def EXP_luxcavation(combat_count: int = 1):
             and auto.find_element("home/back_assets.png", model="normal")
             and not auto.find_element("luxcavation/exp_enter.png", threshold=0.85)
         ):
+            # 优先点返回键；点不动再按 ESC（键盘可用时与 Windows 一致）
+            if auto.click_element("home/back_assets.png", take_screenshot=True):
+                continue
             auto.key_press("esc")
             continue
         if auto.find_element("luxcavation/exp_enter.png", threshold=0.85, take_screenshot=True):
@@ -154,6 +157,9 @@ def thread_luxcavation(combat_count: int = 1):
             and not auto.find_element("luxcavation/thread_enter_up80_assets.png")
             and not auto.find_element("luxcavation/thread_consume.png")
         ):
+            # 优先点返回键；点不动再按 ESC（键盘可用时与 Windows 一致）
+            if auto.click_element("home/back_assets.png", take_screenshot=True):
+                continue
             auto.key_press("esc")
             continue
         if thread_enter := auto.click_element("luxcavation/thread_enter_up80_assets.png", click=False):
