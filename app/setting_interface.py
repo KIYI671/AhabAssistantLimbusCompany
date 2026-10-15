@@ -248,7 +248,7 @@ class SettingInterface(QWidget):
             max_value=3600,
             content=QT_TRANSLATE_NOOP(
                 "PushSettingCardChance",
-                "默认流程及返回主界面超时后重启游戏；低性能模拟器可设置为600秒，显式超时不受影响",
+                "超时卡死时间设置，低性能PC/模拟器可设置更高",
             ),
             parent=self.simulator_setting_group,
         )
