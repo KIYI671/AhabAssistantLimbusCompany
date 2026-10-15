@@ -234,6 +234,8 @@ class Mirror:
         back_menu_count = 0
         theme_pack_active = False  # 同一卡包页选包重试时，不重复识别和重新计时。
         preparing = False  # 新镜牢的准备过程不计入某一层的耗时。
+
+        self.observe_bbox = ImageUtils.get_bbox(ImageUtils.load_image("mirror/road_to_mir/observe_ego_gift/observe_bbox.png"))
         # 未到达奖励页不会停止
         while True:
             if main_loop_count >= 50:
@@ -492,8 +494,8 @@ class Mirror:
                 self.select_init_ego_gift()
                 continue
 
-            if auto.find_element("mirror/road_to_mir/observe_ego_gift/observe_bleed_assets.png",model="clam") or auto.find_element(
-                    "mirror/road_to_mir/observe_ego_gift/observe_burn_assets.png",model="clam"):
+            if auto.find_element("mirror/road_to_mir/observe_ego_gift/bleed.png",model="clam",my_crop=self.observe_bbox) or auto.find_element(
+                    "mirror/road_to_mir/observe_ego_gift/burn.png",model="clam",my_crop=self.observe_bbox):
                 preparing = True
                 self.current_floor_start_time = None
                 self.select_observe_ego_gift()
@@ -889,9 +891,8 @@ class Mirror:
             if not self.observe_ego_gift or len(self.observe_ego_gift_selected)==0:
                 auto.click_element("mirror/road_to_mir/activate_gift_search_on_assets.png")
             # 如果已经进入观测饰品页面,则跳过初始EGO选择
-            if auto.find_element("mirror/theme_pack/feature_theme_pack_assets.png") or auto.find_element(
-                    "mirror/road_to_mir/observe_ego_gift/observe_bleed_assets.png") or auto.find_element(
-                    "mirror/road_to_mir/observe_ego_gift/observe_burn_assets.png"):
+            if auto.find_element("mirror/theme_pack/feature_theme_pack_assets.png") or auto.find_element("mirror/road_to_mir/observe_ego_gift/bleed.png",model="clam",my_crop=self.observe_bbox) or auto.find_element(
+                    "mirror/road_to_mir/observe_ego_gift/burn.png",model="clam",my_crop=self.observe_bbox):
                 break
 
             if (team_system == "slash" or team_system == "pierce" or team_system == "blunt") and scroll == False:
@@ -983,9 +984,9 @@ class Mirror:
 
         my_scale = cfg.set_win_size / 1440
         benchmark_point = None
-        if point := auto.find_element("mirror/road_to_mir/observe_ego_gift/observe_burn_assets.png", model="clam",take_screenshot=True):
+        if point := auto.find_element("mirror/road_to_mir/observe_ego_gift/bleed.png",model="clam",my_crop=self.observe_bbox,take_screenshot=True):
             benchmark_point = point
-        elif point := auto.find_element("mirror/road_to_mir/observe_ego_gift/observe_bleed_assets.png", model="clam"):
+        elif point := auto.find_element("mirror/road_to_mir/observe_ego_gift/burn.png",model="clam",my_crop=self.observe_bbox):
             benchmark_point = (point[0] - 110 * my_scale, point[1])
 
         if not benchmark_point:
