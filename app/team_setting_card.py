@@ -20,6 +20,7 @@ from qfluentwidgets import (
     PushButton,
     ScrollArea,
     SmoothMode,
+    SpinBox,
     ToolButton,
     ToolTipFilter,
     ToolTipPosition,
@@ -474,7 +475,7 @@ class TeamSettingCard(QFrame):
                     if combobox == "team_system":
                         self.foolproof(getattr(self.team_setting, combobox))
 
-        self.findChild(BaseComboBox, "defense_for_solo_turns").set_options(self.team_setting.defense_for_solo_turns - 1)
+        self.findChild(SpinBox, "defense_for_solo_turns").setValue(self.team_setting.defense_for_solo_turns)
 
         # 读取编队码设置
         if team_code_input := self.findChild(BaseLineEdit, "team_code"):
@@ -741,10 +742,15 @@ class CustomizeSettingsModule(QFrame):
             QT_TRANSLATE_NOOP("BaseCheckBox", "小指良单通杀家人"),
             tips=QT_TRANSLATE_NOOP("BaseCheckBox", "每次镜牢任务内，连续指定回合数全员防御"),
         )
-        self.defense_for_solo_turns = BaseComboBox("defense_for_solo_turns", combo_box_width=60)
-        self.defense_for_solo_turns.add_items({str(turn): turn for turn in range(1, 6)})
-        self.defense_for_solo_turns.set_box_enabled(self.defense_for_solo.check_box.isChecked())
-        self.defense_for_solo.check_box.toggled.connect(self.defense_for_solo_turns.set_box_enabled)
+        self.defense_for_solo_turns = SpinBox(self)
+        self.defense_for_solo_turns.setObjectName("defense_for_solo_turns")
+        self.defense_for_solo_turns.setRange(1, 2_147_483_647)
+        self.defense_for_solo_turns.setFixedWidth(120)
+        self.defense_for_solo_turns.valueChanged.connect(
+            lambda value: mediator.team_setting.emit({"defense_for_solo_turns": value})
+        )
+        self.defense_for_solo_turns.setEnabled(self.defense_for_solo.check_box.isChecked())
+        self.defense_for_solo.check_box.toggled.connect(self.defense_for_solo_turns.setEnabled)
         self.defense_first_round.check_box.toggled.connect(
             lambda checked: self.defense_for_solo.set_check_false() if checked else None
         )
