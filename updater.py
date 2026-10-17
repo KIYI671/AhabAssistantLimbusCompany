@@ -37,6 +37,7 @@ _DETACHED_PROCESS = 0x00000008
 _CREATE_NEW_PROCESS_GROUP = 0x00000200
 
 _PARENT_EXIT_WAIT_SECONDS = 15
+_OTHER_UPDATER_WAIT_SECONDS = 30
 _EXTRACT_MAX_ATTEMPTS = 3
 _FS_OP_MAX_ATTEMPTS = 4
 _FS_OP_RETRY_DELAY_SECONDS = 0.5
@@ -425,6 +426,8 @@ class Updater:
 
         self._wait_for_parent_exit(parent_pid)
 
+        self._wait_other_updaters()
+
         self.progress.update(stage="正在关闭 AALC 进程...", detail="清理可能占用更新文件的进程")
         self.terminate_processes()
 
@@ -471,6 +474,35 @@ class Updater:
                 return
             time.sleep(0.2)
         _log("等待主程序退出超时，转由进程清扫兜底")
+
+    def _wait_other_updaters(self):
+        """等待其他更新器实例退出（参考 MAA.Updater 的更新互斥语义）。
+
+        被中断的更新可能遗留仍在运行的更新器进程；两个更新器并发应用会互相
+        覆盖文件、重复重启主程序。这里限时等待其退出，超时则交给随后的进程
+        清扫强制清理，保证既不竞态也不会永久卡住。
+        """
+        mine = os.getpid()
+        deadline = time.monotonic() + _OTHER_UPDATER_WAIT_SECONDS
+        last_logged_pids = None
+        while True:
+            others = []
+            for proc in psutil.process_iter(attrs=["pid", "name"]):
+                if proc.pid == mine:
+                    continue
+                name = (proc.info.get("name") or "").lower()
+                if name.startswith("aalc updater"):
+                    others.append(proc)
+            if not others:
+                return
+            pids = tuple(sorted(o.pid for o in others))
+            if pids != last_logged_pids:
+                _log(f"检测到其他更新器进程 {list(pids)}，等待其退出...")
+                last_logged_pids = pids
+            if time.monotonic() >= deadline:
+                _log("等待其他更新器退出超时，转由进程清扫兜底")
+                return
+            time.sleep(0.5)
 
     # ------------------------------------------------------------------
     # 解压与校验
