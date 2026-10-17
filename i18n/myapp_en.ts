@@ -2507,6 +2507,14 @@ These fields will be populated with default values. Do you wish to continue?</tr
         <source>MuMu/蓝叠启动模拟器超时时间(秒)</source>
         <translation>Start Simulator Timeout</translation>
     </message>
+    <message>
+        <source>任务卡死重启等待时间(秒)</source>
+        <translation>Task stall restart timeout (seconds)</translation>
+    </message>
+    <message>
+        <source>超时卡死时间设置，低性能PC/模拟器可设置更高</source>
+        <translation>Stall timeout setting; slower PCs/emulators can set it higher</translation>
+    </message>
 </context>
 <context>
     <name>PushSettingCardDate</name>

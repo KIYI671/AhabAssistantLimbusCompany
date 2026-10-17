@@ -234,6 +234,8 @@ class Mirror:
         back_menu_count = 0
         theme_pack_active = False  # 同一卡包页选包重试时，不重复识别和重新计时。
         preparing = False  # 新镜牢的准备过程不计入某一层的耗时。
+
+        self.observe_bbox = ImageUtils.get_bbox(ImageUtils.load_image("mirror/road_to_mir/observe_ego_gift/observe_bbox.png"))
         # 未到达奖励页不会停止
         while True:
             if main_loop_count >= 50:
@@ -492,8 +494,8 @@ class Mirror:
                 self.select_init_ego_gift()
                 continue
 
-            if auto.find_element("mirror/road_to_mir/observe_ego_gift/observe_bleed_assets.png",model="clam") or auto.find_element(
-                    "mirror/road_to_mir/observe_ego_gift/observe_burn_assets.png",model="clam"):
+            if auto.find_element("mirror/road_to_mir/observe_ego_gift/bleed.png",my_crop=self.observe_bbox) or auto.find_element(
+                    "mirror/road_to_mir/observe_ego_gift/burn.png",my_crop=self.observe_bbox):
                 preparing = True
                 self.current_floor_start_time = None
                 self.select_observe_ego_gift()
@@ -889,9 +891,8 @@ class Mirror:
             if not self.observe_ego_gift or len(self.observe_ego_gift_selected)==0:
                 auto.click_element("mirror/road_to_mir/activate_gift_search_on_assets.png")
             # 如果已经进入观测饰品页面,则跳过初始EGO选择
-            if auto.find_element("mirror/theme_pack/feature_theme_pack_assets.png") or auto.find_element(
-                    "mirror/road_to_mir/observe_ego_gift/observe_bleed_assets.png") or auto.find_element(
-                    "mirror/road_to_mir/observe_ego_gift/observe_burn_assets.png"):
+            if auto.find_element("mirror/theme_pack/feature_theme_pack_assets.png") or auto.find_element("mirror/road_to_mir/observe_ego_gift/bleed.png",my_crop=self.observe_bbox) or auto.find_element(
+                    "mirror/road_to_mir/observe_ego_gift/burn.png",my_crop=self.observe_bbox):
                 break
 
             if (team_system == "slash" or team_system == "pierce" or team_system == "blunt") and scroll == False:
@@ -982,20 +983,34 @@ class Mirror:
         auto.model = "clam"
 
         my_scale = cfg.set_win_size / 1440
-        benchmark_point = None
-        if point := auto.find_element("mirror/road_to_mir/observe_ego_gift/observe_burn_assets.png", model="clam",take_screenshot=True):
-            benchmark_point = point
-        elif point := auto.find_element("mirror/road_to_mir/observe_ego_gift/observe_bleed_assets.png", model="clam"):
-            benchmark_point = (point[0] - 110 * my_scale, point[1])
+        first_point = None
+        second_point = None
+        for _ in range(3):
+            if first_point and second_point:
+                break
+            if not second_point:
+                if point := auto.find_element("mirror/road_to_mir/observe_ego_gift/bleed.png",my_crop=self.observe_bbox,take_screenshot=True):
+                    second_point = point
+                    auto.mouse_click(point[0], point[1])
+                    sleep(0.5)
+            if not first_point:
+                if point := auto.find_element("mirror/road_to_mir/observe_ego_gift/burn.png",my_crop=self.observe_bbox,take_screenshot=True):
+                    first_point = point
+                    auto.mouse_click(point[0], point[1])
+                    sleep(0.5)
 
-        if not benchmark_point:
+        if not first_point or not second_point:
             return
+
+        # 体系之间的间距
+        system_distance = second_point[0] - first_point[0]
+        print(system_distance)
 
         gift_box = ImageUtils.get_bbox(ImageUtils.load_image("mirror/road_to_mir/observe_ego_gift/gift_box_bbox.png"))
 
         # 选择观测饰品
         for gift_id in self.observe_ego_gift_selected:
-            # 从文件名推断体系，如 "bleed_3_3_7.png" -> "bleed"
+            # 从文件名推断体系，如 "bleed_3_3_7" -> "bleed"
             gm = re.match(r"^([a-z]+)_", gift_id)
             if not gm:
                 log.warning(f"无法解析饰品体系：{gift_id}，跳过")
@@ -1011,15 +1026,17 @@ class Mirror:
                 system_index = 10
             else:
                 system_index = [k for k, v in observe_system.items() if v == file_system][0]
-            # 选择体系，先点一下其他体系，再点回来，重置页面
-            auto.mouse_click(benchmark_point[0] + 110 * (system_index+1) * my_scale, benchmark_point[1])
-            sleep(0.2)
-            auto.mouse_click(benchmark_point[0] + 110 * (system_index - 1) * my_scale, benchmark_point[1])
-            sleep(0.2)
-            auto.mouse_click(benchmark_point[0] + 110 * system_index * my_scale, benchmark_point[1])
-            sleep(0.2)
 
-            if level_point := auto.find_element(f"mirror/road_to_mir/observe_ego_gift/Level_{"I"*gift_level}.png",take_screenshot=True):
+            print(system_index)
+            # 选择体系，先点一下其他体系，再点回来，重置页面
+            auto.mouse_click(first_point[0], first_point[1])
+            sleep(0.5)
+            auto.mouse_click(second_point[0], second_point[1])
+            sleep(0.5)
+            auto.mouse_click(first_point[0] + system_distance * system_index, first_point[1])
+            sleep(0.5)
+
+            if level_point := auto.find_element(f"mirror/road_to_mir/observe_ego_gift/Level_{"I"*gift_level}.png",threshold=0.85,take_screenshot=True):
                 _select_gift(level_point)
             else:
                 level_point = None
@@ -1030,7 +1047,7 @@ class Mirror:
                         dy=-(gift_box[-1]-gift_box[1])/2,
                         drag_time=1.5,
                     )
-                    if p:= auto.find_element(f"mirror/road_to_mir/observe_ego_gift/Level_{"I"*gift_level}.png",take_screenshot=True):
+                    if p:= auto.find_element(f"mirror/road_to_mir/observe_ego_gift/Level_{"I"*gift_level}.png",threshold=0.85,take_screenshot=True):
                         level_point = p
                         break
                 if level_point is None:
