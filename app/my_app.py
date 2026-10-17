@@ -1,7 +1,6 @@
 import ctypes
 import os
 import re
-import subprocess
 import sys
 from enum import Enum
 
@@ -56,6 +55,7 @@ from module.config import cfg
 from module.font_manager import font_manager
 from module.logger import log
 from module.system_actions import autodaily_exit_to_after_completion_config, suspend_completion_actions
+from module.update.check_update import start_update
 
 # WinRT toast / Win32 焦点切换存在异步回跳，这里保留一次延迟补偿。
 _FOREGROUND_RETRY_DELAY_MS = 600
@@ -497,6 +497,24 @@ class MainWindow(FramelessWindow):
         cfg.set_value("window_position_x", self.x())
         cfg.set_value("window_position_y", self.y())
 
+        if getattr(self, "updating", False):
+            # 更新流程触发的退出：不再弹确认框，直接收尾任务后退出，
+            # 更新器在等待本进程退出（超时才会强制清理）
+            log.info("更新流程退出：收尾运行中的任务")
+            if (
+                self.farming_interface.interface_left.my_script is not None
+                and self.farming_interface.interface_left.my_script.isRunning()
+            ):
+                self.farming_interface.interface_left.my_script.terminate()
+            if self.tools_interface.tools:
+                for tool in self.tools_interface.tools.values():
+                    if isinstance(tool.w, QWidget):
+                        tool.w.close()
+                    elif isinstance(tool.w, QThread):
+                        tool.w.terminate()
+            e.accept()
+            return super().closeEvent(e)
+
         if (
             self.farming_interface.interface_left.my_script is not None
             and self.farming_interface.interface_left.my_script.isRunning()
@@ -696,11 +714,18 @@ class MainWindow(FramelessWindow):
             self.help_interface.load_markdown(url)
 
     def download_and_install(self, file_name):
-        messages_box = MessageBoxConfirm(self.tr("更新提醒"), self.tr("下载已经完成，是否开始更新"), self.window())
-        if messages_box.exec():
-            source_file = os.path.abspath("./AALC Updater.exe")
-            assert_name = file_name
-            subprocess.Popen([source_file, assert_name], creationflags=subprocess.DETACHED_PROCESS)
+        """下载完成后自动进入安装：启动更新器并优雅退出主程序，全程无需再次确认。
+
+        参考 MAA 的更新流程：更新器通过 --parent-pid 等待本进程退出后再应用
+        更新包，因此这里只负责交接，退出统一走 close() 让 closeEvent 收尾。
+        """
+        log.info("更新包下载完成，自动启动更新器并退出 AALC")
+        self.updating = True
+        if not start_update(file_name):
+            self.updating = False
+            return
+        # 略作延迟，保证更新器进程已拉起后再退出；更新器会等待本进程退出
+        QTimer.singleShot(300, self.close)
 
     def retranslateUi(self):
         self.pivot.setItemText("farming_interface", self.tr("一键长草"))

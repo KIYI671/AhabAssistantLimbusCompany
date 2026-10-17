@@ -483,13 +483,15 @@ def update(assets_url):
                     subprocess.run(
                         [exe_path, "x", download_file_path, f"-o{destination}", "-aoa"],
                         check=True,
+                        creationflags=subprocess.CREATE_NO_WINDOW,
                     )
                 else:
                     shutil.unpack_archive(download_file_path, destination)
                 log.info("OCR解压完成，请重启AALC")
                 return True
-            except Exception:
-                input("解压失败，按回车键重新解压. . .多次失败请手动下载更新")
+            except Exception as e:
+                # 无窗口环境下不允许 input() 等待：记录日志并提示用户手动处理
+                log.error(f"OCR更新包解压失败: {e}，请查看日志或手动重新下载")
                 return False
         else:
             mediator.download_complete.emit(file_name)
@@ -511,5 +513,17 @@ def start_update_thread(assets_url):
 
 
 def start_update(assert_name):
+    """启动独立更新器进程（无窗口、无确认）。
+
+    通过 ``--parent-pid`` 告知更新器本进程 PID：更新器会先等待 AALC 优雅退出
+    （保存配置、结束任务），超时后再强制清理，避免直接杀进程丢失状态。
+    """
     source_file = os.path.abspath("./AALC Updater.exe")
-    subprocess.Popen([source_file, assert_name], creationflags=subprocess.DETACHED_PROCESS)
+    if not os.path.exists(source_file):
+        log.error("启动更新失败：找不到 AALC Updater.exe")
+        return False
+    subprocess.Popen(
+        [source_file, assert_name, "--parent-pid", str(os.getpid())],
+        creationflags=subprocess.DETACHED_PROCESS | subprocess.CREATE_NEW_PROCESS_GROUP,
+    )
+    return True

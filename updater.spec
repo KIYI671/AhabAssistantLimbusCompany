@@ -29,7 +29,8 @@ exe = EXE(
     upx=True,
     upx_exclude=[],
     runtime_tmpdir=None,
-    console=True,
+    # 参考 MAA.Updater：更新器不依赖控制台，全程通过日志文件与原生进度窗反馈
+    console=False,
     disable_windowed_traceback=False,
     argv_emulation=False,
     target_arch=None,
