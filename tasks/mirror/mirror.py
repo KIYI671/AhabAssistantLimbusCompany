@@ -178,7 +178,7 @@ class Mirror:
                 infinity_bbox[2] + 100,
                 infinity_bbox[3],
             )  # 临时修复措施，调整裁切大小
-            if not auto.find_text_element(["off", "ff"], infinity_bbox):
+            if not auto.find_text_element(["off", "ff","of"], infinity_bbox):
                 auto.click_element("mirror/road_to_mir/infinity_mirror_enter_assets.png")
             if auto.click_element("mirror/road_to_mir/enter_assets.png"):
                 sleep(0.5)
@@ -426,7 +426,7 @@ class Mirror:
                 continue
 
             # 镜牢星光
-            if auto.find_element("mirror/road_to_mir/dreaming_star/coins_assets.png", threshold=0.9):
+            if auto.find_element("mirror/road_to_mir/dreaming_star/coins_assets.png",model="normal"):
                 preparing = True
                 self.current_floor_start_time = None
                 self.enter_mir_with_star()
@@ -789,7 +789,7 @@ class Mirror:
         return True
 
     def enter_mir_with_star(self):
-        coins = auto.find_element("mirror/road_to_mir/dreaming_star/coins_assets.png", threshold=0.9)
+        coins = auto.find_element("mirror/road_to_mir/dreaming_star/coins_assets.png",model="normal")
         scale = cfg.set_win_size / 1440
         first_starlight = [coins[0] - 1800 * scale, coins[1] + 300 * scale]
         starlights_X = [first_starlight[0] + (i % 5) * 400 * scale for i in range(10)]
