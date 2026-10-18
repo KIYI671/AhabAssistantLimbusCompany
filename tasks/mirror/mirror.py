@@ -179,7 +179,7 @@ class Mirror:
                 infinity_bbox[3],
             )  # 临时修复措施，调整裁切大小
             if not auto.find_text_element(["off", "ff","of"], infinity_bbox):
-                auto.click_element("mirror/road_to_mir/infinity_mirror_enter_assets.png")
+                auto.click_element("mirror/road_to_mir/infinity_mirror_enter_assets.png",take_screenshot=True)
             if auto.click_element("mirror/road_to_mir/enter_assets.png"):
                 sleep(0.5)
                 continue
@@ -976,7 +976,7 @@ class Mirror:
                         dy=-s,
                         drag_time=1.5,
                     )
-                    sleep(1)
+                    sleep(1.5)
                 auto.mouse_click(select_gift_point[0], select_gift_point[1] - height)
 
         log.debug("开始选择观测EGO饰品")
