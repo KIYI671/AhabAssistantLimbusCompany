@@ -5,6 +5,8 @@ from module.automation import auto
 from module.config import cfg
 from module.decorator.decorator import begin_and_finish_time_log
 from module.logger import log
+from module.ocr import ocr
+from tasks.teams.team_name_locator import locate_named_team
 
 WINDOWS_ORDERED_TEAM_PAGE_SWIPE_DISTANCE = 400
 NAMED_TEAM_PAGE_SWIPE_DISTANCE = 385
@@ -164,20 +166,29 @@ def select_battle_team(num):
             sleep(1)
             return True
         else:
-            team_name_zh = "编队#" + str(num)
-            team_name_en = [f"TEAMS #{num}", f"TEAMS#{num}", f"TFAMS#{num}"]
             position_bbox = (0, 0, position[0] + 130 * scale, position[1] + 600 * scale)
             for i in range(10):
                 while auto.take_screenshot() is None:
                     continue
-                if team_position := auto.find_language_text(team_name_zh, team_name_en, my_crop=position_bbox):
+                # 按行推算而非子串匹配，避免 "TEAMS#1" 命中 "TEAMS#13"
+                result = ocr.run(auto.screenshot.crop(position_bbox))
+                boxes = result.boxes if result.boxes is not None else []
+                rows = [
+                    (text, ((box[0][0] + box[2][0]) / 2, (box[0][1] + box[2][1]) / 2))
+                    for text, box in zip(result.txts or [], boxes)
+                ]
+                where, team_position = locate_named_team(num, rows)
+                log.debug(f"查找队伍 #{num}：{where} {team_position}")
+                if where == "found":
                     auto.mouse_action_with_pos(team_position, offset=False)
                     find = True
                     break
+                # 目标在可见范围上方时向上翻页，其余情况保持原来的向下翻页
+                direction = 1 if where == "up" else -1
                 auto.mouse_swipe_for_team_scroll(
                     first_position[0],
                     first_position[1] + 375 * scale,
-                    dy=-NAMED_TEAM_PAGE_SWIPE_DISTANCE * scale,
+                    dy=direction * NAMED_TEAM_PAGE_SWIPE_DISTANCE * scale,
                     duration=0.3,
                 )
                 sleep(1)
