@@ -1,7 +1,9 @@
 import os  # 导入os模块以便操作文件路径
+import platform
 import re
 import shutil
 import subprocess
+import sys
 from enum import Enum
 from threading import Thread
 from typing import Callable
@@ -236,14 +238,26 @@ class UpdateThread(QThread):
 
     def get_download_url_from_assets(self, assets):
         """
-        从资产列表中获取 .7z 文件的下载 URL。
+        从资产列表中获取当前平台更新包的下载 URL。
 
         参数:
         assets -- 资产列表（JSON 格式）
 
         返回:
-        .7z 文件的下载 URL，如果没有找到则返回 None
+        更新包的下载 URL，如果没有找到则返回 None
         """
+        if sys.platform == "darwin":
+            # macOS 打包版命名见 scripts/build.py：AALC_<version>_macos_<arch>.zip
+            arch_suffix = f"_macos_{platform.machine()}.zip"
+            for asset in assets:
+                if asset["name"].endswith(arch_suffix):
+                    return asset["browser_download_url"]
+            # 没有架构完全匹配的包时退一步接受任意 macOS 包
+            for asset in assets:
+                if "_macos_" in asset["name"]:
+                    return asset["browser_download_url"]
+            return None
+
         for asset in assets:
             if asset["name"].endswith(".7z"):
                 return asset["browser_download_url"]
@@ -251,7 +265,9 @@ class UpdateThread(QThread):
 
     def get_assets_url(self):
         try:
-            if cfg.update_source == "MirrorChyan":
+            # Mirror酱上分发的是 Windows 的 .7z，macOS 打包版一律走 GitHub 源取自己的更新包
+            use_mirrorchyan = cfg.update_source == "MirrorChyan" and sys.platform != "darwin"
+            if use_mirrorchyan:
                 if cfg.mirrorchyan_cdk == "":
                     self.error_msg = "未设置 Mirror酱 CDK"
                     self.updateSignal.emit(UpdateStatus.FAILURE)

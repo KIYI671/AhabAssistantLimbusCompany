@@ -3,9 +3,13 @@ from __future__ import annotations
 import os
 import re
 import subprocess
-import winreg
 from dataclasses import dataclass
 from pathlib import Path
+
+try:
+    import winreg  # Windows-only（BlueStacks 桌面版安装信息发现）
+except ImportError:
+    winreg = None  # type: ignore[assignment]
 
 import psutil
 
@@ -114,6 +118,8 @@ class BlueStacksLauncher:
 
     @classmethod
     def discover(cls) -> "BlueStacksLauncher":
+        if winreg is None:
+            raise BlueStacksError("BlueStacks 桌面版安装发现仅支持 Windows（macOS 请手动启动模拟器并通过 ADB 连接）")
         install_dir = ""
         user_data_dir = ""
         registry_access_modes = (winreg.KEY_READ | winreg.KEY_WOW64_64KEY, winreg.KEY_READ)

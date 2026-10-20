@@ -6,10 +6,19 @@ import datetime
 import getpass
 import os
 import sys
-import winreg
 
-import win32com.client
-from pywintypes import com_error
+try:
+    import winreg  # Windows-only
+
+    import win32com.client
+    from pywintypes import com_error
+
+    SCHEDULE_WIN32_AVAILABLE = True
+except ImportError:
+    winreg = None  # type: ignore[assignment]
+    win32com = None  # type: ignore[assignment]
+    com_error = None
+    SCHEDULE_WIN32_AVAILABLE = False
 
 from module.logger import log
 

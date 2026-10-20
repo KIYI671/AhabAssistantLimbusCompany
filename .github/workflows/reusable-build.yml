@@ -8,7 +8,7 @@ on:
         type: string
 
 jobs:
-  build:
+  build-windows:
     runs-on: windows-latest
     steps:
       # 签出代码
@@ -40,4 +40,39 @@ jobs:
           name: AALC_${{ inputs.version }}
           path: |
             dist/AALC_${{ inputs.version }}.7z
+          archive: false
+
+  build-macos:
+    # macos-latest 是 Apple Silicon，产物为 arm64 的 AALC.app
+    runs-on: macos-latest
+    steps:
+      # 签出代码
+      - name: Checkout
+        uses: actions/checkout@main
+
+      # 配置 uv
+      - name: Setup UV for Python
+        uses: astral-sh/setup-uv@v8.1.0
+        with:
+          enable-cache: true
+          cache-dependency-glob: |
+            **/uv.lock
+
+      # 安装依赖
+      - name: Install dependencies
+        run: |
+          uv sync --frozen
+
+      # 构建并打包程序（内含 ad-hoc 签名，参见 scripts/build.py）
+      - name: build & bundle
+        run: |
+          uv run python ./scripts/build.py --version ${{ inputs.version }}
+
+      # 上传打包结果
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@main
+        with:
+          name: AALC_${{ inputs.version }}_macos
+          path: |
+            dist/AALC_${{ inputs.version }}_macos_*.zip
           archive: false
