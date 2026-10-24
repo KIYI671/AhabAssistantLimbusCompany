@@ -1,5 +1,5 @@
 config_version: 1781049600 # 配置文件版本号 (时间戳)
-disable_mirror_rewards: false # 开发者：放弃所有镜牢奖励，仅记录数据，默认关闭
+disable_mirror_rewards: true  # 开发者：放弃所有镜牢奖励，仅记录数据，默认关闭
 
 # 游戏设置
 game_title_name: LimbusCompany # 游戏窗口标题。
@@ -8,8 +8,8 @@ game_process_name: LimbusCompany.exe # 游戏进程名。
 game_path: C:\Program Files (x86)\Steam\steamapps\common\Limbus 
   Company\LimbusCompany.exe                                                               # 游戏启动路径。
 
-keep_after_completion: false # 是否保持脚本结束后的操作
-language_in_program: '' # 程序语言
+keep_after_completion: true  # 是否保持脚本结束后的操作
+language_in_program: zh_cn # 程序语言
 shutdown_hotkey: <ctrl>+q   # 关闭快捷键
 pause_hotkey: <alt>+p   # 暂停快捷键
 resume_hotkey: <alt>+r   # 继续快捷键
@@ -26,8 +26,8 @@ last_auto_change: 1715990400.0 # 上次自动切换困难镜牢的时间戳
 hard_mirror_chance: 0 # 困难镜牢剩余次数
 
 zoom_scale: 0 # 缩放比例
-window_position_x: 0 # 窗口位置x
-window_position_y: 0 # 窗口位置y
+window_position_x: 310 # 窗口位置x
+window_position_y: 163 # 窗口位置y
 theme_mode: AUTO # 应用主题：AUTO, LIGHT, DARK
 autostart: false # 自启动
 autodaily: false # 启用定时执行
@@ -95,10 +95,10 @@ after_completion_actions: [] # 脚本结束后的前置动作（可多选）：e
 after_completion_power_action: none   # 脚本结束后的最终动作（单选）：none/sleep/hibernate/lock/shutdown
 
 # 脚本运行速度设置
-screenshot_interval: 0.85 # 截图间隔时间
-mouse_action_interval: 0.5 # 鼠标操作间隔时间
+screenshot_interval: 0.19999999999999996 # 截图间隔时间
+mouse_action_interval: 0.19999999999999996 # 鼠标操作间隔时间
 mouse_down_duration: 0.1 # 鼠标按下持续时间
-use_post_message: false # 是否使用PostMessage进行输入
+use_post_message: true  # 是否使用PostMessage进行输入
 
 resonate_with_Ahab: false # 是否播放亚哈语录
 
@@ -120,7 +120,7 @@ task_stall_timeout: 90 # 默认卡死重启等待秒数；低性能PC/模拟器�
 adb_reconnect_on_error: true # ADB或minitouch连接失效时自动重连
 
 # 自动更新
-check_update: true
+check_update: false
 update_prerelease_enable: false
 update_source: GitHub # 更新源
 mirrorchyan_cdk: '' # Mirror酱 CDK
@@ -128,7 +128,7 @@ image_resource_sync: true # 是否启用图片资源自动同步
 image_resource_source: Auto # 图片资源同步源，可选 Auto / Gitee / GitHub
 
 # 保存启动后的页面
-default_page: 0
+default_page: 4
 
 # 是否进行自动窗口设置
 set_windows: true # 是否进行自动窗口设置
@@ -136,11 +136,11 @@ set_win_size: 1080 # 设置使用的分辨率,1080:1920*1080,1440:2560*1440,2160
 set_win_position: free # 是否自动设置窗口的位置
 set_reduce_miscontact: true # 是否防止误触
 
-select_team_by_order: false # 是否按顺序(而非名称)选择队伍
+select_team_by_order: true  # 是否按顺序(而非名称)选择队伍
 
 # 是否进行日常本
 daily_task: false # 是否进行日常本
-set_EXP_count: 1 # 设置经验本的次数
+set_EXP_count: 2 # 设置经验本的次数
 set_thread_count: 3 # 设置纽本的次数
 daily_teams: 1 # 设置日常本使用的队伍
 use_continuous_combat: false # 是否使用连续作战
@@ -161,7 +161,7 @@ thread_day_7: 1
 
 # 是否自动获取奖励
 get_reward: false # 是否进行获取奖励
-set_get_prize: 0 # 0 领取邮件和通行证日常与周常，1 只领取通行证日常与周常， 2 只领取邮件
+set_get_prize: 1 # 0 领取邮件和通行证日常与周常，1 只领取通行证日常与周常， 2 只领取邮件
 
 # 是否自动购买体力
 buy_enkephalin: false # 是否自动购买体力
@@ -170,65 +170,84 @@ Dr_Grandet_mode: false
 skip_enkephalin: false # 跳过换体
 
 # 是否进行自动镜牢
-mirror: false # 是否进行自动镜牢
+mirror: true  # 是否进行自动镜牢
 set_mirror_count: 1 # 镜牢的次数
 hard_mirror: false # 进行困难镜牢
 no_weekly_bonuses: false # 不使用每周加成
-infinite_dungeons: false # 无限刷牢
+infinite_dungeons: true  # 无限刷牢
 save_rewards: false # 保存奖励不领
 hard_mirror_single_bonuses: false # 困难镜牢使用单次加成
 select_event_pack: false # 第五层选择（最左边）活动卡包
 skip_event_pack: false # 第五层跳过（最左边）活动卡包
 re_claim_rewards: false # 再次执行领取奖励任务
 not_skip_whitegossypium: false # 不跳过白棉花
-fight_to_last_man: false # 战斗直到全灭
-teams_be_select_num: 0 # 被选中的队伍数量
+fight_to_last_man: true  # 战斗直到全灭
+teams_be_select_num: 1 # 被选中的队伍数量
 teams_be_select:         # 被选中的队伍
-- false
+- true
 teams_order:     # 队伍的顺序
-- 0
+- 1
 mirror_keyboard_navigation: false # 使用键盘进行镜牢寻路
 mirror_lower_chain: false # 旧版本兼容字段，已停用；守备/EGO本回合触发时自动下排连线
-battle_speed_hold: false # 暂停按钮或EGO动画信号任一触发长按，单次最多30秒
+battle_speed_hold: true  # 暂停按钮或EGO动画信号任一触发长按，单次最多30秒
 mirror_keyboard_simple_pathfinding: false # 简单键盘寻路（始终按↑，避免鼠标拖动）
 
 # 队伍设置
-teams_active_queue: [] # 镜牢启用队伍的执行队列（单一事实源）
+teams_active_queue:    # 镜牢启用队伍的执行队列（单一事实源）
+- 1
 teams:
   '1':
     rabbit_lower_chain: false
-    rabbit_ego_enabled: false
-    rabbit_ego_rules: []
+    rabbit_ego_enabled: true
+    rabbit_ego_rules:
+    - enabled: true
+      turn: 1
+      name: 空洞(le trou)
+      mode: 1
     rabbit_ego_turn: 1
     rabbit_ego_name: ''
     rabbit_ego_mode: 1
-    gift_lock_enabled: false
-    gift_lock_images: []
-    mirror_floor_limit: 5
-    stop_fusion_on_failure: false
-    battle_retry_limit_enabled: false
+    gift_lock_enabled: true
+    gift_lock_images:
+    - assets/user/gift_protection/0e1513b6f388d09a89b0_屏幕截图 2026-10-20 
+      182127.png
+    - assets/user/gift_protection/df7d24fadfac20af43c3_屏幕截图 2026-10-21 
+      182219.png
+    mirror_floor_limit: 3
+    stop_fusion_on_failure: true
+    battle_retry_limit_enabled: true
     battle_max_attempts: 4
-    route_weights_enabled: false
+    route_weights_enabled: true
     route_node_weights:
       battle: 4
       boss_battle: 6
       event: 1
       focused_encounter: 6
-      risky_encounter: 7
+      risky_encounter: 999
       shop: 2
-      abnormality_focused_encounter: 6
-    rabbit_event_exclusion_enabled: false
-    rabbit_event_excluded: []
-    rabbit_observe_enabled: false
-    rabbit_observe_rules: []
+      abnormality_focused_encounter: 999
+    rabbit_event_exclusion_enabled: true
+    rabbit_event_excluded:
+    - 1
+    rabbit_observe_enabled: true
+    rabbit_observe_rules:
+    - - 1
+      - 1
+      - 3
+    - - 2
+      - 2
+      - 2
+    - - 3
+      - 2
+      - 5
     rabbit_animation_hold: false
-    team_system: 0
-    team_number: 1
-    shop_strategy: 0
-    sinners_be_select: 0
+    team_system: 4
+    team_number: 22
+    shop_strategy: 2
+    sinners_be_select: 1
     chosen_sinners:
     - 0
-    - 0
+    - 1
     - 0
     - 0
     - 0
@@ -241,6 +260,7 @@ teams:
     - 0
     sinner_order:
     - 0
+    - 1
     - 0
     - 0
     - 0
@@ -251,24 +271,23 @@ teams:
     - 0
     - 0
     - 0
-    - 0
-    system_burn: false
-    system_bleed: false
-    system_tremor: false
-    system_rupture: false
+    system_burn: true
+    system_bleed: true
+    system_tremor: true
+    system_rupture: true
     system_poise: false
     system_sinking: false
-    system_charge: false
-    system_slash: false
+    system_charge: true
+    system_slash: true
     system_pierce: false
-    system_blunt: false
-    do_not_heal: false
+    system_blunt: true
+    do_not_heal: true
     do_not_buy: false
     do_not_fuse: false
-    do_not_sell: false
+    do_not_sell: true
     do_not_enhance: false
     only_aggressive_fuse: false
-    do_not_system_fuse: false
+    do_not_system_fuse: true
     only_system_fuse: false
     avoid_skill_3: false
     prioritize_skill_3: false
@@ -280,51 +299,53 @@ teams:
     defense_first_round: false
     defense_for_solo: false
     defense_for_solo_turns: 5
-    fixed_team_use: false
-    fixed_team_use_select: 0
-    reward_cards: false
+    fixed_team_use: true
+    fixed_team_use_select: 1
+    reward_cards: true
     reward_cards_select: 0
     opening_bonus:
     - 1
+    - 0
     - 1
-    - 1
-    - 1
     - 0
     - 0
     - 0
     - 0
     - 0
     - 0
-    after_level_IV: false
-    after_level_IV_select: 0
+    - 0
+    after_level_IV: true
+    after_level_IV_select: 2
     shopping_strategy: false
-    shopping_strategy_select: 0
-    opening_items: false
+    shopping_strategy_select: 1
+    opening_items: true
     opening_items_select: 0
-    opening_items_system: 0
+    opening_items_system: 4
     second_system: false
-    second_system_select: 0
-    second_system_setting: 0
+    second_system_select: 5
+    second_system_setting: 1
     second_system_action:
     - 0
     - 0
     - 0
     - 0
-    observe_ego_gift: false
-    observe_ego_gift_selected: []
+    observe_ego_gift: true
+    observe_ego_gift_selected:
+    - general_3_1_7
+    - general_3_3_3
     skill_replacement: false
     skill_replacement_select: 0
     skill_replacement_mode: 0
     ignore_shop:
+    - 1
+    - 0
+    - 1
     - 0
     - 0
-    - 0
-    - 0
-    - 0
-    max_keyword_refresh: 1
-    max_normal_refresh: 1
-    remark_name:
-    use_custom_theme_pack_weight: false
+    max_keyword_refresh: 0
+    max_normal_refresh: 4
+    remark_name: 3层兔子洞(示例)
+    use_custom_theme_pack_weight: true
     use_team_code: false
     team_code: ''
     total_mirror_time_hard: []
