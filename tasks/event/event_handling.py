@@ -21,12 +21,21 @@ class EventHandling:
     def __init__(self):
         self.last_action_time = float("-inf")
         self.fallback_offset = 0
+        self.reset_exclusion_attempts()
+
+    def reset_exclusion_attempts(self):
+        """Call at an event boundary; excluded-mode retries are bounded per check."""
+        self.exclusion_exhausted = False
+        self._exclusion_key = None
+        self._exclusion_attempted = set()
 
     def _can_retry(self, now: float) -> bool:
         return now - self.last_action_time >= self.ACTION_RETRY_INTERVAL
 
-    def decision_event_handling(self) -> bool:
+    def decision_event_handling(self, excluded_sinners=()) -> bool:
         """选择成功率最高的罪人；模板和 OCR 都失败时仍能安全轮换兜底。"""
+        if excluded_sinners:
+            return self._decision_excluding(excluded_sinners, include_templates=True)
         now = time.monotonic()
         if not self._can_retry(now):
             return False
@@ -42,7 +51,9 @@ class EventHandling:
 
         return self.decision_event_handling_ocr(now=now)
 
-    def decision_event_handling_ocr(self, now: float | None = None) -> bool:
+    def decision_event_handling_ocr(self, now: float | None = None, excluded_sinners=()) -> bool:
+        if excluded_sinners:
+            return self._decision_excluding(excluded_sinners, now=now, include_templates=False)
         now = time.monotonic() if now is None else now
         if not self._can_retry(now):
             return False
@@ -70,6 +81,78 @@ class EventHandling:
         auto.mouse_click(target_sinner[0], target_sinner[1])
         self.last_action_time = now
         self.fallback_offset = (self.fallback_offset + 1) % self.SINNER_COUNT
+        return True
+
+    def _event_sinner_index(self, position):
+        """Event cards use the original horizontal twelve-sinner order."""
+        scale = cfg.set_win_size / 1440
+        index = round((position[0] / scale - 150) / 140)
+        if not 0 <= index < self.SINNER_COUNT:
+            return None
+        if abs(position[0] - (150 + 140 * index) * scale) > 70 * scale:
+            return None
+        return index
+
+    def _decision_excluding(self, excluded_sinners, now=None, include_templates=True):
+        now = time.monotonic() if now is None else now
+        if not self._can_retry(now):
+            return False
+        # Invalid twelve-person exclusion is treated as no eligible participant,
+        # rather than silently permitting one of the explicitly excluded sinners.
+        excluded = frozenset(
+            index for index in excluded_sinners
+            if isinstance(index, int) and not isinstance(index, bool) and 0 <= index < self.SINNER_COUNT
+        )
+        if excluded != self._exclusion_key:
+            self.reset_exclusion_attempts()
+            self._exclusion_key = excluded
+        eligible = set(range(self.SINNER_COUNT)) - excluded - self._exclusion_attempted
+        if not eligible:
+            self.exclusion_exhausted = True
+            log.warning("事件排除：所有允许参与的罪人均已尝试，不再点击罪人")
+            return False
+
+        scale = cfg.set_win_size / 1440
+        crop = (0, 0, int(1830 * scale), int(1440 * scale))
+        choice = None
+        if include_templates:
+            for asset in self.SUCCESS_LEVEL_ASSETS:
+                positions = auto.find_element(
+                    asset, threshold=self.SUCCESS_LEVEL_THRESHOLD,
+                    find_type="image_with_multiple_targets", my_crop=crop,
+                ) or []
+                candidates = sorted(
+                    index for position in positions
+                    if (index := self._event_sinner_index(position)) in eligible
+                )
+                if candidates:
+                    choice = candidates[0]
+                    break
+        if choice is None:
+            try:
+                # Position-based OCR avoids interpreting a missing/excluded card
+                # as a shift in the original twelve-sinner index order.
+                recognized = auto._run_ocr_for_text(my_crop=crop) or {}
+                scores = []
+                for text, position in recognized.items():
+                    absolute = (position[0] + crop[0], position[1] + crop[1])
+                    index = self._event_sinner_index(absolute)
+                    if index not in eligible:
+                        continue
+                    levels = extract_levels([text])
+                    for rank, level in enumerate(self.SUCCESS_LEVEL_PRIORITY):
+                        if level in levels:
+                            scores.append((rank, index))
+                            break
+                if scores:
+                    choice = min(scores)[1]
+            except Exception as error:
+                log.debug(f"事件排除：成功率文字识别失败，使用有限轮换：{error}")
+        if choice is None:
+            choice = min(eligible)
+        self._exclusion_attempted.add(choice)
+        auto.mouse_click((150 + 140 * choice) * scale, 1300 * scale)
+        self.last_action_time = now
         return True
 
 

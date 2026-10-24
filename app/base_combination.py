@@ -58,6 +58,7 @@ from app.card.messagebox_custom import (
     MessageBoxSpinbox,
 )
 from app.language_manager import LanguageManager
+from app.common.hover_notes import set_hover_note
 from app.observe_ego_gift_selection import (
     OBSERVE_COL_VALUES,
     OBSERVE_LEVEL_VALUES,
@@ -178,6 +179,7 @@ class LabelWithComboBox(QFrame):
 
         if tips:
             self.setToolTip(tips)
+            set_hover_note(self.label.label, "explanation", tips)
             self.installEventFilter(ToolTipFilter(self))
 
     def add_items(self, items):
@@ -186,6 +188,8 @@ class LabelWithComboBox(QFrame):
     def retranslateUi(self):
         self.label.label.setText(self.tr(self.text))
         self.combo_box.retranslateUi()
+        if self.toolTip():
+            set_hover_note(self.label.label, "explanation", self.tr(self.toolTip()))
 
 
 class LabelWithSpinBox(QFrame):
@@ -213,10 +217,14 @@ class LabelWithSpinBox(QFrame):
 
         if tips:
             self.setToolTip(tips)
+            set_hover_note(self.label.label, "explanation", tips)
             self.installEventFilter(ToolTipFilter(self))
 
     def retranslateUi(self):
         self.label.label.setText(self.tr(self.text))
+        if self.tips:
+            self.setToolTip(self.tr(self.tips))
+            set_hover_note(self.label.label, "explanation", self.tr(self.tips))
         if self.tips:
             self.setToolTip(self.tr(self.tips))
 
