@@ -1,5 +1,6 @@
 import random
-from time import sleep, time
+from threading import RLock, Timer
+from time import monotonic, sleep, time
 from typing import overload
 
 import pyautogui
@@ -103,6 +104,8 @@ class WinAbstractInput(AbstractInput):
 
     def __init__(self) -> None:
         super().__init__()
+        self._hold_lock = RLock()
+        self._hold_timer = None
         self.use_post_message = cfg.config.use_post_message
 
     def get_mouse_position(self) -> tuple[int, int]:
@@ -116,6 +119,100 @@ class WinAbstractInput(AbstractInput):
         except PyWinTypesError:
             log.debug("获取鼠标位置失败（可能锁屏），返回 (0, 0)")
             return (0, 0)
+
+    def mouse_hold(self, x, y, duration=0.8) -> None:
+        duration = max(0.05, min(float(duration), 2.0))
+        try:
+            self.mouse_begin_hold(x, y)
+            deadline = time() + duration
+            while time() < deadline and not self.is_pause:
+                sleep(0.03)
+        finally:
+            self.release_active_hold()
+
+    def mouse_begin_hold(self, x, y, max_duration=None) -> None:
+        self.wait_pause()
+        with self._hold_lock:
+            if self.has_active_hold():
+                return
+            deadline = monotonic() + min(30, max(0.05, float(max_duration))) if max_duration is not None else None
+            self._mouse_begin_hold(x, y)
+            if deadline is not None:
+                timer = Timer(max(0, deadline - monotonic()), self._expire_active_hold, args=(self._active_hold,))
+                timer.daemon = True
+                self._hold_timer = timer
+                timer.start()
+
+    def _expire_active_hold(self, token):
+        with self._hold_lock:
+            if token is not None and getattr(self, "_active_hold", None) is token:
+                self._release_active_hold_unlocked()
+                log.debug("持续长按达到30秒上限，独立计时器已释放；继续流程，不抛出异常")
+
+    def _mouse_begin_hold(self, x, y) -> None:
+        if self.has_active_hold():
+            return
+        window_pos = None
+        foreground = isinstance(self, Input)
+        try:
+            if foreground:
+                px, py = self.pos_offset(x, y)
+                pyautogui.moveTo(px, py)
+                self._active_hold = (x, y, True, None)
+                pyautogui.mouseDown()
+            else:
+                if isinstance(self, WindowMoveInput):
+                    window_pos = self._set_window_pos(x, y)
+                else:
+                    self.set_mouse_pos(x, y)
+                self.set_active()
+                self._active_hold = (x, y, False, window_pos)
+                hwnd = screen.handle.hwnd
+                position = win32api.MAKELONG(int(x), int(y))
+                sender = win32api.PostMessage if self.use_post_message else win32api.SendMessage
+                sender(hwnd, win32con.WM_LBUTTONDOWN, win32con.MK_LBUTTON, position)
+            log.debug(f"持续长按开始：({int(x)},{int(y)})，输入方式 {type(self).__name__}")
+        except BaseException:
+            self.release_active_hold()
+            raise
+
+    def mouse_keep_hold(self) -> None:
+        with self._hold_lock:
+            held = getattr(self, "_active_hold", None)
+            if held is None or held[2]:
+                return
+            x, y, _, _ = held
+            hwnd = screen.handle.hwnd
+            if hwnd:
+                position = win32api.MAKELONG(int(x), int(y))
+                if self.use_post_message:
+                    win32api.PostMessage(hwnd, win32con.WM_MOUSEMOVE, win32con.MK_LBUTTON, position)
+                else:
+                    win32api.SendMessage(hwnd, win32con.WM_MOUSEMOVE, win32con.MK_LBUTTON, position)
+
+    def release_active_hold(self) -> None:
+        with self._hold_lock:
+            self._release_active_hold_unlocked()
+
+    def _release_active_hold_unlocked(self) -> None:
+        timer = getattr(self, "_hold_timer", None)
+        self._hold_timer = None
+        if timer is not None:
+            timer.cancel()
+        held = getattr(self, "_active_hold", None)
+        self._active_hold = None
+        if held is None:
+            return
+        x, y, foreground, window_pos = held
+        log.debug(f"持续长按释放：({int(x)},{int(y)})")
+        try:
+            if foreground:
+                pyautogui.mouseUp()
+            else:
+                self.mouse_up(x, y)
+        finally:
+            if window_pos is not None:
+                screen.handle.set_window_pos(*window_pos)
 
     @staticmethod
     def _make_key_lparam(vk: int, key_up: bool = False) -> int:

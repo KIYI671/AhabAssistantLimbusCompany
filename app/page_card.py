@@ -37,7 +37,7 @@ from app.base_combination import (
     MirrorTeamCombination,
     TextProgressBar,
 )
-from app.base_tools import BaseCheckBox
+from app.base_tools import BaseCheckBox, BaseLabel
 from app.common.ui_config import get_theme_aware_text_browser_qss
 from app.language_manager import LanguageManager
 from app.widget.custom_segmented_widget import CustomSegmentedWidget
@@ -134,11 +134,15 @@ class PageSetWindows(PageCard):
             QT_TRANSLATE_NOOP("LabelWithSpinBox", "截图间隔"),
             "screenshot_interval",
             double=True,
+            min_value=0,
+            tips=QT_TRANSLATE_NOOP("LabelWithSpinBox", "原版业务截图的最小间隔，单位秒；已过去的识别时间计入等待。0沿用原版0.85秒回退。截图性能测试不含此间隔，监控截图使用独立缓存路径。"),
         )
         self.mouse_action_interval = LabelWithSpinBox(
             QT_TRANSLATE_NOOP("LabelWithSpinBox", "鼠标活动间隔"),
             "mouse_action_interval",
             double=True,
+            min_value=0,
+            tips=QT_TRANSLATE_NOOP("LabelWithSpinBox", "原版识图后操作入口的最小间隔，单位秒；0沿用原版0.5秒回退。直接按键、点击与拖动不共用全局时钟；手势时长、EGO长按及特殊流程的稳定等待单独保留。"),
         )
         self.mouse_down_duration = LabelWithSpinBox(
             QT_TRANSLATE_NOOP("LabelWithSpinBox", "鼠标按下持续时间"),
@@ -437,11 +441,17 @@ class PageMirror(PageCard):
             ),
             temporary=True,
         )
-        self.floor_3_exit = BaseCheckBox(
-            "floor_3_exit",
+        self.battle_speed_hold = BaseCheckBox(
+            "battle_speed_hold",
             None,
-            QT_TRANSLATE_NOOP("BaseCheckBox", "只打三层"),
+            QT_TRANSLATE_NOOP("BaseCheckBox", "长按加速"),
             center=False,
+            tips=QT_TRANSLATE_NOOP("BaseCheckBox", "交战／EGO动画加速，单次最多30秒。检测到暂停按钮或EGO动画信号中的一种即长按屏幕中央；结算、奖励或停止时释放。*可能影响前台程序运行"),
+        )
+        self.disable_mirror_rewards = BaseCheckBox(
+            "disable_mirror_rewards", None,
+            QT_TRANSLATE_NOOP("BaseCheckBox", "禁止领取所有奖励"), center=False,
+            tips=QT_TRANSLATE_NOOP("BaseCheckBox", "默认关闭。启用后所有镜牢结算均自动放弃奖励并继续下一局；不消耗结算模块或周常加成。数据直接使用原版队伍次数和耗时统计，沿用原版完整五层统计口径；不另建数据文件。优先于保存困牢奖励等领奖设置。"),
         )
         self.infinite_dungeons = BaseCheckBox(
             "infinite_dungeons",
@@ -523,7 +533,8 @@ class PageMirror(PageCard):
 
         self.vbox_advanced.addWidget(self.hard_mirror)
         self.vbox_advanced.addWidget(self.no_weekly_bonuses)
-        self.vbox_advanced.addWidget(self.floor_3_exit)
+        self.vbox_advanced.addWidget(self.battle_speed_hold)
+        self.vbox_advanced.addWidget(self.disable_mirror_rewards)
         self.vbox_advanced.addWidget(self.infinite_dungeons)
         self.vbox_advanced.addWidget(self.save_rewards)
         self.vbox_advanced.addWidget(self.hard_mirror_single_bonuses)
@@ -800,7 +811,8 @@ class PageMirror(PageCard):
         self.mirror_count.retranslateUi()
         self.hard_mirror.retranslateUi()
         self.no_weekly_bonuses.retranslateUi()
-        self.floor_3_exit.retranslateUi()
+        self.battle_speed_hold.retranslateUi()
+        self.disable_mirror_rewards.retranslateUi()
         self.infinite_dungeons.retranslateUi()
         self.save_rewards.retranslateUi()
         self.hard_mirror_single_bonuses.retranslateUi()

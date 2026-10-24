@@ -1,10 +1,123 @@
 from typing import List, Optional
 
-from pydantic import BaseModel, field_validator
+from pydantic import BaseModel, Field, field_validator, model_validator
+
+from utils.route_weights import DEFAULT_ROUTE_WEIGHTS, validated_route_weights
+
+
+class EgoReleaseRule(BaseModel):
+    """按列表优先级，在指定 TURN 尝试的 EGO 配置。"""
+
+    enabled: bool = True
+    turn: int = Field(default=1, ge=1, le=99)
+    name: str = ""
+    mode: int = Field(default=1, ge=0, le=1)
 
 
 class TeamSetting(BaseModel):
     """单个队伍设置"""
+
+    rabbit_lower_chain: bool = False
+    """旧配置兼容字段，不再单独启用下排连线"""
+
+    rabbit_ego_enabled: bool = False
+    rabbit_ego_rules: List[EgoReleaseRule] = Field(default_factory=list)
+    """同 TURN 按列表顺序选首个可用 EGO，后续条目作为备用"""
+
+    # Keep the single-rule values readable for older configuration files.
+    rabbit_ego_turn: int = Field(default=1, ge=1, le=99)
+    rabbit_ego_name: str = ""
+    rabbit_ego_mode: int = Field(default=1, ge=0, le=1)
+    """指定 TURN 尝试一次 EGO，0 觉醒、1 侵蚀；名称为游戏完整文本"""
+
+    gift_lock_enabled: bool = False
+    gift_lock_images: List[str] = Field(default_factory=list)
+    mirror_floor_limit: int = Field(default=5, ge=1, le=5)
+    stop_fusion_on_failure: bool = False
+    battle_retry_limit_enabled: bool = False
+    battle_max_attempts: int = Field(default=4, ge=1, le=20)
+
+    route_weights_enabled: bool = False
+    route_node_weights: dict[str, int] = Field(default_factory=lambda: dict(DEFAULT_ROUTE_WEIGHTS))
+
+    @field_validator("route_node_weights", mode="before")
+    @classmethod
+    def _validate_route_weights(cls, values):
+        return validated_route_weights(values)
+
+    rabbit_event_exclusion_enabled: bool = False
+    rabbit_event_excluded: List[int] = Field(default_factory=list, max_length=11)
+    """不参与事件的罪人，使用 0..11 的原版罪人顺序"""
+
+    rabbit_observe_enabled: bool = False
+    rabbit_observe_rules: List[List[int]] = Field(default_factory=list)
+    """实验性卡包观测规则，每项为 [楼层, 行, 列]"""
+
+    rabbit_animation_hold: bool = False
+
+    @model_validator(mode="before")
+    @classmethod
+    def _migrate_floor_limit(cls, values):
+        if isinstance(values, dict):
+            values = dict(values)
+            if "mirror_floor_limit" not in values and "floor_3_exit" in values:
+                values["mirror_floor_limit"] = 3 if values["floor_3_exit"] else 5
+            values.pop("floor_3_exit", None)
+        return values
+
+    @model_validator(mode="before")
+    @classmethod
+    def _migrate_gift_lock(cls, values):
+        if isinstance(values, dict):
+            values = dict(values)
+            if "gift_lock_enabled" not in values:
+                values["gift_lock_enabled"] = bool(values.get("protect_gift_images", False)
+                                                   or values.get("specify_gift_images", False))
+            if "gift_lock_images" not in values:
+                values["gift_lock_images"] = list(dict.fromkeys(
+                    list(values.get("protected_gift_images") or [])
+                    + list(values.get("specified_gift_images") or [])
+                ))
+        return values
+
+    @model_validator(mode="before")
+    @classmethod
+    def _migrate_single_ego_rule(cls, values):
+        if isinstance(values, dict) and "rabbit_ego_rules" not in values:
+            name = values.get("rabbit_ego_name", "")
+            if isinstance(name, str) and name.strip():
+                values = dict(values)
+                values["rabbit_ego_rules"] = [{
+                    "enabled": True,
+                    "turn": values.get("rabbit_ego_turn", 1),
+                    "name": name,
+                    "mode": values.get("rabbit_ego_mode", 1),
+                }]
+        return values
+
+    @field_validator("rabbit_event_excluded")
+    @classmethod
+    def _validate_event_excluded(cls, values: List[int]) -> List[int]:
+        if any(value < 0 or value > 11 for value in values):
+            raise ValueError("事件排除罪人编号必须在 0 到 11 之间")
+        if len(values) != len(set(values)):
+            raise ValueError("事件排除罪人不能重复")
+        return values
+
+    @field_validator("rabbit_observe_rules")
+    @classmethod
+    def _validate_observe_rules(cls, rules: List[List[int]]) -> List[List[int]]:
+        floors = set()
+        for rule in rules:
+            if len(rule) != 3:
+                raise ValueError("卡包观测规则必须包含楼层、行、列")
+            floor, row, column = rule
+            if not (1 <= floor <= 5 and 1 <= row <= 10 and 1 <= column <= 5):
+                raise ValueError("卡包观测规则超出楼层或行列范围")
+            if floor in floors:
+                raise ValueError("每个楼层只能设置一个观测目标")
+            floors.add(floor)
+        return rules
 
     team_system: int = 0
     """队伍使用的体系"""
@@ -203,6 +316,7 @@ class TeamSetting(BaseModel):
 
     mirror_normal_count: int = 0
     """普通镜牢次数"""
+
 
 class ConfigModel(BaseModel):
     """配置模型"""
@@ -498,9 +612,6 @@ class ConfigModel(BaseModel):
     no_weekly_bonuses: int | bool
     """不使用每周加成"""
 
-    floor_3_exit: bool
-    """只打三层"""
-
     infinite_dungeons: bool
     """无限刷牢"""
 
@@ -539,6 +650,16 @@ class ConfigModel(BaseModel):
 
     mirror_keyboard_navigation: bool
     """使用键盘进行镜牢寻路"""
+
+    mirror_lower_chain: bool
+    """所有镜牢编队在普通遭遇连接下排行动槽，日常战斗不受影响"""
+
+
+    battle_speed_hold: bool
+    """暂停按钮或动画信号任一触发长按加速，单次最多30秒"""
+
+    disable_mirror_rewards: bool
+    """所有镜牢结算放弃奖励，只记录运行数据"""
 
     mirror_keyboard_simple_pathfinding: bool
     """简单键盘寻路模式：始终按↑选择第一个节点，完全避免鼠标拖动"""

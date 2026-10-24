@@ -1,4 +1,5 @@
 config_version: 1781049600 # 配置文件版本号 (时间戳)
+disable_mirror_rewards: False # 开发者：放弃所有镜牢奖励，仅记录数据，默认关闭
 
 # 游戏设置
 game_title_name: LimbusCompany # 游戏窗口标题。
@@ -128,7 +129,6 @@ mirror: False # 是否进行自动镜牢
 set_mirror_count: 1 # 镜牢的次数
 hard_mirror: False # 进行困难镜牢
 no_weekly_bonuses: False # 不使用每周加成
-floor_3_exit: False # 只打三层
 infinite_dungeons: False # 无限刷牢
 save_rewards: False # 保存奖励不领
 hard_mirror_single_bonuses: False # 困难镜牢使用单次加成
@@ -141,6 +141,8 @@ teams_be_select_num: 0 # 被选中的队伍数量
 teams_be_select: [False] # 被选中的队伍
 teams_order: [0] # 队伍的顺序
 mirror_keyboard_navigation: False # 使用键盘进行镜牢寻路
+mirror_lower_chain: False # 旧版本兼容字段，已停用；守备/EGO本回合触发时自动下排连线
+battle_speed_hold: False # 暂停按钮或EGO动画信号任一触发长按，单次最多30秒
 mirror_keyboard_simple_pathfinding: False # 简单键盘寻路（始终按↑，避免鼠标拖动）
 
 # 队伍设置

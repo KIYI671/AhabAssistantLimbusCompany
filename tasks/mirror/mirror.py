@@ -21,9 +21,16 @@ from tasks.base.make_enkephalin_module import make_enkephalin_module
 from tasks.base.retry import retry
 from tasks.battle import battle
 from tasks.battle.battle import DefenseForSoloState
+from tasks.battle.optional_actions import BattleEventOutcome, BattleOptions, EgoRule, EgoAttemptState
 from tasks.event import event_handling
 from tasks.mirror.get_floor import get_floor
 from tasks.mirror.in_shop import Shop
+from tasks.mirror.observation_rules import reset_tab_indices, tab_positions, verify_count, verify_known_name
+from tasks.mirror.observation_failure import MirrorRunOutcome, ObservationCleanupError, exit_failed_observation
+from tasks.mirror.pack_observation import PackObservationFailed, selection_floor
+from tasks.mirror.settlement import ExplorationExit, settlement_wait
+from tasks.mirror.failure_policy import forfeit_failed_run
+from tasks.mirror.developer_rewards import reward_page_visible
 from tasks.mirror.reward_card import get_reward_card
 from tasks.mirror.search_road import (
     MirrorMap,
@@ -56,6 +63,20 @@ class Mirror:
         self.system = all_systems[team_setting.team_system]  # 选择的体系
         self.avoid_skill_3 = team_setting.avoid_skill_3  # 是否避免使用3技能
         self.prioritize_skill_3 = team_setting.prioritize_skill_3  # 是否优先使用3技能
+        self.rabbit_options = BattleOptions(
+            ego_enabled=team_setting.rabbit_ego_enabled,
+            ego_rules=tuple(EgoRule(rule.turn, rule.name, rule.mode, rule.enabled)
+                            for rule in team_setting.rabbit_ego_rules),
+        )
+        self.speed_hold = cfg.battle_speed_hold
+        self.mirror_floor_limit = team_setting.mirror_floor_limit
+        self.floor_limit_exit = False
+        self.route_node_weights = team_setting.route_node_weights if team_setting.route_weights_enabled else None
+        self.event_excluded_sinners = tuple(team_setting.rabbit_event_excluded) if team_setting.rabbit_event_exclusion_enabled else ()
+        self.observation_rules = team_setting.rabbit_observe_rules if team_setting.rabbit_observe_enabled else None
+        self.observation_forfeit = False
+        self.battle_max_attempts = team_setting.battle_max_attempts if team_setting.battle_retry_limit_enabled else None
+        self.rabbit_turn_attempts = EgoAttemptState()
         # 开局星光加成
         self.opening_bonus = team_setting.opening_bonus
         self.use_starlight = team_setting.use_starlight
@@ -101,7 +122,8 @@ class Mirror:
         self.floor_detect_failed = False  # 本层楼层识别已失败，进入新的层前不再重试，避免持续失败带来的卡死
         self.LOOP_COUNT = 250
 
-        self.mirror_map = MirrorMap(hard_mode=self.hard_mode)
+        self.mirror_map = (MirrorMap(hard_mode=self.hard_mode, node_weights=self.route_node_weights)
+                           if self.route_node_weights is not None else MirrorMap(hard_mode=self.hard_mode))
 
         self.pass_coins = None
 
@@ -113,6 +135,33 @@ class Mirror:
         result = fn(*args, **kwargs)
         return result, time.time() - start
 
+    def _record_long_term_log(self, success, reason=""):
+        # The optional standalone tool may be removed without changing tasks.
+        try:
+            from mirror_run_log import record_result
+        except ImportError:
+            return False
+        return record_result(self, success, reason)
+
+    def record_developer_result(self, reason):
+        self._record_run_statistics(self.start_time, count_complete=reason in {"completed", "floor_limit", "run_finished"})
+        success = (True if reason in {"completed", "floor_limit"} else
+                   False if reason in {"observation_failed", "attempts_exhausted", "unfinished_settlement"} else None)
+        descriptions = {"observation_failed": "主题卡包观测失败，已放弃本局及奖励",
+                        "attempts_exhausted": "战败尝试次数耗尽，已放弃本局及奖励",
+                        "unfinished_settlement": "未完成镜牢，按设置放弃奖励",
+                        "previous_settlement": "接续上一局结算，计时不完整",
+                        "floor_limit": "已完成设置层数，按设置放弃奖励",
+                        "completed": "已完成，按设置放弃奖励",
+                        "run_finished": "本局已结束，按设置放弃奖励"}
+        self._record_long_term_log(success, descriptions.get(reason, reason))
+        log.info(f"镜牢已按设置放弃奖励，使用原版队伍统计：{reason}")
+        return MirrorRunOutcome.DEVELOPER_NO_REWARDS
+
+    def _complete_without_rewards(self, reason):
+        forfeit_failed_run(auto, log, running=lambda: battle.running, already_exited=True, config=cfg)
+        return self.record_developer_result(reason)
+
     def _log_floor_time(self, end_time, floor):
         """输出当前楼层的耗时"""
         if self.current_floor_start_time is None:
@@ -123,14 +172,28 @@ class Mirror:
         to_log_with_time(msg, end_time - self.current_floor_start_time)
 
     def _fight(self) -> None:
-        _, elapsed = self._time_call(
+        optional = {}
+        if self.rabbit_options.ego_enabled:
+            optional["rabbit_options"] = self.rabbit_options
+        if self.rabbit_options.ego_enabled:
+            optional["ego_attempt_state"] = self.rabbit_turn_attempts
+        if self.speed_hold:
+            optional["speed_hold"] = True
+        if self.event_excluded_sinners:
+            optional["event_excluded_sinners"] = self.event_excluded_sinners
+        if getattr(self, "battle_max_attempts", None) is not None:
+            optional["max_attempts"] = self.battle_max_attempts
+        result, elapsed = self._time_call(
             battle.fight,
             avoid_skill_3=self.avoid_skill_3,
             prioritize_skill_3=self.prioritize_skill_3,
             defense_first_round=self.defense_first_round,
             defense_for_solo_state=self.defense_for_solo_state,
+            **optional,
         )
         self.battle_total_time += elapsed
+        if result is BattleEventOutcome.EXCLUDED_EXHAUSTED:
+            self.event_handling(force_failure=True)
 
     def _enter_hard_mode_if_needed(self):
         if self.normal_to_hard_floor > 0 and self.floor >= self.normal_to_hard_floor:
@@ -150,6 +213,9 @@ class Mirror:
             auto.mouse_to_blank()
             if retry() is False:
                 return False
+            if getattr(cfg, "disable_mirror_rewards", False) and reward_page_visible(auto):
+                self.bequest_from_the_previous_game = True
+                return True
             if auto.find_element("home/first_prompt_assets.png", model="clam") and auto.find_element(
                 "home/back_assets.png", model="normal"
             ):
@@ -246,17 +312,25 @@ class Mirror:
 
             retry()
 
-            if cfg.floor_3_exit and self.floor >= 4:
-                if auto.click_element("mirror/road_in_mir/towindow&forfeit_confirm_assets.png"):
+            if getattr(cfg, "disable_mirror_rewards", False) and reward_page_visible(auto):
+                reason = ("observation_failed" if self.observation_forfeit else
+                          "floor_limit" if self.floor_limit_exit else
+                          "previous_settlement" if self.bequest_from_the_previous_game else
+                          "completed" if auto.find_element("mirror/claim_reward/complete_mirror_100%_assets.png")
+                          else "unfinished_settlement")
+                return self._complete_without_rewards(reason)
+
+            if self.floor >= self.mirror_floor_limit + 1:
+                self.floor_limit_exit = True
+                if not hasattr(self, "_exploration_exit"):
+                    self._exploration_exit = ExplorationExit()
+                if self._exploration_exit.advance(auto, cfg, pause=sleep):
                     break
-                if auto.click_element("mirror/road_in_mir/forfeit_assets.png"):
-                    continue
-                if auto.click_element("mirror/road_in_mir/setting_assets.png"):
-                    continue
+                continue
 
             # 镜牢结束领取奖励
             if auto.find_element("mirror/claim_reward/battle_statistics_assets.png"):
-                if auto.click_element("mirror/claim_reward/claim_rewards_assets.png") is False:
+                if auto.click_element("mirror/claim_reward/claim_rewards_assets.png", offset=False) is False:
                     claim_rewards_bbox = ImageUtils.get_bbox(
                         ImageUtils.load_image("mirror/claim_reward/claim_rewards_assets.png")
                     )
@@ -264,6 +338,7 @@ class Mirror:
                         (claim_rewards_bbox[0] + claim_rewards_bbox[2]) / 2,
                         (claim_rewards_bbox[1] + claim_rewards_bbox[3]) / 2,
                     )
+                sleep(settlement_wait(cfg))
                 break
             if auto.find_element("mirror/claim_reward/claim_rewards_assets.png") and auto.find_element(
                 "mirror/claim_reward/complete_mirror_100%_assets.png"
@@ -285,15 +360,37 @@ class Mirror:
             if auto.find_element("mirror/theme_pack/feature_theme_pack_assets.png"):
                 new_floor = not theme_pack_active or preparing
                 if new_floor:
-                    sleep(2)  # 等待主题包页面加载完成再打开楼层设置
+                    sleep(2)
                     previous_floor = self.floor
-                    self.floor = get_floor(self.floor, "mirror/theme_pack/theme_pack_setting_assets.png")
+                    visible_floor = None
+                    if self.observation_rules:
+                        width, height = auto.screenshot.size
+                        visible_floor = selection_floor(auto._run_ocr_for_text(
+                            my_crop=(0, 0, width, int(height * 0.26)), only_text=True,
+                        ))
+                    self.floor = visible_floor if visible_floor is not None else get_floor(
+                        self.floor, "mirror/theme_pack/theme_pack_setting_assets.png")
                     self.floor_detect_failed = self.floor == 0
                     self.mirror_map.refresh_floor(self.floor, reset=True)
+                    if self.floor >= self.mirror_floor_limit + 1:
+                        self.floor_limit_exit = True
+                        continue
                     if self.floor > 0:
                         self._enter_hard_mode_if_needed()
                         switch_theme_pack_difficulty(self.hard_mode)
-                select_theme_pack(self.hard_mode, self.floor, self.team_order, self.use_custom_theme_pack_weight)
+                try:
+                    if self.observation_rules:
+                        select_theme_pack(self.hard_mode, self.floor, self.team_order,
+                                          self.use_custom_theme_pack_weight, observation_rules=self.observation_rules)
+                    else:
+                        select_theme_pack(self.hard_mode, self.floor, self.team_order, self.use_custom_theme_pack_weight)
+                except PackObservationFailed as error:
+                    if not error.cancelled:
+                        raise ObservationCleanupError("观测取消未确认，保留现场，不扣次数") from error
+                    log.warning(f"观测确认无效，进入原版退出探索及放弃奖励流程：{error}")
+                    self.observation_forfeit = True
+                    exit_failed_observation(auto, log)
+                    break
                 if self.re_formation_each_floor:
                     self.first_battle = True
                 if new_floor:
@@ -340,7 +437,8 @@ class Mirror:
                     self.floor_detect_failed = self.floor == 0
                     self.mirror_map.refresh_floor(self.floor)
 
-                if cfg.floor_3_exit and self.floor >= 4:
+                if self.floor >= self.mirror_floor_limit + 1:
+                    self.floor_limit_exit = True
                     continue
 
                 while auto.take_screenshot() is None:
@@ -363,7 +461,7 @@ class Mirror:
 
             if battle.fail_times >= 5:
                 battle.fail_times = 0
-                self.re_start()
+                self.re_start(reason="战败重试达到原版上限，放弃并重开")
                 preparing = True
                 continue
 
@@ -391,11 +489,12 @@ class Mirror:
                     continue_mirror = check_team()
                     # 如果还有至少5人能战斗就继续，不然就退出重开
                     if continue_mirror is False and self.first_battle is False:
-                        self.re_start()
+                        self.re_start(reason="可战斗罪人不足，放弃并重开")
                         preparing = True
                 if auto.click_element("battle/chaim_to_battle_assets.png") or auto.click_element(
                     "battle/normal_to_battle_assets.png"
                 ):
+                    self.rabbit_turn_attempts.clear()
                     retry()
                     continue
 
@@ -536,13 +635,27 @@ class Mirror:
         msg = "开始进行镜牢奖励领取"
         log.info(msg)
 
+        if getattr(cfg, "disable_mirror_rewards", False):
+            reason = ("observation_failed" if self.observation_forfeit else
+                      "floor_limit" if self.floor_limit_exit else
+                      "previous_settlement" if self.bequest_from_the_previous_game else "run_finished")
+            return self._complete_without_rewards(reason)
+
         if self.bequest_from_the_previous_game:
-            self.get_reward_in_road()
+            result = self.get_reward_in_road()
+            if result is MirrorRunOutcome.DEVELOPER_NO_REWARDS:
+                return result
 
         main_loop_count = 20
         auto.model = "clam"
-        failed = None
+        failed = True if self.observation_forfeit else None
+        reward_forfeited = False
+        reward_choice_opened = False
+        settlement_steps = 0
         while not self.bequest_from_the_previous_game:
+            settlement_steps += 1
+            if settlement_steps > 90:
+                raise cannotOperateGameError("镜牢结算未确认，停止重复点击并保留现场")
             # 自动截图
             if auto.take_screenshot() is None:
                 auto.mouse_to_blank()
@@ -552,40 +665,57 @@ class Mirror:
             if (
                 not auto.find_element("mirror/claim_reward/complete_mirror_100%_assets.png")
                 and failed is None
-                and cfg.floor_3_exit is False
+                and not self.floor_limit_exit
+                and not self.observation_forfeit
             ):
                 failed = True
-            if auto.find_element("mirror/claim_reward/complete_mirror_100%_assets.png") or auto.find_element(
-                "mirror/claim_reward/clear_assets.png"
+            if not self.observation_forfeit and (
+                auto.find_element("mirror/claim_reward/complete_mirror_100%_assets.png") or auto.find_element(
+                    "mirror/claim_reward/clear_assets.png"
+                )
             ):
                 failed = False
                 log.debug("镜牢完成度100%，能够正常领取奖励")
             # 如果回到主界面，退出循环
             if auto.find_element("home/drive_assets.png"):
+                if self.observation_forfeit and not reward_forfeited:
+                    raise RuntimeError("未核实放弃奖励，不扣次数")
                 break
-            if auto.click_element("battle/battle_finish_confirm_assets.png"):
+            if auto.click_element("battle/battle_finish_confirm_assets.png", offset=False):
+                sleep(settlement_wait(cfg))
                 continue
-            if auto.click_element("mirror/claim_reward/rewards_acquired_assets.png"):
+            if auto.click_element("mirror/claim_reward/rewards_acquired_assets.png", offset=False):
+                sleep(settlement_wait(cfg))
                 continue
-            if auto.click_element(
+            if (not failed or reward_forfeited) and auto.click_element(
                 "mirror/claim_reward/claim_rewards_confirm_assets.png",
                 threshold=0.75,
                 model="clam",
                 take_screenshot=True,
+                offset=False,
             ):
+                sleep(settlement_wait(cfg))
                 continue
             if failed:
-                auto.mouse_click_blank()
-                sleep(0.5)
+                if reward_forfeited:
+                    sleep(settlement_wait(cfg))
+                    continue
+                if not reward_choice_opened:
+                    auto.mouse_click_blank()
+                    sleep(settlement_wait(cfg))
                 complete_mirror_bbox = ImageUtils.get_bbox(
                     ImageUtils.load_image("mirror/claim_reward/complete_mirror_100%_assets.png")
                 )
-                if auto.find_text_element("100", complete_mirror_bbox):
+                if not self.observation_forfeit and auto.find_text_element("100", complete_mirror_bbox):
                     failed = False
                     continue
-                if auto.click_element("mirror/claim_reward/claim_rewards_assets.png"):
-                    sleep(1)
-                if auto.click_element("mirror/claim_reward/claim_forfeit_assets.png", model="normal", take_screenshot=True):
+                if not reward_choice_opened and auto.click_element("mirror/claim_reward/claim_rewards_assets.png", offset=False):
+                    reward_choice_opened = True
+                    sleep(settlement_wait(cfg))
+                    continue
+                if auto.click_element("mirror/claim_reward/claim_forfeit_assets.png", model="normal", take_screenshot=True, offset=False):
+                    reward_forfeited = True
+                    sleep(settlement_wait(cfg))
                     continue
             else:
                 if self.hard_reward_eligible and cfg.save_rewards:
@@ -675,7 +805,7 @@ class Mirror:
                         sleep(1)
                     retry()
                     continue
-            if auto.click_element("mirror/claim_reward/use_enkephalin_assets.png", threshold=0.75):  # 降低识别阈值
+            if not self.observation_forfeit and auto.click_element("mirror/claim_reward/use_enkephalin_assets.png", threshold=0.75):  # 降低识别阈值
                 sleep(1)
                 continue
             # 处理周年活动弹出的窗口
@@ -695,13 +825,24 @@ class Mirror:
             if main_loop_count < 0:
                 raise cannotOperateGameError("镜牢奖励领取出错,请手动操作重试")
 
+        if self.observation_forfeit:
+            self._record_long_term_log(False, "主题卡包观测失败，已放弃本局及奖励")
+            return MirrorRunOutcome.ABANDONED
         if failed:
+            self._record_long_term_log(False, "结算未达到完成条件，已结束本局")
             return False
+        success = None if self.bequest_from_the_previous_game else True
+        reason = ("接续上一局结算，计时不完整" if self.bequest_from_the_previous_game else
+                  "已完成设置层数" if self.floor_limit_exit else "已完成")
+        self._record_long_term_log(success, reason)
+        return self._record_run_statistics(run_start_time)
+
+    def _record_run_statistics(self, start_time, count_complete=True):
         # 计时结束
         end_time = time.time()
-        elapsed_time = end_time - run_start_time
+        elapsed_time = end_time - start_time
 
-        if self.theme_pack_timing_start_count == 5:  # 五层都从卡包页开始计时，才更新完整一轮的耗时历史。
+        if count_complete and self.theme_pack_timing_start_count == 5:
             team = cfg.config.teams.get(f"{self.team_order}")
             if team:
                 team_history = {
@@ -755,7 +896,7 @@ class Mirror:
 
         # 从领奖页中途启动时，同样输出启动后这一段不完整的耗时。
         if self.current_floor_start_time is None:
-            self.current_floor_start_time = run_start_time
+            self.current_floor_start_time = start_time
         self._log_floor_time(end_time, self.floor)
 
         # 输出战斗总时间
@@ -1001,10 +1142,15 @@ class Mirror:
 
         if not first_point or not second_point:
             return
+        burn_point, bleed_point = first_point, second_point
+        tabs = tab_positions(burn_point, bleed_point, my_scale)
+        width, height = auto.screenshot.size
+        header = (0, max(0, int(burn_point[1] - 65 * my_scale)), width,
+                  min(height, int(burn_point[1] + 100 * my_scale)))
+        general_text = auto.find_language_text("泛用", "General", my_crop=header)
+        if general_text:
+            tabs[10] = (general_text[0], general_text[1] + header[1])
 
-        # 体系之间的间距
-        system_distance = second_point[0] - first_point[0]
-        print(system_distance)
 
         gift_box = ImageUtils.get_bbox(ImageUtils.load_image("mirror/road_to_mir/observe_ego_gift/gift_box_bbox.png"))
 
@@ -1026,15 +1172,10 @@ class Mirror:
                 system_index = 10
             else:
                 system_index = [k for k, v in observe_system.items() if v == file_system][0]
-
-            print(system_index)
-            # 选择体系，先点一下其他体系，再点回来，重置页面
-            auto.mouse_click(first_point[0], first_point[1])
-            sleep(0.5)
-            auto.mouse_click(second_point[0], second_point[1])
-            sleep(0.5)
-            auto.mouse_click(first_point[0] + system_distance * system_index, first_point[1])
-            sleep(0.5)
+            # Reset using the two measured tabs, then select the requested system.
+            for index in reset_tab_indices(system_index):
+                auto.mouse_click(*tabs[index])
+                sleep(0.5)
 
             if level_point := auto.find_element(f"mirror/road_to_mir/observe_ego_gift/Level_{"I"*gift_level}.png",threshold=0.85,take_screenshot=True):
                 _select_gift(level_point)
@@ -1055,8 +1196,18 @@ class Mirror:
                 _select_gift(level_point)
                 sleep(0.5)
 
+            if auto.take_screenshot() is None:
+                raise RuntimeError("观测饰品：选择后截图失败")
+            confirm_box = ImageUtils.get_bbox(ImageUtils.load_image("mirror/road_to_mir/observe_ego_gift/select_gift_bbox.png"))
+            details = auto._run_ocr_for_text(my_crop=(int(width * 0.61), 0, width, confirm_box[1]), only_text=True)
+            verify_known_name(gift_id, details)
+
 
         # 观测饰品选择完毕
+        if auto.take_screenshot() is None:
+            raise RuntimeError("观测饰品：确认前截图失败")
+        count_box = ImageUtils.get_bbox(ImageUtils.load_image("mirror/road_to_mir/observe_ego_gift/select_gift_bbox.png"))
+        verify_count(auto._run_ocr_for_text(my_crop=count_box, only_text=True), len(self.observe_ego_gift_selected))
         for _ in range(5):
             bbox =ImageUtils.get_bbox(ImageUtils.load_image("mirror/road_to_mir/observe_ego_gift/select_gift_bbox.png"))
             ocr_result = auto.find_language_text("选择", "select",bbox )
@@ -1199,7 +1350,7 @@ class Mirror:
             if retry() is False:
                 return False
 
-    def re_start(self):
+    def re_start(self, reason="原版流程放弃并重开"):
         while True:
             # 自动截图
             if auto.take_screenshot() is None:
@@ -1216,6 +1367,7 @@ class Mirror:
             time.sleep(1)
             if retry() is False:
                 return False
+        self._record_long_term_log(False, reason)
         # TODO耗时
         msg = f"满 身 疮 痍 ！ 重 开 ！此次战败耗时{time.time() - self.start_time}"
         log.info(msg)
@@ -1227,12 +1379,14 @@ class Mirror:
         self.current_floor_time_complete = False
         self.floor_detect_failed = False
 
-    def event_handling(self):
+    def event_handling(self, force_failure=False):
+        if self.event_excluded_sinners and not force_failure:
+            event_handling.reset_exclusion_attempts()
         # 遇到有SKIP的情况
         event_start_time = time.time()
         loop_count = 30
         auto.model = "clam"
-        event_chance = 15
+        event_chance = -1 if force_failure else 15
         while True:
             # 自动截图
             if auto.take_screenshot() is None:
@@ -1242,7 +1396,7 @@ class Mirror:
                 return False
 
             # 如果在战斗中或回到镜牢路线图中，则跳出循环
-            if auto.find_element("battle/turn_assets.png"):
+            if not force_failure and auto.find_element("battle/turn_assets.png"):
                 break
             if auto.find_element("mirror/road_in_mir/legend_assets.png"):
                 break
@@ -1288,6 +1442,12 @@ class Mirror:
                     for coordinate in coordinates:
                         auto.mouse_click(coordinate[0], coordinate[1])
                     retry()
+                elif force_failure or (self.event_excluded_sinners and event_handling.exclusion_exhausted):
+                    # The optional exclusion failure must still exit after the
+                    # upstream normal-event recovery stopped returning here.
+                    log.error("事件无可用罪人且无法继续，返回主界面")
+                    back_init_menu()
+                    return
 
             # 针对不同事件进行处理，优先选???与直接获取的，再选需要判定的，再选后续事件的，最后第一个事项
             if auto.click_element("event/unknown_event.png"):
@@ -1318,16 +1478,30 @@ class Mirror:
             if auto.find_element(
                 "event/perform_the_check_feature_assets.png",
                 threshold=0.75,
-            ) and event_handling.decision_event_handling():
-                # 输入后立即刷新画面，避免继续在已失效的判定帧上匹配其它按钮。
-                continue
+            ):
+                acted = (event_handling.decision_event_handling(excluded_sinners=self.event_excluded_sinners)
+                         if self.event_excluded_sinners else event_handling.decision_event_handling())
+                if acted:
+                    continue
+                if self.event_excluded_sinners and event_handling.exclusion_exhausted:
+                    # Use the original event failure/exit handler, not another sinner.
+                    event_chance = -1
+                    continue
             if auto.click_element("event/continue_assets.png"):
+                if self.event_excluded_sinners:
+                    event_handling.reset_exclusion_attempts()
                 continue
             if auto.click_element("event/proceed_assets.png"):
+                if self.event_excluded_sinners:
+                    event_handling.reset_exclusion_attempts()
                 continue
             if auto.click_element("event/commence_assets.png"):
+                if self.event_excluded_sinners:
+                    event_handling.reset_exclusion_attempts()
                 continue
             if auto.click_element("event/commence_battle_assets.png"):
+                if self.event_excluded_sinners:
+                    event_handling.reset_exclusion_attempts()
                 continue
 
             if auto.click_element("mirror/road_in_mir/ego_gift_get_confirm_assets.png"):
@@ -1539,6 +1713,8 @@ class Mirror:
                 continue
 
     def get_reward_in_road(self):
+        if getattr(cfg, "disable_mirror_rewards", False):
+            return self._complete_without_rewards("previous_settlement")
         main_loop_count = 20
         auto.model = "clam"
         while True:

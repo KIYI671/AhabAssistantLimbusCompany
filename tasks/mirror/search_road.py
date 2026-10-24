@@ -17,11 +17,12 @@ ROAD_ROW_GAP = 437
 
 
 class MirrorMap:
-    def __init__(self, floor=1, hard_mode=False):
+    def __init__(self, floor=1, hard_mode=False, node_weights=None):
         self.floor = floor
         self.floor_map = []
         self.map = {}
         self.hard_mode = hard_mode
+        self.node_weights = node_weights
 
     def get_next_step(self):
         re_identify = False
@@ -35,7 +36,10 @@ class MirrorMap:
             re_identify = True
 
         if re_identify is True:
-            self.floor_map, self.floor_nodes = search_road_from_road_map(hard_mode=self.hard_mode)
+            if self.node_weights is not None:
+                self.floor_map, self.floor_nodes = search_road_from_road_map(hard_mode=self.hard_mode, node_weights=self.node_weights)
+            else:
+                self.floor_map, self.floor_nodes = search_road_from_road_map(hard_mode=self.hard_mode)
             if self.floor_map is True and self.floor_nodes is True:
                 # 已通过点击巴士直接进入节点，无路线可缓存；保留 True 会让下次 len() 报错
                 self.floor_map, self.floor_nodes = [], []
@@ -276,7 +280,7 @@ def search_road_farthest_distance():
     return False
 
 
-def search_road_from_road_map(hard_mode=False):
+def search_road_from_road_map(hard_mode=False, node_weights=None):
     start_time = time.time()
     scale = cfg.set_win_size / 1440
     bus = None
@@ -384,6 +388,7 @@ def search_road_from_road_map(hard_mode=False):
         bus_row=bus_row,
         bus_position=bus,
         hard_mode=hard_mode,
+        node_weights=node_weights,
     )
     route_graph.init_road(connections)
 
@@ -647,6 +652,7 @@ class RouteGraph:
         bus_row,
         bus_position,
         hard_mode=False,
+        node_weights=None,
     ):
         """初始化三行路线图；连线由 init_road() 写入。"""
         self.bus_row = bus_row
@@ -655,6 +661,7 @@ class RouteGraph:
         self._add_new_column()
         self._set_node(1, bus_row, "bus", 1)
         self.hard_mode = hard_mode
+        self.node_weights = {**all_node_weight, **(node_weights or {})}
         self._init_node(all_nodes, bus_position)
 
     def _add_new_column(self):
@@ -681,7 +688,7 @@ class RouteGraph:
                     self.column_count,
                     vertical_pos,
                     node_entry[0],
-                    all_node_weight[node_entry[0]],
+                    self.node_weights[node_entry[0]],
                 )
 
         if self.hard_mode is False:

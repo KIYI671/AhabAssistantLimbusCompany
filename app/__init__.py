@@ -232,6 +232,7 @@ all_checkbox_config_name = [
     "skill_replacement",
     "ignore_shop",
     "use_custom_theme_pack_weight",
+    "stop_fusion_on_failure",
     "use_team_code",
     "observe_ego_gift",
 ]

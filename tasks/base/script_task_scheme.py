@@ -44,6 +44,8 @@ from tasks.battle import battle
 from tasks.daily.get_prize import get_mail_prize, get_pass_prize
 from tasks.daily.luxcavation import EXP_luxcavation, thread_luxcavation
 from tasks.mirror.mirror import Mirror
+from tasks.mirror.observation_failure import MirrorRunOutcome, ObservationCleanupError
+from tasks.mirror.failure_policy import MirrorBattleAttemptsExhausted, forfeit_failed_run
 from tasks.teams.team_formation import select_battle_team
 from utils.path_manager import path_manager
 from utils.utils import calculate_the_teams, check_hard_mirror_time, get_day_of_week
@@ -94,7 +96,10 @@ def onetime_mir_process(team_setting: TeamSetting, team_num: int):
     # 进行一次镜牢
     try:
         mirror_adventure = Mirror(team_setting, team_num)
-        if mirror_adventure.run():
+        outcome = mirror_adventure.run()
+        if outcome in (MirrorRunOutcome.ABANDONED, MirrorRunOutcome.DEVELOPER_NO_REWARDS):
+            return outcome
+        if outcome:
             del mirror_adventure
             mirror_adventure = None
             back_init_menu()
@@ -102,8 +107,21 @@ def onetime_mir_process(team_setting: TeamSetting, team_num: int):
             return True
         else:
             return False
+    except MirrorBattleAttemptsExhausted as error:
+        log.warning(str(error))
+        mirror_adventure.observation_forfeit = True
+        forfeit_failed_run(auto, log, running=lambda: battle.running, config=cfg)
+        battle.fail_times = 0
+        if getattr(cfg, "disable_mirror_rewards", False):
+            return mirror_adventure.record_developer_result("attempts_exhausted")
+        mirror_adventure._record_long_term_log(False, str(error))
+        return MirrorRunOutcome.ABANDONED
+    except ObservationCleanupError:
+        raise
     except Exception as e:
         log.exception(f"镜牢行动出错: {e}")
+        if "mirror_adventure" in locals() and mirror_adventure.observation_forfeit:
+            raise
         return False
 
 
@@ -295,7 +313,7 @@ def Mirror_task():
     mir_times = cfg.set_mirror_count
     if cfg.infinite_dungeons:
         mir_times = 9999
-    if cfg.save_rewards and cfg.hard_mirror:
+    if cfg.save_rewards and cfg.hard_mirror and not getattr(cfg, "disable_mirror_rewards", False):
         mir_times = 1
         log.info("启用了保存困牢奖励，将只执行一次困牢，并且不结算")
     finish_times = 0
@@ -335,6 +353,14 @@ def Mirror_task():
                 continue
         # 执行一次镜牢任务，根据执行结果进行处理
         mirror_result = onetime_mir_process(team_setting, team_num)
+        if mirror_result in (MirrorRunOutcome.ABANDONED, MirrorRunOutcome.DEVELOPER_NO_REWARDS):
+            cfg.rotate_team_queue()
+            mir_times -= 1
+            if not cfg.infinite_dungeons:
+                cfg.set_value("set_mirror_count", max(0, cfg.set_mirror_count - 1))
+            mediator.mirror_signal.emit(finish_times, mir_times)
+            log.debug("本局已放弃奖励并返回主界面，扣一次计划次数，不计成功或困难奖励次数")
+            continue
         if mirror_result:
             cfg.rotate_team_queue()
             mir_times -= 1
@@ -349,11 +375,11 @@ def Mirror_task():
             mediator.mirror_signal.emit(finish_times, mir_times)
             msg = f"已完成 {finish_times} 次镜牢"
             log.info(msg)
-            if finish_times == 1 and cfg.re_claim_rewards:  # 完成第一次镜牢后重新领取奖励
+            if finish_times == 1 and cfg.re_claim_rewards and not getattr(cfg, "disable_mirror_rewards", False):
                 to_get_reward()
 
     mediator.mirror_bar_kill_signal.emit()
-    if cfg.re_claim_rewards and finish_times > 1:
+    if cfg.re_claim_rewards and finish_times > 1 and not getattr(cfg, "disable_mirror_rewards", False):
         to_get_reward()
 
 
@@ -479,10 +505,14 @@ class my_script_task(QThread):
             log.exception("脚本线程执行失败")
         finally:
             retry_monitor.stop()
+            if auto.input_handler is not None:
+                auto.input_handler.release_active_hold()
             self.mutex.unlock()
 
     def terminate(self):
         retry_monitor.stop()
+        if auto.input_handler is not None:
+            auto.input_handler.release_active_hold()
         super().terminate()
         # TerminateThread 不会释放被杀线程持有的 RLock,换新锁防止后续任务取锁永久阻塞
         auto.reset_safety_locks()

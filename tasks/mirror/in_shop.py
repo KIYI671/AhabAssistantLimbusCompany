@@ -10,11 +10,27 @@ from tasks import all_sinners_name, all_sinners_name_zh, all_systems, system_cn_
 from tasks.base.back_init_menu import back_init_menu
 from tasks.base.retry import retry
 from tasks.mirror import fusion_result, must_be_abandoned, must_purchase
+from tasks.mirror.priority_purchase import PurchaseResult, buy_specified
 from utils.image_utils import ImageUtils
+from utils.protected_gifts import ProtectedGiftMatcher
+
+
+class FusionAttemptStopped(Exception):
+    pass
 
 
 class Shop:
     def __init__(self, team_setting: TeamSetting):
+        self.protect_gift_images = team_setting.gift_lock_enabled
+        self.protected_gift_images = tuple(team_setting.gift_lock_images)
+        self.stop_fusion_on_failure = team_setting.stop_fusion_on_failure
+        self._gift_matcher = ProtectedGiftMatcher(self.protected_gift_images)
+        self.specify_gift_images = team_setting.gift_lock_enabled
+        self.specified_gift_images = tuple(team_setting.gift_lock_images)
+        self._specified_matcher = ProtectedGiftMatcher(self.specified_gift_images)
+        self._specified_attempted = set()
+        self._protection_error_logged = False
+        self._fusion_successes = 0
         self.system = all_systems[team_setting.team_system]  # 队伍体系
         self.sinner_team = team_setting.sinner_order  # 选择的罪人序列
         # 获取舍弃的饰品体系列表
@@ -70,6 +86,56 @@ class Shop:
     class RestartGame(Exception):
         pass
 
+    @property
+    def _image_protection_active(self):
+        return self.protect_gift_images and bool(self.protected_gift_images)
+
+    def _filter_protected_gifts(self, points):
+        if not self._image_protection_active:
+            return points
+        try:
+            allowed = []
+            for point in points:
+                protected = self._gift_matcher.match(auto.screenshot, point)
+                if protected:
+                    log.debug(f"图片保护：跳过合成/出售材料 {protected}")
+                else:
+                    if isinstance(self._gift_matcher.last_scan, dict):
+                        log.debug(f"图片保护未命中（阈值{self._gift_matcher.threshold}）：{self._gift_matcher.last_scan}")
+                    allowed.append(point)
+            return allowed
+        except Exception as error:
+            if not self._protection_error_logged:
+                log.warning(f"保护图片无法读取或匹配，本店不选择合成/出售材料：{error}")
+                self._protection_error_logged = True
+            return []
+
+    def _unprotected_sale(self, target):
+        points = auto.find_element(target, find_type="image_with_multiple_targets") or []
+        if isinstance(points, tuple) and len(points) == 2 and isinstance(points[0], (int, float)):
+            points = [points]
+        points = self._filter_protected_gifts(points)
+        return points[0] if points else None
+
+    def _stop_failed_fusion(self):
+        if self.stop_fusion_on_failure:
+            raise FusionAttemptStopped()
+
+    def _run_fusion_stage(self, operation):
+        if not self.stop_fusion_on_failure:
+            operation()
+            return True
+        before = self._fusion_successes
+        try:
+            operation()
+        except FusionAttemptStopped:
+            log.info("一次合成未果，结束本店合成阶段，继续后续商店步骤")
+            return False
+        if self._fusion_successes == before:
+            log.info("本次未能合成饰品，结束本店合成阶段，继续后续商店步骤")
+            return False
+        return True
+
     def ego_gift_to_power_up(self):
         loop_count = 30
         auto.model = "clam"
@@ -96,6 +162,11 @@ class Shop:
             if loop_count < 0:
                 log.error("无法升级ego饰品")
                 break
+
+    def _buy_specified_gifts(self):
+        if self.do_not_buy or not self.specify_gift_images or not self.specified_gift_images:
+            return PurchaseResult()
+        return buy_specified(auto, self._specified_matcher, self._specified_attempted, log)
 
     def buy_gifts(self):
         def sort_points(points, complete=0, threshold=40):
@@ -149,6 +220,11 @@ class Shop:
             # 自动截图
             if auto.take_screenshot() is None:
                 continue
+            if self.specify_gift_images and self.specified_gift_images:
+                result = self._buy_specified_gifts()
+                complete_count += result.count
+                if not result.ready:
+                    return
             if self.shopping_strategy is False or (
                 self.shopping_strategy and self.shopping_strategy_select in (0, 1, 5)
             ):
@@ -323,6 +399,7 @@ class Shop:
                         else:
                             break
                     keyword_refresh_count += 1
+                    self._specified_attempted.clear()
                     auto.mouse_click_blank()
                     sleep(3)
                     if retry() is False:
@@ -335,6 +412,7 @@ class Shop:
                 auto.mouse_click_blank(times=3)
                 if auto.click_element("mirror/shop/refresh_assets.png"):
                     normal_refresh_count += 1
+                    self._specified_attempted.clear()
                     sleep(3)
                     if retry() is False:
                         raise self.RestartGame()
@@ -399,6 +477,7 @@ class Shop:
             if len(points) >= 1:
                 gift = points[-1]
             else:
+                self._stop_failed_fusion()
                 return
             if gift:
                 first_gift = [gift[0] + 95 * scale, gift[1] + 135 * scale]
@@ -444,6 +523,8 @@ class Shop:
                 for coord in protect_coord:
                     gift_list = processing_coordinates(gift_list, coord)
 
+            gift_list = self._filter_protected_gifts(gift_list)
+
             # 直到合成概率90%
             for coord in gift_list:
                 auto.mouse_click(coord[0], coord[1])
@@ -456,8 +537,10 @@ class Shop:
 
             # 如果无法合成四级，或可用饰品不足三个，则退出此次合成
             if not auto.find_element("mirror/shop/fuse_90%_assets.png", take_screenshot=True):
+                self._stop_failed_fusion()
                 return
             if not auto.find_element("mirror/shop/fusion_level_IV_gift_assets.png", threshold=0.9):
+                self._stop_failed_fusion()
                 return
 
             loop_times = 15
@@ -467,7 +550,13 @@ class Shop:
                 if auto.take_screenshot() is None:
                     continue
 
+                if self.stop_fusion_on_failure:
+                    if loop_times <= 0:
+                        self._stop_failed_fusion()
+                    loop_times -= 1
+
                 if ego_gift_get_confirm := auto.find_element("mirror/road_in_mir/ego_gift_get_confirm_assets.png"):
+                    self._fusion_successes += 1
                     if auto.find_language_text(["残片", "罪孽"], ["fragment", "corrosion", "resources"]):
                         fuse = True
                     else:
@@ -496,9 +585,10 @@ class Shop:
                     model="normal",
                 ):
                     sleep(2)
-                    if loop_times <= 0:
-                        break
-                    loop_times -= 1
+                    if not self.stop_fusion_on_failure:
+                        if loop_times <= 0:
+                            break
+                        loop_times -= 1
                     continue
 
                 if retry() is False:
@@ -589,11 +679,14 @@ class Shop:
                 ):
                     my_list = protect_coordinates(my_list, protect_gift)
 
+            my_list = self._filter_protected_gifts(my_list)
+
             # 选择3样无用饰品，不足则退出合成
             if len(my_list) <= 2:
                 if block is False:
                     msg = "饰品舍弃列表数量不足，结束合成"
                     log.debug(msg)
+                    self._stop_failed_fusion()
                     return
             else:
                 for sequence in range(3):
@@ -615,6 +708,7 @@ class Shop:
                         continue
 
                     if loop_times < 0:
+                        self._stop_failed_fusion()
                         break
                     loop_times -= 1
 
@@ -624,6 +718,7 @@ class Shop:
                         fuse_IV = True
 
                     if auto.find_element("mirror/road_in_mir/ego_gift_get_confirm_assets.png"):
+                        self._fusion_successes += 1
                         if fuse_IV:
                             if auto.find_language_text(["残片", "罪孽"], ["fragment", "corrosion", "resources"]):
                                 pass
@@ -675,6 +770,7 @@ class Shop:
                 continue
 
             auto.mouse_click_blank(times=3)
+            self._stop_failed_fusion()
             break
 
         if retry() is False:
@@ -682,6 +778,9 @@ class Shop:
 
     def fuse_system_gifts(self):
         """合成体系饰品"""
+        if self._image_protection_active:
+            log.info("图片保护已开启：跳过无法逐件过滤自动材料的配方快捷合成")
+            return
         auto.model = "clam"
         log.debug("开始执行体系饰品合成模块")
 
@@ -693,7 +792,9 @@ class Shop:
             if g[0] == self.system:
                 system_gifts.append(gift)
 
-        self.enter_fuse()
+        if self.enter_fuse() is False:
+            self._stop_failed_fusion()
+            return
 
         while True:
             if list_block := auto.find_element("mirror/shop/gifts_list_block.png", take_screenshot=True):
@@ -706,6 +807,7 @@ class Shop:
             )
             if len(points) < 2:
                 auto.mouse_click_blank(times=3)
+                self._stop_failed_fusion()
                 return
 
             points.sort(key=lambda c: (c[1], c[0]))
@@ -737,6 +839,7 @@ class Shop:
                             fusion_pos.append(g)
                 if len(fusion_pos) == 0:
                     auto.mouse_click_blank(times=3)
+                    self._stop_failed_fusion()
                     return
                 else:
                     fusion = True
@@ -751,6 +854,7 @@ class Shop:
                     continue
 
                 if chance < 0:
+                    self._stop_failed_fusion()
                     if len(fusion_pos) > 0:
                         pos = fusion_pos.pop(0)
                         auto.mouse_click(pos[0], pos[1])
@@ -765,6 +869,7 @@ class Shop:
                 auto.mouse_to_blank()
 
                 if auto.click_element("mirror/road_in_mir/ego_gift_get_confirm_assets.png"):
+                    self._fusion_successes += 1
                     break
 
                 if auto.click_element(
@@ -824,7 +929,9 @@ class Shop:
             if system_sell:
                 for sell_system in self.shop_sell_list:
                     my_sell_system = f"mirror/shop/enhance_gifts/{sell_system}.png"
-                    if sell_gift := auto.find_element(my_sell_system):
+                    sell_gift = (self._unprotected_sale(my_sell_system) if self._image_protection_active
+                                 else auto.find_element(my_sell_system))
+                    if sell_gift:
                         if second is not None and protect_coordinates(sell_gift, second):
                             continue
                         else:
@@ -856,7 +963,14 @@ class Shop:
             system_sell = False
 
             for commodity in must_be_abandoned:
-                if auto.click_element(commodity):
+                if self._image_protection_active:
+                    point = self._unprotected_sale(commodity)
+                    selected = bool(point)
+                    if point:
+                        auto.mouse_click(*point)
+                else:
+                    selected = auto.click_element(commodity)
+                if selected:
                     auto.click_element(
                         "mirror/shop/enhance_and_fuse_and_sell_confirm_assets.png",
                         model="normal",
@@ -925,7 +1039,8 @@ class Shop:
             log.debug("开始执行第一次激进合成")
             if self.enter_fuse() is False:
                 return False
-            self.fuse_useless_gifts_aggressive()
+            if not self._run_fusion_stage(self.fuse_useless_gifts_aggressive):
+                return
             auto.mouse_click_blank(times=3)
         if self.fuse_switch is False:
             if self.fuse_IV is True and self.after_level_IV is True and self.after_level_IV_select == 3:
@@ -939,7 +1054,8 @@ class Shop:
             log.debug("开始执行普通合成")
             if self.enter_fuse() is False:
                 return False
-            self.fuse_useless_gifts()
+            if not self._run_fusion_stage(self.fuse_useless_gifts):
+                return
             auto.mouse_click_blank(times=3)
 
         # 再次激进合成
@@ -947,7 +1063,8 @@ class Shop:
             log.debug("开始执行第二次激进合成")
             if self.enter_fuse() is False:
                 return False
-            self.fuse_useless_gifts_aggressive()
+            if not self._run_fusion_stage(self.fuse_useless_gifts_aggressive):
+                return
             auto.mouse_click_blank(times=3)
         if self.fuse_switch is False:
             if self.fuse_IV is True and self.after_level_IV is True and self.after_level_IV_select == 3:
@@ -956,7 +1073,8 @@ class Shop:
             return
         # 合成体系饰品
         if not self.only_aggressive_fuse and not self.do_not_system_fuse:
-            self.fuse_system_gifts()
+            if not self._run_fusion_stage(self.fuse_system_gifts):
+                return
             auto.mouse_click_blank(times=3)
 
     def heal_sinner(self):
@@ -1328,6 +1446,9 @@ class Shop:
 
     # 在商店的处理
     def in_shop(self, layer):
+        self._specified_attempted.clear()
+        self._fusion_successes = 0
+        self._protection_error_logged = False
         heal = False
         sell = False
         buy = False
