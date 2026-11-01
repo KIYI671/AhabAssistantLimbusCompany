@@ -104,6 +104,7 @@ THEME_PACK_NAME_MAP = {
     "thread": "绞丝",
     "compassion": "巡礼",
     "mnestic": "经验",
+    "campout": "开店",
     "unknown": "未知",
 }
 
@@ -143,6 +144,9 @@ THEME_PACK_HARD_NAME_MAP = {
     "Blade": "刀与作",
     "Unsever": "割舍",
     "Theb": "凤·皇",
+    "anarchy": "纷繁",
+    "creed": "保存的",
+    "readvent": "暴食",
 }
 
 # 中文名称到英文key的反向映射表（普通模式）
@@ -233,6 +237,7 @@ THEME_PACK_IMAGE_MAP = {
     "thread": "Twining Threads.png",
     "compassion": "Pilgrimage of Compassion.png",
     "mnestic": "Experience Memory.png",
+    "campout": "Storefront Campout.png",
     "unknown": "Unknown.png",
 }
 
@@ -272,6 +277,9 @@ THEME_PACK_HARD_IMAGE_MAP = {
     "Blade": "Blade and Artwork.png",
     "Unsever": "The Unsevering.png",
     "Theb": "The BE.png",
+    "anarchy": "An Anarchy of Colors.png",
+    "creed": "Creed of Preservation.png",
+    "readvent": "Readvent of Gluttony.png",
     # 以下主题包暂无对应图片文件
     # 轨道线系列（如需支持多条线路，可添加以下映射）
     # "line2": "Line 2.png",
