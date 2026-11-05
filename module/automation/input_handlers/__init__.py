@@ -19,6 +19,8 @@ class AbstractInput:
         """
         self.is_pause = not self.is_pause  # 设置暂停状态
         if self.is_pause:
+            self.release_active_hold()
+        if self.is_pause:
             msg = "操作将在下一次点击时暂停"
         else:
             msg = "继续操作"
@@ -51,6 +53,27 @@ class AbstractInput:
             输出日志: "点击位置:(x,y)"
         """
         raise InterruptedError(f"未实现的输入方法 {self.__class__.__name__}.mouse_click")
+
+    def mouse_hold(self, x, y, duration=0.8) -> None:
+        """Bounded stationary hold; adapters must release in a finally block."""
+        raise InterruptedError(f"输入适配器 {self.__class__.__name__} 不支持长按")
+
+    def mouse_begin_hold(self, x, y, max_duration=None) -> None:
+        raise InterruptedError(f"输入适配器 {self.__class__.__name__} 不支持持续长按")
+
+    def mouse_end_hold(self) -> None:
+        self.release_active_hold()
+
+    def mouse_keep_hold(self) -> None:
+        """Maintain an existing stationary hold without a new down/up pair."""
+        return
+
+    def has_active_hold(self) -> bool:
+        return getattr(self, "_active_hold", None) is not None
+
+    def release_active_hold(self) -> None:
+        """Stop-path cleanup; adapters without stationary holds need no work."""
+        return
 
     def mouse_click_blank(self, coordinate=(1, 1), times=1, move_back=False) -> bool:
         """在空白位置点击鼠标

@@ -1,0 +1,200 @@
+# 优选阈值
+preferred_thresholds: 1
+
+theme_pack_list:
+  forgot: -5
+  gambl: 5
+  nagel: -5
+  nag: -5
+  faith: -5
+  unconf: -5
+  workshop: -5
+  tearful: -5
+  lake: -5
+  dregs: -5
+  certain: -5
+  chick: 5
+  s.e.a: -5
+  miracle: -5
+  bullet: -5
+  cleaved: -5
+  penetra: -5
+  pierced: -5
+  crushers: -5
+  repression: -5
+  addict: -5
+  seduct: 5
+  dolen: -5
+  devoured: -5
+  dev: -5
+  cravi: -5
+  degraded: -5
+  deg: -5
+  subserv: -5
+  nsignif: -5
+  judgment: -5
+  outcast: -5
+  crushed: -5
+  shed: -5
+  automated: -5
+  spring: -5
+  unloving: -5
+  flowers: -5
+  abyss: -5
+  bones: -5
+  time: -5
+  warp: -5
+  violet: -5
+  dicers: -5
+  repressed: -5
+  ssed: -5
+  treadwheel: -5
+  tread: -5
+  flood: -5
+  vain: -5
+  check: -5
+  sweep: -5
+  Hatred: -5
+  Wander: -5
+  dusk: -5
+  thread: -5
+  compassion: -5
+  mnestic: -5
+  mne: -5
+  unknown: -5
+theme_pack_list_hard:
+  Theb: -5 # 鸡鸡；隐藏主题包，保留既有支持
+  b·e: -5 # 鸡鸡；OCR 备用
+  seismic: -5 # 妖精
+  external: -5 # 寄居蟹、提灯、符人
+  xte: -5 # 寄居蟹、提灯、符人；英文 OCR 短片段兜底
+  thunder: -5 # 蜈蚣、迷失乘客、电羊
+  sanguine: -5 # 断头鱼、玩具熊、白棉花
+  dizzying: -5 # 鸡哥
+  pang: -5 # 蛙蛙、伞狐
+  sigh: -5 # 故障机器人、诺姆
+  supply: -5 # 蜈蚣、导游机器人
+
+  four: -5 #四大家族
+  opening: -5 # 血魔
+  procession: -5 # 血魔
+  unchanging: -5 # 东朗
+  unch: -5 # 东朗；英文 OCR 短片段兜底
+  evil: -5 # 亚哈
+  heartb: -5 # 狼夫
+  line: -5 #轨道
+  unbound: -5 # 人皮（解放的暴怒）
+  tangling: -5 # 卡塞蒂
+  inert: -5 # 洋流、山茶花、时间杀人魔
+  excessive: -5 # 山茶花
+  sunk: -5 # 狼夫
+  pride: -5 # 亚哈、金笠
+  pitiful: -5 # 狼夫
+  haze: -5 # 人皮
+  season: -5 # 人皮
+  corpses: -5 # 卡塞蒂、狼夫
+  might: -5 # 山茶花
+  deluge: -5 # 洋流、山茶花
+  poised: -5 # 亚哈、金笠、洋流
+  ending: -5 # 桑丘
+  witnessing: -5 # 夫子、贾母
+  Text: -5 #卢西奥、火蛾
+  Blade: -5 #黑檀、莲、阿尔比娜
+  Unsever: -5 #空
+
+theme_pack_list_cn:
+  遗忘: -5
+  赌徒: 5
+  钉与锤: -5
+  信仰: -5
+  无作为: -5
+  未曾面对: -5
+  工坊: -5
+  落泪: -5
+  湖的: -5
+  宅邸: -5
+  某个世界: -5
+  地狱鸡: 5
+  海·边: -5
+  海边: -5
+  区的奇: -5
+  句点: -5
+  当斩: -5
+  穿刺者: -5
+  当贯: -5
+  粉碎者: -5
+  情感压迫: -5
+  沉迷的: -5
+  情感困惑: 5
+  情感懒: -5
+  吞噬的: -5
+  情感饥渴: -5
+  落的忧: -5
+  情感屈从: -5
+  寒微: -5
+  情感评判: -5
+  无归属: -5
+  当碎: -5
+  自动: -5
+  琢春: -5
+  切琢: -5
+  无慈悲: -5
+  无法去爱: -5
+  落花: -5
+  伏行: -5
+  骨断: -5
+  时间杀人: -5
+  谋杀: -5
+  紫罗兰: -5
+  斩切: -5
+  压抑的: -5
+  虚张声势: -5
+  沉溺者: -5
+  空转: -5
+  体检: -5
+  体险: -5
+  清扫: -5
+  绝望: -5
+  彷徨: -5
+  黄昏: -5
+  绞丝: -5
+  巡礼: -5
+  经验: -5
+  未知: -5
+theme_pack_list_hard_cn:
+  凤皇: -5 # 鸡鸡
+  凤·皇: -5 # 鸡鸡
+  地震: -5 # 妖精
+  破坏性: -5 # 寄居蟹、提灯、符人
+  电闪雷鸣: -5 # 蜈蚣、迷失乘客、电羊
+  渗出的: -5 # 断头鱼、玩具熊、白棉花
+  缭乱的: -5 # 鸡哥
+  沉于: -5 # 蛙蛙、伞狐
+  叹息: -5 # 故障机器人、诺姆
+  动力: -5 # 蜈蚣、导游机器人
+
+  家族: -5 # 四大家族
+  无尽的: -5 # 血魔
+  开园: -5 # 血魔
+  无改变: -5 # 东朗
+  定义为: -5 # 亚哈
+  心意相: -5 # 狼夫
+  号线: -5 #轨道
+  解放的: -5 # 人皮
+  束缚的: -5 # 卡塞蒂
+  停滞的: -5 # 洋流、山茶花、时间杀人魔
+  漫溢的: -5 # 山茶花
+  沉溺的: -5 # 狼夫
+  自以为: -5 # 亚哈、金笠
+  凄惨的: -5 # 狼夫
+  摇曳: -5 # 人皮
+  盛火: -5 # 人皮
+  血海: -5 # 卡塞蒂、狼夫
+  破竹: -5 # 山茶花、东朗
+  沉沦泛: -5 # 洋流、山茶花
+  循环呼: -5 # 亚哈、金笠、洋流
+  终焉: -5 # 桑丘
+  观望: -5 # 夫子、贾母
+  刀与作: -5 # 黑檀、莲、阿尔比娜
+  割舍: -5 # 空
+  教材: -5 # 卢西奥、火蛾

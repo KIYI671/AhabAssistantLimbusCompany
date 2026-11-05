@@ -19,6 +19,7 @@ from module.logger import log
 from utils.singletonmeta import SingletonMeta
 
 from .config_typing import ConfigModel, TeamSetting
+from .optional_migration import migrate_global_battle_options
 
 
 class Config(metaclass=SingletonMeta):
@@ -248,7 +249,7 @@ class Config(metaclass=SingletonMeta):
                     loaded_config["config_version"] = self.config.config_version
                     self._old_version_cfg_upgrade(saved_version, loaded_config)
                 # 使用更新后的配置初始化 Config 对象
-                self.config = ConfigModel(**{**self._defaults, **loaded_config})
+                self.config = ConfigModel(**{**self._defaults, **migrate_global_battle_options(loaded_config, self._defaults.get("teams"))})
                 queue_in_loaded_config = loaded_config.get("teams_active_queue")
                 if queue_in_loaded_config is None:
                     normalized_queue = self._normalize_team_queue(self.migrate_legacy_team_queue())
@@ -543,7 +544,7 @@ class Config(metaclass=SingletonMeta):
             with open(path, "r", encoding="utf-8") as file:
                 loaded_config = self.yaml.load(file)
             if loaded_config:
-                self.config = ConfigModel(**{**self._defaults, **loaded_config})
+                self.config = ConfigModel(**{**self._defaults, **migrate_global_battle_options(loaded_config, self._defaults.get("teams"))})
                 queue_in_loaded_config = loaded_config.get("teams_active_queue")
                 if queue_in_loaded_config is None:
                     normalized_queue = self._normalize_team_queue(self.migrate_legacy_team_queue())

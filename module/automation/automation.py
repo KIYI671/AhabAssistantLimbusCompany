@@ -121,6 +121,8 @@ class Automation(metaclass=SingletonMeta):
     def suspend_interactions(self) -> None:
         """暂时阻止业务线程继续点击。"""
         self._interaction_gate.clear()
+        if self.input_handler is not None:
+            self.input_handler.release_active_hold()
 
     def resume_interactions(self) -> None:
         """恢复业务线程点击。"""
@@ -134,6 +136,7 @@ class Automation(metaclass=SingletonMeta):
         """
         self._input_lock = threading.RLock()
         self._screenshot_lock = threading.RLock()
+
 
     def _run_business_interaction(self, method_name: str):
         """在交互门放行且取得输入锁后执行一次业务输入。
@@ -471,7 +474,8 @@ class Automation(metaclass=SingletonMeta):
                 template = ImageUtils.crop(template, bbox)
             if template is None:
                 raise ValueError("读取图片失败")
-            screenshot = np.array(self.screenshot)
+            # Templates are grayscale even when a feature requested an RGB frame.
+            screenshot = np.array(self.screenshot if self.screenshot.mode == "L" else self.screenshot.convert("L"))
             crop_offset = (0, 0)
             if my_crop:
                 crop_offset = (int(round(my_crop[0])), int(round(my_crop[1])))
@@ -830,7 +834,8 @@ class Automation(metaclass=SingletonMeta):
                 log.debug(f"无法加载图片: {target}", stacklevel=additional_stack + 3)
                 return None
 
-            screenshot = np.array(self.screenshot)
+            # Templates are grayscale even when a feature requested an RGB frame.
+            screenshot = np.array(self.screenshot if self.screenshot.mode == "L" else self.screenshot.convert("L"))
             if my_crop:
                 screenshot = ImageUtils.crop(screenshot, my_crop)
 

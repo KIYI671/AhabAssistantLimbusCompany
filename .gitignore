@@ -38,3 +38,13 @@ __main_dev_temp__.py
 
 # 其他
 .worktrees
+# Local runtime packages and generated test output
+/_internal/
+/*.exe
+/assets/user/
+/.pytest_cache/
+/.ruff_cache/
+*.log
+
+# Personal optional run history
+/mirror_run_log.md

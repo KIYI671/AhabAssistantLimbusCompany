@@ -12,10 +12,15 @@ from module.automation import auto
 from module.config import cfg
 from module.decorator.decorator import begin_and_finish_time_log
 from module.logger import log
+from module.my_error.my_error import userStopError
 from module.ocr import ocr
 from tasks import sins
 from tasks.base.retry import retry
+from tasks.battle.optional_actions import BattleEventOutcome, BattleOptions, TurnEgoAction, general_battle, lower_row_points
+from tasks.battle.animation_hold import optional_hold_cleanup
+from tasks.battle.speed_hold import UnifiedSpeedHold
 from tasks.event import event_handling
+from tasks.mirror.failure_policy import BattleAttemptBudget, DefeatDialogAction
 from utils.image_utils import ImageUtils
 from utils.utils import find_skill3
 
@@ -193,6 +198,7 @@ class Battle:
         return limited_defense_succeeded
 
     @begin_and_finish_time_log(task_name="一次战斗")
+    @optional_hold_cleanup(auto)
     def fight(
         self,
         avoid_skill_3=False,
@@ -204,6 +210,13 @@ class Battle:
         combat_count=1,
         defense_for_solo_state: DefenseForSoloState | None = None,
         prioritize_skill_3=False,
+        rabbit_options: BattleOptions | None = None,
+        rabbit_animation_hold=False,
+        event_excluded_sinners=(),
+        ego_attempt_state=None,
+        max_attempts=None,
+        combat_speed_hold=False,
+        speed_hold=False,
     ):
         chance = self.INIT_CHANCE
         waiting = self._update_wait_time()
@@ -219,11 +232,52 @@ class Battle:
             turn_ocr_bbox = ImageUtils.get_bbox(ImageUtils.load_image("battle/turn_ocr_assets.png"))
 
         first_turn = True
+        optional_action = None
+        if rabbit_options and rabbit_options.ego_enabled:
+            turn_box = None
+            if rabbit_options.ego_enabled:
+                try:
+                    turn_box = ImageUtils.get_bbox(ImageUtils.load_image("battle/turn_ocr_assets.png"))
+                except Exception:
+                    log.warning("TURN区域未就绪，本次使用一般战斗流程")
+            optional_action = TurnEgoAction(auto, cfg.set_win_size, rabbit_options, log, turn_box, lambda: self.running,
+                                            attempted_turns=ego_attempt_state)
+        # Legacy keyword aliases use the same controller, never competing holds.
+        speed_controller = UnifiedSpeedHold(auto, lambda: self.running, logger=log) if (
+            speed_hold or rabbit_animation_hold or combat_speed_hold
+        ) and not cfg.simulator else None
+        event_check_active = False
+        attempt_budget = BattleAttemptBudget(max_attempts) if max_attempts is not None else None
+        defeat_action = DefeatDialogAction() if attempt_budget is not None else None
         defense_for_solo_used_this_turn = False
         start_time = time.time()
 
         def perform_battle_operation() -> None:
             nonlocal defense_for_solo_used_this_turn
+            if speed_controller is not None:
+                speed_controller.update(False)
+            if attempt_budget is not None:
+                attempt_budget.combat_resumed()
+            ego_claim = optional_action.claim_turn() if optional_action is not None else None
+            limited_due = (defense_for_solo_state is not None
+                           and defense_for_solo_state.remaining_turns > 0
+                           and not defense_for_solo_used_this_turn)
+            guard_due = (limited_due or (first_turn and defense_first_round
+                         and not defense_for_solo_used_this_turn) or self.defense_all_time)
+            # Preparation must never drag/Enter. EGO is allowed to cover guard.
+            # With EGO disabled use the mature original guard/skill path.
+            guard_due = guard_due and optional_action is not None
+            guard_prepared = self._prepare_defense() if guard_due else False
+            ego_due = optional_action.prepare(ego_claim) if optional_action is not None else False
+            if guard_due or ego_due:
+                if self.running:
+                    general_battle(auto, cfg.set_win_size / 1440, True, log)
+                    if guard_prepared:
+                        defense_for_solo_used_this_turn = True
+                        if limited_due:
+                            defense_for_solo_state.consume_turn()
+                            log.info(f"已准备守备并提交（允许EGO覆盖），剩余 {defense_for_solo_state.remaining_turns} 回合")
+                return
             limited_defense_succeeded = self._battle_operation(
                 first_turn=first_turn,
                 defense_first_round=defense_first_round,
@@ -241,15 +295,43 @@ class Battle:
             from tasks.base.retry import check_times
 
             # 自动截图
-            if auto.take_screenshot() is None:
+            if (auto.take_screenshot(gray=False) if speed_controller is not None else auto.take_screenshot()) is None:
+                if speed_controller is not None:
+                    speed_controller.release(block=True)
                 continue
             if auto.get_restore_time() is not None:
                 start_time = max(start_time, auto.get_restore_time())
             if infinite_battle is False and check_times(start_time, timeout=900 + 300 * combat_count, logs=False):
                 from tasks.base.back_init_menu import back_init_menu
 
+                if speed_controller is not None:
+                    speed_controller.release(block=True)
                 back_init_menu()
                 return False
+
+            # A floor transition can skip the map/reward pages. Hand the
+            # theme-pack screen back to Mirror.run before any battle input.
+            if not infinite_battle and auto.find_element("mirror/theme_pack/feature_theme_pack_assets.png"):
+                return False
+
+            if speed_controller is not None:
+                if auto.find_element("mirror/road_in_mir/select_encounter_reward_card_assets.png", threshold=0.9):
+                    speed_controller.release(block=True)
+                    if not infinite_battle:
+                        break
+                speed_controller.probe()
+                if speed_controller.signal_visible:
+                    if speed_controller.combat_visible:
+                        if optional_action is not None:
+                            optional_action.observe_running()
+                        if attempt_budget is not None:
+                            attempt_budget.combat_resumed()
+                        chance = self.INIT_CHANCE
+                        first_turn = False
+                        defense_for_solo_used_this_turn = False
+                    sleep(0.1)
+                    continue
+                auto.screenshot = auto.screenshot.convert("L")
 
             total_count += 1
 
@@ -273,36 +355,55 @@ class Battle:
                 continue
 
             # 如果正在交战过程
-            if auto.find_element("battle/pause_assets.png"):
-                sleep(2 * waiting)  # 战斗播片中增大间隔
+            defeated = auto.find_element("battle/dead_all.png")
+            if defeat_action is not None and not defeated:
+                defeat_action.reset()
+            if auto.find_element("battle/pause_assets.png") and not defeated:
+                if optional_action is not None:
+                    optional_action.observe_running()
+                if attempt_budget is not None:
+                    attempt_budget.combat_resumed()
+                sleep(0.15 if speed_controller is not None else 2 * waiting)
                 chance = self.INIT_CHANCE
                 first_turn = False
                 defense_for_solo_used_this_turn = False
                 continue
 
             # 战斗失败重启
-            if auto.find_element("battle/dead_all.png"):
-                dead_select = auto.find_element("battle/dead_all.png", find_type="image_with_multiple_targets")
-                if len(dead_select) == 3:
-                    dead_select = sorted(dead_select, key=lambda y: y[1])
-                    auto.mouse_click(dead_select[1][0], dead_select[1][1])
-                else:
-                    confirm_button = auto.find_element("battle/dead_all_confirm_assets.png")
-                    try:
-                        my_scale = cfg.set_win_size / 1440
-                        auto.mouse_click(
-                            confirm_button[0] + 200 * my_scale,
-                            confirm_button[1] - 350 * my_scale,
-                        )
-                    except:
+            if defeated:
+                if optional_action is not None:
+                    optional_action.reset()  # A visible defeat ends this attempt, before any retry input.
+                if attempt_budget is not None:
+                    attempt_budget.defeat()  # Raise before selecting another retry.
+                    if not defeat_action.submit(auto, retry=True, config=cfg, pause=sleep):
+                        sleep(0.5)
                         continue
+                else:
+                    # Limit disabled: retain the original retry selection path.
+                    dead_select = auto.find_element("battle/dead_all.png", find_type="image_with_multiple_targets")
+                    if len(dead_select) == 3:
+                        dead_select = sorted(dead_select, key=lambda y: y[1])
+                        auto.mouse_click(dead_select[1][0], dead_select[1][1])
+                    else:
+                        confirm_button = auto.find_element("battle/dead_all_confirm_assets.png")
+                        try:
+                            my_scale = cfg.set_win_size / 1440
+                            auto.mouse_click(
+                                confirm_button[0] + 200 * my_scale,
+                                confirm_button[1] - 350 * my_scale,
+                            )
+                        except:
+                            continue
 
-                auto.click_element("battle/dead_all_confirm_assets.png")
+                    auto.click_element("battle/dead_all_confirm_assets.png")
                 sleep(1)
                 start_time = time.time()
                 self.fail_times += 1
+                if optional_action is not None:
+                    optional_action.reset()
                 defense_for_solo_used_this_turn = False
-                if self.fail_times >= 5:
+                first_turn = True
+                if attempt_budget is None and self.fail_times >= 5:
                     return False
                 continue
 
@@ -463,7 +564,18 @@ class Battle:
                         event_chance = -1
 
             if choice_event_handling and auto.find_element("event/perform_the_check_feature_assets.png"):
-                event_handling.decision_event_handling()
+                if event_excluded_sinners:
+                    if not event_check_active:
+                        event_handling.reset_exclusion_attempts()
+                    event_check_active = True
+                    event_handling.decision_event_handling(excluded_sinners=event_excluded_sinners)
+                    if event_handling.exclusion_exhausted:
+                        return BattleEventOutcome.EXCLUDED_EXHAUSTED
+                else:
+                    event_handling.decision_event_handling()
+            elif event_check_active:
+                event_handling.reset_exclusion_attempts()
+                event_check_active = False
             if choice_event_handling:
                 if auto.click_element("event/continue_assets.png"):
                     continue
@@ -675,6 +787,26 @@ class Battle:
             sleep(1)
             return True
         except Exception:
+            return False
+
+    @staticmethod
+    def _prepare_defense() -> bool:
+        """Click lower slots into guard without submitting the action chain."""
+        try:
+            scale = cfg.set_win_size / 1440
+            left = auto.find_element("battle/gear_left.png", threshold=0.9)
+            right = auto.find_element("battle/gear_right.png", threshold=0.9)
+            points = lower_row_points(left, right, scale) if left and right else []
+            if not points:
+                return False
+            for x, y in points:
+                auto.mouse_click(x, y)
+                sleep(cfg.mouse_action_interval if cfg.simulator else cfg.mouse_action_interval // 1.5)
+            return True
+        except userStopError:
+            raise
+        except Exception as error:
+            log.warning(f"守备准备未完成，继续一般战斗：{error}")
             return False
 
     @staticmethod

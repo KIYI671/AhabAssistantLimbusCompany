@@ -51,9 +51,19 @@ from app.observe_ego_gift_selection import (
     parse_observe_ego_gift_values,
     serialize_observe_ego_gift_values,
 )
+from app.rabbit_options import (
+    EgoReleaseOptions,
+    EventOptions,
+    GiftLockOptions,
+    NestedSettingsCard,
+    RouteWeightOptions,
+    TeamAutomationOptions,
+    ThemeObservationOptions,
+)
 from app.starlight_bonus import StarlightCard, StarlightLevelSelector
 from app.theme_pack_setting_interface import ThemePackSettingDialog
 from module.config import TeamSetting, cfg, theme_list
+from module.config.config_typing import EgoReleaseRule
 from module.config.team_import_export import (
     apply_team_settings,
     export_team_settings,
@@ -117,6 +127,13 @@ class TeamSettingCard(QFrame):
             title=self.tr("观测EGO饰品"),
         )
 
+        self.ego_release_layout = ExpandSettingCard(icon=FIF.PLAY, title=self.tr("EGO释放"))
+        self.theme_observation_layout = ExpandSettingCard(icon=FIF.SEARCH, title=self.tr("观测主题卡包"))
+
+        self.gift_lock_layout = ExpandSettingCard(icon=FIF.SETTING, title=self.tr("饰品锁定"))
+        self.event_options_layout = ExpandSettingCard(icon=FIF.INFO, title=self.tr("事件选项"))
+        self.team_advanced_layout = NestedSettingsCard(icon=FIF.SETTING, title=self.tr("高级设置"))
+        self.route_weights_layout = ExpandSettingCard(icon=FIF.SETTING, title=self.tr("寻路权重"))
         self.custom_layout2 = ExpandSettingCard(icon=FIF.INFO, title=self.tr("编队统计数据"))
 
         self.setting_layout = QHBoxLayout()
@@ -259,6 +276,19 @@ class TeamSettingCard(QFrame):
 
         self.customize_settings_module = CustomizeSettingsModule(self.team_num)
         self.observe_ego_gift_module = ObserveEgoGiftModule(self.team_num)
+        self.team_automation_module = TeamAutomationOptions(self)
+        self.gift_lock_module = GiftLockOptions(self)
+        self.event_options_module = EventOptions(self)
+        self.ego_release_module = EgoReleaseOptions(self)
+        self.theme_observation_module = ThemeObservationOptions(self)
+        self.route_weights_module = RouteWeightOptions(self)
+        self.optional_team_modules = (
+            self.team_automation_module, self.ego_release_module, self.theme_observation_module,
+            self.gift_lock_module, self.event_options_module,
+            self.route_weights_module,
+        )
+        for module in self.optional_team_modules:
+            module.changed.connect(self.setting_team)
         self.customize_info_module = CustomizeInfoModule(self.team_num)
         self.customize_settings_module.select_theme_pack_weight_button.clicked.connect(
             self.open_theme_pack_weight_dialog
@@ -319,14 +349,34 @@ class TeamSettingCard(QFrame):
         self.layout_.addWidget(self.gift_system_layout)
         self.layout_.addWidget(self.custom_layout)
         self.layout_.addWidget(self.observe_ego_gift_layout)
+        self.layout_.addWidget(self.team_advanced_layout)
         self.layout_.addWidget(self.custom_layout2)
 
         self.main_layout.addLayout(self.setting_layout)
         self.main_layout.addSpacing(15)
         self.setting_layout.setContentsMargins(10, 0, 10, 0)  # 手动对齐其他组件
 
+        for section in (self.gift_lock_layout,
+                        self.ego_release_layout, self.theme_observation_layout, self.event_options_layout,
+                        self.route_weights_layout):
+            self.team_advanced_layout.addSection(section)
+        self.team_advanced_layout.viewLayout.addWidget(self.team_automation_module)
+        self.gift_lock_layout.viewLayout.addWidget(self.gift_lock_module)
+        self.event_options_layout.viewLayout.addWidget(self.event_options_module)
+        self.route_weights_layout.viewLayout.addWidget(self.route_weights_module)
         self.custom_layout.viewLayout.addWidget(self.customize_settings_module)
+        self.ego_release_layout.viewLayout.addWidget(self.ego_release_module)
         self.observe_ego_gift_layout.viewLayout.addWidget(self.observe_ego_gift_module)
+        self.theme_observation_layout.viewLayout.addWidget(self.theme_observation_module)
+        for module, section in (
+            (self.gift_lock_module, self.gift_lock_layout),
+            (self.ego_release_module, self.ego_release_layout),
+            (self.theme_observation_module, self.theme_observation_layout),
+            (self.event_options_module, self.event_options_layout),
+            (self.route_weights_module, self.route_weights_layout),
+            (self.team_automation_module, self.team_advanced_layout),
+        ):
+            module.bind_note_title(section.card.titleLabel)
         self.custom_layout2.viewLayout.addWidget(self.customize_info_module)
 
     def connect_mediator(self):
@@ -342,6 +392,8 @@ class TeamSettingCard(QFrame):
     def setting_team(self, data_dict: dict):
         keys = list(data_dict.keys())[0]
         values = list(data_dict.values())[0]
+        if keys == "rabbit_ego_rules":
+            values = [EgoReleaseRule.model_validate(rule) for rule in values]
         if hasattr(self.team_setting, f"{keys}"):
             setattr(self.team_setting, keys, values)
             if keys == "team_system":
@@ -379,6 +431,9 @@ class TeamSettingCard(QFrame):
             self.team_setting.ignore_shop[shop_index] = values
 
     def save_team_setting(self):
+        for module in self.optional_team_modules:
+            for key, value in module.settings().items():
+                self.setting_team({key: value})
         cfg.set_value(f"{self.team_num}", self.team_setting, config_obj=cfg.config.teams)
         self.cancel_team_setting()
 
@@ -475,6 +530,7 @@ class TeamSettingCard(QFrame):
                         self.foolproof(getattr(self.team_setting, combobox))
 
         self.findChild(BaseComboBox, "defense_for_solo_turns").set_options(self.team_setting.defense_for_solo_turns - 1)
+        self.findChild(BaseComboBox, "mirror_floor_limit").set_options(self.team_setting.mirror_floor_limit - 1)
 
         # 读取编队码设置
         if team_code_input := self.findChild(BaseLineEdit, "team_code"):
@@ -484,6 +540,8 @@ class TeamSettingCard(QFrame):
         observe_module = self.findChild(ObserveEgoGiftModule, "ObserveEgoGiftModule")
         if observe_module:
             observe_module.load_selected(self.team_setting.observe_ego_gift_selected)
+        for module in self.optional_team_modules:
+            module.load_settings(self.team_setting)
 
     def foolproof(self, team_system):
         for checkbox in all_checkbox_config_name:
@@ -694,6 +752,10 @@ class CustomizeSettingsModule(QFrame):
             QT_TRANSLATE_NOOP("BaseCheckBox", "只使用公式合成"),
         )
 
+        self.stop_fusion_on_failure = BaseCheckBox(
+            "stop_fusion_on_failure", None, QT_TRANSLATE_NOOP("BaseCheckBox", "单次合成尝试"),
+            tips=QT_TRANSLATE_NOOP("BaseCheckBox", "一次合成未果就结束本店合成阶段，继续后续强化及离店步骤"),
+        )
         self.avoid_skill_3 = BaseCheckBox(
             "avoid_skill_3",
             None,
@@ -718,6 +780,14 @@ class CustomizeSettingsModule(QFrame):
         self.normal_to_hard_floor.layout_.takeAt(1)
         self.normal_to_hard_floor.label.setFixedWidth(150)
         self.normal_to_hard_floor.combo_box.setFixedWidth(300)
+        self.mirror_floor_limit = LabelWithComboBox(
+            QT_TRANSLATE_NOOP("LabelWithComboBox", "刷牢层数"),
+            "mirror_floor_limit", {str(i): i for i in range(1, 6)}, vbox=False,
+        )
+        self.mirror_floor_limit.layout_.takeAt(1)
+        self.mirror_floor_limit.label.setFixedWidth(150)
+        self.mirror_floor_limit.combo_box.setFixedWidth(300)
+        self.mirror_floor_limit.setToolTip("默认5层。读取到目标层数的下一层时，先退出探索并领取已有奖励，再结束本局；不切换该层难度或选择卡包。")
         self.use_starlight = BaseCheckBox("use_starlight", None, QT_TRANSLATE_NOOP("BaseCheckBox", "开局星光换钱"))
 
         self.aggressive_also_enhance = BaseCheckBox(
@@ -777,6 +847,7 @@ class CustomizeSettingsModule(QFrame):
             fixed_team_margins.right(),
             fixed_team_margins.bottom(),
         )
+        self.mirror_floor_limit.layout_.setContentsMargins(fixed_team_margins)
         self.reward_cards = CheckBoxWithComboBox(
             "reward_cards",
             QT_TRANSLATE_NOOP("CheckBoxWithComboBox", "奖励卡优先度"),
@@ -961,6 +1032,7 @@ class CustomizeSettingsModule(QFrame):
         self.second_line.addWidget(self.only_aggressive_fuse)
         self.second_line.addWidget(self.do_not_system_fuse)
         self.second_line.addWidget(self.only_system_fuse)
+        self.second_line.addWidget(self.stop_fusion_on_failure)
 
         self.third_line.addWidget(self.avoid_skill_3)
         self.third_line.addWidget(self.prioritize_skill_3)
@@ -996,6 +1068,7 @@ class CustomizeSettingsModule(QFrame):
 
         self.features_patch_line_2.addWidget(self.fixed_team_use)
         self.features_patch_line_2.addWidget(self.normal_to_hard_floor)
+        self.features_patch_line_2.addWidget(self.mirror_floor_limit)
         self.features_patch_line_2.addWidget(self.reward_cards)
 
         self.fifth_line.addWidget(self.opening_items, Qt.AlignLeft)
@@ -1075,6 +1148,7 @@ class CustomizeSettingsModule(QFrame):
         self.do_not_system_fuse.retranslateUi()
         self.only_aggressive_fuse.retranslateUi()
         self.only_system_fuse.retranslateUi()
+        self.stop_fusion_on_failure.retranslateUi()
         self.avoid_skill_3.retranslateUi()
         self.prioritize_skill_3.retranslateUi()
         self.use_starlight.retranslateUi()
@@ -1086,6 +1160,7 @@ class CustomizeSettingsModule(QFrame):
         self.reward_cards.retranslateUi()
         self.re_formation_each_floor.retranslateUi()
         self.normal_to_hard_floor.retranslateUi()
+        self.mirror_floor_limit.retranslateUi()
         self.starlight_select_all.set_label_text(get_starlight_action_label(self.tr("全选"), cfg.language_in_program))
         self.starlight_clear_button.setText(get_starlight_action_label(self.tr("清空"), cfg.language_in_program))
 

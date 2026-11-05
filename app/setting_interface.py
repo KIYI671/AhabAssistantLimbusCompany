@@ -36,6 +36,7 @@ from app.base_combination import (
 )
 from app.card.messagebox_custom import BaseInfoBar
 from app.common.ui_config import get_setting_interface_qss
+from app.common.hover_notes import move_setting_notes_to_hover
 from app.language_manager import SUPPORTED_LANG_NAME, LanguageManager
 from app.theme_pack_setting_interface import ThemePackSettingDialog
 from app.widget.setting_nav import SettingNav
@@ -70,6 +71,7 @@ class SettingInterface(QWidget):
         self.setObjectName("SettingInterface")
 
         LanguageManager().register_component(self)
+        move_setting_notes_to_hover(self)
 
     def __init_widget(self):
         # main container
@@ -711,6 +713,7 @@ class SettingInterface(QWidget):
         self.win_input_type_card.content = content
         self.win_input_type_card.setContent(content)
         self.win_input_type_card.retranslateUi()
+        move_setting_notes_to_hover(self)
 
     def __onSimulatorTypeChanged(self):
         self.bluestacks_instance_setting_card.setVisible(cfg.get_value("simulator_type") == 1)
@@ -795,9 +798,11 @@ class SettingInterface(QWidget):
         self.github_card.retranslateUi()
         self.discord_group_card.retranslateUi()
         self.feedback_card.retranslateUi()
+        move_setting_notes_to_hover(self)
         self.experimental_group.retranslateUi()
         self.hdr_warning_card.retranslateUi()
         self.keep_screen_awake_card.retranslateUi()
+        move_setting_notes_to_hover(self)
 
     def __onThemeCardChanged(self):
         theme_mode = cfg.get_value("theme_mode")

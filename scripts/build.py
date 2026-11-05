@@ -35,6 +35,9 @@ shutil.move(os.path.join("dist", "AALC Updater.exe"), os.path.join("dist", "AALC
 # 拷贝必要的文件到dist目录
 shutil.copy("README.md", os.path.join("dist", "AALC", "README.md"))
 shutil.copy("LICENSE", os.path.join("dist", "AALC", "LICENSE"))
+# Keep this optional tool removable; never ship the user's journal history.
+if os.path.isfile("mirror_run_log.py"):
+    shutil.copy("mirror_run_log.py", os.path.join("dist", "AALC", "mirror_run_log.py"))
 shutil.copytree("assets", os.path.join("dist", "AALC", "assets"), dirs_exist_ok=True)
 
 # 生成翻译文件

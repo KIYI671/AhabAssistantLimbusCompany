@@ -14,6 +14,12 @@ from app.card.messagebox_custom import BaseInfoBar
 from app.language_manager import LanguageManager
 from tasks import tools
 
+try:
+    from mirror_run_log import create_window as create_run_log_window, tool_available as run_log_tool_available
+except ImportError:
+    create_run_log_window = None
+    run_log_tool_available = lambda: False
+
 
 class ToolsInterface(ScrollArea):
     def __init__(self, parent=None):
@@ -62,10 +68,23 @@ class ToolsInterface(ScrollArea):
             parent=self.tools_group,
         )
 
+        self.mirror_run_log_card = None
+        self._run_log_window = None
+        if create_run_log_window is not None and run_log_tool_available():
+            self.mirror_run_log_card = BasePushSettingCard(
+                QT_TRANSLATE_NOOP("BasePushSettingCard", "打开"), FIF.HISTORY,
+                QT_TRANSLATE_NOOP("BasePushSettingCard", "镜牢长期日志"), "",
+                parent=self.tools_group,
+            )
+            self.mirror_run_log_card.setToolTip("可开关记录每局用时、层数、成功与失败原因；独立的 mirror_run_log.py 和 mirror_run_log.md 可删除。")
+            self.mirror_run_log_card.clicked.connect(self._open_mirror_run_log)
+
     def __initLayout(self):
         self.tools_group.addSettingCard(self.auto_battle_card)
         self.tools_group.addSettingCard(self.auto_production_card)
         self.tools_group.addSettingCard(self.get_screenshot_card)
+        if self.mirror_run_log_card is not None:
+            self.tools_group.addSettingCard(self.mirror_run_log_card)
 
         self.expand_layout.addWidget(self.tools_group)
 
@@ -89,6 +108,18 @@ class ToolsInterface(ScrollArea):
         )
         self.auto_production_card.clicked.connect(lambda: self._tool_start("production", self.auto_production_card))
         self.get_screenshot_card.clicked.connect(lambda: self._tool_start("screenshot", self.get_screenshot_card))
+
+    def _open_mirror_run_log(self):
+        if not run_log_tool_available():
+            return
+        if self._run_log_window is None:
+            self._run_log_window = create_run_log_window(self.window())
+            if self._run_log_window is None:
+                return
+            self._run_log_window.destroyed.connect(lambda: setattr(self, "_run_log_window", None))
+        self._run_log_window.show()
+        self._run_log_window.raise_()
+        self._run_log_window.activateWindow()
 
     def _tool_start(self, tool_name: str, card: BasePushSettingCard):
         if tool_name in self.tools:
@@ -140,3 +171,5 @@ class ToolsInterface(ScrollArea):
         self.auto_battle_card.retranslateUi()
         self.auto_production_card.retranslateUi()
         self.get_screenshot_card.retranslateUi()
+        if self.mirror_run_log_card is not None:
+            self.mirror_run_log_card.retranslateUi()
