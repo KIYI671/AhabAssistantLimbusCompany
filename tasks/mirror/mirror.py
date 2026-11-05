@@ -877,6 +877,7 @@ class Mirror:
         team_system = self.system
         if self.opening_items:
             team_system = all_systems[self.opening_items_system]
+        start_gift_order = start_gift[self.opening_items_select] if self.opening_items else [1, 2, 3]
         log.debug("开始选择初始EGO")
         while True:
             # 自动截图
@@ -910,21 +911,10 @@ class Mirror:
                 select_system = True
                 continue
 
-            if self.opening_items:
-                start_gift_order = start_gift[self.opening_items_select]
+            for gift_id in start_gift_order:
                 auto.click_element(
-                    f"mirror/road_to_mir/select_init_gift/{team_system}_ego_gift_{start_gift_order[0]}.png"
+                    f"mirror/road_to_mir/select_init_gift/{team_system}_ego_gift_{gift_id}.png"
                 )
-                auto.click_element(
-                    f"mirror/road_to_mir/select_init_gift/{team_system}_ego_gift_{start_gift_order[1]}.png"
-                )
-                auto.click_element(
-                    f"mirror/road_to_mir/select_init_gift/{team_system}_ego_gift_{start_gift_order[2]}.png"
-                )
-            else:
-                auto.click_element(f"mirror/road_to_mir/select_init_gift/{team_system}_ego_gift_1.png")
-                auto.click_element(f"mirror/road_to_mir/select_init_gift/{team_system}_ego_gift_2.png")
-                auto.click_element(f"mirror/road_to_mir/select_init_gift/{team_system}_ego_gift_3.png")
 
             # 如果选择观测饰品且选择了饰品，则开启观测饰品按钮
             if self.observe_ego_gift and self.observe_ego_gift_selected:
