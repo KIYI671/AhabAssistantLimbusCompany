@@ -1,4 +1,4 @@
-from typing import Union
+from typing import Iterable, Union
 
 from PySide6.QtCore import Qt, Signal
 from PySide6.QtGui import QFont, QIcon
@@ -445,6 +445,89 @@ class BaseComboBox(BaseLayout):
                 index += 1
         if self.toolTip():
             self.setToolTip(self.tr(self.toolTip()))
+
+
+class MultiSelectComboBox(BaseLayout):
+    """下拉多选框：弹出菜单勾选多项，按钮上显示已选摘要。"""
+
+    def __init__(
+        self,
+        config_name: str,
+        items: dict,
+        combo_box_width: int = 180,
+        placeholder: str = "请选择",
+        parent=None,
+    ):
+        super().__init__(parent=parent)
+        self.setObjectName(config_name)
+        self.config_name = config_name
+        self.items = items
+        self.placeholder = placeholder
+        self._selected: list = []
+        self._value_to_key = {value: key for key, value in items.items()}
+
+        self.button = PushButton(self.tr(placeholder), self)
+        self.button.setFixedHeight(30)
+        self.button.setFixedWidth(combo_box_width)
+        self.button.clicked.connect(self._show_menu)
+        self.hBoxLayout.addWidget(self.button, stretch=1)
+        self.setFixedHeight(30)
+        self._refresh_button_text()
+
+    def _selected_values(self) -> list:
+        return list(self._selected)
+
+    def set_selected(self, values: Iterable):
+        normalized = []
+        seen = set()
+        for value in values or []:
+            if value in self._value_to_key and value not in seen:
+                normalized.append(value)
+                seen.add(value)
+        self._selected = normalized
+        self._refresh_button_text()
+
+    def get_selected(self) -> list:
+        return list(self._selected)
+
+    def set_box_enabled(self, enabled: bool):
+        self.button.setEnabled(enabled)
+
+    def _refresh_button_text(self):
+        if not self._selected:
+            self.button.setText(self.tr(self.placeholder))
+            return
+        names = [self.tr(self._value_to_key[value]) for value in self._selected]
+        if len(names) <= 2:
+            self.button.setText("、".join(names))
+        else:
+            self.button.setText(self.tr("已选{0}人").format(len(names)))
+        self.button.setToolTip("、".join(names))
+
+    def _show_menu(self):
+        menu = RoundMenu(parent=self)
+        for key, value in self.items.items():
+            action = Action(self.tr(key), self)
+            action.setCheckable(True)
+            action.setChecked(value in self._selected)
+            action.toggled.connect(lambda checked, v=value: self._on_item_toggled(v, checked))
+            menu.addAction(action)
+        menu.exec(self.button.mapToGlobal(self.button.rect().bottomLeft()))
+
+    def _on_item_toggled(self, value, checked: bool):
+        if checked:
+            if value not in self._selected:
+                self._selected.append(value)
+        else:
+            self._selected = [v for v in self._selected if v != value]
+        self._refresh_button_text()
+        self.send_switch_signal({self.config_name: list(self._selected)})
+
+    def send_switch_signal(self, target: dict):
+        mediator.team_setting.emit(target)
+
+    def retranslateUi(self):
+        self._refresh_button_text()
 
 
 class BaseSpinBox(BaseLayout):
