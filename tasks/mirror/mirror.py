@@ -868,6 +868,19 @@ class Mirror:
             if loop_count < 0:
                 raise cannotOperateGameError("无法进入镜牢，不能进行下一步,请手动操作重试")
 
+    def _click_init_gift_row(self, gift_id: int) -> bool:
+        """锚点兜底：以确认按钮为锚点，按实测偏移点选饰品行（随分辨率缩放）"""
+        confirm_pos = auto.find_element("mirror/road_to_mir/select_init_ego_gifts_confirm_assets.png")
+        if not confirm_pos:
+            return False
+        row_dy = {1: -490, 2: -330, 3: -170}
+        if gift_id not in row_dy:
+            return False
+        s = cfg.set_win_size / 1080
+        auto.mouse_click(confirm_pos[0] - 340 * s, confirm_pos[1] + row_dy[gift_id] * s)
+        sleep(cfg.mouse_action_interval)
+        return True
+
     def select_init_ego_gift(self):
         scroll = False
         select_system = False
@@ -880,6 +893,18 @@ class Mirror:
         start_gift_order = start_gift[self.opening_items_select] if self.opening_items else [1, 2, 3]
         log.debug("开始选择初始EGO")
         while True:
+            # 安全计数放在循环顶部，任何 continue 都跳不过它，保证有限轮内出结果
+            loop_count -= 1
+            if loop_count < 10 and auto.model != "aggressive":
+                auto.model = "aggressive"
+                log.debug("识别模式切换到激进模式")
+            elif loop_count < 20 and auto.model == "clam":
+                auto.model = "normal"
+                auto.mouse_to_blank(move_back=False)
+                log.debug("识别模式切换到正常模式")
+            if loop_count % 5 == 0:
+                log.debug(f"选择藏品识别次数剩余{loop_count}次")
+
             # 自动截图
             if auto.take_screenshot() is None:
                 continue
@@ -911,10 +936,14 @@ class Mirror:
                 select_system = True
                 continue
 
+            # 按优先级逐个尝试点饰品，识别降级：阈值 0.8→0.7→锚点坐标
             for gift_id in start_gift_order:
-                auto.click_element(
-                    f"mirror/road_to_mir/select_init_gift/{team_system}_ego_gift_{gift_id}.png"
-                )
+                target = f"mirror/road_to_mir/select_init_gift/{team_system}_ego_gift_{gift_id}.png"
+                if auto.click_element(target):
+                    continue
+                if auto.click_element(target, threshold=0.7):
+                    continue
+                self._click_init_gift_row(gift_id)
 
             # 如果选择观测饰品且选择了饰品，则开启观测饰品按钮
             if self.observe_ego_gift and self.observe_ego_gift_selected:
@@ -926,16 +955,6 @@ class Mirror:
 
             if retry() is False:
                 return False
-            loop_count -= 1
-            if loop_count % 5 == 0:
-                log.debug(f"选择藏品识别次数剩余{loop_count}次")
-            if loop_count < 20:
-                auto.model = "normal"
-                auto.mouse_to_blank(move_back=False)
-                log.debug("识别模式切换到正常模式")
-            if loop_count < 10:
-                auto.model = "aggressive"
-                log.debug("识别模式切换到激进模式")
             if loop_count < 0:
                 log.error("无法进入镜牢,尝试回到初始界面")
                 back_init_menu()
