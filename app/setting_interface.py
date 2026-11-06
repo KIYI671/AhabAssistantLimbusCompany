@@ -705,6 +705,12 @@ class SettingInterface(QWidget):
                 "基于移动窗口的后台模式，有效规避了后台模式需要移动鼠标的情况，<br/>但是性能和稳定性较差，<font color=red>不推荐长时间无人使用</font>",
             )
             cfg.set_value("background_click", True)
+        elif input_type == "fake_cursor":
+            content = QT_TRANSLATE_NOOP(
+                "ComboBoxSettingCard",
+                "假光标后台模式，把坐标写进游戏进程而不是移动系统光标，<font color=blue>运行期间鼠标可以正常使用</font>，<br/>游戏放后台即可，但<font color=red>不能最小化</font>",
+            )
+            cfg.set_value("background_click", True)
         else:
             content = QT_TRANSLATE_NOOP("ComboBoxSettingCard", "未知的输入模式，发生了错误")
 
