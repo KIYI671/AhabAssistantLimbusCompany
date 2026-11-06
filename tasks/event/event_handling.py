@@ -98,6 +98,28 @@ class EventHandling:
         self.fallback_offset = (self.fallback_offset + 1) % self.SINNER_COUNT
         return True
 
+    def click_option_avoiding_unknown(self) -> bool:
+        """小指良单通模式：事件选项出现“？？？”时，改为选择其它选项。"""
+        unknown_pos = auto.find_element("event/unknown_event.png")
+        if not unknown_pos:
+            return False
+        positions = auto.find_element(
+            "event/select_first_option_assets.png",
+            find_type="image_with_multiple_targets",
+            threshold=0.75,
+        )
+        if not positions:
+            return False
+        # “？？？”标签画在所属选项按钮内部，按钮自上而下排列：
+        # 所属按钮取标签上方最近的按钮（都不在上方时退回最近的），改选离标签最近的其它按钮
+        above = [p for p in positions if p[1] <= unknown_pos[1]]
+        owner = max(above, key=lambda p: p[1]) if above else min(positions, key=lambda p: abs(p[1] - unknown_pos[1]))
+        others = [p for p in positions if p is not owner]
+        target = min(others, key=lambda p: abs(p[1] - unknown_pos[1])) if others else owner
+        log.info("小指良单通模式：跳过“？？？”选项，规避诅咒饰品")
+        auto.mouse_click(target[0], target[1])
+        return True
+
 
 def black_out_red(frame_rgb, bbox):
     """把 bbox 内红色系像素（低/极低徽章）置黑，使其不再干扰金橙系等级匹配。
