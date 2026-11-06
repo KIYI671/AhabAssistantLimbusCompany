@@ -178,6 +178,10 @@ teams:
     aggressive_also_enhance: False # 激进合成期间也升级饰品
     aggressive_save_systems: False # 激进合成保留体系饰品
     defense_first_round: False # 第一回合全员防御
+    defense_for_solo: False # 小指良单通杀家人
+    defense_for_solo_turns: 5 # 小指良连续全员防御回合数
+    defense_for_solo_sacrifice: False # 小指良单通前先送死所选罪人
+    defense_for_solo_sacrifice_sinners: [0, 1] # 送死罪人列表（0-11，可多选）
     fixed_team_use: False # 固定队伍用途
     fixed_team_use_select: 0 # 固定队伍用途的选择项
     reward_cards: False # 奖励卡优先度

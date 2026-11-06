@@ -15,12 +15,12 @@ from module.my_error.my_error import (
     unableToFindTeamError,
 )
 from module.ocr import ocr
-from tasks import all_systems, observe_system, start_gift
+from tasks import all_sinners_name_zh, all_systems, observe_system, start_gift
 from tasks.base.back_init_menu import back_init_menu
 from tasks.base.make_enkephalin_module import make_enkephalin_module
 from tasks.base.retry import retry
 from tasks.battle import battle
-from tasks.battle.battle import DefenseForSoloState
+from tasks.battle.battle import SACRIFICE_ACCEPTED, DefenseForSoloState
 from tasks.event import event_handling
 from tasks.mirror.get_floor import get_floor
 from tasks.mirror.in_shop import Shop
@@ -34,6 +34,7 @@ from tasks.mirror.search_road import (
 from tasks.mirror.select_theme_pack import select_theme_pack, switch_theme_pack_difficulty
 from tasks.teams.team_formation import check_team, load_team_code_in_game, select_battle_team, team_formation
 from utils.image_utils import ImageUtils
+from utils.utils import format_elapsed_time
 
 
 # 输出时间统计
@@ -78,9 +79,30 @@ class Mirror:
 
         self.defense_first_round = team_setting.defense_first_round  # 是否第一回合全员防御
         self.defense_for_solo = team_setting.defense_for_solo  # 是否小指良单通连续防御
+        self.defense_for_solo_turns = team_setting.defense_for_solo_turns
         self.defense_for_solo_state = (
-            DefenseForSoloState(team_setting.defense_for_solo_turns) if team_setting.defense_for_solo else None
+            DefenseForSoloState(self.defense_for_solo_turns) if self.defense_for_solo else None
         )
+        # 小指良单通前：第一场先派所选罪人守备送死，接受结果后再用正式队伍重进
+        self.defense_for_solo_sacrifice = bool(
+            team_setting.defense_for_solo and team_setting.defense_for_solo_sacrifice
+        )
+        self.sacrifice_sinners = []
+        for sinner_index in team_setting.defense_for_solo_sacrifice_sinners:
+            if 0 <= sinner_index <= 11 and sinner_index not in self.sacrifice_sinners:
+                self.sacrifice_sinners.append(sinner_index)
+        self.sacrifice_pending = False
+        self.sacrifice_active = False
+        self.sacrifice_defense_turns = 0
+        self.sacrifice_defense_success_turns = 0
+        self.sacrifice_total_time = 0.0
+        if self.defense_for_solo_sacrifice:
+            if not self.sacrifice_sinners:
+                log.warning("[送死阶段] 未选择送死罪人，已忽略送死功能")
+            else:
+                self.sacrifice_pending = True
+                names = "、".join(all_sinners_name_zh[i] for i in self.sacrifice_sinners)
+                log.info(f"[送死阶段] 已启用：镜牢第一场将派出 {names} 守备至阵亡")
 
         self.start_time = time.time()
         self.first_battle = True  # 判断是否首次进入战斗，如果是则重新配队
@@ -122,15 +144,58 @@ class Mirror:
             msg += "，计时不完整"
         to_log_with_time(msg, end_time - self.current_floor_start_time)
 
+    def _build_sacrifice_team(self) -> list[int]:
+        """构造仅含送死罪人的编队顺序（值为出战序号，0 表示未选）。"""
+        order = [0] * 12
+        for deploy_order, sinner_index in enumerate(self.sacrifice_sinners, start=1):
+            order[sinner_index] = deploy_order
+        return order
+
+    def _sacrifice_sinner_names(self) -> str:
+        return "、".join(all_sinners_name_zh[i] for i in self.sacrifice_sinners)
+
     def _fight(self) -> None:
-        _, elapsed = self._time_call(
+        # sacrifice_pending 覆盖整段送死流程（含异常中断后重进战斗），
+        # 避免误走小指良单通并消耗其守备回合数。
+        in_sacrifice_phase = self.sacrifice_pending
+        if in_sacrifice_phase:
+            self.sacrifice_active = True
+            log.info(
+                "[送死阶段] 开始送死战斗（不消耗小指良单通守备回合，"
+                f"单通剩余={self.defense_for_solo_state.remaining_turns if self.defense_for_solo_state else 0}）"
+            )
+        result, elapsed = self._time_call(
             battle.fight,
             avoid_skill_3=self.avoid_skill_3,
             prioritize_skill_3=self.prioritize_skill_3,
             defense_first_round=self.defense_first_round,
-            defense_for_solo_state=self.defense_for_solo_state,
+            defense_for_solo_state=None if in_sacrifice_phase else self.defense_for_solo_state,
+            sacrifice_mode=in_sacrifice_phase,
         )
         self.battle_total_time += elapsed
+        if result == SACRIFICE_ACCEPTED:
+            self.sacrifice_defense_turns = battle.sacrifice_defense_turns
+            self.sacrifice_defense_success_turns = battle.sacrifice_defense_success_turns
+            self.sacrifice_total_time = elapsed
+            solo_left = self.defense_for_solo_state.remaining_turns if self.defense_for_solo_state else 0
+            log.info(
+                "[送死阶段] 送死完成，已回到路线图；下次进战斗将使用正式队伍编队；"
+                f"守备回合={self.sacrifice_defense_turns}"
+                f"（成功{self.sacrifice_defense_success_turns}）；"
+                f"小指良单通守备回合未消耗，剩余={solo_left}"
+            )
+            to_log_with_time("[送死阶段] 送死战斗", elapsed)
+            self.sacrifice_pending = False
+            self.sacrifice_active = False
+            self.first_battle = True
+            battle.fail_times = 0
+        elif in_sacrifice_phase:
+            log.warning(
+                f"[送死阶段] 送死战斗异常结束，返回值={result!r}，"
+                f"当前守备回合={battle.sacrifice_defense_turns}"
+                f"（成功{battle.sacrifice_defense_success_turns}），"
+                f"本场耗时={format_elapsed_time(elapsed)}，保持送死状态等待重试"
+            )
 
     def _enter_hard_mode_if_needed(self):
         if self.normal_to_hard_floor > 0 and self.floor >= self.normal_to_hard_floor:
@@ -371,7 +436,16 @@ class Mirror:
             if auto.find_element("teams/identify_assets.png"):
                 # 如果第一次启动脚本，还没进行编队，就先编队
                 if self.first_battle:
-                    team_formation(self.sinner_team)
+                    if self.sacrifice_pending:
+                        sacrifice_team = self._build_sacrifice_team()
+                        log.info(f"[送死阶段] 第一场仅编队：{self._sacrifice_sinner_names()}")
+                        team_formation(sacrifice_team)
+                        self.sacrifice_active = True
+                    else:
+                        if self.defense_for_solo_sacrifice and not self.sacrifice_pending:
+                            log.info("[送死阶段] 送死已完成，使用队伍设置中的正式队伍编队")
+                        team_formation(self.sinner_team)
+                        self.sacrifice_active = False
                     self.first_battle = False
                     continue
                 # 战斗配队失败的情况
@@ -382,6 +456,7 @@ class Mirror:
                 if (
                     not cfg.fight_to_last_man
                     and not self.defense_for_solo
+                    and not self.sacrifice_active
                     and not (
                         auto.find_element("teams/12_sinner_live_assets.png",threshold=0.75)
                         or auto.find_element("teams/11_sinner_live_assets.png")
@@ -762,6 +837,15 @@ class Mirror:
         msg = "此次镜牢在战斗"
         to_log_with_time(msg, self.battle_total_time)
 
+        # 输出送死阶段统计
+        if self.defense_for_solo_sacrifice:
+            log.info(
+                "[送死阶段] 此次镜牢送死统计："
+                f"守备回合={self.sacrifice_defense_turns}"
+                f"（成功{self.sacrifice_defense_success_turns}）"
+            )
+            to_log_with_time("[送死阶段] 此次镜牢送死战斗", self.sacrifice_total_time)
+
         # 输出事件总时间
         msg = f"此次镜牢走的事件次数{self.event_times}"
         log.info(msg)
@@ -779,7 +863,11 @@ class Mirror:
 
         # debug输出时间
         log.debug(
-            f"战斗时间:{self.battle_total_time} 事件时间:{self.event_total_time} 商店时间:{self.shop_total_time} 寻路时间:{self.find_road_total_time} 总时间:{elapsed_time}"
+            f"战斗时间:{self.battle_total_time} "
+            f"送死时间:{format_elapsed_time(self.sacrifice_total_time)} "
+            f"送死守备回合:{self.sacrifice_defense_turns}/{self.sacrifice_defense_success_turns} "
+            f"事件时间:{self.event_total_time} 商店时间:{self.shop_total_time} "
+            f"寻路时间:{self.find_road_total_time} 总时间:{elapsed_time}"
         )
 
         # 输出镜牢总时间
@@ -1235,6 +1323,17 @@ class Mirror:
         self.current_floor_start_time = None
         self.current_floor_time_complete = False
         self.floor_detect_failed = False
+        if self.defense_for_solo_sacrifice:
+            self.sacrifice_pending = bool(self.sacrifice_sinners)
+            self.sacrifice_active = False
+            self.sacrifice_defense_turns = 0
+            self.sacrifice_defense_success_turns = 0
+            self.sacrifice_total_time = 0.0
+            if self.sacrifice_pending:
+                log.info("[送死阶段] 镜牢重开，送死阶段将重新执行，统计已清零")
+            if self.defense_for_solo:
+                self.defense_for_solo_state = DefenseForSoloState(self.defense_for_solo_turns)
+                log.info(f"[送死阶段] 小指良单通守备回合数已重置为 {self.defense_for_solo_turns}")
 
     def event_handling(self):
         # 遇到有SKIP的情况
