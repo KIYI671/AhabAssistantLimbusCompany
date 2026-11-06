@@ -1299,7 +1299,12 @@ class Mirror:
                     retry()
 
             # 针对不同事件进行处理，优先选???与直接获取的，再选需要判定的，再选后续事件的，最后第一个事项
-            if auto.click_element("event/unknown_event.png"):
+            if unknown_pos := auto.find_element("event/unknown_event.png"):
+                if self.defense_for_solo:
+                    # 小指良单通模式：不选“？？？”选项，规避诅咒饰品
+                    event_handling.click_option_avoiding_unknown()
+                else:
+                    auto.mouse_click(unknown_pos[0], unknown_pos[1])
                 event_chance -= 1
                 continue
             if positions_list := auto.find_element(
