@@ -332,17 +332,25 @@ class ScreenShot:
         """
 
         try:
-            screen.handle.init_handle()
-            if screen.handle.hwnd == 0:
-                log.info("未找到游戏窗口，无法进行截图性能测试")
-                return False, 0.0
+            # 模拟器（含 PlayCover）没有桌面窗口句柄，截图走 ADB/MaaTools；
+            # 只有桌面版才需要先确认窗口存在。
+            if not cfg.simulator:
+                screen.handle.init_handle()
+                if screen.handle.hwnd == 0:
+                    log.info("未找到游戏窗口，无法进行截图性能测试")
+                    return False, 0.0
             start_time = time.time()
             for i in range(test_time):
-                ScreenShot.take_screenshot(gray=False)
+                # 截图失败会返回 None，此前直接计入耗时，导致"失败也显示成功"。
+                if ScreenShot.take_screenshot(gray=False) is None:
+                    log.info("截图性能测试失败：未能获取到游戏画面")
+                    return False, 0.0
             end_time = time.time()
             avg_time = (end_time - start_time) / test_time * 1000  # 转为毫秒
             log.info(f"截图性能测试: {test_time}次截图平均耗时 {avg_time:.2f} ms")
             return True, avg_time
+        except userStopError:
+            raise
         except Exception as e:
             log.info("截图性能测试失败")
             log.debug(f"截图性能测试报错: {e}")

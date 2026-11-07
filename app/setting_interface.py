@@ -678,7 +678,14 @@ class SettingInterface(QWidget):
                 content_kwargs={"time": time},
             )
         else:
-            msg = QT_TRANSLATE_NOOP("BaseInfoBar", "请确保LimbusCompany正在运行")
+            # 模拟器与桌面版的失败原因不同，提示要能指向真正该检查的地方。
+            if cfg.simulator:
+                msg = QT_TRANSLATE_NOOP(
+                    "BaseInfoBar",
+                    "请确认模拟器已连接且游戏正在运行（设置 → 模拟器设置）",
+                )
+            else:
+                msg = QT_TRANSLATE_NOOP("BaseInfoBar", "请确保LimbusCompany正在运行")
             BaseInfoBar.error(
                 title=QT_TRANSLATE_NOOP("BaseInfoBar", "截图测试结束"),
                 content=msg,
