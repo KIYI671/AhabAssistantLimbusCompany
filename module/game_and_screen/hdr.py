@@ -1,6 +1,7 @@
 """Windows HDR display detection through DXGI."""
 
 import ctypes
+import sys
 from dataclasses import dataclass
 
 from module.logger import log
@@ -77,50 +78,55 @@ IID_IDXGIOutput6 = GUID(
     (ctypes.c_ubyte * 8)(0xAD, 0xD7, 0x13, 0x7F, 0x51, 0x3F, 0x77, 0xA1),
 )
 
-_QueryInterface = ctypes.WINFUNCTYPE(
-    ctypes.c_long,
-    ctypes.c_void_p,
-    ctypes.POINTER(GUID),
-    ctypes.POINTER(ctypes.c_void_p),
-)
+if sys.platform == "win32":
+    _QueryInterface = ctypes.WINFUNCTYPE(
+        ctypes.c_long,
+        ctypes.c_void_p,
+        ctypes.POINTER(GUID),
+        ctypes.POINTER(ctypes.c_void_p),
+    )
 
-_Release = ctypes.WINFUNCTYPE(
-    ctypes.c_ulong,
-    ctypes.c_void_p,
-)
+    _Release = ctypes.WINFUNCTYPE(
+        ctypes.c_ulong,
+        ctypes.c_void_p,
+    )
 
-_EnumAdapters1 = ctypes.WINFUNCTYPE(
-    ctypes.c_long,
-    ctypes.c_void_p,
-    ctypes.c_uint,
-    ctypes.POINTER(ctypes.c_void_p),
-)
+    _EnumAdapters1 = ctypes.WINFUNCTYPE(
+        ctypes.c_long,
+        ctypes.c_void_p,
+        ctypes.c_uint,
+        ctypes.POINTER(ctypes.c_void_p),
+    )
 
-_EnumOutputs = ctypes.WINFUNCTYPE(
-    ctypes.c_long,
-    ctypes.c_void_p,
-    ctypes.c_uint,
-    ctypes.POINTER(ctypes.c_void_p),
-)
+    _EnumOutputs = ctypes.WINFUNCTYPE(
+        ctypes.c_long,
+        ctypes.c_void_p,
+        ctypes.c_uint,
+        ctypes.POINTER(ctypes.c_void_p),
+    )
 
-_GetDesc1 = ctypes.WINFUNCTYPE(
-    ctypes.c_long,
-    ctypes.c_void_p,
-    ctypes.POINTER(DXGI_OUTPUT_DESC1),
-)
+    _GetDesc1 = ctypes.WINFUNCTYPE(
+        ctypes.c_long,
+        ctypes.c_void_p,
+        ctypes.POINTER(DXGI_OUTPUT_DESC1),
+    )
 
-_ole32 = ctypes.windll.ole32
-_ole32.CoInitializeEx.argtypes = [ctypes.c_void_p, ctypes.c_ulong]
-_ole32.CoInitializeEx.restype = ctypes.c_long
-_ole32.CoUninitialize.argtypes = []
-_ole32.CoUninitialize.restype = None
+    _ole32 = ctypes.windll.ole32
+    _ole32.CoInitializeEx.argtypes = [ctypes.c_void_p, ctypes.c_ulong]
+    _ole32.CoInitializeEx.restype = ctypes.c_long
+    _ole32.CoUninitialize.argtypes = []
+    _ole32.CoUninitialize.restype = None
 
-_dxgi = ctypes.windll.dxgi
-_dxgi.CreateDXGIFactory1.argtypes = [
-    ctypes.POINTER(GUID),
-    ctypes.POINTER(ctypes.c_void_p),
-]
-_dxgi.CreateDXGIFactory1.restype = ctypes.c_long
+    _dxgi = ctypes.windll.dxgi
+    _dxgi.CreateDXGIFactory1.argtypes = [
+        ctypes.POINTER(GUID),
+        ctypes.POINTER(ctypes.c_void_p),
+    ]
+    _dxgi.CreateDXGIFactory1.restype = ctypes.c_long
+else:
+    # macOS/Linux 无 DXGI；保留模块可导入，运行时直接降级
+    _ole32 = None
+    _dxgi = None
 
 
 def _vtable_func(com_ptr: int, index: int, prototype):
@@ -202,6 +208,10 @@ def _enumerate_output_descs(factory_ptr: int) -> list[DXGI_OUTPUT_DESC1]:
 
 def enumerate_hdr_displays() -> list[HdrDisplayInfo]:
     """Return HDR color-space information for current display outputs."""
+    if _ole32 is None or _dxgi is None:
+        # macOS/Linux 没有 DXGI COM 接口，无法检测 HDR
+        return []
+
     hr = _ole32.CoInitializeEx(None, COINIT_APARTMENTTHREADED)
     if hr not in (S_OK, S_FALSE):
         log.warning(f"COM 初始化失败，跳过 HDR 检测: 0x{hr & 0xFFFFFFFF:08X}")

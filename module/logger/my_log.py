@@ -1,6 +1,5 @@
 import logging
 import os
-import sys
 from collections import deque
 from copy import deepcopy
 from pathlib import Path
@@ -19,7 +18,9 @@ from utils.singletonmeta import SingletonMeta
 class TranslationFormatter(colorlog.ColoredFormatter):
     """自定义日志格式化器，用于日志消息国际化"""
 
-    project_root = Path(sys._MEIPASS) if hasattr(sys, "_MEIPASS") else Path.cwd()
+    # 打包后应用自身的模块路径是相对的（PyInstaller 会把 co_filename 改写成 app/my_app.py 这类形式），
+    # 只有相对进程的工作目录（程序目录 / macOS 的数据目录）才能还原成简短路径。
+    project_root = Path.cwd()
 
     def format(self, record):
         record.msg = QApplication.translate("Logger", str(record.msg))
@@ -58,6 +59,29 @@ class UILogDispatcher(QObject):
 
 
 ui_log_dispatcher = UILogDispatcher()
+
+_LOG_LEVEL_ENV = "AALC_LOG_LEVEL"
+"""控制台日志级别（DEBUG/INFO/WARNING/ERROR/CRITICAL 或数字），默认 DEBUG。"""
+
+_LOG_FILE_LEVEL_ENV = "AALC_LOG_FILE_LEVEL"
+"""logs/debugLog.log 的日志级别，默认 DEBUG（反馈问题时的完整日志来源）。"""
+
+
+def _log_level_from_env(name: str, default: int) -> tuple[int, str | None]:
+    """读环境变量里的日志级别。
+
+    返回 ``(级别, 出错提示)``：未设置时用默认值且无提示，取值非法时回退默认值并把提示交给
+    调用方（handler 挂好后再用 logger 输出，避免在日志系统就绪前直接 print）。
+    """
+    raw = os.environ.get(name, "").strip()
+    if not raw:
+        return default, None
+    if raw.isdigit():
+        return int(raw), None
+    level = logging.getLevelName(raw.upper())
+    if isinstance(level, int):
+        return level, None
+    return default, f"环境变量 {name}={raw!r} 不是合法日志级别，改用 {logging.getLevelName(default)}"
 
 
 class UILogHandler(logging.Handler):
@@ -118,6 +142,10 @@ class Logger(metaclass=SingletonMeta):
         self.logger = logging.getLogger("AALC")
         self.logger.propagate = False  # 避免泄露到其他logger导致重复记录
 
+        # 环境变量控制日志级别（进程启动前设置；未设置保持原来的全量 DEBUG）
+        console_level, console_level_error = _log_level_from_env(_LOG_LEVEL_ENV, logging.DEBUG)
+        file_level, file_level_error = _log_level_from_env(_LOG_FILE_LEVEL_ENV, logging.DEBUG)
+
         # 移除其它第三方库给root logger添加的StreamHandler，避免重复输出
         _root_logger = logging.getLogger()
         _root_handlers = _root_logger.handlers
@@ -139,7 +167,7 @@ class Logger(metaclass=SingletonMeta):
                 },
             )
             console_handler.setFormatter(console_formatter)
-            console_handler.setLevel(logging.DEBUG)
+            console_handler.setLevel(console_level)
 
             # 创建日志目录
             os.makedirs("./logs", exist_ok=True)
@@ -154,7 +182,7 @@ class Logger(metaclass=SingletonMeta):
             file_formatter = deepcopy(console_formatter)
             file_formatter.no_color = True  # 输出到文件时不要加颜色符号
             debug_file_handler.setFormatter(file_formatter)
-            debug_file_handler.setLevel(logging.DEBUG)
+            debug_file_handler.setLevel(file_level)
 
             # 显示在 UI 窗口中的日志，写到 ring buffer，不落盘
             ui_log_formatter = TranslationFormatter("%(asctime)s - %(message)s", "%H:%M:%S", no_color=True)
@@ -163,10 +191,15 @@ class Logger(metaclass=SingletonMeta):
             ui_log_handler.setLevel(logging.INFO)
             ui_log_handler.setFormatter(ui_log_formatter)
 
-            self.logger.setLevel(logging.DEBUG)
+            # logger 自身放行到最低的处理器级别；UI 面板固定 INFO，别把它一起挡掉
+            self.logger.setLevel(min(console_level, file_level, logging.INFO))
             self.logger.addHandler(console_handler)
             self.logger.addHandler(debug_file_handler)
             self.logger.addHandler(ui_log_handler)
+
+            for message in (console_level_error, file_level_error):
+                if message:
+                    self.logger.warning(message)
 
     def get_logger(self) -> logging.Logger:
         return self.logger
