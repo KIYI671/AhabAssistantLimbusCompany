@@ -1,15 +1,24 @@
 import time
 
+import cv2
+import numpy as np
+from PIL import Image
+
 from module.automation import auto
 from module.config import cfg
 from module.logger import log
+from utils.image_utils import ImageUtils
 
 
 class EventHandling:
+    # 高概率的成功系
     SUCCESS_LEVEL_ASSETS = (
         "event/very_high.png",
         "event/high.png",
         "event/normal.png",
+    )
+    # 低概率的红色（失败）系
+    WARN_LEVEL_ASSETS = (
         "event/low.png",
         "event/very_low.png",
     )
@@ -33,14 +42,31 @@ class EventHandling:
 
         # 该方法只在“选择罪人进行判定”特征已命中后调用，因此可以使用稍低的
         # 专用阈值，兼容 MuMu 缩放后落在默认 0.8 临界线下方的彩色成功率文字。
-        for asset in self.SUCCESS_LEVEL_ASSETS:
+        # 彩色截图 → 罪人区域内红色（低/极低）涂黑 → 转灰度 → 找极高/高/一般，
+        # 这样very low不会再被灰度匹配误判成极高。
+        if auto.take_screenshot(gray=False) is not None:
+            frame = np.array(auto.screenshot)
+            if (bbox_img := ImageUtils.load_image("event/all_sinner_bbox.png")) is not None:
+                black_out_red(frame, ImageUtils.get_bbox(bbox_img))
+            auto.screenshot = Image.fromarray(frame).convert("L")
+            if self._click_first_hit(self.SUCCESS_LEVEL_ASSETS, now):
+                return True
+
+        # 极高/高/一般三档都没命中：重新截屏（不再处理红色部分），按原流程找低/极低
+        auto.take_screenshot()
+        if self._click_first_hit(self.WARN_LEVEL_ASSETS, now):
+            return True
+
+        return self.decision_event_handling_ocr(now=now)
+
+    def _click_first_hit(self, assets, now: float) -> bool:
+        for asset in assets:
             if best_option := auto.find_element(asset, threshold=self.SUCCESS_LEVEL_THRESHOLD):
                 auto.mouse_action_with_pos(best_option)
                 self.last_action_time = now
                 self.fallback_offset = 0
                 return True
-
-        return self.decision_event_handling_ocr(now=now)
+        return False
 
     def decision_event_handling_ocr(self, now: float | None = None) -> bool:
         now = time.monotonic() if now is None else now
@@ -71,6 +97,40 @@ class EventHandling:
         self.last_action_time = now
         self.fallback_offset = (self.fallback_offset + 1) % self.SINNER_COUNT
         return True
+
+    def click_option_avoiding_unknown(self) -> bool:
+        """小指良单通模式：事件选项出现“？？？”时，改为选择其它选项。"""
+        unknown_pos = auto.find_element("event/unknown_event.png")
+        if not unknown_pos:
+            return False
+        positions = auto.find_element(
+            "event/select_first_option_assets.png",
+            find_type="image_with_multiple_targets",
+            threshold=0.75,
+        )
+        if not positions:
+            return False
+        # “？？？”标签画在所属选项按钮内部，按钮自上而下排列：
+        # 所属按钮取标签上方最近的按钮（都不在上方时退回最近的），改选离标签最近的其它按钮
+        above = [p for p in positions if p[1] <= unknown_pos[1]]
+        owner = max(above, key=lambda p: p[1]) if above else min(positions, key=lambda p: abs(p[1] - unknown_pos[1]))
+        others = [p for p in positions if p is not owner]
+        target = min(others, key=lambda p: abs(p[1] - unknown_pos[1])) if others else owner
+        log.info("小指良单通模式：跳过“？？？”选项，规避诅咒饰品")
+        auto.mouse_click(target[0], target[1])
+        return True
+
+
+def black_out_red(frame_rgb, bbox):
+    """把 bbox 内红色系像素（低/极低徽章）置黑，使其不再干扰金橙系等级匹配。
+
+    只抹高饱和红（H≈1°，OpenCV 8bit H=角度/2 即 ≤4 或 ≥175）：金橙系徽章
+    （极高/高/一般）H≈18~23°，不会被抹。bbox 外区域保持原样。
+    """
+    roi = frame_rgb[bbox[1] : bbox[3], bbox[0] : bbox[2]]
+    hsv = cv2.cvtColor(roi, cv2.COLOR_RGB2HSV)
+    red = ((hsv[:, :, 0] <= 4) | (hsv[:, :, 0] >= 175)) & (hsv[:, :, 1] >= 90)
+    roi[red] = 0
 
 
 def is_edit_distance_one(s1, s2):
