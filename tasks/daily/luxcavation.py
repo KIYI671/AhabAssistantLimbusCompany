@@ -3,6 +3,7 @@ from time import sleep
 from module.automation import auto
 from module.config import cfg
 from module.logger import log
+from utils.timing import sleep_gameplay
 
 
 def _prepare_continuous_combat_count(
@@ -39,7 +40,7 @@ def _prepare_continuous_combat_count(
 
     for _ in range(combat_count - 1):
         auto.mouse_click(up_button[0], up_button[1])
-        sleep(0.1)
+        sleep_gameplay(0.1)
 
     log.debug(f"{log_prefix}连续战斗次数已设置为 {combat_count} 次")
     return True
