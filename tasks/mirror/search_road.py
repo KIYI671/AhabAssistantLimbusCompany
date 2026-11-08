@@ -1,6 +1,7 @@
 import heapq
 import time
 from enum import Enum
+from functools import lru_cache
 from time import sleep
 
 import cv2
@@ -405,10 +406,16 @@ def search_road_from_road_map(hard_mode=False):
 # battle 是常规遭遇战，boss_battle 是 Boss 战，event 是事件，focused_encounter 是集中遭遇战（链式战）
 # risky_encounter 是精锐遭遇战（链式战），shop 是商店，abnormality_focused_encounter 是异想体集中遭遇战
 
+@lru_cache(maxsize=1)
+def _get_ort_session():
+    """缓存 ONNX 推理会话，模型全进程只加载一次。"""
+    import onnxruntime as ort
+
+    return ort.InferenceSession("./assets/model/best.onnx")
+
 
 def identify_nodes(bus_x):
     import numpy as np
-    import onnxruntime as ort
 
     model_input_height = 544
     model_input_width = 960
@@ -425,7 +432,7 @@ def identify_nodes(bus_x):
     if auto.take_screenshot(gray=False) is None:
         return None
     original = np.array(auto.screenshot)
-    session = ort.InferenceSession("./assets/model/best.onnx")
+    session = _get_ort_session()
 
     # 等比例缩放并填充到模型输入尺寸；保留比例和偏移以便还原检测框坐标。
     height, width = original.shape[:2]

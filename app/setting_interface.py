@@ -40,6 +40,7 @@ from app.language_manager import SUPPORTED_LANG_NAME, LanguageManager
 from app.theme_pack_setting_interface import ThemePackSettingDialog
 from app.widget.setting_nav import SettingNav
 from module.config import cfg, theme_list
+from module.update.check_update import check_update
 from utils.adb_endpoint import normalize_adb_host
 from utils.schedule_helper import ScheduleHelper
 
@@ -633,6 +634,7 @@ class SettingInterface(QWidget):
         self.win_input_type_card.valueChanged.connect(self.__onWinInputTypeChanged)
         self.__onWinInputTypeChanged()
         self.autostart_card.switchButton.checkedChanged.connect(self.__onAutostartCardChanged)
+        self.check_update_card.switchButton.checkedChanged.connect(self.__onUpdatePrereleaseChanged)
         self.theme_card.valueChanged.connect(self.__onThemeCardChanged)
         self.simulator_type_setting_card.valueChanged.connect(self.__onSimulatorTypeChanged)
         self.__onSimulatorTypeChanged()
@@ -654,6 +656,18 @@ class SettingInterface(QWidget):
     def __onCheckImageResourceUpdateClicked(self) -> None:
         """将手动检查图片资源的请求上抛给主窗口处理。"""
         self.manualResourceSyncRequested.emit()
+
+    def __onUpdatePrereleaseChanged(self, isChecked: bool) -> None:
+        """切换到预览版渠道后检查更新，已有检查运行时跳过。"""
+        if not isChecked:
+            return
+
+        window = self.window()
+        update_thread = getattr(window, "update_thread", None)
+        if update_thread is not None and update_thread.isRunning():
+            return
+
+        check_update(window)
 
     def __onOpenLogsCardClicked(self):
         import os
