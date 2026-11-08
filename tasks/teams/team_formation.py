@@ -5,6 +5,7 @@ from module.automation import auto
 from module.config import cfg
 from module.decorator.decorator import begin_and_finish_time_log
 from module.logger import log
+from utils.timing import sleep_gameplay
 
 WINDOWS_ORDERED_TEAM_PAGE_SWIPE_DISTANCE = 400
 NAMED_TEAM_PAGE_SWIPE_DISTANCE = 385
@@ -74,7 +75,7 @@ def team_formation(sinner_team):
                 first_sinner[0] + 270 * (sinner - 6) * scale,
                 first_sinner[1] + 500 * scale,
             )
-        sleep(cfg.mouse_action_interval)
+        sleep_gameplay(cfg.mouse_action_interval)
 
 
 def _ordered_team_page_swipe_distance(page_index=None):

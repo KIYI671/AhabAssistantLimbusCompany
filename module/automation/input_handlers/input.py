@@ -11,6 +11,7 @@ from pywintypes import error as PyWinTypesError
 
 from module.config import cfg
 from utils.singletonmeta import SingletonMeta
+from utils.timing import sleep_input_hold
 
 from ...game_and_screen import screen
 from ...logger import log
@@ -364,7 +365,7 @@ class BackgroundInput(WinAbstractInput, metaclass=SingletonMeta):
             self.set_mouse_pos(x, y)
             self.set_active()
             self.mouse_down(x, y)
-            sleep(0.03)
+            sleep_input_hold(0.03)
             self.mouse_up(x, y)
             # 多次点击执行很快所以暂停放到循环外
 
@@ -474,7 +475,7 @@ class BackgroundInput(WinAbstractInput, metaclass=SingletonMeta):
             self.set_mouse_pos(x, y)
             self.set_active()
             self.mouse_down(x, y)
-            sleep(0.03)
+            sleep_input_hold(0.03)
             self.mouse_up(x, y)
 
         if move_back and current_mouse_position:
@@ -907,8 +908,8 @@ class WindowMoveInput(WinAbstractInput, metaclass=SingletonMeta):
         except Exception as e:
             log.debug(f"通过 WM_CHAR 输入文本失败: {e}")
 
-    def mouse_down(self, x, y):
-        """鼠标左键按下
+    def mouse_down(self, x, y, *, vary_hold=False):
+        """鼠标左键按下；仅单次点击启用持续时间微调，拖动时保持原有时序。
         Args:
             x (number): 相对于窗口左上角的 x 轴坐标
             y (number): 相对于窗口左上角的 y 轴坐标
@@ -919,10 +920,14 @@ class WindowMoveInput(WinAbstractInput, metaclass=SingletonMeta):
         long_positon = win32api.MAKELONG(x, y)
         if self.use_post_message:
             win32api.PostMessage(hwnd, win32con.WM_LBUTTONDOWN, 0, long_positon)
-            sleep(0.02 + cfg.config.mouse_down_duration)
+            duration = 0.02 + cfg.config.mouse_down_duration
         else:
             win32api.SendMessage(hwnd, win32con.WM_LBUTTONDOWN, 0, long_positon)
-            sleep(0.01)
+            duration = 0.01
+        if vary_hold:
+            sleep_input_hold(duration)
+        else:
+            sleep(duration)
 
     def mouse_up(self, x, y):
         """鼠标左键抬起
@@ -951,7 +956,7 @@ class WindowMoveInput(WinAbstractInput, metaclass=SingletonMeta):
             else:
                 self._set_window_pos(x, y)
             self.set_active()
-            self.mouse_down(x, y)
+            self.mouse_down(x, y, vary_hold=True)
             self.mouse_up(x, y)
         assert pos is not None
         screen.handle.set_window_pos(*pos)

@@ -34,6 +34,7 @@ from tasks.mirror.search_road import (
 from tasks.mirror.select_theme_pack import select_theme_pack, switch_theme_pack_difficulty
 from tasks.teams.team_formation import check_team, load_team_code_in_game, select_battle_team, team_formation
 from utils.image_utils import ImageUtils
+from utils.timing import sleep_gameplay
 
 
 # 输出时间统计
@@ -878,7 +879,7 @@ class Mirror:
             return False
         s = cfg.set_win_size / 1080
         auto.mouse_click(confirm_pos[0] - 340 * s, confirm_pos[1] + row_dy[gift_id] * s)
-        sleep(cfg.mouse_action_interval)
+        sleep_gameplay(cfg.mouse_action_interval)
         return True
 
     def select_init_ego_gift(self):
@@ -1378,9 +1379,9 @@ class Mirror:
         if type == 2:
             pos = auto.find_element("mirror/road_in_mir/acquire_ego_gift_refuse_assets.png")
             auto.mouse_click(pos[0] - 500 * my_scale, pos[1] - 500 * my_scale)
-            sleep(cfg.mouse_action_interval)
+            sleep_gameplay(cfg.mouse_action_interval)
             auto.mouse_click(pos[0], pos[1] - 500 * my_scale)
-            sleep(cfg.mouse_action_interval)
+            sleep_gameplay(cfg.mouse_action_interval)
             auto.click_element("mirror/road_in_mir/acquire_ego_gift_select_assets.png", model="normal")
             time.sleep(2)
             if retry() is False:
@@ -1454,7 +1455,7 @@ class Mirror:
                                         return False
                                     return
                         auto.mouse_click(button[0], button[1])
-                        time.sleep(1)
+                        sleep_gameplay(1)
                         auto.click_element(
                             "mirror/road_in_mir/acquire_ego_gift_select_assets.png",
                             model="normal",
@@ -1514,7 +1515,7 @@ class Mirror:
                 if auto.find_text_element(["0/2", "02", "2/2", "22", "/2"], my_crop=select_bbox):
                     for gift in my_list[:2]:
                         auto.mouse_click(gift[0], gift[1])
-                        sleep(cfg.mouse_action_interval)
+                        sleep_gameplay(cfg.mouse_action_interval)
                     auto.click_element(
                         "mirror/road_in_mir/acquire_ego_gift_select_assets.png",
                         model="normal",
@@ -1526,7 +1527,7 @@ class Mirror:
                 elif auto.find_text_element(["0/1", "01", "1/1", "11", "1/2", "12", "/1"], my_crop=select_bbox):
                     for gift in my_list[:1]:
                         auto.mouse_click(gift[0], gift[1])
-                        sleep(cfg.mouse_action_interval)
+                        sleep_gameplay(cfg.mouse_action_interval)
                     auto.click_element(
                         "mirror/road_in_mir/acquire_ego_gift_select_assets.png",
                         model="normal",
@@ -1538,7 +1539,7 @@ class Mirror:
                 else:
                     for gift in my_list:
                         auto.mouse_click(gift[0], gift[1])
-                        sleep(cfg.mouse_action_interval)
+                        sleep_gameplay(cfg.mouse_action_interval)
                     auto.click_element(
                         "mirror/road_in_mir/acquire_ego_gift_select_assets.png",
                         model="normal",
