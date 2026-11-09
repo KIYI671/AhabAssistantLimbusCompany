@@ -62,6 +62,8 @@ class Automation(metaclass=SingletonMeta):
     def init_input(self):
         """初始化输入处理器，将输入操作如点击、拖动等绑定至实例变量"""
         if self.input_handler:
+            # 重新初始化前先卸载假光标，避免旧会话的注入残留
+            self.release_fake_cursor()
             self.input_handler = None
         if cfg.simulator:
             if cfg.simulator_type == 0:
@@ -92,6 +94,11 @@ class Automation(metaclass=SingletonMeta):
 
                 log.debug("使用基于窗口移动的后台点击模块")
                 self.input_handler = WindowMoveInput()
+            elif input_type == "fake_cursor":
+                from .input_handlers.input import FakeCursorInput
+
+                log.debug("使用假光标后台点击模块")
+                self.input_handler = FakeCursorInput()
         if self.input_handler is None:
             from .input_handlers.input import BackgroundInput
 
@@ -121,6 +128,19 @@ class Automation(metaclass=SingletonMeta):
     def suspend_interactions(self) -> None:
         """暂时阻止业务线程继续点击。"""
         self._interaction_gate.clear()
+
+    def release_fake_cursor(self) -> None:
+        """让假光标后端卸载注入，游戏恢复读真光标。
+
+        只有 `fake_cursor` 模式实现了这个方法，其余输入方式调用为无操作。
+        """
+        release = getattr(self.input_handler, "release_fake_cursor", None)
+        if release is None:
+            return
+        try:
+            release()
+        except Exception as exc:
+            log.debug(f"卸载假光标失败: {exc}")
 
     def resume_interactions(self) -> None:
         """恢复业务线程点击。"""
