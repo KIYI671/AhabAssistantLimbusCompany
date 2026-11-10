@@ -199,28 +199,38 @@ class MNTConnection(object):
 
         # build connection
         client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        client.connect((self._DEFAULT_HOST, self.port))
-        self.client = client
+        client.settimeout(10)
+        socket_out = None
+        try:
+            client.connect((self._DEFAULT_HOST, self.port))
+            self.client = client
 
-        # get minitouch server info
-        socket_out = client.makefile()
+            # get minitouch server info
+            socket_out = client.makefile()
 
-        # v <version>
-        # protocol version, usually it is 1. needn't use this
-        socket_out.readline()
+            # v <version>
+            # protocol version, usually it is 1. needn't use this
+            socket_out.readline()
 
-        # ^ <max-contacts> <max-x> <max-y> <max-pressure>
-        _, max_contacts, max_x, max_y, max_pressure, *_ = (
-            socket_out.readline().replace("\n", "").replace("\r", "").split(" ")
-        )
-        self.max_contacts = max_contacts
-        self.max_x = max_x
-        self.max_y = max_y
-        self.max_pressure = max_pressure
+            # ^ <max-contacts> <max-x> <max-y> <max-pressure>
+            _, max_contacts, max_x, max_y, max_pressure, *_ = (
+                socket_out.readline().replace("\n", "").replace("\r", "").split(" ")
+            )
+            self.max_contacts = max_contacts
+            self.max_x = max_x
+            self.max_y = max_y
+            self.max_pressure = max_pressure
 
-        # $ <pid>
-        _, pid = socket_out.readline().replace("\n", "").replace("\r", "").split(" ")
-        self.pid = pid
+            # $ <pid>
+            _, pid = socket_out.readline().replace("\n", "").replace("\r", "").split(" ")
+            self.pid = pid
+            client.settimeout(None)
+        except Exception:
+            client.close()
+            raise
+        finally:
+            if socket_out is not None:
+                socket_out.close()
 
         log.debug("在端口上运行的 Minitouch：{}，PID：{}".format(self.port, self.pid))
         log.debug(
