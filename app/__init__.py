@@ -223,6 +223,7 @@ all_checkbox_config_name = [
     "aggressive_save_systems",
     "defense_first_round",
     "defense_for_solo",
+    "defense_for_solo_sacrifice",
     "fixed_team_use",
     "reward_cards",
     "after_level_IV",
