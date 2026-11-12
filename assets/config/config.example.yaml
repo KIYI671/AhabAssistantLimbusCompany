@@ -1,4 +1,4 @@
-config_version: 1781049600 # 配置文件版本号 (时间戳)
+config_version: 1794153600 # 配置文件版本号 (时间戳)
 
 # 游戏设置
 game_title_name: LimbusCompany # 游戏窗口标题。
@@ -115,7 +115,9 @@ thread_day_7: 1
 
 # 是否自动获取奖励
 get_reward: False # 是否进行获取奖励
-set_get_prize: 0 # 0 领取邮件和通行证日常与周常，1 只领取通行证日常与周常， 2 只领取邮件
+claim_mission_rewards: True # 领取日常、周常及赛季任务奖励
+claim_battle_pass_rewards: True # 领取通行证奖励
+claim_mail_rewards: True # 领取邮件奖励
 
 # 是否自动购买体力
 buy_enkephalin: False # 是否自动购买体力

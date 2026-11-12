@@ -74,6 +74,8 @@
 
 ![image](/assets/doc/image/page_2.png)
 
+在“领取奖励”页面勾选需要领取的奖励，可多选：日常/周常（包含赛季任务）、通行证奖励、邮件。
+
 ---
 
 ![image](/assets/doc/image/page_3.png)
