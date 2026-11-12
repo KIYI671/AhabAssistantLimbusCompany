@@ -471,8 +471,14 @@ class ConfigModel(BaseModel):
     get_reward: bool
     """是否进行获取奖励"""
 
-    set_get_prize: int
-    """奖励领取模式"""
+    claim_mission_rewards: bool
+    """领取日常、周常及赛季任务奖励"""
+
+    claim_battle_pass_rewards: bool
+    """领取通行证奖励"""
+
+    claim_mail_rewards: bool
+    """领取邮件奖励"""
 
     buy_enkephalin: bool
     """是否自动购买体力"""

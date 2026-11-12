@@ -327,17 +327,25 @@ class PageGetPrize(PageCard):
         self.setObjectName("page_get_prize")
 
     def __init_card(self):
-        self.set_get_prize = LabelWithComboBox(
-            QT_TRANSLATE_NOOP("LabelWithComboBox", "领取奖励"),
-            "set_get_prize",
-            set_get_prize_options,
+        self.claim_mission_rewards = BaseCheckBox(
+            "claim_mission_rewards", None, QT_TRANSLATE_NOOP("BaseCheckBox", "日常/周常"), center=False
+        )
+        self.claim_battle_pass_rewards = BaseCheckBox(
+            "claim_battle_pass_rewards", None, QT_TRANSLATE_NOOP("BaseCheckBox", "通行证奖励"), center=False
+        )
+        self.claim_mail_rewards = BaseCheckBox(
+            "claim_mail_rewards", None, QT_TRANSLATE_NOOP("BaseCheckBox", "邮件"), center=False
         )
 
     def __init_layout(self):
-        self.vbox_general.addWidget(self.set_get_prize)
+        self.vbox_general.addWidget(self.claim_mission_rewards)
+        self.vbox_general.addWidget(self.claim_battle_pass_rewards)
+        self.vbox_general.addWidget(self.claim_mail_rewards)
 
     def retranslateUi(self):
-        self.set_get_prize.retranslateUi()
+        self.claim_mission_rewards.retranslateUi()
+        self.claim_battle_pass_rewards.retranslateUi()
+        self.claim_mail_rewards.retranslateUi()
         super().retranslateUi()
 
 
