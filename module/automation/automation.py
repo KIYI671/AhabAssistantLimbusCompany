@@ -463,33 +463,74 @@ class Automation(metaclass=SingletonMeta):
     ) -> List:
         """
         在当前截图中查找多个目标图像的位置
+
+        这里和 find_image_element 一样遍历 existing_image_paths()（dark/default × zh_cn/en/share）。
+        原先直接 ImageUtils.load_image(target) 只按 path_manager.pic_path 的第一个命中路径加载，
+        等于绕过了 UI 主题识别：pic_path 的初始顺序是 dark 在前，游戏若是 default 主题
+        则本方法恒取 dark 模板 ⇒ 同一个模板在单目标模式命中 0.97、在多目标模式最高只有 0.38，
+        返回空列表后调用方（如饰品奖励页）就不点卡、只点灰色按钮，表现为无限空转。
         """
         try:
-            template = ImageUtils.load_image(target)
-            if target.endswith("assets.png"):
-                bbox = ImageUtils.get_bbox(template)
-                template = ImageUtils.crop(template, bbox)
-            if template is None:
-                raise ValueError("读取图片失败")
+            existing_paths = ImageUtils.existing_image_paths(target)
+            if not existing_paths:
+                log.error(f"未找到图片： {target} ")
+                log.debug(f"无法加载图片: {target}", stacklevel=additional_stack + 3)
+                return []
+
             screenshot = np.array(self.screenshot)
             crop_offset = (0, 0)
             if my_crop:
                 crop_offset = (int(round(my_crop[0])), int(round(my_crop[1])))
                 screenshot = ImageUtils.crop(screenshot, my_crop)
+
+            results = []
+            templates: dict[str, tuple[np.ndarray, list]] = {}
+            for loaded_path in existing_paths:
+                template, bbox = self._load_template_for_path(target, loaded_path, True)
+                if template is None:
+                    continue
+                templates[loaded_path] = (template, bbox)
+                _, match_val = ImageUtils.match_template(screenshot, template, bbox, self.model)
+                match_fmt = ".3f" if 0.70 < match_val < 0.90 else ".2f"
+                log.debug(
+                    f"多目标候选：{target.replace('./assets/images/', '')}, 路径: {loaded_path}, "
+                    f"相似度：{match_val:{match_fmt}}",
+                    stacklevel=additional_stack + 3,
+                )
+                results.append(
+                    {
+                        "path": loaded_path,
+                        "center": (0, 0),
+                        "matched": self._is_valid_match(match_val, threshold),
+                        "matchVal": match_val,
+                    }
+                )
+            if not results:
+                log.debug(f"无法加载图片: {target}", stacklevel=additional_stack + 3)
+                return []
+
+            self._update_path_state_from_match_results(results, additional_stack=additional_stack)
+            best = max(results, key=lambda r: r["matchVal"])
+            template, bbox = templates[best["path"]]
+            if target.endswith("assets.png"):
+                template = ImageUtils.crop(template, ImageUtils.get_bbox(template))
+
             matches = ImageUtils.match_template_with_multiple_targets(
                 screenshot, template, threshold, min_dist=min_dist
             )
             if crop_offset != (0, 0):
                 matches = [(x + crop_offset[0], y + crop_offset[1]) for x, y in matches]
             if len(matches) == 0:
-                log.debug(f"未找到任何目标图像{target}", stacklevel=additional_stack + 3)
-                return []
-            else:
                 log.debug(
-                    f"找到{len(matches)}个目标：{matches}",
+                    f"未找到任何目标图像{target}（当前最佳路径 {best['path']}，相似度 {best['matchVal']:.3f}）",
                     stacklevel=additional_stack + 3,
                 )
-                return matches
+                return []
+            log.debug(
+                f"找到{len(matches)}个目标：{matches}",
+                stacklevel=additional_stack + 3,
+            )
+            return matches
         except Exception as e:
             log.error(f"寻找图片出错:{e}")
             return []
