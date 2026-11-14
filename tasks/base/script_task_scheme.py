@@ -4,14 +4,19 @@ from datetime import datetime
 from threading import Event
 from time import sleep, time
 
-import win32api
-import win32con
+try:
+    import win32api  # Windows-only
+    import win32con
+except ImportError:
+    win32api = None  # type: ignore[assignment]
+    win32con = None  # type: ignore[assignment]
 from playsound3 import playsound
 from PySide6.QtCore import QT_TRANSLATE_NOOP, QMutex, QThread
 
 from app import mediator
 from app.windows_toast import TemplateToast, send_toast
 from module.automation import auto
+from module.automation.input_handlers.macos.playcover_control import PLAYCOVER_SIMULATOR_TYPE
 from module.config import TeamSetting, cfg
 from module.decorator.decorator import begin_and_finish_time_log
 from module.game_and_screen import game_process, screen
@@ -148,6 +153,14 @@ def init_game():
             )
 
             MumuControl(instance_number=mumu_instance_number)
+        elif cfg.simulator_type == PLAYCOVER_SIMULATOR_TYPE:
+            from module.automation.input_handlers.macos.playcover_control import (
+                PlayCoverControl,
+            )
+
+            # 启动时先清理旧连接再重建
+            PlayCoverControl.clean_connect()
+            PlayCoverControl()
         else:
             from module.automation.input_handlers.simulator.simulator_control import (
                 SimulatorControl,
@@ -164,6 +177,12 @@ def init_game():
             )
 
             MumuControl.connection_device.start_game()
+        elif cfg.simulator_type == PLAYCOVER_SIMULATOR_TYPE:
+            from module.automation.input_handlers.macos.playcover_control import (
+                PlayCoverControl,
+            )
+
+            PlayCoverControl.connection_device.start_game()
         else:
             from module.automation.input_handlers.simulator.simulator_control import (
                 SimulatorControl,

@@ -11,8 +11,8 @@ version = "1.0.9"
 dependencies = [
     "pyside6>=6.9.2",
     "pyside6-fluent-widgets>=1.9.1",
-    "pyuac~=0.0.3",
-    "pywin32",
+    "pyuac~=0.0.3 ; sys_platform == 'win32'",
+    "pywin32 ; sys_platform == 'win32'",
     "PyAutoGUI",
     "pynput",
     "pyperclip",
@@ -33,7 +33,7 @@ dependencies = [
     "rapidocr>=3.4.1",
     "tzdata>=2025.2",
     "adbutils>=2.10.2",
-    "windows-toasts>=1.3.1",
+    "windows-toasts>=1.3.1 ; sys_platform == 'win32'",
     "pydantic>=2.12.5",
 ]
 

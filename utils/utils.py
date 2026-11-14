@@ -8,8 +8,13 @@ from zoneinfo import ZoneInfo  # Python 3.9+ 内置模块
 
 import cv2
 import numpy as np
-import win32crypt
 
+try:
+    import win32crypt  # Windows DPAPI；macOS/Linux 无此模块
+except ImportError:
+    win32crypt = None  # type: ignore[assignment]
+
+from module.automation.input_handlers.macos.playcover_control import PLAYCOVER_SIMULATOR_TYPE
 from module.config import cfg
 from module.logger import log
 
@@ -132,6 +137,9 @@ def check_teams_order(lst):
 def encrypt_string(text: str, entropy: bytes = b"AALC") -> str:
     """使用当前Windows用户凭据加密字符串"""
 
+    if win32crypt is None:
+        raise NotImplementedError("DPAPI 凭据加密仅支持 Windows；macOS/Linux 暂未实现等价方案")
+
     if not text:
         return ""
 
@@ -153,6 +161,10 @@ def encrypt_string(text: str, entropy: bytes = b"AALC") -> str:
 
 def decrypt_string(encrypted_b64: str, entropy: bytes = b"AALC") -> str:
     """使用当前Windows用户凭据解密字符串"""
+    if win32crypt is None:
+        # 非 Windows 平台没有 DPAPI；与解密失败一致，原样返回
+        return encrypted_b64
+
     if not encrypted_b64:
         return ""
 
@@ -189,6 +201,15 @@ def check_game_running() -> bool:
                 MumuControl,
             )
             return MumuControl.connection_device.check_game_alive()
+        elif cfg.simulator_type == PLAYCOVER_SIMULATOR_TYPE:
+            from module.automation.input_handlers.macos.playcover_control import (
+                PlayCoverControl,
+            )
+
+            device = PlayCoverControl.connection_device
+            if device is None:
+                return False
+            return device.check_game_alive()
         else:
             # 其他模拟器类型，使用通用的 SimulatorControl 检查
             try:

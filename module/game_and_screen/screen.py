@@ -1,9 +1,19 @@
 from time import sleep
 from typing import TYPE_CHECKING, overload
 
-import win32api
-import win32con
-import win32gui
+try:
+    import win32api
+    import win32con
+    import win32gui
+
+    _HAS_WIN32 = True
+except ImportError:
+    # macOS/Linux：窗口句柄 API 不可用；模块仍可导入（GUI 依赖它），
+    # set_win/reset_win 等窗口管理入口在此时直接跳过
+    win32api = None  # type: ignore[assignment]
+    win32con = None  # type: ignore[assignment]
+    win32gui = None  # type: ignore[assignment]
+    _HAS_WIN32 = False
 
 from app import mediator
 from module.config import cfg
@@ -333,6 +343,11 @@ class Screen(metaclass=SingletonMeta):
 
     def set_win(self) -> None:
         """设置窗口大小与位置"""
+        if not _HAS_WIN32:
+            # macOS/Linux 没有 Win32 窗口可调（模拟器模式的窗口由系统管理），
+            # 后面检查分辨率、误触、尺寸的整套流程都无从谈起
+            log.debug("当前平台无 Win32 窗口接口，跳过窗口设置")
+            return
 
         def _set_win():
             # 如果窗口最小化或不可见，先将其恢复
@@ -511,6 +526,9 @@ class Screen(metaclass=SingletonMeta):
 
         任务结束链路会传 activate=False，只恢复窗口样式，不重新抢占前台焦点。
         """
+        if not _HAS_WIN32:
+            log.debug("当前平台无 Win32 窗口接口，跳过重置游戏窗口")
+            return True
         try:
             hwnd = self.handle.hwnd
             log.debug(f"开始重置游戏窗口，activate={activate}")

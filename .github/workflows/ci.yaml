@@ -98,11 +98,12 @@ jobs:
       - name: Checkout
         uses: actions/checkout@main
 
-      - name: Download build artifact
+      - name: Download build artifacts
         uses: actions/download-artifact@main
         with:
-          name: AALC_${{ needs.prepare-version.outputs.version }}.7z
+          pattern: AALC_${{ needs.prepare-version.outputs.version }}*
           path: release
+          merge-multiple: true
 
       - name: Generate release notes
         env:
@@ -195,7 +196,7 @@ jobs:
           make_latest: false
           generate_release_notes: false
           body_path: ${{ runner.temp }}/aalc-release-notes.md
-          files: release/AALC_${{ needs.prepare-version.outputs.version }}.7z
+          files: release/*
           fail_on_unmatched_files: true
           token: ${{ secrets.GITHUB_TOKEN }}
 

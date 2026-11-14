@@ -9,6 +9,20 @@ class AbstractInput:
     Tips: 有特殊需求写在对应方法描述中
     """
 
+    supports_keyboard: bool = True
+    """该输入方式能否把按键送达游戏；触摸端为 False。"""
+
+    keyboard_keys: frozenset[str] | None = None
+    """该输入方式支持的按键名；None 表示不限（见 :meth:`supports_key`）。"""
+
+    def supports_key(self, key: str) -> bool:
+        """指定按键能否送达游戏。
+
+        设备只支持部分按键时用 ``keyboard_keys`` 限定（如 PlayCover 只有 Enter/P/ESC），
+        其余按键的调用方据此继续走触摸兜底。
+        """
+        return self.supports_keyboard and (self.keyboard_keys is None or key in self.keyboard_keys)
+
     def __init__(self) -> None:
         self.is_pause: bool = False
         self.restore_time: float | None = None

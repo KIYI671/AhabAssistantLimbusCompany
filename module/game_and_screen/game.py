@@ -1,9 +1,16 @@
 import os
+import sys
 import webbrowser
 from time import sleep, time
 
 import psutil
-import win32gui
+
+try:
+    import win32gui  # Windows-only
+except ImportError:
+    # macOS / Linux：没有 Win32 窗口接口。模块仍要能导入（启动链路会加载它），
+    # 只是窗口相关的检测手段不可用，改为按进程名判断。
+    win32gui = None  # type: ignore[assignment]
 
 from module.config import cfg
 from utils.singletonmeta import SingletonMeta
@@ -32,6 +39,10 @@ class Game(metaclass=SingletonMeta):
                 proc_name = proc.info["name"]
                 # 精确匹配进程名（区分大小写，取决于系统）
                 if self.process_name in proc_name:
+                    if win32gui is None:
+                        # 非 Windows：没有窗口句柄可查，进程存在即视为存活。
+                        self.log.debug(f"游戏已启动：{self.process_name}，进程ID：{proc.pid}")
+                        return True
                     if win32gui.FindWindow("UnityWndClass", cfg.game_title_name):
                         self.log.debug(f"游戏已启动：{self.process_name}，进程ID：{proc.pid}")
                         return True
@@ -72,8 +83,14 @@ class Game(metaclass=SingletonMeta):
             self.log.info("使用steam命令启动游戏")
             sleep(5)
             if not self.check_game_alive() and self.game_path_exists:
-                os.startfile(self.game_path)
-                self.log.info(f"游戏启动：{self.game_path}")
+                # os.startfile 是 Windows 专属；macOS/Linux 没有等价语义，
+                # 直接跳过（游戏应由 Steam 拉起的 URL 启动）。
+                startfile = getattr(os, "startfile", None)
+                if startfile is not None:
+                    startfile(self.game_path)
+                    self.log.info(f"游戏启动：{self.game_path}")
+                else:
+                    self.log.debug("当前平台没有 os.startfile，跳过按路径启动")
             return True
         except Exception as e:
             self.log.error(f"启动游戏时发生错误：{e}")
