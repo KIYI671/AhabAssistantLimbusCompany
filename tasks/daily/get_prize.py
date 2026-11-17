@@ -73,14 +73,22 @@ def get_pass_prize():
 def get_mail_prize():
     loop_count = 15
     auto.model = "clam"
-    while True:
+    scale = cfg.set_win_size / 1440
+    empty_mail_bbox = tuple(round(value * scale) for value in (1000, 600, 1560, 850))
+    while loop_count >= 0:
         # 自动截图
         if auto.take_screenshot() is None:
             continue
+        loop_count -= 1
+        update_model_for_retry(loop_count, normal_at=10, aggressive_at=5)
         if retry() is False:
             return False
         if auto.click_element("mail/get_mail_prize_confirm.png"):
             auto.click_element("mail/close_assets.png")
+            break
+        close_position = auto.find_element("mail/close_assets.png", model="normal", threshold=0.68)
+        if close_position and auto.find_text_element(["暂无邮件", "no mail"], my_crop=empty_mail_bbox):
+            auto.mouse_action_with_pos(close_position, offset=False)
             break
         if auto.click_element("mail/claim_all_assets.png"):
             sleep(3)
@@ -88,11 +96,8 @@ def get_mail_prize():
                 continue
             auto.click_element("mail/close_assets.png")
             break
-        if auto.click_element("home/mail_assets.png"):
+        if not close_position and auto.click_element("home/mail_assets.png"):
             continue
         auto.mouse_to_blank()
-        loop_count -= 1
-        update_model_for_retry(loop_count, normal_at=20, aggressive_at=10)
-        if loop_count < 0:
-            log.error("无法收取邮箱")
-            break
+    else:
+        log.error("无法收取邮箱")
