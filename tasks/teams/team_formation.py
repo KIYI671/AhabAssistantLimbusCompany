@@ -123,10 +123,11 @@ def select_battle_team(num):
     find = False
     while auto.take_screenshot() is None:
         continue
-    if auto.find_element("home/first_prompt_assets.png", model="clam") and auto.find_element(
-        "home/back_assets.png", model="normal"
-    ):
-        auto.click_element("home/back_assets.png")
+    if auto.find_element("home/first_prompt_assets.png", model="clam", threshold=0.9):
+        if back_button := auto.click_element("home/back_assets.png", model="normal"):
+            auto.mouse_click(back_button[0], back_button[1])
+        elif back_button := auto.click_element("home/back2_assets.png", model="normal"):
+            auto.mouse_click(back_button[0], back_button[1])
     if identify_position := auto.find_element("teams/identify_assets.png", take_screenshot=True):
         position = [identify_position[0] - 2150 * scale, identify_position[1] + 215 * scale]
         auto.mouse_click(1, 1)

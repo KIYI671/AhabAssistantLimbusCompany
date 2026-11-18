@@ -12,6 +12,14 @@ from utils.path_manager import path_manager
 
 class ImageUtils:
     @staticmethod
+    def _find_image_path(image_path):
+        for path in path_manager.pic_path:
+            img_path = f"./assets/images/{path}/{image_path}"
+            if os.path.exists(img_path):
+                return img_path, path
+        return None, None
+
+    @staticmethod
     def load_image(image_path, resize=True, return_path=False):
         """
         加载图片，并根据指定区域裁剪图片。
@@ -21,14 +29,8 @@ class ImageUtils:
         :return: 图片数组；若 return_path=True，则返回 (图片数组, 路径名)。
         """
         try:
-            img_path = None
-            selected_path = None
-            for path in path_manager.pic_path:
-                img_path = os.path.join(f"./assets/images/{path}/{image_path}")
-                if os.path.exists(img_path):
-                    selected_path = path
-                    break
-            if img_path is None or not os.path.exists(img_path):
+            img_path, selected_path = ImageUtils._find_image_path(image_path)
+            if img_path is None:
                 log.error(f"未找到图片： {image_path} ")
                 return (None, None) if return_path else None
             # 使用上下文管理器打开图片文件，确保文件对象及时关闭
@@ -46,6 +48,22 @@ class ImageUtils:
         except Exception as e:
             log.error(f"加载图片时发生错误： {e}")
             return (None, None) if return_path else None
+
+    @staticmethod
+    def get_template_bbox(image_path):
+        """返回原始黑底模板中非黑像素的最小外接矩形。"""
+        img_path, _ = ImageUtils._find_image_path(image_path)
+        if img_path is None:
+            log.error(f"未找到图片： {image_path}")
+            return None
+        try:
+            with Image.open(img_path) as image:
+                if image.mode not in ("1", "L", "RGB"):
+                    return image.convert("RGB").getbbox()
+                return image.getbbox()
+        except (OSError, Image.DecompressionBombError):
+            log.error(f"无法读取图片： {image_path}")
+            return None
 
     @staticmethod
     def check_default_path_exists(image_path):
@@ -284,50 +302,33 @@ class ImageUtils:
         close_size=3,
         close_iter=2,
     ):
-        """
-        颜色区域计数：mask_fn 在 ROI 内生成前景掩码，闭运算合并后按连通域计数。
+        """颜色掩码经闭运算、连通域面积过滤与质心去重，返回 [(x, y, area)]。
 
-        Args:
-            image: 彩色 RGB ndarray（如彩色截图）
-            mask_fn: callable(ROI的RGB ndarray) -> uint8 掩码(0/255)
-            roi: (x1, y1, x2, y2) **1440 高度基准坐标**，函数内部按实际图像高度自动缩放，
-                 None 为全图；返回坐标为实际图像坐标系
-            min_area: 1440 高度基准下，连在一起的前景区域至少包含多少像素才保留
-            min_dist: 质心合并最小距离（1440 基准，按 scale 换算）
-            close_size/close_iter: 闭运算核边长与迭代次数（合并徽章内的字母笔画，0/负值关闭）
-
-        Returns:
-            list[(cx, cy, area)]: 各颜色区域质心与面积；无匹配返回 []，匹配出错返回 None
+        roi、min_area、min_dist 以 1440 高度为基准；返回实际截图坐标。
+        无匹配返回 []，处理失败返回 None。
         """
         try:
-            # 缩放比 = 截图实际高度 / 1440，下列所有以 1440 为基准的量都按它换算
             scale = image.shape[0] / 1440
             if roi:
-                # ROI 以 1440 基准书写，缩放到实际分辨率后裁剪出进度条横带；返回坐标需加回偏移
                 scaled = [int(round(v * scale)) for v in roi]
                 offset = (scaled[0], scaled[1])
                 work = ImageUtils.crop(image, scaled)
             else:
                 offset = (0, 0)
                 work = image
-            # 前景掩码：mask_fn 判定目标颜色像素（如 CLEAR 红字母），命中 255、其余 0
             mask = np.asarray(mask_fn(work), dtype=np.uint8)
             if mask.shape != work.shape[:2]:
                 raise ValueError(f"掩码尺寸 {mask.shape} 与 ROI {work.shape[:2]} 不一致")
-            # 闭运算：把同一标记内部的笔画间隙连成一整块，避免一枚标记数成多个连通域
             if close_size > 0 and close_iter > 0:
                 kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (close_size, close_size))
                 mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, kernel, iterations=close_iter)
-            # 面积是二维量，阈值按 scale² 换算，过滤抗锯齿碎屑
             min_a = max(1, int(min_area * scale * scale))
-            # 连通域计数：label 0 是背景，从 1 开始遍历
             count, _, stats, centroids = cv2.connectedComponentsWithStats(mask)
             regions = []
             for i in range(1, count):
                 area = stats[i, cv2.CC_STAT_AREA]
                 if area >= min_a:
                     regions.append((centroids[i][0] + offset[0], centroids[i][1] + offset[1], area))
-            # 质心去重：同一标记的残留碎块按面积从大到小保留，距已保留质心不足 min_dist 的合并
             merged = []
             for cx, cy, area in sorted(regions, key=lambda r: -r[2]):
                 if all(np.hypot(cx - mx, cy - my) > min_dist * scale for mx, my, _ in merged):

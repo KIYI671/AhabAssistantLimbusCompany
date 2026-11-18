@@ -6,7 +6,7 @@ import threading
 import time
 from ast import List
 from dataclasses import dataclass
-from typing import Any
+from typing import Any, Literal
 
 import cv2
 import numpy as np
@@ -390,6 +390,23 @@ class Automation(metaclass=SingletonMeta):
 
                 init_game()
                 start_time = time.time()
+
+    def get_template_position(
+        self, target: str, output: Literal["center", "bbox"] = "center"
+    ) -> tuple[int, int] | tuple[int, int, int, int] | None:
+        """按配置分辨率返回黑底模板的中心或最小外接矩形。"""
+        if output not in ("center", "bbox"):
+            raise ValueError(f"不支持的模板位置输出类型: {output}")
+        bbox = ImageUtils.get_template_bbox(target)
+        if bbox is None:
+            return None
+        scale = cfg.set_win_size / 1440
+        left, top, right, bottom = bbox
+        left, top = math.floor(left * scale), math.floor(top * scale)
+        right, bottom = math.ceil(right * scale), math.ceil(bottom * scale)
+        if output == "bbox":
+            return left, top, right, bottom
+        return (left + right) // 2, (top + bottom) // 2
 
     def find_element(
         self,

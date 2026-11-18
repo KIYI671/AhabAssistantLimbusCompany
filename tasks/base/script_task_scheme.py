@@ -108,18 +108,14 @@ def onetime_mir_process(team_setting: TeamSetting, team_num: int):
 
 
 def to_get_reward():
-    if cfg.set_get_prize == 0:
+    if not (cfg.claim_mission_rewards or cfg.claim_battle_pass_rewards or cfg.claim_mail_rewards):
+        return
+    back_init_menu()
+    if cfg.claim_mission_rewards or cfg.claim_battle_pass_rewards:
+        if not get_pass_prize(claim_missions=cfg.claim_mission_rewards, claim_rewards=cfg.claim_battle_pass_rewards):
+            return
         back_init_menu()
-        get_pass_prize()
-        back_init_menu()
-        get_mail_prize()
-        back_init_menu()
-    elif cfg.set_get_prize == 1:
-        back_init_menu()
-        get_pass_prize()
-        back_init_menu()
-    else:
-        back_init_menu()
+    if cfg.claim_mail_rewards:
         get_mail_prize()
         back_init_menu()
 
