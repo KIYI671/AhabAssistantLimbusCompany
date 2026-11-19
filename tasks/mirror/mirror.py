@@ -17,6 +17,7 @@ from module.my_error.my_error import (
 from module.ocr import ocr
 from tasks import all_systems, observe_system, start_gift
 from tasks.base.back_init_menu import back_init_menu
+from tasks.base.drive_entry import click_drive_entry
 from tasks.base.make_enkephalin_module import make_enkephalin_module
 from tasks.base.retry import retry
 from tasks.battle import battle
@@ -184,15 +185,8 @@ class Mirror:
             if auto.click_element("mirror/road_to_mir/enter_assets.png"):
                 sleep(0.5)
                 continue
-            if auto.click_element("home/mirror_dungeons_assets.png"):
+            if click_drive_entry("mirror_dungeons"):
                 continue
-            if auto.find_element("home/inferno_bus_assets.png") and not auto.find_element(
-                "home/mirror_dungeons_assets.png"
-            ):
-                sleep(1)
-                if not auto.find_element("home/mirror_dungeons_assets.png"):
-                    auto.click_element("home/window_assets.png")
-                    continue
             if auto.find_element("base/renew_confirm_assets.png", model="clam") and auto.find_element(
                 "home/drive_assets.png", model="normal"
             ):

@@ -3,6 +3,7 @@ from time import sleep
 from module.automation import auto
 from module.config import cfg
 from module.logger import log
+from tasks.base.drive_entry import click_drive_entry
 
 
 def _prepare_continuous_combat_count(
@@ -96,13 +97,8 @@ def EXP_luxcavation(combat_count: int = 1):
                     if select_team:
                         break
                     log.debug(f"经验本第 {lv_idx + 1} 关 3 次尝试均未进入编队，降级尝试下一关")
-        if auto.click_element("home/luxcavation_assets.png"):
+        if click_drive_entry("luxcavation"):
             continue
-        if auto.find_element("home/inferno_bus_assets.png") and not auto.find_element("home/luxcavation_assets.png"):
-            sleep(1)
-            if not auto.find_element("home/luxcavation_assets.png"):
-                auto.click_element("home/window_assets.png")
-                continue
         if auto.find_element("base/renew_confirm_assets.png", model="clam") and auto.find_element(
             "home/drive_assets.png", model="normal"
         ):
@@ -227,13 +223,8 @@ def thread_luxcavation(combat_count: int = 1):
         if auto.click_element("luxcavation/thread_assets.png"):
             sleep(0.5)
             continue
-        if auto.click_element("home/luxcavation_assets.png"):
+        if click_drive_entry("luxcavation"):
             continue
-        if auto.find_element("home/inferno_bus_assets.png") and not auto.find_element("home/luxcavation_assets.png"):
-            sleep(1)
-            if not auto.find_element("home/luxcavation_assets.png"):
-                auto.click_element("home/window_assets.png")
-                continue
         if auto.find_element("base/renew_confirm_assets.png", model="clam") and auto.find_element(
             "home/drive_assets.png", model="normal"
         ):
