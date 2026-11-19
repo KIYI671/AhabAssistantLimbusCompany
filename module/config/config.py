@@ -6,7 +6,7 @@ from pathlib import Path
 from time import localtime, strftime, time
 from typing import Any, Optional
 
-from pydantic import BaseModel, ValidationError
+from pydantic import BaseModel, TypeAdapter, ValidationError
 from ruamel.yaml import YAML, YAMLError
 
 from module.after_completion_types import (
@@ -181,6 +181,12 @@ class Config(metaclass=SingletonMeta):
                         file.unlink()
                     except Exception as e:
                         log.error(f"删除旧备份文件 {file} 失败: {e}")
+
+        if saved_version < 1794153600:
+            prize_mode = TypeAdapter(int).validate_python(loaded_config.pop("set_get_prize", 0))
+            loaded_config.setdefault("claim_mail_rewards", prize_mode != 1)
+            loaded_config.setdefault("claim_mission_rewards", prize_mode in (0, 1))
+            loaded_config.setdefault("claim_battle_pass_rewards", False)
 
         log.info("配置升级完成")
 

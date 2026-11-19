@@ -94,7 +94,7 @@ def back_init_menu(*, allow_restart: bool = True):
             continue
 
         # 左上角有后退键
-        if auto.click_element("home/back_assets.png"):
+        if auto.click_element("home/back_assets.png") or auto.click_element("home/back2_assets.png"):
             continue
 
         # 在战斗中

@@ -226,6 +226,21 @@
 <context>
     <name>BaseCheckBox</name>
     <message>
+        <location filename="../app/page_card.py" line="331"/>
+        <source>日常/周常</source>
+        <translation>Daily/Weekly</translation>
+    </message>
+    <message>
+        <location filename="../app/page_card.py" line="334"/>
+        <source>通行证奖励</source>
+        <translation>Battle Pass Rewards</translation>
+    </message>
+    <message>
+        <location filename="../app/page_card.py" line="337"/>
+        <source>邮件</source>
+        <translation>Mail</translation>
+    </message>
+    <message>
         <location filename="../app/page_card.py" line="210"/>
         <source>勾选后将使用连续作战模式，设置的值为最大连续作战场次</source>
         <translation>When checked, Continuous Combat Mode will be enabled; the set value represents the maximum number of consecutive battles</translation>
@@ -651,21 +666,6 @@ Right-click to set as permanent</translation>
         <location filename="../app/__init__.py" line="48"/>
         <source>换第三次</source>
         <translation>Thrice</translation>
-    </message>
-    <message>
-        <location filename="../app/__init__.py" line="51"/>
-        <source>邮件+日/周常</source>
-        <translation>Mail + Daily/Weekily</translation>
-    </message>
-    <message>
-        <location filename="../app/__init__.py" line="52"/>
-        <source>日/周常</source>
-        <translation>Daily/Weekily</translation>
-    </message>
-    <message>
-        <location filename="../app/__init__.py" line="53"/>
-        <source>邮件</source>
-        <translation>Mail</translation>
     </message>
     <message>
         <location filename="../app/__init__.py" line="63"/>

@@ -76,6 +76,8 @@ For additional support regarding external scripts, please refer to [Third-Party 
 
 ![image](/assets/doc/image/page_2.png)
 
+On the rewards page, select the rewards to collect: Daily/Weekly (including Seasonal missions), Battle Pass Rewards, and Mail. You can select multiple options.
+
 ---
 
 ![image](/assets/doc/image/page_3.png)
