@@ -885,7 +885,7 @@ class Shop:
                 self.fuse_IV is True
                 and self.second_system is True
                 and self.fuse_second_IV is False
-                and self.second_system_action[0] is True
+                and self.second_system_action[0]
                 and self.fuse_aggressive_switch is True
             ):
                 if auto.click_element(f"mirror/shop/keyword/keyword_{self.second_system_select}.png"):
@@ -1175,7 +1175,7 @@ class Shop:
                 self.after_level_IV_select == 2
                 and self.second_system is True
                 and self.fuse_second_IV is False
-                and self.second_system_action[0] is True
+                and self.second_system_action[0]
             ):
                 self.fuse_aggressive_switch = True
                 log.debug("合成四级，切换到第二体系四级合成")
