@@ -19,6 +19,7 @@ from adbutils import AdbError, adb
 from module.config import cfg
 from module.logger import log
 from module.my_error.my_error import userStopError
+from utils.timing import sleep_input_hold
 from utils.utils import run_as_user
 
 from .. import AbstractInput
@@ -1060,7 +1061,7 @@ class MumuControl(AbstractInput):
 
     def key_press(self, key):
         self.key_down(usual_key_code[key])
-        time.sleep(0.015)
+        sleep_input_hold(0.015)
         self.key_up(usual_key_code[key])
 
     def input_text(self, text: str):
@@ -1092,7 +1093,7 @@ class MumuControl(AbstractInput):
         msg = f"点击位置:({x},{y})"
         log.debug(msg, stacklevel=2)
         self.down(x, y)
-        time.sleep(0.015)
+        sleep_input_hold(0.015)
         self.up()
         time.sleep(0.035)
 
@@ -1109,7 +1110,7 @@ class MumuControl(AbstractInput):
 
     def long_click(self, x, y, duration):
         self.down(x, y)
-        time.sleep(duration)
+        sleep_input_hold(duration)
         self.up()
         time.sleep(0.050)
 
