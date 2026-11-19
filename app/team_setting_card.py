@@ -379,6 +379,12 @@ class TeamSettingCard(QFrame):
             self.team_setting.ignore_shop[shop_index] = values
 
     def save_team_setting(self):
+        # 统计可在编辑期间被清除或更新，保存时保留当前值，避免旧快照覆盖统计。
+        if team := cfg.config.teams.get(f"{self.team_num}"):
+            self.team_setting.total_mirror_time_hard = team.total_mirror_time_hard.copy()
+            self.team_setting.mirror_hard_count = team.mirror_hard_count
+            self.team_setting.total_mirror_time_normal = team.total_mirror_time_normal.copy()
+            self.team_setting.mirror_normal_count = team.mirror_normal_count
         cfg.set_value(f"{self.team_num}", self.team_setting, config_obj=cfg.config.teams)
         self.cancel_team_setting()
 
