@@ -35,7 +35,14 @@ from app.base_combination import (
     ObserveGiftSelectionRow,
     SinnerSelect,
 )
-from app.base_tools import BaseCheckBox, BaseComboBox, BaseLabel, BaseLineEdit, BaseSettingLayout
+from app.base_tools import (
+    BaseCheckBox,
+    BaseComboBox,
+    BaseLabel,
+    BaseLineEdit,
+    BaseSettingLayout,
+    MultiSelectComboBox,
+)
 from app.card.messagebox_custom import BaseInfoBar, MessageBoxConfirm
 from app.common.ui_config import (
     STARLIGHT_BONUS_COSTS,
@@ -481,6 +488,9 @@ class TeamSettingCard(QFrame):
                         self.foolproof(getattr(self.team_setting, combobox))
 
         self.findChild(BaseComboBox, "defense_for_solo_turns").set_options(self.team_setting.defense_for_solo_turns - 1)
+        if sacrifice_select := self.findChild(MultiSelectComboBox, "defense_for_solo_sacrifice_sinners"):
+            sacrifice_select.set_selected(self.team_setting.defense_for_solo_sacrifice_sinners)
+        self.customize_settings_module._sync_sacrifice_enabled()
 
         # 读取编队码设置
         if team_code_input := self.findChild(BaseLineEdit, "team_code"):
@@ -647,6 +657,8 @@ class CustomizeSettingsModule(QFrame):
 
         self.features_patch_widget_1 = QWidget()
         self.features_patch_line_1 = QHBoxLayout(self.features_patch_widget_1)
+        self.sacrifice_line_widget = QWidget()
+        self.sacrifice_line = QHBoxLayout(self.sacrifice_line_widget)
 
         self.star_layout = BaseSettingLayout(box_type=2)
         self.star_layout.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
@@ -751,6 +763,38 @@ class CustomizeSettingsModule(QFrame):
         self.defense_for_solo_turns.add_items({str(turn): turn for turn in range(1, 6)})
         self.defense_for_solo_turns.set_box_enabled(self.defense_for_solo.check_box.isChecked())
         self.defense_for_solo.check_box.toggled.connect(self.defense_for_solo_turns.set_box_enabled)
+        sacrifice_sinner_items = {
+            QT_TRANSLATE_NOOP("MultiSelectComboBox", "李箱"): 0,
+            QT_TRANSLATE_NOOP("MultiSelectComboBox", "浮士德"): 1,
+            QT_TRANSLATE_NOOP("MultiSelectComboBox", "堂吉诃德"): 2,
+            QT_TRANSLATE_NOOP("MultiSelectComboBox", "良秀"): 3,
+            QT_TRANSLATE_NOOP("MultiSelectComboBox", "默尔索"): 4,
+            QT_TRANSLATE_NOOP("MultiSelectComboBox", "鸿璐"): 5,
+            QT_TRANSLATE_NOOP("MultiSelectComboBox", "希斯克利夫"): 6,
+            QT_TRANSLATE_NOOP("MultiSelectComboBox", "以实玛利"): 7,
+            QT_TRANSLATE_NOOP("MultiSelectComboBox", "罗佳"): 8,
+            QT_TRANSLATE_NOOP("MultiSelectComboBox", "辛克莱"): 9,
+            QT_TRANSLATE_NOOP("MultiSelectComboBox", "奥提斯"): 10,
+            QT_TRANSLATE_NOOP("MultiSelectComboBox", "格里高尔"): 11,
+        }
+        self.defense_for_solo_sacrifice = BaseCheckBox(
+            "defense_for_solo_sacrifice",
+            None,
+            QT_TRANSLATE_NOOP("BaseCheckBox", "单通前先送死"),
+            tips=QT_TRANSLATE_NOOP(
+                "BaseCheckBox",
+                "镜牢第一场仅派出所选罪人全员守备至阵亡，接受结果后用正式队伍重进，再执行小指良单通",
+            ),
+        )
+        self.defense_for_solo_sacrifice_sinners = MultiSelectComboBox(
+            "defense_for_solo_sacrifice_sinners",
+            sacrifice_sinner_items,
+            combo_box_width=160,
+            placeholder=QT_TRANSLATE_NOOP("MultiSelectComboBox", "选择送死罪人"),
+        )
+        self.defense_for_solo.check_box.toggled.connect(self._sync_sacrifice_enabled)
+        self.defense_for_solo_sacrifice.check_box.toggled.connect(self._sync_sacrifice_enabled)
+        self._sync_sacrifice_enabled()
         self.defense_first_round.check_box.toggled.connect(
             lambda checked: self.defense_for_solo.set_check_false() if checked else None
         )
@@ -979,6 +1023,13 @@ class CustomizeSettingsModule(QFrame):
         self.features_patch_line_1.addWidget(self.defense_for_solo)
         self.defense_for_solo.hBoxLayout.addWidget(self.defense_for_solo_turns, alignment=Qt.AlignmentFlag.AlignLeft)
 
+        self.sacrifice_line.setContentsMargins(0, 0, 0, 0)
+        self.sacrifice_line.addWidget(self.defense_for_solo_sacrifice)
+        self.defense_for_solo_sacrifice.hBoxLayout.addWidget(
+            self.defense_for_solo_sacrifice_sinners, alignment=Qt.AlignmentFlag.AlignLeft
+        )
+        self.sacrifice_line.addStretch()
+
         self.star_list.addWidget(self.starlight_select_all_wrapper, 0, 0)
         self.star_list.addWidget(self.starlight_clear_button_wrapper, 0, 1)
         self.star_list.addWidget(
@@ -1043,6 +1094,7 @@ class CustomizeSettingsModule(QFrame):
         self.main_layout.addWidget(self.second_line_widget)
         self.main_layout.addWidget(self.third_line_widget)
         self.main_layout.addWidget(self.features_patch_widget_1)
+        self.main_layout.addWidget(self.sacrifice_line_widget)
         self.main_layout.addWidget(self.star_layout)
         self.main_layout.addWidget(self.features_patch_widget_2, Qt.AlignLeft)
         self.main_layout.addWidget(self.fourth_line_widget)
@@ -1053,6 +1105,15 @@ class CustomizeSettingsModule(QFrame):
         self.main_layout.addWidget(self.ninth_line_widget)
         self.main_layout.addWidget(self.tenth_line_widget)
         self.main_layout.addWidget(self.eleventh_line_widget)
+
+    def _sync_sacrifice_enabled(self, checked: bool = False):
+        """送死开关仅在开启「小指良单通」时可操作；关闭单通时一并关掉送死。"""
+        solo_enabled = self.defense_for_solo.check_box.isChecked()
+        self.defense_for_solo_sacrifice.set_box_enabled(solo_enabled)
+        sacrifice_enabled = solo_enabled and self.defense_for_solo_sacrifice.check_box.isChecked()
+        self.defense_for_solo_sacrifice_sinners.set_box_enabled(sacrifice_enabled)
+        if not solo_enabled and self.defense_for_solo_sacrifice.check_box.isChecked():
+            self.defense_for_solo_sacrifice.set_check_false()
 
     def __set_all_starlight(self, bonus_value: int):
         mediator.team_setting.emit({"starlight_all_state": max(0, min(int(bonus_value), 3))})
@@ -1088,6 +1149,8 @@ class CustomizeSettingsModule(QFrame):
         self.aggressive_save_systems.retranslateUi()
         self.defense_first_round.retranslateUi()
         self.defense_for_solo.retranslateUi()
+        self.defense_for_solo_sacrifice.retranslateUi()
+        self.defense_for_solo_sacrifice_sinners.retranslateUi()
         self.fixed_team_use.retranslateUi()
         self.reward_cards.retranslateUi()
         self.re_formation_each_floor.retranslateUi()

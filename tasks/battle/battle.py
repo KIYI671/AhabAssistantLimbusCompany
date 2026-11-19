@@ -17,9 +17,10 @@ from tasks import sins
 from tasks.base.retry import retry
 from tasks.event import event_handling
 from utils.image_utils import ImageUtils
-from utils.utils import find_skill3
+from utils.utils import find_skill3, format_elapsed_time
 
 DEFENSE_FOR_SOLO_TURN_LIMIT = 5
+SACRIFICE_ACCEPTED = "sacrifice_accepted"
 
 
 @dataclass
@@ -45,6 +46,10 @@ class Battle:
         self.cur_turn = 1
         self.is_tool = is_tool
         """是否由小工具初始化"""
+        self.sacrifice_defense_turns = 0
+        """送死阶段已执行的守备回合数（含守备失败改 P+Enter 的回合）"""
+        self.sacrifice_defense_success_turns = 0
+        """送死阶段守备成功的回合数"""
 
     @staticmethod
     def to_battle():
@@ -115,18 +120,46 @@ class Battle:
         prioritize_skill_3: bool = False,
         defense_for_solo_state: DefenseForSoloState | None = None,
         defense_for_solo_used_this_turn: bool = False,
+        sacrifice_mode: bool = False,
     ) -> bool:
         auto.mouse_click_blank()
         use_limited_defense = (
-            defense_for_solo_state is not None
+            not sacrifice_mode
+            and defense_for_solo_state is not None
             and defense_for_solo_state.remaining_turns > 0
             and not defense_for_solo_used_this_turn
         )
         use_first_round_defense = (
-            first_turn and defense_first_round and not defense_for_solo_used_this_turn
+            not sacrifice_mode
+            and first_turn
+            and defense_first_round
+            and not defense_for_solo_used_this_turn
         )
         limited_defense_succeeded = False
-        if (use_limited_defense or use_first_round_defense) and auto.find_element(
+        if sacrifice_mode and auto.find_element("battle/gear_left.png", threshold=0.9):
+            self.sacrifice_defense_turns += 1
+            turn_no = self.sacrifice_defense_turns
+            msg = f"[送死阶段] 第{turn_no}回合执行全员守备"
+            log.info(msg)
+            if self._defense_this_round() is False:
+                msg = f"[送死阶段] 第{turn_no}回合全员守备失败，改为P+Enter"
+                log.warning(msg)
+                auto.key_press("p")
+                sleep(0.5)
+                auto.key_press("enter")
+            else:
+                self.sacrifice_defense_success_turns += 1
+                msg = (
+                    f"[送死阶段] 第{turn_no}回合全员守备已执行"
+                    f"（成功{self.sacrifice_defense_success_turns}/{self.sacrifice_defense_turns}）"
+                )
+                log.info(msg)
+            sleep(2)
+            if not auto.find_element("battle/pause_assets.png", take_screenshot=True):
+                auto.key_press("p")
+                sleep(0.5)
+                auto.key_press("enter")
+        elif (use_limited_defense or use_first_round_defense) and auto.find_element(
             "battle/gear_left.png", threshold=0.9
         ):
             if use_limited_defense:
@@ -204,6 +237,7 @@ class Battle:
         combat_count=1,
         defense_for_solo_state: DefenseForSoloState | None = None,
         prioritize_skill_3=False,
+        sacrifice_mode: bool = False,
     ):
         chance = self.INIT_CHANCE
         waiting = self._update_wait_time()
@@ -217,6 +251,10 @@ class Battle:
         if defense_on_turn1:
             defense_first_round = True
             turn_ocr_bbox = ImageUtils.get_bbox(ImageUtils.load_image("battle/turn_ocr_assets.png"))
+        if sacrifice_mode:
+            self.sacrifice_defense_turns = 0
+            self.sacrifice_defense_success_turns = 0
+            log.info("[送死阶段] 进入送死战斗：每回合全员守备，直至全灭后接受结果")
 
         first_turn = True
         defense_for_solo_used_this_turn = False
@@ -231,6 +269,7 @@ class Battle:
                 prioritize_skill_3=prioritize_skill_3,
                 defense_for_solo_state=defense_for_solo_state,
                 defense_for_solo_used_this_turn=defense_for_solo_used_this_turn,
+                sacrifice_mode=sacrifice_mode,
             )
             defense_for_solo_used_this_turn = (
                 defense_for_solo_used_this_turn or limited_defense_succeeded
@@ -256,6 +295,15 @@ class Battle:
             if auto.find_element("mirror/road_in_mir/legend_assets.png"):
                 if infinite_battle:
                     continue
+                if sacrifice_mode:
+                    elapsed = time.time() - start_time
+                    log.info(
+                        "[送死阶段] 战斗循环中检测到路线图，视为送死完成；"
+                        f"守备回合={self.sacrifice_defense_turns}"
+                        f"（成功{self.sacrifice_defense_success_turns}），"
+                        f"战斗耗时={format_elapsed_time(elapsed)}"
+                    )
+                    return SACRIFICE_ACCEPTED
                 return False
 
             # 战斗开始前的加载
@@ -280,8 +328,23 @@ class Battle:
                 defense_for_solo_used_this_turn = False
                 continue
 
-            # 战斗失败重启
+            # 战斗失败重启 / 送死阶段接受结果
             if auto.find_element("battle/dead_all.png"):
+                if sacrifice_mode:
+                    accepted = self._accept_sacrifice_defeat()
+                    if accepted:
+                        elapsed = time.time() - start_time
+                        log.info(
+                            "[送死阶段] 已接受全灭结果，准备回到镜牢路线图；"
+                            f"守备回合={self.sacrifice_defense_turns}"
+                            f"（成功{self.sacrifice_defense_success_turns}），"
+                            f"战斗耗时={format_elapsed_time(elapsed)}"
+                        )
+                        return SACRIFICE_ACCEPTED
+                    log.warning("[送死阶段] 接受全灭结果失败，继续重试")
+                    defense_for_solo_used_this_turn = False
+                    continue
+
                 dead_select = auto.find_element("battle/dead_all.png", find_type="image_with_multiple_targets")
                 if len(dead_select) == 3:
                     dead_select = sorted(dead_select, key=lambda y: y[1])
@@ -306,7 +369,7 @@ class Battle:
                     return False
                 continue
 
-            if in_mirror and not cfg.fight_to_last_man and not infinite_battle:
+            if in_mirror and not cfg.fight_to_last_man and not infinite_battle and not sacrifice_mode:
                 if dead_position := auto.find_element("battle/dead.png"):
                     my_scale = cfg.set_win_size / 1440
                     dead_bbox = (
@@ -713,3 +776,39 @@ class Battle:
             return True
         except Exception:
             return False
+
+    @staticmethod
+    def _accept_sacrifice_defeat() -> bool:
+        """送死阶段全灭后，点击「接受结果并前往关卡入场界面」并确认。"""
+        log.info("[送死阶段] 检测到全灭弹窗，准备点击第三个选项「接受结果并前往关卡入场界面」")
+        dead_select = auto.find_element("battle/dead_all.png", find_type="image_with_multiple_targets")
+        if not dead_select or len(dead_select) < 3:
+            count = 0 if not dead_select else len(dead_select)
+            log.warning(f"[送死阶段] 全灭选项识别异常，期望3个，实际{count}个")
+            return False
+
+        dead_select = sorted(dead_select, key=lambda pos: pos[1])
+        target = dead_select[2]
+        log.info(f"[送死阶段] 点击第三个选项，位置=({target[0]:.1f}, {target[1]:.1f})")
+        auto.mouse_click(target[0], target[1])
+        sleep(0.5)
+
+        if not auto.click_element("battle/dead_all_confirm_assets.png", take_screenshot=True):
+            log.warning("[送死阶段] 未点到确认按钮，尝试再次截图点击")
+            if not auto.click_element("battle/dead_all_confirm_assets.png", take_screenshot=True):
+                return False
+        log.info("[送死阶段] 已点击确认，等待回到镜牢路线图")
+
+        for attempt in range(40):
+            if auto.take_screenshot() is None:
+                continue
+            if auto.find_element("mirror/road_in_mir/legend_assets.png"):
+                log.info(f"[送死阶段] 已回到镜牢路线图（等待{attempt + 1}次截图）")
+                return True
+            if auto.find_element("battle/dead_all.png"):
+                log.debug("[送死阶段] 全灭弹窗仍在，再次尝试点击确认")
+                auto.click_element("battle/dead_all_confirm_assets.png")
+            sleep(0.5)
+
+        log.warning("[送死阶段] 等待回到路线图超时")
+        return False

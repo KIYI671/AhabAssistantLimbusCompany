@@ -14,6 +14,13 @@ from module.config import cfg
 from module.logger import log
 
 
+def format_elapsed_time(elapsed_time: float) -> str:
+    """将秒数格式化为 HH:MM:SS，与项目其它耗时日志一致。"""
+    hours, remainder = divmod(max(0.0, elapsed_time), 3600)
+    minutes, seconds = divmod(remainder, 60)
+    return f"{int(hours):02}:{int(minutes):02}:{int(seconds):02}"
+
+
 def get_day_of_week():
     # 直接获取当前东九区时间（Asia/Seoul）
     now_time = datetime.now(ZoneInfo("Asia/Seoul"))

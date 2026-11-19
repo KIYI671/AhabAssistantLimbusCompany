@@ -1,6 +1,6 @@
-from typing import List, Optional
+from typing import Any, List, Optional
 
-from pydantic import BaseModel, field_validator
+from pydantic import BaseModel, field_validator, model_validator
 
 
 class TeamSetting(BaseModel):
@@ -108,6 +108,12 @@ class TeamSetting(BaseModel):
     defense_for_solo_turns: int = 5
     """小指良连续全员防御回合数"""
 
+    defense_for_solo_sacrifice: bool = False
+    """小指良单通前先送死所选罪人"""
+
+    defense_for_solo_sacrifice_sinners: List[int] = [0, 1]
+    """送死罪人列表（0-11，对应编队格子顺序，可多选）"""
+
     fixed_team_use: bool = False
     """固定队伍用途"""
 
@@ -203,6 +209,29 @@ class TeamSetting(BaseModel):
 
     mirror_normal_count: int = 0
     """普通镜牢次数"""
+
+    @model_validator(mode="before")
+    @classmethod
+    def _migrate_sacrifice_sinners(cls, data: Any) -> Any:
+        """兼容旧版两个单独下拉框字段。"""
+        if not isinstance(data, dict):
+            return data
+        if "defense_for_solo_sacrifice_sinners" not in data:
+            old_1 = data.get("defense_for_solo_sacrifice_1")
+            old_2 = data.get("defense_for_solo_sacrifice_2")
+            if old_1 is not None or old_2 is not None:
+                sinners: list[int] = []
+                for value in (old_1, old_2):
+                    if value is None:
+                        continue
+                    value = int(value)
+                    if value not in sinners:
+                        sinners.append(value)
+                data["defense_for_solo_sacrifice_sinners"] = sinners or [0, 1]
+        data.pop("defense_for_solo_sacrifice_1", None)
+        data.pop("defense_for_solo_sacrifice_2", None)
+        return data
+
 
 class ConfigModel(BaseModel):
     """配置模型"""
