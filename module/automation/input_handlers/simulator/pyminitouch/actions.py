@@ -134,18 +134,30 @@ class MNTDevice(object):
         self.start()
 
     def start(self):
-        # prepare for connection
-        try:
-            self.server = MNTServer(self.device_id)
-        except AssertionError:
-            import adbutils
-
-            adbutils.adb.kill_server()
-            self.start()
-        except:
-            self.start()
-        # real connection
-        self.connection = MNTConnection(self.server.port)
+        last_error = None
+        for attempt in range(3):
+            try:
+                self.server = MNTServer(self.device_id)
+                self.connection = MNTConnection(self.server.port)
+                return
+            except Exception as exc:
+                last_error = exc
+                if self.connection is not None:
+                    try:
+                        self.connection.disconnect()
+                    except Exception:
+                        pass
+                    self.connection = None
+                if self.server is not None:
+                    try:
+                        self.server.stop()
+                    except Exception:
+                        pass
+                    self.server = None
+                log.warning(f"minitouch 初始化失败 ({attempt + 1}/3): {type(exc).__name__}: {exc}")
+                if attempt < 2:
+                    time.sleep(1)
+        raise RuntimeError(f"minitouch 初始化重试耗尽: {last_error}") from last_error
 
     def stop(self):
         self.connection.disconnect()
