@@ -279,6 +279,16 @@ class Mirror:
             ):
                 break
 
+            # 重开的奖励领取处理
+            if preparing:
+                if auto.find_element("mirror/claim_reward/clear_assets.png"):
+                    break
+                if auto.click_element("mirror/road_in_mir/mirror_failed_confirm_assets.png"):
+                    continue
+                if auto.click_element("mirror/claim_reward/claim_rewards_assets.png"):
+                    time.sleep(1)
+                    continue
+
             # 离开镜牢的设置页面
             if to_window_position := auto.find_element("mirror/road_in_mir/to_window_assets.png", threshold=0.75):
                 auto.mouse_click(to_window_position[0] - 200 * cfg.set_win_size / 1440, to_window_position[1])
@@ -1243,6 +1253,7 @@ class Mirror:
             if auto.click_element("mirror/road_in_mir/towindow&forfeit_confirm_assets.png"):
                 break
             if auto.click_element("mirror/road_in_mir/forfeit_assets.png"):
+                time.sleep(1)
                 continue
             if auto.click_element("battle/give_up_assets.png"):
                 continue
