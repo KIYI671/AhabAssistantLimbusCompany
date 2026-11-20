@@ -122,9 +122,7 @@ class Battle:
             and defense_for_solo_state.remaining_turns > 0
             and not defense_for_solo_used_this_turn
         )
-        use_first_round_defense = (
-            first_turn and defense_first_round and not defense_for_solo_used_this_turn
-        )
+        use_first_round_defense = first_turn and defense_first_round and not defense_for_solo_used_this_turn
         limited_defense_succeeded = False
         if (use_limited_defense or use_first_round_defense) and auto.find_element(
             "battle/gear_left.png", threshold=0.9
@@ -156,9 +154,7 @@ class Battle:
             if auto.find_element("battle/gear_left.png", threshold=0.9):
                 msg = "使用全员防御模式开始战斗"
                 self._defense_this_round()
-        elif (avoid_skill_3 or prioritize_skill_3) and auto.find_element(
-            "battle/gear_left.png", threshold=0.9
-        ):
+        elif (avoid_skill_3 or prioritize_skill_3) and auto.find_element("battle/gear_left.png", threshold=0.9):
             use_prioritize_skill_3 = prioritize_skill_3 and not avoid_skill_3
             mode_name = "优先" if use_prioritize_skill_3 else "避免"
             msg = f"使用{mode_name}3技能模式开始战斗"
@@ -232,9 +228,7 @@ class Battle:
                 defense_for_solo_state=defense_for_solo_state,
                 defense_for_solo_used_this_turn=defense_for_solo_used_this_turn,
             )
-            defense_for_solo_used_this_turn = (
-                defense_for_solo_used_this_turn or limited_defense_succeeded
-            )
+            defense_for_solo_used_this_turn = defense_for_solo_used_this_turn or limited_defense_succeeded
 
         self.fail_times = 0
         while self.running:
@@ -624,9 +618,7 @@ class Battle:
             skill_3_matches = []
             for sin_color in sins.values():
                 skill_3_matches.extend(find_skill3(sc, sin_color))
-            skill_3_indexes = {
-                round(match[0] / (145 * scale)) for match in skill_3_matches
-            }
+            skill_3_indexes = {round(match[0] / (145 * scale)) for match in skill_3_matches}
             lower_row_indexes = Battle._get_lower_row_skill_indexes(
                 skill_3_indexes,
                 skill_nums,
