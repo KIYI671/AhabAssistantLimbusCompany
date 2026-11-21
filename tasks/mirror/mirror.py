@@ -1434,6 +1434,10 @@ class Mirror:
             if auto.click_element("mirror/road_in_mir/ego_gift_get_confirm_assets.png"):
                 break
             try:
+                if auto.find_element("mirror/road_in_mir/refuse_gift_confirm_assets.png"):
+                    auto.mouse_click_blank()
+                    time.sleep(1)
+                    continue
                 acquire_card = auto.find_element(
                     "mirror/road_in_mir/acquire_ego_gift_card.png",
                     find_type="image_with_multiple_targets",
@@ -1552,8 +1556,8 @@ class Mirror:
                         min(select_bbox[2] + 100, cfg.set_win_size * 16 / 9),  # 确保右下角 x 坐标不大于 图片宽
                         min(select_bbox[3] + 100, cfg.set_win_size),  # 确保右下角 y 坐标不大于 图片高
                     )
-                if auto.find_text_element(["0/2", "02", "2/2", "22", "/2"], my_crop=select_bbox):
-                    for gift in my_list[:2]:
+                if auto.find_text_element(["0/1", "01", "1/1", "11", "1/2", "12", "/1"], my_crop=select_bbox):
+                    for gift in my_list[:1]:
                         auto.mouse_click(gift[0], gift[1])
                         sleep(cfg.mouse_action_interval)
                     auto.click_element(
@@ -1564,8 +1568,8 @@ class Mirror:
                     if retry() is False:
                         return False
                     return
-                elif auto.find_text_element(["0/1", "01", "1/1", "11", "1/2", "12", "/1"], my_crop=select_bbox):
-                    for gift in my_list[:1]:
+                elif auto.find_text_element(["0/2", "02", "2/2", "22", "/2"], my_crop=select_bbox):
+                    for gift in my_list[:2]:
                         auto.mouse_click(gift[0], gift[1])
                         sleep(cfg.mouse_action_interval)
                     auto.click_element(
