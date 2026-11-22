@@ -5,6 +5,7 @@ import subprocess
 from enum import Enum
 from threading import Thread
 from typing import Callable
+from urllib.parse import quote
 
 import requests  # 导入requests模块，用于发送HTTP请求
 from markdown_it import MarkdownIt
@@ -26,15 +27,16 @@ class UpdateStatus(Enum):
     """
     定义更新状态的枚举类
 
-    该枚举类用于表示更新操作的三种可能结果状态：
-    - SUCCESS 表示更新操作成功
-    - UPDATE_AVAILABLE 表示有可用的更新
-    - FAILURE 表示更新操作失败
+    - SUCCESS 表示主程序已是最新版本
+    - UPDATE_AVAILABLE 表示发现新版本
+    - FAILURE 表示主程序版本检查失败
+    - ASSET_URL_FAILURE 表示获取安装包地址失败
     """
 
     SUCCESS = 1
     UPDATE_AVAILABLE = 2
     FAILURE = 0
+    ASSET_URL_FAILURE = 3
 
 
 class UpdateThread(QThread):
@@ -62,6 +64,7 @@ class UpdateThread(QThread):
         self.user = "KIYI671"
         self.repo = "AhabAssistantLimbusCompany"
         self.new_version = ""
+        self.github_assets_url: str | None = None
         # 记录本次检查后“当前版本是否已追平最新版本”，供资源同步门禁读取。
         self.is_current_version_latest = False
 
@@ -141,6 +144,9 @@ class UpdateThread(QThread):
             version = data["version_name"]
             # 同步记录本次检查得到的最新版本号与比较结果，供资源同步门禁直接复用。
             current_version, latest_version = self._set_version_gate_state(version)
+            # 发布工作流使用同一个 tag 命名安装包，确认更新时可直接下载。
+            tag = quote(version, safe="")
+            self.github_assets_url = f"https://github.com/{self.user}/{self.repo}/releases/download/{tag}/AALC_{tag}.7z"
             # 第二步：整理更新日志正文，去掉图片，生成可展示文本。
             content = self._build_release_note_content(data["release_note"])
 
@@ -148,7 +154,7 @@ class UpdateThread(QThread):
             self._emit_version_check_result(version, current_version, latest_version, content)
         except Exception as e:
             # Mirror酱 失败后自动回退到 GitHub，保持原有软件更新逻辑不变。
-            log.error(f"从Mirror酱源检查更新失败:{e},尝试使用GitHub源检查更新")
+            log.warning(f"从 Mirror 酱检查主程序版本失败，尝试从 GitHub 查询：{e}")
             try:
                 data = self.check_update_info_github()
                 version = data["tag_name"]
@@ -156,10 +162,10 @@ class UpdateThread(QThread):
                 current_version, latest_version = self._set_version_gate_state(version)
                 # 回退到 GitHub 后同样整理更新日志正文。
                 content = self._build_release_note_content(data["body"])
-                assets_url = self.get_download_url_from_assets(data["assets"])
+                self.github_assets_url = self.get_download_url_from_assets(data["assets"])
 
                 # 若当前回退源未携带可下载资产，则按“当前无需更新”处理。
-                if assets_url is None:
+                if self.github_assets_url is None:
                     self.updateSignal.emit(UpdateStatus.SUCCESS)
                     return
 
@@ -167,7 +173,7 @@ class UpdateThread(QThread):
                 self._emit_version_check_result(version, current_version, latest_version, content)
             except Exception as e:
                 # 异常处理，发送失败信号
-                log.error(f"Mirror酱源与GitHub源均检查更新失败:{e}")
+                log.error(f"主程序版本检查失败，Mirror 酱与 GitHub 均未返回可用版本信息：{e}")
                 self.updateSignal.emit(UpdateStatus.FAILURE)
 
     def check_update_info_github(self):
@@ -254,7 +260,7 @@ class UpdateThread(QThread):
             if cfg.update_source == "MirrorChyan":
                 if cfg.mirrorchyan_cdk == "":
                     self.error_msg = "未设置 Mirror酱 CDK"
-                    self.updateSignal.emit(UpdateStatus.FAILURE)
+                    self.updateSignal.emit(UpdateStatus.ASSET_URL_FAILURE)
                     return None
                 # 符合Mirror酱条件
                 cdk = decrypt_string(cfg.mirrorchyan_cdk)
@@ -264,6 +270,7 @@ class UpdateThread(QThread):
                     if mirrorchyan_data["code"] == 0 and mirrorchyan_data["msg"] == "success":
                         url = mirrorchyan_data["data"]["url"]
                         return url
+                    self.error_msg = f"Mirror 酱未返回下载地址（状态码 {mirrorchyan_data['code']}）"
                 else:
                     try:
                         mirrorchyan_data = response.json()
@@ -279,24 +286,15 @@ class UpdateThread(QThread):
                         }
                         if self.code in cdk_error_messages:
                             self.error_msg = cdk_error_messages[self.code]
-                    except:
-                        self.error_msg = "Mirror酱API请求失败"
-                    self.updateSignal.emit(UpdateStatus.FAILURE)
-                    return None
+                    except (KeyError, TypeError, ValueError):
+                        self.error_msg = f"Mirror 酱接口请求失败（HTTP {response.status_code}）"
+                self.updateSignal.emit(UpdateStatus.ASSET_URL_FAILURE)
+                return None
             else:
-                # 复用统一的 GitHub release 查询逻辑，避免重复维护接口路径与预发布分支判断。
-                data = self.check_update_info_github()
-                assets_url = self.get_download_url_from_assets(data["assets"])
-
-                # 如果没有可用的下载 URL，则发送成功信号并返回
-                if assets_url is None:
-                    self.updateSignal.emit(UpdateStatus.SUCCESS)
-                    return
-                return assets_url
+                return self.github_assets_url
         except Exception as e:
-            # 异常处理，发送失败信号
-            log.error(f"更新失败:{e}")
-            self.updateSignal.emit(UpdateStatus.FAILURE)
+            self.error_msg = f"请求更新源时发生异常（{type(e).__name__}）"
+            self.updateSignal.emit(UpdateStatus.ASSET_URL_FAILURE)
 
 
 def handle_update_status(
@@ -344,7 +342,8 @@ def handle_update_status(
             parent=self,
         )
     else:
-        # 第三类：检查失败时，按策略展示失败原因。
+        if status == UpdateStatus.ASSET_URL_FAILURE:
+            log.error(f"主程序更新未开始，获取安装包下载地址失败（{cfg.update_source}）：{update_thread.error_msg}")
         if not show_failure:
             return
 
@@ -359,7 +358,7 @@ def handle_update_status(
         )
 
 
-@begin_and_finish_time_log(task_name="检查更新")
+@begin_and_finish_time_log(task_name="启动主程序版本检查线程")
 def check_update(
     self,
     timeout=5,
@@ -400,8 +399,8 @@ def check_update(
             show_failure=show_failure,
             show_update_dialog=show_update_dialog,
         )
-        # 第二步：再把结果交给调用方补充后续动作，例如资源同步门禁。
-        if on_finished is not None:
+        # 图片资源同步等调用方只接收主程序版本检查的结果。
+        if on_finished is not None and status != UpdateStatus.ASSET_URL_FAILURE:
             on_finished(status, update_thread)
 
     # 第二步：仍将线程实例缓存到界面对象，保持现有调用方通过 self.update_thread 访问的行为不变。
@@ -495,9 +494,10 @@ def update(assets_url):
             mediator.download_complete.emit(file_name)
 
     except requests.exceptions.RequestException as e:
-        log.error(f"下载失败，请检查网络: {e}")
+        reason = f"HTTP {e.response.status_code}" if e.response is not None else type(e).__name__
+        log.error(f"主程序安装包下载失败：{reason}")
     except OSError as e:
-        log.error(f"文件操作失败: {e}")
+        log.error(f"保存主程序安装包失败：{e}")
 
 
 def start_update_thread(assets_url):
