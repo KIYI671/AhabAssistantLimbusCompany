@@ -85,11 +85,10 @@ class CheckBoxWithButton(QFrame):
 
         self.hBoxLayout = QHBoxLayout(self)
         self.box_text = check_box_title
-        self.box = BaseCheckBox(check_box_name, check_box_icon, check_box_title, parent=self)
+        self.box = BaseCheckBox(check_box_name, check_box_icon, check_box_title, parent=self, center=False)
         self.button = ChangePageButton(button_name, parent=self)
-        self.hBoxLayout.addWidget(self.box)
+        self.hBoxLayout.addWidget(self.box, stretch=1)
         self.hBoxLayout.addWidget(self.button)
-        self.hBoxLayout.setAlignment(Qt.AlignCenter)
         task_check_box.append(self.box.check_box)
 
     def set_box_enabled(self, b: bool):
