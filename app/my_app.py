@@ -126,7 +126,12 @@ class MainWindow(FramelessWindow):
         self.resource_sync_status_label.hide()
         self.titleBar.hBoxLayout.insertWidget(3, self.resource_sync_status_label, 0, Qt.AlignLeft)
 
-        self.resize(1080, 600)
+        # 默认至少 800 高（任务列表需要纵向空间）；屏幕放不下时按屏幕可用高度来
+        primary = QApplication.primaryScreen()
+        available_height = primary.availableGeometry().height() if primary else 800
+        window_height = max(600, min(800, available_height - 40))
+        self.setMinimumHeight(window_height)
+        self.resize(1080, window_height)
         # 恢复窗口位置
         saved_x = cfg.get_value("window_position_x", None)
         saved_y = cfg.get_value("window_position_y", None)
