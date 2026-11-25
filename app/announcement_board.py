@@ -1,4 +1,5 @@
 import time
+from typing import Literal, NotRequired, TypedDict
 
 import requests
 from PySide6.QtCore import Qt, QThread, Signal, Slot
@@ -32,6 +33,18 @@ from module.config import cfg
 from module.logger import log
 
 
+class AnnouncementItem(TypedDict):
+    title: str
+    content: str
+    contentType: NotRequired[Literal["markdown", "html", "text"]]  # 缺省按 markdown 处理
+    lang: NotRequired[str]  # 可选，界面语言代码（zh_cn / en）；缺省时按标题推断
+
+
+class AnnouncementFeed(TypedDict):
+    Time: str  # 公告更新时间，格式 "%Y-%m-%d %H:%M:%S"
+    Announcement: list[AnnouncementItem]
+
+
 class AnnouncementThread(QThread):
     """
     公告线程类，用于在后台检查和处理公告更新。
@@ -58,7 +71,7 @@ class AnnouncementThread(QThread):
             response.raise_for_status()  # 如果状态码非200则抛出异常
 
             # 解析 JSON 数据
-            announcements = response.json()
+            announcements: AnnouncementFeed = response.json()
             time_str = announcements["Time"]
             time_struct = time.strptime(time_str, "%Y-%m-%d %H:%M:%S")
             target_timestamp = time.mktime(time_struct)
@@ -67,7 +80,7 @@ class AnnouncementThread(QThread):
                 self.AnnouncementSignal.emit(AnnouncementStatus.SUCCESS)
                 return
             self.announcement_time = target_timestamp
-            self.announcement = announcements["Announcement"]
+            self.announcement: list[AnnouncementItem] = announcements["Announcement"]
             self.AnnouncementSignal.emit(AnnouncementStatus.ANNO_AVAILABLE)
         except Exception as e:
             log.error(f"获取公告失败:{e}")
@@ -134,7 +147,7 @@ class Announcement(QWidget):
 
 
 class AnnouncementBoard(FramelessDialog):
-    def __init__(self, anno, time, parent=None):
+    def __init__(self, anno: list[AnnouncementItem], time: float, parent=None):
         super().__init__(parent=parent)
 
         # 设置标题栏
@@ -255,7 +268,7 @@ class AnnouncementBoard(FramelessDialog):
         # 应用主题样式
         self._apply_styles()
 
-    def set_announcement(self, announcements):
+    def set_announcement(self, announcements: list[AnnouncementItem]):
         """设置公告"""
         for anno in announcements:
             self.add(
