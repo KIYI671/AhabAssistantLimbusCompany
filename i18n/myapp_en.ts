@@ -861,6 +861,56 @@ Right-click to save this setting as the default.</translation>
         <source>否 (默认)</source>
         <translation>No (Default)</translation>
     </message>
+    <message>
+        <location filename="../app/__init__.py" line="63"/>
+        <source>1 次</source>
+        <translation>1 Time</translation>
+    </message>
+    <message>
+        <location filename="../app/__init__.py" line="64"/>
+        <source>2 次</source>
+        <translation>2 Times</translation>
+    </message>
+    <message>
+        <location filename="../app/__init__.py" line="65"/>
+        <source>3 次</source>
+        <translation>3 Times</translation>
+    </message>
+    <message>
+        <location filename="../app/__init__.py" line="66"/>
+        <source>4 次</source>
+        <translation>4 Times</translation>
+    </message>
+    <message>
+        <location filename="../app/__init__.py" line="67"/>
+        <source>5 次</source>
+        <translation>5 Times</translation>
+    </message>
+    <message>
+        <location filename="../app/__init__.py" line="68"/>
+        <source>6 次</source>
+        <translation>6 Times</translation>
+    </message>
+    <message>
+        <location filename="../app/__init__.py" line="69"/>
+        <source>7 次</source>
+        <translation>7 Times</translation>
+    </message>
+    <message>
+        <location filename="../app/__init__.py" line="70"/>
+        <source>8 次</source>
+        <translation>8 Times</translation>
+    </message>
+    <message>
+        <location filename="../app/__init__.py" line="71"/>
+        <source>9 次</source>
+        <translation>9 Times</translation>
+    </message>
+    <message>
+        <location filename="../app/__init__.py" line="72"/>
+        <source>10 次</source>
+        <translation>10 Times</translation>
+    </message>
 </context>
 <context>
     <name>BaseInfoBar</name>
@@ -3223,6 +3273,357 @@ Release notes:</translation>
         <location filename="../tasks/base/script_task_scheme.py" line="414"/>
         <source>所有任务已完成</source>
         <translation>All tasks are complete.</translation>
+    </message>
+</context>
+<context>
+    <name>StarlightBonus</name>
+    <message>
+        <location filename="../app/common/ui_config.py" line="272"/>
+        <source>buff：
+初始经费 +150
+主题卡包出现数量 +1
+商店里展出的饰品数量 +1
+可免费进行商店普通刷新 1次</source>
+        <translation>buff:
+Starting Cost +150
+Theme Pack Selection +1
+Shop E.G.O Gift Choice +1
+1 free standard refresh per shop</translation>
+    </message>
+    <message>
+        <location filename="../app/common/ui_config.py" line="276"/>
+        <source>buff+：
+初始经费 \yellow{+250}
+主题卡包出现数量 +1
+商店里展出的饰品数量 +1
+可免费进行商店普通刷新 1次</source>
+        <translation>buff+:
+Starting Cost \yellow{+250}
+Theme Pack Selection +1
+Shop E.G.O Gift Choice +1
+1 free standard refresh per shop</translation>
+    </message>
+    <message>
+        <location filename="../app/common/ui_config.py" line="280"/>
+        <source>buff++：
+初始经费 \yellow{+250}
+主题卡包出现数量 +1
+商店里展出的饰品数量 +1
+可免费进行商店普通刷新 \yellow{2次}</source>
+        <translation>buff++:
+Starting Cost \yellow{+250}
+Theme Pack Selection +1
+Shop E.G.O Gift Choice +1
+\yellow{2} free standard refreshes per shop</translation>
+    </message>
+    <message>
+        <location filename="../app/common/ui_config.py" line="286"/>
+        <source>buff：
+进入下个阶段时，增加当前经费的10%(最多100)
+售卖饰品所得经费增加50%(每个商店1次)</source>
+        <translation>buff:
+When moving to the next floor, increase current Cost balance by 10% (max 100)
+Increase E.G.O Gift sale price by 50% (once per Shop)</translation>
+    </message>
+    <message>
+        <location filename="../app/common/ui_config.py" line="290"/>
+        <source>buff+：
+进入下个阶段时，增加当前经费的\yellow{20%(最多125)}
+售卖饰品所得经费增加\yellow{75%(每个商店1次)}</source>
+        <translation>buff+:
+When moving to the next floor, increase current Cost balance by \yellow{20% (max 125)}
+Increase E.G.O Gift sale price by \yellow{75% (once per Shop)}</translation>
+    </message>
+    <message>
+        <location filename="../app/common/ui_config.py" line="294"/>
+        <source>buff++：
+进入下个阶段时，增加当前经费的\yellow{30%(最多150)}
+售卖饰品所得经费增加\yellow{100%(每个商店1次)}</source>
+        <translation>buff++:
+When moving to the next floor, increase current Cost balance by \yellow{30% (max 150)}
+Increase E.G.O Gift sale price by \yellow{100% (once per Shop)}</translation>
+    </message>
+    <message>
+        <location filename="../app/common/ui_config.py" line="300"/>
+        <source>buff：
+主题卡包出现数量 +1
+主题卡包刷新次数 +2
+选择未记录的主题卡包时，所有人格等级 +3(最多9级)</source>
+        <translation>buff:
+Theme Pack Selection +1
+Theme Pack Refresh Chance +2
+When choosing a new Theme Pack for the first time, all Identities gain 3 levels (max 9)</translation>
+    </message>
+    <message>
+        <location filename="../app/common/ui_config.py" line="304"/>
+        <source>buff+：
+主题卡包出现数量 +1
+主题卡包刷新次数 \yellow{+3}
+选择未记录的主题卡包时，所有人格等级 +3(最多9级)
+\yellow{如果解锁了45个及以上主题卡包图鉴中的主题卡包，获得1层拼点威力提升}</source>
+        <translation>buff+:
+Theme Pack Selection +1
+Theme Pack Refresh Chance \yellow{+3}
+When choosing a new Theme Pack for the first time, all Identities gain 3 levels (max 9)
+\yellow{If 45+ Theme Packs are unlocked in the Theme Pack Compendium, gain 1 Clash Power Up}</translation>
+    </message>
+    <message>
+        <location filename="../app/common/ui_config.py" line="308"/>
+        <source>buff++：
+主题卡包出现数量 +1
+主题卡包刷新次数 \yellow{+4}
+选择未记录的主题卡包时，所有人格等级 +3(最多9级)
+\yellow{如果解锁了45个及以上主题卡包图鉴中的主题卡包，获得2层拼点威力提升}</source>
+        <translation>buff++:
+Theme Pack Refresh Chance \yellow{+4}
+When choosing a new Theme Pack for the first time, all Identities gain 3 levels (max 9)
+\yellow{If 45+ Theme Packs are unlocked in the Theme Pack Compendium, gain 2 Clash Power Up}</translation>
+    </message>
+    <message>
+        <location filename="../app/common/ui_config.py" line="314"/>
+        <source>buff：
+初始经费 +400
+初始饰品可选择数 +1</source>
+        <translation>buff:
+Starting Cost +400
+Starting E.G.O Gift Choice +1</translation>
+    </message>
+    <message>
+        <location filename="../app/common/ui_config.py" line="318"/>
+        <source>buff+：
+初始经费 \yellow{+500}
+初始饰品可选择数 +1
+\yellow{选择遭遇战奖励卡中的星芒选项时，经费 +75}</source>
+        <translation>buff+:
+Starting Cost \yellow{+500}
+Starting E.G.O Gift Choice +1
+\yellow{When choosing Starlight from Encounter Reward Cards, Cost +75}</translation>
+    </message>
+    <message>
+        <location filename="../app/common/ui_config.py" line="322"/>
+        <source>buff++：
+初始经费 \yellow{+700}
+初始饰品可选择数 +1
+\yellow{选择遭遇战奖励卡中的星芒选项时，经费 +150}</source>
+        <translation>buff++:
+Starting Cost \yellow{+700}
+Starting E.G.O Gift Choice +1
+\yellow{When choosing Starlight from Encounter Reward Cards, Cost +150}</translation>
+    </message>
+    <message>
+        <location filename="../app/common/ui_config.py" line="328"/>
+        <source>buff：
+商店里展出的饰品数量 +1
+战斗胜利时获得的经费 +20%
+提升商店里更高等级饰品的展出概率</source>
+        <translation>buff:
+Shop E.G.O Gift Choice +1
+Encounter Reward Cost +20%
+Greater chance for higher-tier E.G.O Gifts to appear in Shops</translation>
+    </message>
+    <message>
+        <location filename="../app/common/ui_config.py" line="332"/>
+        <source>buff+：
+商店里展出的饰品数量 +1
+战斗胜利时获得的经费 \yellow{+30%}
+提升商店里更高等级饰品的展出概率
+\yellow{进入商店时，获得等同于当前持有的饰品等级之和的经费(最多75)}</source>
+        <translation>buff+:
+Shop E.G.O Gift Choice +1
+Encounter Reward Cost \yellow{+30%}
+Greater chance for higher-tier E.G.O Gifts to appear in Shops
+\yellow{Upon entering a shop, gain Cost equal to the sum of the tiers of your E.G.O Gifts (max 75)}</translation>
+    </message>
+    <message>
+        <location filename="../app/common/ui_config.py" line="336"/>
+        <source>buff++：
+商店里展出的饰品数量 +1
+战斗胜利时获得的经费 \yellow{+40%}
+提升商店里更高等级饰品的展出概率
+\yellow{进入商店时，获得等同于当前持有的饰品等级之和的经费(最多150)}</source>
+        <translation>buff++:
+Encounter Reward Cost \yellow{+40%}
+Greater chance for higher-tier E.G.O Gifts to appear in Shops
+\yellow{Upon entering a shop, gain Cost equal to the sum of the tiers of your E.G.O Gifts (max 150)}</translation>
+    </message>
+    <message>
+        <location filename="../app/common/ui_config.py" line="342"/>
+        <source>buff：
+可免费进行商店关键词刷新 1次
+进入第1层时，随机获得1件1级饰品</source>
+        <translation>buff:
+1 free keyword refresh per shop
+Upon entering Floor 1, gain 1 random Tier 1 E.G.O Gift</translation>
+    </message>
+    <message>
+        <location filename="../app/common/ui_config.py" line="346"/>
+        <source>buff+：
+可免费进行商店关键词刷新 1次
+进入第1层时，随机获得\yellow{2件}1级饰品
+\yellow{特殊商店出现概率 +10%}</source>
+        <translation>buff+:
+1 free keyword refresh per shop
+Upon entering Floor 1, gain \yellow{2} random Tier 1 E.G.O Gifts
+\yellow{+10% chance for Super Shop to appear}</translation>
+    </message>
+    <message>
+        <location filename="../app/common/ui_config.py" line="350"/>
+        <source>buff++：
+可免费进行商店关键词刷新 \yellow{2次}
+进入第1层时，随机获得\yellow{3件}1级饰品
+\yellow{特殊商店出现概率 +25%}</source>
+        <translation>buff++:
+\yellow{2} free keyword refreshes per shop
+Upon entering Floor 1, gain \yellow{3} random Tier 1 E.G.O Gifts
+\yellow{+25% chance for Super Shop to appear}</translation>
+    </message>
+    <message>
+        <location filename="../app/common/ui_config.py" line="356"/>
+        <source>buff：
+进入第1层时，人格等级 +3
+通过阶段时，人格等级 +1(最多+5)</source>
+        <translation>buff:
+Upon entering Floor 1, all Identities gain 3 levels
+After clearing a floor, all Identities gain 1 level (max 5)</translation>
+    </message>
+    <message>
+        <location filename="../app/common/ui_config.py" line="360"/>
+        <source>buff+：
+进入第1层时，人格等级 +3
+通过阶段时，人格等级 +1\yellow{(最多+9)}</source>
+        <translation>buff+:
+Upon entering Floor 1, all Identities gain 3 levels
+After clearing a floor, all Identities gain 1 level \yellow{(max 9)}</translation>
+    </message>
+    <message>
+        <location filename="../app/common/ui_config.py" line="364"/>
+        <source>buff++：
+进入第1层时，人格等级 +3
+\yellow{进入第6层时，人格等级 +3}
+通过阶段时，人格等级 +1\yellow{(最多+9)}</source>
+        <translation>buff++:
+Upon entering Floor 1, all Identities gain 3 levels
+\yellow{Upon entering Floor 6, all Identities gain 3 levels}
+After clearing a floor, all Identities gain 1 level \yellow{(max 9)}</translation>
+    </message>
+    <message>
+        <location filename="../app/common/ui_config.py" line="370"/>
+        <source>buff：
+最大速度值 +2
+获得1层 拼点威力提升
+获得1层 伤害强化
+获得1层 守护</source>
+        <translation>buff:
+Max Speed +2
+Gain 1 Clash Power Up
+Gain 1 Damage Up
+Gain 1 Protection</translation>
+    </message>
+    <message>
+        <location filename="../app/common/ui_config.py" line="374"/>
+        <source>buff+：
+最大速度值 \yellow{+3}
+获得\yellow{2层} 拼点威力提升
+获得1层 伤害强化
+获得1层 守护</source>
+        <translation>buff+:
+Max Speed \yellow{+3}
+Gain \yellow{2} Clash Power Up
+Gain 1 Damage Up
+Gain 1 Protection</translation>
+    </message>
+    <message>
+        <location filename="../app/common/ui_config.py" line="378"/>
+        <source>buff++：
+最大速度值 \yellow{+3}
+获得\yellow{2层} 拼点威力提升
+获得\yellow{2层} 伤害强化
+获得\yellow{2层} 守护</source>
+        <translation>buff++:
+Max Speed \yellow{+3}
+Gain \yellow{2} Clash Power Up
+Gain \yellow{2} Damage Up
+Gain \yellow{2} Protection</translation>
+    </message>
+    <message>
+        <location filename="../app/common/ui_config.py" line="384"/>
+        <source>buff：
+进入商店时，随机获得1件3级及以下的合成/售卖专用饰品
+进入第3层时，随机获得1件3级饰品
+合成时，随机获得比合成产物(3级及以上)低2级的饰品(每个商店最多1次)</source>
+        <translation>buff:
+Upon entering a shop, gain one random E.G.O Gift of Tier 3 or lower, usable only for fusion or sale
+Upon entering Floor 3, gain 1 random Tier 3 E.G.O Gift
+When fusing, gain a random additional E.G.O Gift 2 Tiers below the fusion result (must be Tier 3 or higher) (once per Shop)</translation>
+    </message>
+    <message>
+        <location filename="../app/common/ui_config.py" line="388"/>
+        <source>buff+：
+进入商店时，随机获得1件3级及以下的合成・售卖专用E.G.O饰品
+第5层及以下：\yellow{1~3级}
+第6层及以上：\yellow{2~3级}
+进入第3层\yellow{与第5层}时，随机获得1件所选关键词的3级E.G.O饰品
+合成时，可随机获得比合成产物(3级及以上)低2级的E.G.O饰品(每个商店1次)</source>
+        <translation>buff+:
+Upon entering a shop, gain one random E.G.O Gift usable only for fusion or sale
+Floor 5 or lower: \yellow{Tier 1~3}
+Floor 6 or higher: \yellow{Tier 2~3}
+Upon entering Floor 3/Floor 5, gain 1 random Tier 3 E.G.O Gift from the selected Keyword category
+When fusing, gain a random additional E.G.O Gift 2 Tiers below the fusion result (must be Tier 3 or higher) (once per Shop)</translation>
+    </message>
+    <message>
+        <location filename="../app/common/ui_config.py" line="392"/>
+        <source>buff++：
+进入商店时，随机获得1件3级及以下的合成・售卖专用E.G.O饰品
+第5层及以下：\yellow{2~3级}
+第6层及以上：\yellow{3~4级}
+进入第3层、第5层\yellow{与第7层}时，随机获得1件所选关键词的\yellow{4级}E.G.O饰品
+合成时，可随机获得比合成产物(3级及以上)低\yellow{1级}的E.G.O饰品(每个商店1次)</source>
+        <translation>buff++:
+Upon entering a shop, gain one random E.G.O Gift usable only for fusion or sale
+Floor 5 or lower: \yellow{Tier 2~3}
+Floor 6 or higher: \yellow{Tier 3~4}
+Upon entering Floor 3/Floor 5/Floor 7, gain 1 random Tier \yellow{4} E.G.O Gift from the selected Keyword category
+When fusing, gain a random additional E.G.O Gift \yellow{1 Tier below} the fusion result (must be Tier 3 or higher) (once per Shop)</translation>
+    </message>
+    <message>
+        <location filename="../app/common/ui_config.py" line="398"/>
+        <source>buff：
+主题卡包出现数量 +1
+初始饰品可选择数 +1
+进入镜像迷宫时，选择获得1件所选关键词对应的随机3级饰品(若无该等级的饰品，则会出现更低等级的饰品)
+进入镜像迷宫时，获得1个黯淡的残影</source>
+        <translation>buff:
+Theme Pack Selection +1
+Starting E.G.O Gift Choice +1
+Upon entry, choose 1 Tier 3 E.G.O Gift for the selected Keyword (if no remaining Gifts meet the conditions, a lower-tier gift will appear instead)
+Upon entry, gain 1 Dark Vestige</translation>
+    </message>
+    <message>
+        <location filename="../app/common/ui_config.py" line="402"/>
+        <source>buff+：
+主题卡包出现数量 +1
+初始饰品可选择数 +1
+进入镜像迷宫时，选择获得\yellow{2件}所选关键词对应的随机3级饰品(若无该等级的饰品，则会出现更低等级的饰品)
+进入镜像迷宫时，获得1个黯淡的残影、\yellow{1个微茫的残影}</source>
+        <translation>buff+:
+Theme Pack Selection +1
+Starting E.G.O Gift Choice +1
+Upon entry, choose \yellow{2} Tier 3 E.G.O Gifts for the selected Keyword (if no remaining Gifts meet the conditions, a lower-tier gift will appear instead)
+Upon entry, gain 1 Dark Vestige and \yellow{1 Dim Vestige}</translation>
+    </message>
+    <message>
+        <location filename="../app/common/ui_config.py" line="406"/>
+        <source>buff++：
+主题卡包出现数量 +1
+初始饰品可选择数 +1
+进入镜像迷宫时，选择获得\yellow{3件}所选关键词对应的随机3级饰品(若无该等级的饰品，则会出现更低等级的饰品)
+进入镜像迷宫时，获得1个黯淡的残影、\yellow{1个微茫的残影}与\yellow{1个闪耀的残影}</source>
+        <translation>buff++:
+Theme Pack Selection +1
+Starting E.G.O Gift Choice +1
+Upon entry, choose \yellow{3} Tier 3 E.G.O Gifts for the selected Keyword (if no remaining Gifts meet the conditions, a lower-tier gift will appear instead)
+Upon entry, gain 1 Dark Vestige, 1 Dim Vestige, and \yellow{1 Shining Vestige}</translation>
     </message>
 </context>
 </TS>

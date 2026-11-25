@@ -59,7 +59,18 @@ set_after_completion_options = {
     QT_TRANSLATE_NOOP("BaseComboBox", "退出AALC和MUMU模拟器"): 8,
 }
 all_teams = {f"Team{i}": i for i in range(1, 41)}
-coutinuous_times = {f"{i} {'Time' if i == 1 else 'Times'}": i for i in range(1, 11)}
+coutinuous_times = {
+    QT_TRANSLATE_NOOP("BaseComboBox", "1 次"): 1,
+    QT_TRANSLATE_NOOP("BaseComboBox", "2 次"): 2,
+    QT_TRANSLATE_NOOP("BaseComboBox", "3 次"): 3,
+    QT_TRANSLATE_NOOP("BaseComboBox", "4 次"): 4,
+    QT_TRANSLATE_NOOP("BaseComboBox", "5 次"): 5,
+    QT_TRANSLATE_NOOP("BaseComboBox", "6 次"): 6,
+    QT_TRANSLATE_NOOP("BaseComboBox", "7 次"): 7,
+    QT_TRANSLATE_NOOP("BaseComboBox", "8 次"): 8,
+    QT_TRANSLATE_NOOP("BaseComboBox", "9 次"): 9,
+    QT_TRANSLATE_NOOP("BaseComboBox", "10 次"): 10,
+}
 all_systems = {
     QT_TRANSLATE_NOOP("BaseComboBox", "烧伤"): 0,
     QT_TRANSLATE_NOOP("BaseComboBox", "流血"): 1,
