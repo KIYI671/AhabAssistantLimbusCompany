@@ -4,7 +4,11 @@ import time
 from time import sleep
 
 import psutil
-import win32process
+
+try:
+    import win32process
+except ImportError:  # 非 Windows 平台没有 pywin32
+    win32process = None
 
 from module.automation import auto
 from module.config import cfg
@@ -74,6 +78,56 @@ def click_title_screen_safely() -> None:
     auto.mouse_click(int(width * x_ratio), int(height * y_ratio))
 
 
+def _game_processes():
+    """遍历名字含 cfg.game_process_name 的进程（与下面的退出等待同一判据）。"""
+    for proc in psutil.process_iter(["name"]):
+        try:
+            proc_name = proc.info["name"] or ""
+            if proc_name and cfg.game_process_name.lower() in proc_name.lower():
+                yield proc
+        except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
+            continue
+
+
+def _alive_game_processes(procs):
+    """过滤掉已退出/僵尸的进程对象（psutil 的状态查询本身也会抛异常）。"""
+    alive = []
+    for proc in procs:
+        try:
+            if proc.is_running() and proc.status() != psutil.STATUS_ZOMBIE:
+                alive.append(proc)
+        except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
+            continue
+    return alive
+
+
+def _terminate_game_processes(grace: float = 10.0) -> int:
+    """非 Windows 平台的结束游戏：先 SIGTERM，宽限期内没退出再 SIGKILL。
+
+    返回被处理的进程数（0 = 本来就没在跑，属正常情况）。
+    """
+    procs = list(_game_processes())
+    if not procs:
+        return 0
+    for proc in procs:
+        try:
+            proc.terminate()
+        except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
+            continue
+    deadline = time.time() + grace
+    while time.time() < deadline and _alive_game_processes(procs):
+        sleep(1)
+    lingering = _alive_game_processes(procs)
+    for proc in lingering:
+        try:
+            proc.kill()
+        except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
+            continue
+    if lingering:
+        log.warning(f"游戏进程未在 {grace:.0f}s 内退出，已强制结束 {len(lingering)} 个")
+    return len(procs)
+
+
 def kill_game():
     """关闭游戏"""
     if cfg.simulator:
@@ -99,22 +153,15 @@ def kill_game():
 
         _, pid = win32process.GetWindowThreadProcessId(screen.handle.hwnd)
         os.system(f"taskkill /F /PID {pid}")
+    else:
+        # 非 Windows：此前这里直接落到 sleep(10)，进程根本没被结束，
+        # 下面 30 s 的退出等待必然超时（Linux + Proton / 模拟器外置进程均命中）
+        _terminate_game_processes()
     sleep(10)
     wait_start = time.time()
     while True:
-        game_running = False
-        for proc in psutil.process_iter(["name"]):
-            try:
-                # 获取进程的可执行文件名（如 "notepad.exe"）
-                proc_name = proc.info["name"]
-                # 仅当遍历后找不到任何游戏进程时，才认为游戏已退出
-                if proc_name and cfg.game_process_name.lower() in proc_name.lower():
-                    game_running = True
-                    break
-            except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
-                # 忽略已终止、无权限或僵尸进程
-                continue
-        if not game_running:
+        # 仅当遍历后找不到任何游戏进程时，才认为游戏已退出
+        if not list(_game_processes()):
             break
         if time.time() - wait_start > 30:
             log.warning("等待游戏进程退出超时(30s)，继续后续流程")
