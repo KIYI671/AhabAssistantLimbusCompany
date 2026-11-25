@@ -480,8 +480,20 @@ class Automation(metaclass=SingletonMeta):
     ) -> List:
         """
         在当前截图中查找多个目标图像的位置
+
+        `ImageUtils.load_image` 只按 `path_manager.pic_path` 的第一个命中路径取模板（初始 dark 在前），
+        不读已判定的 UI 主题。若本方法在主题判定**之前**被调用（例如未识别主题就直接进入 EGO 选择），
+        它会一直取 dark 模板 ⇒ 同一个模板单目标模式命中 0.97、多目标模式只有 0.38，返回空列表后
+        调用方不点卡、只点灰色按钮，表现为无限空转。
+        这里只在「主题尚未判定」时先走一次 find_element：它用 `existing_image_paths()` 全量候选 +
+        命中回写主题（必要时淘汰 dark 路径），之后 `load_image` 自然取到当前主题的模板。
         """
         try:
+            if path_manager.current_theme is None:
+                self.find_element(
+                    target, find_type="image", threshold=threshold, my_crop=my_crop,
+                    additional_stack=additional_stack + 1,
+                )
             template = ImageUtils.load_image(target)
             if target.endswith("assets.png"):
                 bbox = ImageUtils.get_bbox(template)
