@@ -3375,6 +3375,7 @@ When choosing a new Theme Pack for the first time, all Identities gain 3 levels 
 选择未记录的主题卡包时，所有人格等级 +3(最多9级)
 \yellow{如果解锁了45个及以上主题卡包图鉴中的主题卡包，获得2层拼点威力提升}</source>
         <translation>buff++:
+Theme Pack Selection +1
 Theme Pack Refresh Chance \yellow{+4}
 When choosing a new Theme Pack for the first time, all Identities gain 3 levels (max 9)
 \yellow{If 45+ Theme Packs are unlocked in the Theme Pack Compendium, gain 2 Clash Power Up}</translation>
@@ -3442,6 +3443,7 @@ Greater chance for higher-tier E.G.O Gifts to appear in Shops
 提升商店里更高等级饰品的展出概率
 \yellow{进入商店时，获得等同于当前持有的饰品等级之和的经费(最多150)}</source>
         <translation>buff++:
+Shop E.G.O Gift Selection +1
 Encounter Reward Cost \yellow{+40%}
 Greater chance for higher-tier E.G.O Gifts to appear in Shops
 \yellow{Upon entering a shop, gain Cost equal to the sum of the tiers of your E.G.O Gifts (max 150)}</translation>
@@ -3568,7 +3570,7 @@ When fusing, gain a random additional E.G.O Gift 2 Tiers below the fusion result
 Upon entering a shop, gain one random E.G.O Gift usable only for fusion or sale
 Floor 5 or lower: \yellow{Tier 1~3}
 Floor 6 or higher: \yellow{Tier 2~3}
-Upon entering Floor 3/Floor 5, gain 1 random Tier 3 E.G.O Gift from the selected Keyword category
+Upon entering Floor 3 \yellow{and Floor 5}, gain 1 random Tier 3 E.G.O Gift from the selected Keyword category
 When fusing, gain a random additional E.G.O Gift 2 Tiers below the fusion result (must be Tier 3 or higher) (once per Shop)</translation>
     </message>
     <message>
@@ -3583,7 +3585,7 @@ When fusing, gain a random additional E.G.O Gift 2 Tiers below the fusion result
 Upon entering a shop, gain one random E.G.O Gift usable only for fusion or sale
 Floor 5 or lower: \yellow{Tier 2~3}
 Floor 6 or higher: \yellow{Tier 3~4}
-Upon entering Floor 3/Floor 5/Floor 7, gain 1 random Tier \yellow{4} E.G.O Gift from the selected Keyword category
+Upon entering Floors 3, 5, \yellow{and 7}, gain 1 random Tier \yellow{4} E.G.O Gift from the selected Keyword category
 When fusing, gain a random additional E.G.O Gift \yellow{1 Tier below} the fusion result (must be Tier 3 or higher) (once per Shop)</translation>
     </message>
     <message>
@@ -3623,7 +3625,7 @@ Upon entry, gain 1 Dark Vestige and \yellow{1 Faint Vestige}</translation>
 Theme Pack Selection +1
 Starting E.G.O Gift Choice +1
 Upon entry, choose \yellow{3} Tier 3 E.G.O Gifts for the selected Keyword (if no remaining Gifts meet the conditions, a lower-tier gift will appear instead)
-Upon entry, gain 1 Dark Vestige, 1 Faint Vestige, and \yellow{1 Twinkling Vestige}</translation>
+Upon entry, gain 1 Dark Vestige, \yellow{1 Faint Vestige}, and \yellow{1 Twinkling Vestige}</translation>
     </message>
 </context>
 </TS>
