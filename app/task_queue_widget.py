@@ -153,13 +153,15 @@ class TaskItemDelegate(ListItemDelegate):
             painter.drawRoundedRect(gear, 5, 5)
             FIF.SETTING.icon(color=QColor(255, 255, 255)).paint(painter, icon_rect)
         else:
-            FIF.SETTING.render(painter, icon_rect)
+            gear_gray = QColor(160, 160, 160) if is_dark else QColor(120, 120, 120)
+            FIF.SETTING.icon(color=gear_gray).paint(painter, icon_rect)
 
         # 悬停或选中时显示行内操作（同 MAA）：复制用主题色
         text_right = gear.left() - 8
         if self.shows_actions(index):
             rects = self.action_rects(rect)
             icons = {"copy": FIF.COPY, "rename": FIF.EDIT, "delete": FIF.DELETE}
+            gray = QColor(160, 160, 160) if is_dark else QColor(120, 120, 120)
             for name, icon in icons.items():
                 action_rect = rects[name]
                 hovered = self.hover_action == (row, name)
@@ -169,16 +171,9 @@ class TaskItemDelegate(ListItemDelegate):
                     painter.setPen(Qt.NoPen)
                     painter.setBrush(QColor(c, c, c, 24 if is_dark else 18))
                     painter.drawRoundedRect(action_rect.adjusted(-4, -4, 4, 4), 4, 4)
-                if name == "delete" and hovered:
-                    color = QColor("#ff99a4") if is_dark else QColor("#c42b1c")
-                elif name == "copy" or hovered:
-                    color = QColor(themeColor())
-                else:
-                    color = None
-                if color is None:
-                    icon.render(painter, action_rect)
-                else:
-                    icon.icon(color=color).paint(painter, action_rect)
+                # 默认灰色，悬停时用主题色
+                color = QColor(themeColor()) if hovered else gray
+                icon.icon(color=color).paint(painter, action_rect)
             text_right = rects["copy"].left() - 8
 
         text_color = QColor(255, 255, 255) if is_dark else QColor(0, 0, 0)
