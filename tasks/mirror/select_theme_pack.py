@@ -33,7 +33,14 @@ def switch_theme_pack_difficulty(hard_mode=False):
 
 @begin_and_finish_time_log(task_name="选择镜牢主题包")
 # 选择镜牢主题包
-def select_theme_pack(hard_mode=False, floor=None, team_num=None, use_custom_theme_pack_weight=False):
+def select_theme_pack(
+    hard_mode=False,
+    floor=None,
+    team_num=None,
+    use_custom_theme_pack_weight=False,
+    select_event_pack=False,
+    skip_event_pack=False,
+):
     loop_count = 30
     auto.model = "clam"
     scale = cfg.set_win_size / 1080
@@ -65,7 +72,7 @@ def select_theme_pack(hard_mode=False, floor=None, team_num=None, use_custom_the
             continue
 
         try:
-            if floor == 5 and cfg.select_event_pack:
+            if floor == 5 and select_event_pack:
                 if all_theme_pack := auto.find_element(
                     "mirror/theme_pack/theme_pack_features.png",
                     find_type="image_with_multiple_targets",
@@ -84,7 +91,7 @@ def select_theme_pack(hard_mode=False, floor=None, team_num=None, use_custom_the
                 find_type="image_with_multiple_targets",
                 take_screenshot=True,
             ):
-                if floor == 5 and cfg.skip_event_pack:
+                if floor == 5 and skip_event_pack:
                     all_theme_pack.sort(key=lambda pos: (pos[0], pos[1]))
                     all_theme_pack.pop(0)  # 删除最左边的卡包
                 for pack in all_theme_pack:

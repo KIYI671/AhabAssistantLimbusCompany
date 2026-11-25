@@ -175,7 +175,7 @@ def make_enkephalin_module(cancel=True, skip=True, *, task_name: str = "体力�
 
 
 @begin_and_finish_time_log(task_name="狂气换体", calculate_time=False)
-def lunacy_to_enkephalin(times=0):
+def lunacy_to_enkephalin(times=0, dr_grandet=False):
     make_enkephalin_module(cancel=False, skip=False, task_name="狂气换体")
     auto.click_element("enkephalin/use_lunacy_assets.png")
     sleep(0.5)
@@ -202,7 +202,7 @@ def lunacy_to_enkephalin(times=0):
         if auto.find_element(lunacy_asset):
             forward = False
             # 葛朗台模式
-            if cfg.Dr_Grandet_mode:
+            if dr_grandet:
                 while get_the_timing() is False:
                     if Grandet:
                         break

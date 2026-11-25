@@ -1,13 +1,6 @@
-"""任务列表配置模型与旧配置迁移的测试。
+"""任务列表配置模型与旧配置迁移的测试。"""
 
-`module/config/__init__.py` 在 import 时会创建全局 cfg 并读写仓库根目录的 config.yaml，
-这里用一个空的包壳加载 `module.config` 下的子模块，避免副作用。
-"""
-
-import importlib
 import io
-import sys
-import types
 from pathlib import Path
 
 import pytest
@@ -18,24 +11,9 @@ EXAMPLE_PATH = REPO_ROOT / "assets" / "config" / "config.example.yaml"
 
 
 @pytest.fixture(scope="module")
-def tq():
+def tq(isolated_import):
     """返回 (task_queue 模块, config_typing 模块)"""
-    if str(REPO_ROOT) not in sys.path:
-        sys.path.insert(0, str(REPO_ROOT))
-    added = []
-    if "module.config" not in sys.modules:
-        importlib.import_module("module")
-        shell = types.ModuleType("module.config")
-        shell.__path__ = [str(REPO_ROOT / "module" / "config")]
-        sys.modules["module.config"] = shell
-        added.append("module.config")
-    before = set(sys.modules)
-    task_queue = importlib.import_module("module.config.task_queue")
-    config_typing = importlib.import_module("module.config.config_typing")
-    added += [name for name in sys.modules if name not in before and name.startswith("module.config.")]
-    yield task_queue, config_typing
-    for name in added:
-        sys.modules.pop(name, None)
+    return isolated_import("module.config.task_queue"), isolated_import("module.config.config_typing")
 
 
 def _example() -> dict:

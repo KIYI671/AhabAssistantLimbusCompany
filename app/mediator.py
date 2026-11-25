@@ -25,7 +25,9 @@ class Mediator(QObject):
     completion_suppressed_changed = Signal(bool)
     # 任务线程通过信号请求主窗口抢回前台，避免跨层直接操作 UI。
     request_focus = Signal()
-    mirror_signal = Signal(int, int)  # 运行的当前次数和总次数
+    mirror_signal = Signal(int, int, bool)  # 已完成次数、剩余次数、是否困难
+    # 开始执行任务列表中的某一项（任务 id），全部结束时发空字符串
+    task_item_started = Signal(str)
     mirror_bar_kill_signal = Signal()
     hotkey_listener_stop_signal = Signal()
     hotkey_listener_start_signal = Signal()

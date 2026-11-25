@@ -545,7 +545,7 @@ class PageMirror(PageCard):
 
         self.card_layout.insertWidget(self.card_layout.count() - 1, self.mirror_count)
 
-    def _create_mirror_bar(self, current: int, total: int) -> TextProgressBar:
+    def _create_mirror_bar(self, current: int, total: int, hard: bool) -> TextProgressBar:
         """创建进度条"""
         bar = TextProgressBar(self)
         self.bar_layout = QVBoxLayout()
@@ -560,7 +560,7 @@ class PageMirror(PageCard):
         self.card_layout.insertLayout(1, self.bar_layout)
 
         QT_TRANSLATE_NOOP("PageCard", "镜 牢 进 度 ")
-        if cfg.hard_mirror:
+        if hard:
             text = self.tr("镜 牢 进 度 ( 困 难 ) ")
         else:
             text = self.tr("镜 牢 进 度 ( 普 通 ) ")
@@ -576,10 +576,11 @@ class PageMirror(PageCard):
 
         return bar
 
-    def update_mirror_bar(self, current: int, total: int):
+    def update_mirror_bar(self, current: int, total: int, hard: bool = False):
         """更新进度条 若不存在则新建"""
+        self.bar_hard = hard
         if self.bar is not None:
-            if cfg.hard_mirror:
+            if hard:
                 text = self.tr("镜 牢 进 度 ( 困 难 ) ")
             else:
                 text = self.tr("镜 牢 进 度 ( 普 通 ) ")
@@ -600,13 +601,13 @@ class PageMirror(PageCard):
                 self.bar.setUseAni(True)
                 self.bar.setFormat(f"{text}: %v / %m")
         else:
-            self.bar = self._create_mirror_bar(current, total)
+            self.bar = self._create_mirror_bar(current, total, hard)
 
     def destroy_mirror_bar(self):
         """销毁进度条"""
         if self.bar is not None:
             log.info(
-                f"已完成{'困难镜牢' if cfg.hard_mirror else '普通镜牢'}进度 {self.bar.value() if self.bar.maximum() < 9000 else self.bar.specialValue} / {self.bar.maximum()}"
+                f"已完成{'困难镜牢' if getattr(self, 'bar_hard', False) else '普通镜牢'}进度 {self.bar.value() if self.bar.maximum() < 9000 else self.bar.specialValue} / {self.bar.maximum()}"
             )
             self.bar.deleteLater()
             self.bar = None

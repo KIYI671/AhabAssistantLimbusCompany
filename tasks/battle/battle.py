@@ -204,6 +204,7 @@ class Battle:
         combat_count=1,
         defense_for_solo_state: DefenseForSoloState | None = None,
         prioritize_skill_3=False,
+        fight_to_last_man=False,
     ):
         chance = self.INIT_CHANCE
         waiting = self._update_wait_time()
@@ -306,7 +307,7 @@ class Battle:
                     return False
                 continue
 
-            if in_mirror and not cfg.fight_to_last_man and not infinite_battle:
+            if in_mirror and not fight_to_last_man and not infinite_battle:
                 if dead_position := auto.find_element("battle/dead.png"):
                     my_scale = cfg.set_win_size / 1440
                     dead_bbox = (
