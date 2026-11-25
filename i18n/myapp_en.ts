@@ -1621,7 +1621,7 @@ The code will overwrite your current team settings.</translation>
     <message>
         <location filename="../app/team_setting_card.py" line="1116"/>
         <source>每次商店访问时普通刷新商品的次数上限</source>
-        <translation>Maximum number of standard refreshes per shop visit.</translation>
+        <translation>Maximum number of Normal Refreshes per shop visit.</translation>
     </message>
     <message>
         <location filename="../app/common/ui_config.py" line="246"/>
@@ -3287,8 +3287,8 @@ Release notes:</translation>
         <translation>buff:
 Starting Cost +150
 Theme Pack Selection +1
-Shop E.G.O Gift Choice +1
-1 free standard refresh per shop</translation>
+Shop E.G.O Gift Selection +1
+1 free Normal Refresh per shop</translation>
     </message>
     <message>
         <location filename="../app/common/ui_config.py" line="276"/>
@@ -3300,8 +3300,8 @@ Shop E.G.O Gift Choice +1
         <translation>buff+:
 Starting Cost \yellow{+250}
 Theme Pack Selection +1
-Shop E.G.O Gift Choice +1
-1 free standard refresh per shop</translation>
+Shop E.G.O Gift Selection +1
+1 free Normal Refresh per shop</translation>
     </message>
     <message>
         <location filename="../app/common/ui_config.py" line="280"/>
@@ -3313,8 +3313,8 @@ Shop E.G.O Gift Choice +1
         <translation>buff++:
 Starting Cost \yellow{+250}
 Theme Pack Selection +1
-Shop E.G.O Gift Choice +1
-\yellow{2} free standard refreshes per shop</translation>
+Shop E.G.O Gift Selection +1
+\yellow{2} free Normal Refreshes per shop</translation>
     </message>
     <message>
         <location filename="../app/common/ui_config.py" line="286"/>
@@ -3417,7 +3417,7 @@ Starting E.G.O Gift Choice +1
 战斗胜利时获得的经费 +20%
 提升商店里更高等级饰品的展出概率</source>
         <translation>buff:
-Shop E.G.O Gift Choice +1
+Shop E.G.O Gift Selection +1
 Encounter Reward Cost +20%
 Greater chance for higher-tier E.G.O Gifts to appear in Shops</translation>
     </message>
@@ -3429,7 +3429,7 @@ Greater chance for higher-tier E.G.O Gifts to appear in Shops</translation>
 提升商店里更高等级饰品的展出概率
 \yellow{进入商店时，获得等同于当前持有的饰品等级之和的经费(最多75)}</source>
         <translation>buff+:
-Shop E.G.O Gift Choice +1
+Shop E.G.O Gift Selection +1
 Encounter Reward Cost \yellow{+30%}
 Greater chance for higher-tier E.G.O Gifts to appear in Shops
 \yellow{Upon entering a shop, gain Cost equal to the sum of the tiers of your E.G.O Gifts (max 75)}</translation>
@@ -3452,7 +3452,7 @@ Greater chance for higher-tier E.G.O Gifts to appear in Shops
 可免费进行商店关键词刷新 1次
 进入第1层时，随机获得1件1级饰品</source>
         <translation>buff:
-1 free keyword refresh per shop
+1 free Keyword Refresh per shop
 Upon entering Floor 1, gain 1 random Tier 1 E.G.O Gift</translation>
     </message>
     <message>
@@ -3462,7 +3462,7 @@ Upon entering Floor 1, gain 1 random Tier 1 E.G.O Gift</translation>
 进入第1层时，随机获得\yellow{2件}1级饰品
 \yellow{特殊商店出现概率 +10%}</source>
         <translation>buff+:
-1 free keyword refresh per shop
+1 free Keyword Refresh per shop
 Upon entering Floor 1, gain \yellow{2} random Tier 1 E.G.O Gifts
 \yellow{+10% chance for Super Shop to appear}</translation>
     </message>
@@ -3473,7 +3473,7 @@ Upon entering Floor 1, gain \yellow{2} random Tier 1 E.G.O Gifts
 进入第1层时，随机获得\yellow{3件}1级饰品
 \yellow{特殊商店出现概率 +25%}</source>
         <translation>buff++:
-\yellow{2} free keyword refreshes per shop
+\yellow{2} free Keyword Refreshes per shop
 Upon entering Floor 1, gain \yellow{3} random Tier 1 E.G.O Gifts
 \yellow{+25% chance for Super Shop to appear}</translation>
     </message>
@@ -3610,7 +3610,7 @@ Upon entry, gain 1 Dark Vestige</translation>
 Theme Pack Selection +1
 Starting E.G.O Gift Choice +1
 Upon entry, choose \yellow{2} Tier 3 E.G.O Gifts for the selected Keyword (if no remaining Gifts meet the conditions, a lower-tier gift will appear instead)
-Upon entry, gain 1 Dark Vestige and \yellow{1 Dim Vestige}</translation>
+Upon entry, gain 1 Dark Vestige and \yellow{1 Faint Vestige}</translation>
     </message>
     <message>
         <location filename="../app/common/ui_config.py" line="406"/>
@@ -3623,7 +3623,7 @@ Upon entry, gain 1 Dark Vestige and \yellow{1 Dim Vestige}</translation>
 Theme Pack Selection +1
 Starting E.G.O Gift Choice +1
 Upon entry, choose \yellow{3} Tier 3 E.G.O Gifts for the selected Keyword (if no remaining Gifts meet the conditions, a lower-tier gift will appear instead)
-Upon entry, gain 1 Dark Vestige, 1 Dim Vestige, and \yellow{1 Shining Vestige}</translation>
+Upon entry, gain 1 Dark Vestige, 1 Faint Vestige, and \yellow{1 Twinkling Vestige}</translation>
     </message>
 </context>
 </TS>
