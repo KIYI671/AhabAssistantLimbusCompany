@@ -6,6 +6,7 @@ from PySide6.QtGui import QFont, QIcon
 from PySide6.QtWidgets import (
     QFrame,
     QHBoxLayout,
+    QListWidget,
     QListWidgetItem,
     QTextBrowser,
     QVBoxLayout,
@@ -13,9 +14,9 @@ from PySide6.QtWidgets import (
 )
 from qfluentwidgets import (
     CheckBox,
-    ListWidget,
     PopUpAniStackedWidget,
     PrimaryPushButton,
+    SmoothScrollDelegate,
     isDarkTheme,
 )
 from qframelesswindow import FramelessDialog, StandardTitleBar
@@ -171,9 +172,14 @@ class AnnouncementBoard(FramelessDialog):
         # ...
 
         # 标题列表
-        self.title_list = ListWidget()
-        self.title_list.setSpacing(5)
+        self.title_list = QListWidget()
         self.title_list.setContentsMargins(0, 10, 0, 0)  # 增加顶部间距代替头部
+        # 先创建再设置滚动条策略，否则创建时会把横向滚动条重新打开，长标题不再显示省略号
+        self.title_list_scroll_delegate = SmoothScrollDelegate(self.title_list)
+        # 侧边栏宽度固定：长标题用省略号截断（悬停显示完整标题），不出现横向滚动
+        self.title_list.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        # 右边留出悬浮滚动条的位置，避免压住文字
+        self.title_list.setViewportMargins(4, 4, 12, 4)
         self.title_list.currentRowChanged.connect(self.on_title_clicked)
         self.title_list.addItem(QListWidgetItem(self.tr("ALL~ 全部公告")))
 
@@ -342,7 +348,9 @@ class AnnouncementBoard(FramelessDialog):
         # 将标题添加到左侧标题栏
         title = dialog.title
         dialog.setParent(self)
-        self.title_list.addItem(title)
+        item = QListWidgetItem(title)
+        item.setToolTip(title)
+        self.title_list.addItem(item)
 
         # 将内容添加到右侧内容栏
         self.content_stack.addWidget(dialog)

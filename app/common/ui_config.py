@@ -612,47 +612,45 @@ def get_announcement_sidebar_qss() -> tuple[str, str]:
 # 公告板列表项样式配置
 ANNOUNCEMENT_LIST_STYLES = {
     "dark": """
-        ListWidget {
+        QListWidget {
             background-color: transparent;
             border: none;
             outline: 0px;
+            font-size: 14px;
         }
-        ListWidget::item {
+        QListWidget::item {
             color: rgba(255, 255, 255, 0.85);
             background-color: transparent;
-            border-left: 3px solid transparent;
-            padding: 12px 15px;
-            margin: 2px 5px;
+            padding: 4px 6px;
             border-radius: 4px;
         }
-        ListWidget::item:hover {
+        QListWidget::item:hover {
             background-color: rgba(255, 255, 255, 0.08);
         }
-        ListWidget::item:selected {
-            background-color: rgba(255, 255, 255, 0.12);
-            border-left: 3px solid #0078d4;
+        QListWidget::item:selected {
+            background-color: rgba(255, 255, 255, 0.14);
+            color: rgba(255, 255, 255, 0.85);
         }
     """,
     "light": """
-        ListWidget {
+        QListWidget {
             background-color: transparent;
             border: none;
             outline: 0px;
+            font-size: 14px;
         }
-        ListWidget::item {
+        QListWidget::item {
             color: rgba(0, 0, 0, 0.85);
             background-color: transparent;
-            border-left: 3px solid transparent;
-            padding: 12px 15px;
-            margin: 2px 5px;
+            padding: 4px 6px;
             border-radius: 4px;
         }
-        ListWidget::item:hover {
+        QListWidget::item:hover {
             background-color: rgba(0, 0, 0, 0.05);
         }
-        ListWidget::item:selected {
-            background-color: rgba(0, 0, 0, 0.08);
-            border-left: 3px solid #0078d4;
+        QListWidget::item:selected {
+            background-color: rgba(0, 0, 0, 0.09);
+            color: rgba(0, 0, 0, 0.85);
         }
     """,
 }
