@@ -349,22 +349,22 @@ Right-click to save this setting as the default.</translation>
     <message>
         <location filename="../app/team_setting_card.py" line="676"/>
         <source>不购买饰品</source>
-        <translation>Skip Buying E.G.O. Gifts</translation>
+        <translation>Skip Buying E.G.O Gifts</translation>
     </message>
     <message>
         <location filename="../app/team_setting_card.py" line="677"/>
         <source>不合成饰品</source>
-        <translation>Skip Fusing E.G.O. Gifts</translation>
+        <translation>Skip Fusing E.G.O Gifts</translation>
     </message>
     <message>
         <location filename="../app/team_setting_card.py" line="678"/>
         <source>不出售饰品</source>
-        <translation>Skip Selling E.G.O. Gifts</translation>
+        <translation>Skip Selling E.G.O Gifts</translation>
     </message>
     <message>
         <location filename="../app/team_setting_card.py" line="679"/>
         <source>不升级饰品</source>
-        <translation>Skip Upgrading E.G.O. Gifts</translation>
+        <translation>Skip Upgrading E.G.O Gifts</translation>
     </message>
     <message>
         <location filename="../app/team_setting_card.py" line="684"/>
@@ -374,12 +374,12 @@ Right-click to save this setting as the default.</translation>
     <message>
         <location filename="../app/team_setting_card.py" line="700"/>
         <source>链接战避免使用三技能</source>
-        <translation>Avoid skill 3 in normal encounters</translation>
+        <translation>Avoid S3 in General Encounters</translation>
     </message>
     <message>
         <location filename="../app/team_setting_card.py" line="705"/>
         <source>链接战优先使用三技能</source>
-        <translation>Prioritize skill 3 in normal encounters</translation>
+        <translation>Prioritize S3 in General Encounters</translation>
     </message>
     <message>
         <location filename="../app/team_setting_card.py" line="710"/>
@@ -483,12 +483,12 @@ Right-click to save this setting as the default.</translation>
     <message>
         <location filename="../app/team_setting_card.py" line="736"/>
         <source>链接战第一回合全员防御</source>
-        <translation>defense first round in normal encounters</translation>
+        <translation>Defend on Turn 1 in General Encounters</translation>
     </message>
     <message>
         <location filename="../app/team_setting_card.py" line="741"/>
         <source>小指良单通杀家人</source>
-        <translation>Thumb Ryoshu solo defense</translation>
+        <translation>Ryōshū Solo Setup</translation>
     </message>
     <message>
         <location filename="../app/team_setting_card.py" line="742"/>
@@ -765,22 +765,22 @@ Right-click to save this setting as the default.</translation>
     <message>
         <location filename="../app/__init__.py" line="92"/>
         <source>星光→饰品→钱→饰品/钱→罪孽</source>
-        <translation>Starlight → E.G.O. Gifts → Cost → Gifts/Cost → Sin</translation>
+        <translation>Starlight → E.G.O Gifts → Cost → Gifts/Cost → Sin</translation>
     </message>
     <message>
         <location filename="../app/__init__.py" line="93"/>
         <source>星光→钱→饰品→饰品/钱→罪孽</source>
-        <translation>Starlight → Cost → E.G.O. Gifts → Gifts/Cost → Sin</translation>
+        <translation>Starlight → Cost → E.G.O Gifts → Gifts/Cost → Sin</translation>
     </message>
     <message>
         <location filename="../app/__init__.py" line="94"/>
         <source>钱→饰品→饰品/钱→罪孽→星光</source>
-        <translation>Cost → E.G.O. Gifts → Gifts/Cost → Sin → Starlight</translation>
+        <translation>Cost → E.G.O Gifts → Gifts/Cost → Sin → Starlight</translation>
     </message>
     <message>
         <location filename="../app/__init__.py" line="95"/>
         <source>饰品→钱→饰品/钱→罪孽→星光</source>
-        <translation>E.G.O. Gifts → Cost → Gifts/Cost → Sin → Starlight</translation>
+        <translation>E.G.O Gifts → Cost → Gifts/Cost → Sin → Starlight</translation>
     </message>
     <message>
         <location filename="../app/__init__.py" line="102"/>
@@ -1220,7 +1220,7 @@ Right-click to save this setting as the default.</translation>
     <message>
         <location filename="../app/team_setting_card.py" line="868"/>
         <source>自选开局饰品</source>
-        <translation>Starting E.G.O. Gift</translation>
+        <translation>Starting E.G.O Gift</translation>
     </message>
     <message>
         <location filename="../app/team_setting_card.py" line="878"/>
@@ -1940,7 +1940,7 @@ The code will overwrite your current team settings.</translation>
     <message>
         <location filename="../app/my_app.py" line="707"/>
         <source>一键长草</source>
-        <translation>One-Click Grass Mode</translation>
+        <translation>One-Click Auto Farming</translation>
     </message>
     <message>
         <location filename="../app/my_app.py" line="708"/>
@@ -2130,7 +2130,7 @@ To hide this notice, turn off “HDR Detection Warning” in Settings &gt; Exper
     <message>
         <location filename="../app/page_card.py" line="411"/>
         <source>坐牢次数</source>
-        <translation>Mirror Dungeon Runs</translation>
+        <translation>MD Runs</translation>
     </message>
 </context>
 <context>
@@ -2228,7 +2228,7 @@ To hide this notice, turn off “HDR Detection Warning” in Settings &gt; Exper
         <location filename="../app/team_setting_card.py" line="1229"/>
         <location filename="../app/team_setting_card.py" line="1466"/>
         <source>启用观测</source>
-        <translation>Enable E.G.O. Gift Observation</translation>
+        <translation>Enable E.G.O Gift Observation</translation>
     </message>
     <message>
         <location filename="../app/team_setting_card.py" line="1271"/>
@@ -2319,7 +2319,7 @@ To hide this notice, turn off “HDR Detection Warning” in Settings &gt; Exper
     <message>
         <location filename="../app/team_setting_card.py" line="1316"/>
         <source>&lt;div style=&quot;font-size: 15px; line-height: 1.6;&quot;&gt;知道你们想要什么&lt;br&gt;2026-06 蜘蛛巢良秀专武在泛用-3级-4行-8列&lt;/div&gt;</source>
-        <translation>&lt;div style=&quot;font-size: 15px; line-height: 1.6;&quot;&gt;I know what you&apos;re looking for&lt;br&gt;As of June 2026, Spider Nest Ryoshu&apos;s signature weapon is at General - Level 3 - Row 4 - Column 8&lt;/div&gt;</translation>
+        <translation>&lt;div style=&quot;font-size: 15px; line-height: 1.6;&quot;&gt;I know what you&apos;re looking for&lt;br&gt;As of June 2026, the gift for Blade of the House of Spiders Ryōshū is at General, Tier III, Row 4, Column 8.&lt;/div&gt;</translation>
     </message>
 </context>
 <context>
@@ -2346,7 +2346,7 @@ To hide this notice, turn off “HDR Detection Warning” in Settings &gt; Exper
     <message>
         <location filename="../app/page_card.py" line="555"/>
         <source>镜 牢 进 度 </source>
-        <translation>Mirror Dungeon Progress</translation>
+        <translation>MD Progress</translation>
     </message>
 </context>
 <context>
@@ -2355,7 +2355,7 @@ To hide this notice, turn off “HDR Detection Warning” in Settings &gt; Exper
         <location filename="../app/page_card.py" line="560"/>
         <location filename="../app/page_card.py" line="578"/>
         <source>镜 牢 进 度 ( 普 通 ) </source>
-        <translation>Mirror Dungeon Progress (Normal)</translation>
+        <translation>MD Progress (Normal)</translation>
     </message>
     <message>
         <location filename="../app/page_card.py" line="654"/>
@@ -2447,7 +2447,7 @@ Use the default values and continue?</translation>
         <location filename="../app/page_card.py" line="557"/>
         <location filename="../app/page_card.py" line="576"/>
         <source>镜 牢 进 度 ( 困 难 ) </source>
-        <translation>Mirror Dungeon Progress (Hard)</translation>
+        <translation>MD Progress (Hard)</translation>
     </message>
 </context>
 <context>
@@ -2864,7 +2864,7 @@ Use the default values and continue?</translation>
     <message>
         <location filename="../app/team_setting_card.py" line="117"/>
         <source>观测EGO饰品</source>
-        <translation>Observe E.G.O. Gifts</translation>
+        <translation>Observe E.G.O Gifts</translation>
     </message>
     <message>
         <location filename="../app/team_setting_card.py" line="120"/>
