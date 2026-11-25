@@ -47,15 +47,10 @@ from app.resource_sync_coordinator import ResourceSyncCoordinator
 from app.setting_interface import SettingInterface
 from app.team_setting_card import TeamSettingCard
 from app.tools_interface import ToolsInterface
-from module.after_completion_types import (
-    LEGACY_AFTER_COMPLETION_TO_CONFIG,
-    POWER_ACTION_NONE,
-    autodaily_exit_to_after_completion_config,
-    normalize_after_completion_config,
-)
 from module.config import cfg
 from module.font_manager import font_manager
 from module.logger import log
+from module.start_command import parse_start_command
 from module.system_actions import suspend_completion_actions
 
 # WinRT toast / Win32 焦点切换存在异步回跳，这里保留一次延迟补偿。
@@ -96,6 +91,7 @@ class MainWindow(FramelessWindow):
         self._pending_start_commands: list[list[str]] = []
         self._scheduled_start_pending = False
         self._scheduled_start_command: list[str] | None = None
+        self._scheduled_start_request = None
 
         # 应用全局字体配置
         apply_font_config()
@@ -343,86 +339,16 @@ class MainWindow(FramelessWindow):
             )
             return
 
-        skip_arg_times = 0
-        start_flag = False
-        exit_flag = False
-        exit_type = 0
-        parsed_actions = None
-        parsed_power_action = None
-        last_cmd = ""
-        # 读取输入参数
-        for index, arg in enumerate(argv):
-            if index == 0:
-                # 跳过第一个参数（程序路径）
-                continue
-            if skip_arg_times > 0:
-                # 读取参数后可以跳过的次数
-                # 运行一个控制语句读取多个参数
-                skip_arg_times -= 1
-                continue
-            if arg == "start":
-                start_flag = True
-                last_cmd = "start"
-                continue
-            if arg == "--exit" and last_cmd == "start":
-                exit_flag = True
-                skip_arg_times = 1
-                exit_type = 5
-                try:
-                    if isinstance(argv[index + 1], str) and argv[index + 1].startswith("autodaily"):
-                        exit_task = cfg.get_value(argv[index + 1] + "_task_exit")
-                        actions, power_action = autodaily_exit_to_after_completion_config(exit_task)
-                        parsed_actions = actions
-                        parsed_power_action = power_action
-                        exit_type = 0
-                        autodaily_task = cfg.get_value(argv[index + 1] + "_task")
-                        if autodaily_task[0]:
-                            self.farming_interface.interface_left.daily_task.box.set_check_true()
-                        else:
-                            self.farming_interface.interface_left.daily_task.box.set_check_false()
-                        if autodaily_task[1]:
-                            self.farming_interface.interface_left.get_reward.box.set_check_true()
-                        else:
-                            self.farming_interface.interface_left.get_reward.box.set_check_false()
-                        if autodaily_task[2]:
-                            self.farming_interface.interface_left.buy_enkephalin.box.set_check_true()
-                        else:
-                            self.farming_interface.interface_left.buy_enkephalin.box.set_check_false()
-                        if autodaily_task[3]:
-                            self.farming_interface.interface_left.mirror.box.set_check_true()
-                        else:
-                            self.farming_interface.interface_left.mirror.box.set_check_false()
-                    else:
-                        exit_type = int(argv[index + 1])
-                        if exit_type < 0 or exit_type > 8:
-                            exit_type = 0
-                            log.error(f'命令行参数 --exit 后输入值"{argv[index + 1]}"越界')
-                except (IndexError, ValueError):
-                    # 由于输入值为可选, 所以在强制int失败或缺少时将跳过参数数值重置为0
-                    skip_arg_times = 0
-                    log.info("命令行参数 --exit 后缺少退出类型，默认为5, 即退出AALC")
-                except Exception as e:
-                    exit_type = 0
-                    skip_arg_times = 0
-                    log.error(f"命令行参数 --exit 未知错误: {e}")
-                continue
-
-        # 最终执行操作
-        if exit_flag:
-            if parsed_actions is not None and parsed_power_action is not None:
-                actions, power_action = parsed_actions, parsed_power_action
-            else:
-                # 兼容旧命令行数字参数
-                actions, power_action = normalize_after_completion_config(
-                    *LEGACY_AFTER_COMPLETION_TO_CONFIG.get(exit_type, ((), POWER_ACTION_NONE))
-                )
-            self.farming_interface.interface_left.after_completion_selector.set_from_external(actions, power_action)
-
-        if start_flag:
-            log.info("开始通过命令行参数启动程序")
-            self._scheduled_start_pending = True
-            self._scheduled_start_command = list(argv)
-            QTimer.singleShot(3000, self._emit_scheduled_start)
+        request = parse_start_command(argv)
+        if not request.start:
+            return
+        # 定时任务和命令行启动只决定「这一次」跑什么、结束后做什么，
+        # 不改主界面的任务勾选，也不改用户默认的结束后操作。
+        log.info("开始通过命令行参数启动程序")
+        self._scheduled_start_pending = True
+        self._scheduled_start_command = list(argv)
+        self._scheduled_start_request = request
+        QTimer.singleShot(3000, self._emit_scheduled_start)
 
     @staticmethod
     def _is_start_command(argv: list[str]) -> bool:
@@ -439,12 +365,15 @@ class MainWindow(FramelessWindow):
                 )
             self._scheduled_start_pending = False
             self._scheduled_start_command = None
+            self._scheduled_start_request = None
             return
 
+        request = self._scheduled_start_request
         self._scheduled_start_pending = False
         self._scheduled_start_command = None
+        self._scheduled_start_request = None
         self._set_completion_actions_suspended(bool(self._pending_start_commands))
-        mediator.finished_signal.emit()
+        mediator.finished_signal.emit(request)
         if not self._has_running_script():
             self._schedule_next_queued_start()
 
