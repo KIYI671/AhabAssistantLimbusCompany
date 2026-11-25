@@ -1,7 +1,7 @@
 # 应用 UI 配置
 from PySide6.QtCore import QT_TRANSLATE_NOOP, Qt
 from PySide6.QtGui import QColor
-from PySide6.QtWidgets import QFrame
+from PySide6.QtWidgets import QApplication, QFrame
 from qfluentwidgets import isDarkTheme, qconfig
 
 BORDER_STYLE = {
@@ -36,6 +36,12 @@ TITLE_BAR_STYLES = {
 def apply_font_config():
     """应用全局字体配置"""
     qconfig.fontFamilies.value = FONT_FAMILIES
+    # 普通 Qt 控件用应用默认字体，Windows 上默认只有 Segoe UI，汉字会回退成日文字形，所以也加上中文字体
+    app = QApplication.instance()
+    if app is not None:
+        font = app.font()
+        font.setFamilies(FONT_FAMILIES)
+        app.setFont(font)
 
 
 def get_main_window_style(is_dark: bool) -> dict:
