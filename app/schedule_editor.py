@@ -4,8 +4,8 @@
 运行时只用定时任务自己的设置，不改主界面的任务列表和默认结束后操作。
 """
 
-from PySide6.QtCore import QT_TRANSLATE_NOOP, QCoreApplication, Qt, QTime, Signal
-from PySide6.QtWidgets import QFrame, QHBoxLayout, QStackedWidget, QVBoxLayout, QWidget
+from PySide6.QtCore import QT_TRANSLATE_NOOP, QCoreApplication, Qt, QTime, QTimer, Signal
+from PySide6.QtWidgets import QFrame, QHBoxLayout, QSizePolicy, QStackedWidget, QVBoxLayout, QWidget
 from qfluentwidgets import (
     Action,
     BodyLabel,
@@ -368,34 +368,49 @@ class ScheduleSettingGroup(BaseSettingCardGroup):
     def __init__(self, title: str, parent=None):
         super().__init__(title, parent)
         self.cards: list[ScheduleCard] = []
-        self.footer = QWidget(self)
+        # SettingCardGroup 的 ExpandLayout 不支持移除控件，卡片放在自己的容器里增删
+        self.container = QWidget(self)
+        self.container_layout = QVBoxLayout(self.container)
+        self.container_layout.setContentsMargins(0, 0, 0, 0)
+        self.container_layout.setSpacing(2)
+
+        self.footer = QWidget(self.container)
         footer_layout = QHBoxLayout(self.footer)
         footer_layout.setContentsMargins(0, 6, 0, 0)
         self.add_button = PrimaryPushButton(FIF.ADD, "", self.footer)
+        self.add_button.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
         self.hint = BodyLabel(self.footer)
         self.hint.setTextColor("#8a8a8a", "#9a9a9a")
-        footer_layout.addWidget(self.add_button)
+        self.hint.setWordWrap(True)
+        footer_layout.addWidget(self.add_button, 0, Qt.AlignVCenter)
         footer_layout.addSpacing(12)
         footer_layout.addWidget(self.hint, 1)
+        self.container_layout.addWidget(self.footer)
+        self.addSettingCard(self.container)
         self.add_button.clicked.connect(self._add_schedule)
         self.rebuild()
 
     def rebuild(self) -> None:
-        while self.cardLayout.count():
-            self.cardLayout.takeAt(0)
         for card in self.cards:
-            card.setParent(None)
+            self.container_layout.removeWidget(card)
+            card.hide()
             card.deleteLater()
         self.cards = []
         for schedule in cfg.config.schedules:
-            card = ScheduleCard(schedule, self)
+            card = ScheduleCard(schedule, self.container)
             card.deleteRequested.connect(self._delete)
             card.changed.connect(self._refresh_titles)
             self.cards.append(card)
-            self.addSettingCard(card)
-        self.addSettingCard(self.footer)
-        self.footer.show()
+            self.container_layout.insertWidget(self.container_layout.count() - 1, card)
         self.retranslateUi()
+        self._resize()
+
+    def _resize(self) -> None:
+        spacing = self.container_layout.spacing()
+        height = sum(card.height() + spacing for card in self.cards)
+        height += max(self.footer.sizeHint().height(), self.add_button.sizeHint().height() + 6)
+        self.container.setFixedHeight(height)
+        self.adjustSize()
 
     def _refresh_titles(self) -> None:
         for card in self.cards:
@@ -406,7 +421,20 @@ class ScheduleSettingGroup(BaseSettingCardGroup):
         cfg.config.schedules.append(schedule)
         cfg.save()
         self.rebuild()
-        self.cards[-1]._edit()
+        # 等布局刷新后再弹出编辑框；取消则不保留这个新建的定时任务
+        QTimer.singleShot(0, lambda: self._edit_new(schedule))
+
+    def _edit_new(self, schedule: Schedule) -> None:
+        card = next((c for c in self.cards if c.schedule is schedule), None)
+        if card is None:
+            return
+        dialog = ScheduleEditorDialog(schedule, self.window())
+        if dialog.exec():
+            card.retranslateUi()
+            return
+        cfg.config.schedules.remove(schedule)
+        cfg.save()
+        self.rebuild()
 
     def _delete(self, card: ScheduleCard) -> None:
         from qfluentwidgets import MessageBox
@@ -427,6 +455,8 @@ class ScheduleSettingGroup(BaseSettingCardGroup):
     def retranslateUi(self):
         super().retranslateUi()
         self.add_button.setText(tr(QT_TRANSLATE_NOOP("ScheduleEditor", "添加定时任务")))
+        self.add_button.adjustSize()
+        self.add_button.setMinimumWidth(self.add_button.sizeHint().width() + 8)
         self.hint.setText(
             tr(
                 QT_TRANSLATE_NOOP(

@@ -6,9 +6,9 @@ pydantic 对象），每次改动后发出 changed 信号，由使用方负责�
 
 from typing import Callable
 
-from PySide6.QtCore import QT_TRANSLATE_NOOP, QCoreApplication, QModelIndex, QRect, QSize, Qt, Signal
+from PySide6.QtCore import QT_TRANSLATE_NOOP, QCoreApplication, QEvent, QModelIndex, QRect, QSize, Qt, Signal
 from PySide6.QtGui import QColor, QFont, QPainter
-from PySide6.QtWidgets import QAbstractItemView, QListWidgetItem, QStyleOptionViewItem
+from PySide6.QtWidgets import QAbstractItemView, QListWidgetItem, QStyleOptionViewItem, QToolTip
 from qfluentwidgets import (
     Action,
     ListItemDelegate,
@@ -72,10 +72,41 @@ class TaskItemDelegate(ListItemDelegate):
     CHECK_SIZE = 18
     GEAR_SIZE = 16
 
+    ACTION_SIZE = 16
+    ACTION_GAP = 10
+    ACTIONS = ("copy", "rename", "delete")
+
     def __init__(self, parent):
         super().__init__(parent)
         self.margin = 1
         self.running_id = ""
+        self.actions_enabled = True  # 运行期间不显示行内操作
+
+    def gear_rect(self, row_rect: QRect) -> QRect:
+        size = self.GEAR_SIZE + 6
+        return QRect(row_rect.right() - 6 - size, row_rect.center().y() - size // 2, size, size)
+
+    def action_rects(self, row_rect: QRect) -> dict[str, QRect]:
+        """齿轮左边的行内按钮：复制、重命名、删除"""
+        rects = {}
+        right = self.gear_rect(row_rect).left() - self.ACTION_GAP
+        for name in reversed(self.ACTIONS):
+            rects[name] = QRect(
+                right - self.ACTION_SIZE,
+                row_rect.center().y() - self.ACTION_SIZE // 2,
+                self.ACTION_SIZE,
+                self.ACTION_SIZE,
+            )
+            right -= self.ACTION_SIZE + self.ACTION_GAP
+        return rects
+
+    def shows_actions(self, index: QModelIndex) -> bool:
+        row = index.row()
+        return (
+            self.actions_enabled
+            and index.data(Qt.ItemDataRole.CheckStateRole) is not None
+            and (row == self.hoverRow or row in self.selectedRows)
+        )
 
     def sizeHint(self, option, index):
         return QSize(option.rect.width(), self.ROW_HEIGHT)
@@ -112,21 +143,32 @@ class TaskItemDelegate(ListItemDelegate):
             self._drawCheckBox(painter, opt, index)
             x = rect.x() + self.CHECK_X + self.CHECK_SIZE + 10
 
-        # 齿轮：表示「点这一行在右边看设置」，选中时用主题色
-        gear = QRect(
-            rect.right() - 8 - self.GEAR_SIZE, rect.center().y() - self.GEAR_SIZE // 2, self.GEAR_SIZE, self.GEAR_SIZE
-        )
+        # 齿轮：表示「点这一行在右边看设置」；选中时是主题色实心底
+        gear = self.gear_rect(rect)
+        icon_rect = gear.adjusted(3, 3, -3, -3)
         if selected:
-            FIF.SETTING.icon(color=QColor(themeColor())).paint(painter, gear)
+            painter.setPen(Qt.NoPen)
+            painter.setBrush(QColor(themeColor()))
+            painter.drawRoundedRect(gear, 5, 5)
+            FIF.SETTING.icon(color=QColor(255, 255, 255)).paint(painter, icon_rect)
         else:
-            FIF.SETTING.render(painter, gear)
+            FIF.SETTING.render(painter, icon_rect)
+
+        # 悬停或选中时显示行内操作（同 MAA）：复制用主题色
+        text_right = gear.left() - 8
+        if self.shows_actions(index):
+            rects = self.action_rects(rect)
+            FIF.COPY.icon(color=QColor(themeColor())).paint(painter, rects["copy"])
+            FIF.EDIT.render(painter, rects["rename"])
+            FIF.DELETE.render(painter, rects["delete"])
+            text_right = rects["copy"].left() - 8
 
         text_color = QColor(255, 255, 255) if is_dark else QColor(0, 0, 0)
         if index.data(Qt.ItemDataRole.CheckStateRole) == Qt.CheckState.Unchecked:
             text_color.setAlpha(140)
         painter.setPen(text_color)
         painter.setFont(getFont(14, QFont.DemiBold if running else QFont.Normal))
-        text_w = max(0, gear.left() - 8 - x)
+        text_w = max(0, text_right - x)
         title = painter.fontMetrics().elidedText(index.data(Qt.ItemDataRole.DisplayRole) or "", Qt.ElideRight, text_w)
         painter.drawText(QRect(x, rect.y(), text_w, rect.height()), Qt.AlignVCenter, title)
         painter.restore()
@@ -226,6 +268,7 @@ class TaskQueueList(ListWidget):
     def set_editable(self, editable: bool) -> None:
         """运行期间禁止编辑，但仍然可以选中查看设置"""
         self._editable = editable
+        self.delegate.actions_enabled = editable
         self.setDragEnabled(editable)
         for row in range(self.count()):
             item = self.item(row)
@@ -363,6 +406,11 @@ class TaskQueueList(ListWidget):
             item = self.itemAt(e.position().toPoint())
             if item is not None:
                 rect = self.visualItemRect(item)
+                action = self._action_at(item, e.position().toPoint())
+                if action is not None:
+                    self._run_action(item, action)
+                    e.accept()
+                    return
                 hit = self.delegate.checkbox_rect(rect).adjusted(-6, -6, 6, 6)
                 if hit.contains(e.position().toPoint()):
                     if self._editable:
@@ -370,6 +418,47 @@ class TaskQueueList(ListWidget):
                     e.accept()
                     return
         super().mousePressEvent(e)
+
+    def _action_at(self, item: QListWidgetItem, pos) -> str | None:
+        index = self.indexFromItem(item)
+        if not self.delegate.shows_actions(index):
+            return None
+        rect = QRect(self.visualItemRect(item)).adjusted(2, 1, -2, -1)
+        for name, action_rect in self.delegate.action_rects(rect).items():
+            if action_rect.adjusted(-4, -4, 4, 4).contains(pos):
+                return name
+        return None
+
+    def _run_action(self, item: QListWidgetItem, action: str) -> None:
+        task_id = item.data(ID_ROLE)
+        if action == "copy":
+            self.duplicate_task(task_id)
+        elif action == "rename":
+            self.setCurrentItem(item)
+            self._rename_item(item)
+        elif action == "delete":
+            self.remove_task(task_id)
+
+    def viewportEvent(self, e):
+        # 行内按钮的悬停提示
+        if e.type() == QEvent.Type.ToolTip:
+            item = self.itemAt(e.pos())
+            action = self._action_at(item, e.pos()) if item is not None else None
+            if action is not None:
+                tips = {
+                    "copy": tr(QT_TRANSLATE_NOOP("TaskQueue", "复制")),
+                    "rename": tr(QT_TRANSLATE_NOOP("TaskQueue", "重命名")),
+                    "delete": tr(QT_TRANSLATE_NOOP("TaskQueue", "删除")),
+                }
+                QToolTip.showText(e.globalPos(), tips[action], self)
+                return True
+            QToolTip.hideText()
+            return True
+        return super().viewportEvent(e)
+
+    def mouseMoveEvent(self, e):
+        super().mouseMoveEvent(e)
+        self.viewport().update()
 
     def _toggle(self, item: QListWidgetItem) -> None:
         task = self.find_task(item.data(ID_ROLE))

@@ -173,7 +173,7 @@ class AfterCompletion(BaseModel):
     actions: list[str] = Field(default_factory=list)
     """前置动作（可多选）：exit_game / exit_emulator / exit_aalc"""
 
-    power_action: str = POWER_ACTION_NONE
+    power_action: str = "none"
     """最终动作（单选）：none / sleep / hibernate / lock / shutdown"""
 
     @field_validator("actions", mode="before")

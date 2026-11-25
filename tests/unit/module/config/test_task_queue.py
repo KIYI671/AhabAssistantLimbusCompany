@@ -225,3 +225,12 @@ def test_dump_is_plain_yaml(tq):
     assert reloaded["task_queue"][3]["re_claim"]["battle_pass"] is False
     again = config_typing.ConfigModel(**reloaded)
     assert again.model_dump() == model.model_dump()
+
+
+def test_new_objects_dump_as_plain_yaml(tq):
+    """新建的定时任务 / 任务的默认值也必须是普通类型，否则整份配置写盘失败"""
+    task_queue, _ = tq
+    schedule = task_queue.Schedule(tasks=task_queue.default_task_queue())
+    buffer = io.StringIO()
+    YAML().dump(schedule.model_dump(), buffer)
+    assert "power_action: none" in buffer.getvalue()
