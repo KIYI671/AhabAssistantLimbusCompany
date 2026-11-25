@@ -1,3 +1,4 @@
+import re
 import time
 from typing import Literal, NotRequired, TypedDict
 
@@ -43,6 +44,29 @@ class AnnouncementItem(TypedDict):
 class AnnouncementFeed(TypedDict):
     Time: str  # 公告更新时间，格式 "%Y-%m-%d %H:%M:%S"
     Announcement: list[AnnouncementItem]
+
+
+_CJK_PATTERN = re.compile("[\\u4e00-\\u9fff]")
+
+
+def get_announcement_language(anno: AnnouncementItem) -> str:
+    """
+    获取公告 `anno` 所用的语言。优先使用 `anno` 的 `lang` 字段；
+    没有该字段时，标题含汉字视为 `zh_cn`，否则视为 `en`。
+    """
+    lang = anno.get("lang")
+    if lang:
+        return lang
+    return "zh_cn" if _CJK_PATTERN.search(anno["title"]) else "en"
+
+
+def filter_announcements_by_lang(announcements: list[AnnouncementItem], lang: str) -> list[AnnouncementItem]:
+    """
+    使用 `lang` 过滤公告 `announcements`，只保留语言为 `lang` 的公告。
+    没有符合的公告时返回全部公告，避免用户一条公告都看不到。
+    """
+    matched = [anno for anno in announcements if get_announcement_language(anno) == lang]
+    return matched or announcements
 
 
 class AnnouncementThread(QThread):
@@ -270,7 +294,7 @@ class AnnouncementBoard(FramelessDialog):
 
     def set_announcement(self, announcements: list[AnnouncementItem]):
         """设置公告"""
-        for anno in announcements:
+        for anno in filter_announcements_by_lang(announcements, cfg.language_in_program):
             self.add(
                 Announcement(
                     None,
