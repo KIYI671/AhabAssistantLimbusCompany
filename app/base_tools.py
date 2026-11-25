@@ -22,7 +22,6 @@ from qfluentwidgets import (
     RoundMenu,
     SpinBox,
     SplitToolButton,
-    ToggleToolButton,
     ToolButton,
     ToolTipFilter,
     ToolTipPosition,
@@ -179,8 +178,6 @@ class BaseCheckBox(BaseLayout):
             team_num = int(self.config_name.split("_")[-1])
             cfg.set_team_enabled(team_num, checked)
             mediator.refresh_teams_order.emit()
-        elif self.config_name.startswith("autodaily"):
-            mediator.autodaily_setting.emit(self.config_name)
         else:
             data_dict = {self.config_name: checked}
             self.send_switch_signal(data_dict)
@@ -275,36 +272,6 @@ class ToSettingButton(BaseButton):
         self.del_action.setText(self.tr("删除"))
         self.copy_settings.setText(self.tr("复制"))
         self.paste_settings.setText(self.tr("粘贴"))
-
-
-class ChangePageButton(BaseButton):
-    def __init__(
-        self,
-        config_name,
-        icon: Union[str, QIcon, FluentIconBase, None] = FIF.SETTING,
-        parent=None,
-    ):
-        super().__init__(config_name, parent=parent)
-
-        self.setFixedHeight(30)
-        self.setFixedWidth(50)
-
-        self.button = ToggleToolButton(icon, self)
-        toggle_button_group[config_name] = self.button
-        self.button.clicked.connect(self.on_click)
-
-        self.hBoxLayout.addWidget(self.button)
-
-    def on_click(self):
-        for d, button in toggle_button_group.items():
-            if button == self.button:
-                button.setChecked(True)
-                self.send_switch_signal(self.config_name)
-            else:
-                button.setChecked(False)
-
-    def send_switch_signal(self, target: str):
-        mediator.switch_page.emit(target)
 
 
 class SettingTeamsButton(BaseButton):

@@ -7,19 +7,8 @@ from module.config import cfg
 
 mediator = Mediator()
 
-toggle_button_group = {}
-
 team_toggle_button_group = []
 
-task_check_box = []
-
-page_name_and_index = {
-    "set_windows": 0,
-    "daily_task": 1,
-    "get_reward": 2,
-    "buy_enkephalin": 3,
-    "mirror": 4,
-}
 
 set_win_size_options = {
     "1920*1080": 1080,

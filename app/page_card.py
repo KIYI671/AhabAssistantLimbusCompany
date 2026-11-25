@@ -13,6 +13,7 @@ from PySide6.QtGui import (
 from PySide6.QtWidgets import QFileDialog, QFrame, QHBoxLayout, QVBoxLayout, QWidget
 from qfluentwidgets import (
     Action,
+    CaptionLabel,
     InfoBar,
     InfoBarPosition,
     MessageBox,
@@ -30,16 +31,15 @@ from qfluentwidgets import FluentIcon as FIF
 
 from app import *
 from app.base_combination import (
-    CheckBoxWithComboBox,
     LabelWithComboBox,
     LabelWithSpinBox,
-    MirrorSpinBox,
     MirrorTeamCombination,
     TextProgressBar,
 )
 from app.base_tools import BaseCheckBox
 from app.common.ui_config import get_theme_aware_text_browser_qss
 from app.language_manager import LanguageManager
+from app.task_fields import GLOBAL_HINT, TaskBinder, mirror_option_fields, refresh_dependency
 from app.widget.custom_segmented_widget import CustomSegmentedWidget
 from module.config import TeamSetting, cfg, theme_list
 from module.config.team_import_export import apply_team_settings, import_team_settings
@@ -177,221 +177,6 @@ class PageSetWindows(PageCard):
         super().retranslateUi()
 
 
-class PageDailyTask(PageCard):
-    def __init__(self, parent=None):
-        super().__init__(parent=parent)
-
-        self.__init_card()
-        self.__init_layout()
-        self.setObjectName("page_daily_task")
-
-    def __init_card(self):
-        self.EXP_count = LabelWithSpinBox(
-            QT_TRANSLATE_NOOP("LabelWithSpinBox", "经验本次数"),
-            "set_EXP_count",
-            min_value=0,
-            min_step=1,
-        )
-        self.thread_count = LabelWithSpinBox(
-            QT_TRANSLATE_NOOP("LabelWithSpinBox", "纽本次数"),
-            "set_thread_count",
-            min_value=0,
-            min_step=1,
-        )
-        self.team_select = LabelWithComboBox(
-            QT_TRANSLATE_NOOP("LabelWithComboBox", "使用编队"), "daily_teams", all_teams
-        )
-
-        self.coutinuous_combat = CheckBoxWithComboBox(
-            "use_continuous_combat",
-            QT_TRANSLATE_NOOP("CheckBoxWithComboBox", "使用连续作战"),
-            None,
-            "use_continuous_combat_select",
-            tips=QT_TRANSLATE_NOOP("BaseCheckBox", "勾选后将使用连续作战模式，设置的值为最大连续作战场次"),
-        )
-        self.coutinuous_combat.box.setFixedWidth(200)
-        self.coutinuous_combat.combo_box.setFixedWidth(100)
-        self.coutinuous_combat.add_items(coutinuous_times)
-
-        self.targeted_teaming_EXP = BaseCheckBox(
-            "targeted_teaming_EXP",
-            None,
-            QT_TRANSLATE_NOOP("BaseCheckBox", "经验本针对性配队"),
-            center=False,
-        )
-        self.EXP_day_1_2 = LabelWithComboBox(
-            QT_TRANSLATE_NOOP("LabelWithComboBox", "周一、周二（斩击）"),
-            "EXP_day_1_2",
-            all_teams,
-        )
-        self.EXP_day_3_4 = LabelWithComboBox(
-            QT_TRANSLATE_NOOP("LabelWithComboBox", "周三、周四（突刺）"),
-            "EXP_day_3_4",
-            all_teams,
-        )
-        self.EXP_day_5_6 = LabelWithComboBox(
-            QT_TRANSLATE_NOOP("LabelWithComboBox", "周五、周六（打击）"),
-            "EXP_day_5_6",
-            all_teams,
-        )
-        self.EXP_day_7 = LabelWithComboBox(QT_TRANSLATE_NOOP("LabelWithComboBox", "周日"), "EXP_day_7", all_teams)
-        self.targeted_teaming_thread = BaseCheckBox(
-            "targeted_teaming_thread",
-            None,
-            QT_TRANSLATE_NOOP("BaseCheckBox", "纽本针对性配队"),
-            center=False,
-        )
-        self.thread_day_1 = LabelWithComboBox(
-            QT_TRANSLATE_NOOP("LabelWithComboBox", "纽本周一（色欲）"),
-            "thread_day_1",
-            all_teams,
-        )
-        self.thread_day_2 = LabelWithComboBox(
-            QT_TRANSLATE_NOOP("LabelWithComboBox", "纽本周二（怠惰）"),
-            "thread_day_2",
-            all_teams,
-        )
-        self.thread_day_3 = LabelWithComboBox(
-            QT_TRANSLATE_NOOP("LabelWithComboBox", "纽本周三（暴食）"),
-            "thread_day_3",
-            all_teams,
-        )
-        self.thread_day_4 = LabelWithComboBox(
-            QT_TRANSLATE_NOOP("LabelWithComboBox", "纽本周四（忧郁）"),
-            "thread_day_4",
-            all_teams,
-        )
-        self.thread_day_5 = LabelWithComboBox(
-            QT_TRANSLATE_NOOP("LabelWithComboBox", "纽本周五（傲慢）"),
-            "thread_day_5",
-            all_teams,
-        )
-        self.thread_day_6 = LabelWithComboBox(
-            QT_TRANSLATE_NOOP("LabelWithComboBox", "纽本周六（嫉妒）"),
-            "thread_day_6",
-            all_teams,
-        )
-        self.thread_day_7 = LabelWithComboBox(
-            QT_TRANSLATE_NOOP("LabelWithComboBox", "纽本周日（暴怒）"),
-            "thread_day_7",
-            all_teams,
-        )
-
-    def __init_layout(self):
-        self.vbox_general.addWidget(self.EXP_count)
-        self.vbox_general.addWidget(self.thread_count)
-        self.vbox_general.addWidget(self.team_select)
-        self.vbox_general.addWidget(self.coutinuous_combat)
-
-        self.vbox_advanced.addWidget(self.targeted_teaming_EXP)
-        self.vbox_advanced.addWidget(self.EXP_day_1_2)
-        self.vbox_advanced.addWidget(self.EXP_day_3_4)
-        self.vbox_advanced.addWidget(self.EXP_day_5_6)
-        self.vbox_advanced.addWidget(self.EXP_day_7)
-        self.vbox_advanced.addSpacing(30)
-        self.vbox_advanced.addWidget(self.targeted_teaming_thread)
-        self.vbox_advanced.addWidget(self.thread_day_1)
-        self.vbox_advanced.addWidget(self.thread_day_2)
-        self.vbox_advanced.addWidget(self.thread_day_3)
-        self.vbox_advanced.addWidget(self.thread_day_4)
-        self.vbox_advanced.addWidget(self.thread_day_5)
-        self.vbox_advanced.addWidget(self.thread_day_6)
-        self.vbox_advanced.addWidget(self.thread_day_7)
-
-    def retranslateUi(self):
-        self.EXP_count.retranslateUi()
-        self.thread_count.retranslateUi()
-        self.team_select.retranslateUi()
-        self.coutinuous_combat.retranslateUi()
-        self.targeted_teaming_EXP.retranslateUi()
-        self.targeted_teaming_thread.retranslateUi()
-
-        for i in range(1, 8):
-            thread = getattr(self, f"thread_day_{i}")
-            thread.retranslateUi()
-            if i % 2 == 0:
-                Exp = getattr(self, f"EXP_day_{i - 1}_{i}")
-                Exp.retranslateUi()
-
-        self.EXP_day_7.retranslateUi()
-
-        super().retranslateUi()
-
-
-class PageGetPrize(PageCard):
-    def __init__(self, parent=None):
-        super().__init__(parent=parent)
-
-        self.__init_card()
-        self.__init_layout()
-        self.setObjectName("page_get_prize")
-
-    def __init_card(self):
-        self.claim_mission_rewards = BaseCheckBox(
-            "claim_mission_rewards", None, QT_TRANSLATE_NOOP("BaseCheckBox", "日常/周常"), center=False
-        )
-        self.claim_battle_pass_rewards = BaseCheckBox(
-            "claim_battle_pass_rewards", None, QT_TRANSLATE_NOOP("BaseCheckBox", "通行证奖励"), center=False
-        )
-        self.claim_mail_rewards = BaseCheckBox(
-            "claim_mail_rewards", None, QT_TRANSLATE_NOOP("BaseCheckBox", "邮件"), center=False
-        )
-
-    def __init_layout(self):
-        self.vbox_general.addWidget(self.claim_mission_rewards)
-        self.vbox_general.addWidget(self.claim_battle_pass_rewards)
-        self.vbox_general.addWidget(self.claim_mail_rewards)
-
-    def retranslateUi(self):
-        self.claim_mission_rewards.retranslateUi()
-        self.claim_battle_pass_rewards.retranslateUi()
-        self.claim_mail_rewards.retranslateUi()
-        super().retranslateUi()
-
-
-class PageLunacyToEnkephalin(PageCard):
-    def __init__(self, parent=None):
-        super().__init__(parent=parent)
-
-        self.__init_card()
-        self.__init_layout()
-        self.setObjectName("page_lunacy_to_enkephalin")
-
-    def __init_card(self):
-        self.set_lunacy_to_enkephalin = LabelWithComboBox(
-            QT_TRANSLATE_NOOP("LabelWithComboBox", "狂气换体"),
-            "set_lunacy_to_enkephalin",
-            set_lunacy_to_enkephalin_options,
-        )
-
-        self.Dr_Grandet_mode = BaseCheckBox(
-            "Dr_Grandet_mode",
-            None,
-            QT_TRANSLATE_NOOP("BaseCheckBox", "葛朗台模式"),
-            center=False,
-        )
-
-        self.skip_enkephalin = BaseCheckBox(
-            "skip_enkephalin",
-            None,
-            QT_TRANSLATE_NOOP("BaseCheckBox", "不自动兑换脑啡肽 (?)"),
-            tips=QT_TRANSLATE_NOOP("BaseCheckBox", "勾选后除狂气换体以外不执行兑换脑啡肽的操作"),
-            center=False,
-        )
-
-    def __init_layout(self):
-        self.vbox_general.addWidget(self.set_lunacy_to_enkephalin)
-
-        self.vbox_advanced.addWidget(self.Dr_Grandet_mode)
-        self.vbox_advanced.addWidget(self.skip_enkephalin)
-
-    def retranslateUi(self):
-        self.set_lunacy_to_enkephalin.retranslateUi()
-        self.Dr_Grandet_mode.retranslateUi()
-        self.skip_enkephalin.retranslateUi()
-        super().retranslateUi()
-
-
 class PageMirror(PageCard):
     def __init__(self, parent=None):
         super().__init__(parent=parent)
@@ -416,90 +201,20 @@ class PageMirror(PageCard):
             "team1_setting",
         )
 
-        self.mirror_count = MirrorSpinBox(QT_TRANSLATE_NOOP("MirrorSpinBox", "坐牢次数"), "set_mirror_count")
+        # 镜牢次数和选项绑定当前选中的镜牢任务；队伍列表和键盘寻路是全局设置
+        self.binder = TaskBinder(self)
+        self.taskChanged = self.binder.changed
+        self.mirror_count, self.option_fields = mirror_option_fields(self.binder)
+        self.re_claim_controller = next(f for f in self.option_fields if f.field == "re_claim_rewards")
+        self.global_hint = CaptionLabel(self)
+        self.global_hint.setContentsMargins(4, 12, 0, 2)
+        self.global_hint.setTextColor("#7a7a7a", "#a0a0a0")
 
         self.add_team = QHBoxLayout()
         self.add_team_button = TransparentToolButton(FIF.ADD, None)
         self.add_team_button.setMinimumWidth(200)
         self.add_team_button.clicked.connect(self.show_team_creation_menu)
 
-        self.hard_mirror = BaseCheckBox(
-            "hard_mirror",
-            None,
-            QT_TRANSLATE_NOOP("BaseCheckBox", "使用困难镜牢*"),
-            center=False,
-            tips=QT_TRANSLATE_NOOP(
-                "BaseCheckBox",
-                "仅本次运行期间有效，重启AALC后失效\n右键可设置为永久生效\n注: 自动困牢会关闭本功能",
-            ),
-            temporary=True,
-        )
-        self.no_weekly_bonuses = BaseCheckBox(
-            "no_weekly_bonuses",
-            None,
-            QT_TRANSLATE_NOOP("BaseCheckBox", "不使用每周加成*"),
-            center=False,
-            tips=QT_TRANSLATE_NOOP(
-                "BaseCheckBox",
-                "仅本次运行期间有效，重启AALC后失效\n右键可设置为永久生效",
-            ),
-            temporary=True,
-        )
-        self.floor_3_exit = BaseCheckBox(
-            "floor_3_exit",
-            None,
-            QT_TRANSLATE_NOOP("BaseCheckBox", "只打三层"),
-            center=False,
-        )
-        self.infinite_dungeons = BaseCheckBox(
-            "infinite_dungeons",
-            None,
-            QT_TRANSLATE_NOOP("BaseCheckBox", "无限坐牢"),
-            center=False,
-        )
-        self.save_rewards = BaseCheckBox(
-            "save_rewards",
-            None,
-            QT_TRANSLATE_NOOP("BaseCheckBox", "保存困牢奖励"),
-            tips=QT_TRANSLATE_NOOP("BaseCheckBox", "仅在进行困难镜牢时生效，普通难度不生效"),
-            center=False,
-        )
-        self.hard_mirror_single_bonuses = BaseCheckBox(
-            "hard_mirror_single_bonuses",
-            None,
-            QT_TRANSLATE_NOOP("BaseCheckBox", "困牢单次加成"),
-            center=False,
-        )
-        self.select_event_pack = BaseCheckBox(
-            "select_event_pack",
-            None,
-            QT_TRANSLATE_NOOP("BaseCheckBox", "第五层选择（最左边）活动卡包"),
-            center=False,
-        )
-        self.skip_event_pack = BaseCheckBox(
-            "skip_event_pack",
-            None,
-            QT_TRANSLATE_NOOP("BaseCheckBox", "第五层跳过（最左边）活动卡包"),
-            center=False,
-        )
-        self.re_claim_rewards = BaseCheckBox(
-            "re_claim_rewards",
-            None,
-            QT_TRANSLATE_NOOP("BaseCheckBox", "再次领取奖励"),
-            center=False,
-        )
-        self.not_skip_whitegossypium = BaseCheckBox(
-            "not_skip_whitegossypium",
-            None,
-            QT_TRANSLATE_NOOP("BaseCheckBox", "不跳过白棉花"),
-            center=False,
-        )
-        self.fight_to_last_man = BaseCheckBox(
-            "fight_to_last_man",
-            None,
-            QT_TRANSLATE_NOOP("BaseCheckBox", "战斗直到全灭"),
-            center=False,
-        )
         self.mirror_keyboard_navigation = BaseCheckBox(
             "mirror_keyboard_navigation",
             None,
@@ -529,21 +244,29 @@ class PageMirror(PageCard):
         self.add_team.addWidget(self.add_team_button)
         self.vbox_general.addLayout(self.add_team)
 
-        self.vbox_advanced.addWidget(self.hard_mirror)
-        self.vbox_advanced.addWidget(self.no_weekly_bonuses)
-        self.vbox_advanced.addWidget(self.floor_3_exit)
-        self.vbox_advanced.addWidget(self.infinite_dungeons)
-        self.vbox_advanced.addWidget(self.save_rewards)
-        self.vbox_advanced.addWidget(self.hard_mirror_single_bonuses)
-        self.vbox_advanced.addWidget(self.select_event_pack)
-        self.vbox_advanced.addWidget(self.skip_event_pack)
-        self.vbox_advanced.addWidget(self.re_claim_rewards)
-        self.vbox_advanced.addWidget(self.not_skip_whitegossypium)
-        self.vbox_advanced.addWidget(self.fight_to_last_man)
+        for field in self.option_fields:
+            self.vbox_advanced.addWidget(field)
+        self.vbox_advanced.addWidget(self.global_hint)
         self.vbox_advanced.addWidget(self.mirror_keyboard_navigation)
         self.vbox_advanced.addWidget(self.mirror_keyboard_simple_pathfinding)
 
         self.card_layout.insertWidget(self.card_layout.count() - 1, self.mirror_count)
+
+    @property
+    def task(self):
+        return self.binder.task
+
+    def bind(self, task) -> None:
+        self.binder.task = task
+        if task is None:
+            return
+        self.mirror_count.load()
+        for field in self.option_fields:
+            field.load()
+        refresh_dependency(self.re_claim_controller)
+
+    def refresh_dependencies(self) -> None:
+        refresh_dependency(self.re_claim_controller)
 
     def _create_mirror_bar(self, current: int, total: int, hard: bool) -> TextProgressBar:
         """创建进度条"""
@@ -807,17 +530,9 @@ class PageMirror(PageCard):
 
     def retranslateUi(self):
         self.mirror_count.retranslateUi()
-        self.hard_mirror.retranslateUi()
-        self.no_weekly_bonuses.retranslateUi()
-        self.floor_3_exit.retranslateUi()
-        self.infinite_dungeons.retranslateUi()
-        self.save_rewards.retranslateUi()
-        self.hard_mirror_single_bonuses.retranslateUi()
-        self.select_event_pack.retranslateUi()
-        self.skip_event_pack.retranslateUi()
-        self.re_claim_rewards.retranslateUi()
-        self.not_skip_whitegossypium.retranslateUi()
-        self.fight_to_last_man.retranslateUi()
+        for field in self.option_fields:
+            field.retranslateUi()
+        self.global_hint.setText(QCoreApplication.translate("TaskPage", GLOBAL_HINT))
         self.mirror_keyboard_navigation.retranslateUi()
         self.mirror_keyboard_simple_pathfinding.retranslateUi()
         self.add_team_button.setToolTip(self.tr("添加队伍"))

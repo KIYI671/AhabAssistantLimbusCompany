@@ -1,14 +1,16 @@
 import sys
 from typing import Callable
 
-from PySide6.QtCore import QT_TRANSLATE_NOOP, Qt
+from PySide6.QtCore import QT_TRANSLATE_NOOP, QCoreApplication, QSize, Qt, Signal
 from PySide6.QtGui import QTextCursor
-from PySide6.QtWidgets import QApplication, QDialog, QTextEdit
+from PySide6.QtWidgets import QApplication, QDialog, QListWidgetItem, QTextEdit
 from qfluentwidgets import (
     BodyLabel,
     CheckBox,
     ComboBox,
+    DropDownPushButton,
     FlyoutViewBase,
+    ListWidget,
     PopUpAniStackedWidget,
     PrimaryPushButton,
     PushButton,
@@ -19,18 +21,21 @@ from qfluentwidgets import (
     qconfig,
     setCustomStyleSheet,
 )
+from qfluentwidgets import FluentIcon as FIF
 
 from app import mediator
 from app.base_combination import *
 from app.base_tools import *
 from app.common.ui_config import get_log_text_edit_qss, set_border_style
 from app.language_manager import LanguageManager
-from app.page_card import (
-    PageDailyTask,
-    PageGetPrize,
-    PageLunacyToEnkephalin,
-    PageMirror,
-    PageSetWindows,
+from app.page_card import PageMirror, PageSetWindows
+from app.task_pages import DailyTaskPage, EnkephalinTaskPage, RewardTaskPage
+from app.task_queue_widget import (
+    WINDOW_SETTINGS_ID,
+    TaskItemDelegate,
+    TaskQueueList,
+    build_add_menu,
+    schedule_title,
 )
 from app.team_setting_card import TeamSettingCard
 from module.after_completion_types import (
@@ -46,6 +51,7 @@ from module.after_completion_types import (
 )
 from module.automation import auto
 from module.config import TeamSetting, cfg
+from module.config.task_queue import AfterCompletion, MirrorTask
 from module.game_and_screen import screen
 from module.hotkey_listener import ExactGlobalHotKeys
 from module.logger import log
@@ -54,8 +60,8 @@ from module.system_actions import (
     get_after_completion_config,
     set_after_completion_config,
 )
-from tasks.base.script_task_scheme import my_script_task
-from utils.utils import check_hard_mirror_time
+from tasks.base.run_plan import RunPlan, any_team_usable, is_hard_mirror
+from tasks.base.script_task_scheme import my_script_task, refresh_auto_hard_mirror
 
 
 class AfterCompletionActionEditor(FlyoutViewBase):
@@ -188,6 +194,8 @@ class AfterCompletionSelector(QFrame):
         self._tool_tip_text = QT_TRANSLATE_NOOP(
             "AfterCompletionSelector", "支持组合动作：退出目标后再执行电源动作，可选择仅本次或保存默认"
         )
+        self._schedule_prefix_text = QT_TRANSLATE_NOOP("AfterCompletionSelector", "定时任务「{0}」：{1}")
+        self._command_prefix_text = QT_TRANSLATE_NOOP("AfterCompletionSelector", "命令行指定：{0}")
         self._queued_text = QT_TRANSLATE_NOOP("AfterCompletionSelector", "存在另一定时任务")
         self._queued_tooltip_text = QT_TRANSLATE_NOOP(
             "AfterCompletionSelector",
@@ -208,8 +216,10 @@ class AfterCompletionSelector(QFrame):
         self.setMinimumWidth(280)
         self._editor_dialog = None
 
-        if cfg.get_value("keep_after_completion", False) is False:
-            self._set_after_completion_config([], POWER_ACTION_NONE, persist=False)
+        # 「仅本次生效」的结束后操作只放在内存里，重启 AALC 后失效，不写入配置文件
+        self._once: tuple[list[str], str] | None = None
+        # 定时任务 / 命令行运行期间显示它自己的结束后操作（同样不写配置）
+        self._run_override: tuple[str | None, list[str], str] | None = None
 
         self.edit_button.installEventFilter(ToolTipFilter(self))
         self.summary.installEventFilter(ToolTipFilter(self.summary, position=ToolTipPosition.BOTTOM))
@@ -227,7 +237,7 @@ class AfterCompletionSelector(QFrame):
     def apply_style(self):
         set_border_style(self)
 
-    def _summary_text(self, actions: list[str], power_action: str) -> tuple[str, str]:
+    def _summary_text(self, actions: list[str], power_action: str, once: bool) -> tuple[str, str]:
         exit_names = [self.tr(self._action_text[action]) for action in actions if action in self._action_text]
         exit_targets = [
             name[len(self.tr(self._exit_prefix_text)) :] if name.startswith(self.tr(self._exit_prefix_text)) else name
@@ -248,7 +258,7 @@ class AfterCompletionSelector(QFrame):
             else:
                 display_text = self.tr(self._do_nothing_text)
 
-        mode = self.tr(self._saved_text if cfg.get_value("keep_after_completion", False) else self._once_text)
+        mode = self.tr(self._once_text if once else self._saved_text)
         full_text = f"{display_text}（{mode}）"
 
         # 动作较多时用换行压缩宽度，完整内容通过悬浮提示查看
@@ -268,7 +278,7 @@ class AfterCompletionSelector(QFrame):
 
         # 先刷新摘要，确保界面展示与配置一致
         self.refresh_from_config()
-        actions, power_action = get_after_completion_config()
+        actions, power_action = self._effective()
         dialog = QDialog(self.window())
         dialog.setWindowTitle(self.tr("结束后操作"))
         dialog.setWindowModality(Qt.WindowModality.WindowModal)
@@ -292,27 +302,38 @@ class AfterCompletionSelector(QFrame):
         self._editor_dialog = dialog
         dialog.show()
 
-    def _set_after_completion_config(self, actions: list[str], power_action: str, persist: bool):
-        # UI 层统一先规范化一次，避免一次性设置把脏值写入配置。
-        normalized_actions, normalized_power = normalize_after_completion_config(actions, power_action)
-        if persist:
-            set_after_completion_config(normalized_actions, normalized_power)
-        else:
-            cfg.unsaved_set_value("after_completion_actions", normalized_actions)
-            cfg.unsaved_set_value("after_completion_power_action", normalized_power)
+    def _effective(self) -> tuple[list[str], str]:
+        if self._once is not None:
+            return self._once
+        return get_after_completion_config()
 
     def apply_selection(self, actions: list[str], power_action: str, permanent: bool):
-        cfg.unsaved_set_value("keep_after_completion", permanent)
-        self._set_after_completion_config(actions, power_action, persist=permanent)
+        normalized = normalize_after_completion_config(actions, power_action)
+        if permanent:
+            set_after_completion_config(*normalized)
+            self._once = None
+        else:
+            self._once = normalized
         self.refresh_from_config()
         self._close_dialog()
 
-    def set_from_external(self, actions: list[str], power_action: str):
-        # 命令行/定时注入视为一次性设置，不覆盖用户默认偏好
-        cfg.unsaved_set_value("keep_after_completion", False)
-        self._set_after_completion_config(actions, power_action, persist=False)
+    def once_after_completion(self) -> AfterCompletion | None:
+        """「仅本次生效」时返回本次的结束后操作，否则 None（使用默认设置）"""
+        if self._once is None:
+            return None
+        actions, power_action = self._once
+        return AfterCompletion(actions=actions, power_action=power_action)
+
+    def show_run(self, schedule_name: str | None, after_completion: AfterCompletion) -> None:
+        """定时任务 / 命令行运行期间，摘要显示它自己的结束后操作"""
+        actions, power_action = after_completion.normalized()
+        self._run_override = (schedule_name, actions, power_action)
         self.refresh_from_config()
-        self._close_dialog()
+
+    def clear_run(self) -> None:
+        if self._run_override is not None:
+            self._run_override = None
+            self.refresh_from_config()
 
     def _apply_from_dialog(self, actions: list[str], power_action: str, permanent: bool, dialog: QDialog):
         self.apply_selection(actions, power_action, permanent)
@@ -344,8 +365,18 @@ class AfterCompletionSelector(QFrame):
             self.summary.setText(self.tr(self._queued_text))
             self.summary.setToolTip(self.tr(self._queued_tooltip_text))
             return
-        actions, power_action = get_after_completion_config()
-        summary_text, full_text = self._summary_text(actions, power_action)
+        if self._run_override is not None:
+            name, actions, power_action = self._run_override
+            summary_text, full_text = self._summary_text(actions, power_action, once=True)
+            if name is not None:
+                summary_text = self.tr(self._schedule_prefix_text).format(name, summary_text)
+                full_text = self.tr(self._schedule_prefix_text).format(name, full_text)
+            else:
+                summary_text = self.tr(self._command_prefix_text).format(summary_text)
+                full_text = self.tr(self._command_prefix_text).format(full_text)
+        else:
+            actions, power_action = self._effective()
+            summary_text, full_text = self._summary_text(actions, power_action, once=self._once is not None)
         self.summary.setText(summary_text)
         self.summary.setToolTip(full_text)
 
@@ -381,12 +412,27 @@ class FarmingInterface(QWidget):
         self.hbox_layout_left.addWidget(self.interface_left)
         self.hbox_layout_center.addWidget(self.interface_center)
         self.hbox_layout_right.addWidget(self.interface_right)
+
+        # 左侧选中哪一项，中间就显示哪一项的设置；任何改动都写回配置
+        panel = self.interface_left.task_panel
+        panel.itemSelected.connect(self.interface_center.show_item)
+        panel.changed.connect(self._on_queue_changed)
+        self.interface_center.taskChanged.connect(self._on_task_param_changed)
+        mediator.task_queue_editable.connect(self.interface_center.refresh_dependencies)
+        panel.select(cfg.last_selected_task)
         # self.setStyleSheet("border: 1px solid black;")
         # 启动快捷键监听
 
         self._listener_start()
         mediator.hotkey_listener_stop_signal.connect(self._listener_stop)
         mediator.hotkey_listener_start_signal.connect(self._listener_start)
+
+    def _on_queue_changed(self):
+        cfg.save()
+
+    def _on_task_param_changed(self):
+        cfg.save()
+        self.interface_left.queue_list.refresh()
 
     def _listener_stop(self):
         if self.listener:
@@ -418,6 +464,119 @@ class FarmingInterface(QWidget):
         super().resizeEvent(event)
 
 
+class WindowSettingsRow(ListWidget):
+    """任务列表上方固定的「窗口设置」行，不能拖动、没有勾选框"""
+
+    selected = Signal()
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.text = QT_TRANSLATE_NOOP("TaskQueue", "窗口设置")
+        delegate = TaskItemDelegate(self)
+        self.setItemDelegate(delegate)
+        self.delegate = delegate
+        item = QListWidgetItem(self.text)
+        item.setData(Qt.ItemDataRole.UserRole, WINDOW_SETTINGS_ID)
+        item.setSizeHint(QSize(0, TaskItemDelegate.ROW_HEIGHT))
+        self.addItem(item)
+        self.setFixedHeight(TaskItemDelegate.ROW_HEIGHT + 4)
+        self.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self.itemPressed.connect(lambda _: self.selected.emit())
+        self.currentItemChanged.connect(lambda current, _: current is not None and self.selected.emit())
+
+    def retranslateUi(self):
+        self.item(0).setText(QCoreApplication.translate("TaskQueue", self.text))
+
+
+class TaskQueuePanel(BaseSettingLayout):
+    """主界面左侧：任务列表（含固定的窗口设置行）、添加按钮、全选 / 清空"""
+
+    itemSelected = Signal(str)  # 任务 id 或 "set_windows"
+    changed = Signal()
+
+    def __init__(self, parent=None):
+        super().__init__(parent=parent)
+        self.add_text = QT_TRANSLATE_NOOP("TaskQueue", "添加")
+        self.select_all_text = QT_TRANSLATE_NOOP("NormalTextButton", "全选")
+        self.clear_all_text = QT_TRANSLATE_NOOP("NormalTextButton", "清空")
+
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(4, 4, 4, 4)
+        layout.setSpacing(2)
+
+        self.window_row = WindowSettingsRow(self)
+        layout.addWidget(self.window_row)
+
+        self.queue_list = TaskQueueList(lambda: cfg.config.task_queue, self)
+        layout.addWidget(self.queue_list, stretch=1)
+
+        footer = QHBoxLayout()
+        footer.setContentsMargins(2, 4, 2, 0)
+        footer.setSpacing(4)
+        self.add_button = DropDownPushButton(FIF.ADD, "", self)
+        self.add_button.setMenu(build_add_menu(self, self._add_task))
+        self.select_all = PushButton(self)
+        self.clear_all = PushButton(self)
+        footer.addWidget(self.add_button)
+        footer.addWidget(self.select_all, 1)
+        footer.addWidget(self.clear_all, 1)
+        layout.addLayout(footer)
+
+        # 亚哈共鸣不是任务，放在列表外面
+        self.resonate_with_Ahab = BaseCheckBox(
+            "resonate_with_Ahab", None, QT_TRANSLATE_NOOP("BaseCheckBox", "亚哈共鸣"), center=False
+        )
+
+        self.select_all.clicked.connect(lambda: self.queue_list.set_all_enabled(True))
+        self.clear_all.clicked.connect(lambda: self.queue_list.set_all_enabled(False))
+        self.queue_list.changed.connect(self.changed)
+        self.queue_list.taskSelected.connect(self._on_task_selected)
+        self.window_row.selected.connect(self._on_window_selected)
+        self.retranslateUi()
+
+    def _add_task(self, task_type: str) -> None:
+        self.queue_list.add_task(task_type)
+
+    def _on_task_selected(self, task_id: str) -> None:
+        if not task_id:
+            if self.queue_list.count() == 0:
+                self._on_window_selected()
+            return
+        self.window_row.clearSelection()
+        self.window_row.setCurrentItem(None)
+        self.itemSelected.emit(task_id)
+
+    def _on_window_selected(self) -> None:
+        self.queue_list.blockSignals(True)
+        self.queue_list.clearSelection()
+        self.queue_list.setCurrentItem(None)
+        self.queue_list.blockSignals(False)
+        self.queue_list.viewport().update()
+        self.window_row.setCurrentRow(0)
+        self.itemSelected.emit(WINDOW_SETTINGS_ID)
+
+    def select(self, item_id: str) -> None:
+        if item_id != WINDOW_SETTINGS_ID and self.queue_list.select_task(item_id):
+            return
+        self._on_window_selected()
+
+    def set_editable(self, editable: bool) -> None:
+        self.queue_list.set_editable(editable)
+
+    def retranslateUi(self):
+        self.add_button.setText(self.tr(self.add_text))
+        self.add_button.setMenu(build_add_menu(self, self._add_task))
+        self.select_all.setText(QCoreApplication.translate("NormalTextButton", self.select_all_text))
+        self.clear_all.setText(QCoreApplication.translate("NormalTextButton", self.clear_all_text))
+        self.resonate_with_Ahab.retranslateUi()
+        self.window_row.retranslateUi()
+        self.queue_list.refresh()
+
+    def tr(self, text):
+        return QCoreApplication.translate("TaskQueue", text)
+
+
 class FarmingInterfaceLeft(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent=parent)
@@ -425,6 +584,7 @@ class FarmingInterfaceLeft(QWidget):
         self.setObjectName("FarmingInterfaceLeft")
 
         self.my_script = None
+        self._running_schedule = None
 
         self.__init_widget()
         self.__init_card()
@@ -436,61 +596,10 @@ class FarmingInterfaceLeft(QWidget):
 
     def __init_widget(self):
         self.hbox_layout = QVBoxLayout(self)
-        self.setting_layout = QVBoxLayout()
-        self.setting_options = QVBoxLayout()
-        self.setting_options.setSpacing(10)
-
-        self.setting_box = BaseSettingLayout()
-        self.setting_box.setLayout(self.setting_layout)
 
     def __init_card(self):
-        self.set_windows = CheckBoxWithButton(
-            "set_windows",
-            QT_TRANSLATE_NOOP("CheckBoxWithButton", "窗口设置"),
-            None,
-            "set_windows",
-        )
-        self.set_windows.set_box_enabled(False)
-
-        self.daily_task = CheckBoxWithButton(
-            "daily_task",
-            QT_TRANSLATE_NOOP("CheckBoxWithButton", "日常任务"),
-            None,
-            "daily_task",
-        )
-
-        self.get_reward = CheckBoxWithButton(
-            "get_reward",
-            QT_TRANSLATE_NOOP("CheckBoxWithButton", "领取奖励"),
-            None,
-            "get_reward",
-        )
-        self.buy_enkephalin = CheckBoxWithButton(
-            "buy_enkephalin",
-            QT_TRANSLATE_NOOP("CheckBoxWithButton", "狂气换体"),
-            None,
-            "buy_enkephalin",
-        )
-        self.mirror = CheckBoxWithButton(
-            "mirror",
-            QT_TRANSLATE_NOOP("CheckBoxWithButton", "坐牢设置"),
-            None,
-            "mirror",
-        )
-        self.resonate_with_Ahab = CheckBoxWithButton(
-            "resonate_with_Ahab",
-            QT_TRANSLATE_NOOP("CheckBoxWithButton", "亚哈共鸣"),
-            None,
-            "resonate_with_Ahab",
-        )
-
-        self.resonate_with_Ahab.button.setEnabled(False)
-
-        self.select_all = NormalTextButton(QT_TRANSLATE_NOOP("NormalTextButton", "全选"), "select_all")
-        self.select_all.clicked.connect(self.select_all_function)
-
-        self.clear_all = NormalTextButton(QT_TRANSLATE_NOOP("NormalTextButton", "清空"), "clear_all")
-        self.clear_all.clicked.connect(self.clear_all_function)
+        self.task_panel = TaskQueuePanel(self)
+        self.queue_list = self.task_panel.queue_list
 
         self.then = BaseLabel(QT_TRANSLATE_NOOP("BaseLabel", "之后"))
 
@@ -511,37 +620,14 @@ class FarmingInterfaceLeft(QWidget):
         self.pause_resume_button.button.setFont(font)
 
     def __init_layout(self):
-        self.setting_options.addWidget(self.set_windows)
-        self.setting_options.addWidget(self.daily_task)
-        self.setting_options.addWidget(self.get_reward)
-        self.setting_options.addWidget(self.buy_enkephalin)
-        self.setting_options.addWidget(self.mirror)
-        self.setting_options.addWidget(self.resonate_with_Ahab)
-        self.setting_layout.addLayout(self.setting_options)
-
-        self.hbox_button = QHBoxLayout()
-        self.hbox_button.addWidget(self.select_all)
-        self.hbox_button.addWidget(self.clear_all)
-
-        self.setting_layout.addLayout(self.hbox_button)
-
-        self.hbox_layout.addWidget(self.setting_box)
+        self.hbox_layout.addWidget(self.task_panel, stretch=1)
+        self.hbox_layout.addWidget(self.task_panel.resonate_with_Ahab)
         self.hbox_layout.addWidget(self.then)
         self.hbox_layout.addWidget(self.after_completion_selector)
         self.action_button_layout = QHBoxLayout()
         self.action_button_layout.addWidget(self.link_start_button)
         self.action_button_layout.addWidget(self.pause_resume_button)
         self.hbox_layout.addLayout(self.action_button_layout)
-
-    @staticmethod
-    def select_all_function():
-        for check_box in task_check_box[:5]:
-            check_box.setChecked(True)
-
-    @staticmethod
-    def clear_all_function():
-        for check_box in task_check_box[1:5]:
-            check_box.setChecked(False)
 
     def stop_AALC(self):
         log.debug("即将关闭AALC")
@@ -551,31 +637,32 @@ class FarmingInterfaceLeft(QWidget):
             pass
         sys.exit(0)
 
-    def check_setting(self):
+    def manual_plan(self) -> RunPlan:
+        """手动点击 Link Start：主界面任务列表 + 结束后操作（「仅本次生效」优先）"""
+        return RunPlan.from_queue(
+            cfg.config.task_queue,
+            self.after_completion_selector.once_after_completion(),
+            source="manual",
+        )
+
+    def check_setting(self, plan: RunPlan):
         # 检测是否有未保存的镜牢队伍设置
         if self.parent().parent().findChild(TeamSettingCard):
             list(self.parent().parent().parent().pivot.items.values())[-1].click()
             mediator.save_warning.emit()
             return False
 
-        if cfg.mirror:
-            # 判断是否启用了自动切换困牢
-            if cfg.auto_hard_mirror:
-                from datetime import datetime
+        if not plan.tasks:
+            mediator.tasks_warning.emit()
+            return False
 
-                if cfg.last_auto_change == 1715990400:
-                    cfg.set_value("last_auto_change", datetime.now().timestamp())
-                    cfg.flush()
-                if check_hard_mirror_time():
-                    log.info("识别到新的困牢周期，自动切换困难镜牢，设置困牢次数为3")
-                    cfg.set_value("last_auto_change", datetime.now().timestamp())
-                    cfg.set_value("hard_mirror", True)
-                    cfg.set_value("hard_mirror_chance", 3)
-                    cfg.flush()
-                # 自动切换到困难模式时，同步保留困难模式开关状态
-                if cfg.hard_mirror_chance > 0:
-                    cfg.set_value("hard_mirror", True)
-                    log.debug(f"困难镜牢模式启用中，剩余次数：{cfg.hard_mirror_chance}")
+        mirror_tasks = [task for task in plan.tasks if isinstance(task, MirrorTask)]
+        if mirror_tasks:
+            # 判断是否进入新的自动困牢周期
+            refresh_auto_hard_mirror()
+            cfg.flush()
+            if cfg.auto_hard_mirror and cfg.hard_mirror_chance > 0:
+                log.debug(f"自动困牢启用中，剩余次数：{cfg.hard_mirror_chance}")
 
             # 检查队伍配置状况
             teams_be_select = sum(1 for team in cfg.teams_be_select if team)
@@ -590,51 +677,43 @@ class FarmingInterfaceLeft(QWidget):
 
             # 检测是否有未配置角色选择的队伍
             teams_be_select = cfg.get_value("teams_be_select")
+            enabled_teams: list[TeamSetting] = []
             for index in (i for i, t in enumerate(teams_be_select) if t is True):
                 team_setting: TeamSetting = cfg.config.teams[f"{index + 1}"]
                 if team_setting.sinners_be_select == 0:
                     message = self.tr("存在未配置角色选择的队伍：TEAM_{0}")
                     mediator.warning.emit(message.format(index + 1))
                     return False
+                enabled_teams.append(team_setting)
 
-            # 检测配置的队伍能否顺利执行
-            useful = False
-            hard = bool(cfg.hard_mirror)
-            teams_be_select = cfg.get_value("teams_be_select")
-            for index in (i for i, t in enumerate(teams_be_select) if t is True):
-                team_setting: TeamSetting = cfg.config.teams[f"{index + 1}"]
-                if team_setting.fixed_team_use is False:
-                    useful = True
-                    break
-                if team_setting.fixed_team_use_select == 1 and hard is False:
-                    useful = True
-                    break
-                if team_setting.fixed_team_use_select == 0 and hard is True:
-                    useful = True
-                    break
-            if useful is False:
-                if hard:
-                    message = self.tr("启用了困牢，但是无可用于困牢的队伍")
-                else:
-                    message = self.tr("启用了普牢，但是无可用于普牢的队伍")
-                mediator.warning.emit(message)
-                return False
+            # 检测配置的队伍能否顺利执行（每个镜牢任务按自己的难度检查）
+            team_uses = [(t.fixed_team_use, t.fixed_team_use_select) for t in enabled_teams]
+            for task in mirror_tasks:
+                hard = is_hard_mirror(task, cfg.auto_hard_mirror, cfg.hard_mirror_chance)
+                if not any_team_usable(team_uses, hard):
+                    if hard:
+                        message = self.tr("启用了困牢，但是无可用于困牢的队伍")
+                    else:
+                        message = self.tr("启用了普牢，但是无可用于普牢的队伍")
+                    mediator.warning.emit(message)
+                    return False
+        return True
 
-        if cfg.daily_task is False and cfg.get_reward is False and cfg.buy_enkephalin is False and cfg.mirror is False:
-            mediator.tasks_warning.emit()
-            return False
-
-    def start_and_stop_tasks(self):
+    def start_and_stop_tasks(self, plan: RunPlan | None = None):
         # 设置按下启动与停止按钮时，其他模块的启用与停用
         current_text = self.link_start_button.get_text()
         if current_text == "Link Start!":
+            if not isinstance(plan, RunPlan):
+                plan = self.manual_plan()
             # 启动前检查设置，防呆
-            if self.check_setting() is False:
+            if self.check_setting(plan) is False:
+                self._clear_running_schedule()
                 return
             self.link_start_button.set_text("S t o p !")
             self.sync_pause_resume_button()
             self._disable_setting(self.parent())
-            self.create_and_start_script()
+            self.task_panel.set_editable(False)
+            self.create_and_start_script(plan)
         else:
             if cfg.set_reduce_miscontact and cfg.simulator is False:
                 # 手动停止时仍需恢复游戏窗口，但这里不再要求抢前台。
@@ -672,8 +751,26 @@ class FarmingInterfaceLeft(QWidget):
             if thread_was_running:
                 auto.clear_img_cache()
             mediator.mirror_bar_kill_signal.emit()
+            self._after_run_ui_reset()
 
-    def start_tasks_from_command(self):
+    def plan_from_request(self, request) -> RunPlan | None:
+        """把命令行 / 定时启动请求变成本次要执行的计划；找不到定时任务时返回 None"""
+        if request is not None and request.schedule_id:
+            schedule = next((s for s in cfg.config.schedules if s.id == request.schedule_id), None)
+            if schedule is None:
+                log.error(f"找不到定时任务 {request.schedule_id}，本次启动已跳过")
+                return None
+            self._running_schedule = schedule
+            self.after_completion_selector.show_run(schedule_title(schedule), schedule.after_completion)
+            return RunPlan.from_queue(schedule.tasks, schedule.after_completion, source=f"schedule:{schedule.id}")
+        override = request.after_completion if request is not None else None
+        if override is not None:
+            self.after_completion_selector.show_run(None, override)
+        else:
+            override = self.after_completion_selector.once_after_completion()
+        return RunPlan.from_queue(cfg.config.task_queue, override, source="cli")
+
+    def start_tasks_from_command(self, request=None):
         """Start a command/scheduled task without toggling a running task to stop."""
         if self.my_script is not None and self.my_script.isRunning():
             log.warning("收到命令行或定时启动请求，但已有脚本正在运行，本次启动请求已安全跳过")
@@ -681,7 +778,20 @@ class FarmingInterfaceLeft(QWidget):
         if self.link_start_button.get_text() != "Link Start!":
             log.warning("启动按钮状态与脚本线程不一致，已恢复为空闲状态后继续定时启动")
             self._on_script_finished()
-        self.start_and_stop_tasks()
+        plan = self.plan_from_request(request)
+        if plan is None:
+            return
+        self.start_and_stop_tasks(plan)
+
+    def _clear_running_schedule(self):
+        self._running_schedule = None
+        self.after_completion_selector.clear_run()
+
+    def _after_run_ui_reset(self):
+        self.task_panel.set_editable(True)
+        self.queue_list.set_running("")
+        self._clear_running_schedule()
+        mediator.task_queue_editable.emit()
 
     def _on_script_finished(self):
         # 自然结束只做 UI 收尾；不要复用“手动停止”入口，否则会重复触发窗口清理。
@@ -691,6 +801,7 @@ class FarmingInterfaceLeft(QWidget):
         self.reset_pause_resume_button()
         mediator.refresh_teams_order.emit()
         mediator.mirror_bar_kill_signal.emit()
+        self._after_run_ui_reset()
 
     def _disable_setting(self, parent):
         for child in parent.children():
@@ -721,8 +832,6 @@ class FarmingInterfaceLeft(QWidget):
             # 跳过非 QWidget 类型的子对象（如信号、槽等）
             if not isinstance(child, QWidget):
                 continue
-            if child.objectName() == "set_windows":
-                continue
             # 检查是否为目标控件类型
             if isinstance(
                 child,
@@ -740,13 +849,13 @@ class FarmingInterfaceLeft(QWidget):
                 # 递归处理子部件的子部件（如布局中的嵌套控件）
                 self._enable_setting(child)
 
-    def create_and_start_script(self):
+    def create_and_start_script(self, plan: RunPlan):
         try:
             msg = "开始进行所有任务"
             log.info(msg)
             ui_log_dispatcher.clear()
             # 启动脚本线程
-            self.my_script = my_script_task()
+            self.my_script = my_script_task(plan)
             # 设置脚本线程为守护(当程序被关闭，一起停止)
             self.my_script.daemon = True
             self.my_script.finished.connect(mediator.script_finished.emit)
@@ -756,6 +865,7 @@ class FarmingInterfaceLeft(QWidget):
             self.link_start_button.set_text("Link Start!")
             self._enable_setting(self.parent())
             self.reset_pause_resume_button()
+            self._after_run_ui_reset()
 
     def stop_script(self):
         if self.my_script and self.my_script.isRunning():
@@ -802,23 +912,18 @@ class FarmingInterfaceLeft(QWidget):
         # 自动任务只能启动，不能切换为停止当前任务。
         mediator.finished_signal.connect(self.start_tasks_from_command)
         mediator.script_finished.connect(self._on_script_finished)
+        mediator.task_item_started.connect(self.queue_list.set_running)
 
     def retranslateUi(self):
-        self.set_windows.retranslateUi()
-        self.daily_task.retranslateUi()
-        self.get_reward.retranslateUi()
-        self.buy_enkephalin.retranslateUi()
-        self.mirror.retranslateUi()
-        self.resonate_with_Ahab.retranslateUi()
-
+        self.task_panel.retranslateUi()
         self.then.retranslateUi()
         self.after_completion_selector.retranslateUi()
-        self.select_all.retranslateUi()
-        self.clear_all.retranslateUi()
         self.sync_pause_resume_button()
 
 
 class FarmingInterfaceCenter(QWidget):
+    taskChanged = Signal()
+
     def __init__(self, parent=None):
         super().__init__(parent=parent)
 
@@ -826,57 +931,57 @@ class FarmingInterfaceCenter(QWidget):
         self.__init_widget()
         self.__init_card()
         self.__init_layout()
-        self.__init_setting()
-
-        self.connect_mediator()
 
         LanguageManager().register_component(self)
 
     def __init_widget(self):
-        # self.setting_box = CardWidget()
         self.vbox = QVBoxLayout(self)
-
         self.setting_page = PopUpAniStackedWidget(self)
 
     def __init_card(self):
         self.set_windows = PageSetWindows(self)
-        self.daily_task = PageDailyTask(self)
-        self.get_reward = PageGetPrize(self)
-        self.buy_enkephalin = PageLunacyToEnkephalin(self)
+        self.daily_task = DailyTaskPage(self)
+        self.get_reward = RewardTaskPage(self)
+        self.buy_enkephalin = EnkephalinTaskPage(self)
         self.mirror = PageMirror(self)
+        self.task_pages = {
+            "daily": self.daily_task,
+            "reward": self.get_reward,
+            "enkephalin": self.buy_enkephalin,
+            "mirror": self.mirror,
+        }
+        for page in self.task_pages.values():
+            page.taskChanged.connect(lambda _field: self.taskChanged.emit())
 
     def __init_layout(self):
         self.setting_page.addWidget(self.set_windows)
-        self.setting_page.addWidget(self.daily_task)
-        self.setting_page.addWidget(self.get_reward)
-        self.setting_page.addWidget(self.buy_enkephalin)
-        self.setting_page.addWidget(self.mirror)
+        for page in self.task_pages.values():
+            self.setting_page.addWidget(page)
         self.vbox.addWidget(self.setting_page)
-        # self.setting_box.setLayout(self.vbox)
 
-    def __init_setting(self):
-        self.setting_page.setCurrentIndex(cfg.get_value("default_page"))
-        list(toggle_button_group.items())[cfg.get_value("default_page")][1].setChecked(True)
+    def show_item(self, item_id: str) -> None:
+        """显示窗口设置，或某个任务的设置页（并绑定到该任务）"""
+        page = self.set_windows
+        if item_id != WINDOW_SETTINGS_ID:
+            task = next((t for t in cfg.config.task_queue if t.id == item_id), None)
+            if task is not None:
+                page = self.task_pages[task.type]
+                page.bind(task)
+            else:
+                item_id = WINDOW_SETTINGS_ID
+        if self.setting_page.currentWidget() is not page:
+            self.setting_page.setCurrentWidget(page)
+        if cfg.last_selected_task != item_id:
+            cfg.set_value("last_selected_task", item_id)
 
-    def switch_to_page(self, target: str):
-        try:
-            """切换页面（带越界保护）"""
-            page_index = page_name_and_index[target]
-            self.setting_page.setCurrentIndex(page_index)  # 当调用 setCurrentIndex 时，StackedWidget 会自动播放过渡动画
-            cfg.set_value("default_page", page_index)
-        except Exception as e:
-            log.error(f"【异常】switch_to_page 出错：{type(e).__name__}:{e}")
-
-    def connect_mediator(self):
-        # 连接所有可能信号
-        mediator.switch_page.connect(self.switch_to_page)
+    def refresh_dependencies(self) -> None:
+        for page in self.task_pages.values():
+            page.refresh_dependencies()
 
     def retranslateUi(self):
         self.set_windows.retranslateUi()
-        self.daily_task.retranslateUi()
-        self.get_reward.retranslateUi()
-        self.buy_enkephalin.retranslateUi()
-        self.mirror.retranslateUi()
+        for page in self.task_pages.values():
+            page.retranslateUi()
 
 
 class FarmingInterfaceRight(QWidget):
