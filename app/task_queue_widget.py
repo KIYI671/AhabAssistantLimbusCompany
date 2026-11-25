@@ -81,6 +81,7 @@ class TaskItemDelegate(ListItemDelegate):
         self.margin = 1
         self.running_id = ""
         self.actions_enabled = True  # 运行期间不显示行内操作
+        self.hover_action: tuple[int, str] | None = None  # 鼠标所在的行内按钮 (行号, 按钮名)
 
     def gear_rect(self, row_rect: QRect) -> QRect:
         size = self.GEAR_SIZE + 6
@@ -158,9 +159,26 @@ class TaskItemDelegate(ListItemDelegate):
         text_right = gear.left() - 8
         if self.shows_actions(index):
             rects = self.action_rects(rect)
-            FIF.COPY.icon(color=QColor(themeColor())).paint(painter, rects["copy"])
-            FIF.EDIT.render(painter, rects["rename"])
-            FIF.DELETE.render(painter, rects["delete"])
+            icons = {"copy": FIF.COPY, "rename": FIF.EDIT, "delete": FIF.DELETE}
+            for name, icon in icons.items():
+                action_rect = rects[name]
+                hovered = self.hover_action == (row, name)
+                if hovered:
+                    # 悬停：浅色圆角底 + 图标变色（删除用红色）
+                    c = 255 if is_dark else 0
+                    painter.setPen(Qt.NoPen)
+                    painter.setBrush(QColor(c, c, c, 24 if is_dark else 18))
+                    painter.drawRoundedRect(action_rect.adjusted(-4, -4, 4, 4), 4, 4)
+                if name == "delete" and hovered:
+                    color = QColor("#ff99a4") if is_dark else QColor("#c42b1c")
+                elif name == "copy" or hovered:
+                    color = QColor(themeColor())
+                else:
+                    color = None
+                if color is None:
+                    icon.render(painter, action_rect)
+                else:
+                    icon.icon(color=color).paint(painter, action_rect)
             text_right = rects["copy"].left() - 8
 
         text_color = QColor(255, 255, 255) if is_dark else QColor(0, 0, 0)
@@ -458,6 +476,21 @@ class TaskQueueList(ListWidget):
 
     def mouseMoveEvent(self, e):
         super().mouseMoveEvent(e)
+        self._update_hover_action(e.position().toPoint())
+
+    def _update_hover_action(self, pos) -> None:
+        item = self.itemAt(pos)
+        action = self._action_at(item, pos) if item is not None else None
+        hover = (self.row(item), action) if action is not None else None
+        if hover != self.delegate.hover_action:
+            self.delegate.hover_action = hover
+            self.viewport().setCursor(Qt.CursorShape.PointingHandCursor if hover else Qt.CursorShape.ArrowCursor)
+        self.viewport().update()
+
+    def leaveEvent(self, e):
+        super().leaveEvent(e)
+        self.delegate.hover_action = None
+        self.viewport().unsetCursor()
         self.viewport().update()
 
     def _toggle(self, item: QListWidgetItem) -> None:
