@@ -26,7 +26,6 @@ from app.base_combination import (
     BasePushSettingCard,
     BaseSettingCardGroup,
     ComboBoxSettingCard,
-    DailySettingCard,
     HotkeySettingCard,
     PushSettingCardChance,
     PushSettingCardDate,
@@ -37,6 +36,7 @@ from app.base_combination import (
 from app.card.messagebox_custom import BaseInfoBar
 from app.common.ui_config import get_setting_interface_qss
 from app.language_manager import SUPPORTED_LANG_NAME, LanguageManager
+from app.schedule_editor import ScheduleSettingGroup
 from app.theme_pack_setting_interface import ThemePackSettingDialog
 from app.widget.setting_nav import SettingNav
 from module.config import cfg, theme_list
@@ -271,37 +271,9 @@ class SettingInterface(QWidget):
             "autostart",
             parent=self.game_path_group,
         )
-        self.autodaily_group = BaseSettingCardGroup(
+        self.autodaily_group = ScheduleSettingGroup(
             QT_TRANSLATE_NOOP("BaseSettingCardGroup", "定时执行 AALC"),
             self.scroll_widget,
-        )
-        self.autodaily_card = DailySettingCard(
-            FIF.HISTORY,
-            QT_TRANSLATE_NOOP("DailySettingCard", "定时执行 1"),
-            QT_TRANSLATE_NOOP("DailySettingCard", "如果计算机处于启动状态，将在指定时间执行 AALC 任务"),
-            "autodaily",
-            parent=self.autodaily_group,
-        )
-        self.autodaily_card_2 = DailySettingCard(
-            FIF.HISTORY,
-            QT_TRANSLATE_NOOP("DailySettingCard", "定时执行 2"),
-            None,
-            "autodaily2",
-            parent=self.autodaily_group,
-        )
-        self.autodaily_card_3 = DailySettingCard(
-            FIF.HISTORY,
-            QT_TRANSLATE_NOOP("DailySettingCard", "定时执行 3"),
-            None,
-            "autodaily3",
-            parent=self.autodaily_group,
-        )
-        self.autodaily_card_4 = DailySettingCard(
-            FIF.HISTORY,
-            QT_TRANSLATE_NOOP("DailySettingCard", "定时执行 4"),
-            None,
-            "autodaily4",
-            parent=self.autodaily_group,
         )
         self.minimize_to_tray_card = SwitchSettingCard(
             FIF.REMOVE,
@@ -532,10 +504,6 @@ class SettingInterface(QWidget):
         self.game_path_group.addSettingCard(self.autostart_card)
         self.game_path_group.addSettingCard(self.minimize_to_tray_card)
 
-        self.autodaily_group.addSettingCard(self.autodaily_card)
-        self.autodaily_group.addSettingCard(self.autodaily_card_2)
-        self.autodaily_group.addSettingCard(self.autodaily_card_3)
-        self.autodaily_group.addSettingCard(self.autodaily_card_4)
 
         self.personal_group.addSettingCard(self.language_card)
         self.personal_group.addSettingCard(self.theme_card)
@@ -792,10 +760,6 @@ class SettingInterface(QWidget):
         self.zoom_card.retranslateUi()
         self.hotkey_card.retranslateUi()
         self.autostart_card.retranslateUi()
-        self.autodaily_card.retranslateUi()
-        self.autodaily_card_2.retranslateUi()
-        self.autodaily_card_3.retranslateUi()
-        self.autodaily_card_4.retranslateUi()
         self.update_group.retranslateUi()
         self.update_source_card.retranslateUi()
         self.check_update_card.retranslateUi()

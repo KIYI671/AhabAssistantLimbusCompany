@@ -8,7 +8,6 @@ from PySide6.QtCore import (
     QObject,
     QPropertyAnimation,
     QRect,
-    QTime,
     QUrl,
     Signal,
 )
@@ -30,12 +29,10 @@ from PySide6.QtWidgets import (
 )
 from qfluentwidgets import (
     ComboBox,
-    FlyoutViewBase,
     IndicatorPosition,
     InfoBarPosition,
     LineEdit,
     MessageBox,
-    PopupTeachingTip,
     PrimaryPushButton,
     PrimaryPushSettingCard,
     ProgressBar,
@@ -44,8 +41,6 @@ from qfluentwidgets import (
     SettingCard,
     SettingCardGroup,
     SwitchButton,
-    TeachingTipTailPosition,
-    TimePicker,
     setCustomStyleSheet,
 )
 
@@ -69,34 +64,6 @@ from module.logger import log
 from module.my_error.my_error import settingsTypeError
 from module.update.check_update import check_update
 from utils.utils import decrypt_string, encrypt_string
-
-
-class CheckBoxWithButton(QFrame):
-    def __init__(
-        self,
-        check_box_name,
-        check_box_title,
-        check_box_icon: Union[str, QIcon, FluentIconBase, None],
-        button_name,
-        parent=None,
-    ):
-        super().__init__(parent)
-        # self.setFixedHeight(80)
-
-        self.hBoxLayout = QHBoxLayout(self)
-        self.box_text = check_box_title
-        self.box = BaseCheckBox(check_box_name, check_box_icon, check_box_title, parent=self)
-        self.button = ChangePageButton(button_name, parent=self)
-        self.hBoxLayout.addWidget(self.box)
-        self.hBoxLayout.addWidget(self.button)
-        self.hBoxLayout.setAlignment(Qt.AlignCenter)
-        task_check_box.append(self.box.check_box)
-
-    def set_box_enabled(self, b: bool):
-        self.box.set_box_enabled(b)
-
-    def retranslateUi(self):
-        self.box.check_box.setText(self.tr(self.box_text))
 
 
 class CheckBoxWithComboBox(QFrame):
@@ -980,275 +947,6 @@ class PushSettingCardText(BasePushSettingCard):
 
         cfg.set_value(self.config_name, new_value)
         self.line_text.setText(new_value)
-
-
-class AutoDailyView(FlyoutViewBase):
-    def __init__(self, parent=None):
-        super().__init__(parent)
-        self.config_name = None
-
-        self.vBoxLayout = QVBoxLayout(self)
-        self.line_1_box = QWidget(self)
-        self.line_1 = QHBoxLayout(self.line_1_box)
-        self.label_text = QT_TRANSLATE_NOOP("AutoDailyView", "选择执行的行动")
-        self.label = BodyLabel(self.label_text)
-        self.task_name = [
-            "autodaily_daily",
-            "autodaily_get_reward",
-            "autodaily_buy_enkephalin",
-            "autodaily_mirror",
-        ]
-        self.box_daily = BaseCheckBox("autodaily_daily", None, QT_TRANSLATE_NOOP("BaseCheckBox", "自动执行日常"))
-        self.box_get_reward = BaseCheckBox(
-            "autodaily_get_reward",
-            None,
-            QT_TRANSLATE_NOOP("BaseCheckBox", "自动获取奖励"),
-        )
-        self.box_buy_enkephalin = BaseCheckBox(
-            "autodaily_buy_enkephalin",
-            None,
-            QT_TRANSLATE_NOOP("BaseCheckBox", "自动狂气换体"),
-        )
-        self.box_mirror = BaseCheckBox("autodaily_mirror", None, QT_TRANSLATE_NOOP("BaseCheckBox", "自动镜牢"))
-        self.line_1.addWidget(self.box_daily)
-        self.line_1.addWidget(self.box_get_reward)
-        self.line_1.addWidget(self.box_buy_enkephalin)
-        self.line_1.addWidget(self.box_mirror)
-
-        self.label2_text = QT_TRANSLATE_NOOP("AutoDailyView", "运行结束后")
-        self.label2 = BodyLabel(self.label2_text)
-        self.line_2_box = QWidget(self)
-        self.line_2 = QHBoxLayout(self.line_2_box)
-        self.exit_task_name = [
-            "autodaily_exit_game",
-            "autodaily_exit_aalc",
-            "autodaily_sleep",
-            "autodaily_hibernate",
-            "autodaily_shutdown",
-            "autodaily_lock",
-            "autodaily_exit_emulator",
-        ]
-        self.box_exit_game = BaseCheckBox("autodaily_exit_game", None, QT_TRANSLATE_NOOP("BaseCheckBox", "退出游戏"))
-        self.box_exit_emulator = BaseCheckBox(
-            "autodaily_exit_emulator", None, QT_TRANSLATE_NOOP("BaseCheckBox", "退出模拟器")
-        )
-        self.box_exit_aalc = BaseCheckBox("autodaily_exit_aalc", None, QT_TRANSLATE_NOOP("BaseCheckBox", "退出AALC"))
-        self.box_sleep = BaseCheckBox("autodaily_sleep", None, QT_TRANSLATE_NOOP("BaseCheckBox", "睡眠"))
-        self.box_hibernate = BaseCheckBox("autodaily_hibernate", None, QT_TRANSLATE_NOOP("BaseCheckBox", "休眠"))
-        self.box_shutdown = BaseCheckBox("autodaily_shutdown", None, QT_TRANSLATE_NOOP("BaseCheckBox", "关机"))
-        self.box_lock = BaseCheckBox("autodaily_lock", None, QT_TRANSLATE_NOOP("BaseCheckBox", "锁屏"))
-        self.line_2.addWidget(self.box_exit_game)
-        self.line_2.addWidget(self.box_exit_emulator)
-        self.line_2.addWidget(self.box_exit_aalc)
-        self.line_2.addWidget(self.box_sleep)
-        self.line_2.addWidget(self.box_hibernate)
-        self.line_2.addWidget(self.box_shutdown)
-        self.line_2.addWidget(self.box_lock)
-
-        self.line_3_box = QWidget(self)
-        self.line_3 = QHBoxLayout(self.line_3_box)
-
-        self.save_button_text = QT_TRANSLATE_NOOP("AutoDailyView", "保存")
-        self.save_button = PrimaryPushButton(self.save_button_text)
-
-        self.line_3.addWidget(self.save_button)
-
-        self.checkboxes = [self.box_sleep, self.box_hibernate, self.box_shutdown, self.box_lock]
-        for cb in self.checkboxes:
-            cb.check_box.clicked.connect(self.__on_checkbox_clicked)
-
-        self.vBoxLayout.setSpacing(12)
-        self.vBoxLayout.setContentsMargins(20, 16, 20, 16)
-        self.vBoxLayout.addWidget(self.label)
-        self.vBoxLayout.addWidget(self.line_1_box)
-        self.vBoxLayout.addWidget(self.label2)
-        self.vBoxLayout.addWidget(self.line_2_box)
-        self.vBoxLayout.addWidget(self.line_3_box)
-
-        self.__get_init()
-
-        mediator.autodaily_setting.connect(self.__autodaily_setting)
-        self.save_button.clicked.connect(self.__save)
-        self.retranslateUi()
-
-    def __get_init(self):
-        while self.config_name is None:
-            self.config_name = self.__search_parent_class().config_name
-        self.setting = cfg.get_value(self.config_name + "_task")
-        self.exit_setting = cfg.get_value(self.config_name + "_task_exit")
-        exit_old_len = len(self.exit_setting)
-        if exit_old_len < 7:
-            self.exit_setting = list(self.exit_setting) + [False] * (7 - exit_old_len)
-            if exit_old_len > 0 and self.exit_setting[0]:
-                self.exit_setting[6] = True
-
-        task = [
-            self.box_daily,
-            self.box_get_reward,
-            self.box_buy_enkephalin,
-            self.box_mirror,
-        ]
-        for i in range(len(task)):
-            task[i].set_checked(self.setting[i])
-        exit_task = [
-            self.box_exit_game,
-            self.box_exit_aalc,
-            self.box_sleep,
-            self.box_hibernate,
-            self.box_shutdown,
-            self.box_lock,
-            self.box_exit_emulator,
-        ]
-        for i in range(len(exit_task)):
-            exit_task[i].set_checked(self.exit_setting[i])
-
-    def __on_checkbox_clicked(self):
-        clicked_cb = self.sender()
-        # 如果当前点击的被勾选了，则把其他的都取消勾选
-        for cb in self.checkboxes:
-            if cb.check_box is not clicked_cb:
-                cb.blockSignals(True)
-                cb.set_checked(False)
-                cb.blockSignals(False)
-
-    def __autodaily_setting(self, config_name: str):
-        if config_name in self.task_name:
-            index = self.task_name.index(config_name)
-            self.setting[index] = not self.setting[index]
-        elif config_name in self.exit_task_name:
-            index = self.exit_task_name.index(config_name)
-            self.exit_setting[index] = not self.exit_setting[index]
-
-    def __save(self):
-        if len(self.exit_setting) < 7:
-            self.exit_setting = list(self.exit_setting) + [False] * (7 - len(self.exit_setting))
-        cfg.set_value(self.config_name + "_task", self.setting)
-        cfg.set_value(self.config_name + "_task_exit", self.exit_setting)
-        # 关闭弹出窗
-        parent_card = self.__search_parent_class("DailySettingCard")
-        if parent_card is not None and hasattr(parent_card, "_popup"):
-            try:
-                parent_card._popup.close()
-            except Exception:
-                pass
-
-    def __search_parent_class(self, class_name="DailySettingCard"):
-        current = self.parentWidget()
-        while current is not None:
-            # 使用 __class__.__name__ 获取类名字符串进行比对
-            if current.__class__.__name__ == class_name:
-                return current
-            current = current.parentWidget()
-        return None
-
-    def retranslateUi(self):
-        self.label.setText(self.tr(self.label_text))
-        self.label2.setText(self.tr(self.label2_text))
-        self.save_button.setText(self.tr(self.save_button_text))
-        self.box_daily.retranslateUi()
-        self.box_get_reward.retranslateUi()
-        self.box_buy_enkephalin.retranslateUi()
-        self.box_mirror.retranslateUi()
-        self.box_exit_game.retranslateUi()
-        self.box_exit_emulator.retranslateUi()
-        self.box_exit_aalc.retranslateUi()
-        self.box_sleep.retranslateUi()
-        self.box_hibernate.retranslateUi()
-        self.box_shutdown.retranslateUi()
-        self.box_lock.retranslateUi()
-
-
-class DailySettingCard(SwitchSettingCard):
-    def __init__(
-        self,
-        icon: Union[str, QIcon, FluentIconBase],
-        title,
-        content=None,
-        config_name: str = None,
-        parent=None,
-    ):
-        super().__init__(icon, title, content, config_name, parent)
-        self.config_name = config_name
-        self.autodaily_timepicker = TimePicker()
-        if self.config_name[-1] in ["2", "3", "4"]:
-            self.value_name = "autodaily_time" + self.config_name[-1]
-        else:
-            self.value_name = "autodaily_time"
-        self.button_text = QT_TRANSLATE_NOOP("DailySettingCard", "设置任务项")
-
-        autodaily_time = cfg.get_value(self.value_name) or "00:00"
-        autodaily_qtime = QTime.fromString(autodaily_time, "HH:mm")
-        if not autodaily_qtime.isValid():
-            autodaily_qtime = QTime(0, 0)
-        self.autodaily_timepicker.setTime(autodaily_qtime)
-        self.button = PushButton(self.button_text, self)
-        current_count = self.hBoxLayout.count()
-        self.hBoxLayout.insertWidget(current_count - 2, self.autodaily_timepicker)
-        self.hBoxLayout.insertSpacing(current_count - 1, 20)
-        current_count = self.hBoxLayout.count()
-        self.hBoxLayout.insertWidget(current_count - 2, self.button)
-        self.hBoxLayout.insertSpacing(current_count - 1, 20)
-        self.autodaily_timepicker.setDisabled(not self.switchButton.isChecked())
-        self.autodaily_timepicker.timeChanged.connect(self.__onAutoDailyTimepickerChanged)
-        self.button.clicked.connect(self.__show_view)
-        self.__connect_signal()
-        self.retranslateUi()
-
-    def __show_view(self):
-        self._popup = PopupTeachingTip.make(
-            target=self.button,
-            view=AutoDailyView(self),
-            tailPosition=TeachingTipTailPosition.RIGHT,
-            duration=-1,
-            parent=self,
-        )
-
-    def __connect_signal(self):
-        self.switchButton.checkedChanged.connect(self.__onAutoDailyCheckboxChanged)
-        self.autodaily_timepicker.timeChanged.connect(self.__onAutoDailyTimepickerChanged)
-
-    @staticmethod
-    def __autodaily_taskname() -> str:
-        return "AALC Daily Task"
-
-    def __onAutoDailyCheckboxChanged(self, isChecked):
-        from utils.schedule_helper import ScheduleHelper
-
-        helper = ScheduleHelper()
-        task_name = self.__autodaily_taskname()
-        if self.config_name[-1] in ["2", "3", "4"]:
-            task_name += self.config_name[-1]
-
-        cfg.set_value(self.config_name, isChecked)
-        if isChecked:
-            self.autodaily_timepicker.setDisabled(False)
-            time = self.autodaily_timepicker.getTime()
-            helper.register_daily_task(
-                task_name,
-                f"start --exit {self.config_name}",
-                time.hour(),
-                time.minute(),
-            )
-        else:
-            self.autodaily_timepicker.setDisabled(True)
-            helper.unregister_task(task_name)
-
-    def __onAutoDailyTimepickerChanged(self, time: QTime):
-        from utils.schedule_helper import ScheduleHelper
-
-        helper = ScheduleHelper()
-        task_name = self.__autodaily_taskname()
-        if self.config_name[-1] in ["2", "3", "4"]:
-            task_name += self.config_name[-1]
-
-        cfg.set_value(self.value_name, time.toString("HH:mm"))
-        helper.unregister_task(task_name)
-        helper.register_daily_task(task_name, f"start --exit {self.config_name}", time.hour(), time.minute())
-
-    def retranslateUi(self):
-        self.button.setText(self.tr(self.button_text))
-        self.titleLabel.setText(self.tr(self.title))
-        self.contentLabel.setText(self.tr(self.content))
 
 
 class HotkeySettingCard(BasePushSettingCard):
