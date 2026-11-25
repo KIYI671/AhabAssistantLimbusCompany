@@ -1018,7 +1018,7 @@ Right-click to save this setting as the default.</translation>
         <location filename="../app/setting_interface.py" line="423"/>
         <location filename="../app/setting_interface.py" line="425"/>
         <source>项目主页</source>
-        <translation>Object repo</translation>
+        <translation>Project Homepage</translation>
     </message>
     <message>
         <location filename="../app/setting_interface.py" line="429"/>
