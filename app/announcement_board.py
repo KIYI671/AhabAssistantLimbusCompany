@@ -130,6 +130,8 @@ class Announcement(QWidget):
         self.content = QTextBrowser(self)
         self.content.setOpenExternalLinks(True)
         self.content.setAutoFillBackground(True)
+        # 用 Fluent 风格的悬浮滚动条代替原生滚动条，跟随深浅色主题
+        self.scroll_delegate = SmoothScrollDelegate(self.content)
 
         # 根据 content_type 渲染内容
         if show_title:
@@ -181,6 +183,10 @@ class AnnouncementBoard(FramelessDialog):
         self.titleBar.minBtn.hide()
         self.titleBar.maxBtn.hide()
         self.titleBar.closeBtn.hide()
+        # qframelesswindow 建的标题 QLabel 没有 objectName，自身 QSS 还写死了 'Segoe UI'（汉字会回退到日文字形）。
+        # 给它起名并清掉自身 QSS，交给下面 _apply_styles 里的标题栏 QSS 统一控制。
+        self.titleBar.titleLabel.setObjectName("titleLabel")
+        self.titleBar.titleLabel.setStyleSheet("")
 
         # 设置模态
         self.setWindowModality(Qt.WindowModal)
@@ -464,7 +470,10 @@ class AnnouncementBoard(FramelessDialog):
                     background-color: rgba(45, 45, 45, 1);
                     color: white;
                 }
-                TitleBar > QLabel#titleLabel {
+                QLabel#titleLabel {
+                    background: transparent;
+                    font-size: 13px;
+                    padding: 0 4px;
                     color: white;
                 }
                 """
@@ -482,7 +491,10 @@ class AnnouncementBoard(FramelessDialog):
                     background-color: rgba(245, 245, 245, 1);
                     color: black;
                 }
-                TitleBar > QLabel#titleLabel {
+                QLabel#titleLabel {
+                    background: transparent;
+                    font-size: 13px;
+                    padding: 0 4px;
                     color: black;
                 }
                 """
