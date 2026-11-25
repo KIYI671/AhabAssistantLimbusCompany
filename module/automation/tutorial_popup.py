@@ -1,32 +1,4 @@
-"""新手教程弹窗的全局检测与关闭。
-
-模板位置：``assets/images/<主题>/<语言>/base/tutorial_*_assets.png``。
-模板特征（实测记录，未做猜测）：
-
-* 2560×1440 的 **RGBA** 图，alpha 全为 255（不透明），按 AALC 惯例丢弃 alpha 只取 RGB；
-* RGB 画面约 98% 是纯黑背景，真正有内容的区域是顶部一条横向条幅
-  （例如 zh_cn 成就条 bbox 为 ``(107, 33, 834, 158)``，en 版本会因文字更长而更宽），
-  因此完全符合 ``*_assets.png`` 约定：``_load_template_for_path`` 会用
-  ``ImageUtils.get_bbox`` 裁掉黑底，并把该 bbox 当作搜索区域；
-  ``clam`` 模式只在其外扩 ±30px 的范围内匹配，速度快、误匹配少；
-* 同一模板的 dark/default、zh_cn/en 之间差异 0.3%~1.5%，只体现主题与文字差异，
-  所以按主题/语言各存一份即可。
-
-检测挂接点：``Automation.take_screenshot()``。每一帧新截图都会先过这里；
-命中就点击关闭、随后重新截图确认弹窗消失，确认后才把新帧交给调用方。
-因此所有调用 ``auto.take_screenshot()`` 的自动化流程都会自动获得该能力，
-任务代码不需要改动。
-
-复用说明（不重复造轮子）：
-
-* 识别：``ImageUtils.existing_image_paths`` 选路径、``Automation._load_template_for_path``
-  加载+裁边+缓存、``ImageUtils.match_template`` 做 TM_CCOEFF_NORMED、
-  ``Automation._is_valid_match`` 做阈值判定 —— 与 ``find_image_element`` 完全同一条链路；
-* 点击：``Automation.mouse_action_with_pos``（含交互门/输入锁/点击间隔），
-  坐标换算复用 ``Handle.mouse_pos_to_client_mouse``；
-* 截图：``ScreenShot.take_screenshot``（与业务截图同一后端）；
-* 日志/节流：``module.logger.log``、``cfg``。
-"""
+"""新手教程弹窗的全局检测与关闭。"""
 
 import time
 from typing import TYPE_CHECKING
