@@ -286,6 +286,25 @@ class ScheduleEditorDialog(MessageBoxBase):
         self.after_fields.retranslateUi()
 
 
+def open_editor(schedule: Schedule, window, on_saved=None, on_cancelled=None) -> "ScheduleEditorDialog":
+    """非模态打开编辑框。
+
+    不用 exec()：编辑框是主窗口的子控件，嵌套的模态事件循环会和启动后异步弹出的
+    公告窗口（窗口级模态）互相影响，实测会让主窗口一直处于禁用状态、点什么都没反应。
+    编辑框自带全窗口遮罩，背后的界面本来就点不到，不需要模态。
+    """
+    dialog = ScheduleEditorDialog(schedule, window)
+    dialog.setWindowModality(Qt.WindowModality.NonModal)
+    if on_saved is not None:
+        dialog.accepted.connect(on_saved)
+    if on_cancelled is not None:
+        dialog.rejected.connect(on_cancelled)
+    dialog.finished.connect(lambda _: dialog.deleteLater())
+    dialog.show()
+    dialog.raise_()
+    return dialog
+
+
 # ---------------------------------------------------------------------------
 # 设置页里的卡片
 # ---------------------------------------------------------------------------
@@ -339,10 +358,11 @@ class ScheduleCard(SettingCard):
         self.retranslateUi()
 
     def _edit(self) -> None:
-        dialog = ScheduleEditorDialog(self.schedule, self.window())
-        if dialog.exec():
+        def saved():
             self.retranslateUi()
             self.changed.emit()
+
+        open_editor(self.schedule, self.window(), on_saved=saved)
 
     def _show_menu(self) -> None:
         menu = RoundMenu(parent=self)
@@ -428,13 +448,14 @@ class ScheduleSettingGroup(BaseSettingCardGroup):
         card = next((c for c in self.cards if c.schedule is schedule), None)
         if card is None:
             return
-        dialog = ScheduleEditorDialog(schedule, self.window())
-        if dialog.exec():
-            card.retranslateUi()
-            return
-        cfg.config.schedules.remove(schedule)
-        cfg.save()
-        self.rebuild()
+
+        def cancelled():
+            if schedule in cfg.config.schedules:
+                cfg.config.schedules.remove(schedule)
+                cfg.save()
+                self.rebuild()
+
+        open_editor(schedule, self.window(), on_saved=card.retranslateUi, on_cancelled=cancelled)
 
     def _delete(self, card: ScheduleCard) -> None:
         from qfluentwidgets import MessageBox
@@ -445,7 +466,13 @@ class ScheduleSettingGroup(BaseSettingCardGroup):
             tr(QT_TRANSLATE_NOOP("ScheduleEditor", "确定删除「{0}」吗？")).format(title),
             self.window(),
         )
-        if not box.exec():
+        box.setWindowModality(Qt.WindowModality.NonModal)
+        box.accepted.connect(lambda: self._confirm_delete(card))
+        box.finished.connect(lambda _: box.deleteLater())
+        box.show()
+
+    def _confirm_delete(self, card: ScheduleCard) -> None:
+        if card.schedule not in cfg.config.schedules:
             return
         unregister_schedule(card.schedule)
         cfg.config.schedules.remove(card.schedule)
