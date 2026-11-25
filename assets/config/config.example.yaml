@@ -1,4 +1,4 @@
-config_version: 1794153600 # 配置文件版本号 (时间戳)
+config_version: 1795580925 # 配置文件版本号 (时间戳)
 
 # 游戏设置
 game_title_name: LimbusCompany # 游戏窗口标题。
@@ -6,7 +6,6 @@ game_process_name: LimbusCompany.exe # 游戏进程名。
 
 game_path: C:\Program Files (x86)\Steam\steamapps\common\Limbus Company\LimbusCompany.exe # 游戏启动路径。
 
-keep_after_completion: False # 是否保持脚本结束后的操作
 language_in_program: "" # 程序语言
 shutdown_hotkey: "<ctrl>+q" # 关闭快捷键
 pause_hotkey: "<alt>+p" # 暂停快捷键
@@ -28,22 +27,6 @@ window_position_x: 0 # 窗口位置x
 window_position_y: 0 # 窗口位置y
 theme_mode: AUTO # 应用主题：AUTO, LIGHT, DARK
 autostart: False # 自启动
-autodaily: False # 启用定时执行
-autodaily_task: [False, False, False, False]
-autodaily_task_exit: [False, False, False, False, False, False, False]
-autodaily_time: "00:00" # 定时执行时间 (HH:mm)
-autodaily2: False # 启用定时执行2
-autodaily2_task: [False, False, False, False]
-autodaily2_task_exit: [False, False, False, False, False, False, False]
-autodaily_time2: "00:00" # 定时执行时间2 (HH:mm)
-autodaily3: False # 启用定时执行3
-autodaily3_task: [False, False, False, False]
-autodaily3_task_exit: [False, False, False, False, False, False, False]
-autodaily_time3: "00:00" # 定时执行时间3 (HH:mm)
-autodaily4: False # 启用定时执行4
-autodaily4_task: [False, False, False, False]
-autodaily4_task_exit: [False, False, False, False, False, False, False]
-autodaily_time4: "00:00" # 定时执行时间4 (HH:mm)
 minimize_to_tray: False # 最小化到托盘
 after_completion_actions: [] # 脚本结束后的前置动作（可多选）：exit_game/exit_emulator/exit_aalc
 after_completion_power_action: "none" # 脚本结束后的最终动作（单选）：none/sleep/hibernate/lock/shutdown
@@ -59,8 +42,6 @@ resonate_with_Ahab: False # 是否播放亚哈语录
 # 实验性功能
 experimental_keep_screen_awake: False # 运行期间阻止系统与显示器休眠，任务结束自动恢复
 experimental_hdr_warning: True # 任务启动时检测游戏显示器 HDR 状态并提示潜在识别问题
-
-
 
 # 模拟器设置
 simulator: False # 是否使用模拟器
@@ -81,9 +62,6 @@ mirrorchyan_cdk: "" # Mirror酱 CDK
 image_resource_sync: True # 是否启用图片资源自动同步
 image_resource_source: Auto # 图片资源同步源，可选 Auto / Gitee / GitHub
 
-# 保存启动后的页面
-default_page: 0
-
 # 是否进行自动窗口设置
 set_windows: True # 是否进行自动窗口设置
 set_win_size: 1080 # 设置使用的分辨率,1080:1920*1080,1440:2560*1440,2160:3840*2160,720:1280*720,900:1600*900,1800:3200*1800
@@ -92,58 +70,23 @@ set_reduce_miscontact: True # 是否防止误触
 
 select_team_by_order: False # 是否按顺序(而非名称)选择队伍
 
-# 是否进行日常本
-daily_task: False # 是否进行日常本
-set_EXP_count: 1 # 设置经验本的次数
-set_thread_count: 3 # 设置纽本的次数
-daily_teams: 1 # 设置日常本使用的队伍
-use_continuous_combat: False # 是否使用连续作战
-use_continuous_combat_select: 1 # 一场连续作战的最大次数
-targeted_teaming_EXP: False
-EXP_day_1_2: 1
-EXP_day_3_4: 1
-EXP_day_5_6: 1
-EXP_day_7: 1
-targeted_teaming_thread: False
-thread_day_1: 1
-thread_day_2: 1
-thread_day_3: 1
-thread_day_4: 1
-thread_day_5: 1
-thread_day_6: 1
-thread_day_7: 1
-
-# 是否自动获取奖励
-get_reward: False # 是否进行获取奖励
-claim_mission_rewards: True # 领取日常、周常及赛季任务奖励
-claim_battle_pass_rewards: True # 领取通行证奖励
-claim_mail_rewards: True # 领取邮件奖励
-
-# 是否自动购买体力
-buy_enkephalin: False # 是否自动购买体力
-set_lunacy_to_enkephalin: 2 # 0 不购买，1 购买一次，2 购买两次，3 购买三次
-Dr_Grandet_mode: False
 skip_enkephalin: False # 跳过换体
 
-# 是否进行自动镜牢
-mirror: False # 是否进行自动镜牢
-set_mirror_count: 1 # 镜牢的次数
-hard_mirror: False # 进行困难镜牢
-no_weekly_bonuses: False # 不使用每周加成
-floor_3_exit: False # 只打三层
-infinite_dungeons: False # 无限刷牢
-save_rewards: False # 保存奖励不领
-hard_mirror_single_bonuses: False # 困难镜牢使用单次加成
-select_event_pack: False # 第五层选择（最左边）活动卡包
-skip_event_pack: False # 第五层跳过（最左边）活动卡包
-re_claim_rewards: False # 再次执行领取奖励任务
-not_skip_whitegossypium: False # 不跳过白棉花
-fight_to_last_man: False # 战斗直到全灭
 teams_be_select_num: 0 # 被选中的队伍数量
 teams_be_select: [False] # 被选中的队伍
 teams_order: [0] # 队伍的顺序
 mirror_keyboard_navigation: False # 使用键盘进行镜牢寻路
 mirror_keyboard_simple_pathfinding: False # 简单键盘寻路（始终按↑，避免鼠标拖动）
+
+# 主界面任务列表：按顺序执行，每项有自己的开关和参数，同类任务可以有多项
+task_queue:
+  - {id: daily, type: daily, enabled: False}
+  - {id: reward, type: reward, enabled: False}
+  - {id: enkephalin, type: enkephalin, enabled: False}
+  - {id: mirror, type: mirror, enabled: False}
+# 定时执行：每项有自己的时间、任务列表和收尾设置
+schedules: []
+last_selected_task: set_windows # 主界面上次选中的项
 
 # 队伍设置
 teams_active_queue: [] # 镜牢启用队伍的执行队列（单一事实源）

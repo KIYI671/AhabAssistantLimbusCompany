@@ -19,6 +19,7 @@ from module.logger import log
 from utils.singletonmeta import SingletonMeta
 
 from .config_typing import ConfigModel, TeamSetting
+from .task_queue import migrate_legacy_config, reset_session_flags
 
 
 class Config(metaclass=SingletonMeta):
@@ -188,7 +189,18 @@ class Config(metaclass=SingletonMeta):
             loaded_config.setdefault("claim_mission_rewards", prize_mode in (0, 1))
             loaded_config.setdefault("claim_battle_pass_rewards", False)
 
+        if saved_version < 1795580925:
+            # 主界面四个开关 + 全局任务参数 → task_queue；autodaily 1~4 → schedules
+            migrate_legacy_config(loaded_config)
+            log.info("已将旧版任务设置与定时执行迁移为任务列表")
+
         log.info("配置升级完成")
+
+    def _reset_session_flags(self) -> None:
+        """「仅本次运行期间有效」的选项在 AALC 启动时失效"""
+        reset_session_flags(self.config.task_queue)
+        for schedule in self.config.schedules:
+            reset_session_flags(schedule.tasks)
 
     def _load_version(self, version_path: str) -> str:
         """加载版本信息"""
@@ -255,6 +267,7 @@ class Config(metaclass=SingletonMeta):
                     self._old_version_cfg_upgrade(saved_version, loaded_config)
                 # 使用更新后的配置初始化 Config 对象
                 self.config = ConfigModel(**{**self._defaults, **loaded_config})
+                self._reset_session_flags()
                 queue_in_loaded_config = loaded_config.get("teams_active_queue")
                 if queue_in_loaded_config is None:
                     normalized_queue = self._normalize_team_queue(self.migrate_legacy_team_queue())
