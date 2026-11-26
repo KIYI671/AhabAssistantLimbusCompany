@@ -1,5 +1,5 @@
 from pathlib import Path
-from re import search
+from re import findall, search
 from threading import Event
 from time import monotonic
 
@@ -37,7 +37,6 @@ TEMPLATE_BOXES = {
     "schema_one": (392, 68, 460, 148),
     "cleared_node": (884, 680, 998, 716),
     "regular": (580, 344, 668, 432),
-    "regular_translucent": (1564, 674, 1652, 762),
     "respite_node": (908, 675, 994, 764),
     "danger_node": (574, 676, 673, 766),
     "encounter": (2128, 1244, 2374, 1324),
@@ -72,6 +71,11 @@ TEMPLATE_BOXES = {
 }
 
 
+def image_edges(image):
+    gray = image.astype(np.float32)
+    return gray - cv2.GaussianBlur(gray, (7, 7), 0)
+
+
 class SchemacraftFrame:
     def __init__(self, image: Image.Image, templates: dict):
         self.color = np.asarray(image.convert("RGB").resize(FRAME_SIZE, Image.Resampling.BILINEAR))
@@ -86,6 +90,9 @@ class SchemacraftFrame:
             return tuple(coord * 2 for coord in point) if score >= threshold else None
         left, top, right, bottom = (coord // 2 for coord in area)
         crop = self.gray[top:bottom, left:right]
+        if name == "regular":
+            crop = image_edges(crop)
+            template = template.astype(np.float32)
         matches = ImageUtils.match_template_with_multiple_targets(crop, template, threshold, min_dist=45)
         return [(2 * (x + left), 2 * (y + top)) for x, y in matches]
 
@@ -113,7 +120,7 @@ class SchemacraftFrame:
         left, top, right, bottom = (coord // 2 for coord in TEMPLATE_BOXES["schema_one"])
         # 楼层数字是半透明的，保留文字边缘以减少移动背景的影响。
         crop = cv2.GaussianBlur(self.gray[top:bottom, left:right].astype(np.float32), (3, 3), 0)
-        edges = crop - cv2.GaussianBlur(crop, (7, 7), 0)
+        edges = image_edges(crop)
         template = self.templates["schema_one"].astype(np.float32)
         return cv2.matchTemplate(edges, template, cv2.TM_CCOEFF_NORMED).max()
 
@@ -125,7 +132,8 @@ class SchemacraftFrame:
         return score > 0.9
 
     def reachable_node(self, name):
-        nodes = self.find(name, (80, 156, 2470, 1180), threshold=0.79)
+        # 蓝色表示可达。普通节点按剑的轮廓识别，避免透过图标的地图背景干扰。
+        nodes = self.find(name, (80, 156, 2470, 1180), threshold=0.55 if name == "regular" else 0.79)
         reachable = [(x, y) for x, y in nodes if self.blue_fraction((x - 50, y - 50, x + 50, y + 50)) > 0.35]
         return min(reachable, key=lambda point: (point[1], point[0]), default=None)
 
@@ -285,11 +293,9 @@ class SchemacraftRun(QThread):
             return "选择中间奖励包", (1268, 550)
         if frame.find("boss_reward") or frame.find("reward", (240, 27, 840, 89), threshold=0.88):
             self.settle_at_map = True
-            if position := self.choose_reward(frame):
-                return position
             if frame.bright_fraction(TEMPLATE_BOXES["reward_accept"]) > 0.23 and frame.find("reward_accept"):
                 return "领取战后奖励", (2257, 1314)
-            return None
+            return self.choose_reward(frame)
         if frame.find("battle"):
             self.waiting_for_battle = True
             return None
@@ -318,7 +324,6 @@ class SchemacraftRun(QThread):
                 return "打开地图设置，准备结算", MAP_SETTINGS
             for name, label in (
                 ("regular", "选择可达的普通节点"),
-                ("regular_translucent", "选择可达的普通节点"),
                 ("respite_node", "选择休整节点"),
             ):
                 if position := frame.reachable_node(name):
@@ -364,6 +369,15 @@ class SchemacraftRun(QThread):
         ego = sorted(frame.find("reward_ego", (1100, 410, 2350, 690), threshold=0.83))
         needs_id = frame.has_empty_counter("id")
         needs_ego = frame.has_empty_counter("ego")
+        if not needs_id and not needs_ego:
+            counters = frame.read_text((2344, 1276, 2497, 1358)).upper().replace(".", "").replace(" ", "")
+            unfinished = {
+                category
+                for category, count, total in findall(r"(ID|EG[O0])(\d+)/(\d+)", counters)
+                if int(count) < int(total)
+            }
+            needs_id = "ID" in unfinished
+            needs_ego = bool(unfinished & {"EGO", "EG0"})
         if full := frame.find("team_full", (300, 1106, 2110, 1164), threshold=0.91):
             x, _ = full[0]
             return "队伍已满，改领人格碎片", (x + 82, 384)
