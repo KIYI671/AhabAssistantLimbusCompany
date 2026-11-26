@@ -22,6 +22,7 @@ from utils.image_utils import ImageUtils
 TEMPLATE_DIR = Path("assets/schemacraft")
 FRAME_SIZE = (1280, 720)
 MAP_SETTINGS = (2442, 98)
+REPORT_CONFIRM = (2302, 1309)
 
 # 全屏参考坐标，读取时统一缩小到 1280×720。
 TEMPLATE_BOXES = {
@@ -196,10 +197,13 @@ class SchemacraftRun(QThread):
                     raise RuntimeError("请让游戏窗口完整显示在同一块屏幕上")
                 if abs(width * 9 - height * 16) > 16:
                     raise RuntimeError("请将游戏画面设为 16:9")
+                was_in_battle = self.waiting_for_battle
                 action = self.next_action(SchemacraftFrame(image, templates))
-                # 战后地图先显示按钮，过场结束后才接收点击。
-                retry_settings = action and action[1] == MAP_SETTINGS and monotonic() - last_click > 2
-                if action and (action != last_action or retry_settings):
+                if was_in_battle and not self.waiting_for_battle:
+                    last_progress = monotonic()
+                # 战后界面先显示按钮，过场结束后才接收点击。
+                retry = action and action[1] in (MAP_SETTINGS, REPORT_CONFIRM) and monotonic() - last_click > 2
+                if action and (action != last_action or retry):
                     label, position = action
                     if position is None:
                         self.status.emit(label)
@@ -272,7 +276,7 @@ class SchemacraftRun(QThread):
         if frame.find("report"):
             self.waiting_for_battle = False
             self.entering_encounter = False
-            return "确认战斗报告", (2302, 1309)
+            return "确认战斗报告", REPORT_CONFIRM
         if frame.find("schema_rewards"):
             self.reward_picks.clear()
             self.settle_at_map = True
