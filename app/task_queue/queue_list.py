@@ -22,7 +22,6 @@ from qfluentwidgets.common.font import getFont
 
 from module.config import task_queue as tq
 from module.config.task_queue import TASK_TYPES, TaskBase, TaskQueue
-from module.schedules import number as schedule_number
 
 CONTEXT = "TaskQueue"
 
@@ -46,14 +45,6 @@ def task_type_name(task_type: str) -> str:
 
 def task_title(task: TaskBase) -> str:
     return tq.task_title(task, task_type_name)
-
-
-def schedule_title(schedule, schedules: list | None = None) -> str:
-    """定时任务显示名：自定义名称，否则「定时执行 N」"""
-    if schedule.name:
-        return schedule.name
-    number = schedule_number(schedule, schedules or [])
-    return tr(QT_TRANSLATE_NOOP("TaskQueue", "定时执行 {0}")).format(number)
 
 
 class TaskItemDelegate(ListItemDelegate):

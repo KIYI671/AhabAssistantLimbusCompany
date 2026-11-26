@@ -26,7 +26,7 @@ from app.base_tools import *
 from app.common.ui_config import get_log_text_edit_qss, set_border_style
 from app.language_manager import LanguageManager
 from app.page_card import PageMirror, PageSetWindows
-from app.task_queue.queue_list import schedule_title
+from app.schedule.texts import schedule_title
 from app.task_queue.queue_panel import WINDOW_SETTINGS_ID, TaskQueuePanel
 from app.task_queue.task_pages import DailyTaskPage, EnkephalinTaskPage, RewardTaskPage
 from app.team_setting_card import TeamSettingCard

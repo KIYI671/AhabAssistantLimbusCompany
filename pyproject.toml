@@ -81,7 +81,9 @@ files = [
     "app/task_queue/queue_panel.py",
     "app/task_queue/task_fields.py",
     "app/task_queue/task_pages.py",
-    "app/schedule_editor.py",
+    "app/schedule/texts.py",
+    "app/schedule/editor_dialog.py",
+    "app/schedule/setting_group.py",
     "i18n/myapp_en.ts",
 ]
 

@@ -36,7 +36,7 @@ from app.base_combination import (
 from app.card.messagebox_custom import BaseInfoBar
 from app.common.ui_config import get_setting_interface_qss
 from app.language_manager import SUPPORTED_LANG_NAME, LanguageManager
-from app.schedule_editor import ScheduleSettingGroup
+from app.schedule.setting_group import ScheduleSettingGroup
 from app.theme_pack_setting_interface import ThemePackSettingDialog
 from app.widget.setting_nav import SettingNav
 from module.config import cfg, theme_list
