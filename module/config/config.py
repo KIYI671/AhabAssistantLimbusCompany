@@ -19,7 +19,7 @@ from module.logger import log
 from utils.singletonmeta import SingletonMeta
 
 from .config_typing import ConfigModel, TeamSetting
-from .task_queue import migrate_legacy_config, reset_session_flags
+from .task_queue import migrate_legacy_config, start_session
 
 
 class Config(metaclass=SingletonMeta):
@@ -198,9 +198,7 @@ class Config(metaclass=SingletonMeta):
 
     def _reset_session_flags(self) -> None:
         """「仅本次运行期间有效」的选项在 AALC 启动时失效"""
-        reset_session_flags(self.config.task_queue)
-        for schedule in self.config.schedules:
-            reset_session_flags(schedule.tasks)
+        start_session(self.config)
 
     def _load_version(self, version_path: str) -> str:
         """加载版本信息"""

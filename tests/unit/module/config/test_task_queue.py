@@ -130,6 +130,8 @@ def test_schedules_copy_params_and_use_own_switches(tq):
 
     # 参数是主界面的副本
     assert second.tasks[0].team == 5 and second.tasks[3].count == 2
+    # 定时任务每次都是新启动 AALC：旧版「仅本次」的勾选（1）在定时运行时本来就已失效，迁移成关闭；永久（2）保留
+    assert (second.tasks[3].hard_mirror, second.tasks[3].no_weekly_bonuses) == (2, 0)
 
     # 5 位旧格式：退出游戏 → 同时退出模拟器；退出 AALC
     assert first.after_completion.actions == ["exit_game", "exit_emulator", "exit_aalc"]
@@ -234,3 +236,15 @@ def test_new_objects_dump_as_plain_yaml(tq):
     buffer = io.StringIO()
     YAML().dump(schedule.model_dump(), buffer)
     assert "power_action: none" in buffer.getvalue()
+
+
+def test_session_flags_only_reset_main_queue(tq):
+    """定时任务没有「仅本次运行」的说法，勾选值 1 也表示一直有效，启动时不清零"""
+    task_queue, config_typing = tq
+    data = {**_example(), **_migrated(task_queue)}
+    data["schedules"][0]["tasks"][3]["hard_mirror"] = 1
+    data["task_queue"][3]["hard_mirror"] = 1
+    model = config_typing.ConfigModel(**data)
+    task_queue.start_session(model)
+    assert model.task_queue[3].hard_mirror == 0
+    assert model.schedules[0].tasks[3].hard_mirror == 1

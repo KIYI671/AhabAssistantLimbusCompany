@@ -327,6 +327,14 @@ class TaskQueue:
             task.enabled = enabled
 
 
+def start_session(config) -> None:
+    """AALC 启动时调用：主界面任务列表里「仅本次运行有效」的选项失效。
+
+    定时任务每次运行都是新启动的 AALC，没有「本次」的说法，它的勾选一直有效，不清零。
+    """
+    reset_session_flags(config.task_queue)
+
+
 def reset_session_flags(tasks: list[TaskBase]) -> None:
     """AALC 启动时调用：「仅本次运行有效」的困牢 / 不用每周加成（值为 1）清零"""
     for task in tasks:
@@ -483,6 +491,10 @@ def legacy_schedules(old: dict) -> list[dict]:
         for item, flag in zip(tasks, flags):
             item["enabled"] = bool(flag)
             item.pop("id", None)
+            # 旧版定时运行时 AALC 是新启动的，「仅本次」（1）的困牢 / 不用每周加成已经失效
+            for key in ("hard_mirror", "no_weekly_bonuses"):
+                if item.get(key) == 1:
+                    item[key] = 0
         actions, power_action = autodaily_exit_to_after_completion_config(old.get(exit_key) or [])
         schedules.append(
             {
