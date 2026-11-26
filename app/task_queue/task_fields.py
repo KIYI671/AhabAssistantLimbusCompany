@@ -6,34 +6,14 @@
 主界面的镜牢页和各任务设置页、定时任务编辑框都用这里的东西。
 """
 
-from PySide6.QtCore import QT_TRANSLATE_NOOP, QCoreApplication, QObject, Signal
+from PySide6.QtCore import QT_TRANSLATE_NOOP, QCoreApplication
 from qfluentwidgets import CaptionLabel
 
 from app.base_combination import LabelWithComboBox, LabelWithSpinBox, MirrorSpinBox
 from app.base_tools import BaseCheckBox
-from module.config.task_queue import TaskBase
-from module.task_queue.fields import get_field, set_field
+from app.task_queue.task_store import TaskStore
 
 GLOBAL_HINT = QT_TRANSLATE_NOOP("TaskPage", "以下设置对所有任务生效")
-
-
-class TaskStore(QObject):
-    """给 Base* 控件用的 ValueStore：读写当前绑定的任务。没有绑定任务时读到 None，控件不会写入"""
-
-    changed = Signal(str)  # 被修改的字段名
-
-    def __init__(self, parent=None):
-        super().__init__(parent)
-        self.task: TaskBase | None = None
-
-    def get_value(self, key: str, default=None):
-        if self.task is None:
-            return default
-        return get_field(self.task, key, default)
-
-    def set_value(self, key: str, value) -> None:
-        if self.task is not None and set_field(self.task, key, value):
-            self.changed.emit(key)
 
 
 class GlobalHint(CaptionLabel):

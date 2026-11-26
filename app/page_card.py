@@ -38,7 +38,8 @@ from app.base_combination import (
 from app.base_tools import BaseCheckBox
 from app.common.ui_config import get_theme_aware_text_browser_qss
 from app.language_manager import LanguageManager
-from app.task_queue.task_fields import GLOBAL_HINT, GlobalHint, TaskStore, TaskWidgets, mirror_widgets
+from app.task_queue.task_fields import GLOBAL_HINT, GlobalHint, TaskWidgets, mirror_widgets
+from app.task_queue.task_store import TaskStore
 from app.widget.custom_segmented_widget import CustomSegmentedWidget
 from module.config import TeamSetting, cfg, theme_list
 from module.config.team_import_export import apply_team_settings, import_team_settings

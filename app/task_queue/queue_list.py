@@ -6,7 +6,7 @@
 
 from typing import Callable
 
-from PySide6.QtCore import QT_TRANSLATE_NOOP, QCoreApplication, QEvent, QModelIndex, QRect, QSize, Qt, Signal
+from PySide6.QtCore import QT_TRANSLATE_NOOP, QEvent, QModelIndex, QRect, QSize, Qt, Signal
 from PySide6.QtGui import QColor, QFont, QPainter
 from PySide6.QtWidgets import QAbstractItemView, QListWidgetItem, QStyleOptionViewItem, QToolTip
 from qfluentwidgets import (
@@ -20,32 +20,11 @@ from qfluentwidgets import (
 from qfluentwidgets import FluentIcon as FIF
 from qfluentwidgets.common.font import getFont
 
+from app.task_queue.texts import task_title, task_type_name, tr
 from module.config.task_queue import TASK_TYPES, TaskBase
-from module.task_queue import operations
 from module.task_queue.operations import TaskQueue
 
-CONTEXT = "TaskQueue"
-
-TASK_TYPE_NAMES = {
-    "daily": QT_TRANSLATE_NOOP("TaskQueue", "日常任务"),
-    "reward": QT_TRANSLATE_NOOP("TaskQueue", "领取奖励"),
-    "enkephalin": QT_TRANSLATE_NOOP("TaskQueue", "狂气换体"),
-    "mirror": QT_TRANSLATE_NOOP("TaskQueue", "镜牢"),
-}
-
 ID_ROLE = Qt.ItemDataRole.UserRole
-
-
-def tr(text: str) -> str:
-    return QCoreApplication.translate(CONTEXT, text)
-
-
-def task_type_name(task_type: str) -> str:
-    return tr(TASK_TYPE_NAMES.get(task_type, task_type))
-
-
-def task_title(task: TaskBase) -> str:
-    return operations.task_title(task, task_type_name)
 
 
 class TaskItemDelegate(ListItemDelegate):

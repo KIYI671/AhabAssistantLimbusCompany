@@ -2,7 +2,7 @@
 
 from PySide6.QtCore import QT_TRANSLATE_NOOP, QCoreApplication
 
-from app.task_queue.queue_list import task_title
+from app.task_queue.texts import task_title
 from module.after_completion_types import (
     ACTION_EXIT_AALC,
     ACTION_EXIT_EMULATOR,
