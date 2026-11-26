@@ -8,7 +8,7 @@ import numpy as np
 import win32gui
 from PIL import Image
 from PySide6.QtCore import Qt, QThread, Signal
-from PySide6.QtWidgets import QLabel, QPushButton, QVBoxLayout, QWidget
+from PySide6.QtWidgets import QComboBox, QLabel, QPushButton, QSpinBox, QVBoxLayout, QWidget
 
 from module.automation.input_handlers.input import BackgroundInput
 from module.automation.screenshot import ScreenShot
@@ -23,6 +23,8 @@ TEMPLATE_DIR = Path("assets/schemacraft")
 FRAME_SIZE = (1280, 720)
 MAP_SETTINGS = (2442, 98)
 REPORT_CONFIRM = (2302, 1309)
+RESULT_CONFIRM = (2235, 1320)
+PASS_CONFIRM = (1280, 1024)
 
 # 全屏参考坐标，读取时统一缩小到 1280×720。
 TEMPLATE_BOXES = {
@@ -36,7 +38,7 @@ TEMPLATE_BOXES = {
     "rolled": (1959, 1054, 2040, 1190),
     "map_info": (2104, 66, 2152, 132),
     "schema_one": (392, 68, 460, 148),
-    "cleared_node": (884, 680, 998, 716),
+    "schema_two": (392, 68, 460, 148),
     "regular": (580, 344, 668, 432),
     "respite_node": (908, 675, 994, 764),
     "danger_node": (574, 676, 673, 766),
@@ -117,13 +119,19 @@ class SchemacraftFrame:
         crop = crop.resize((crop.width * 3, crop.height * 3), Image.Resampling.LANCZOS)
         return " ".join(ocr.run(crop).txts or ())
 
-    def first_schema_score(self):
+    def schema_number(self):
         left, top, right, bottom = (coord // 2 for coord in TEMPLATE_BOXES["schema_one"])
         # 楼层数字是半透明的，保留文字边缘以减少移动背景的影响。
         crop = cv2.GaussianBlur(self.gray[top:bottom, left:right].astype(np.float32), (3, 3), 0)
         edges = image_edges(crop)
-        template = self.templates["schema_one"].astype(np.float32)
-        return cv2.matchTemplate(edges, template, cv2.TM_CCOEFF_NORMED).max()
+        scores = [
+            cv2.matchTemplate(edges, self.templates[name].astype(np.float32), cv2.TM_CCOEFF_NORMED).max()
+            for name in ("schema_one", "schema_two")
+        ]
+        schema = max(range(2), key=scores.__getitem__)
+        if scores[schema] > 0.55 and abs(scores[0] - scores[1]) > 0.12:
+            return schema + 1
+        return None
 
     def has_empty_counter(self, category):
         name = f"reward_{category}_zero"
@@ -142,13 +150,18 @@ class SchemacraftFrame:
 class SchemacraftRun(QThread):
     status = Signal(str)
 
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, *, second_floor_wins=None, round_limit=0):
         super().__init__(parent)
+        self.second_floor_wins = second_floor_wins
+        self.round_limit = round_limit
+        self.completed_rounds = 0
         self.stop_requested = Event()
         self.waiting_for_battle = False
         self.reward_picks = set()
-        self.first_schema = None
-        self.started_from_team_screen = False
+        self.schema = None
+        self.regular_wins = 0
+        self.reward_counted = False
+        self.boss_encounter = False
         self.entering_encounter = False
         self.settle_at_map = False
         self.settlement_confirmed = False
@@ -202,7 +215,11 @@ class SchemacraftRun(QThread):
                 if was_in_battle and not self.waiting_for_battle:
                     last_progress = monotonic()
                 # 战后界面先显示按钮，过场结束后才接收点击。
-                retry = action and action[1] in (MAP_SETTINGS, REPORT_CONFIRM) and monotonic() - last_click > 2
+                retry = (
+                    action
+                    and action[1] in (MAP_SETTINGS, REPORT_CONFIRM, RESULT_CONFIRM, PASS_CONFIRM)
+                    and monotonic() - last_click > 2
+                )
                 if action and (action != last_action or retry):
                     label, position = action
                     if position is None:
@@ -227,7 +244,7 @@ class SchemacraftRun(QThread):
 
     def next_action(self, frame: SchemacraftFrame):
         if frame.find("pass_popup"):
-            return "确认通行证经验", (1280, 1024)
+            return "确认通行证经验", PASS_CONFIRM
         if frame.find("final_results"):
             self.waiting_for_battle = False
             self.checked_lobby_limit = False
@@ -236,9 +253,10 @@ class SchemacraftRun(QThread):
                 if exp is None:
                     return None
                 self.round_exp = int(exp[1])
+                self.completed_rounds += 1
                 self.empty_runs = 0 if self.round_exp else self.empty_runs + 1
                 self.weekly_limit_reached = self.at_weekly_limit(frame, (1307, 137, 1601, 177))
-            return f"本局获得 {self.round_exp} 点通行证经验", (2235, 1320)
+            return f"本局获得 {self.round_exp} 点通行证经验", RESULT_CONFIRM
         if frame.find("forfeit_dialog"):
             self.settlement_confirmed = True
             return "确认按当前进度结算", (1480, 916)
@@ -252,8 +270,12 @@ class SchemacraftRun(QThread):
                 return "本周图式构筑通行证经验已达上限", None
             if self.empty_runs >= 2:
                 return "连续两局未获得通行证经验，已停止", None
-            self.first_schema = None
-            self.started_from_team_screen = False
+            if self.round_limit and self.completed_rounds >= self.round_limit:
+                return f"已完成 {self.completed_rounds} 局结算", None
+            self.schema = None
+            self.regular_wins = 0
+            self.reward_counted = False
+            self.boss_encounter = False
             self.entering_encounter = False
             self.settle_at_map = False
             self.settlement_confirmed = False
@@ -279,24 +301,24 @@ class SchemacraftRun(QThread):
             return "确认战斗报告", REPORT_CONFIRM
         if frame.find("schema_rewards"):
             self.reward_picks.clear()
-            self.settle_at_map = True
             if self.schema_confirm_ready(frame):
                 return "确认本层通关奖励", (2293, 1317)
             return "选择重抽次数和罪人包", (358, 536)
         if frame.find("sinner_packs"):
             self.reward_picks.clear()
-            self.settle_at_map = True
             if self.schema_confirm_ready(frame):
                 return "确认罪人奖励包", (2293, 1317)
             return "选择第一位罪人的奖励包", (292, 550)
         if frame.find("pack_choice"):
             self.reward_picks.clear()
-            self.settle_at_map = True
+            self.record_regular_win()
             if frame.bright_fraction(TEMPLATE_BOXES["open_pack"]) > 0.21 and frame.find("open_pack"):
                 return "打开选中的奖励包", (2330, 1319)
             return "选择中间奖励包", (1268, 550)
-        if frame.find("boss_reward") or frame.find("reward", (240, 27, 840, 89), threshold=0.88):
-            self.settle_at_map = True
+        boss_reward = frame.find("boss_reward")
+        if boss_reward or frame.find("reward", (240, 27, 840, 89), threshold=0.88):
+            if not boss_reward:
+                self.record_regular_win()
             if frame.bright_fraction(TEMPLATE_BOXES["reward_accept"]) > 0.23 and frame.find("reward_accept"):
                 return "领取战后奖励", (2257, 1314)
             return self.choose_reward(frame)
@@ -304,6 +326,7 @@ class SchemacraftRun(QThread):
             self.waiting_for_battle = True
             return None
         if frame.find("respite") and (position := frame.find("bonus_roll")):
+            self.entering_encounter = False
             if frame.find("respite_select") and frame.bright_fraction(TEMPLATE_BOXES["respite_select"]) > 0.19:
                 return "确认休整奖励", (2293, 1317)
             return "选择额外投掷次数", position
@@ -312,27 +335,38 @@ class SchemacraftRun(QThread):
                 self.waiting_for_battle = True
                 return "开始自动战斗，等待报告", position
         if position := frame.find("encounter"):
-            if self.settle_at_map or self.past_first_schema(frame) or frame.find("boss_encounter", threshold=0.9):
+            self.update_schema(frame)
+            boss = bool(frame.find("boss_encounter", threshold=0.9))
+            if self.should_settle() or (boss and not self.can_fight_boss()):
                 self.settle_at_map = True
                 return "关闭遭遇面板，准备结算", (1550, 448)
+            if self.schema is None:
+                return None
             self.entering_encounter = True
+            self.reward_counted = False
+            self.boss_encounter = boss
             return "进入遭遇节点", position
         if frame.find("map_info", threshold=0.92) and frame.find("roll"):
             if self.entering_encounter:
                 return None
-            has_cleared_node = not self.started_from_team_screen and frame.find(
-                "cleared_node", (80, 156, 2470, 1140), threshold=0.83
-            )
-            if self.settle_at_map or self.past_first_schema(frame) or has_cleared_node:
+            self.update_schema(frame)
+            if self.should_settle():
                 self.settle_at_map = True
                 return "打开地图设置，准备结算", MAP_SETTINGS
+            if self.schema is None:
+                return None
+            boss = frame.reachable_node("danger_node")
+            if boss and self.can_fight_boss() and self.regular_wins >= 2:
+                return "选择第一层首领节点", boss
             for name, label in (
                 ("regular", "选择可达的普通节点"),
                 ("respite_node", "选择休整节点"),
             ):
                 if position := frame.reachable_node(name):
                     return label, position
-            if frame.reachable_node("danger_node"):
+            if boss and self.can_fight_boss():
+                return "选择第一层首领节点", boss
+            if boss:
                 self.settle_at_map = True
                 return "打开地图设置，准备结算", MAP_SETTINGS
             if not frame.find("rolled") and frame.blue_fraction((2140, 1080, 2320, 1168)) > 0.45:
@@ -341,8 +375,7 @@ class SchemacraftRun(QThread):
             if not frame.selected_tab((880, 94, 1080, 110)):
                 return "切换到随机队伍", (975, 84)
             if frame.find("commence"):
-                self.first_schema = True
-                self.started_from_team_screen = True
+                self.schema = 1
                 return "使用随机队伍开局", (2278, 1275)
         if position := frame.find("entrance"):
             return "打开图式构筑", position
@@ -350,12 +383,29 @@ class SchemacraftRun(QThread):
             return "打开 Drive", position
         return None
 
-    def past_first_schema(self, frame):
-        if self.first_schema is None:
-            score = frame.first_schema_score()
-            if score > 0.55 or score < 0.4:
-                self.first_schema = score > 0.55
-        return self.first_schema is False
+    def update_schema(self, frame):
+        schema = frame.schema_number()
+        if schema is not None and schema != self.schema:
+            if self.schema is not None:
+                self.regular_wins = 0
+            self.schema = schema
+            log.info(f"图式构筑：进入第 {schema} 层")
+
+    def should_settle(self):
+        if self.schema == 1:
+            return self.settle_at_map or (self.second_floor_wins is None and self.regular_wins >= 2)
+        if self.schema == 2:
+            return self.settle_at_map or self.second_floor_wins is None or self.regular_wins >= self.second_floor_wins
+        return self.settle_at_map
+
+    def can_fight_boss(self):
+        return self.schema == 1 and self.second_floor_wins is not None
+
+    def record_regular_win(self):
+        if not self.boss_encounter and not self.reward_counted:
+            self.regular_wins += 1
+            self.reward_counted = True
+            log.info(f"图式构筑：第 {self.schema or '?'} 层已赢 {self.regular_wins} 场普通战")
 
     @staticmethod
     def at_weekly_limit(frame, box):
@@ -408,12 +458,22 @@ class SchemacraftTool(QWidget):
         self.closing = False
         self.setAttribute(Qt.WA_DeleteOnClose)
         self.setWindowTitle("图式构筑")
-        self.status = QLabel("赢一场第一层普通战后自动结算并重开。请保持 Steam 英文游戏窗口可见。")
+        self.status = QLabel("请将 Steam 英文游戏窗口保持在前台。")
         self.status.setWordWrap(True)
+        self.strategy = QComboBox()
+        self.strategy.addItem("第一层赢两场普通战后结算", None)
+        self.strategy.addItem("进入第二层立即结算", 0)
+        self.strategy.addItem("第二层赢一场普通战后结算", 1)
+        self.round_limit = QSpinBox()
+        self.round_limit.setRange(0, 999)
+        self.round_limit.setSpecialValueText("不限局数")
+        self.round_limit.setSuffix(" 局后停止")
         self.button = QPushButton("开始")
         self.button.clicked.connect(self.toggle_run)
         layout = QVBoxLayout(self)
         layout.addWidget(self.status)
+        layout.addWidget(self.strategy)
+        layout.addWidget(self.round_limit)
         layout.addWidget(self.button)
         self.resize(380, 120)
         apply_tool_window_theme(self, "SchemacraftTool")
@@ -429,10 +489,14 @@ class SchemacraftTool(QWidget):
         if self.can_start is not None and not self.can_start():
             self.status.setText("请先停止主任务并关闭其他小工具。")
             return
-        self.worker = SchemacraftRun(self)
+        self.worker = SchemacraftRun(
+            self, second_floor_wins=self.strategy.currentData(), round_limit=self.round_limit.value()
+        )
         self.worker.status.connect(self.status.setText)
         self.worker.finished.connect(self.on_finished)
         self.button.setText("停止")
+        self.strategy.setEnabled(False)
+        self.round_limit.setEnabled(False)
         self.worker.start()
 
     def on_finished(self):
@@ -443,6 +507,8 @@ class SchemacraftTool(QWidget):
             return
         self.button.setText("开始")
         self.button.setEnabled(True)
+        self.strategy.setEnabled(True)
+        self.round_limit.setEnabled(True)
 
     def closeEvent(self, event):
         if self.is_running():
