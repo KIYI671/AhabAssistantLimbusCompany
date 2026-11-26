@@ -50,7 +50,7 @@ from module.after_completion_types import (
     normalize_after_completion_config,
 )
 from module.automation import auto
-from module.config import TeamSetting, cfg
+from module.config import cfg
 from module.config.task_queue import AfterCompletion, MirrorTask
 from module.game_and_screen import screen
 from module.hotkey_listener import ExactGlobalHotKeys
@@ -60,7 +60,7 @@ from module.system_actions import (
     get_after_completion_config,
     set_after_completion_config,
 )
-from tasks.base.run_plan import RunPlan, any_team_usable, is_hard_mirror
+from tasks.base.run_plan import Problem, RunPlan, plan_for_request, plan_problem
 from tasks.base.script_task_scheme import my_script_task, refresh_auto_hard_mirror
 
 
@@ -652,52 +652,40 @@ class FarmingInterfaceLeft(QWidget):
             mediator.save_warning.emit()
             return False
 
-        if not plan.tasks:
-            mediator.tasks_warning.emit()
-            return False
-
-        mirror_tasks = [task for task in plan.tasks if isinstance(task, MirrorTask)]
-        if mirror_tasks:
-            # 判断是否进入新的自动困牢周期
+        if any(isinstance(task, MirrorTask) for task in plan.tasks):
+            # 判断是否进入新的自动困牢周期，并整理队伍勾选状态
             refresh_auto_hard_mirror()
+            if sum(1 for team in cfg.teams_be_select if team) != cfg.teams_be_select_num:
+                cfg.normalize_and_sync_team_state()
             cfg.flush()
             if cfg.auto_hard_mirror and cfg.hard_mirror_chance > 0:
                 log.debug(f"自动困牢启用中，剩余次数：{cfg.hard_mirror_chance}")
 
-            # 检查队伍配置状况
-            teams_be_select = sum(1 for team in cfg.teams_be_select if team)
-            if teams_be_select != cfg.teams_be_select_num:
-                cfg.normalize_and_sync_team_state()
-                cfg.flush()
+        selected_teams = {
+            index + 1: cfg.config.teams[f"{index + 1}"] for index, on in enumerate(cfg.teams_be_select) if on
+        }
+        problem = plan_problem(
+            plan,
+            selected_teams,
+            auto_hard_mirror=cfg.auto_hard_mirror,
+            hard_mirror_chance=cfg.hard_mirror_chance,
+        )
+        if problem is None:
+            return True
+        if problem.kind == "no_tasks":
+            mediator.tasks_warning.emit()
+        else:
+            mediator.warning.emit(self._problem_text(problem))
+        return False
 
-            if cfg.teams_be_select_num == 0:
-                message = self.tr("没有启用任何队伍，请选择一个队伍进行镜牢任务")
-                mediator.warning.emit(message)
-                return False
-
-            # 检测是否有未配置角色选择的队伍
-            teams_be_select = cfg.get_value("teams_be_select")
-            enabled_teams: list[TeamSetting] = []
-            for index in (i for i, t in enumerate(teams_be_select) if t is True):
-                team_setting: TeamSetting = cfg.config.teams[f"{index + 1}"]
-                if team_setting.sinners_be_select == 0:
-                    message = self.tr("存在未配置角色选择的队伍：TEAM_{0}")
-                    mediator.warning.emit(message.format(index + 1))
-                    return False
-                enabled_teams.append(team_setting)
-
-            # 检测配置的队伍能否顺利执行（每个镜牢任务按自己的难度检查）
-            team_uses = [(t.fixed_team_use, t.fixed_team_use_select) for t in enabled_teams]
-            for task in mirror_tasks:
-                hard = is_hard_mirror(task, cfg.auto_hard_mirror, cfg.hard_mirror_chance)
-                if not any_team_usable(team_uses, hard):
-                    if hard:
-                        message = self.tr("启用了困牢，但是无可用于困牢的队伍")
-                    else:
-                        message = self.tr("启用了普牢，但是无可用于普牢的队伍")
-                    mediator.warning.emit(message)
-                    return False
-        return True
+    def _problem_text(self, problem: Problem) -> str:
+        if problem.kind == "no_team":
+            return self.tr("没有启用任何队伍，请选择一个队伍进行镜牢任务")
+        if problem.kind == "team_without_sinners":
+            return self.tr("存在未配置角色选择的队伍：TEAM_{0}").format(problem.team)
+        if problem.kind == "no_team_for_hard":
+            return self.tr("启用了困牢，但是无可用于困牢的队伍")
+        return self.tr("启用了普牢，但是无可用于普牢的队伍")
 
     def start_and_stop_tasks(self, plan: RunPlan | None = None):
         # 设置按下启动与停止按钮时，其他模块的启用与停用
@@ -755,20 +743,21 @@ class FarmingInterfaceLeft(QWidget):
 
     def plan_from_request(self, request) -> RunPlan | None:
         """把命令行 / 定时启动请求变成本次要执行的计划；找不到定时任务时返回 None"""
-        if request is not None and request.schedule_id:
-            schedule = next((s for s in cfg.config.schedules if s.id == request.schedule_id), None)
-            if schedule is None:
-                log.error(f"找不到定时任务 {request.schedule_id}，本次启动已跳过")
-                return None
+        plan, schedule = plan_for_request(
+            request,
+            cfg.config.task_queue,
+            cfg.config.schedules,
+            self.after_completion_selector.once_after_completion(),
+        )
+        if plan is None:
+            log.error(f"找不到定时任务 {request.schedule_id}，本次启动已跳过")
+            return None
+        if schedule is not None:
             self._running_schedule = schedule
             self.after_completion_selector.show_run(schedule_title(schedule), schedule.after_completion)
-            return RunPlan.from_queue(schedule.tasks, schedule.after_completion, source=f"schedule:{schedule.id}")
-        override = request.after_completion if request is not None else None
-        if override is not None:
-            self.after_completion_selector.show_run(None, override)
-        else:
-            override = self.after_completion_selector.once_after_completion()
-        return RunPlan.from_queue(cfg.config.task_queue, override, source="cli")
+        elif request is not None and request.after_completion is not None:
+            self.after_completion_selector.show_run(None, request.after_completion)
+        return plan
 
     def start_tasks_from_command(self, request=None):
         """Start a command/scheduled task without toggling a running task to stop."""

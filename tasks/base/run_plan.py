@@ -4,9 +4,9 @@
 """
 
 from dataclasses import dataclass, field
-from typing import Iterable, Sequence
+from typing import Iterable, Mapping, Protocol, Sequence
 
-from module.config.task_queue import AfterCompletion, DailyTask, MirrorTask, TaskBase
+from module.config.task_queue import AfterCompletion, DailyTask, MirrorTask, Schedule, TaskBase
 
 
 @dataclass(frozen=True)
@@ -102,3 +102,69 @@ def team_usable(fixed_team_use: bool, fixed_team_use_select: int, hard: bool) ->
 
 def any_team_usable(teams: Sequence[tuple[bool, int]], hard: bool) -> bool:
     return any(team_usable(fixed, select, hard) for fixed, select in teams)
+
+
+class TeamLike(Protocol):
+    sinners_be_select: int
+    fixed_team_use: bool
+    fixed_team_use_select: int
+
+
+@dataclass(frozen=True)
+class Problem:
+    """启动前检查发现的问题，界面负责把 kind 换成提示文字"""
+
+    kind: str
+    """no_tasks / no_team / team_without_sinners / no_team_for_hard / no_team_for_normal"""
+
+    team: int | None = None
+    """team_without_sinners 时是哪一队（从 1 开始）"""
+
+
+def plan_problem(
+    plan: RunPlan,
+    selected_teams: Mapping[int, TeamLike],
+    *,
+    auto_hard_mirror: bool,
+    hard_mirror_chance: int,
+) -> Problem | None:
+    """检查这次运行能不能开始；selected_teams 是启用的镜牢队伍 {队伍编号: 队伍设置}"""
+    if not plan.tasks:
+        return Problem("no_tasks")
+    mirror_tasks = [task for task in plan.tasks if isinstance(task, MirrorTask)]
+    if not mirror_tasks:
+        return None
+    if not selected_teams:
+        return Problem("no_team")
+    for number, team in selected_teams.items():
+        if team.sinners_be_select == 0:
+            return Problem("team_without_sinners", number)
+    team_uses = [(team.fixed_team_use, team.fixed_team_use_select) for team in selected_teams.values()]
+    for task in mirror_tasks:
+        hard = is_hard_mirror(task, auto_hard_mirror, hard_mirror_chance)
+        if not any_team_usable(team_uses, hard):
+            return Problem("no_team_for_hard" if hard else "no_team_for_normal")
+    return None
+
+
+def plan_for_request(
+    request,
+    task_queue: Iterable[TaskBase],
+    schedules: Iterable[Schedule],
+    once: AfterCompletion | None,
+) -> tuple[RunPlan | None, Schedule | None]:
+    """命令行 / 定时启动请求对应的运行计划和定时任务。
+
+    - 定时任务：用它自己的任务列表和结束后操作；找不到这个定时任务时返回 (None, None)
+    - 命令行指定了结束后操作：主界面任务列表 + 指定的结束后操作
+    - 其他：主界面任务列表 + 「仅本次生效」的结束后操作（once，None 表示用默认设置）
+    """
+    if request is not None and request.schedule_id:
+        schedule = next((s for s in schedules if s.id == request.schedule_id), None)
+        if schedule is None:
+            return None, None
+        return RunPlan.from_queue(schedule.tasks, schedule.after_completion, source=f"schedule:{schedule.id}"), schedule
+    after = request.after_completion if request is not None else None
+    if after is None:
+        after = once
+    return RunPlan.from_queue(task_queue, after, source="cli"), None
