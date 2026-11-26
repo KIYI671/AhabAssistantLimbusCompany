@@ -683,6 +683,55 @@ class BackgroundInput(WinAbstractInput, metaclass=SingletonMeta):
                 log.error(f"鼠标移动失败: {type(e)}: {e}")
 
 
+class FakeCursorInput(BackgroundInput, metaclass=SingletonMeta):
+    """后台点击 + 假光标：坐标写进游戏进程，不移动系统光标。
+
+    与 `BackgroundInput` 唯一的区别是不调用 `SetCursorPos`。Limbus 是 Unity
+    游戏，指针位置由 `GetCursorPos()` 决定，所以这里把游戏进程里的
+    `GetCursorPos` 换成一段返回假坐标的桩（见 `fake_cursor.py`），让游戏读到
+    我们指定的点，而系统光标原地不动。
+
+    注入失败（权限不足、32 位 Python、函数已被其他工具挂钩等）时自动退回
+    `BackgroundInput` 的行为，不会中断任务。
+    """
+
+    def __init__(self) -> None:
+        super().__init__()
+        from .fake_cursor import FakeCursor
+
+        self._fake = FakeCursor()
+        self._fake_pos = (0, 0)
+
+    def get_mouse_position(self) -> tuple[int, int]:
+        """返回假光标位置，避免 move_back 去动真光标"""
+        return self._fake_pos
+
+    def _set_mouse_pos(self, x: int, y: int):
+        """只更新假光标，真光标保持不动"""
+        x, y = int(x), int(y)
+        self._fake_pos = (x, y)
+        self._fake.move(x, y)
+
+    def mouse_move(self, coordinate=(1, 1)) -> None:
+        self._set_mouse_pos(coordinate[0], coordinate[1])
+        self.wait_pause()
+
+    def mouse_to_blank(self, coordinate=(1, 1), move_back=True) -> None:
+        """只把假光标停到空白处；真光标本来就没被移开，无需回避遮挡"""
+        self._set_mouse_pos(coordinate[0], coordinate[1])
+        self.wait_pause()
+
+    def set_pause(self) -> None:
+        super().set_pause()
+        if self.is_pause:
+            # 暂停时把指针还给玩家，恢复后下一次点击会重新注入
+            self._fake.detach()
+
+    def release_fake_cursor(self) -> None:
+        """脚本停止时调用，让游戏恢复读真光标"""
+        self._fake.detach()
+
+
 class WindowMoveInput(WinAbstractInput, metaclass=SingletonMeta):
     """基于移动窗口位置改变光标相对位置的输入方式"""
 

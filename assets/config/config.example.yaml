@@ -17,6 +17,7 @@ announcement: 1715990400 # 公告板时间戳
 memory_protection: False # 内存占用保护
 
 background_click: True # 是否使用后台点击
+# 键鼠操控方式：foreground(前台) / background(后台) / window_move(后台增强) / fake_cursor(假光标)
 win_input_type: "background" # 键鼠操控方式
 
 auto_hard_mirror: False # 周四自动切换困难镜牢

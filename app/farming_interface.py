@@ -760,6 +760,8 @@ class FarmingInterfaceLeft(QWidget):
     def stop_script(self):
         if self.my_script and self.my_script.isRunning():
             log.debug("正在终止脚本线程...")
+            # 假光标模式下先把注入卸掉，否则游戏会一直读到最后一个假坐标
+            auto.release_fake_cursor()
             self.my_script.terminate()  # 终止线程
 
     def my_stop_shortcut(self):
