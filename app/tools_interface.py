@@ -54,6 +54,13 @@ class ToolsInterface(ScrollArea):
             QT_TRANSLATE_NOOP("BasePushSettingCard", "辅助自动换饼小工具，防止体力溢出"),
             parent=self.tools_group,
         )
+        self.schemacraft_card = BasePushSettingCard(
+            QT_TRANSLATE_NOOP("BasePushSettingCard", "运行"),
+            FIF.CAFE,
+            QT_TRANSLATE_NOOP("BasePushSettingCard", "图式构筑"),
+            QT_TRANSLATE_NOOP("BasePushSettingCard", "使用随机队伍推进图式构筑，优先选择普通节点"),
+            parent=self.tools_group,
+        )
         self.get_screenshot_card = BasePushSettingCard(
             QT_TRANSLATE_NOOP("BasePushSettingCard", "运行"),
             FIF.CAFE,
@@ -65,6 +72,7 @@ class ToolsInterface(ScrollArea):
     def __initLayout(self):
         self.tools_group.addSettingCard(self.auto_battle_card)
         self.tools_group.addSettingCard(self.auto_production_card)
+        self.tools_group.addSettingCard(self.schemacraft_card)
         self.tools_group.addSettingCard(self.get_screenshot_card)
 
         self.expand_layout.addWidget(self.tools_group)
@@ -88,6 +96,7 @@ class ToolsInterface(ScrollArea):
             )
         )
         self.auto_production_card.clicked.connect(lambda: self._tool_start("production", self.auto_production_card))
+        self.schemacraft_card.clicked.connect(lambda: self._tool_start("schemacraft", self.schemacraft_card))
         self.get_screenshot_card.clicked.connect(lambda: self._tool_start("screenshot", self.get_screenshot_card))
 
     def _tool_start(self, tool_name: str, card: BasePushSettingCard):
@@ -97,6 +106,8 @@ class ToolsInterface(ScrollArea):
                 tool.w.activateWindow()
                 tool.w.raise_()
             return
+        if self.schemacraft_running():
+            return
         tool = tools.start(tool_name)
         self.tools[tool_name] = tool
         while tool.initialized is False:
@@ -105,6 +116,10 @@ class ToolsInterface(ScrollArea):
         if tool.initialized is None:
             self.tools.pop(tool_name, None)
             return
+        if tool_name == "schemacraft":
+            tool.w.can_start = lambda: not self.window()._has_running_script() and not (
+                self.tools.keys() - {"schemacraft"}
+            )
         self._update_running_button(card)
         tool.w.destroyed.connect(lambda _: self.tools.pop(tool_name, None))
         tool.w.destroyed.connect(lambda _: self._restore_button_style(card))
@@ -112,6 +127,10 @@ class ToolsInterface(ScrollArea):
             tool.w.on_saved_timestr.connect(self._onScreenshotToolButtonPressed)
         if isinstance(tool.w, QThread):
             tool.w.start()
+
+    def schemacraft_running(self) -> bool:
+        tool = self.tools.get("schemacraft")
+        return tool is not None and tool.w is not None and tool.w.is_running()
 
     def _update_running_button(self, card: BasePushSettingCard):
         card.button.setText(QT_TRANSLATE_NOOP("BasePushSettingCard", "运行中"))
@@ -139,4 +158,5 @@ class ToolsInterface(ScrollArea):
         self.tools_group.retranslateUi()
         self.auto_battle_card.retranslateUi()
         self.auto_production_card.retranslateUi()
+        self.schemacraft_card.retranslateUi()
         self.get_screenshot_card.retranslateUi()

@@ -9,11 +9,14 @@ from module.logger import log
 from tasks.base.script_task_scheme import init_game
 from tasks.tools.infinite_battle import InfiniteBattles
 from tasks.tools.production_module import ProductionModule
+from tasks.tools.schemacraft import SchemacraftTool
 from tasks.tools.screenshot_module import ScreenshotGet
+
+ToolName = Literal["battle", "production", "schemacraft", "screenshot"]
 
 
 class ToolManager:
-    def __init__(self, tool: Literal["battle", "production", "screenshot"]):
+    def __init__(self, tool: ToolName):
         self.tool = tool
         self.initialized = False
         self.w: QObject = None
@@ -40,6 +43,8 @@ class ToolManager:
                     self.w = InfiniteBattles()
                 elif self.tool == "production":
                     self.w = ProductionModule()
+                elif self.tool == "schemacraft":
+                    self.w = SchemacraftTool()
                 elif self.tool == "screenshot":
                     self.w = ScreenshotGet()
                 if self.w is None:
@@ -63,7 +68,7 @@ class ToolManager:
         QTimer.singleShot(0, app, create_and_show)
 
 
-def start(tool: Literal["battle", "production", "screenshot"]):
+def start(tool: ToolName):
     """
     启动工具管理器的方法。
     :param tool: 启动工具，可以是"battle"。
