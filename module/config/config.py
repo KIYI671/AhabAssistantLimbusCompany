@@ -19,7 +19,8 @@ from module.logger import log
 from utils.singletonmeta import SingletonMeta
 
 from .config_typing import ConfigModel, TeamSetting
-from .task_queue import migrate_legacy_config, start_session
+from .task_queue import start_session
+from .task_queue_legacy import migrate_legacy_config
 
 
 class Config(metaclass=SingletonMeta):

@@ -16,6 +16,11 @@ def tq(isolated_import):
     return isolated_import("module.config.task_queue"), isolated_import("module.config.config_typing")
 
 
+@pytest.fixture(scope="module")
+def legacy(isolated_import):
+    return isolated_import("module.config.task_queue_legacy")
+
+
 def _example() -> dict:
     return YAML().load(EXAMPLE_PATH.read_text(encoding="utf-8"))
 
@@ -74,9 +79,9 @@ LEGACY = {
 }
 
 
-def _migrated(tq_module, extra: dict | None = None) -> dict:
+def _migrated(legacy_module, extra: dict | None = None) -> dict:
     old = {**LEGACY, **(extra or {})}
-    tq_module.migrate_legacy_config(old)
+    legacy_module.migrate_legacy_config(old)
     return old
 
 
@@ -89,9 +94,9 @@ def test_example_defaults_validate(tq):
     assert len({t.id for t in model.task_queue}) == 4
 
 
-def test_main_queue_keeps_order_switches_and_params(tq):
+def test_main_queue_keeps_order_switches_and_params(tq, legacy):
     task_queue, config_typing = tq
-    model = config_typing.ConfigModel(**{**_example(), **_migrated(task_queue)})
+    model = config_typing.ConfigModel(**{**_example(), **_migrated(legacy)})
     daily, reward, enkephalin, mirror = model.task_queue
 
     assert [t.id for t in model.task_queue] == ["daily", "reward", "enkephalin", "mirror"]
@@ -114,9 +119,9 @@ def test_main_queue_keeps_order_switches_and_params(tq):
     assert (mirror.re_claim.missions, mirror.re_claim.battle_pass, mirror.re_claim.mail) == (True, False, True)
 
 
-def test_schedules_copy_params_and_use_own_switches(tq):
+def test_schedules_copy_params_and_use_own_switches(tq, legacy):
     task_queue, config_typing = tq
-    model = config_typing.ConfigModel(**{**_example(), **_migrated(task_queue)})
+    model = config_typing.ConfigModel(**{**_example(), **_migrated(legacy)})
 
     assert [s.id for s in model.schedules] == ["autodaily", "autodaily2", "autodaily3", "autodaily4"]
     first, second, third, fourth = model.schedules
@@ -146,19 +151,17 @@ def test_schedules_copy_params_and_use_own_switches(tq):
     assert len(ids) == len(set(ids))
 
 
-def test_old_keys_removed_and_selection_mapped(tq):
-    task_queue, _ = tq
-    migrated = _migrated(task_queue)
+def test_old_keys_removed_and_selection_mapped(legacy):
+    migrated = _migrated(legacy)
     for key in ("daily_task", "set_mirror_count", "autodaily2_task", "autodaily_time3", "keep_after_completion"):
         assert key not in migrated
     assert migrated["last_selected_task"] == "mirror"
     assert migrated["after_completion_actions"] == ["exit_game"]
 
 
-def test_unsaved_after_completion_resets_to_nothing(tq):
-    task_queue, _ = tq
+def test_unsaved_after_completion_resets_to_nothing(legacy):
     migrated = _migrated(
-        task_queue,
+        legacy,
         {
             "keep_after_completion": False,
             "after_completion_actions": ["exit_game"],
@@ -169,18 +172,17 @@ def test_unsaved_after_completion_resets_to_nothing(tq):
     assert migrated["after_completion_power_action"] == "none"
 
 
-def test_migration_does_not_overwrite_new_fields(tq):
-    task_queue, _ = tq
+def test_migration_does_not_overwrite_new_fields(legacy):
     existing = [{"id": "x", "type": "mirror", "count": 9}]
-    migrated = _migrated(task_queue, {"task_queue": existing, "schedules": []})
+    migrated = _migrated(legacy, {"task_queue": existing, "schedules": []})
     assert migrated["task_queue"] is existing
     assert migrated["schedules"] == []
 
 
-def test_minimal_legacy_config_uses_old_defaults(tq):
+def test_minimal_legacy_config_uses_old_defaults(tq, legacy):
     task_queue, config_typing = tq
     old: dict = {}
-    task_queue.migrate_legacy_config(old)
+    legacy.migrate_legacy_config(old)
     model = config_typing.ConfigModel(**{**_example(), **old})
     daily, reward, enkephalin, mirror = model.task_queue
     assert not any(t.enabled for t in model.task_queue)
@@ -217,9 +219,9 @@ def test_schedule_time_validated(tq):
     assert task_queue.Schedule().id.startswith("autodaily_")
 
 
-def test_dump_is_plain_yaml(tq):
+def test_dump_is_plain_yaml(tq, legacy):
     task_queue, config_typing = tq
-    model = config_typing.ConfigModel(**{**_example(), **_migrated(task_queue)})
+    model = config_typing.ConfigModel(**{**_example(), **_migrated(legacy)})
     buffer = io.StringIO()
     YAML().dump(model.model_dump(), buffer)
     reloaded = YAML(typ="safe").load(buffer.getvalue())
@@ -238,10 +240,10 @@ def test_new_objects_dump_as_plain_yaml(tq):
     assert "power_action: none" in buffer.getvalue()
 
 
-def test_session_flags_only_reset_main_queue(tq):
+def test_session_flags_only_reset_main_queue(tq, legacy):
     """定时任务没有「仅本次运行」的说法，勾选值 1 也表示一直有效，启动时不清零"""
     task_queue, config_typing = tq
-    data = {**_example(), **_migrated(task_queue)}
+    data = {**_example(), **_migrated(legacy)}
     data["schedules"][0]["tasks"][3]["hard_mirror"] = 1
     data["task_queue"][3]["hard_mirror"] = 1
     model = config_typing.ConfigModel(**data)
