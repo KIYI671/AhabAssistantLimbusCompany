@@ -58,7 +58,7 @@ class ToolsInterface(ScrollArea):
             QT_TRANSLATE_NOOP("BasePushSettingCard", "运行"),
             FIF.CAFE,
             QT_TRANSLATE_NOOP("BasePushSettingCard", "图式构筑"),
-            QT_TRANSLATE_NOOP("BasePushSettingCard", "使用随机队伍推进图式构筑，优先选择普通节点"),
+            QT_TRANSLATE_NOOP("BasePushSettingCard", "赢一场普通战后结算图式构筑通行证经验，自动重开"),
             parent=self.tools_group,
         )
         self.get_screenshot_card = BasePushSettingCard(
