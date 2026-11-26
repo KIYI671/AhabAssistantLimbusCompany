@@ -1,6 +1,6 @@
 """任务列表控件：显示任务列表，把勾选、拖动、添加 / 复制 / 改名 / 删除转给 TaskQueue。
 
-主界面和定时任务编辑框共用。数据怎么变由 module.config.task_queue.TaskQueue
+主界面和定时任务编辑框共用。数据怎么变由 module.task_queue.operations.TaskQueue
 决定；这里只负责画出来、响应鼠标键盘，改动后发出 changed 信号，由使用方保存。
 """
 
@@ -20,8 +20,9 @@ from qfluentwidgets import (
 from qfluentwidgets import FluentIcon as FIF
 from qfluentwidgets.common.font import getFont
 
-from module.config import task_queue as tq
-from module.config.task_queue import TASK_TYPES, TaskBase, TaskQueue
+from module.config.task_queue import TASK_TYPES, TaskBase
+from module.task_queue import operations
+from module.task_queue.operations import TaskQueue
 
 CONTEXT = "TaskQueue"
 
@@ -44,7 +45,7 @@ def task_type_name(task_type: str) -> str:
 
 
 def task_title(task: TaskBase) -> str:
-    return tq.task_title(task, task_type_name)
+    return operations.task_title(task, task_type_name)
 
 
 class TaskItemDelegate(ListItemDelegate):

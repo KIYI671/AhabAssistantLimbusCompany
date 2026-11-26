@@ -7,12 +7,13 @@ NAMES = {"daily": "日常任务", "reward": "领取奖励", "enkephalin": "狂�
 
 @pytest.fixture(scope="module")
 def tq(isolated_import):
-    return isolated_import("module.config.task_queue")
+    return isolated_import("module.task_queue.operations")
 
 
 @pytest.fixture
-def queue(tq):
-    tasks = [tq.new_task("daily"), tq.new_task("mirror"), tq.new_task("reward")]
+def queue(tq, isolated_import):
+    config = isolated_import("module.config.task_queue")
+    tasks = [config.new_task("daily"), config.new_task("mirror"), config.new_task("reward")]
     return tq.TaskQueue(tasks, NAMES.__getitem__)
 
 
@@ -130,33 +131,3 @@ def test_set_all_enabled(queue):
     assert [t.enabled for t in queue.tasks] == [False, False, False]
     queue.set_all_enabled(True)
     assert [t.enabled for t in queue.tasks] == [True, True, True]
-
-
-def test_field_nested_read_and_write(tq):
-    task = tq.MirrorTask()
-    assert tq.get_field(task, "re_claim.mail") is True
-    assert tq.set_field(task, "re_claim.mail", False) is True
-    assert task.re_claim.mail is False
-    assert tq.get_field(task, "no_such_field", "默认") == "默认"
-
-
-def test_field_bool_into_int_field_becomes_int(tq):
-    task = tq.MirrorTask()
-    tq.set_field(task, "hard_mirror", True)
-    assert task.hard_mirror == 1 and type(task.hard_mirror) is int
-    tq.set_field(task, "hard_mirror", 2)
-    assert task.hard_mirror == 2
-    tq.set_field(task, "hard_mirror", False)
-    assert task.hard_mirror == 0 and type(task.hard_mirror) is int
-
-
-def test_field_bool_field_stays_bool(tq):
-    task = tq.MirrorTask()
-    tq.set_field(task, "infinite", True)
-    assert task.infinite is True
-
-
-def test_field_same_value_reports_no_change(tq):
-    task = tq.MirrorTask(infinite=True)
-    assert tq.set_field(task, "infinite", True) is False
-    assert tq.set_field(task, "hard_mirror", 0) is False

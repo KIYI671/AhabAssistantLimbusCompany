@@ -11,7 +11,8 @@ from qfluentwidgets import CaptionLabel
 
 from app.base_combination import LabelWithComboBox, LabelWithSpinBox, MirrorSpinBox
 from app.base_tools import BaseCheckBox
-from module.config.task_queue import TaskBase, get_field, set_field
+from module.config.task_queue import TaskBase
+from module.task_queue.fields import get_field, set_field
 
 GLOBAL_HINT = QT_TRANSLATE_NOOP("TaskPage", "以下设置对所有任务生效")
 
