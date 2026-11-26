@@ -34,7 +34,6 @@ TASK_TYPE_NAMES = {
 }
 
 ID_ROLE = Qt.ItemDataRole.UserRole
-WINDOW_SETTINGS_ID = "set_windows"
 
 
 def tr(text: str) -> str:

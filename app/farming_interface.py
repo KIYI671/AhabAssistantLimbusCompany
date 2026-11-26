@@ -1,16 +1,14 @@
 import sys
 from typing import Callable
 
-from PySide6.QtCore import QT_TRANSLATE_NOOP, QCoreApplication, QSize, Qt, Signal
+from PySide6.QtCore import QT_TRANSLATE_NOOP, Qt, Signal
 from PySide6.QtGui import QTextCursor
-from PySide6.QtWidgets import QApplication, QDialog, QListWidgetItem, QTextEdit
+from PySide6.QtWidgets import QApplication, QDialog, QTextEdit
 from qfluentwidgets import (
     BodyLabel,
     CheckBox,
     ComboBox,
-    DropDownPushButton,
     FlyoutViewBase,
-    ListWidget,
     PopUpAniStackedWidget,
     PrimaryPushButton,
     PushButton,
@@ -21,7 +19,6 @@ from qfluentwidgets import (
     qconfig,
     setCustomStyleSheet,
 )
-from qfluentwidgets import FluentIcon as FIF
 
 from app import mediator
 from app.base_combination import *
@@ -29,13 +26,8 @@ from app.base_tools import *
 from app.common.ui_config import get_log_text_edit_qss, set_border_style
 from app.language_manager import LanguageManager
 from app.page_card import PageMirror, PageSetWindows
-from app.task_queue.queue_list import (
-    WINDOW_SETTINGS_ID,
-    TaskItemDelegate,
-    TaskQueueList,
-    build_add_menu,
-    schedule_title,
-)
+from app.task_queue.queue_list import schedule_title
+from app.task_queue.queue_panel import WINDOW_SETTINGS_ID, TaskQueuePanel
 from app.task_queue.task_pages import DailyTaskPage, EnkephalinTaskPage, RewardTaskPage
 from app.team_setting_card import TeamSettingCard
 from module.after_completion_types import (
@@ -464,119 +456,6 @@ class FarmingInterface(QWidget):
         super().resizeEvent(event)
 
 
-class WindowSettingsRow(ListWidget):
-    """任务列表上方固定的「窗口设置」行，不能拖动、没有勾选框"""
-
-    selected = Signal()
-
-    def __init__(self, parent=None):
-        super().__init__(parent)
-        self.text = QT_TRANSLATE_NOOP("TaskQueue", "窗口设置")
-        delegate = TaskItemDelegate(self)
-        self.setItemDelegate(delegate)
-        self.delegate = delegate
-        item = QListWidgetItem(self.text)
-        item.setData(Qt.ItemDataRole.UserRole, WINDOW_SETTINGS_ID)
-        item.setSizeHint(QSize(0, TaskItemDelegate.ROW_HEIGHT))
-        self.addItem(item)
-        self.setFixedHeight(TaskItemDelegate.ROW_HEIGHT + 4)
-        self.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
-        self.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
-        self.itemPressed.connect(lambda _: self.selected.emit())
-        self.currentItemChanged.connect(lambda current, _: current is not None and self.selected.emit())
-
-    def retranslateUi(self):
-        self.item(0).setText(QCoreApplication.translate("TaskQueue", self.text))
-
-
-class TaskQueuePanel(BaseSettingLayout):
-    """主界面左侧：任务列表（含固定的窗口设置行）、添加按钮、全选 / 清空"""
-
-    itemSelected = Signal(str)  # 任务 id 或 "set_windows"
-    changed = Signal()
-
-    def __init__(self, parent=None):
-        super().__init__(parent=parent)
-        self.add_text = QT_TRANSLATE_NOOP("TaskQueue", "添加")
-        self.select_all_text = QT_TRANSLATE_NOOP("NormalTextButton", "全选")
-        self.clear_all_text = QT_TRANSLATE_NOOP("NormalTextButton", "清空")
-
-        layout = QVBoxLayout(self)
-        layout.setContentsMargins(4, 4, 4, 4)
-        layout.setSpacing(2)
-
-        self.window_row = WindowSettingsRow(self)
-        layout.addWidget(self.window_row)
-
-        self.queue_list = TaskQueueList(lambda: cfg.config.task_queue, self)
-        layout.addWidget(self.queue_list, stretch=1)
-
-        footer = QHBoxLayout()
-        footer.setContentsMargins(2, 4, 2, 0)
-        footer.setSpacing(4)
-        self.add_button = DropDownPushButton(FIF.ADD, "", self)
-        self.add_button.setMenu(build_add_menu(self, self._add_task))
-        self.select_all = PushButton(self)
-        self.clear_all = PushButton(self)
-        footer.addWidget(self.add_button)
-        footer.addWidget(self.select_all, 1)
-        footer.addWidget(self.clear_all, 1)
-        layout.addLayout(footer)
-
-        # 亚哈共鸣不是任务，放在列表外面
-        self.resonate_with_Ahab = BaseCheckBox(
-            "resonate_with_Ahab", None, QT_TRANSLATE_NOOP("BaseCheckBox", "亚哈共鸣"), center=False
-        )
-
-        self.select_all.clicked.connect(lambda: self.queue_list.set_all_enabled(True))
-        self.clear_all.clicked.connect(lambda: self.queue_list.set_all_enabled(False))
-        self.queue_list.changed.connect(self.changed)
-        self.queue_list.taskSelected.connect(self._on_task_selected)
-        self.window_row.selected.connect(self._on_window_selected)
-        self.retranslateUi()
-
-    def _add_task(self, task_type: str) -> None:
-        self.queue_list.add_task(task_type)
-
-    def _on_task_selected(self, task_id: str) -> None:
-        if not task_id:
-            if self.queue_list.count() == 0:
-                self._on_window_selected()
-            return
-        self.window_row.clearSelection()
-        self.window_row.setCurrentItem(None)
-        self.itemSelected.emit(task_id)
-
-    def _on_window_selected(self) -> None:
-        self.queue_list.blockSignals(True)
-        self.queue_list.clearSelection()
-        self.queue_list.setCurrentItem(None)
-        self.queue_list.blockSignals(False)
-        self.queue_list.viewport().update()
-        self.window_row.setCurrentRow(0)
-        self.itemSelected.emit(WINDOW_SETTINGS_ID)
-
-    def select(self, item_id: str) -> None:
-        if item_id != WINDOW_SETTINGS_ID and self.queue_list.select_task(item_id):
-            return
-        self._on_window_selected()
-
-    def set_editable(self, editable: bool) -> None:
-        self.queue_list.set_editable(editable)
-
-    def retranslateUi(self):
-        self.add_button.setText(self.tr(self.add_text))
-        self.add_button.setMenu(build_add_menu(self, self._add_task))
-        self.select_all.setText(QCoreApplication.translate("NormalTextButton", self.select_all_text))
-        self.clear_all.setText(QCoreApplication.translate("NormalTextButton", self.clear_all_text))
-        self.resonate_with_Ahab.retranslateUi()
-        self.window_row.retranslateUi()
-        self.queue_list.refresh()
-
-    def tr(self, text):
-        return QCoreApplication.translate("TaskQueue", text)
-
-
 class FarmingInterfaceLeft(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent=parent)
@@ -598,8 +477,12 @@ class FarmingInterfaceLeft(QWidget):
         self.hbox_layout = QVBoxLayout(self)
 
     def __init_card(self):
-        self.task_panel = TaskQueuePanel(self)
+        self.task_panel = TaskQueuePanel(lambda: cfg.config.task_queue, self)
         self.queue_list = self.task_panel.queue_list
+        # 亚哈共鸣不是任务，放在列表外面
+        self.resonate_with_Ahab = BaseCheckBox(
+            "resonate_with_Ahab", None, QT_TRANSLATE_NOOP("BaseCheckBox", "亚哈共鸣"), center=False
+        )
 
         self.then = BaseLabel(QT_TRANSLATE_NOOP("BaseLabel", "之后"))
 
@@ -621,7 +504,7 @@ class FarmingInterfaceLeft(QWidget):
 
     def __init_layout(self):
         self.hbox_layout.addWidget(self.task_panel, stretch=1)
-        self.hbox_layout.addWidget(self.task_panel.resonate_with_Ahab)
+        self.hbox_layout.addWidget(self.resonate_with_Ahab)
         self.hbox_layout.addWidget(self.then)
         self.hbox_layout.addWidget(self.after_completion_selector)
         self.action_button_layout = QHBoxLayout()
@@ -905,6 +788,7 @@ class FarmingInterfaceLeft(QWidget):
 
     def retranslateUi(self):
         self.task_panel.retranslateUi()
+        self.resonate_with_Ahab.retranslateUi()
         self.then.retranslateUi()
         self.after_completion_selector.retranslateUi()
         self.sync_pause_resume_button()
