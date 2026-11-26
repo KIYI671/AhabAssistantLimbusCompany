@@ -29,14 +29,14 @@ from app.base_tools import *
 from app.common.ui_config import get_log_text_edit_qss, set_border_style
 from app.language_manager import LanguageManager
 from app.page_card import PageMirror, PageSetWindows
-from app.task_pages import DailyTaskPage, EnkephalinTaskPage, RewardTaskPage
-from app.task_queue_widget import (
+from app.task_queue.queue_list import (
     WINDOW_SETTINGS_ID,
     TaskItemDelegate,
     TaskQueueList,
     build_add_menu,
     schedule_title,
 )
+from app.task_queue.task_pages import DailyTaskPage, EnkephalinTaskPage, RewardTaskPage
 from app.team_setting_card import TeamSettingCard
 from module.after_completion_types import (
     ACTION_EXIT_AALC,

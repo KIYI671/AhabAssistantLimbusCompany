@@ -30,8 +30,8 @@ from qfluentwidgets import FluentIcon as FIF
 
 from app.base_combination import BaseSettingCardGroup
 from app.base_tools import BaseSettingLayout
-from app.task_pages import DailyTaskPage, EnkephalinTaskPage, RewardTaskPage, ScheduledMirrorTaskPage
-from app.task_queue_widget import TaskQueueList, build_add_menu, schedule_title, task_title
+from app.task_queue.queue_list import TaskQueueList, build_add_menu, schedule_title, task_title
+from app.task_queue.task_pages import DailyTaskPage, EnkephalinTaskPage, RewardTaskPage, ScheduledMirrorTaskPage
 from module import schedules
 from module.after_completion_types import (
     ACTION_EXIT_AALC,

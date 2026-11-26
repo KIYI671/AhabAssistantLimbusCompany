@@ -6,7 +6,7 @@ from app import all_teams, coutinuous_times, set_lunacy_to_enkephalin_options
 from app.base_combination import CheckBoxWithComboBox
 from app.base_tools import BaseCheckBox
 from app.page_card import PageCard
-from app.task_fields import GLOBAL_HINT, GlobalHint, TaskStore, TaskWidgets, mirror_widgets
+from app.task_queue.task_fields import GLOBAL_HINT, GlobalHint, TaskStore, TaskWidgets, mirror_widgets
 from module.config.task_queue import TaskBase
 
 
