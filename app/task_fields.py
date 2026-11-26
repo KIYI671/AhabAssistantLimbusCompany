@@ -1,28 +1,23 @@
-"""绑定到某个任务项（task item）字段的设置控件。
+"""绑定到「当前选中的任务」的设置控件。
 
-旧的 BaseCheckBox / LabelWithSpinBox 等控件用字段名字符串直接读写全局配置；
-任务列表里同类任务可以有多项，所以这里的控件改为读写「当前绑定的任务对象」。
-切换选中的任务时调用 load(task) 刷新显示，不会触发写回。
+用的是项目原有的 BaseCheckBox / LabelWithSpinBox 等控件，只是把读写对象从全局 cfg
+换成 TaskStore（当前选中的任务）。切换选中的任务时调用 load()，控件重新读取显示。
+做法同 MAA 的 GetTaskConfig<T>() / SetTaskConfig<T>()：控件不变，换的是背后的任务。
+主界面的镜牢页和各任务设置页、定时任务编辑框都用这里的东西。
 """
 
-from typing import Callable
+from PySide6.QtCore import QT_TRANSLATE_NOOP, QCoreApplication, QObject, Signal
+from qfluentwidgets import CaptionLabel
 
-from PySide6.QtCore import QT_TRANSLATE_NOOP, QCoreApplication, QObject, Qt, Signal
-from PySide6.QtWidgets import QFrame, QHBoxLayout, QSizePolicy, QVBoxLayout
-from qfluentwidgets import ComboBox, SpinBox, ToolTipFilter, ToolTipPosition
-
-from app.base_tools import BaseLabel, RightClickCheckBox
+from app.base_combination import LabelWithComboBox, LabelWithSpinBox, MirrorSpinBox
+from app.base_tools import BaseCheckBox
 from module.config.task_queue import TaskBase
 
 GLOBAL_HINT = QT_TRANSLATE_NOOP("TaskPage", "以下设置对所有任务生效")
 
 
-def _tr(context: str, text: str | None) -> str:
-    return QCoreApplication.translate(context, text) if text else ""
-
-
-class TaskBinder(QObject):
-    """一个设置页共用一个 binder：记录当前绑定的任务，控件通过它写字段"""
+class TaskStore(QObject):
+    """给 Base* 控件用的 ValueStore：读写当前绑定的任务。没有绑定任务时读到 None，控件不会写入"""
 
     changed = Signal(str)  # 被修改的字段名
 
@@ -30,360 +25,152 @@ class TaskBinder(QObject):
         super().__init__(parent)
         self.task: TaskBase | None = None
 
-    def set(self, path: str, value) -> None:
-        if self.task is None:
-            return
-        target, name = _resolve(self.task, path)
-        if getattr(target, name) == value:
-            return
-        setattr(target, name, value)
-        self.changed.emit(path)
-
-    def get(self, path: str, default=None):
+    def get_value(self, key: str, default=None):
         if self.task is None:
             return default
-        target, name = _resolve(self.task, path)
+        target, name = _resolve(self.task, key)
         return getattr(target, name, default)
 
+    def set_value(self, key: str, value) -> None:
+        if self.task is None:
+            return
+        target, name = _resolve(self.task, key)
+        old = getattr(target, name)
+        if isinstance(old, int) and not isinstance(old, bool) and isinstance(value, bool):
+            value = int(value)  # 困牢等 0/1/2 字段：普通勾选写 1
+        if old == value:
+            return
+        setattr(target, name, value)
+        self.changed.emit(key)
 
-def _resolve(task, path: str):
+
+def _resolve(task, key: str):
     """支持 "re_claim.mail" 这样的嵌套字段"""
-    *parents, name = path.split(".")
+    *parents, name = key.split(".")
     target = task
     for parent in parents:
         target = getattr(target, parent)
     return target, name
 
 
-class BoundField(QFrame):
-    def __init__(self, binder: TaskBinder, field: str, parent=None):
+class GlobalHint(CaptionLabel):
+    """设置页里区分「本任务」和「全局」设置的小标题"""
+
+    def __init__(self, text: str = GLOBAL_HINT, parent=None):
         super().__init__(parent)
-        self.binder = binder
-        self.field = field
-
-    def load(self) -> None:
-        raise NotImplementedError
-
-    def retranslateUi(self) -> None:
-        pass
-
-
-class BoundCheckBox(BoundField):
-    """复选框。
-
-    session=True：取值 0/1/2，左键勾选仅本次运行 AALC 期间有效，右键勾选永久有效。
-    checked_value：勾选时写入的值（例如定时任务里的困牢开关直接写 2，表示一直有效）。
-    """
-
-    def __init__(
-        self,
-        binder: TaskBinder,
-        field: str,
-        title: str,
-        tips: str | None = None,
-        *,
-        context: str = "BaseCheckBox",
-        session: bool = False,
-        checked_value=True,
-        indent: int = 0,
-        parent=None,
-    ):
-        super().__init__(binder, field, parent)
-        self.checked_value = checked_value
-        self.title = title
-        self.tips = tips
-        self.context = context
-        self.session = session
-        layout = QHBoxLayout(self)
-        layout.setContentsMargins(indent, 0, 0, 0)
-        layout.setAlignment(Qt.AlignLeft)
-        self.check_box = RightClickCheckBox(title, self)
-        self.check_box.installEventFilter(
-            ToolTipFilter(self.check_box, showDelay=0, position=ToolTipPosition.BOTTOM_LEFT)
-        )
-        layout.addWidget(self.check_box, 0, Qt.AlignLeft)
-        self.check_box.toggled.connect(self._on_toggled)
+        self.source_text = text
+        self.setContentsMargins(4, 12, 0, 2)
+        self.setTextColor("#7a7a7a", "#a0a0a0")
         self.retranslateUi()
 
-    def load(self) -> None:
-        self.check_box.blockSignals(True)
-        self.check_box.setChecked(bool(self.binder.get(self.field, False)))
-        self.check_box.blockSignals(False)
-
-    def _on_toggled(self, checked: bool) -> None:
-        if self.session:
-            value = (2 if self.check_box.right_clicked else 1) if checked else 0
-        elif checked:
-            value = self.checked_value
-        else:
-            value = 0 if isinstance(self.checked_value, int) and not isinstance(self.checked_value, bool) else False
-        self.binder.set(self.field, value)
-
-    def setEnabled(self, enabled: bool) -> None:
-        self.check_box.setEnabled(enabled)
-
-    def retranslateUi(self) -> None:
-        self.check_box.setText(_tr(self.context, self.title))
-        if self.tips:
-            self.check_box.setToolTip(_tr(self.context, self.tips))
+    def retranslateUi(self):
+        self.setText(QCoreApplication.translate("TaskPage", self.source_text))
 
 
-class _LabelledField(BoundField):
-    def __init__(self, binder, field, label, context, tips=None, parent=None):
-        super().__init__(binder, field, parent)
-        self.label_text = label
-        self.context = context
-        self.tips = tips
-        self.vbox = QVBoxLayout(self)
-        self.vbox.setContentsMargins(0, 0, 0, 0)
-        self.vbox.setSpacing(4)
-        self.label = BaseLabel(label)
-        self.vbox.addWidget(self.label)
-        self.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Fixed)
-        if tips:
-            self.installEventFilter(ToolTipFilter(self))
-
-    def retranslateUi(self) -> None:
-        self.label.setText(_tr(self.context, self.label_text))
-        if self.tips:
-            self.setToolTip(_tr(self.context, self.tips))
-
-
-class BoundSpinRow(_LabelledField):
-    def __init__(
-        self,
-        binder: TaskBinder,
-        field: str,
-        label: str,
-        *,
-        minimum: int = 0,
-        maximum: int = 9999,
-        context: str = "LabelWithSpinBox",
-        tips: str | None = None,
-        parent=None,
-    ):
-        super().__init__(binder, field, label, context, tips, parent)
-        self.spin_box = SpinBox(self)
-        self.spin_box.setRange(minimum, maximum)
-        self.spin_box.setAlignment(Qt.AlignCenter)
-        self.vbox.addWidget(self.spin_box)
-        self.spin_box.valueChanged.connect(lambda v: self.binder.set(self.field, int(v)))
-        self.retranslateUi()
-
-    def load(self) -> None:
-        self.spin_box.blockSignals(True)
-        self.spin_box.setValue(int(self.binder.get(self.field, 0) or 0))
-        self.spin_box.blockSignals(False)
-
-
-class BoundComboRow(_LabelledField):
-    def __init__(
-        self,
-        binder: TaskBinder,
-        field: str,
-        label: str,
-        options: dict,
-        *,
-        context: str = "LabelWithComboBox",
-        option_context: str = "BaseComboBox",
-        tips: str | None = None,
-        parent=None,
-    ):
-        super().__init__(binder, field, label, context, tips, parent)
-        self.options = list(options.items())
-        self.option_context = option_context
-        self.combo_box = ComboBox(self)
-        self.combo_box.addItems([_tr(option_context, key) for key, _ in self.options])
-        self.vbox.addWidget(self.combo_box)
-        self.combo_box.currentIndexChanged.connect(self._on_index)
-        self.retranslateUi()
-
-    def _on_index(self, index: int) -> None:
-        if 0 <= index < len(self.options):
-            self.binder.set(self.field, self.options[index][1])
-
-    def load(self) -> None:
-        value = self.binder.get(self.field)
-        self.combo_box.blockSignals(True)
-        for i, (_, option_value) in enumerate(self.options):
-            if option_value == value:
-                self.combo_box.setCurrentIndex(i)
-                break
-        self.combo_box.blockSignals(False)
-
-    def set_combo_enabled(self, enabled: bool) -> None:
-        self.combo_box.setEnabled(enabled)
-
-    def retranslateUi(self) -> None:
-        super().retranslateUi()
-        for i, (key, _) in enumerate(self.options):
-            self.combo_box.setItemText(i, _tr(self.option_context, key))
-
-
-class BoundInlineSpin(BoundField):
-    """左边文字、右边数字框（镜牢次数）"""
-
-    def __init__(
-        self,
-        binder: TaskBinder,
-        field: str,
-        label: str,
-        *,
-        minimum: int = 0,
-        maximum: int = 9999,
-        context: str = "MirrorSpinBox",
-        parent=None,
-    ):
-        super().__init__(binder, field, parent)
-        self.label_text = label
-        self.context = context
-        layout = QHBoxLayout(self)
-        self.label = BaseLabel(label)
-        self.spin_box = SpinBox(self)
-        self.spin_box.setRange(minimum, maximum)
-        self.spin_box.setAlignment(Qt.AlignCenter)
-        layout.addWidget(self.label, stretch=1)
-        layout.addWidget(self.spin_box, stretch=2)
-        self.setMaximumHeight(70)
-        self.spin_box.valueChanged.connect(lambda v: self.binder.set(self.field, int(v)))
-        self.retranslateUi()
-
-    def load(self) -> None:
-        self.spin_box.blockSignals(True)
-        self.spin_box.setValue(int(self.binder.get(self.field, 0) or 0))
-        self.spin_box.blockSignals(False)
-
-    def retranslateUi(self) -> None:
-        self.label.setText(_tr(self.context, self.label_text))
-
-
-class BoundCheckCombo(BoundField):
-    """左边复选框、右边下拉框（例如：使用连续作战 + 最大场次）"""
-
-    def __init__(
-        self,
-        binder: TaskBinder,
-        check_field: str,
-        title: str,
-        combo_field: str,
-        options: dict,
-        *,
-        context: str = "CheckBoxWithComboBox",
-        tips: str | None = None,
-        tips_context: str = "BaseCheckBox",
-        parent=None,
-    ):
-        super().__init__(binder, check_field, parent)
-        layout = QHBoxLayout(self)
-        layout.setContentsMargins(0, 0, 0, 0)
-        self.check = BoundCheckBox(binder, check_field, title, tips, context=context)
-        self.check_tips = (tips_context, tips)
-        self.combo_field = combo_field
-        self.options = list(options.items())
-        self.combo_box = ComboBox(self)
-        self.combo_box.addItems([key for key, _ in self.options])
-        self.combo_box.setMinimumWidth(110)
-        layout.addWidget(self.check, 1)
-        layout.addWidget(self.combo_box)
-        self.combo_box.currentIndexChanged.connect(self._on_index)
-        self.check.check_box.toggled.connect(self.combo_box.setEnabled)
-        self.retranslateUi()
-
-    def _on_index(self, index: int) -> None:
-        if 0 <= index < len(self.options):
-            self.binder.set(self.combo_field, self.options[index][1])
-
-    def load(self) -> None:
-        self.check.load()
-        value = self.binder.get(self.combo_field)
-        self.combo_box.blockSignals(True)
-        for i, (_, option_value) in enumerate(self.options):
-            if option_value == value:
-                self.combo_box.setCurrentIndex(i)
-                break
-        self.combo_box.blockSignals(False)
-        self.combo_box.setEnabled(self.check.check_box.isChecked())
-
-    def retranslateUi(self) -> None:
-        self.check.retranslateUi()
-        context, tips = self.check_tips
-        if tips:
-            self.check.check_box.setToolTip(_tr(context, tips))
-
-
-def bind_dependency(controller: BoundCheckBox, dependents: list[BoundField], setter: Callable | None = None) -> None:
-    """controller 未勾选时禁用 dependents（只影响显示，不改值）"""
+def depends_on(controller: BaseCheckBox, dependents: list) -> None:
+    """controller 没勾选时禁用 dependents（只影响显示，不改值）"""
 
     def apply(checked: bool):
         for widget in dependents:
-            if setter is not None:
-                setter(widget, checked)
-            else:
-                widget.setEnabled(checked)
+            widget.setEnabled(checked)
 
     controller.check_box.toggled.connect(apply)
-    controller._apply_dependency = apply  # load() 后由页面调用刷新
+    controller.apply_dependency = lambda: apply(controller.check_box.isChecked())
 
 
-def refresh_dependency(controller: BoundCheckBox) -> None:
-    apply = getattr(controller, "_apply_dependency", None)
-    if apply is not None:
-        apply(controller.check_box.isChecked())
+class TaskWidgets:
+    """一个设置页里绑定到任务的控件：统一 load / retranslate / 刷新依赖"""
+
+    def __init__(self, store: TaskStore):
+        self.store = store
+        self.widgets: list = []
+        self.controllers: list[BaseCheckBox] = []
+
+    def check(self, field: str, title: str, tips: str | None = None, *, temporary=False, indent=0) -> BaseCheckBox:
+        box = BaseCheckBox(field, None, title, center=False, tips=tips, temporary=temporary, store=self.store)
+        if indent:
+            box.hBoxLayout.setContentsMargins(indent, 0, 0, 0)
+        return self.keep(box)
+
+    def combo(self, field: str, label: str, items: dict) -> LabelWithComboBox:
+        return self.keep(LabelWithComboBox(label, field, items, store=self.store))
+
+    def spin(self, field: str, label: str) -> LabelWithSpinBox:
+        return self.keep(LabelWithSpinBox(label, field, min_value=0, min_step=1, store=self.store))
+
+    def keep(self, widget):
+        self.widgets.append(widget)
+        return widget
+
+    def depends(self, controller: BaseCheckBox, dependents: list) -> None:
+        depends_on(controller, dependents)
+        self.controllers.append(controller)
+
+    def load(self) -> None:
+        for widget in self.widgets:
+            widget.load()
+        self.refresh_dependencies()
+
+    def refresh_dependencies(self) -> None:
+        for controller in self.controllers:
+            controller.apply_dependency()
+
+    def retranslateUi(self) -> None:
+        for widget in self.widgets:
+            widget.retranslateUi()
 
 
-def mirror_option_fields(binder: TaskBinder, *, scheduled: bool = False) -> tuple[BoundField, list[BoundField]]:
-    """镜牢任务的参数控件：返回 (镜牢次数, 其余选项)。
+def mirror_widgets(fields: TaskWidgets, *, scheduled: bool) -> tuple[MirrorSpinBox, list, list]:
+    """镜牢任务的设置控件：返回 (镜牢次数, 常用选项, 其余选项)。主界面和定时任务共用。
 
-    scheduled=True 用于定时任务：困牢 / 不用每周加成没有「仅本次运行有效」，勾上就一直有效。
+    主界面的困牢 / 不用每周加成可以「仅本次运行期间有效」（左键）或一直有效（右键）；
+    定时任务每次都是新启动 AALC，没有「本次」的说法，勾上就一直有效。
     """
-    count = BoundInlineSpin(binder, "count", QT_TRANSLATE_NOOP("MirrorSpinBox", "坐牢次数"))
+    count = fields.keep(MirrorSpinBox(QT_TRANSLATE_NOOP("MirrorSpinBox", "坐牢次数"), "count", store=fields.store))
     if scheduled:
-        hard = BoundCheckBox(binder, "hard_mirror", QT_TRANSLATE_NOOP("BaseCheckBox", "使用困难镜牢"), checked_value=2)
-        weekly = BoundCheckBox(
-            binder, "no_weekly_bonuses", QT_TRANSLATE_NOOP("BaseCheckBox", "不使用每周加成"), checked_value=2
-        )
+        hard = fields.check("hard_mirror", QT_TRANSLATE_NOOP("BaseCheckBox", "使用困难镜牢"))
+        weekly = fields.check("no_weekly_bonuses", QT_TRANSLATE_NOOP("BaseCheckBox", "不使用每周加成"))
     else:
-        hard = BoundCheckBox(
-            binder,
+        hard = fields.check(
             "hard_mirror",
             QT_TRANSLATE_NOOP("BaseCheckBox", "使用困难镜牢*"),
             QT_TRANSLATE_NOOP(
                 "BaseCheckBox",
                 "仅本次运行期间有效，重启AALC后失效\n右键可设置为永久生效\n开启自动困牢时，有剩余困牢次数就会打困牢",
             ),
-            session=True,
+            temporary=True,
         )
-        weekly = BoundCheckBox(
-            binder,
+        weekly = fields.check(
             "no_weekly_bonuses",
             QT_TRANSLATE_NOOP("BaseCheckBox", "不使用每周加成*"),
             QT_TRANSLATE_NOOP("BaseCheckBox", "仅本次运行期间有效，重启AALC后失效\n右键可设置为永久生效"),
-            session=True,
+            temporary=True,
         )
-    re_claim = BoundCheckBox(binder, "re_claim_rewards", QT_TRANSLATE_NOOP("BaseCheckBox", "再次领取奖励"))
-    re_claim_parts = [
-        BoundCheckBox(binder, "re_claim.missions", QT_TRANSLATE_NOOP("BaseCheckBox", "日常/周常"), indent=28),
-        BoundCheckBox(binder, "re_claim.battle_pass", QT_TRANSLATE_NOOP("BaseCheckBox", "通行证奖励"), indent=28),
-        BoundCheckBox(binder, "re_claim.mail", QT_TRANSLATE_NOOP("BaseCheckBox", "邮件"), indent=28),
-    ]
-    bind_dependency(re_claim, re_claim_parts)
-    options = [
+    common = [
         hard,
         weekly,
-        BoundCheckBox(binder, "floor_3_exit", QT_TRANSLATE_NOOP("BaseCheckBox", "只打三层")),
-        BoundCheckBox(binder, "infinite", QT_TRANSLATE_NOOP("BaseCheckBox", "无限坐牢")),
-        BoundCheckBox(
-            binder,
+        fields.check("floor_3_exit", QT_TRANSLATE_NOOP("BaseCheckBox", "只打三层")),
+        fields.check("infinite", QT_TRANSLATE_NOOP("BaseCheckBox", "无限坐牢")),
+    ]
+    re_claim = fields.check("re_claim_rewards", QT_TRANSLATE_NOOP("BaseCheckBox", "再次领取奖励"))
+    re_claim_parts = [
+        fields.check("re_claim.missions", QT_TRANSLATE_NOOP("BaseCheckBox", "日常/周常"), indent=28),
+        fields.check("re_claim.battle_pass", QT_TRANSLATE_NOOP("BaseCheckBox", "通行证奖励"), indent=28),
+        fields.check("re_claim.mail", QT_TRANSLATE_NOOP("BaseCheckBox", "邮件"), indent=28),
+    ]
+    fields.depends(re_claim, re_claim_parts)
+    rest = [
+        fields.check(
             "save_rewards",
             QT_TRANSLATE_NOOP("BaseCheckBox", "保存困牢奖励"),
             QT_TRANSLATE_NOOP("BaseCheckBox", "仅在进行困难镜牢时生效，普通难度不生效"),
         ),
-        BoundCheckBox(binder, "hard_single_bonuses", QT_TRANSLATE_NOOP("BaseCheckBox", "困牢单次加成")),
-        BoundCheckBox(binder, "select_event_pack", QT_TRANSLATE_NOOP("BaseCheckBox", "第五层选择（最左边）活动卡包")),
-        BoundCheckBox(binder, "skip_event_pack", QT_TRANSLATE_NOOP("BaseCheckBox", "第五层跳过（最左边）活动卡包")),
-        BoundCheckBox(binder, "not_skip_whitegossypium", QT_TRANSLATE_NOOP("BaseCheckBox", "不跳过白棉花")),
-        BoundCheckBox(binder, "fight_to_last_man", QT_TRANSLATE_NOOP("BaseCheckBox", "战斗直到全灭")),
+        fields.check("hard_single_bonuses", QT_TRANSLATE_NOOP("BaseCheckBox", "困牢单次加成")),
+        fields.check("select_event_pack", QT_TRANSLATE_NOOP("BaseCheckBox", "第五层选择（最左边）活动卡包")),
+        fields.check("skip_event_pack", QT_TRANSLATE_NOOP("BaseCheckBox", "第五层跳过（最左边）活动卡包")),
+        fields.check("not_skip_whitegossypium", QT_TRANSLATE_NOOP("BaseCheckBox", "不跳过白棉花")),
+        fields.check("fight_to_last_man", QT_TRANSLATE_NOOP("BaseCheckBox", "战斗直到全灭")),
         re_claim,
         *re_claim_parts,
     ]
-    return count, options
+    return count, common, rest

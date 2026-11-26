@@ -1,4 +1,4 @@
-from typing import Union
+from typing import Protocol, Union
 
 from PySide6.QtCore import Qt, Signal
 from PySide6.QtGui import QFont, QIcon
@@ -34,6 +34,14 @@ from qfluentwidgets.components.settings.setting_card import SettingIconWidget
 from app import *
 from app.common.ui_config import get_setting_layout_style
 from module.config import cfg
+
+
+class ValueStore(Protocol):
+    """控件读写设置值的地方。默认是全局配置 cfg；任务设置页传入「当前选中的任务」"""
+
+    def get_value(self, key: str, default=None): ...
+
+    def set_value(self, key: str, value) -> None: ...
 
 
 class BaseLayout(QFrame):
@@ -114,11 +122,14 @@ class BaseCheckBox(BaseLayout):
         icon_size=16,
         tips=None,
         temporary=False,
+        store: ValueStore | None = None,
     ):
+        """temporary：取值 0/1/2，左键勾选为 1（仅本次运行 AALC 期间有效），右键勾选为 2（一直有效）"""
         super().__init__(parent=parent)
         self.config_name = config_name
         self.setObjectName(config_name)
         self.temporary = temporary
+        self.store = store if store is not None else cfg
 
         if icon:
             self.iconLabel = SettingIconWidget(icon, self)
@@ -138,12 +149,8 @@ class BaseCheckBox(BaseLayout):
         if not center:
             self.hBoxLayout.setAlignment(Qt.AlignLeft)
 
-        if cfg.get_value(self.config_name) is not None:
-            if temporary and cfg.get_value(self.config_name) < 2:
-                self.check_box.setChecked(False)
-                self.on_toggle(False)
-            else:
-                self.check_box.setChecked(cfg.get_value(self.config_name))
+        if self.store.get_value(self.config_name) is not None:
+            self.check_box.setChecked(bool(self.store.get_value(self.config_name)))
         elif "the_team_" in self.config_name:
             number = int(self.config_name.split("_")[-1])
             teams_be_select = cfg.get_value("teams_be_select")
@@ -153,6 +160,14 @@ class BaseCheckBox(BaseLayout):
             mediator.sinner_be_selected.emit()
 
         self.check_box.toggled.connect(self.on_toggle)
+
+    def load(self):
+        """重新从 store 读取显示，不写回"""
+        value = self.store.get_value(self.config_name)
+        if value is not None:
+            self.check_box.blockSignals(True)
+            self.check_box.setChecked(bool(value))
+            self.check_box.blockSignals(False)
 
     def set_checked(self, checked):
         self.check_box.toggled.disconnect(self.on_toggle)
@@ -170,10 +185,11 @@ class BaseCheckBox(BaseLayout):
 
     def on_toggle(self, checked):
         right_clicked = self.check_box.right_clicked
-        if cfg.get_value(self.config_name) is not None:
-            if self.temporary and right_clicked is True:
-                checked = 2 * checked
-            cfg.set_value(self.config_name, checked)
+        if self.store.get_value(self.config_name) is not None:
+            value = checked
+            if self.temporary:
+                value = (2 if right_clicked else 1) if checked else 0
+            self.store.set_value(self.config_name, value)
         elif self.config_name.startswith("the_team_"):
             team_num = int(self.config_name.split("_")[-1])
             cfg.set_team_enabled(team_num, checked)
@@ -360,10 +376,12 @@ class BaseComboBox(BaseLayout):
         combo_box_width: int | None = None,
         tool_tip_delay: int = 0,
         parent=None,
+        store: ValueStore | None = None,
     ):
         super().__init__(parent=parent)
         self.setObjectName(config_name)
         self.config_name = config_name
+        self.store = store if store is not None else cfg
         self.items = None
         self.combo_box = RightClickComboBox(self)
         self.hBoxLayout.addWidget(self.combo_box, stretch=1)
@@ -378,20 +396,29 @@ class BaseComboBox(BaseLayout):
         self.combo_box.currentIndexChanged.disconnect(self.on_change)
         self.combo_box.addItems(items)
         self.items = items
-        saved_value = cfg.get_value(self.config_name)
-        if saved_value is not None:
-            items_list = list(items.items())
-            for i, (_, value) in enumerate(items_list):
-                if value == saved_value:
-                    self.combo_box.setCurrentIndex(i)
-                    break
+        self._select_saved()
         self.combo_box.currentIndexChanged.connect(self.on_change)
+
+    def _select_saved(self):
+        saved_value = self.store.get_value(self.config_name)
+        if saved_value is None or not self.items:
+            return
+        for i, value in enumerate(self.items.values()):
+            if value == saved_value:
+                self.combo_box.setCurrentIndex(i)
+                break
+
+    def load(self):
+        """重新从 store 读取显示，不写回"""
+        self.combo_box.blockSignals(True)
+        self._select_saved()
+        self.combo_box.blockSignals(False)
 
     def on_change(self, index):
         items_list = list(self.items.items())
         value = items_list[index][1]
-        if cfg.get_value(self.config_name) is not None:
-            cfg.set_value(self.config_name, value)
+        if self.store.get_value(self.config_name) is not None:
+            self.store.set_value(self.config_name, value)
         else:
             self.send_switch_signal({self.config_name: value})
 
@@ -415,9 +442,10 @@ class BaseComboBox(BaseLayout):
 
 
 class BaseSpinBox(BaseLayout):
-    def __init__(self, config_name, parent=None, double=False, min_value=0, min_step=1):
+    def __init__(self, config_name, parent=None, double=False, min_value=0, min_step=1, store: ValueStore | None = None):
         super().__init__(parent=parent)
         self.config_name = config_name
+        self.store = store if store is not None else cfg
         if double:
             self.spin_box = DoubleSpinBox(self)
             min_value = 0.01
@@ -430,14 +458,22 @@ class BaseSpinBox(BaseLayout):
         self.spin_box.setSingleStep(min_step)
         self.spin_box.setAlignment(Qt.AlignCenter)
 
-        if cfg.get_value(self.config_name) is not None:
-            self.spin_box.setValue(cfg.get_value(self.config_name))
+        if self.store.get_value(self.config_name) is not None:
+            self.spin_box.setValue(self.store.get_value(self.config_name))
 
         self.spin_box.valueChanged.connect(self.value_changed)
 
+    def load(self):
+        """重新从 store 读取显示，不写回"""
+        value = self.store.get_value(self.config_name)
+        if value is not None:
+            self.spin_box.blockSignals(True)
+            self.spin_box.setValue(value)
+            self.spin_box.blockSignals(False)
+
     def value_changed(self):
-        if cfg.get_value(self.config_name) is not None:
-            cfg.set_value(self.config_name, self.spin_box.value())
+        if self.store.get_value(self.config_name) is not None:
+            self.store.set_value(self.config_name, self.spin_box.value())
 
 
 class BaseLineEdit(BaseLayout):

@@ -76,22 +76,31 @@ class CheckBoxWithComboBox(QFrame):
         combo_box_width=None,
         tips=None,
         parent=None,
+        store=None,
     ):
         super().__init__(parent)
         # self.setFixedHeight(80)
         self.additional_combo_box = None
         self.hBoxLayout = QHBoxLayout(self)
         self.box_text = check_box_title
-        self.box = BaseCheckBox(check_box_name, check_box_icon, check_box_title, parent=self, center=False, tips=tips)
+        self.box = BaseCheckBox(
+            check_box_name, check_box_icon, check_box_title, parent=self, center=False, tips=tips, store=store
+        )
         self.box.setFixedWidth(150)
-        self.combo_box = BaseComboBox(combo_box_name, combo_box_width)
+        self.combo_box = BaseComboBox(combo_box_name, combo_box_width, store=store)
         self.combo_box.setFixedWidth(300)
         self.hBoxLayout.addWidget(self.box, Qt.AlignLeft)
         self.hBoxLayout.addWidget(self.combo_box)
         self.hBoxLayout.setAlignment(Qt.AlignCenter)
 
+    def load(self):
+        self.box.load()
+        self.combo_box.load()
+        if self.additional_combo_box:
+            self.additional_combo_box.load()
+
     def add_combobox(self, config_name, combo_box_width=None):
-        self.additional_combo_box = BaseComboBox(config_name, combo_box_width)
+        self.additional_combo_box = BaseComboBox(config_name, combo_box_width, store=self.box.store)
         self.hBoxLayout.addWidget(self.additional_combo_box)
 
     def add_items(self, items):
@@ -120,6 +129,7 @@ class LabelWithComboBox(QFrame):
         vbox=True,
         parent=None,
         tips: str | None = None,
+        store=None,
     ):
         super().__init__(parent)
         self.setObjectName(config_name)
@@ -133,7 +143,7 @@ class LabelWithComboBox(QFrame):
             self.layout_ = QHBoxLayout(self)
         self.layout_.setContentsMargins(0, 0, 0, 0)
         self.label = BaseLabel(label_text)
-        self.combo_box = BaseComboBox(config_name)
+        self.combo_box = BaseComboBox(config_name, store=store)
         self.combo_box.add_items(items)
         self.layout_.addWidget(self.label)
         if vbox is not True:
@@ -150,6 +160,9 @@ class LabelWithComboBox(QFrame):
     def add_items(self, items):
         self.combo_box.add_items(items)
 
+    def load(self):
+        self.combo_box.load()
+
     def retranslateUi(self):
         self.label.label.setText(self.tr(self.text))
         self.combo_box.retranslateUi()
@@ -165,13 +178,14 @@ class LabelWithSpinBox(QFrame):
         min_value=0.1,
         min_step=0.01,
         tips: str | None = None,
+        store=None,
     ):
         super().__init__(parent)
         self.vbox_layout = QVBoxLayout(self)
         self.tips = tips
         self.text = label_text
         self.label = BaseLabel(label_text)
-        self.box = BaseSpinBox(box_name, double=double, min_value=min_value, min_step=min_step)
+        self.box = BaseSpinBox(box_name, double=double, min_value=min_value, min_step=min_step, store=store)
         self.vbox_layout.addWidget(self.label)
         self.vbox_layout.addWidget(self.box)
         self.vbox_layout.setAlignment(Qt.AlignCenter)
@@ -182,6 +196,9 @@ class LabelWithSpinBox(QFrame):
             self.setToolTip(tips)
             self.installEventFilter(ToolTipFilter(self))
 
+    def load(self):
+        self.box.load()
+
     def retranslateUi(self):
         self.label.label.setText(self.tr(self.text))
         if self.tips:
@@ -189,15 +206,18 @@ class LabelWithSpinBox(QFrame):
 
 
 class MirrorSpinBox(QFrame):
-    def __init__(self, label_text, box_name, parent=None, double=False, min_value=0, min_step=1):
+    def __init__(self, label_text, box_name, parent=None, double=False, min_value=0, min_step=1, store=None):
         super().__init__(parent)
         self.box_layout = QHBoxLayout(self)
         self.text = label_text
         self.label = BaseLabel(label_text)
-        self.box = BaseSpinBox(box_name, double=double, min_value=min_value, min_step=min_step)
+        self.box = BaseSpinBox(box_name, double=double, min_value=min_value, min_step=min_step, store=store)
         self.box_layout.addWidget(self.label, stretch=1)
         self.box_layout.addWidget(self.box, stretch=2)
         self.setMaximumHeight(70)
+
+    def load(self):
+        self.box.load()
 
     def retranslateUi(self):
         self.label.label.setText(self.tr(self.text))

@@ -13,7 +13,6 @@ from PySide6.QtGui import (
 from PySide6.QtWidgets import QFileDialog, QFrame, QHBoxLayout, QVBoxLayout, QWidget
 from qfluentwidgets import (
     Action,
-    CaptionLabel,
     InfoBar,
     InfoBarPosition,
     MessageBox,
@@ -39,7 +38,7 @@ from app.base_combination import (
 from app.base_tools import BaseCheckBox
 from app.common.ui_config import get_theme_aware_text_browser_qss
 from app.language_manager import LanguageManager
-from app.task_fields import GLOBAL_HINT, TaskBinder, mirror_option_fields, refresh_dependency
+from app.task_fields import GLOBAL_HINT, GlobalHint, TaskStore, TaskWidgets, mirror_widgets
 from app.widget.custom_segmented_widget import CustomSegmentedWidget
 from module.config import TeamSetting, cfg, theme_list
 from module.config.team_import_export import apply_team_settings, import_team_settings
@@ -202,13 +201,12 @@ class PageMirror(PageCard):
         )
 
         # 镜牢次数和选项绑定当前选中的镜牢任务；队伍列表和键盘寻路是全局设置
-        self.binder = TaskBinder(self)
-        self.taskChanged = self.binder.changed
-        self.mirror_count, self.option_fields = mirror_option_fields(self.binder)
-        self.re_claim_controller = next(f for f in self.option_fields if f.field == "re_claim_rewards")
-        self.global_hint = CaptionLabel(self)
-        self.global_hint.setContentsMargins(4, 12, 0, 2)
-        self.global_hint.setTextColor("#7a7a7a", "#a0a0a0")
+        self.store = TaskStore(self)
+        self.taskChanged = self.store.changed
+        self.fields = TaskWidgets(self.store)
+        self.mirror_count, common, rest = mirror_widgets(self.fields, scheduled=False)
+        self.option_fields = common + rest
+        self.global_hint = GlobalHint(GLOBAL_HINT, self)
 
         self.add_team = QHBoxLayout()
         self.add_team_button = TransparentToolButton(FIF.ADD, None)
@@ -254,19 +252,15 @@ class PageMirror(PageCard):
 
     @property
     def task(self):
-        return self.binder.task
+        return self.store.task
 
     def bind(self, task) -> None:
-        self.binder.task = task
-        if task is None:
-            return
-        self.mirror_count.load()
-        for field in self.option_fields:
-            field.load()
-        refresh_dependency(self.re_claim_controller)
+        self.store.task = task
+        if task is not None:
+            self.fields.load()
 
     def refresh_dependencies(self) -> None:
-        refresh_dependency(self.re_claim_controller)
+        self.fields.refresh_dependencies()
 
     def _create_mirror_bar(self, current: int, total: int, hard: bool) -> TextProgressBar:
         """创建进度条"""
@@ -529,10 +523,8 @@ class PageMirror(PageCard):
         mediator.mirror_bar_kill_signal.connect(self.destroy_mirror_bar)
 
     def retranslateUi(self):
-        self.mirror_count.retranslateUi()
-        for field in self.option_fields:
-            field.retranslateUi()
-        self.global_hint.setText(QCoreApplication.translate("TaskPage", GLOBAL_HINT))
+        self.fields.retranslateUi()
+        self.global_hint.retranslateUi()
         self.mirror_keyboard_navigation.retranslateUi()
         self.mirror_keyboard_simple_pathfinding.retranslateUi()
         self.add_team_button.setToolTip(self.tr("添加队伍"))
