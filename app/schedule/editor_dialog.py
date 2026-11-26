@@ -19,8 +19,8 @@ from app.base_tools import BaseSettingLayout
 from app.schedule.texts import EXIT_ACTIONS, POWER_ACTIONS, schedule_title, tr
 from app.task_queue.queue_list import TaskQueueList, build_add_menu
 from app.task_queue.task_pages import DailyTaskPage, EnkephalinTaskPage, RewardTaskPage, ScheduledMirrorTaskPage
-from module.config import cfg
-from module.config.task_queue import AfterCompletion, Schedule, copy_task
+from module.config.task_queue import AfterCompletion, Schedule
+from module.schedules import ScheduleBook
 
 
 class AfterCompletionFields(QWidget):
@@ -70,15 +70,16 @@ class AfterCompletionFields(QWidget):
 class ScheduleEditorDialog(MessageBoxBase):
     """编辑一个定时任务。改的是副本，点「保存」才写回。"""
 
-    def __init__(self, schedule: Schedule, parent=None):
+    def __init__(self, book: ScheduleBook, schedule: Schedule, parent=None):
         super().__init__(parent)
+        self.book = book
         self.schedule = schedule
         self.draft = schedule.model_copy(deep=True)
 
         self.title = SubtitleLabel(self)
         self.name_edit = LineEdit(self)
         self.name_edit.setText(schedule.name or "")
-        self.name_edit.setPlaceholderText(schedule_title(schedule, cfg.config.schedules))
+        self.name_edit.setPlaceholderText(schedule_title(schedule, book.schedules))
         self.name_edit.setClearButtonEnabled(True)
         self.name_edit.setMaximumWidth(260)
 
@@ -158,18 +159,14 @@ class ScheduleEditorDialog(MessageBoxBase):
 
     def _copy_from_main(self) -> None:
         """用主界面当前的任务列表（含参数和勾选）替换本定时任务的列表"""
-        self.draft.tasks[:] = [copy_task(task) for task in cfg.config.task_queue]
+        self.draft.tasks[:] = self.book.copy_main_tasks()
         first = self.draft.tasks[0].id if self.draft.tasks else ""
         self.queue_list.reload(select_id=first)
         if not first:
             self._show_task("")
 
     def _save(self) -> None:
-        name = self.name_edit.text().strip()
-        self.schedule.name = name or None
-        self.schedule.tasks = self.draft.tasks
-        self.schedule.after_completion = self.after_fields.value()
-        cfg.save()
+        self.book.apply_edit(self.schedule, self.name_edit.text(), self.draft.tasks, self.after_fields.value())
 
     def retranslateUi(self):
         self.title.setText(tr(QT_TRANSLATE_NOOP("ScheduleEditor", "编辑定时任务")))
@@ -185,14 +182,16 @@ class ScheduleEditorDialog(MessageBoxBase):
         self.after_fields.retranslateUi()
 
 
-def open_editor(schedule: Schedule, window, on_saved=None, on_cancelled=None) -> "ScheduleEditorDialog":
+def open_editor(
+    book: ScheduleBook, schedule: Schedule, window, on_saved=None, on_cancelled=None
+) -> "ScheduleEditorDialog":
     """非模态打开编辑框。
 
     不用 exec()：编辑框是主窗口的子控件，嵌套的模态事件循环会和启动后异步弹出的
     公告窗口（窗口级模态）互相影响，实测会让主窗口一直处于禁用状态、点什么都没反应。
     编辑框自带全窗口遮罩，背后的界面本来就点不到，不需要模态。
     """
-    dialog = ScheduleEditorDialog(schedule, window)
+    dialog = ScheduleEditorDialog(book, schedule, window)
     dialog.setWindowModality(Qt.WindowModality.NonModal)
     if on_saved is not None:
         dialog.accepted.connect(on_saved)
