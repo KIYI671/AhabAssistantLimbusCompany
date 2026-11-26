@@ -32,6 +32,7 @@ from app.base_combination import BaseSettingCardGroup
 from app.base_tools import BaseSettingLayout
 from app.task_pages import DailyTaskPage, EnkephalinTaskPage, RewardTaskPage, ScheduledMirrorTaskPage
 from app.task_queue_widget import TaskQueueList, build_add_menu, schedule_title, task_title
+from module import schedules
 from module.after_completion_types import (
     ACTION_EXIT_AALC,
     ACTION_EXIT_EMULATOR,
@@ -43,8 +44,7 @@ from module.after_completion_types import (
     POWER_ACTION_SLEEP,
 )
 from module.config import cfg
-from module.config.task_queue import AfterCompletion, Schedule, copy_task, default_task_queue
-from module.logger import log
+from module.config.task_queue import AfterCompletion, Schedule, copy_task
 
 CONTEXT = "ScheduleEditor"
 
@@ -68,39 +68,8 @@ POWER_ACTIONS = [
 
 
 # ---------------------------------------------------------------------------
-# Windows 计划任务
+# 摘要文字
 # ---------------------------------------------------------------------------
-
-
-def schedule_task_name(schedule: Schedule) -> str:
-    """迁移来的定时任务沿用旧的计划任务名，已注册的任务不用重新注册"""
-    suffix = schedule.id[len("autodaily") :]
-    if suffix == "" or suffix.isdigit():
-        return f"AALC Daily Task{suffix}"
-    return f"AALC Schedule {suffix.lstrip('_')}"
-
-
-def register_schedule(schedule: Schedule) -> None:
-    from utils.schedule_helper import ScheduleHelper
-
-    time = QTime.fromString(schedule.time, "HH:mm")
-    try:
-        helper = ScheduleHelper()
-        helper.unregister_task(schedule_task_name(schedule))
-        helper.register_daily_task(
-            schedule_task_name(schedule), f"start --exit {schedule.id}", time.hour(), time.minute()
-        )
-    except Exception as e:
-        log.error(f"注册定时任务 {schedule.id} 失败: {e}")
-
-
-def unregister_schedule(schedule: Schedule) -> None:
-    from utils.schedule_helper import ScheduleHelper
-
-    try:
-        ScheduleHelper().unregister_task(schedule_task_name(schedule))
-    except Exception as e:
-        log.error(f"注销定时任务 {schedule.id} 失败: {e}")
 
 
 def after_completion_text(after: AfterCompletion) -> str:
@@ -343,18 +312,12 @@ class ScheduleCard(SettingCard):
         self.retranslateUi()
 
     def _on_time_changed(self, time: QTime) -> None:
-        self.schedule.time = time.toString("HH:mm")
+        schedules.set_time(self.schedule, time.toString("HH:mm"), schedules.system_scheduler())
         cfg.save()
-        if self.schedule.enabled:
-            register_schedule(self.schedule)
 
     def _on_switch(self, checked: bool) -> None:
-        self.schedule.enabled = checked
+        schedules.set_enabled(self.schedule, checked, schedules.system_scheduler())
         cfg.save()
-        if checked:
-            register_schedule(self.schedule)
-        else:
-            unregister_schedule(self.schedule)
         self.retranslateUi()
 
     def _edit(self) -> None:
@@ -437,8 +400,7 @@ class ScheduleSettingGroup(BaseSettingCardGroup):
             card.retranslateUi()
 
     def _add_schedule(self) -> None:
-        schedule = Schedule(tasks=default_task_queue())
-        cfg.config.schedules.append(schedule)
+        schedule = schedules.add(cfg.config.schedules)
         cfg.save()
         self.rebuild()
         # 等布局刷新后再弹出编辑框；取消则不保留这个新建的定时任务
@@ -450,8 +412,8 @@ class ScheduleSettingGroup(BaseSettingCardGroup):
             return
 
         def cancelled():
-            if schedule in cfg.config.schedules:
-                cfg.config.schedules.remove(schedule)
+            # 新建的定时任务还没启用，系统里没有对应的计划任务，删掉也不会碰系统
+            if schedules.remove(cfg.config.schedules, schedule, schedules.system_scheduler()):
                 cfg.save()
                 self.rebuild()
 
@@ -472,12 +434,9 @@ class ScheduleSettingGroup(BaseSettingCardGroup):
         box.show()
 
     def _confirm_delete(self, card: ScheduleCard) -> None:
-        if card.schedule not in cfg.config.schedules:
-            return
-        unregister_schedule(card.schedule)
-        cfg.config.schedules.remove(card.schedule)
-        cfg.save()
-        self.rebuild()
+        if schedules.remove(cfg.config.schedules, card.schedule, schedules.system_scheduler()):
+            cfg.save()
+            self.rebuild()
 
     def retranslateUi(self):
         super().retranslateUi()

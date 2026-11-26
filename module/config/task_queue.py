@@ -193,6 +193,11 @@ class AfterCompletion(BaseModel):
 _TIME_RE = re.compile(r"^([01]\d|2[0-3]):[0-5]\d$")
 
 
+def time_is_valid(value) -> bool:
+    """HH:mm，00:00 ~ 23:59"""
+    return isinstance(value, str) and _TIME_RE.match(value) is not None
+
+
 class Schedule(BaseModel):
     id: str = Field(default_factory=lambda: f"autodaily_{new_task_id()}")
     """也是 Windows 计划任务命令行 `start --exit <id>` 里的标识"""
@@ -208,7 +213,7 @@ class Schedule(BaseModel):
     @field_validator("time")
     @classmethod
     def _valid_time(cls, v: str) -> str:
-        return v if isinstance(v, str) and _TIME_RE.match(v) else "00:00"
+        return v if time_is_valid(v) else "00:00"
 
 
 def default_task_queue() -> list[TaskBase]:

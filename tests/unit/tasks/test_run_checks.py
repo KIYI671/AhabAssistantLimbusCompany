@@ -80,7 +80,9 @@ def test_each_mirror_task_checked_with_own_difficulty(mods):
 
 def queue_and_schedules(tq):
     queue = [tq.DailyTask(), tq.RewardTask(enabled=False)]
-    schedule = tq.Schedule(id="autodaily2", tasks=[tq.MirrorTask()], after_completion=tq.AfterCompletion(power_action="shutdown"))
+    schedule = tq.Schedule(
+        id="autodaily2", tasks=[tq.MirrorTask()], after_completion=tq.AfterCompletion(power_action="shutdown")
+    )
     return queue, [schedule]
 
 
