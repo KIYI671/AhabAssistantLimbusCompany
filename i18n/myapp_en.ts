@@ -233,55 +233,55 @@
 <context>
     <name>BaseCheckBox</name>
     <message>
-        <location filename="../app/task_queue/task_fields.py" line="139"/>
-        <location filename="../app/task_queue/task_pages.py" line="108"/>
+        <location filename="../app/task_queue/task_fields.py" line="120"/>
+        <location filename="../app/task_queue/task_pages.py" line="109"/>
         <source>日常/周常</source>
         <translation>Daily/Weekly</translation>
     </message>
     <message>
-        <location filename="../app/task_queue/task_fields.py" line="140"/>
-        <location filename="../app/task_queue/task_pages.py" line="109"/>
+        <location filename="../app/task_queue/task_fields.py" line="121"/>
+        <location filename="../app/task_queue/task_pages.py" line="110"/>
         <source>通行证奖励</source>
         <translation>Battle Pass Rewards</translation>
     </message>
     <message>
-        <location filename="../app/task_queue/task_fields.py" line="141"/>
-        <location filename="../app/task_queue/task_pages.py" line="110"/>
+        <location filename="../app/task_queue/task_fields.py" line="122"/>
+        <location filename="../app/task_queue/task_pages.py" line="111"/>
         <source>邮件</source>
         <translation>Mail</translation>
     </message>
     <message>
-        <location filename="../app/task_queue/task_pages.py" line="64"/>
+        <location filename="../app/task_queue/task_pages.py" line="65"/>
         <source>勾选后将使用连续作战模式，设置的值为最大连续作战场次</source>
         <translation>When checked, Continuous Combat Mode will be enabled; the set value represents the maximum number of consecutive battles</translation>
     </message>
     <message>
-        <location filename="../app/task_queue/task_pages.py" line="73"/>
+        <location filename="../app/task_queue/task_pages.py" line="74"/>
         <source>经验本针对性配队</source>
         <translation>Daily EXP Teams</translation>
     </message>
     <message>
-        <location filename="../app/task_queue/task_pages.py" line="83"/>
+        <location filename="../app/task_queue/task_pages.py" line="84"/>
         <source>纽本针对性配队</source>
         <translation>Daily Thread Teams</translation>
     </message>
     <message>
-        <location filename="../app/task_queue/task_pages.py" line="123"/>
+        <location filename="../app/task_queue/task_pages.py" line="124"/>
         <source>葛朗台模式</source>
         <translation>Grandet mode</translation>
     </message>
     <message>
-        <location filename="../app/task_queue/task_pages.py" line="130"/>
+        <location filename="../app/task_queue/task_pages.py" line="131"/>
         <source>不自动兑换脑啡肽 (?)</source>
         <translation>Do not automatic exchange enkephalin (?)</translation>
     </message>
     <message>
-        <location filename="../app/task_queue/task_pages.py" line="131"/>
+        <location filename="../app/task_queue/task_pages.py" line="132"/>
         <source>勾选后除狂气换体以外不执行兑换脑啡肽的操作</source>
         <translation>After checking, do not perform the operation of exchanging enkephalin except for lunacy to enkephalin</translation>
     </message>
     <message>
-        <location filename="../app/task_queue/task_fields.py" line="118"/>
+        <location filename="../app/task_queue/task_fields.py" line="99"/>
         <source>使用困难镜牢*</source>
         <translation>Hard mode*</translation>
     </message>
@@ -294,17 +294,17 @@ Right-click to set as permanent
 Note: Auto change Hard Mirror will disable this feature</translation>
     </message>
     <message>
-        <location filename="../app/task_queue/task_fields.py" line="113"/>
+        <location filename="../app/task_queue/task_fields.py" line="94"/>
         <source>使用困难镜牢</source>
         <translation>Hard mode</translation>
     </message>
     <message>
-        <location filename="../app/task_queue/task_fields.py" line="114"/>
+        <location filename="../app/task_queue/task_fields.py" line="95"/>
         <source>不使用每周加成</source>
         <translation>Non-weekly bonus</translation>
     </message>
     <message>
-        <location filename="../app/task_queue/task_fields.py" line="122"/>
+        <location filename="../app/task_queue/task_fields.py" line="103"/>
         <source>仅本次运行期间有效，重启AALC后失效
 右键可设置为永久生效
 开启自动困牢时，有剩余困牢次数就会打困牢</source>
@@ -313,59 +313,59 @@ Right-click to set as permanent
 With auto hard mode on, hard mode is used while hard runs remain</translation>
     </message>
     <message>
-        <location filename="../app/task_queue/task_fields.py" line="127"/>
+        <location filename="../app/task_queue/task_fields.py" line="108"/>
         <source>不使用每周加成*</source>
         <translation>Non-weekly bonus*</translation>
     </message>
     <message>
-        <location filename="../app/task_queue/task_fields.py" line="128"/>
+        <location filename="../app/task_queue/task_fields.py" line="109"/>
         <source>仅本次运行期间有效，重启AALC后失效
 右键可设置为永久生效</source>
         <translation>Only effective for this run, invalid after restart
 Right-click to set as permanent</translation>
     </message>
     <message>
-        <location filename="../app/task_queue/task_fields.py" line="134"/>
+        <location filename="../app/task_queue/task_fields.py" line="115"/>
         <source>只打三层</source>
         <translation>Only floor 3</translation>
     </message>
     <message>
-        <location filename="../app/task_queue/task_fields.py" line="135"/>
+        <location filename="../app/task_queue/task_fields.py" line="116"/>
         <source>无限坐牢</source>
         <translation>Infinite farming</translation>
     </message>
     <message>
-        <location filename="../app/task_queue/task_fields.py" line="147"/>
+        <location filename="../app/task_queue/task_fields.py" line="128"/>
         <source>保存困牢奖励</source>
         <translation>Save hard mirror rewards</translation>
     </message>
     <message>
-        <location filename="../app/task_queue/task_fields.py" line="150"/>
+        <location filename="../app/task_queue/task_fields.py" line="131"/>
         <source>困牢单次加成</source>
         <translation>Hard mirror single bonus</translation>
     </message>
     <message>
-        <location filename="../app/task_queue/task_fields.py" line="152"/>
+        <location filename="../app/task_queue/task_fields.py" line="133"/>
         <source>第五层跳过（最左边）活动卡包</source>
         <translation>No select the leftmost theme pack on the fifth floor</translation>
     </message>
     <message>
-        <location filename="../app/task_queue/task_fields.py" line="153"/>
+        <location filename="../app/task_queue/task_fields.py" line="134"/>
         <source>不跳过白棉花</source>
         <translation>No skip White Gossypium</translation>
     </message>
     <message>
-        <location filename="../app/task_queue/task_fields.py" line="154"/>
+        <location filename="../app/task_queue/task_fields.py" line="135"/>
         <source>战斗直到全灭</source>
         <translation>Fight to last man</translation>
     </message>
     <message>
-        <location filename="../app/page_card.py" line="219"/>
+        <location filename="../app/page_card.py" line="220"/>
         <source>使用键盘进行镜牢寻路</source>
         <translation>Mirror Dungeon Pathfinding using the Keyboard</translation>
     </message>
     <message>
-        <location filename="../app/page_card.py" line="225"/>
+        <location filename="../app/page_card.py" line="226"/>
         <source>简单键盘寻路（始终按↑键，避免鼠标拖动）</source>
         <translation>Simple keyboard pathfinding (always press ↑, avoid mouse dragging)</translation>
     </message>
@@ -494,12 +494,12 @@ Right-click to set as permanent</translation>
         <translation>Only formula fuse</translation>
     </message>
     <message>
-        <location filename="../app/task_queue/task_fields.py" line="148"/>
+        <location filename="../app/task_queue/task_fields.py" line="129"/>
         <source>仅在进行困难镜牢时生效，普通难度不生效</source>
         <translation>Only effective for hard mirror, ineffective for normal mirror</translation>
     </message>
     <message>
-        <location filename="../app/task_queue/task_fields.py" line="151"/>
+        <location filename="../app/task_queue/task_fields.py" line="132"/>
         <source>第五层选择（最左边）活动卡包</source>
         <translation>Select the leftmost theme pack on the fifth floor</translation>
     </message>
@@ -524,7 +524,7 @@ Right-click to set as permanent</translation>
         <translation>Defend with all units for the selected number of turns in each Mirror Dungeon run</translation>
     </message>
     <message>
-        <location filename="../app/task_queue/task_fields.py" line="137"/>
+        <location filename="../app/task_queue/task_fields.py" line="118"/>
         <source>再次领取奖励</source>
         <translation>Claim rewards again</translation>
     </message>
@@ -662,7 +662,7 @@ Right-click to set as permanent</translation>
     </message>
     <message>
         <location filename="../app/__init__.py" line="30"/>
-        <location filename="../app/page_card.py" line="153"/>
+        <location filename="../app/page_card.py" line="154"/>
         <source>是</source>
         <translation>Yes</translation>
     </message>
@@ -881,7 +881,7 @@ Right-click to set as permanent</translation>
         <translation type="vanished">Yes (Default)</translation>
     </message>
     <message>
-        <location filename="../app/page_card.py" line="153"/>
+        <location filename="../app/page_card.py" line="154"/>
         <source>否 (默认)</source>
         <translation>No (Default)</translation>
     </message>
@@ -1256,7 +1256,7 @@ Right-click to set as permanent</translation>
         <translation>Fixed team usage</translation>
     </message>
     <message>
-        <location filename="../app/task_queue/task_pages.py" line="61"/>
+        <location filename="../app/task_queue/task_pages.py" line="62"/>
         <source>使用连续作战</source>
         <translation>Continuous Combat</translation>
     </message>
@@ -1787,32 +1787,32 @@ Entering a formation code will overwrite your current team configuration.</trans
         <translation>Switch to Hard Mirror Dungeon on Floor</translation>
     </message>
     <message>
-        <location filename="../app/page_card.py" line="118"/>
+        <location filename="../app/page_card.py" line="119"/>
         <source>窗口分辨率</source>
         <translation>Window size</translation>
     </message>
     <message>
-        <location filename="../app/page_card.py" line="123"/>
+        <location filename="../app/page_card.py" line="124"/>
         <source>窗口位置</source>
         <translation>Window Positions</translation>
     </message>
     <message>
-        <location filename="../app/page_card.py" line="128"/>
+        <location filename="../app/page_card.py" line="129"/>
         <source>结束后恢复窗口</source>
         <translation>Restore window after completion</translation>
     </message>
     <message>
-        <location filename="../app/page_card.py" line="154"/>
+        <location filename="../app/page_card.py" line="155"/>
         <source>提高点击速度，但是对硬件与网络有一定需求，否则可能出现漏点</source>
         <translation>It increases click speed, but places certain demands on hardware and network performance; otherwise, missed clicks may occur</translation>
     </message>
     <message>
-        <location filename="../app/task_queue/task_pages.py" line="78"/>
+        <location filename="../app/task_queue/task_pages.py" line="79"/>
         <source>周日</source>
         <translation>Sun.</translation>
     </message>
     <message>
-        <location filename="../app/task_queue/task_pages.py" line="57"/>
+        <location filename="../app/task_queue/task_pages.py" line="58"/>
         <source>使用编队</source>
         <translation>Used TEAM</translation>
     </message>
@@ -1821,17 +1821,17 @@ Entering a formation code will overwrite your current team configuration.</trans
         <translation type="vanished">Claim Rewards</translation>
     </message>
     <message>
-        <location filename="../app/task_queue/task_pages.py" line="120"/>
+        <location filename="../app/task_queue/task_pages.py" line="121"/>
         <source>狂气换体</source>
         <translation>Buy Enkephalin</translation>
     </message>
     <message>
-        <location filename="../app/task_queue/task_pages.py" line="75"/>
+        <location filename="../app/task_queue/task_pages.py" line="76"/>
         <source>周一、周二（斩击）</source>
         <translation>Mon. Tue. (Slash)</translation>
     </message>
     <message>
-        <location filename="../app/page_card.py" line="151"/>
+        <location filename="../app/page_card.py" line="152"/>
         <source>使用异步方法进行键鼠输入</source>
         <translation>Use asynchronous method for input</translation>
     </message>
@@ -1844,47 +1844,47 @@ Entering a formation code will overwrite your current team configuration.</trans
         <translation type="vanished">No</translation>
     </message>
     <message>
-        <location filename="../app/task_queue/task_pages.py" line="76"/>
+        <location filename="../app/task_queue/task_pages.py" line="77"/>
         <source>周三、周四（突刺）</source>
         <translation>Wed. Thu. (Pierce)</translation>
     </message>
     <message>
-        <location filename="../app/task_queue/task_pages.py" line="77"/>
+        <location filename="../app/task_queue/task_pages.py" line="78"/>
         <source>周五、周六（打击）</source>
         <translation>Fri. Sat. (Blunt)</translation>
     </message>
     <message>
-        <location filename="../app/task_queue/task_pages.py" line="85"/>
+        <location filename="../app/task_queue/task_pages.py" line="86"/>
         <source>纽本周一（色欲）</source>
         <translation>Thread Mon. (Lust)</translation>
     </message>
     <message>
-        <location filename="../app/task_queue/task_pages.py" line="86"/>
+        <location filename="../app/task_queue/task_pages.py" line="87"/>
         <source>纽本周二（怠惰）</source>
         <translation>Thread Tue. (Sloth)</translation>
     </message>
     <message>
-        <location filename="../app/task_queue/task_pages.py" line="87"/>
+        <location filename="../app/task_queue/task_pages.py" line="88"/>
         <source>纽本周三（暴食）</source>
         <translation>Thread Wed. (Gluttony)</translation>
     </message>
     <message>
-        <location filename="../app/task_queue/task_pages.py" line="88"/>
+        <location filename="../app/task_queue/task_pages.py" line="89"/>
         <source>纽本周四（忧郁）</source>
         <translation>Thread Thu. (Gloom)</translation>
     </message>
     <message>
-        <location filename="../app/task_queue/task_pages.py" line="89"/>
+        <location filename="../app/task_queue/task_pages.py" line="90"/>
         <source>纽本周五（傲慢）</source>
         <translation>Thread Fri. (Pride)</translation>
     </message>
     <message>
-        <location filename="../app/task_queue/task_pages.py" line="90"/>
+        <location filename="../app/task_queue/task_pages.py" line="91"/>
         <source>纽本周六（嫉妒）</source>
         <translation>Thread Sat. (Envy)</translation>
     </message>
     <message>
-        <location filename="../app/task_queue/task_pages.py" line="91"/>
+        <location filename="../app/task_queue/task_pages.py" line="92"/>
         <source>纽本周日（暴怒）</source>
         <translation>Thread Sun. (Wrath)</translation>
     </message>
@@ -1902,32 +1902,32 @@ Entering a formation code will overwrite your current team configuration.</trans
 <context>
     <name>LabelWithSpinBox</name>
     <message>
-        <location filename="../app/page_card.py" line="133"/>
+        <location filename="../app/page_card.py" line="134"/>
         <source>截图间隔</source>
         <translation>Screenshot interval</translation>
     </message>
     <message>
-        <location filename="../app/page_card.py" line="138"/>
+        <location filename="../app/page_card.py" line="139"/>
         <source>鼠标活动间隔</source>
         <translation>Mouse activity interval</translation>
     </message>
     <message>
-        <location filename="../app/page_card.py" line="143"/>
+        <location filename="../app/page_card.py" line="144"/>
         <source>鼠标按下持续时间</source>
         <translation>Mouse press duration</translation>
     </message>
     <message>
-        <location filename="../app/page_card.py" line="148"/>
+        <location filename="../app/page_card.py" line="149"/>
         <source>仅在使用异步方法进行鼠标输入时生效，单位为秒，每次鼠标按下都会增加对应的延迟</source>
         <translation>Only effective when using asynchronous method for mouse input, unit is seconds, each mouse press will add corresponding delay</translation>
     </message>
     <message>
-        <location filename="../app/task_queue/task_pages.py" line="55"/>
+        <location filename="../app/task_queue/task_pages.py" line="56"/>
         <source>经验本次数</source>
         <translation>EXP count</translation>
     </message>
     <message>
-        <location filename="../app/task_queue/task_pages.py" line="56"/>
+        <location filename="../app/task_queue/task_pages.py" line="57"/>
         <source>纽本次数</source>
         <translation>Thread count</translation>
     </message>
@@ -2139,7 +2139,7 @@ To stop seeing this notice, disable &quot;HDR detection warning&quot; under Sett
 <context>
     <name>MirrorSpinBox</name>
     <message>
-        <location filename="../app/task_queue/task_fields.py" line="111"/>
+        <location filename="../app/task_queue/task_fields.py" line="92"/>
         <source>坐牢次数</source>
         <translation>Farming times</translation>
     </message>
@@ -2152,12 +2152,12 @@ To stop seeing this notice, disable &quot;HDR detection warning&quot; under Sett
         <translation>Nickname</translation>
     </message>
     <message>
-        <location filename="../app/page_card.py" line="198"/>
+        <location filename="../app/page_card.py" line="199"/>
         <source>编队1</source>
         <translation>Team1</translation>
     </message>
     <message>
-        <location filename="../app/page_card.py" line="351"/>
+        <location filename="../app/page_card.py" line="352"/>
         <source>编队</source>
         <translation>Team</translation>
     </message>
@@ -2345,17 +2345,17 @@ To stop seeing this notice, disable &quot;HDR detection warning&quot; under Sett
 <context>
     <name>PageCard</name>
     <message>
-        <location filename="../app/page_card.py" line="100"/>
+        <location filename="../app/page_card.py" line="101"/>
         <source>常规设置</source>
         <translation>General</translation>
     </message>
     <message>
-        <location filename="../app/page_card.py" line="101"/>
+        <location filename="../app/page_card.py" line="102"/>
         <source>高级设置</source>
         <translation>Advanced</translation>
     </message>
     <message>
-        <location filename="../app/page_card.py" line="280"/>
+        <location filename="../app/page_card.py" line="281"/>
         <source>镜 牢 进 度 </source>
         <translation>Mirror Progress</translation>
     </message>
@@ -2363,43 +2363,43 @@ To stop seeing this notice, disable &quot;HDR detection warning&quot; under Sett
 <context>
     <name>PageMirror</name>
     <message>
-        <location filename="../app/page_card.py" line="285"/>
-        <location filename="../app/page_card.py" line="304"/>
+        <location filename="../app/page_card.py" line="286"/>
+        <location filename="../app/page_card.py" line="305"/>
         <source>镜 牢 进 度 ( 普 通 ) </source>
         <translation>Mirror Progress (Normal)</translation>
     </message>
     <message>
-        <location filename="../app/page_card.py" line="380"/>
+        <location filename="../app/page_card.py" line="381"/>
         <source>创建空白队伍</source>
         <translation>Create Empty Team</translation>
     </message>
     <message>
-        <location filename="../app/page_card.py" line="384"/>
+        <location filename="../app/page_card.py" line="385"/>
         <source>从现有配置创建</source>
         <translation>Create from Configuration</translation>
     </message>
     <message>
-        <location filename="../app/page_card.py" line="394"/>
+        <location filename="../app/page_card.py" line="395"/>
         <source>选择队伍配置文件</source>
         <translation>Select Team Configuration</translation>
     </message>
     <message>
-        <location filename="../app/page_card.py" line="403"/>
+        <location filename="../app/page_card.py" line="404"/>
         <source>导入失败</source>
         <translation>Import Failed</translation>
     </message>
     <message>
-        <location filename="../app/page_card.py" line="403"/>
+        <location filename="../app/page_card.py" line="404"/>
         <source>无法读取配置文件，请检查文件格式是否正确。</source>
         <translation>Unable to read the configuration file. Please check if the file format is correct.</translation>
     </message>
     <message>
-        <location filename="../app/page_card.py" line="410"/>
+        <location filename="../app/page_card.py" line="411"/>
         <source>缺少字段</source>
         <translation>Missing Field</translation>
     </message>
     <message>
-        <location filename="../app/page_card.py" line="411"/>
+        <location filename="../app/page_card.py" line="412"/>
         <source>配置文件中缺少以下字段：
 - {missing_text}
 
@@ -2410,53 +2410,53 @@ To stop seeing this notice, disable &quot;HDR detection warning&quot; under Sett
 These fields will be populated with default values. Do you wish to continue?</translation>
     </message>
     <message>
-        <location filename="../app/page_card.py" line="414"/>
+        <location filename="../app/page_card.py" line="415"/>
         <source>继续</source>
         <translation>Continue</translation>
     </message>
     <message>
-        <location filename="../app/page_card.py" line="415"/>
+        <location filename="../app/page_card.py" line="416"/>
         <source>取消</source>
         <translation>Cancel</translation>
     </message>
     <message>
-        <location filename="../app/page_card.py" line="430"/>
+        <location filename="../app/page_card.py" line="431"/>
         <source>无可用队伍槽位</source>
         <translation>No available team slots</translation>
     </message>
     <message>
-        <location filename="../app/page_card.py" line="430"/>
+        <location filename="../app/page_card.py" line="431"/>
         <source>已达到最大队伍数量（20个），无法创建新队伍。</source>
         <translation>The maximum number of teams (20) has been reached; a new team cannot be created.</translation>
     </message>
     <message>
-        <location filename="../app/page_card.py" line="447"/>
+        <location filename="../app/page_card.py" line="448"/>
         <source>导入成功</source>
         <translation>Import successful</translation>
     </message>
     <message>
-        <location filename="../app/page_card.py" line="448"/>
+        <location filename="../app/page_card.py" line="449"/>
         <source>已成功从文件创建队伍 {team_num}</source>
         <translation>Team {team_num} successfully created from file</translation>
     </message>
     <message>
-        <location filename="../app/page_card.py" line="457"/>
+        <location filename="../app/page_card.py" line="458"/>
         <source>创建失败</source>
         <translation>Creation Failed</translation>
     </message>
     <message>
-        <location filename="../app/page_card.py" line="457"/>
+        <location filename="../app/page_card.py" line="458"/>
         <source>创建队伍时出错：{str(e)}</source>
         <translation>Error creating team: {str(e)}</translation>
     </message>
     <message>
-        <location filename="../app/page_card.py" line="530"/>
+        <location filename="../app/page_card.py" line="531"/>
         <source>添加队伍</source>
         <translation>Add Team</translation>
     </message>
     <message>
-        <location filename="../app/page_card.py" line="282"/>
-        <location filename="../app/page_card.py" line="302"/>
+        <location filename="../app/page_card.py" line="283"/>
+        <location filename="../app/page_card.py" line="303"/>
         <source>镜 牢 进 度 ( 困 难 ) </source>
         <translation>Hard Mode Mirror Progress</translation>
     </message>
@@ -2831,7 +2831,7 @@ These fields will be populated with default values. Do you wish to continue?</tr
         <translation>The settings below apply to all tasks</translation>
     </message>
     <message>
-        <location filename="../app/task_queue/task_pages.py" line="146"/>
+        <location filename="../app/task_queue/task_pages.py" line="147"/>
         <source>使用「一键长草 → 镜牢」中启用的编队</source>
         <translation>Uses the teams enabled in Farming → Mirror</translation>
     </message>
@@ -2849,22 +2849,22 @@ These fields will be populated with default values. Do you wish to continue?</tr
         <translation>Add</translation>
     </message>
     <message>
-        <location filename="../app/task_queue/queue_list.py" line="29"/>
+        <location filename="../app/task_queue/texts.py" line="11"/>
         <source>日常任务</source>
         <translation>Daily Tasks</translation>
     </message>
     <message>
-        <location filename="../app/task_queue/queue_list.py" line="30"/>
+        <location filename="../app/task_queue/texts.py" line="12"/>
         <source>领取奖励</source>
         <translation>Claim Rewards</translation>
     </message>
     <message>
-        <location filename="../app/task_queue/queue_list.py" line="31"/>
+        <location filename="../app/task_queue/texts.py" line="13"/>
         <source>狂气换体</source>
         <translation>Lunacy2Enk</translation>
     </message>
     <message>
-        <location filename="../app/task_queue/queue_list.py" line="32"/>
+        <location filename="../app/task_queue/texts.py" line="14"/>
         <source>镜牢</source>
         <translation>Mirror</translation>
     </message>
@@ -2874,45 +2874,45 @@ These fields will be populated with default values. Do you wish to continue?</tr
         <translation>Schedule {0}</translation>
     </message>
     <message>
-        <location filename="../app/task_queue/queue_list.py" line="183"/>
+        <location filename="../app/task_queue/queue_list.py" line="163"/>
         <source>拖动调整顺序，右键复制或重命名</source>
         <translation>Drag to reorder, right-click to copy or rename</translation>
     </message>
     <message>
-        <location filename="../app/task_queue/queue_list.py" line="184"/>
+        <location filename="../app/task_queue/queue_list.py" line="164"/>
         <source>列表是空的，点击「添加」新建任务</source>
         <translation>The list is empty, click &quot;Add&quot; to create a task</translation>
     </message>
     <message>
-        <location filename="../app/task_queue/queue_list.py" line="415"/>
-        <location filename="../app/task_queue/queue_list.py" line="475"/>
+        <location filename="../app/task_queue/queue_list.py" line="395"/>
+        <location filename="../app/task_queue/queue_list.py" line="455"/>
         <source>重命名</source>
         <translation>Rename</translation>
     </message>
     <message>
-        <location filename="../app/task_queue/queue_list.py" line="414"/>
-        <location filename="../app/task_queue/queue_list.py" line="477"/>
+        <location filename="../app/task_queue/queue_list.py" line="394"/>
+        <location filename="../app/task_queue/queue_list.py" line="457"/>
         <source>复制</source>
         <translation>Copy</translation>
     </message>
     <message>
-        <location filename="../app/task_queue/queue_list.py" line="479"/>
+        <location filename="../app/task_queue/queue_list.py" line="459"/>
         <source>上移</source>
         <translation>Move up</translation>
     </message>
     <message>
-        <location filename="../app/task_queue/queue_list.py" line="482"/>
+        <location filename="../app/task_queue/queue_list.py" line="462"/>
         <source>下移</source>
         <translation>Move down</translation>
     </message>
     <message>
-        <location filename="../app/task_queue/queue_list.py" line="416"/>
-        <location filename="../app/task_queue/queue_list.py" line="485"/>
+        <location filename="../app/task_queue/queue_list.py" line="396"/>
+        <location filename="../app/task_queue/queue_list.py" line="465"/>
         <source>删除</source>
         <translation>Delete</translation>
     </message>
     <message>
-        <location filename="../app/task_queue/queue_list.py" line="496"/>
+        <location filename="../app/task_queue/queue_list.py" line="476"/>
         <source>添加任务</source>
         <translation>Add task</translation>
     </message>
