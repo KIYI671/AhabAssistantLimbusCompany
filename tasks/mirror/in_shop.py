@@ -11,6 +11,7 @@ from tasks.base.back_init_menu import back_init_menu
 from tasks.base.retry import retry
 from tasks.mirror import fusion_result, must_be_abandoned, must_purchase
 from utils.image_utils import ImageUtils
+from utils.timing import sleep_gameplay
 
 
 class Shop:
@@ -302,7 +303,7 @@ class Shop:
                         f"mirror/shop/keyword/keyword_{self.system}.png",
                         take_screenshot=True,
                     )
-                    sleep(0.5)
+                    sleep_gameplay(0.5)
                     auto.click_element("mirror/shop/refresh_keyword_confirm_assets.png")
                     for _ in range(3):
                         if auto.find_element(
@@ -600,7 +601,7 @@ class Shop:
                     try:
                         gift_position = my_list[sequence]
                         auto.mouse_click(gift_position[0], gift_position[1])
-                        sleep(0.75)
+                        sleep_gameplay(0.75)
                     except IndexError:
                         msg = f"饰品舍弃列表已经没有第{sequence + 1}项了"
                         log.debug(msg)
@@ -829,7 +830,7 @@ class Shop:
                             continue
                         else:
                             auto.mouse_click(sell_gift[0], sell_gift[1])
-                            sleep(cfg.mouse_action_interval)
+                            sleep_gameplay(cfg.mouse_action_interval)
                         auto.click_element(
                             "mirror/shop/enhance_and_fuse_and_sell_confirm_assets.png",
                             model="normal",
@@ -1208,7 +1209,7 @@ class Shop:
             coins = sorted(coins, key=lambda x: x[0])
             select_mode = 2 - mode
             auto.mouse_click(coins[select_mode][0], coins[select_mode][1])
-            sleep(0.5)
+            sleep_gameplay(0.5)
             auto.click_element("mirror/shop/skill_replacement_confirm_assets.png")
             auto.click_element("mirror/shop/skill_replacement_confirm_assets.png")
             if retry() is False:

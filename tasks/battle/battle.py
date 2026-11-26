@@ -17,6 +17,7 @@ from tasks import sins
 from tasks.base.retry import retry
 from tasks.event import event_handling
 from utils.image_utils import ImageUtils
+from utils.timing import sleep_gameplay
 from utils.utils import find_skill3
 
 DEFENSE_FOR_SOLO_TURN_LIMIT = 5
@@ -139,7 +140,7 @@ class Battle:
                 else:
                     msg = "第一回合全员防御失败，本场战斗改为P+Enter"
                 auto.key_press("p")
-                sleep(0.5)
+                sleep_gameplay(0.5)
                 auto.key_press("enter")
             elif use_limited_defense:
                 defense_for_solo_state.consume_turn()
@@ -150,7 +151,7 @@ class Battle:
             sleep(2)
             if not auto.find_element("battle/pause_assets.png", take_screenshot=True):
                 auto.key_press("p")
-                sleep(0.5)
+                sleep_gameplay(0.5)
                 auto.key_press("enter")
         elif self.defense_all_time:
             if auto.find_element("battle/gear_left.png", threshold=0.9):
@@ -165,16 +166,16 @@ class Battle:
             if self._chain_battle(prioritize_skill_3=use_prioritize_skill_3) is False:
                 msg = f"使用{mode_name}三技能的链接战失败，本场战斗改为P+Enter"
                 auto.key_press("p")
-                sleep(0.5)
+                sleep_gameplay(0.5)
                 auto.key_press("enter")
             sleep(2)
             if not auto.find_element("battle/pause_assets.png", take_screenshot=True):
                 auto.key_press("p")
-                sleep(0.5)
+                sleep_gameplay(0.5)
                 auto.key_press("enter")
         else:
             auto.key_press("p")
-            sleep(0.5)
+            sleep_gameplay(0.5)
             auto.key_press("enter")
             msg = "使用P+Enter开始战斗"
             if self.mouse_click_rate:
@@ -485,7 +486,7 @@ class Battle:
                 center_x = width // 2
                 center_y = height // 2
                 auto.mouse_click(center_x - random_number, center_y + random_number, times=1)
-                sleep(0.15)
+                sleep_gameplay(0.15)
 
             # 战斗结束，进入结算页面
             if auto.click_element("battle/battle_finish_confirm_assets.png", click=False) or auto.find_element(
@@ -668,7 +669,7 @@ class Battle:
 
             auto.mouse_to_blank()
 
-            sleep(0.5)
+            sleep_gameplay(0.5)
 
             auto.key_press("enter")
 
@@ -698,9 +699,9 @@ class Battle:
             for skill in skill_list:
                 auto.mouse_click(skill[0], skill[1])
                 if cfg.simulator:
-                    sleep(cfg.mouse_action_interval)
+                    sleep_gameplay(cfg.mouse_action_interval)
                 else:
-                    sleep(cfg.mouse_action_interval // 1.5)
+                    sleep_gameplay(cfg.mouse_action_interval // 1.5)
 
             skill_list.insert(0, gear_left)
             skill_list.append([gear_right[0] + 5 * skill_nums * scale, gear_right[1] + 150 * scale])
