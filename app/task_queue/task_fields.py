@@ -11,7 +11,7 @@ from qfluentwidgets import CaptionLabel
 
 from app.base_combination import LabelWithComboBox, LabelWithSpinBox, MirrorSpinBox
 from app.base_tools import BaseCheckBox
-from module.config.task_queue import TaskBase
+from module.config.task_queue import TaskBase, get_field, set_field
 
 GLOBAL_HINT = QT_TRANSLATE_NOOP("TaskPage", "以下设置对所有任务生效")
 
@@ -28,29 +28,11 @@ class TaskStore(QObject):
     def get_value(self, key: str, default=None):
         if self.task is None:
             return default
-        target, name = _resolve(self.task, key)
-        return getattr(target, name, default)
+        return get_field(self.task, key, default)
 
     def set_value(self, key: str, value) -> None:
-        if self.task is None:
-            return
-        target, name = _resolve(self.task, key)
-        old = getattr(target, name)
-        if isinstance(old, int) and not isinstance(old, bool) and isinstance(value, bool):
-            value = int(value)  # 困牢等 0/1/2 字段：普通勾选写 1
-        if old == value:
-            return
-        setattr(target, name, value)
-        self.changed.emit(key)
-
-
-def _resolve(task, key: str):
-    """支持 "re_claim.mail" 这样的嵌套字段"""
-    *parents, name = key.split(".")
-    target = task
-    for parent in parents:
-        target = getattr(target, parent)
-    return target, name
+        if self.task is not None and set_field(self.task, key, value):
+            self.changed.emit(key)
 
 
 class GlobalHint(CaptionLabel):
