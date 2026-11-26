@@ -39,9 +39,9 @@ from app.language_manager import SUPPORTED_LANG_NAME, LanguageManager
 from app.schedule.setting_group import ScheduleSettingGroup
 from app.theme_pack_setting_interface import ThemePackSettingDialog
 from app.widget.setting_nav import SettingNav
-from module import schedules
 from module.config import cfg, theme_list
-from module.schedules import ScheduleBook
+from module.schedule.book import ScheduleBook
+from module.schedule.system_task import system_scheduler
 from module.update.check_update import check_update
 from utils.adb_endpoint import normalize_adb_host
 from utils.schedule_helper import ScheduleHelper
@@ -275,7 +275,7 @@ class SettingInterface(QWidget):
         )
         self.autodaily_group = ScheduleSettingGroup(
             QT_TRANSLATE_NOOP("BaseSettingCardGroup", "定时执行 AALC"),
-            ScheduleBook(cfg.config.schedules, cfg.config.task_queue, schedules.system_scheduler, cfg.save),
+            ScheduleBook(cfg.config.schedules, cfg.config.task_queue, system_scheduler, cfg.save),
             self.scroll_widget,
         )
         self.minimize_to_tray_card = SwitchSettingCard(

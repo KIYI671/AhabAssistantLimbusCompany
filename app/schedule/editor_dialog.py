@@ -20,7 +20,7 @@ from app.schedule.texts import EXIT_ACTIONS, POWER_ACTIONS, schedule_title, tr
 from app.task_queue.queue_list import TaskQueueList, build_add_menu
 from app.task_queue.task_pages import DailyTaskPage, EnkephalinTaskPage, RewardTaskPage, ScheduledMirrorTaskPage
 from module.config.task_queue import AfterCompletion, Schedule
-from module.schedules import ScheduleBook
+from module.schedule.book import ScheduleBook
 
 
 class AfterCompletionFields(QWidget):

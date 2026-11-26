@@ -19,82 +19,86 @@ class FakeScheduler:
 
 @pytest.fixture(scope="module")
 def mods(isolated_import):
-    return isolated_import("module.config.task_queue"), isolated_import("module.schedules")
+    return (
+        isolated_import("module.config.task_queue"),
+        isolated_import("module.schedule.system_task"),
+        isolated_import("module.schedule.book"),
+    )
 
 
 def test_task_name_keeps_legacy_names(mods):
-    tq, sc = mods
-    assert sc.scheduler_task_name(tq.Schedule(id="autodaily")) == "AALC Daily Task"
-    assert sc.scheduler_task_name(tq.Schedule(id="autodaily3")) == "AALC Daily Task3"
-    assert sc.scheduler_task_name(tq.Schedule(id="autodaily_ab12cd34")) == "AALC Schedule ab12cd34"
+    tq, system_task, book_mod = mods
+    assert system_task.scheduler_task_name(tq.Schedule(id="autodaily")) == "AALC Daily Task"
+    assert system_task.scheduler_task_name(tq.Schedule(id="autodaily3")) == "AALC Daily Task3"
+    assert system_task.scheduler_task_name(tq.Schedule(id="autodaily_ab12cd34")) == "AALC Schedule ab12cd34"
 
 
 def test_enable_registers_and_disable_unregisters(mods):
-    tq, sc = mods
+    tq, system_task, book_mod = mods
     fake = FakeScheduler()
     schedule = tq.Schedule(id="autodaily2", time="07:05")
-    assert sc.set_enabled(schedule, True, fake) is True
+    assert system_task.set_enabled(schedule, True, fake) is True
     assert fake.tasks == {"AALC Daily Task2": ("start --exit autodaily2", 7, 5)}
-    sc.set_enabled(schedule, False, fake)
+    system_task.set_enabled(schedule, False, fake)
     assert schedule.enabled is False
     assert fake.tasks == {}
 
 
 def test_sync_is_idempotent(mods):
-    tq, sc = mods
+    tq, system_task, book_mod = mods
     fake = FakeScheduler()
     schedule = tq.Schedule(id="autodaily", enabled=True, time="01:00")
-    sc.sync(schedule, fake)
-    sc.sync(schedule, fake)
+    system_task.sync(schedule, fake)
+    system_task.sync(schedule, fake)
     assert fake.tasks == {"AALC Daily Task": ("start --exit autodaily", 1, 0)}
 
 
 def test_time_change_reregisters_only_when_enabled(mods):
-    tq, sc = mods
+    tq, system_task, book_mod = mods
     fake = FakeScheduler()
     schedule = tq.Schedule(id="autodaily", enabled=False)
-    sc.set_time(schedule, "23:30", fake)
+    system_task.set_time(schedule, "23:30", fake)
     assert schedule.time == "23:30"
     assert fake.tasks == {}
     schedule.enabled = True
-    sc.set_time(schedule, "06:45", fake)
+    system_task.set_time(schedule, "06:45", fake)
     assert fake.tasks["AALC Daily Task"] == ("start --exit autodaily", 6, 45)
 
 
 def test_bad_time_is_ignored(mods):
-    tq, sc = mods
+    tq, system_task, book_mod = mods
     schedule = tq.Schedule(time="08:00")
-    sc.set_time(schedule, "25:99", FakeScheduler())
+    system_task.set_time(schedule, "25:99", FakeScheduler())
     assert schedule.time == "08:00"
 
 
 def test_register_failure_reports_false(mods):
-    tq, sc = mods
+    tq, system_task, book_mod = mods
     schedule = tq.Schedule(id="autodaily")
-    assert sc.set_enabled(schedule, True, FakeScheduler(fail=True)) is False
+    assert system_task.set_enabled(schedule, True, FakeScheduler(fail=True)) is False
     assert schedule.enabled is True  # 设置照样保存，只是系统里没注册上
 
 
 def test_add_and_remove(mods):
-    tq, sc = mods
+    tq, system_task, book_mod = mods
     fake = FakeScheduler()
     schedules = []
-    schedule = sc.add(schedules)
+    schedule = book_mod.add(schedules)
     assert schedules == [schedule]
     assert [t.type for t in schedule.tasks] == ["daily", "reward", "enkephalin", "mirror"]
     assert not any(t.enabled for t in schedule.tasks)
-    sc.set_enabled(schedule, True, fake)
-    assert sc.remove(schedules, schedule, fake) is True
+    system_task.set_enabled(schedule, True, fake)
+    assert book_mod.remove(schedules, schedule, fake) is True
     assert schedules == [] and fake.tasks == {}
-    assert sc.remove(schedules, schedule, fake) is False
+    assert book_mod.remove(schedules, schedule, fake) is False
 
 
 def test_number_follows_position_or_legacy_id(mods):
-    tq, sc = mods
+    tq, system_task, book_mod = mods
     first, second = tq.Schedule(), tq.Schedule()
-    assert sc.number(second, [first, second]) == 2
-    assert sc.number(tq.Schedule(id="autodaily4"), []) == 4
-    assert sc.number(tq.Schedule(id="autodaily_x"), []) == 1
+    assert book_mod.number(second, [first, second]) == 2
+    assert book_mod.number(tq.Schedule(id="autodaily4"), []) == 4
+    assert book_mod.number(tq.Schedule(id="autodaily_x"), []) == 1
 
 
 class Counter:
@@ -105,26 +109,26 @@ class Counter:
         self.calls += 1
 
 
-def make_book(sc, schedules=None, main_tasks=None):
+def make_book(book_module, schedules=None, main_tasks=None):
     fake, save = FakeScheduler(), Counter()
     schedules = [] if schedules is None else schedules
-    book = sc.ScheduleBook(schedules, main_tasks or [], lambda: fake, save)
+    book = book_module.ScheduleBook(schedules, main_tasks or [], lambda: fake, save)
     return book, fake, save
 
 
 def test_book_add_appends_to_given_list_and_saves(mods):
-    _, sc = mods
+    _, system_task, book_mod = mods
     schedules = []
-    book, _, save = make_book(sc, schedules)
+    book, _, save = make_book(book_mod, schedules)
     schedule = book.add()
     assert schedules == [schedule] and book.schedules is schedules
     assert save.calls == 1
 
 
 def test_book_set_enabled_syncs_and_saves(mods):
-    tq, sc = mods
+    tq, system_task, book_mod = mods
     schedule = tq.Schedule(id="autodaily_ab12cd34", time="07:05")
-    book, fake, save = make_book(sc, [schedule])
+    book, fake, save = make_book(book_mod, [schedule])
     book.set_enabled(schedule, True)
     assert fake.tasks == {"AALC Schedule ab12cd34": ("start --exit autodaily_ab12cd34", 7, 5)}
     book.set_enabled(schedule, False)
@@ -133,19 +137,19 @@ def test_book_set_enabled_syncs_and_saves(mods):
 
 
 def test_book_set_time_reregisters_and_saves(mods):
-    tq, sc = mods
+    tq, system_task, book_mod = mods
     schedule = tq.Schedule(id="autodaily", enabled=True, time="01:00")
-    book, fake, save = make_book(sc, [schedule])
+    book, fake, save = make_book(book_mod, [schedule])
     book.set_time(schedule, "06:45")
     assert fake.tasks == {"AALC Daily Task": ("start --exit autodaily", 6, 45)}
     assert save.calls == 1
 
 
 def test_book_remove_unregisters_and_saves_only_when_removed(mods):
-    tq, sc = mods
+    tq, system_task, book_mod = mods
     schedule = tq.Schedule(id="autodaily", enabled=True)
     schedules = [schedule]
-    book, fake, save = make_book(sc, schedules)
+    book, fake, save = make_book(book_mod, schedules)
     fake.tasks["AALC Daily Task"] = ("start --exit autodaily", 0, 0)
     assert book.remove(schedule) is True
     assert schedules == [] and fake.tasks == {}
@@ -155,9 +159,9 @@ def test_book_remove_unregisters_and_saves_only_when_removed(mods):
 
 
 def test_book_apply_edit_writes_fields_and_saves(mods):
-    tq, sc = mods
+    tq, system_task, book_mod = mods
     schedule = tq.Schedule(name="old")
-    book, _, save = make_book(sc, [schedule])
+    book, _, save = make_book(book_mod, [schedule])
     tasks = [tq.DailyTask()]
     after = tq.AfterCompletion(actions=["exit_game"], power_action="sleep")
     book.apply_edit(schedule, "  早上  ", tasks, after)
@@ -169,9 +173,9 @@ def test_book_apply_edit_writes_fields_and_saves(mods):
 
 
 def test_book_copy_main_tasks_gives_independent_copies(mods):
-    tq, sc = mods
+    tq, system_task, book_mod = mods
     main = [tq.DailyTask(enabled=False), tq.MirrorTask(name="镜牢 A")]
-    book, _, _ = make_book(sc, main_tasks=main)
+    book, _, _ = make_book(book_mod, main_tasks=main)
     copies = book.copy_main_tasks()
     assert [t.model_dump(exclude={"id"}) for t in copies] == [t.model_dump(exclude={"id"}) for t in main]
     assert not {t.id for t in copies} & {t.id for t in main}

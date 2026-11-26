@@ -28,7 +28,7 @@ from app.schedule.texts import (
     tr,
 )
 from module.config.task_queue import Schedule
-from module.schedules import ScheduleBook
+from module.schedule.book import ScheduleBook
 
 
 class ScheduleCard(SettingCard):

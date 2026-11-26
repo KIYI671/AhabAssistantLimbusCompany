@@ -14,7 +14,7 @@ from module.after_completion_types import (
     POWER_ACTION_SLEEP,
 )
 from module.config.task_queue import AfterCompletion, Schedule
-from module.schedules import number as schedule_number
+from module.schedule.book import number as schedule_number
 
 CONTEXT = "ScheduleEditor"
 
