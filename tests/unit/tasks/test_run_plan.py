@@ -50,9 +50,9 @@ def test_split_combat(mods, times, max_times, expected):
 def test_daily_teams(mods):
     tq, rp = mods
     task = tq.DailyTask(team=5, exp_team_3_4=2, thread_team_6=4)
-    assert rp.exp_team(task, "3_4") == 5 and rp.thread_team(task, 6) == 5
+    assert rp.daily_team(task, "exp", "3_4") == 5 and rp.daily_team(task, "thread", 6) == 5
     task.exp_targeted = task.thread_targeted = True
-    assert rp.exp_team(task, "3_4") == 2 and rp.thread_team(task, 6) == 4
+    assert rp.daily_team(task, "exp", "3_4") == 2 and rp.daily_team(task, "thread", 6) == 4
 
 
 def test_hard_mirror_and_times(mods):

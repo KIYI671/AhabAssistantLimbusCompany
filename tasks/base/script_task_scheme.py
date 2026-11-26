@@ -45,13 +45,12 @@ from tasks.base.run_plan import (
     RunContext,
     RunPlan,
     any_team_usable,
+    daily_team,
     daily_times,
-    exp_team,
     is_hard_mirror,
     mirror_times,
     split_combat,
     team_usable,
-    thread_team,
 )
 from tasks.battle import battle
 from tasks.daily.get_prize import get_mail_prize, get_pass_prize
@@ -248,8 +247,8 @@ def run_daily(task: DailyTask, ctx: RunContext) -> None:
     back_init_menu()
     make_enkephalin_module()
     exp_times, thread_times = daily_times(task, ctx.take_finished_battle())
-    exp_team_num = exp_team(task, calculate_the_teams())
-    thread_team_num = thread_team(task, get_day_of_week())
+    exp_team_num = daily_team(task, "exp", calculate_the_teams())
+    thread_team_num = daily_team(task, "thread", get_day_of_week())
     if task.continuous_combat:
         exp_batches = split_combat(exp_times, task.continuous_combat_max)
         thread_batches = split_combat(thread_times, task.continuous_combat_max)

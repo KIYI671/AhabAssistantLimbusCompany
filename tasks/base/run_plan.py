@@ -66,17 +66,13 @@ def split_combat(times: int, max_times: int) -> list[int]:
     return batches
 
 
-def exp_team(task: DailyTask, day_key: str) -> int:
-    """day_key 是 calculate_the_teams() 的返回值：1_2 / 3_4 / 5_6 / 7"""
-    if task.exp_targeted:
-        return getattr(task, f"exp_team_{day_key}", task.team)
-    return task.team
+def daily_team(task: DailyTask, kind: str, day) -> int:
+    """日常本用哪一队。kind 为 "exp" 或 "thread"；开了针对性配队时按星期选，否则用默认编队。
 
-
-def thread_team(task: DailyTask, weekday: int) -> int:
-    """weekday：1 = 周一 … 7 = 周日"""
-    if task.thread_targeted:
-        return getattr(task, f"thread_team_{weekday}", task.team)
+    day：经验本是 calculate_the_teams() 的返回值（1_2 / 3_4 / 5_6 / 7），纽本是星期几（1 = 周一 … 7 = 周日）
+    """
+    if getattr(task, f"{kind}_targeted"):
+        return getattr(task, f"{kind}_team_{day}", task.team)
     return task.team
 
 
@@ -134,11 +130,28 @@ def plan_problem(
     mirror_tasks = [task for task in plan.tasks if isinstance(task, MirrorTask)]
     if not mirror_tasks:
         return None
+    return team_problem(selected_teams) or difficulty_problem(
+        mirror_tasks, selected_teams, auto_hard_mirror, hard_mirror_chance
+    )
+
+
+def team_problem(selected_teams: Mapping[int, TeamLike]) -> Problem | None:
+    """镜牢至少要启用一队，且每队都选了罪人"""
     if not selected_teams:
         return Problem("no_team")
     for number, team in selected_teams.items():
         if team.sinners_be_select == 0:
             return Problem("team_without_sinners", number)
+    return None
+
+
+def difficulty_problem(
+    mirror_tasks: list[MirrorTask],
+    selected_teams: Mapping[int, TeamLike],
+    auto_hard_mirror: bool,
+    hard_mirror_chance: int,
+) -> Problem | None:
+    """每个镜牢任务按自己的难度，看有没有能用的队伍"""
     team_uses = [(team.fixed_team_use, team.fixed_team_use_select) for team in selected_teams.values()]
     for task in mirror_tasks:
         hard = is_hard_mirror(task, auto_hard_mirror, hard_mirror_chance)

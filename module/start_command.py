@@ -35,37 +35,41 @@ def legacy_exit_to_after_completion(exit_type: int) -> AfterCompletion:
     return AfterCompletion(actions=list(actions), power_action=power_action)
 
 
+def parse_exit_value(value: str | None) -> tuple[int, bool]:
+    """--exit 后面的旧版数字协议，返回 (退出类型, 是否消耗了这个参数)。
+
+    值是可选的：缺少或不是数字时不消耗这个参数，按旧版默认退出 AALC；越界时为 0。
+    """
+    try:
+        exit_type = int(value)
+    except (TypeError, ValueError):
+        log.info("命令行参数 --exit 后缺少退出类型，默认为5, 即退出AALC")
+        return DEFAULT_EXIT_TYPE, False
+    if not 0 <= exit_type <= 8:
+        log.error(f'命令行参数 --exit 后输入值"{value}"越界')
+        return 0, True
+    return exit_type, True
+
+
 def parse_start_command(argv: list[str]) -> StartRequest:
-    """argv[0] 是程序路径"""
+    """argv[0] 是程序路径；--exit 只在 start 之后才有效"""
     start = False
     schedule_id = None
     after_completion = None
     args = list(argv[1:])
     index = 0
-    last_cmd = ""
     while index < len(args):
         arg = args[index]
         index += 1
         if arg == "start":
             start = True
-            last_cmd = "start"
-            continue
-        if arg == "--exit" and last_cmd == "start":
+        elif arg == "--exit" and start:
             value = args[index] if index < len(args) else None
             if value is not None and is_schedule_id(value):
                 schedule_id = value
                 index += 1
                 continue
-            exit_type = DEFAULT_EXIT_TYPE
-            try:
-                exit_type = int(value)
-                index += 1
-                if exit_type < 0 or exit_type > 8:
-                    log.error(f'命令行参数 --exit 后输入值"{value}"越界')
-                    exit_type = 0
-            except (TypeError, ValueError):
-                # 值是可选的：缺少或不是数字时不消耗这个参数，按旧版默认退出 AALC
-                log.info("命令行参数 --exit 后缺少退出类型，默认为5, 即退出AALC")
+            exit_type, consumed = parse_exit_value(value)
+            index += int(consumed)
             after_completion = legacy_exit_to_after_completion(exit_type)
-            continue
     return StartRequest(start=start, schedule_id=schedule_id, after_completion=after_completion)
