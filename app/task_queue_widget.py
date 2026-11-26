@@ -1,7 +1,7 @@
-"""任务列表控件：勾选、拖动排序、添加 / 复制 / 改名 / 删除。
+"""任务列表控件：显示任务列表，把勾选、拖动、添加 / 复制 / 改名 / 删除转给 TaskQueue。
 
-主界面和定时任务编辑框共用。列表直接改传入的任务列表对象（cfg 里的
-pydantic 对象），每次改动后发出 changed 信号，由使用方负责保存。
+主界面和定时任务编辑框共用。数据怎么变由 module.config.task_queue.TaskQueue
+决定；这里只负责画出来、响应鼠标键盘，改动后发出 changed 信号，由使用方保存。
 """
 
 from typing import Callable
@@ -20,12 +20,8 @@ from qfluentwidgets import (
 from qfluentwidgets import FluentIcon as FIF
 from qfluentwidgets.common.font import getFont
 
-from module.config.task_queue import (
-    TASK_TYPES,
-    TaskBase,
-    copy_task,
-    new_task,
-)
+from module.config import task_queue as tq
+from module.config.task_queue import TASK_TYPES, TaskBase, TaskQueue
 
 CONTEXT = "TaskQueue"
 
@@ -49,7 +45,7 @@ def task_type_name(task_type: str) -> str:
 
 
 def task_title(task: TaskBase) -> str:
-    return task.name or task_type_name(task.type)
+    return tq.task_title(task, task_type_name)
 
 
 def schedule_title(schedule, schedules: list | None = None) -> str:
@@ -220,11 +216,15 @@ class TaskQueueList(ListWidget):
         self.reload()
 
     # ----------------------------------------------------------------- data
+    @property
+    def queue(self) -> TaskQueue:
+        return TaskQueue(self.get_tasks(), task_type_name)
+
     def tasks(self) -> list:
         return self.get_tasks()
 
     def find_task(self, task_id: str) -> TaskBase | None:
-        return next((task for task in self.tasks() if task.id == task_id), None)
+        return self.queue.find(task_id)
 
     def selected_id(self) -> str:
         item = self.currentItem()
@@ -294,64 +294,35 @@ class TaskQueueList(ListWidget):
         self.viewport().update()
 
     # ------------------------------------------------------------- editing
+    def _edited(self, select_id: str | None = None) -> None:
+        self.reload(select_id=select_id)
+        self.changed.emit()
+
     def add_task(self, task_type: str) -> TaskBase:
-        task = new_task(task_type)
-        self._insert(task, len(self.tasks()))
+        task = self.queue.add(task_type)
+        self._edited(task.id)
         return task
 
     def duplicate_task(self, task_id: str) -> TaskBase | None:
-        tasks = self.tasks()
-        source = self.find_task(task_id)
-        if source is None:
-            return None
-        clone = copy_task(source)
-        clone.name = self._copy_name(task_title(source))
-        self._insert(clone, tasks.index(source) + 1)
+        clone = self.queue.duplicate(task_id)
+        if clone is not None:
+            self._edited(clone.id)
         return clone
 
-    def _copy_name(self, title: str) -> str:
-        titles = {task_title(t) for t in self.tasks()}
-        n = 2
-        while f"{title} ({n})" in titles:
-            n += 1
-        return f"{title} ({n})"
-
-    def _insert(self, task: TaskBase, position: int) -> None:
-        self.tasks().insert(position, task)
-        self.reload(select_id=task.id)
-        self.changed.emit()
-
     def remove_task(self, task_id: str) -> None:
-        tasks = self.tasks()
-        task = self.find_task(task_id)
-        if task is None:
+        next_id = self.queue.remove(task_id)
+        if next_id is None:
             return
-        row = tasks.index(task)
-        tasks.remove(task)
-        next_id = ""
-        if tasks:
-            next_id = tasks[min(row, len(tasks) - 1)].id
-        self.reload(select_id=next_id)
+        self._edited(next_id)
         if not next_id:
             self.taskSelected.emit("")
-        self.changed.emit()
 
     def move_task(self, task_id: str, offset: int) -> None:
-        tasks = self.tasks()
-        task = self.find_task(task_id)
-        if task is None:
-            return
-        row = tasks.index(task)
-        target = row + offset
-        if not 0 <= target < len(tasks):
-            return
-        tasks.insert(target, tasks.pop(row))
-        self.reload(select_id=task_id)
-        self.changed.emit()
+        if self.queue.move(task_id, offset):
+            self._edited(task_id)
 
     def set_all_enabled(self, enabled: bool) -> None:
-        for task in self.tasks():
-            task.enabled = enabled
+        self.queue.set_all_enabled(enabled)
         self.refresh()
         self.changed.emit()
 
@@ -370,24 +341,18 @@ class TaskQueueList(ListWidget):
     def _on_item_changed(self, item: QListWidgetItem) -> None:
         if self._reloading:
             return
-        task = self.find_task(item.data(ID_ROLE))
-        if task is None:
-            return
-        text = item.text().strip()
-        name = None if not text or text == task_type_name(task.type) else text
-        if name != task.name:
-            task.name = name
+        task_id = item.data(ID_ROLE)
+        changed = self.queue.rename(task_id, item.text())
+        task = self.find_task(task_id)
+        if task is not None:
             self.blockSignals(True)
             item.setText(task_title(task))
             self.blockSignals(False)
+        if changed:
             self.changed.emit()
 
     def _sync_order(self, *args) -> None:
-        tasks = self.tasks()
-        by_id = {task.id: task for task in tasks}
-        ordered = [by_id[self.item(row).data(ID_ROLE)] for row in range(self.count())]
-        if [t.id for t in ordered] != [t.id for t in tasks]:
-            tasks[:] = ordered
+        if self.queue.reorder([self.item(row).data(ID_ROLE) for row in range(self.count())]):
             self.changed.emit()
 
     def _on_current_changed(self, current, previous) -> None:
@@ -489,10 +454,10 @@ class TaskQueueList(ListWidget):
         self.viewport().update()
 
     def _toggle(self, item: QListWidgetItem) -> None:
-        task = self.find_task(item.data(ID_ROLE))
-        if task is None:
+        task_id = item.data(ID_ROLE)
+        if not self.queue.toggle(task_id):
             return
-        task.enabled = not task.enabled
+        task = self.find_task(task_id)
         self.blockSignals(True)
         item.setCheckState(Qt.CheckState.Checked if task.enabled else Qt.CheckState.Unchecked)
         self.blockSignals(False)
@@ -538,9 +503,7 @@ class TaskQueueList(ListWidget):
             menu.addSeparator()
             menu.addAction(delete)
         if self._editable:
-            if not menu.actions():
-                pass
-            else:
+            if menu.actions():
                 menu.addSeparator()
             add_menu = build_add_menu(self, self.add_task)
             add_menu.setTitle(tr(QT_TRANSLATE_NOOP("TaskQueue", "添加任务")))
