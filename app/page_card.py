@@ -934,9 +934,18 @@ class MarkdownViewer(QWidget):
     def reset_viewer(self):
         if os.path.exists(self.help_path):
             self.load_markdown(self.help_path)
+            self._use_css_body_font_size()
             self.text_browser.setHtml(self.html)
         else:
             self.text_browser.setPlainText(f"错误: 无法加载文件 {self.help_path}，请检查文件路径是否正确。")
+
+    def _use_css_body_font_size(self):
+        """Qt 不认 CSS 里 h1–h6 的 font-size，只按文档默认字号放大缩小。
+        默认字号要和 CSS 正文一样是 16px，否则 h4 会比正文还小（14px）。"""
+        document = self.text_browser.document()
+        font = document.defaultFont()
+        font.setPixelSize(16)
+        document.setDefaultFont(font)
 
     def handle_link_clicked(self, url: QUrl):
         """
