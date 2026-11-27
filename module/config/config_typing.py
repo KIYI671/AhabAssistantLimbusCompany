@@ -1,6 +1,8 @@
 from typing import List, Optional
 
-from pydantic import BaseModel, field_validator
+from pydantic import BaseModel
+
+from module.config.task_queue import Schedule, TaskItem
 
 
 class TeamSetting(BaseModel):
@@ -225,9 +227,6 @@ class ConfigModel(BaseModel):
     after_completion_power_action: str
     """脚本结束后的最终动作（单选）：none/sleep/hibernate/lock/shutdown"""
 
-    keep_after_completion: bool
-    """是否保持脚本结束后的操作"""
-
     language_in_program: str
     """程序语言"""
 
@@ -275,54 +274,6 @@ class ConfigModel(BaseModel):
 
     autostart: bool
     """自启动"""
-
-    autodaily: bool
-    """启用定时执行"""
-
-    autodaily_task: List[bool]
-    """定时任务列表"""
-
-    autodaily_task_exit: List[bool]
-    """定时任务退出列表: [exit_game, exit_aalc, sleep, hibernate, shutdown, lock, exit_emulator]"""
-
-    autodaily_time: str
-    """定时执行时间（HH:mm）"""
-
-    autodaily2: bool
-    """启用定时执行2"""
-
-    autodaily2_task: List[bool]
-    """定时任务2列表"""
-
-    autodaily2_task_exit: List[bool]
-    """定时任务2退出列表: [exit_game, exit_aalc, sleep, hibernate, shutdown, lock, exit_emulator]"""
-
-    autodaily_time2: str
-    """定时执行时间2（HH:mm）"""
-
-    autodaily3: bool
-    """启用定时执行3"""
-
-    autodaily3_task: List[bool]
-    """定时任务3列表"""
-
-    autodaily3_task_exit: List[bool]
-    """定时任务3退出列表: [exit_game, exit_aalc, sleep, hibernate, shutdown, lock, exit_emulator]"""
-
-    autodaily_time3: str
-    """定时执行时间3（HH:mm）"""
-
-    autodaily4: bool
-    """启用定时执行4"""
-
-    autodaily4_task: List[bool]
-    """定时任务4列表"""
-
-    autodaily4_task_exit: List[bool]
-    """定时任务4退出列表: [exit_game, exit_aalc, sleep, hibernate, shutdown, lock, exit_emulator]"""
-
-    autodaily_time4: str
-    """定时执行时间4（HH:mm）"""
 
     minimize_to_tray: bool
     """最小化到托盘"""
@@ -393,9 +344,6 @@ class ConfigModel(BaseModel):
     image_resource_source: str
     """图片资源同步源"""
 
-    default_page: int
-    """保存启动后的页面"""
-
     set_windows: bool
     """是否进行自动窗口设置"""
 
@@ -411,125 +359,8 @@ class ConfigModel(BaseModel):
     select_team_by_order: bool
     """是否按顺序（而非名称）选择队伍"""
 
-    daily_task: bool
-    """是否进行日常本"""
-
-    set_EXP_count: int
-    """设置经验本的次数"""
-
-    set_thread_count: int
-    """设置纽本的次数"""
-
-    daily_teams: int
-    """设置日常本使用的队伍"""
-
-    targeted_teaming_EXP: bool
-    """经验本指定队伍"""
-
-    EXP_day_1_2: int
-    """周一/二经验本队伍"""
-
-    EXP_day_3_4: int
-    """周三/四经验本队伍"""
-
-    EXP_day_5_6: int
-    """周五/六经验本队伍"""
-
-    EXP_day_7: int
-    """周日经验本队伍"""
-
-    targeted_teaming_thread: bool
-    """纽本指定队伍"""
-
-    use_continuous_combat: bool
-    """是否使用连续作战"""
-
-    use_continuous_combat_select: int
-    """一场连续作战的最大次数"""
-
-    thread_day_1: int
-    """周一纽本队伍"""
-
-    thread_day_2: int
-    """周二纽本队伍"""
-
-    thread_day_3: int
-    """周三纽本队伍"""
-
-    thread_day_4: int
-    """周四纽本队伍"""
-
-    thread_day_5: int
-    """周五纽本队伍"""
-
-    thread_day_6: int
-    """周六纽本队伍"""
-
-    thread_day_7: int
-    """周日纽本队伍"""
-
-    get_reward: bool
-    """是否进行获取奖励"""
-
-    claim_mission_rewards: bool
-    """领取日常、周常及赛季任务奖励"""
-
-    claim_battle_pass_rewards: bool
-    """领取通行证奖励"""
-
-    claim_mail_rewards: bool
-    """领取邮件奖励"""
-
-    buy_enkephalin: bool
-    """是否自动购买体力"""
-
-    set_lunacy_to_enkephalin: int
-    """购买体力次数"""
-
-    Dr_Grandet_mode: bool
-    """葛朗台模式"""
-
     skip_enkephalin: bool
     """跳过换体"""
-
-    mirror: bool
-    """是否进行自动镜牢"""
-
-    set_mirror_count: int
-    """镜牢的次数"""
-
-    hard_mirror: int | bool
-    """进行困难镜牢"""
-
-    no_weekly_bonuses: int | bool
-    """不使用每周加成"""
-
-    floor_3_exit: bool
-    """只打三层"""
-
-    infinite_dungeons: bool
-    """无限刷牢"""
-
-    save_rewards: bool
-    """保存奖励不领"""
-
-    hard_mirror_single_bonuses: bool
-    """困难镜牢使用单次加成"""
-
-    select_event_pack: bool
-    """第五层选择活动卡包"""
-
-    skip_event_pack: bool
-    """第五层跳过活动卡包"""
-
-    re_claim_rewards: bool
-    """再次执行领取奖励任务"""
-
-    not_skip_whitegossypium: bool
-    """不跳过白棉花"""
-
-    fight_to_last_man: bool
-    """战斗直到全灭"""
 
     teams_be_select_num: int
     """被选中的队伍数量"""
@@ -552,9 +383,11 @@ class ConfigModel(BaseModel):
     teams: dict[str, TeamSetting]
     """队伍设置"""
 
-    @field_validator("use_continuous_combat_select")
-    @classmethod
-    def _coerce_continuous_combat_select(cls, v: int) -> int:
-        if v < 1:
-            return 1
-        return v
+    task_queue: List[TaskItem]
+    """主界面的任务列表（按顺序执行）"""
+
+    schedules: List[Schedule]
+    """定时执行，每个定时任务有自己的任务列表和收尾设置"""
+
+    last_selected_task: str
+    """主界面上次选中的项：任务 id，或 "set_windows" """

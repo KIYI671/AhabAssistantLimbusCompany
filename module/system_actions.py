@@ -84,38 +84,6 @@ def set_after_completion_config(actions: Iterable[str] | None, power_action: str
     cfg.set_value("after_completion_power_action", normalized_power)
 
 
-def autodaily_exit_to_after_completion_config(exit_setting: list[bool] | tuple[bool, ...]) -> tuple[list[str], str]:
-    """
-    将 autodaily_task_exit([exit_game, exit_aalc, sleep, hibernate, shutdown, lock, exit_emulator]) 转换为统一动作配置。
-    """
-    values = list(exit_setting) if isinstance(exit_setting, (list, tuple)) else []
-    original_len = len(values)
-    while len(values) < 7:
-        values.append(False)
-
-    actions: list[str] = []
-    if values[0]:
-        actions.append(ACTION_EXIT_GAME)
-        if original_len < 7:
-            actions.append(ACTION_EXIT_EMULATOR)
-    if original_len >= 7 and values[6]:
-        actions.append(ACTION_EXIT_EMULATOR)
-    if values[1]:
-        actions.append(ACTION_EXIT_AALC)
-
-    power_action = POWER_ACTION_NONE
-    if values[5]:
-        power_action = POWER_ACTION_LOCK
-    elif values[4]:
-        power_action = POWER_ACTION_SHUTDOWN
-    elif values[3]:
-        power_action = POWER_ACTION_HIBERNATE
-    elif values[2]:
-        power_action = POWER_ACTION_SLEEP
-
-    return actions, power_action
-
-
 def apply_power_keep_awake(enable: bool) -> None:
     """
     使用 SetThreadExecutionState 阻止系统休眠和关闭显示器。

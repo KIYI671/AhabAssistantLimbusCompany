@@ -2,13 +2,11 @@ from PySide6.QtCore import QObject, Signal
 
 
 class Mediator(QObject):
-    switch_page = Signal(str)
     switch_team_setting = Signal(str)
     delete_team_setting = Signal(str)
     team_setting = Signal(dict)
     close_setting = Signal()
     refresh_teams_order = Signal()
-    autodaily_setting = Signal(str)
     sinner_be_selected = Signal()
     link_start = Signal()
     save_warning = Signal()
@@ -17,7 +15,8 @@ class Mediator(QObject):
     download_complete = Signal(str)
     warning = Signal(str)
     hdr_warning = Signal(object)
-    finished_signal = Signal()
+    # 命令行 / 定时启动请求（module.start_command.StartRequest）
+    finished_signal = Signal(object)
     script_finished = Signal()
     kill_signal = Signal()
     pause_resume = Signal()
@@ -25,7 +24,11 @@ class Mediator(QObject):
     completion_suppressed_changed = Signal(bool)
     # 任务线程通过信号请求主窗口抢回前台，避免跨层直接操作 UI。
     request_focus = Signal()
-    mirror_signal = Signal(int, int)  # 运行的当前次数和总次数
+    mirror_signal = Signal(int, int, bool)  # 已完成次数、剩余次数、是否困难
+    # 开始执行任务列表中的某一项（任务 id），全部结束时发空字符串
+    task_item_started = Signal(str)
+    # 运行结束、任务列表恢复可编辑
+    task_queue_editable = Signal()
     mirror_bar_kill_signal = Signal()
     hotkey_listener_stop_signal = Signal()
     hotkey_listener_start_signal = Signal()

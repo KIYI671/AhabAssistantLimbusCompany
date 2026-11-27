@@ -6,6 +6,7 @@ import numpy as np
 
 from module.automation import auto
 from module.config import TeamSetting, cfg
+from module.config.task_queue import MirrorTask
 from module.decorator.decorator import begin_and_finish_time_log
 from module.logger import log
 from module.my_error.my_error import (
@@ -46,13 +47,14 @@ def to_log_with_time(msg, elapsed_time):
 
 
 class Mirror:
-    def __init__(self, team_setting: TeamSetting, team_num: int):
+    def __init__(self, team_setting: TeamSetting, team_num: int, options: MirrorTask, hard_mode: bool):
         team_setting = team_setting.model_copy(deep=True)  # 避免修改原始配置
+        self.options = options  # 本次镜牢任务的参数
         self.logger = log
         self.team_order = team_num
         self.sinner_team = team_setting.sinner_order  # 选择的罪人序列
         self.team_number = team_setting.team_number  # 选择的编队名
-        self.shop = Shop(team_setting)
+        self.shop = Shop(team_setting, not_skip_whitegossypium=options.not_skip_whitegossypium)
         self.system = all_systems[team_setting.team_system]  # 选择的体系
         self.avoid_skill_3 = team_setting.avoid_skill_3  # 是否避免使用3技能
         self.prioritize_skill_3 = team_setting.prioritize_skill_3  # 是否优先使用3技能
@@ -84,7 +86,7 @@ class Mirror:
 
         self.start_time = time.time()
         self.first_battle = True  # 判断是否首次进入战斗，如果是则重新配队
-        self.hard_mode = cfg.hard_mirror
+        self.hard_mode = hard_mode
         self.hard_reward_eligible = self.hard_mode  # 第一层是否以困难模式进行
         self.use_custom_theme_pack_weight = team_setting.use_custom_theme_pack_weight  # 是否启用自定义主题包权重
         # 统计时间
@@ -129,6 +131,7 @@ class Mirror:
             prioritize_skill_3=self.prioritize_skill_3,
             defense_first_round=self.defense_first_round,
             defense_for_solo_state=self.defense_for_solo_state,
+            fight_to_last_man=self.options.fight_to_last_man,
         )
         self.battle_total_time += elapsed
 
@@ -247,7 +250,7 @@ class Mirror:
 
             retry()
 
-            if cfg.floor_3_exit and self.floor >= 4:
+            if self.options.floor_3_exit and self.floor >= 4:
                 if auto.click_element("mirror/road_in_mir/towindow&forfeit_confirm_assets.png"):
                     break
                 if auto.click_element("mirror/road_in_mir/forfeit_assets.png"):
@@ -294,7 +297,14 @@ class Mirror:
                     if self.floor > 0:
                         self._enter_hard_mode_if_needed()
                         switch_theme_pack_difficulty(self.hard_mode)
-                select_theme_pack(self.hard_mode, self.floor, self.team_order, self.use_custom_theme_pack_weight)
+                select_theme_pack(
+                    self.hard_mode,
+                    self.floor,
+                    self.team_order,
+                    self.use_custom_theme_pack_weight,
+                    select_event_pack=self.options.select_event_pack,
+                    skip_event_pack=self.options.skip_event_pack,
+                )
                 if self.re_formation_each_floor:
                     self.first_battle = True
                 if new_floor:
@@ -341,7 +351,7 @@ class Mirror:
                     self.floor_detect_failed = self.floor == 0
                     self.mirror_map.refresh_floor(self.floor)
 
-                if cfg.floor_3_exit and self.floor >= 4:
+                if self.options.floor_3_exit and self.floor >= 4:
                     continue
 
                 while auto.take_screenshot() is None:
@@ -381,7 +391,7 @@ class Mirror:
                     continue
                 # 如果未开启战斗直至全灭，则检测罪人幸存人数是否少于10人
                 if (
-                    not cfg.fight_to_last_man
+                    not self.options.fight_to_last_man
                     and not self.defense_for_solo
                     and not (
                         auto.find_element("teams/12_sinner_live_assets.png",threshold=0.75)
@@ -554,7 +564,7 @@ class Mirror:
             if (
                 not auto.find_element("mirror/claim_reward/complete_mirror_100%_assets.png")
                 and failed is None
-                and cfg.floor_3_exit is False
+                and self.options.floor_3_exit is False
             ):
                 failed = True
             if auto.find_element("mirror/claim_reward/complete_mirror_100%_assets.png") or auto.find_element(
@@ -590,7 +600,7 @@ class Mirror:
                 if auto.click_element("mirror/claim_reward/claim_forfeit_assets.png", model="normal", take_screenshot=True):
                     continue
             else:
-                if self.hard_reward_eligible and cfg.save_rewards:
+                if self.hard_reward_eligible and self.options.save_rewards:
                     auto.click_element("mirror/claim_reward/claim_rewards_assets.png")
                     sleep(1)
                     pos = auto.find_element(
@@ -603,7 +613,7 @@ class Mirror:
                     continue
                 elif auto.click_element("mirror/claim_reward/claim_rewards_assets.png"):
                     sleep(1)
-                    if cfg.no_weekly_bonuses:
+                    if self.options.no_weekly_bonuses:
                         bonuses = auto.find_element(
                             "mirror/claim_reward/weekly_bonuses.png",
                             find_type="image_with_multiple_targets",
@@ -613,7 +623,7 @@ class Mirror:
                             for _ in range(len(bonuses)):
                                 position = bonuses.pop(-1)
                                 auto.mouse_click(position[0], position[1])
-                    if cfg.hard_mirror_single_bonuses:
+                    if self.options.hard_single_bonuses:
                         log.debug("开启了困牢单次领取奖励，如果存在多次奖励，则将单次领取")
                         sleep(1)
                         bonuses = auto.find_element(
@@ -1409,7 +1419,7 @@ class Mirror:
                             button[0] + 450 * my_scale,
                             button[1] + 350 * my_scale,
                         )
-                        if not cfg.not_skip_whitegossypium:
+                        if not self.options.not_skip_whitegossypium:
                             ocr_result = auto.find_language_text("白棉花", ["white", "gossypium"], bbox)
                             if isinstance(ocr_result, list):
                                 if len(ocr_result) >= 2:
@@ -1437,7 +1447,7 @@ class Mirror:
                             button[0] + 450 * my_scale,
                             button[1] + 350 * my_scale,
                         )
-                        if not cfg.not_skip_whitegossypium:
+                        if not self.options.not_skip_whitegossypium:
                             ocr_result = auto.find_language_text("白棉花", ["white", "gossypium"], bbox)
                             if isinstance(ocr_result, list):
                                 if len(ocr_result) >= 2:
@@ -1474,7 +1484,7 @@ class Mirror:
                             button[0] + 450 * my_scale,
                             button[1] + 350 * my_scale,
                         )
-                        if not cfg.not_skip_whitegossypium:
+                        if not self.options.not_skip_whitegossypium:
                             ocr_result = auto.find_language_text("白棉花", ["white", "gossypium"], bbox)
                             if ocr_result:
                                 continue
@@ -1570,7 +1580,7 @@ class Mirror:
                 model="clam",
             ):
                 continue
-            if self.hard_reward_eligible and cfg.save_rewards:
+            if self.hard_reward_eligible and self.options.save_rewards:
                 auto.click_element("mirror/claim_reward/claim_rewards_assets.png")
                 sleep(1)
                 pos = auto.find_element(
@@ -1583,7 +1593,7 @@ class Mirror:
                 continue
             elif auto.click_element("mirror/claim_reward/claim_rewards_assets.png"):
                 sleep(1)
-                if cfg.no_weekly_bonuses:
+                if self.options.no_weekly_bonuses:
                     bonuses = auto.find_element(
                         "mirror/claim_reward/weekly_bonuses.png",
                         find_type="image_with_multiple_targets",
@@ -1593,7 +1603,7 @@ class Mirror:
                         for _ in range(len(bonuses)):
                             position = bonuses.pop(-1)
                             auto.mouse_click(position[0], position[1])
-                if cfg.hard_mirror_single_bonuses:
+                if self.options.hard_single_bonuses:
                     bonuses = auto.find_element(
                         "mirror/claim_reward/weekly_bonuses.png",
                         find_type="image_with_multiple_targets",

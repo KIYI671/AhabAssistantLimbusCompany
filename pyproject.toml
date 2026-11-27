@@ -77,6 +77,14 @@ files = [
     "tasks/base/script_task_scheme.py",
     "tasks/tools/production_module.py",
     "app/theme_pack_setting_interface.py",
+    "app/task_queue/queue_list.py",
+    "app/task_queue/queue_panel.py",
+    "app/task_queue/task_fields.py",
+    "app/task_queue/task_pages.py",
+    "app/task_queue/texts.py",
+    "app/schedule/texts.py",
+    "app/schedule/editor_dialog.py",
+    "app/schedule/setting_group.py",
     "i18n/myapp_en.ts",
 ]
 

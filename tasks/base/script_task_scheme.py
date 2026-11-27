@@ -13,6 +13,7 @@ from app import mediator
 from app.windows_toast import TemplateToast, send_toast
 from module.automation import auto
 from module.config import TeamSetting, cfg
+from module.config.task_queue import DailyTask, EnkephalinTask, MirrorTask, RewardOptions, RewardTask
 from module.decorator.decorator import begin_and_finish_time_log
 from module.game_and_screen import game_process, screen
 from module.game_and_screen.hdr import get_monitor_hdr_info
@@ -40,6 +41,17 @@ from tasks.base.make_enkephalin_module import (
     make_enkephalin_module,
 )
 from tasks.base.retry_monitor import retry_monitor
+from tasks.base.run_plan import (
+    RunContext,
+    RunPlan,
+    any_team_usable,
+    daily_team,
+    daily_times,
+    is_hard_mirror,
+    mirror_times,
+    split_combat,
+    team_usable,
+)
 from tasks.battle import battle
 from tasks.daily.get_prize import get_mail_prize, get_pass_prize
 from tasks.daily.luxcavation import EXP_luxcavation, thread_luxcavation
@@ -51,11 +63,7 @@ from utils.utils import calculate_the_teams, check_hard_mirror_time, get_day_of_
 
 @begin_and_finish_time_log(task_name="一次经验本")
 # 一次经验本的过程
-def onetime_EXP_process(combat_count: int = 1):
-    if cfg.targeted_teaming_EXP:
-        team = cfg.get_value(f"EXP_day_{calculate_the_teams()}")
-    else:
-        team = cfg.daily_teams
+def onetime_EXP_process(team: int, combat_count: int = 1):
     EXP_luxcavation(combat_count)
     select_battle_team(team)
     if battle.to_battle() is False:
@@ -67,11 +75,7 @@ def onetime_EXP_process(combat_count: int = 1):
 
 @begin_and_finish_time_log(task_name="一次纽本")
 # 一次纽本的过程
-def onetime_thread_process(combat_count: int = 1):
-    if cfg.targeted_teaming_thread:
-        team = cfg.get_value(f"thread_day_{get_day_of_week()}")
-    else:
-        team = cfg.daily_teams
+def onetime_thread_process(team: int, combat_count: int = 1):
     thread_luxcavation(combat_count)
     select_battle_team(team)
     if battle.to_battle() is False:
@@ -81,19 +85,23 @@ def onetime_thread_process(combat_count: int = 1):
     make_enkephalin_module()
 
 
-@begin_and_finish_time_log(task_name="一次镜牢")
-# 一次镜牢的过程
-def onetime_mir_process(team_setting: TeamSetting, team_num: int):
-    # 实时检查是否需要切换到困难镜牢
-    if cfg.auto_hard_mirror and check_hard_mirror_time():
-        log.info("检测到新的困牢周期，实时切换困难镜牢，设置困牢次数为3")
+def refresh_auto_hard_mirror() -> None:
+    """自动困牢：进入新的困牢周期时重置剩余次数为 3"""
+    if not cfg.auto_hard_mirror:
+        return
+    if cfg.last_auto_change == 1715990400:
         cfg.set_value("last_auto_change", datetime.now().timestamp())
-        cfg.set_value("hard_mirror", True)
+    if check_hard_mirror_time():
+        log.info("检测到新的困牢周期，设置困牢次数为3")
+        cfg.set_value("last_auto_change", datetime.now().timestamp())
         cfg.set_value("hard_mirror_chance", 3)
 
-    # 进行一次镜牢
+
+@begin_and_finish_time_log(task_name="一次镜牢")
+# 一次镜牢的过程
+def onetime_mir_process(team_setting: TeamSetting, team_num: int, task: MirrorTask, hard: bool):
     try:
-        mirror_adventure = Mirror(team_setting, team_num)
+        mirror_adventure = Mirror(team_setting, team_num, task, hard)
         if mirror_adventure.run():
             del mirror_adventure
             mirror_adventure = None
@@ -107,15 +115,15 @@ def onetime_mir_process(team_setting: TeamSetting, team_num: int):
         return False
 
 
-def to_get_reward():
-    if not (cfg.claim_mission_rewards or cfg.claim_battle_pass_rewards or cfg.claim_mail_rewards):
+def to_get_reward(options: RewardOptions):
+    if not options.any():
         return
     back_init_menu()
-    if cfg.claim_mission_rewards or cfg.claim_battle_pass_rewards:
-        if not get_pass_prize(claim_missions=cfg.claim_mission_rewards, claim_rewards=cfg.claim_battle_pass_rewards):
+    if options.missions or options.battle_pass:
+        if not get_pass_prize(claim_missions=options.missions, claim_rewards=options.battle_pass):
             return
         back_init_menu()
-    if cfg.claim_mail_rewards:
+    if options.mail:
         get_mail_prize()
         back_init_menu()
 
@@ -235,86 +243,59 @@ def _get_game_rendering_scale() -> int | None:
     return None
 
 
-def _batch_combat(process_fn, times, max_times):
-    """按 max_times 分批执行战斗"""
-    if times <= 0:
-        return
-    if times > max_times:
-        once = max_times
-        total = times // max_times
-        last = times % max_times
-    else:
-        once = times
-        total = 0
-        last = times
-    for _ in range(total):
-        process_fn(once)
-    if last > 0:
-        process_fn(last)
-
-
-def _single_combat_run(exp_times, thread_times):
-    for _ in range(exp_times):
-        onetime_EXP_process()
-    for _ in range(thread_times):
-        onetime_thread_process()
-
-
-def Daily_task_wrapper(get_reward=None):
-    def wrapper():
-        back_init_menu()
-        make_enkephalin_module()
-        exp_times = cfg.set_EXP_count
-        if get_reward and get_reward == "EXP":
-            exp_times -= 1
-        thread_times = cfg.set_thread_count
-        if get_reward and get_reward == "thread":
-            thread_times -= 1
-        if cfg.config.use_continuous_combat and cfg.use_continuous_combat_select > 0:
-            max_times = cfg.use_continuous_combat_select
-            _batch_combat(onetime_EXP_process, exp_times, max_times)
-            _batch_combat(onetime_thread_process, thread_times, max_times)
-        else:
-            _single_combat_run(exp_times, thread_times)
-
-    return wrapper
-
-
-def Buy_enkephalin():
-    times = cfg.set_lunacy_to_enkephalin
+def run_daily(task: DailyTask, ctx: RunContext) -> None:
     back_init_menu()
-    lunacy_to_enkephalin(times=times)
+    make_enkephalin_module()
+    exp_times, thread_times = daily_times(task, ctx.take_finished_battle())
+    exp_team_num = daily_team(task, "exp", calculate_the_teams())
+    thread_team_num = daily_team(task, "thread", get_day_of_week())
+    if task.continuous_combat:
+        exp_batches = split_combat(exp_times, task.continuous_combat_max)
+        thread_batches = split_combat(thread_times, task.continuous_combat_max)
+    else:
+        exp_batches = [1] * exp_times
+        thread_batches = [1] * thread_times
+    for count in exp_batches:
+        onetime_EXP_process(exp_team_num, count)
+    for count in thread_batches:
+        onetime_thread_process(thread_team_num, count)
 
 
-def Mirror_task():
-    # 判断执行镜牢任务的次数
-    mir_times = cfg.set_mirror_count
-    if cfg.infinite_dungeons:
-        mir_times = 9999
-    if cfg.save_rewards and cfg.hard_mirror:
-        mir_times = 1
+def run_reward(task: RewardTask, ctx: RunContext) -> None:
+    to_get_reward(task)
+
+
+def run_enkephalin(task: EnkephalinTask, ctx: RunContext) -> None:
+    back_init_menu()
+    lunacy_to_enkephalin(times=task.lunacy_times, dr_grandet=task.dr_grandet)
+
+
+def _current_hard(task: MirrorTask) -> bool:
+    return is_hard_mirror(task, cfg.auto_hard_mirror, cfg.hard_mirror_chance)
+
+
+def run_mirror(task: MirrorTask, ctx: RunContext) -> None:
+    refresh_auto_hard_mirror()
+    hard = _current_hard(task)
+    mir_times = mirror_times(task, hard)
+    if task.save_rewards and hard:
         log.info("启用了保存困牢奖励，将只执行一次困牢，并且不结算")
     finish_times = 0
-    mediator.mirror_signal.emit(0, mir_times)
+    mediator.mirror_signal.emit(0, mir_times, hard)
     cfg.normalize_and_sync_team_state(persist=False)
+    re_claim = task.re_claim_rewards and task.re_claim.any()
     # 开始执行镜牢任务
     while mir_times > 0:
+        # 实时检查是否进入新的困牢周期
+        refresh_auto_hard_mirror()
+        hard = _current_hard(task)
         # 检测配置的队伍能否顺利执行
-        useful = False
-        hard = bool(cfg.hard_mirror)
         teams_be_select = cfg.get_value("teams_be_select")
-        for index in (i for i, t in enumerate(teams_be_select) if t is True):
-            team_setting = cfg.config.teams[f"{index + 1}"]
-            if team_setting.fixed_team_use is False:
-                useful = True
-                break
-            if team_setting.fixed_team_use_select == 1 and hard is False:
-                useful = True
-                break
-            if team_setting.fixed_team_use_select == 0 and hard is True:
-                useful = True
-                break
-        if useful is False:
+        enabled_teams = [
+            cfg.config.teams[f"{index + 1}"] for index, selected in enumerate(teams_be_select) if selected is True
+        ]
+        if not any_team_usable([(t.fixed_team_use, t.fixed_team_use_select) for t in enabled_teams], hard):
+            log.warning("没有可用于当前难度的队伍，镜牢任务结束")
             break
 
         if not cfg.teams_active_queue:
@@ -323,37 +304,45 @@ def Mirror_task():
         team_num = cfg.teams_active_queue[0]
         team_setting = cfg.config.teams[f"{team_num}"]
         # 如果该队伍固定了用途，且用途不符合当前情况，将队首队伍轮转到队尾
-        if team_setting.fixed_team_use:
-            if (team_setting.fixed_team_use_select == 0 and not cfg.hard_mirror) or (
-                team_setting.fixed_team_use_select == 1 and cfg.hard_mirror
-            ):
-                cfg.rotate_team_queue()
-                continue
+        if not team_usable(team_setting.fixed_team_use, team_setting.fixed_team_use_select, hard):
+            cfg.rotate_team_queue()
+            continue
         # 执行一次镜牢任务，根据执行结果进行处理
-        mirror_result = onetime_mir_process(team_setting, team_num)
+        mirror_result = onetime_mir_process(team_setting, team_num, task, hard)
         if mirror_result:
             cfg.rotate_team_queue()
             mir_times -= 1
-            if cfg.hard_mirror and cfg.auto_hard_mirror:
-                chance = cfg.hard_mirror_chance - 1
-                cfg.set_value("hard_mirror_chance", chance)
-                if chance == 0:
-                    cfg.set_value("hard_mirror", False)
+            if hard and cfg.auto_hard_mirror and cfg.hard_mirror_chance > 0:
+                cfg.set_value("hard_mirror_chance", cfg.hard_mirror_chance - 1)
 
             # 更新进度条
             finish_times += 1
-            mediator.mirror_signal.emit(finish_times, mir_times)
+            mediator.mirror_signal.emit(finish_times, mir_times, hard)
             msg = f"已完成 {finish_times} 次镜牢"
             log.info(msg)
-            if finish_times == 1 and cfg.re_claim_rewards:  # 完成第一次镜牢后重新领取奖励
-                to_get_reward()
+            if finish_times == 1 and re_claim:  # 完成第一次镜牢后重新领取奖励
+                to_get_reward(task.re_claim)
 
     mediator.mirror_bar_kill_signal.emit()
-    if cfg.re_claim_rewards and finish_times > 1:
-        to_get_reward()
+    if re_claim and finish_times > 1:
+        to_get_reward(task.re_claim)
 
 
-def script_task() -> None | int:
+TASK_RUNNERS = {
+    "daily": run_daily,
+    "reward": run_reward,
+    "enkephalin": run_enkephalin,
+    "mirror": run_mirror,
+}
+
+TASK_LOG_NAMES = {"daily": "日常任务", "reward": "领取奖励", "enkephalin": "狂气换体", "mirror": "镜牢"}
+
+
+def task_log_name(task) -> str:
+    return task.name or TASK_LOG_NAMES.get(task.type, task.type)
+
+
+def script_task(plan: RunPlan) -> None | int:
     start_time = time()
     # 获取（启动）游戏对游戏窗口进行设置
     init_game()
@@ -375,30 +364,19 @@ def script_task() -> None | int:
     if cfg.resonate_with_Ahab:
         Resonate_with_Ahab()
 
+    names = "、".join(task_log_name(t) for t in plan.tasks)
+    log.info(f"本次执行 {len(plan.tasks)} 个任务（来源：{plan.source}）：{names}")
+    ctx = RunContext()
     # 如果是战斗中，先处理战斗
-    get_reward = None
     if auto.click_element("battle/turn_assets.png", take_screenshot=True):
-        get_reward = battle.fight()
+        first_mirror = plan.first(MirrorTask)
+        ctx.finished_battle = battle.fight(fight_to_last_man=first_mirror.fight_to_last_man if first_mirror else False)
 
-    task_list = []
-    # 执行日常刷本任务
-    if cfg.daily_task:
-        task_list.append(Daily_task_wrapper(get_reward=get_reward))
-
-    # 执行奖励领取任务
-    if cfg.get_reward:
-        task_list.append(to_get_reward)
-
-    # 执行狂气换饼任务
-    if cfg.buy_enkephalin:
-        task_list.append(Buy_enkephalin)
-
-    # 执行镜牢任务
-    if cfg.mirror:
-        task_list.append(Mirror_task)
-
-    for task in task_list:
-        task()
+    for task in plan.tasks:
+        log.info(f"开始执行任务：{task_log_name(task)}")
+        mediator.task_item_started.emit(task.id)
+        TASK_RUNNERS[task.type](task, ctx)
+    mediator.task_item_started.emit("")
 
     if cfg.set_reduce_miscontact and not cfg.simulator:
         # 任务已结束，这里只恢复游戏窗口样式，避免把前台重新切回游戏。
@@ -427,7 +405,10 @@ def script_task() -> None | int:
         # 收尾动作可能主动关闭游戏或模拟器。先停止截图监控，避免设备消失
         # 被误判为断链并触发自动恢复，重新拉起刚关闭的模拟器。
         retry_monitor.stop()
-        actions, power_action = get_after_completion_config()
+        if plan.after_completion is not None:
+            actions, power_action = plan.after_completion.normalized()
+        else:
+            actions, power_action = get_after_completion_config()
         try:
             should_exit_aalc = execute_after_completion(actions, power_action)
         except Exception:
@@ -446,10 +427,11 @@ def script_task() -> None | int:
 
 
 class my_script_task(QThread):
-    def __init__(self):
+    def __init__(self, plan: RunPlan):
         # 初始化，构造函数
         super().__init__()
         self.mutex = QMutex()
+        self.plan = plan
 
     def run(self):
         self.mutex.lock()
@@ -492,7 +474,7 @@ class my_script_task(QThread):
         try:
             if keep_awake_enabled:
                 apply_power_keep_awake(True)
-            ret = script_task()
+            ret = script_task(self.plan)
             if ret == 0:
                 mediator.kill_signal.emit()
         finally:

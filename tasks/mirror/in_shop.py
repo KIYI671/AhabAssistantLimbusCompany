@@ -14,7 +14,8 @@ from utils.image_utils import ImageUtils
 
 
 class Shop:
-    def __init__(self, team_setting: TeamSetting):
+    def __init__(self, team_setting: TeamSetting, not_skip_whitegossypium: bool = False):
+        self.not_skip_whitegossypium = not_skip_whitegossypium  # 不跳过白棉花
         self.system = all_systems[team_setting.team_system]  # 队伍体系
         self.sinner_team = team_setting.sinner_order  # 选择的罪人序列
         # 获取舍弃的饰品体系列表
@@ -233,7 +234,7 @@ class Shop:
                     sleep(1)
                     while auto.take_screenshot() is None:
                         continue
-                    if self.system == "bleed" and not cfg.not_skip_whitegossypium:
+                    if self.system == "bleed" and not self.not_skip_whitegossypium:
                         if auto.find_language_text("白棉花", ["white", "gossypium"], all_text=True):
                             auto.mouse_click_blank(times=2)
                         sleep(1)
@@ -267,7 +268,7 @@ class Shop:
                         sleep(1)
                         while auto.take_screenshot() is None:
                             continue
-                        if self.system == "bleed" and not cfg.not_skip_whitegossypium:
+                        if self.system == "bleed" and not self.not_skip_whitegossypium:
                             if auto.find_language_text("白棉花", ["white", "gossypium"], all_text=True):
                                 auto.mouse_click_blank(times=2)
                             sleep(1)
