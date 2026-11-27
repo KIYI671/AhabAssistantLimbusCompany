@@ -36,7 +36,7 @@
     <message>
         <location filename="../app/farming_interface.py" line="80"/>
         <source>锁屏</source>
-        <translation>Lock Screen</translation>
+        <translation>Lock</translation>
     </message>
     <message>
         <location filename="../app/farming_interface.py" line="81"/>
@@ -100,7 +100,7 @@
     <message>
         <location filename="../app/farming_interface.py" line="177"/>
         <source>锁屏</source>
-        <translation>Lock Screen</translation>
+        <translation>Lock</translation>
     </message>
     <message>
         <location filename="../app/farming_interface.py" line="178"/>
@@ -263,12 +263,12 @@
     <message>
         <location filename="../app/page_card.py" line="369"/>
         <source>不自动兑换脑啡肽 (?)</source>
-        <translation>Skip Auto Module Conversion (?)</translation>
+        <translation>Skip Auto Enkephalin Module Assembly (?)</translation>
     </message>
     <message>
         <location filename="../app/page_card.py" line="370"/>
         <source>勾选后除狂气换体以外不执行兑换脑啡肽的操作</source>
-        <translation>When enabled, AALC skips automatic conversion of Enkephalin to modules. It can still exchange Lunacy for Enkephalin.</translation>
+        <translation>When enabled, AALC skips automatic Enkephalin Module assembly. It can still refill Enkephalin using Lunacy.</translation>
     </message>
     <message>
         <location filename="../app/page_card.py" line="421"/>
@@ -319,7 +319,7 @@ Right-click to save this setting as the default.</translation>
     <message>
         <location filename="../app/page_card.py" line="474"/>
         <source>第五层跳过（最左边）活动卡包</source>
-        <translation>Skip the Leftmost Event Pack on Floor 5</translation>
+        <translation>Skip the Leftmost Event Theme Pack on Floor 5</translation>
     </message>
     <message>
         <location filename="../app/page_card.py" line="486"/>
@@ -364,7 +364,7 @@ Right-click to save this setting as the default.</translation>
     <message>
         <location filename="../app/team_setting_card.py" line="679"/>
         <source>不升级饰品</source>
-        <translation>Skip Upgrading E.G.O Gifts</translation>
+        <translation>Skip Enhancing E.G.O Gifts</translation>
     </message>
     <message>
         <location filename="../app/team_setting_card.py" line="684"/>
@@ -398,7 +398,7 @@ Right-click to save this setting as the default.</translation>
     </message>
     <message>
         <source>自选开局加成</source>
-        <translation type="vanished">Custom Starting Bonus</translation>
+        <translation type="vanished">Custom Starter Buff</translation>
     </message>
     <message>
         <location filename="../app/team_setting_card.py" line="888"/>
@@ -413,7 +413,7 @@ Right-click to save this setting as the default.</translation>
     <message>
         <location filename="../app/team_setting_card.py" line="893"/>
         <source>选取胜利奖励</source>
-        <translation>Select Victory Rewards</translation>
+        <translation>Select Encounter Reward Cards</translation>
     </message>
     <message>
         <location filename="../app/team_setting_card.py" line="898"/>
@@ -478,7 +478,7 @@ Right-click to save this setting as the default.</translation>
     <message>
         <location filename="../app/team_setting_card.py" line="726"/>
         <source>激进合成期间也升级饰品</source>
-        <translation>Upgrade Gifts During Aggressive Fusion</translation>
+        <translation>Enhance Gifts During Aggressive Fusion</translation>
     </message>
     <message>
         <location filename="../app/team_setting_card.py" line="736"/>
@@ -488,7 +488,7 @@ Right-click to save this setting as the default.</translation>
     <message>
         <location filename="../app/team_setting_card.py" line="741"/>
         <source>小指良单通杀家人</source>
-        <translation>Ryōshū Solo Setup</translation>
+        <translation>HoS Ryōshū (BladeShu) Solo Setup</translation>
     </message>
     <message>
         <location filename="../app/team_setting_card.py" line="742"/>
@@ -513,7 +513,7 @@ Right-click to save this setting as the default.</translation>
     <message>
         <location filename="../app/base_combination.py" line="1007"/>
         <source>自动狂气换体</source>
-        <translation>Auto-Exchange Lunacy for Enkephalin</translation>
+        <translation>Auto-Refill Enkephalin using Lunacy</translation>
     </message>
     <message>
         <location filename="../app/base_combination.py" line="1009"/>
@@ -553,7 +553,7 @@ Right-click to save this setting as the default.</translation>
     <message>
         <location filename="../app/base_combination.py" line="1036"/>
         <source>锁屏</source>
-        <translation>Lock Screen</translation>
+        <translation>Lock</translation>
     </message>
 </context>
 <context>
@@ -650,22 +650,22 @@ Right-click to save this setting as the default.</translation>
     <message>
         <location filename="../app/__init__.py" line="45"/>
         <source>不换</source>
-        <translation>Skip Exchange</translation>
+        <translation>Do Not Refill</translation>
     </message>
     <message>
         <location filename="../app/__init__.py" line="46"/>
         <source>换第一次</source>
-        <translation>Exchange Once</translation>
+        <translation>Refill Once</translation>
     </message>
     <message>
         <location filename="../app/__init__.py" line="47"/>
         <source>换第二次</source>
-        <translation>Exchange Twice</translation>
+        <translation>Refill Twice</translation>
     </message>
     <message>
         <location filename="../app/__init__.py" line="48"/>
         <source>换第三次</source>
-        <translation>Exchange Three Times</translation>
+        <translation>Refill Three Times</translation>
     </message>
     <message>
         <location filename="../app/__init__.py" line="63"/>
@@ -1094,12 +1094,12 @@ Right-click to save this setting as the default.</translation>
     <message>
         <location filename="../app/tools_interface.py" line="53"/>
         <source>自动体力换饼</source>
-        <translation>Auto-Convert Enkephalin to Modules</translation>
+        <translation>Auto-Assemble Enkephalin to Modules</translation>
     </message>
     <message>
         <location filename="../app/tools_interface.py" line="54"/>
         <source>辅助自动换饼小工具，防止体力溢出</source>
-        <translation>Automatically converts Enkephalin to modules before it reaches the cap.</translation>
+        <translation>Automatically assembles Enkephalin to modules before it reaches the cap.</translation>
     </message>
     <message>
         <location filename="../app/tools_interface.py" line="60"/>
@@ -1200,7 +1200,7 @@ Right-click to save this setting as the default.</translation>
     <message>
         <location filename="../app/farming_interface.py" line="475"/>
         <source>坐牢设置</source>
-        <translation>Mirror Dungeon</translation>
+        <translation>Mirror Dungeon Config</translation>
     </message>
     <message>
         <location filename="../app/farming_interface.py" line="481"/>
@@ -1213,7 +1213,7 @@ Right-click to save this setting as the default.</translation>
     <message>
         <location filename="../app/team_setting_card.py" line="782"/>
         <source>奖励卡优先度</source>
-        <translation>Reward Priority</translation>
+        <translation>Reward Card Priority</translation>
     </message>
     <message>
         <location filename="../app/team_setting_card.py" line="853"/>
@@ -1243,7 +1243,7 @@ Right-click to save this setting as the default.</translation>
     <message>
         <location filename="../app/team_setting_card.py" line="768"/>
         <source>固定队伍用途</source>
-        <translation>Team Role</translation>
+        <translation>Fixed Team Setup Usage</translation>
     </message>
     <message>
         <location filename="../app/page_card.py" line="207"/>
@@ -1266,7 +1266,7 @@ Right-click to save this setting as the default.</translation>
     <message>
         <location filename="../app/setting_interface.py" line="123"/>
         <source>使用队伍序号</source>
-        <translation>By List Position</translation>
+        <translation>By Position in List</translation>
     </message>
     <message>
         <location filename="../app/setting_interface.py" line="191"/>
@@ -1780,7 +1780,7 @@ The code will overwrite your current team settings.</translation>
     <message>
         <location filename="../app/team_setting_card.py" line="713"/>
         <source>第几层转困牢</source>
-        <translation>Switch to Hard Mode on Floor</translation>
+        <translation>Floor to Switch to Hard Mode</translation>
     </message>
     <message>
         <location filename="../app/page_card.py" line="119"/>
@@ -1820,7 +1820,7 @@ The code will overwrite your current team settings.</translation>
     <message>
         <location filename="../app/page_card.py" line="354"/>
         <source>狂气换体</source>
-        <translation>Lunacy for Enkephalin</translation>
+        <translation>Refill Enkephalin using Lunacy</translation>
     </message>
     <message>
         <location filename="../app/page_card.py" line="223"/>
