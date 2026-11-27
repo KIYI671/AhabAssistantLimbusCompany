@@ -482,6 +482,12 @@ class Automation(metaclass=SingletonMeta):
         在当前截图中查找多个目标图像的位置
         """
         try:
+            # 主题未知时先通过单目标匹配识别主题，避免加载错误模板
+            if path_manager.current_theme is None:
+                self.find_element(
+                    target, threshold=threshold, my_crop=my_crop,
+                    additional_stack=additional_stack + 1,
+                )
             template = ImageUtils.load_image(target)
             if target.endswith("assets.png"):
                 bbox = ImageUtils.get_bbox(template)
