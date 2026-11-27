@@ -1,4 +1,4 @@
-from time import sleep
+from time import monotonic, sleep
 
 from PIL import Image
 
@@ -11,6 +11,21 @@ from tasks.base.back_init_menu import back_init_menu
 from tasks.base.retry import retry
 from tasks.mirror import fusion_result, must_be_abandoned, must_purchase
 from utils.image_utils import ImageUtils
+
+
+def _click_when_appears(name: str, *, timeout: float = 3.0, interval: float = 0.4, **click_kw) -> bool:
+    """弹窗/确认键出现有动画：在窗口期内反复「找→点」，点中才算成功。
+
+    定长 `sleep(0.5)` 后只点一次，在慢点击或动画未结束时很容易点空；
+    调用方是「升级饰品」这类不可逆操作，点空也不能当成功。
+    """
+    deadline = monotonic() + timeout
+    while True:
+        if auto.click_element(name, **click_kw):
+            return True
+        if monotonic() >= deadline:
+            return False
+        sleep(interval)
 
 
 class Shop:
@@ -81,8 +96,13 @@ class Shop:
             if auto.click_element("mirror/shop/power_up_assets.png"):
                 auto.mouse_to_blank()
                 sleep(0.5)
-                if auto.click_element("mirror/shop/power_up_confirm_assets.png", take_screenshot=True) is False:
-                    return True
+                # 原实现：确认键点一次没中就 `return True`，等于把「升级失败」当成功上报，
+                # 调用方（:1085 / :1100）拿到 True 后会把这个饰品记进 enhance_gifts_list 并置
+                # system_level_IV = True ⇒ 本局再也不重试，四级升级被静默跳过。
+                # 改成窗口期内反复找→点，没点中返回 False，调用方 break 出本轮升级（下一轮商店再试）。
+                if _click_when_appears("mirror/shop/power_up_confirm_assets.png", take_screenshot=True) is False:
+                    log.warning("升级确认按钮 3 s 内未出现，本次升级按未完成处理")
+                    return False
                 sleep(3)
                 if retry() is False:
                     raise self.RestartGame()
