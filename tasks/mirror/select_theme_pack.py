@@ -8,6 +8,58 @@ from tasks.base.back_init_menu import back_init_menu
 from utils.path_manager import path_manager
 
 
+# ---- 拖拽选包的成功判据：看卡包页是否真的切走，而不是睡固定 3 秒 ----
+# 原实现三处都是 `mouse_drag_down(x, y) → sleep(3) → return`：3 s 是拍脑袋值。
+# 拖拽本身有 `dragTo` 动画、卡包页切换也有动画；机器慢或这一次拖拽没生效时，
+# 这 3 s 睡完就带着「以为已经选好」的错误状态继续往下走（开错包 / 卡在选包页，后续模板全 miss）。
+# 改成**只以可观测状态作为成功判据**：卡包缩略图列表（多点模板）连续多帧都读不到，才算切走。
+
+
+def _points_settled(a, b, tol: float = 12) -> bool:
+    """两组多点坐标是否「已经不动了」（数量一致且逐点差 < tol）。"""
+    if not a or not b or len(a) != len(b):
+        return False
+    sa = sorted(map(tuple, a))
+    sb = sorted(map(tuple, b))
+    return all(abs(p[0] - q[0]) < tol and abs(p[1] - q[1]) < tol for p, q in zip(sa, sb))
+
+
+def _find_multi_stable(name: str, *, interval: float = 0.5, tries: int = 6, **find_kw) -> list:
+    """连读两次坐标一致才算稳定（拖拽/切换动画中途的读数不可信）。
+
+    读不到返回 []（调用方据此判断「列表已消失」），始终不稳则返回最后一次读数。
+    """
+    prev = None
+    for _ in range(tries):
+        sleep(interval)
+        cur = auto.find_element(name, find_type="image_with_multiple_targets", take_screenshot=True, **find_kw)
+        if _points_settled(prev, cur):
+            return cur
+        prev = cur
+    return prev or []
+
+
+def _leave_theme_pack_page(*, timeout: float = 6.0, interval: float = 0.5) -> bool:
+    """卡包页是否真的切走：连续多帧读不到 theme_pack_features.png（缩略图列表）。
+
+    判据取「列表稳定地不存在」，而不是固定 sleep —— 多帧确认可挡住切换动画中途的空帧。
+    """
+    tries = max(2, int(timeout / interval))
+    return not _find_multi_stable("mirror/theme_pack/theme_pack_features.png", interval=interval, tries=tries)
+
+
+def _drag_select_pack(pack, *, tries: int = 2, **kw) -> bool:
+    """拖拽选包 + 轮询确认卡包页切走；未切走则重试拖拽（替代原来的 sleep(3) 盲等）。"""
+    for i in range(tries):
+        auto.mouse_drag_down(pack[0], pack[1])
+        if _leave_theme_pack_page(**kw):
+            return True
+        log.debug(f"选择卡包后卡包页未切走（第 {i + 1} 次），重试拖拽: {pack}")
+        sleep(0.5)
+    log.warning(f"选择卡包后卡包页仍未切走，交由主循环处理: {pack}")
+    return False
+
+
 def get_theme_pack_difficulty():
     if auto.find_element("mirror/theme_pack/normal_assets.png", take_screenshot=True):
         return "normal"
@@ -71,12 +123,10 @@ def select_theme_pack(hard_mode=False, floor=None, team_num=None, use_custom_the
                     find_type="image_with_multiple_targets",
                 ):
                     all_theme_pack.sort(key=lambda pos: (pos[0], pos[1]))
-                    auto.mouse_drag_down(all_theme_pack[0][0], all_theme_pack[0][1])
                     log.debug(f"选择卡包: {all_theme_pack[0]}")
-                    sleep(3)
-                    msg = "此次主题包选择了最左边的（活动）卡包"
-                    log.info(msg)
-                    return
+                    if _drag_select_pack(all_theme_pack[0]):
+                        log.info("此次主题包选择了最左边的（活动）卡包")
+                        return
             weight_list = []
             pack_name = []
             if all_theme_pack := auto.find_element(
@@ -115,12 +165,10 @@ def select_theme_pack(hard_mode=False, floor=None, team_num=None, use_custom_the
                 if max_weight >= int(theme_list.preferred_thresholds):
                     max_index = weight_list.index(max_weight)
                     pack = all_theme_pack[max_index]
-                    auto.mouse_drag_down(pack[0], pack[1])
                     log.debug(f"选择卡包: {pack}")
-                    sleep(3)
-                    msg = f"此次选择卡包关键词：{pack_name[max_index]}"
-                    log.info(msg)
-                    return
+                    if _drag_select_pack(pack):
+                        log.info(f"此次选择卡包关键词：{pack_name[max_index]}")
+                        return
 
         except Exception as e:
             log.error(f"识别主题包出错:{e}")
@@ -140,13 +188,13 @@ def select_theme_pack(hard_mode=False, floor=None, team_num=None, use_custom_the
                 max_weight = max(weight_list)
                 max_index = weight_list.index(max_weight)
                 pack = all_theme_pack[max_index]
-                auto.mouse_drag_down(pack[0], pack[1])
                 log.debug(f"选择卡包: {pack}")
-                sleep(3)
-                log.debug("无匹配最低阈值的主题包，选择最高权重主题包")
-                msg = f"无匹配最低阈值的主题包，选择最高权重主题包\n此次选择卡包关键词：{pack_name[max_index]}"
-                log.info(msg)
-                return
+                if _drag_select_pack(pack):
+                    log.debug("无匹配最低阈值的主题包，选择最高权重主题包")
+                    log.info(
+                        f"无匹配最低阈值的主题包，选择最高权重主题包\n此次选择卡包关键词：{pack_name[max_index]}"
+                    )
+                    return
             except Exception as e:
                 log.error(f"选择主题包出错:{e},尝试回到初始界面")
                 back_init_menu()
