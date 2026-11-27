@@ -628,6 +628,10 @@ class FarmingInterfaceLeft(QWidget):
         # 设置按下启动与停止按钮时，其他模块的启用与停用
         current_text = self.link_start_button.get_text()
         if current_text == "Link Start!":
+            tools_interface = getattr(self.window(), "tools_interface", None)
+            if tools_interface is not None and tools_interface.schemacraft_running():
+                log.warning("图式构筑正在运行，请先停止后再启动主任务")
+                return
             # 启动前检查设置，防呆
             if self.check_setting() is False:
                 return
