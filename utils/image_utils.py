@@ -361,6 +361,10 @@ class ImageUtils:
         kp1, des1 = orb.detectAndCompute(template, None)
         kp2, des2 = orb.detectAndCompute(target, None)
 
+        # 任一图片未提取到特征描述符时直接返回不匹配，避免将 None 传给匹配器导致报错或崩溃。
+        if des1 is None or des2 is None:
+            return False, 0
+
         # 使用FLANN匹配器
         FLANN_INDEX_LSH = 6
         index_params = dict(algorithm=FLANN_INDEX_LSH, table_number=6, key_size=12, multi_probe_level=1)
