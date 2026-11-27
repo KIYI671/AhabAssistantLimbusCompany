@@ -43,7 +43,9 @@ from app.language_manager import LanguageManager
 from app.widget.custom_segmented_widget import CustomSegmentedWidget
 from module.config import TeamSetting, cfg, theme_list
 from module.config.team_import_export import apply_team_settings, import_team_settings
+from module.help_links import OpenExternal, ScrollTo, ShowDoc, resolve_help_link
 from module.logger import log
+from utils.repo_info import REPO_URL
 
 from .markdown_it_imgdiv import imgdiv_plugin, render_div_close, render_div_open
 
@@ -896,6 +898,8 @@ class MarkdownViewer(QWidget):
         self.text_browser.scrollDelegate.verticalSmoothScroll.setSmoothMode(SmoothMode.LINEAR)
         self.text_browser.scrollDelegate.verticalSmoothScroll.duration = 100
         self.text_browser.setOpenExternalLinks(False)
+        # 链接全部由 handle_link_clicked 处理，QTextBrowser 自己不跳转
+        self.text_browser.setOpenLinks(False)
         self.text_browser.anchorClicked.connect(self.handle_link_clicked)
         self.text_browser.setContextMenuPolicy(Qt.ContextMenuPolicy.NoContextMenu)  # 禁用右键菜单
 
@@ -934,38 +938,38 @@ class MarkdownViewer(QWidget):
     def reset_viewer(self):
         if os.path.exists(self.help_path):
             self.load_markdown(self.help_path)
+            self._use_css_body_font_size()
             self.text_browser.setHtml(self.html)
         else:
             self.text_browser.setPlainText(f"错误: 无法加载文件 {self.help_path}，请检查文件路径是否正确。")
 
+    def _use_css_body_font_size(self):
+        """Qt 不认 CSS 里 h1–h6 的 font-size，只按文档默认字号放大缩小。
+        默认字号要和 CSS 正文一样是 16px，否则 h4 会比正文还小（14px）。"""
+        document = self.text_browser.document()
+        font = document.defaultFont()
+        font.setPixelSize(16)
+        document.setDefaultFont(font)
+
     def handle_link_clicked(self, url: QUrl):
         """
-        处理 QTextBrowser 中点击链接的逻辑
+        处理 QTextBrowser 中点击链接的逻辑。本地帮助文档在帮助页内打开，README 和网页链接用浏览器打开。
         """
-        if url.scheme() in ["http", "https"]:
-            # 用系统默认浏览器打开外部链接
-            QDesktopServices.openUrl(url)
-        elif url.scheme() != "":
-            # 其他链接，不处理
-            pass
-        else:
-            # 本地文件
-            file_path = url.path()
-            if file_path.startswith("/"):
-                # 处理以项目根目录为base的路径
-                file_path = file_path[1:]
-
-            if os.path.exists(file_path) and file_path.endswith(".md"):
-                # 如果是本地文件链接，尝试加载 Markdown 文件
-                self.load_markdown(file_path)
-                self.text_browser.setHtml(self.html)
-
-                if url.hasFragment():
-                    # 如果链接有锚点，滚动到对应的锚点
-                    self.text_browser.scrollToAnchor(url.fragment())
-                return
-
-        self.text_browser.setHtml(self.html)
+        action = resolve_help_link(
+            url.toString(QUrl.ComponentFormattingOption.FullyEncoded), self.help_path, repo_url=REPO_URL
+        )
+        if isinstance(action, OpenExternal):
+            QDesktopServices.openUrl(QUrl(action.url))
+        elif isinstance(action, ShowDoc):
+            self.help_path = action.path
+            self.reset_viewer()
+            if action.fragment:
+                self.text_browser.scrollToAnchor(action.fragment)
+        elif isinstance(action, ScrollTo):
+            if action.fragment:
+                self.text_browser.scrollToAnchor(action.fragment)
+            else:
+                self.text_browser.verticalScrollBar().setValue(0)
 
     def load_markdown(self, file_path: str):
         try:

@@ -26,7 +26,7 @@
 
 [简体中文](/README.md) | **English**
 
-Encountering problems? Please check the [FAQ](assets/doc/en/FAQ.md) before asking questions.
+Encountering problems? Please check the [FAQ](/assets/doc/en/FAQ_EN.md) before asking questions.
 
 ---
 

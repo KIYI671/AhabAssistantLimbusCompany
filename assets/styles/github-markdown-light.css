@@ -15,6 +15,11 @@ body {
   line-height: 1.5;
 }
 
+/* Qt 会把行高也套到图片所在的行上，1.5 倍行高会在图片下面留出半张图高的空白 */
+.figure {
+  line-height: 1;
+}
+
 a {
   background-color: transparent;
   color: #0969da;
