@@ -22,6 +22,7 @@ from ..logger import log
 from ..ocr import ocr
 from .input_handlers.input import AbstractInput
 from .screenshot import ScreenShot
+from .tutorial_popup import TutorialPopupMixin
 
 # ponytail: 交互门最长关闭时间。监控线程卡在持久弹窗上时,超时放行业务输入,
 # 恢复 retry() 等流程的卡死看门狗(kill_game/restart_game)。
@@ -37,8 +38,12 @@ class TextMatchResult:
     position: list[float]
 
 
-class Automation(metaclass=SingletonMeta):
-    """自动化管理类，用于管理与游戏窗口有关的自动化操作"""
+class Automation(TutorialPopupMixin, metaclass=SingletonMeta):
+    """自动化管理类，用于管理与游戏窗口有关的自动化操作
+
+    ``TutorialPopupMixin`` 负责新手教程弹窗的检测与关闭，
+    由 ``take_screenshot()`` 在每一帧截图后统一触发。
+    """
 
     def __init__(self, windows_title):
         self.windows_title = windows_title
@@ -367,7 +372,9 @@ class Automation(metaclass=SingletonMeta):
                 if result:
                     self.screenshot = result
                     self.last_screenshot_time = time.time()
-                    return result
+                    # 每一帧新截图都检查新手教程弹窗；命中则关闭并用关闭后的新帧替换
+                    fresh = self.handle_tutorial_popups(result)
+                    return fresh if fresh is not None else result
                 else:
                     return None
             except Exception as e:
@@ -741,6 +748,8 @@ class Automation(metaclass=SingletonMeta):
         """清除图片缓存"""
         self.img_cache.clear()
         self._unavailable_feature_templates.clear()
+        # 教程弹窗的点击计数与一次性告警也随主题/语言切换一起重置
+        self.clear_tutorial_cache()
         gc.collect()  # 强制垃圾回收，清理内存
         log.debug("图片缓存已清除", stacklevel=2)
 

@@ -139,6 +139,28 @@ class Mirror:
             if self.floor == 1:
                 self.hard_reward_eligible = True
 
+    #: 镜牢入口模板：PC 版英文为单行 "Mirror Dungeons"（``_assets``），
+    #: 手机版英文为两行（``_1_assets``），两者都接受
+    MIRROR_DUNGEONS_TEMPLATES = (
+        "home/mirror_dungeons_assets.png",
+        "home/mirror_dungeons_1_assets.png",
+    )
+
+    def find_mirror_dungeons(self):
+        """在当前帧里找镜牢入口（兼容单行/两行英文版），返回位置或 None。"""
+        for target in self.MIRROR_DUNGEONS_TEMPLATES:
+            position = auto.find_element(target)
+            if position:
+                return position
+        return None
+
+    def click_mirror_dungeons(self) -> bool:
+        """点击镜牢入口（兼容单行/两行英文版），点中返回 True。"""
+        for target in self.MIRROR_DUNGEONS_TEMPLATES:
+            if auto.click_element(target):
+                return True
+        return False
+
     def road_to_mir(self):
         loop_count = 30
         auto.model = "clam"
@@ -184,13 +206,13 @@ class Mirror:
             if auto.click_element("mirror/road_to_mir/enter_assets.png"):
                 sleep(0.5)
                 continue
-            if auto.click_element("home/mirror_dungeons_assets.png"):
+            if self.click_mirror_dungeons():
                 continue
-            if auto.find_element("home/inferno_bus_assets.png") and not auto.find_element(
-                "home/mirror_dungeons_assets.png"
-            ):
+            if auto.find_element(
+                "home/inferno_bus_assets.png"
+            ) and not self.find_mirror_dungeons():
                 sleep(1)
-                if not auto.find_element("home/mirror_dungeons_assets.png"):
+                if not self.find_mirror_dungeons():
                     auto.click_element("home/window_assets.png")
                     continue
             if auto.find_element("base/renew_confirm_assets.png", model="clam") and auto.find_element(
