@@ -303,7 +303,7 @@ class StarlightLevelSelector(QFrame):
         return get_starlight_paint_colors(isDarkTheme())
 
     def __refresh_tooltips(self, title: str):
-        tips = get_starlight_bonus_tips(self.starlight_index - 1, cfg.language_in_program)
+        tips = get_starlight_bonus_tips(self.starlight_index - 1)
         self.__set_button_tooltip(self.default_button, lambda title=title: _format_starlight_tip(title, tips["buff"]))
         self.__set_button_tooltip(
             self.level_one_button,

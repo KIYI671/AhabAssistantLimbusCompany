@@ -41,27 +41,27 @@
     <message>
         <location filename="../app/farming_interface.py" line="81"/>
         <source>关机</source>
-        <translation>Shutdown</translation>
+        <translation>Shut Down</translation>
     </message>
     <message>
         <location filename="../app/farming_interface.py" line="84"/>
         <source>前置动作（可多选）</source>
-        <translation>Prerequisite Actions (Multiple Selection)</translation>
+        <translation>Preliminary Actions (Select Multiple)</translation>
     </message>
     <message>
         <location filename="../app/farming_interface.py" line="85"/>
         <source>最终动作（单选）</source>
-        <translation>Final Action (Single Choice)</translation>
+        <translation>Final Action (Select One)</translation>
     </message>
     <message>
         <location filename="../app/farming_interface.py" line="86"/>
         <source>仅本次生效</source>
-        <translation>Only Once</translation>
+        <translation>Apply Once</translation>
     </message>
     <message>
         <location filename="../app/farming_interface.py" line="88"/>
         <source>保存为默认</source>
-        <translation>As Default</translation>
+        <translation>Save as Default</translation>
     </message>
 </context>
 <context>
@@ -105,7 +105,7 @@
     <message>
         <location filename="../app/farming_interface.py" line="178"/>
         <source>关机</source>
-        <translation>Shutdown</translation>
+        <translation>Shut Down</translation>
     </message>
     <message>
         <location filename="../app/farming_interface.py" line="181"/>
@@ -115,32 +115,32 @@
     <message>
         <location filename="../app/farming_interface.py" line="182"/>
         <source>默认</source>
-        <translation>As Default</translation>
+        <translation>Default</translation>
     </message>
     <message>
         <location filename="../app/farming_interface.py" line="183"/>
         <source>本次</source>
-        <translation>Only Once</translation>
+        <translation>This Run</translation>
     </message>
     <message>
         <location filename="../app/farming_interface.py" line="184"/>
         <source>退出</source>
-        <translation>Exit</translation>
+        <translation>Exit </translation>
     </message>
     <message>
         <location filename="../app/farming_interface.py" line="185"/>
         <source>与</source>
-        <translation>And</translation>
+        <translation> and </translation>
     </message>
     <message>
         <location filename="../app/farming_interface.py" line="186"/>
         <source>后，再{0}</source>
-        <translation>，Then{0}</translation>
+        <translation>, then {0}</translation>
     </message>
     <message>
         <location filename="../app/farming_interface.py" line="187"/>
         <source>执行{0}</source>
-        <translation>Execute {0}</translation>
+        <translation>{0}</translation>
     </message>
     <message>
         <location filename="../app/farming_interface.py" line="188"/>
@@ -150,7 +150,7 @@
     <message>
         <location filename="../app/farming_interface.py" line="191"/>
         <source>支持组合动作：退出目标后再执行电源动作，可选择仅本次或保存默认</source>
-        <translation>Supports combined actions</translation>
+        <translation>Exit the selected apps first, then perform the power action. Apply the selection for this run or save it as the default.</translation>
     </message>
     <message>
         <location filename="../app/farming_interface.py" line="192"/>
@@ -160,12 +160,12 @@
     <message>
         <location filename="../app/farming_interface.py" line="197"/>
         <source>还有排队中的自动任务，本次任务结束后不会执行收尾动作，待全部任务完成后由最后一个任务执行</source>
-        <translation>Another automatic task is queued, so Post-completion operations will be skipped for this run. The last queued task will run them once every task is finished.</translation>
+        <translation>An automatic task is queued. Post-run actions will run after the last queued task finishes.</translation>
     </message>
     <message>
         <location filename="../app/farming_interface.py" line="272"/>
         <source>结束后操作</source>
-        <translation>Post-completion operations</translation>
+        <translation>Post-Run Actions</translation>
     </message>
 </context>
 <context>
@@ -182,12 +182,12 @@
         <location filename="../app/announcement_board.py" line="296"/>
         <location filename="../app/announcement_board.py" line="378"/>
         <source>ALL~ 全部公告</source>
-        <translation>All announcements</translation>
+        <translation>All Announcements</translation>
     </message>
     <message>
         <location filename="../app/announcement_board.py" line="200"/>
         <source>下次公告更新前不再显示</source>
-        <translation>Don&apos;t show until next update</translation>
+        <translation>Don&apos;t show again until the next announcement update</translation>
     </message>
     <message>
         <location filename="../app/announcement_board.py" line="205"/>
@@ -202,7 +202,7 @@
     <message>
         <location filename="../app/announcement_board.py" line="265"/>
         <source>长期公告</source>
-        <translation>Long-term announcement</translation>
+        <translation>Long-Term Announcement</translation>
     </message>
 </context>
 <context>
@@ -210,12 +210,12 @@
     <message>
         <location filename="../app/base_combination.py" line="991"/>
         <source>选择执行的行动</source>
-        <translation>Select the action to perform</translation>
+        <translation>Select Actions to Run</translation>
     </message>
     <message>
         <location filename="../app/base_combination.py" line="1016"/>
         <source>运行结束后</source>
-        <translation>After the run is complete</translation>
+        <translation>Post-Run Actions</translation>
     </message>
     <message>
         <location filename="../app/base_combination.py" line="1049"/>
@@ -243,17 +243,17 @@
     <message>
         <location filename="../app/page_card.py" line="210"/>
         <source>勾选后将使用连续作战模式，设置的值为最大连续作战场次</source>
-        <translation>When checked, Continuous Combat Mode will be enabled; the set value represents the maximum number of consecutive battles</translation>
+        <translation>When enabled, the selected value sets the maximum number of consecutive battles.</translation>
     </message>
     <message>
         <location filename="../app/page_card.py" line="219"/>
         <source>经验本针对性配队</source>
-        <translation>Daily EXP Teams</translation>
+        <translation>EXP Luxcavation Teams</translation>
     </message>
     <message>
         <location filename="../app/page_card.py" line="241"/>
         <source>纽本针对性配队</source>
-        <translation>Daily Thread Teams</translation>
+        <translation>Thread Luxcavation Teams</translation>
     </message>
     <message>
         <location filename="../app/page_card.py" line="362"/>
@@ -263,133 +263,133 @@
     <message>
         <location filename="../app/page_card.py" line="369"/>
         <source>不自动兑换脑啡肽 (?)</source>
-        <translation>Do not automatic exchange enkephalin (?)</translation>
+        <translation>Skip Auto Enkephalin Module Assembly (?)</translation>
     </message>
     <message>
         <location filename="../app/page_card.py" line="370"/>
         <source>勾选后除狂气换体以外不执行兑换脑啡肽的操作</source>
-        <translation>After checking, do not perform the operation of exchanging enkephalin except for lunacy to enkephalin</translation>
+        <translation>When enabled, AALC skips automatic Enkephalin Module assembly. It can still refill Enkephalin using Lunacy.</translation>
     </message>
     <message>
         <location filename="../app/page_card.py" line="421"/>
         <source>使用困难镜牢*</source>
-        <translation>Hard mode*</translation>
+        <translation>Use Hard Mode*</translation>
     </message>
     <message>
         <location filename="../app/page_card.py" line="426"/>
         <source>仅本次运行期间有效，重启AALC后失效
 右键可设置为永久生效
 注: 自动困牢会关闭本功能</source>
-        <translation>Only effective for this run, invalid after restart
-Right-click to set as permanent
-Note: Auto change Hard Mirror will disable this feature</translation>
+        <translation>Applies until AALC restarts.
+Right-click to save this setting as the default.
+Auto Hard Mode disables this option.</translation>
     </message>
     <message>
         <location filename="../app/page_card.py" line="432"/>
         <source>不使用每周加成*</source>
-        <translation>Non-weekly bonus*</translation>
+        <translation>Skip Weekly Bonus*</translation>
     </message>
     <message>
         <location filename="../app/page_card.py" line="437"/>
         <source>仅本次运行期间有效，重启AALC后失效
 右键可设置为永久生效</source>
-        <translation>Only effective for this run, invalid after restart
-Right-click to set as permanent</translation>
+        <translation>Applies until AALC restarts.
+Right-click to save this setting as the default.</translation>
     </message>
     <message>
         <location filename="../app/page_card.py" line="443"/>
         <source>只打三层</source>
-        <translation>Only floor 3</translation>
+        <translation>Stop After Floor 3</translation>
     </message>
     <message>
         <location filename="../app/page_card.py" line="449"/>
         <source>无限坐牢</source>
-        <translation>Infinite farming</translation>
+        <translation>Farm Indefinitely</translation>
     </message>
     <message>
         <location filename="../app/page_card.py" line="455"/>
         <source>保存困牢奖励</source>
-        <translation>Save hard mirror rewards</translation>
+        <translation>Save Hard Mode Rewards</translation>
     </message>
     <message>
         <location filename="../app/page_card.py" line="462"/>
         <source>困牢单次加成</source>
-        <translation>Hard mirror single bonus</translation>
+        <translation>Use One Weekly Bonus per Hard Run</translation>
     </message>
     <message>
         <location filename="../app/page_card.py" line="474"/>
         <source>第五层跳过（最左边）活动卡包</source>
-        <translation>No select the leftmost theme pack on the fifth floor</translation>
+        <translation>Skip the Leftmost Event Theme Pack on Floor 5</translation>
     </message>
     <message>
         <location filename="../app/page_card.py" line="486"/>
         <source>不跳过白棉花</source>
-        <translation>No skip White Gossypium</translation>
+        <translation>Don&apos;t Skip White Gossypium</translation>
     </message>
     <message>
         <location filename="../app/page_card.py" line="492"/>
         <source>战斗直到全灭</source>
-        <translation>Fight to last man</translation>
+        <translation>Fight Until All Sinners Fall</translation>
     </message>
     <message>
         <location filename="../app/page_card.py" line="498"/>
         <source>使用键盘进行镜牢寻路</source>
-        <translation>Mirror Dungeon Pathfinding using the Keyboard</translation>
+        <translation>Use Keyboard Pathfinding in Mirror Dungeons</translation>
     </message>
     <message>
         <location filename="../app/page_card.py" line="504"/>
         <source>简单键盘寻路（始终按↑键，避免鼠标拖动）</source>
-        <translation>Simple keyboard pathfinding (always press ↑, avoid mouse dragging)</translation>
+        <translation>Press ↑ to navigate without dragging the mouse.</translation>
     </message>
     <message>
         <location filename="../app/team_setting_card.py" line="675"/>
         <source>不治疗罪人</source>
-        <translation>No heal sinners</translation>
+        <translation>Skip Sinner Healing</translation>
     </message>
     <message>
         <location filename="../app/team_setting_card.py" line="676"/>
         <source>不购买饰品</source>
-        <translation>No buy E.G.O.</translation>
+        <translation>Skip Buying E.G.O Gifts</translation>
     </message>
     <message>
         <location filename="../app/team_setting_card.py" line="677"/>
         <source>不合成饰品</source>
-        <translation>No fuse</translation>
+        <translation>Skip Fusing E.G.O Gifts</translation>
     </message>
     <message>
         <location filename="../app/team_setting_card.py" line="678"/>
         <source>不出售饰品</source>
-        <translation>No sell</translation>
+        <translation>Skip Selling E.G.O Gifts</translation>
     </message>
     <message>
         <location filename="../app/team_setting_card.py" line="679"/>
         <source>不升级饰品</source>
-        <translation>No upgrade</translation>
+        <translation>Skip Enhancing E.G.O Gifts</translation>
     </message>
     <message>
         <location filename="../app/team_setting_card.py" line="684"/>
         <source>只激进合成</source>
-        <translation>Only aggressive fuse</translation>
+        <translation>Use Aggressive Fusion Only</translation>
     </message>
     <message>
         <location filename="../app/team_setting_card.py" line="700"/>
         <source>链接战避免使用三技能</source>
-        <translation>Avoid skill 3 in normal encounters</translation>
+        <translation>Avoid S3 in General Encounters</translation>
     </message>
     <message>
         <location filename="../app/team_setting_card.py" line="705"/>
         <source>链接战优先使用三技能</source>
-        <translation>Prioritize skill 3 in normal encounters</translation>
+        <translation>Prioritize S3 in General Encounters</translation>
     </message>
     <message>
         <location filename="../app/team_setting_card.py" line="710"/>
         <source>每楼层重新编队</source>
-        <translation>Reteam each floor</translation>
+        <translation>Reform the Team on Each Floor</translation>
     </message>
     <message>
         <location filename="../app/team_setting_card.py" line="721"/>
         <source>开局星光换钱</source>
-        <translation>Exchange starlights beginning</translation>
+        <translation>Trade Starlight for Cost at the Start</translation>
     </message>
     <message>
         <location filename="../app/team_setting_card.py" line="731"/>
@@ -398,12 +398,12 @@ Right-click to set as permanent</translation>
     </message>
     <message>
         <source>自选开局加成</source>
-        <translation type="vanished">Custom beginning bonus</translation>
+        <translation type="vanished">Custom Starter Buff</translation>
     </message>
     <message>
         <location filename="../app/team_setting_card.py" line="888"/>
         <source>合成四级</source>
-        <translation>Fuse level IV</translation>
+        <translation>Fuse Tier IV Gifts</translation>
     </message>
     <message>
         <location filename="../app/team_setting_card.py" line="889"/>
@@ -413,12 +413,12 @@ Right-click to set as permanent</translation>
     <message>
         <location filename="../app/team_setting_card.py" line="893"/>
         <source>选取胜利奖励</source>
-        <translation>Select success rewards</translation>
+        <translation>Select Encounter Reward Cards</translation>
     </message>
     <message>
         <location filename="../app/team_setting_card.py" line="898"/>
         <source>升级四级</source>
-        <translation>Upgrade level IV</translation>
+        <translation>Upgrade Tier IV Gifts</translation>
     </message>
     <message>
         <location filename="../app/team_setting_card.py" line="914"/>
@@ -448,7 +448,7 @@ Right-click to set as permanent</translation>
     <message>
         <location filename="../app/team_setting_card.py" line="934"/>
         <source>使用自定义主题包权重</source>
-        <translation>Using Custom Theme Pack Weights</translation>
+        <translation>Use Custom Theme Pack Weights</translation>
     </message>
     <message>
         <location filename="../app/team_setting_card.py" line="941"/>
@@ -458,67 +458,67 @@ Right-click to set as permanent</translation>
     <message>
         <location filename="../app/team_setting_card.py" line="689"/>
         <source>不使用公式合成</source>
-        <translation>Do not formula fuse</translation>
+        <translation>Skip Fusion Recipes</translation>
     </message>
     <message>
         <location filename="../app/team_setting_card.py" line="694"/>
         <source>只使用公式合成</source>
-        <translation>Only formula fuse</translation>
+        <translation>Use Fusion Recipes Only</translation>
     </message>
     <message>
         <location filename="../app/page_card.py" line="456"/>
         <source>仅在进行困难镜牢时生效，普通难度不生效</source>
-        <translation>Only effective for hard mirror, ineffective for normal mirror</translation>
+        <translation>Applies to Hard Mode.</translation>
     </message>
     <message>
         <location filename="../app/page_card.py" line="468"/>
         <source>第五层选择（最左边）活动卡包</source>
-        <translation>Select the leftmost theme pack on the fifth floor</translation>
+        <translation>Select the Leftmost Event Pack on Floor 5</translation>
     </message>
     <message>
         <location filename="../app/team_setting_card.py" line="726"/>
         <source>激进合成期间也升级饰品</source>
-        <translation>Also upgrades gifts during Aggressive Fuse</translation>
+        <translation>Enhance Gifts During Aggressive Fusion</translation>
     </message>
     <message>
         <location filename="../app/team_setting_card.py" line="736"/>
         <source>链接战第一回合全员防御</source>
-        <translation>defense first round in normal encounters</translation>
+        <translation>Defend on Turn 1 in General Encounters</translation>
     </message>
     <message>
         <location filename="../app/team_setting_card.py" line="741"/>
         <source>小指良单通杀家人</source>
-        <translation>Thumb Ryoshu solo defense</translation>
+        <translation>HoS Ryōshū (BladeShu) Solo Setup</translation>
     </message>
     <message>
         <location filename="../app/team_setting_card.py" line="742"/>
         <source>每次镜牢任务内，连续指定回合数全员防御</source>
-        <translation>Defend with all units for the selected number of turns in each Mirror Dungeon run</translation>
+        <translation>Have the whole team defend for the specified number of consecutive turns in each Mirror Dungeon run.</translation>
     </message>
     <message>
         <location filename="../app/page_card.py" line="480"/>
         <source>再次领取奖励</source>
-        <translation>Claim rewards again</translation>
+        <translation>Claim Rewards Again</translation>
     </message>
     <message>
         <location filename="../app/base_combination.py" line="998"/>
         <source>自动执行日常</source>
-        <translation>AutoDaily</translation>
+        <translation>Run Daily Tasks</translation>
     </message>
     <message>
         <location filename="../app/base_combination.py" line="1002"/>
         <source>自动获取奖励</source>
-        <translation>AutoDailyGetReward</translation>
+        <translation>Claim Rewards Automatically</translation>
     </message>
     <message>
         <location filename="../app/base_combination.py" line="1007"/>
         <source>自动狂气换体</source>
-        <translation>AutoDailyBuyEnkephalin</translation>
+        <translation>Auto-Refill Enkephalin using Lunacy</translation>
     </message>
     <message>
         <location filename="../app/base_combination.py" line="1009"/>
         <source>自动镜牢</source>
-        <translation>AutoDailyMirror</translation>
+        <translation>Run Mirror Dungeon Automatically</translation>
     </message>
     <message>
         <location filename="../app/base_combination.py" line="1028"/>
@@ -548,7 +548,7 @@ Right-click to set as permanent</translation>
     <message>
         <location filename="../app/base_combination.py" line="1035"/>
         <source>关机</source>
-        <translation>Shutdown</translation>
+        <translation>Shut Down</translation>
     </message>
     <message>
         <location filename="../app/base_combination.py" line="1036"/>
@@ -569,7 +569,7 @@ Right-click to set as permanent</translation>
     <message>
         <location filename="../app/__init__.py" line="132"/>
         <source>不进入</source>
-        <translation>Do not enter</translation>
+        <translation>Do Not Enter</translation>
     </message>
     <message>
         <location filename="../app/__init__.py" line="56"/>
@@ -589,7 +589,7 @@ Right-click to set as permanent</translation>
     <message>
         <location filename="../app/__init__.py" line="59"/>
         <source>关机</source>
-        <translation>Shutdown</translation>
+        <translation>Shut Down</translation>
     </message>
     <message>
         <location filename="../app/__init__.py" line="60"/>
@@ -609,7 +609,7 @@ Right-click to set as permanent</translation>
     <message>
         <location filename="../app/__init__.py" line="33"/>
         <source>无限制</source>
-        <translation>Free</translation>
+        <translation>No Limit</translation>
     </message>
     <message>
         <location filename="../app/__init__.py" line="34"/>
@@ -650,32 +650,32 @@ Right-click to set as permanent</translation>
     <message>
         <location filename="../app/__init__.py" line="45"/>
         <source>不换</source>
-        <translation>No Buy</translation>
+        <translation>Do Not Refill</translation>
     </message>
     <message>
         <location filename="../app/__init__.py" line="46"/>
         <source>换第一次</source>
-        <translation>Once</translation>
+        <translation>Refill Once</translation>
     </message>
     <message>
         <location filename="../app/__init__.py" line="47"/>
         <source>换第二次</source>
-        <translation>Twice</translation>
+        <translation>Refill Twice</translation>
     </message>
     <message>
         <location filename="../app/__init__.py" line="48"/>
         <source>换第三次</source>
-        <translation>Thrice</translation>
+        <translation>Refill Three Times</translation>
     </message>
     <message>
         <location filename="../app/__init__.py" line="63"/>
         <source>退出MUMU模拟器</source>
-        <translation>Exit MUMU Emulator</translation>
+        <translation>Exit MuMu Emulator</translation>
     </message>
     <message>
         <location filename="../app/__init__.py" line="64"/>
         <source>退出AALC和MUMU模拟器</source>
-        <translation>Exit AALC And MUMU Emulator</translation>
+        <translation>Exit AALC and MuMu Emulator</translation>
     </message>
     <message>
         <location filename="../app/__init__.py" line="69"/>
@@ -740,22 +740,22 @@ Right-click to set as permanent</translation>
     <message>
         <location filename="../app/__init__.py" line="83"/>
         <source>合成：四级优先</source>
-        <translation>Fuse: Level IV First</translation>
+        <translation>Fuse Tier IV Gifts First</translation>
     </message>
     <message>
         <location filename="../app/__init__.py" line="86"/>
         <source>商店策略改为出售</source>
-        <translation>Shop Tactic Change to Sell</translation>
+        <translation>Switch to Selling</translation>
     </message>
     <message>
         <location filename="../app/__init__.py" line="87"/>
         <source>商店策略改为普通合成</source>
-        <translation>Shop Tactic Change to Normal Fuse</translation>
+        <translation>Switch to Standard Fusion</translation>
     </message>
     <message>
         <location filename="../app/__init__.py" line="88"/>
         <source>合成第二体系四级饰品</source>
-        <translation>Fuse Second System Level IV</translation>
+        <translation>Fuse a Tier IV Gift for the Secondary Keyword</translation>
     </message>
     <message>
         <location filename="../app/__init__.py" line="89"/>
@@ -765,57 +765,57 @@ Right-click to set as permanent</translation>
     <message>
         <location filename="../app/__init__.py" line="92"/>
         <source>星光→饰品→钱→饰品/钱→罪孽</source>
-        <translation>Starlight→E.G.O.→Cost→E.G.O./Cost→Sin</translation>
+        <translation>Starlight → E.G.O Gifts → Cost → Gifts/Cost → Sin</translation>
     </message>
     <message>
         <location filename="../app/__init__.py" line="93"/>
         <source>星光→钱→饰品→饰品/钱→罪孽</source>
-        <translation>Starlight→Cost→E.G.O.→E.G.O./Cost→Sin</translation>
+        <translation>Starlight → Cost → E.G.O Gifts → Gifts/Cost → Sin</translation>
     </message>
     <message>
         <location filename="../app/__init__.py" line="94"/>
         <source>钱→饰品→饰品/钱→罪孽→星光</source>
-        <translation>Cost→E.G.O.→E.G.O./Cost→Sin→Starlight</translation>
+        <translation>Cost → E.G.O Gifts → Gifts/Cost → Sin → Starlight</translation>
     </message>
     <message>
         <location filename="../app/__init__.py" line="95"/>
         <source>饰品→钱→饰品/钱→罪孽→星光</source>
-        <translation>E.G.O.→Cost→E.G.O./Cost→Sin→Starlight</translation>
+        <translation>E.G.O Gifts → Cost → Gifts/Cost → Sin → Starlight</translation>
     </message>
     <message>
         <location filename="../app/__init__.py" line="102"/>
         <source>仅购买回血饰品</source>
-        <translation>Only Buy Heal E.G.O.</translation>
+        <translation>Buy Only Healing Gifts</translation>
     </message>
     <message>
         <location filename="../app/__init__.py" line="103"/>
         <source>启用四级优先时：仅购买所有3-4级饰品</source>
-        <translation>Enable Level IV First: only buy level 3-4</translation>
+        <translation>With Tier IV priority, buy only Tier III–IV gifts.</translation>
     </message>
     <message>
         <location filename="../app/__init__.py" line="104"/>
         <source>仅购买体系饰品</source>
-        <translation>Only Buy systems E.G.O.</translation>
+        <translation>Buy Only Gifts for the Team&apos;s Keyword</translation>
     </message>
     <message>
         <location filename="../app/__init__.py" line="105"/>
         <source>不购买体系饰品</source>
-        <translation>No Buy systems E.G.O.</translation>
+        <translation>Skip Gifts for the Team&apos;s Keyword</translation>
     </message>
     <message>
         <location filename="../app/__init__.py" line="106"/>
         <source>不购买回血饰品</source>
-        <translation>No Buy Heal E.G.O.</translation>
+        <translation>Skip Healing Gifts</translation>
     </message>
     <message>
         <location filename="../app/__init__.py" line="107"/>
         <source>启用四级优先时：不购买所有3-4级饰品</source>
-        <translation>Enable Level IV First: no buy level 3-4</translation>
+        <translation>With Tier IV priority, skip Tier III–IV gifts.</translation>
     </message>
     <message>
         <location filename="../app/__init__.py" line="111"/>
         <source>合成第一体系四级饰品后</source>
-        <translation>After Fuse First System Level IV</translation>
+        <translation>After Fusing a Tier IV Gift for the Primary Keyword</translation>
     </message>
     <message>
         <location filename="../app/__init__.py" line="112"/>
@@ -825,32 +825,32 @@ Right-click to set as permanent</translation>
     <message>
         <location filename="../app/__init__.py" line="115"/>
         <source>配队首位</source>
-        <translation>Team First</translation>
+        <translation>First Sinner</translation>
     </message>
     <message>
         <location filename="../app/__init__.py" line="116"/>
         <source>配队前3</source>
-        <translation>Team Top 3</translation>
+        <translation>First 3 Sinners</translation>
     </message>
     <message>
         <location filename="../app/__init__.py" line="117"/>
         <source>配队前7</source>
-        <translation>Team Top 7</translation>
+        <translation>First 7 Sinners</translation>
     </message>
     <message>
         <location filename="../app/__init__.py" line="118"/>
         <source>所有选中的人</source>
-        <translation>All selected sinners</translation>
+        <translation>All Selected Sinners</translation>
     </message>
     <message>
         <location filename="../app/__init__.py" line="98"/>
         <source>困难镜牢</source>
-        <translation>Hard Mirror</translation>
+        <translation>Mirror Dungeon (Hard)</translation>
     </message>
     <message>
         <location filename="../app/__init__.py" line="99"/>
         <source>普通镜牢</source>
-        <translation>Normal Mirror</translation>
+        <translation>Mirror Dungeon (Normal)</translation>
     </message>
     <message>
         <source>是 (默认)</source>
@@ -861,13 +861,21 @@ Right-click to set as permanent</translation>
         <source>否 (默认)</source>
         <translation>No (Default)</translation>
     </message>
+    <message numerus="yes">
+        <location filename="../app/base_tools.py" line="428"/>
+        <source>%n 次</source>
+        <translation>
+            <numerusform>%n Time</numerusform>
+            <numerusform>%n Times</numerusform>
+        </translation>
+    </message>
 </context>
 <context>
     <name>BaseInfoBar</name>
     <message>
         <location filename="../module/update/check_update.py" line="338"/>
         <source>当前是最新版本(＾∀＾●)</source>
-        <translation>Current version is latest (＾∀＾●)</translation>
+        <translation>You&apos;re up to date (＾∀＾●)</translation>
     </message>
     <message>
         <location filename="../module/update/check_update.py" line="352"/>
@@ -876,37 +884,37 @@ Right-click to set as permanent</translation>
     </message>
     <message>
         <source>检测更新失败(╥╯﹏╰╥)</source>
-        <translation type="vanished">Checking update failed (╥╯﹏╰╥)</translation>
+        <translation type="vanished">Failed to check for updates (╥╯﹏╰╥)</translation>
     </message>
     <message>
         <location filename="../app/setting_interface.py" line="706"/>
         <source>更改将在重新启动后生效</source>
-        <translation>The changes will take effect after the restart</translation>
+        <translation>Changes take effect after you restart AALC.</translation>
     </message>
     <message>
         <location filename="../app/base_combination.py" line="291"/>
         <source>已复制到剪切板</source>
-        <translation>Copied to clipboard</translation>
+        <translation>Copied to clipboard.</translation>
     </message>
     <message>
         <location filename="../app/base_combination.py" line="309"/>
         <source>该设置不属于 AALC</source>
-        <translation>This setting does not belong to AALC</translation>
+        <translation>These settings are for a different application.</translation>
     </message>
     <message>
         <location filename="../app/base_combination.py" line="320"/>
         <source>不是有效的 AALC 设置</source>
-        <translation>Not a valid AALC setting</translation>
+        <translation>Invalid AALC settings.</translation>
     </message>
     <message>
         <location filename="../app/base_combination.py" line="337"/>
         <source>导入数据失败，可能是因为设置版本过旧或过新</source>
-        <translation>Data import failed; this may be because the settings version is too old or too new</translation>
+        <translation>Couldn&apos;t import the data. The settings may be from an incompatible version.</translation>
     </message>
     <message>
         <location filename="../app/base_combination.py" line="350"/>
         <source>已粘贴设置</source>
-        <translation>Settings pasted</translation>
+        <translation>Settings pasted.</translation>
     </message>
     <message>
         <location filename="../app/setting_interface.py" line="654"/>
@@ -917,7 +925,7 @@ Right-click to set as permanent</translation>
         <location filename="../app/setting_interface.py" line="655"/>
         <location filename="../app/setting_interface.py" line="667"/>
         <source>截图测试结束</source>
-        <translation>Screenshot test completed</translation>
+        <translation>Screenshot test complete.</translation>
     </message>
     <message>
         <source>截图性能测试失败</source>
@@ -926,17 +934,17 @@ Right-click to set as permanent</translation>
     <message>
         <location filename="../app/tools_interface.py" line="126"/>
         <source>截图完成</source>
-        <translation>Screenshot completed</translation>
+        <translation>Screenshot captured.</translation>
     </message>
     <message>
         <location filename="../app/tools_interface.py" line="127"/>
         <source>图片保存为 AALC &gt; screenshot_{time_str}.png</source>
-        <translation>Image saved as AALC &gt; screenshot_{time_str}.png</translation>
+        <translation>Screenshot saved as AALC &gt; screenshot_{time_str}.png</translation>
     </message>
     <message>
         <location filename="../app/setting_interface.py" line="666"/>
         <source>请确保LimbusCompany正在运行</source>
-        <translation>Please ensure that LimbusCompany is running</translation>
+        <translation>Make sure Limbus Company is running.</translation>
     </message>
 </context>
 <context>
@@ -944,12 +952,12 @@ Right-click to set as permanent</translation>
     <message>
         <location filename="../app/farming_interface.py" line="494"/>
         <source>之后</source>
-        <translation>After</translation>
+        <translation>After the Run</translation>
     </message>
     <message>
         <location filename="../app/team_setting_card.py" line="912"/>
         <source>忽略商店</source>
-        <translation>Ignore shop</translation>
+        <translation>Ignore the Shop</translation>
     </message>
 </context>
 <context>
@@ -962,13 +970,13 @@ Right-click to set as permanent</translation>
     <message>
         <location filename="../app/setting_interface.py" line="417"/>
         <source>打开日志文件夹</source>
-        <translation>Open logs folder</translation>
+        <translation>Open Logs Folder</translation>
     </message>
     <message>
         <location filename="../app/setting_interface.py" line="423"/>
         <location filename="../app/setting_interface.py" line="425"/>
         <source>项目主页</source>
-        <translation>Object repo</translation>
+        <translation>Project Homepage</translation>
     </message>
     <message>
         <location filename="../app/setting_interface.py" line="429"/>
@@ -989,7 +997,7 @@ Right-click to set as permanent</translation>
     <message>
         <location filename="../app/setting_interface.py" line="438"/>
         <source>帮助我们改进 AhabAssistantLimbusCompany</source>
-        <translation>Help us to enhance AhabAssistantLimbusCompany</translation>
+        <translation>Help us improve Ahab Assistant Limbus Company.</translation>
     </message>
     <message>
         <location filename="../app/setting_interface.py" line="171"/>
@@ -999,12 +1007,12 @@ Right-click to set as permanent</translation>
     <message>
         <location filename="../app/setting_interface.py" line="173"/>
         <source>截图性能测试</source>
-        <translation>Screenshot performance test</translation>
+        <translation>Screenshot Performance Test</translation>
     </message>
     <message>
         <location filename="../app/setting_interface.py" line="174"/>
         <source>测试截图功能的性能</source>
-        <translation>Testing the performance of the screenshot function</translation>
+        <translation>Measure how long it takes to capture a screenshot.</translation>
     </message>
     <message>
         <location filename="../app/setting_interface.py" line="404"/>
@@ -1014,7 +1022,7 @@ Right-click to set as permanent</translation>
     <message>
         <location filename="../app/setting_interface.py" line="406"/>
         <source>手动检查资源更新</source>
-        <translation>Manually Check for Resource Updates</translation>
+        <translation>Check for Resource Updates Manually</translation>
     </message>
     <message>
         <location filename="../app/setting_interface.py" line="446"/>
@@ -1029,7 +1037,7 @@ Right-click to set as permanent</translation>
     <message>
         <location filename="../app/setting_interface.py" line="452"/>
         <source>配置镜牢主题包的选择优先级权重</source>
-        <translation>Configure the selection priority weights for Mirror Dungeon theme packs</translation>
+        <translation>Set the selection priority for Mirror Dungeon Theme Packs.</translation>
     </message>
 </context>
 <context>
@@ -1043,27 +1051,27 @@ Right-click to set as permanent</translation>
     <message>
         <location filename="../app/setting_interface.py" line="248"/>
         <source>游戏路径</source>
-        <translation>Game path</translation>
+        <translation>Game Path</translation>
     </message>
     <message>
         <location filename="../app/setting_interface.py" line="346"/>
         <source>快捷键设置</source>
-        <translation>Shortcut Settings</translation>
+        <translation>Hotkey Settings</translation>
     </message>
     <message>
         <location filename="../app/setting_interface.py" line="348"/>
         <source>结束运行的脚本</source>
-        <translation>Stop running script</translation>
+        <translation>Stop Script</translation>
     </message>
     <message>
         <location filename="../app/setting_interface.py" line="349"/>
         <source>暂停脚本运行</source>
-        <translation>Pause running script</translation>
+        <translation>Pause Script</translation>
     </message>
     <message>
         <location filename="../app/setting_interface.py" line="350"/>
         <source>恢复脚本运行</source>
-        <translation>Resume running script</translation>
+        <translation>Resume Script</translation>
     </message>
     <message>
         <location filename="../app/tools_interface.py" line="41"/>
@@ -1081,17 +1089,17 @@ Right-click to set as permanent</translation>
     <message>
         <location filename="../app/tools_interface.py" line="47"/>
         <source>这只是一个为你自动按下P键和Enter键的小工具，不要怀抱太多期待</source>
-        <translation>It&apos;s just a gadget that automatically presses the P and Enter keys for you, so don&apos;t expect too much</translation>
+        <translation>Automatically presses P and Enter for you. Results may vary.</translation>
     </message>
     <message>
         <location filename="../app/tools_interface.py" line="53"/>
         <source>自动体力换饼</source>
-        <translation>Auto Stamina Replacement</translation>
+        <translation>Auto-Assemble Enkephalin to Modules</translation>
     </message>
     <message>
         <location filename="../app/tools_interface.py" line="54"/>
         <source>辅助自动换饼小工具，防止体力溢出</source>
-        <translation>It&apos;s just a gadget that automatically replaces the cogito for you, preventing stamina overflow</translation>
+        <translation>Automatically assembles Enkephalin to modules before it reaches the cap.</translation>
     </message>
     <message>
         <location filename="../app/tools_interface.py" line="60"/>
@@ -1101,7 +1109,7 @@ Right-click to set as permanent</translation>
     <message>
         <location filename="../app/tools_interface.py" line="61"/>
         <source>辅助截图小工具</source>
-        <translation>It&apos;s just a gadget that takes screenshots for you</translation>
+        <translation>Capture a screenshot of the game.</translation>
     </message>
     <message>
         <location filename="../app/tools_interface.py" line="117"/>
@@ -1119,7 +1127,7 @@ Right-click to set as permanent</translation>
     <message>
         <location filename="../app/setting_interface.py" line="179"/>
         <source>模拟器设置</source>
-        <translation>Simulator Setting</translation>
+        <translation>Emulator Settings</translation>
     </message>
     <message>
         <location filename="../app/setting_interface.py" line="243"/>
@@ -1129,7 +1137,7 @@ Right-click to set as permanent</translation>
     <message>
         <location filename="../app/setting_interface.py" line="260"/>
         <source>定时执行 AALC</source>
-        <translation>Scheduled Execution of AALC</translation>
+        <translation>Scheduled Tasks</translation>
     </message>
     <message>
         <location filename="../app/setting_interface.py" line="303"/>
@@ -1144,7 +1152,7 @@ Right-click to set as permanent</translation>
     <message>
         <location filename="../app/setting_interface.py" line="412"/>
         <source>日志设置</source>
-        <translation>logs Settings</translation>
+        <translation>Logs Settings</translation>
     </message>
     <message>
         <location filename="../app/setting_interface.py" line="421"/>
@@ -1159,7 +1167,7 @@ Right-click to set as permanent</translation>
     <message>
         <location filename="../app/setting_interface.py" line="457"/>
         <source>实验性内容</source>
-        <translation>Experimental sections</translation>
+        <translation>Experimental Features</translation>
     </message>
     <message>
         <location filename="../app/setting_interface.py" line="442"/>
@@ -1172,7 +1180,7 @@ Right-click to set as permanent</translation>
     <message>
         <location filename="../app/farming_interface.py" line="448"/>
         <source>窗口设置</source>
-        <translation>Win-Settings</translation>
+        <translation>Window Settings</translation>
     </message>
     <message>
         <location filename="../app/farming_interface.py" line="456"/>
@@ -1187,12 +1195,12 @@ Right-click to set as permanent</translation>
     <message>
         <location filename="../app/farming_interface.py" line="469"/>
         <source>狂气换体</source>
-        <translation>Lunacy2Enk</translation>
+        <translation>Refill Enkephalin</translation>
     </message>
     <message>
         <location filename="../app/farming_interface.py" line="475"/>
         <source>坐牢设置</source>
-        <translation>Mir-Settings</translation>
+        <translation>Mirror Dungeon Config</translation>
     </message>
     <message>
         <location filename="../app/farming_interface.py" line="481"/>
@@ -1205,37 +1213,37 @@ Right-click to set as permanent</translation>
     <message>
         <location filename="../app/team_setting_card.py" line="782"/>
         <source>奖励卡优先度</source>
-        <translation>Reward priority</translation>
+        <translation>Reward Card Priority</translation>
     </message>
     <message>
         <location filename="../app/team_setting_card.py" line="853"/>
         <source>合成四级以后</source>
-        <translation>After fused level IV</translation>
+        <translation>After Tier IV Fusion</translation>
     </message>
     <message>
         <location filename="../app/team_setting_card.py" line="860"/>
         <source>购物策略</source>
-        <translation>Shop tactic</translation>
+        <translation>Shop Strategy</translation>
     </message>
     <message>
         <location filename="../app/team_setting_card.py" line="868"/>
         <source>自选开局饰品</source>
-        <translation>Beginning E.G.O.</translation>
+        <translation>Starting E.G.O Gift</translation>
     </message>
     <message>
         <location filename="../app/team_setting_card.py" line="878"/>
         <source>第二体系</source>
-        <translation>Secend system</translation>
+        <translation>Secondary Keyword</translation>
     </message>
     <message>
         <location filename="../app/team_setting_card.py" line="903"/>
         <source>技能替换</source>
-        <translation>Change skills</translation>
+        <translation>Skill Replacement</translation>
     </message>
     <message>
         <location filename="../app/team_setting_card.py" line="768"/>
         <source>固定队伍用途</source>
-        <translation>Fixed team usage</translation>
+        <translation>Fixed Team Setup Usage</translation>
     </message>
     <message>
         <location filename="../app/page_card.py" line="207"/>
@@ -1248,32 +1256,32 @@ Right-click to set as permanent</translation>
     <message>
         <location filename="../app/setting_interface.py" line="116"/>
         <source>选择队伍方式</source>
-        <translation>Choose teams way</translation>
+        <translation>Team Selection Method</translation>
     </message>
     <message>
         <location filename="../app/setting_interface.py" line="122"/>
         <source>使用队伍名</source>
-        <translation>Using name</translation>
+        <translation>By Team Name</translation>
     </message>
     <message>
         <location filename="../app/setting_interface.py" line="123"/>
         <source>使用队伍序号</source>
-        <translation>Using Index</translation>
+        <translation>By Position in List</translation>
     </message>
     <message>
         <location filename="../app/setting_interface.py" line="191"/>
         <source>模拟器连接配置</source>
-        <translation>Simulator Connecting Setting</translation>
+        <translation>Emulator Connection Settings</translation>
     </message>
     <message>
         <location filename="../app/setting_interface.py" line="192"/>
         <source>选择使用的模拟器</source>
-        <translation>Simulator Type Setting</translation>
+        <translation>Emulator Type</translation>
     </message>
     <message>
         <location filename="../app/setting_interface.py" line="194"/>
         <source>MuMu模拟器(推荐)</source>
-        <translation>MUMU Simulator</translation>
+        <translation>MuMu (Recommended)</translation>
     </message>
     <message>
         <location filename="../app/setting_interface.py" line="195"/>
@@ -1283,7 +1291,7 @@ Right-click to set as permanent</translation>
     <message>
         <location filename="../app/setting_interface.py" line="196"/>
         <source>其他模拟器</source>
-        <translation>Others</translation>
+        <translation>Other Emulator</translation>
     </message>
     <message>
         <location filename="../app/setting_interface.py" line="308"/>
@@ -1293,7 +1301,7 @@ Right-click to set as permanent</translation>
     <message>
         <location filename="../app/setting_interface.py" line="309"/>
         <source>设置程序 UI 使用的语言</source>
-        <translation>Set program language</translation>
+        <translation>Choose the language used in the app.</translation>
     </message>
     <message>
         <location filename="../app/setting_interface.py" line="316"/>
@@ -1303,7 +1311,7 @@ Right-click to set as permanent</translation>
     <message>
         <location filename="../app/setting_interface.py" line="317"/>
         <source>调整应用的主题外观</source>
-        <translation>Adjust the app theme appearance</translation>
+        <translation>Change the app&apos;s appearance.</translation>
     </message>
     <message>
         <location filename="../app/setting_interface.py" line="320"/>
@@ -1318,22 +1326,22 @@ Right-click to set as permanent</translation>
     <message>
         <location filename="../app/setting_interface.py" line="368"/>
         <source>更新源</source>
-        <translation>Update source</translation>
+        <translation>Update Source</translation>
     </message>
     <message>
         <location filename="../app/setting_interface.py" line="369"/>
         <source>选择更新源</source>
-        <translation>Choose update source</translation>
+        <translation>Choose where to download updates.</translation>
     </message>
     <message>
         <location filename="../app/setting_interface.py" line="371"/>
         <source>Github源</source>
-        <translation>Github</translation>
+        <translation>GitHub</translation>
     </message>
     <message>
         <location filename="../app/setting_interface.py" line="372"/>
         <source>Mirror 酱</source>
-        <translation>Mirror Chyan</translation>
+        <translation>MirrorChyan</translation>
     </message>
     <message>
         <location filename="../app/setting_interface.py" line="328"/>
@@ -1343,38 +1351,38 @@ Right-click to set as permanent</translation>
     <message>
         <location filename="../app/setting_interface.py" line="329"/>
         <source>设置程序 UI 使用的缩放</source>
-        <translation>Set program zoom</translation>
+        <translation>Adjust the app&apos;s display scale.</translation>
     </message>
     <message>
         <location filename="../app/setting_interface.py" line="319"/>
         <location filename="../app/setting_interface.py" line="331"/>
         <source>跟随系统</source>
-        <translation>Follow system</translation>
+        <translation>Follow System</translation>
     </message>
     <message>
         <location filename="../app/setting_interface.py" line="120"/>
         <source>使用队伍名为识别“TEAMS#XX”/“编队#XX”的队伍，使用序号为使用从上到下第X个队伍</source>
-        <translation>Using Name that find identifies TEAMS#XX. Using Index to Use the Xth team from top to bottom</translation>
+        <translation>Select teams by their “TEAMS#XX” or “编队#XX” name, or by their position in the list from top to bottom.</translation>
     </message>
     <message>
         <location filename="../app/__init__.py" line="234"/>
         <source>前台模式 (pyautogui)</source>
-        <translation>Foreground mode (pyautogui)</translation>
+        <translation>Foreground Mode (pyautogui)</translation>
     </message>
     <message>
         <location filename="../app/__init__.py" line="235"/>
         <source>后台模式 (默认) (pywin32)</source>
-        <translation>Background mode (default) (pywin32)</translation>
+        <translation>Background Mode (Default, pywin32)</translation>
     </message>
     <message>
         <location filename="../app/__init__.py" line="236"/>
         <source>后台增强 (pywin32+set_window_pos)</source>
-        <translation>Background Mode Enhancement(pywin32+set win pos)</translation>
+        <translation>Enhanced Background Mode (pywin32 + set_window_pos)</translation>
     </message>
     <message>
         <location filename="../app/setting_interface.py" line="155"/>
         <source>操控方式</source>
-        <translation>Control method</translation>
+        <translation>Control Method</translation>
     </message>
     <message>
         <location filename="../app/setting_interface.py" line="395"/>
@@ -1399,22 +1407,22 @@ Right-click to set as permanent</translation>
     <message>
         <location filename="../app/setting_interface.py" line="683"/>
         <source>后台模式，游戏可以在后台运行，但是&lt;font color=red&gt;游戏不能处于最小化状态!!&lt;/font&gt;</source>
-        <translation>Background mode: The game can run in the background, but &lt;font color=red&gt;the game cannot be minimized!!&lt;/font&gt;</translation>
+        <translation>The game can run in the background. &lt;font color=red&gt;Keep the game window open and unminimized.&lt;/font&gt;</translation>
     </message>
     <message>
         <location filename="../app/setting_interface.py" line="686"/>
         <source>前台模式，游戏必须在显示在最上方</source>
-        <translation>In foreground mode, the game must be displayed at the top</translation>
+        <translation>Keep the game window in front when using foreground mode.</translation>
     </message>
     <message>
         <location filename="../app/setting_interface.py" line="692"/>
         <source>基于移动窗口的后台模式，有效规避了后台模式需要移动鼠标的情况，&lt;br/&gt;但是性能和稳定性较差，&lt;font color=red&gt;不推荐长时间无人使用&lt;/font&gt;</source>
-        <translation>Window-move BG mode. Avoids mouse syncing move.&lt;br/&gt; But has poor stability.&lt;font color=red&gt; Don&apos;t leave it unattended.&lt;/font&gt;</translation>
+        <translation>This mode moves the game window to avoid moving the mouse pointer, but may be slower and less stable.&lt;br/&gt;&lt;font color=red&gt;Avoid leaving it unattended for long periods.&lt;/font&gt;</translation>
     </message>
     <message>
         <location filename="../app/setting_interface.py" line="696"/>
         <source>未知的输入模式，发生了错误</source>
-        <translation>An error occurred due to an unknown input pattern</translation>
+        <translation>Unrecognized control mode.</translation>
     </message>
 </context>
 <context>
@@ -1422,108 +1430,108 @@ Right-click to set as permanent</translation>
     <message>
         <location filename="../app/team_setting_card.py" line="1515"/>
         <source>总镜牢次数: 统计数据不足</source>
-        <translation>ALL TIMES：Insuf. Data</translation>
+        <translation>Total runs: Not enough data</translation>
     </message>
     <message>
         <location filename="../app/team_setting_card.py" line="1516"/>
         <source>困难镜牢次数: 统计数据不足</source>
-        <translation>HARD TIMES：Insuf. Data</translation>
+        <translation>Hard runs: Not enough data</translation>
     </message>
     <message>
         <location filename="../app/team_setting_card.py" line="1517"/>
         <source>普通镜牢次数: 统计数据不足</source>
-        <translation>NOR TIMES：Insuf. Data</translation>
+        <translation>Normal runs: Not enough data</translation>
     </message>
     <message>
         <location filename="../app/team_setting_card.py" line="1518"/>
         <location filename="../app/team_setting_card.py" line="1605"/>
         <source>困难平均用时: 统计数据不足</source>
-        <translation>HARD AVG：Insuf. Data</translation>
+        <translation>Hard average: Not enough data</translation>
     </message>
     <message>
         <location filename="../app/team_setting_card.py" line="1519"/>
         <location filename="../app/team_setting_card.py" line="1614"/>
         <source>困难最近5次平均用时: 统计数据不足</source>
-        <translation>HARD NEAR 5 AVG：Insuf. Data</translation>
+        <translation>Hard average (last 5): Not enough data</translation>
     </message>
     <message>
         <location filename="../app/team_setting_card.py" line="1520"/>
         <location filename="../app/team_setting_card.py" line="1624"/>
         <source>困难最近10次平均用时: 统计数据不足</source>
-        <translation>HARD NEAR 10 AVG：Insuf. Data</translation>
+        <translation>Hard average (last 10): Not enough data</translation>
     </message>
     <message>
         <location filename="../app/team_setting_card.py" line="1521"/>
         <location filename="../app/team_setting_card.py" line="1633"/>
         <source>普通平均用时: 统计数据不足</source>
-        <translation>NOR AVG：Insuf. Data</translation>
+        <translation>Normal average: Not enough data</translation>
     </message>
     <message>
         <location filename="../app/team_setting_card.py" line="1522"/>
         <location filename="../app/team_setting_card.py" line="1643"/>
         <source>普通最近5次平均用时: 统计数据不足</source>
-        <translation>NOR NEAR 5 AVG：Insuf. Data</translation>
+        <translation>Normal average (last 5): Not enough data</translation>
     </message>
     <message>
         <location filename="../app/team_setting_card.py" line="1523"/>
         <location filename="../app/team_setting_card.py" line="1653"/>
         <source>普通最近10次平均用时: 统计数据不足</source>
-        <translation>NOR NEAR 10 AVG：Insuf. Data</translation>
+        <translation>Normal average (last 10): Not enough data</translation>
     </message>
     <message>
         <location filename="../app/team_setting_card.py" line="1525"/>
         <source>刷新数据</source>
-        <translation>Fresh</translation>
+        <translation>Refresh Data</translation>
     </message>
     <message>
         <location filename="../app/team_setting_card.py" line="1527"/>
         <source>清除历史统计数据</source>
-        <translation>CLEAR</translation>
+        <translation>Clear Run History</translation>
     </message>
     <message>
         <location filename="../app/team_setting_card.py" line="1594"/>
         <source>总镜牢次数: </source>
-        <translation>ALL TIMES：</translation>
+        <translation>Total runs: </translation>
     </message>
     <message>
         <location filename="../app/team_setting_card.py" line="1595"/>
         <source>困难镜牢次数: </source>
-        <translation>HARD TIMES：</translation>
+        <translation>Hard runs: </translation>
     </message>
     <message>
         <location filename="../app/team_setting_card.py" line="1596"/>
         <source>普通镜牢次数: </source>
-        <translation>NOR TIMES：</translation>
+        <translation>Normal runs: </translation>
     </message>
     <message>
         <location filename="../app/team_setting_card.py" line="1600"/>
         <source>困难平均用时: {min:.0f} : {sec:.2f} </source>
-        <translation>HARD AVG：{min:.0f} : {sec:.2f}</translation>
+        <translation>Hard average: {min:.0f}:{sec:.2f}</translation>
     </message>
     <message>
         <location filename="../app/team_setting_card.py" line="1609"/>
         <source>困难最近5次平均用时: {min:.0f} : {sec:.2f} </source>
-        <translation>HARD NEAR 5 AVG：{min:.0f} : {sec:.2f}</translation>
+        <translation>Hard average (last 5): {min:.0f}:{sec:.2f}</translation>
     </message>
     <message>
         <location filename="../app/team_setting_card.py" line="1618"/>
         <source>困难最近10次平均用时: {min:.0f} : {sec:.2f} </source>
-        <translation>NOR NEAR 10 AVG：{min:.0f} : {sec:.2f}</translation>
+        <translation>Hard average (last 10): {min:.0f}:{sec:.2f}</translation>
     </message>
     <message>
         <location filename="../app/team_setting_card.py" line="1628"/>
         <source>普通平均用时: {min:.0f} : {sec:.2f} </source>
-        <translation>NOR AVG：{min:.0f} : {sec:.2f}</translation>
+        <translation>Normal average: {min:.0f}:{sec:.2f}</translation>
     </message>
     <message>
         <location filename="../app/team_setting_card.py" line="1637"/>
         <source>普通最近5次平均用时: {min:.0f} : {sec:.2f} </source>
-        <translation>NOR NEAR 5 AVG：{min:.0f} : {sec:.2f}</translation>
+        <translation>Normal average (last 5): {min:.0f}:{sec:.2f}</translation>
     </message>
     <message>
         <location filename="../app/team_setting_card.py" line="1647"/>
         <source>普通最近10次平均用时: {min:.0f} : {sec:.2f} </source>
-        <translation>NOR NEAR 10 AVG：{min:.0f} : {sec:.2f}</translation>
+        <translation>Normal average (last 10): {min:.0f}:{sec:.2f}</translation>
     </message>
 </context>
 <context>
@@ -1531,7 +1539,7 @@ Right-click to set as permanent</translation>
     <message>
         <location filename="../app/team_setting_card.py" line="789"/>
         <source>星光</source>
-        <translation>Star</translation>
+        <translation>Starlight</translation>
     </message>
     <message>
         <location filename="../app/team_setting_card.py" line="822"/>
@@ -1555,8 +1563,8 @@ Right-click to set as permanent</translation>
         <location filename="../app/team_setting_card.py" line="948"/>
         <source>后台模式下输入编队码可能不稳定
 输入编队码会覆盖原有的队伍配置</source>
-        <translation>Entering a formation code in background mode may be unstable.
-Entering a formation code will overwrite your current team configuration.</translation>
+        <translation>Entering a team code in background mode may be unreliable.
+The code will overwrite your current team settings.</translation>
     </message>
     <message>
         <location filename="../app/team_setting_card.py" line="951"/>
@@ -1566,12 +1574,12 @@ Entering a formation code will overwrite your current team configuration.</trans
     <message>
         <location filename="../app/team_setting_card.py" line="1115"/>
         <source>每次商店访问时定向刷新商品的次数上限</source>
-        <translation>Maximum number of keyword-targeted refreshes per shop visit</translation>
+        <translation>Maximum number of keyword refreshes per shop visit.</translation>
     </message>
     <message>
         <location filename="../app/team_setting_card.py" line="1116"/>
         <source>每次商店访问时普通刷新商品的次数上限</source>
-        <translation>Maximum number of normal refreshes per shop visit</translation>
+        <translation>Maximum number of Normal Refreshes per shop visit.</translation>
     </message>
     <message>
         <location filename="../app/common/ui_config.py" line="246"/>
@@ -1628,37 +1636,37 @@ Entering a formation code will overwrite your current team configuration.</trans
     <name>DailySettingCard</name>
     <message>
         <source>定时执行 AALC</source>
-        <translation type="vanished">Scheduled Execution of AALC</translation>
+        <translation type="vanished">Scheduled Tasks</translation>
     </message>
     <message>
         <location filename="../app/setting_interface.py" line="265"/>
         <source>定时执行 1</source>
-        <translation>Scheduled execution1</translation>
+        <translation>Scheduled Task 1</translation>
     </message>
     <message>
         <location filename="../app/setting_interface.py" line="266"/>
         <source>如果计算机处于启动状态，将在指定时间执行 AALC 任务</source>
-        <translation>If the computer is on, the AALC task will be executed at the specified time</translation>
+        <translation>AALC runs the task at the specified time if the computer is on.</translation>
     </message>
     <message>
         <location filename="../app/setting_interface.py" line="272"/>
         <source>定时执行 2</source>
-        <translation>Scheduled execution2</translation>
+        <translation>Scheduled Task 2</translation>
     </message>
     <message>
         <location filename="../app/setting_interface.py" line="279"/>
         <source>定时执行 3</source>
-        <translation>Scheduled execution3</translation>
+        <translation>Scheduled Task 3</translation>
     </message>
     <message>
         <location filename="../app/setting_interface.py" line="286"/>
         <source>定时执行 4</source>
-        <translation>Scheduled execution4</translation>
+        <translation>Scheduled Task 4</translation>
     </message>
     <message>
         <location filename="../app/base_combination.py" line="1176"/>
         <source>设置任务项</source>
-        <translation>Set task items</translation>
+        <translation>Configure Tasks</translation>
     </message>
 </context>
 <context>
@@ -1666,22 +1674,22 @@ Entering a formation code will overwrite your current team configuration.</trans
     <message>
         <location filename="../app/farming_interface.py" line="596"/>
         <source>存在未配置角色选择的队伍：TEAM_{0}</source>
-        <translation>There is a team with no configured role selection: TEAM_{0}</translation>
+        <translation>TEAM_{0} has no Sinners selected.</translation>
     </message>
     <message>
         <location filename="../app/farming_interface.py" line="587"/>
         <source>没有启用任何队伍，请选择一个队伍进行镜牢任务</source>
-        <translation>No team is enabled. Please select a team to start the Mirror Dungeon quest</translation>
+        <translation>Select a team to start the Mirror Dungeon run.</translation>
     </message>
     <message>
         <location filename="../app/farming_interface.py" line="617"/>
         <source>启用了困牢，但是无可用于困牢的队伍</source>
-        <translation>Hardmode Mirror Dungeons are enabled, but there are no groups available for Hardmode Mirror Dungeons</translation>
+        <translation>Hard Mode is enabled, but no team is available for it.</translation>
     </message>
     <message>
         <location filename="../app/farming_interface.py" line="619"/>
         <source>启用了普牢，但是无可用于普牢的队伍</source>
-        <translation>Normal Mode Mirror Dungeon is enabled, but there are no groups available for Normal Mode Mirror Dungeon</translation>
+        <translation>Normal Mode is enabled, but no team is available for it.</translation>
     </message>
     <message>
         <location filename="../app/farming_interface.py" line="785"/>
@@ -1713,7 +1721,7 @@ Entering a formation code will overwrite your current team configuration.</trans
     <message>
         <location filename="../app/base_combination.py" line="1420"/>
         <source>按下键盘以设置快捷键, 部分特殊按键可能无法使用</source>
-        <translation>Press a key to set the shortcut, some special keys may not be usable</translation>
+        <translation>Press a key to set the shortcut. Some special keys may be unavailable.</translation>
     </message>
 </context>
 <context>
@@ -1728,15 +1736,15 @@ Entering a formation code will overwrite your current team configuration.</trans
     <name>InfiniteBattles</name>
     <message>
         <source>开始战斗</source>
-        <translation type="vanished">Battle Start</translation>
+        <translation type="vanished">Start Battle</translation>
     </message>
     <message>
         <source>无限守备</source>
-        <translation type="vanished">Defense All Time</translation>
+        <translation type="vanished">Defend Every Turn</translation>
     </message>
     <message>
         <source>第一回合开启守备</source>
-        <translation type="vanished">Defense First Turn</translation>
+        <translation type="vanished">Defend on the First Turn</translation>
     </message>
     <message>
         <source>停止战斗</source>
@@ -1744,19 +1752,19 @@ Entering a formation code will overwrite your current team configuration.</trans
     </message>
     <message>
         <source>状态：战斗中...</source>
-        <translation type="vanished">Status: In combat...</translation>
+        <translation type="vanished">Status: In battle…</translation>
     </message>
     <message>
         <source>状态：正在战斗...</source>
-        <translation type="vanished">Status: Currently in battle...</translation>
+        <translation type="vanished">Status: In battle…</translation>
     </message>
     <message>
         <source>战斗操作执行</source>
-        <translation type="vanished">Combat operations execution</translation>
+        <translation type="vanished">Combat Actions</translation>
     </message>
     <message>
         <source>不处理事件</source>
-        <translation type="vanished">Do not handle events</translation>
+        <translation type="vanished">Skip Events</translation>
     </message>
 </context>
 <context>
@@ -1772,37 +1780,37 @@ Entering a formation code will overwrite your current team configuration.</trans
     <message>
         <location filename="../app/team_setting_card.py" line="713"/>
         <source>第几层转困牢</source>
-        <translation>Switch to Hard Mirror Dungeon on Floor</translation>
+        <translation>Floor to Switch to Hard Mode</translation>
     </message>
     <message>
         <location filename="../app/page_card.py" line="119"/>
         <source>窗口分辨率</source>
-        <translation>Window size</translation>
+        <translation>Window Resolution</translation>
     </message>
     <message>
         <location filename="../app/page_card.py" line="124"/>
         <source>窗口位置</source>
-        <translation>Window Positions</translation>
+        <translation>Window Position</translation>
     </message>
     <message>
         <location filename="../app/page_card.py" line="129"/>
         <source>结束后恢复窗口</source>
-        <translation>Restore window after completion</translation>
+        <translation>Restore Window After the Run</translation>
     </message>
     <message>
         <location filename="../app/page_card.py" line="155"/>
         <source>提高点击速度，但是对硬件与网络有一定需求，否则可能出现漏点</source>
-        <translation>It increases click speed, but places certain demands on hardware and network performance; otherwise, missed clicks may occur</translation>
+        <translation>Clicks faster, but may miss clicks on slower computers or connections.</translation>
     </message>
     <message>
         <location filename="../app/page_card.py" line="237"/>
         <source>周日</source>
-        <translation>Sun.</translation>
+        <translation>Sun</translation>
     </message>
     <message>
         <location filename="../app/page_card.py" line="202"/>
         <source>使用编队</source>
-        <translation>Used TEAM</translation>
+        <translation>Team to Use</translation>
     </message>
     <message>
         <location filename="../app/page_card.py" line="331"/>
@@ -1812,17 +1820,17 @@ Entering a formation code will overwrite your current team configuration.</trans
     <message>
         <location filename="../app/page_card.py" line="354"/>
         <source>狂气换体</source>
-        <translation>Buy Enkephalin</translation>
+        <translation>Refill Enkephalin using Lunacy</translation>
     </message>
     <message>
         <location filename="../app/page_card.py" line="223"/>
         <source>周一、周二（斩击）</source>
-        <translation>Mon. Tue. (Slash)</translation>
+        <translation>Mon &amp; Tue (Slash)</translation>
     </message>
     <message>
         <location filename="../app/page_card.py" line="152"/>
         <source>使用异步方法进行键鼠输入</source>
-        <translation>Use asynchronous method for input</translation>
+        <translation>Use Asynchronous Input</translation>
     </message>
     <message>
         <source>是 (默认)</source>
@@ -1835,47 +1843,47 @@ Entering a formation code will overwrite your current team configuration.</trans
     <message>
         <location filename="../app/page_card.py" line="228"/>
         <source>周三、周四（突刺）</source>
-        <translation>Wed. Thu. (Pierce)</translation>
+        <translation>Wed &amp; Thu (Pierce)</translation>
     </message>
     <message>
         <location filename="../app/page_card.py" line="233"/>
         <source>周五、周六（打击）</source>
-        <translation>Fri. Sat. (Blunt)</translation>
+        <translation>Fri &amp; Sat (Blunt)</translation>
     </message>
     <message>
         <location filename="../app/page_card.py" line="245"/>
         <source>纽本周一（色欲）</source>
-        <translation>Thread Mon. (Lust)</translation>
+        <translation>Thread: Mon (Lust)</translation>
     </message>
     <message>
         <location filename="../app/page_card.py" line="250"/>
         <source>纽本周二（怠惰）</source>
-        <translation>Thread Tue. (Sloth)</translation>
+        <translation>Thread: Tue (Sloth)</translation>
     </message>
     <message>
         <location filename="../app/page_card.py" line="255"/>
         <source>纽本周三（暴食）</source>
-        <translation>Thread Wed. (Gluttony)</translation>
+        <translation>Thread: Wed (Gluttony)</translation>
     </message>
     <message>
         <location filename="../app/page_card.py" line="260"/>
         <source>纽本周四（忧郁）</source>
-        <translation>Thread Thu. (Gloom)</translation>
+        <translation>Thread: Thu (Gloom)</translation>
     </message>
     <message>
         <location filename="../app/page_card.py" line="265"/>
         <source>纽本周五（傲慢）</source>
-        <translation>Thread Fri. (Pride)</translation>
+        <translation>Thread: Fri (Pride)</translation>
     </message>
     <message>
         <location filename="../app/page_card.py" line="270"/>
         <source>纽本周六（嫉妒）</source>
-        <translation>Thread Sat. (Envy)</translation>
+        <translation>Thread: Sat (Envy)</translation>
     </message>
     <message>
         <location filename="../app/page_card.py" line="275"/>
         <source>纽本周日（暴怒）</source>
-        <translation>Thread Sun. (Wrath)</translation>
+        <translation>Thread: Sun (Wrath)</translation>
     </message>
     <message>
         <location filename="../app/team_setting_card.py" line="921"/>
@@ -1893,32 +1901,32 @@ Entering a formation code will overwrite your current team configuration.</trans
     <message>
         <location filename="../app/page_card.py" line="134"/>
         <source>截图间隔</source>
-        <translation>Screenshot interval</translation>
+        <translation>Screenshot Interval</translation>
     </message>
     <message>
         <location filename="../app/page_card.py" line="139"/>
         <source>鼠标活动间隔</source>
-        <translation>Mouse activity interval</translation>
+        <translation>Mouse Activity Interval</translation>
     </message>
     <message>
         <location filename="../app/page_card.py" line="144"/>
         <source>鼠标按下持续时间</source>
-        <translation>Mouse press duration</translation>
+        <translation>Mouse Press Duration</translation>
     </message>
     <message>
         <location filename="../app/page_card.py" line="149"/>
         <source>仅在使用异步方法进行鼠标输入时生效，单位为秒，每次鼠标按下都会增加对应的延迟</source>
-        <translation>Only effective when using asynchronous method for mouse input, unit is seconds, each mouse press will add corresponding delay</translation>
+        <translation>Applies only to asynchronous mouse input. Each mouse press adds the specified delay in seconds.</translation>
     </message>
     <message>
         <location filename="../app/page_card.py" line="190"/>
         <source>经验本次数</source>
-        <translation>EXP count</translation>
+        <translation>EXP Luxcavation Runs</translation>
     </message>
     <message>
         <location filename="../app/page_card.py" line="196"/>
         <source>纽本次数</source>
-        <translation>Thread count</translation>
+        <translation>Thread Luxcavation Runs</translation>
     </message>
     <message>
         <source>定向刷新上限</source>
@@ -1940,7 +1948,7 @@ Entering a formation code will overwrite your current team configuration.</trans
     <message>
         <location filename="../app/my_app.py" line="707"/>
         <source>一键长草</source>
-        <translation>One-Click Grass Mode</translation>
+        <translation>One-Click Auto Farming</translation>
     </message>
     <message>
         <location filename="../app/my_app.py" line="708"/>
@@ -1955,7 +1963,7 @@ Entering a formation code will overwrite your current team configuration.</trans
     <message>
         <location filename="../app/my_app.py" line="596"/>
         <source>设置未保存</source>
-        <translation>SETTINGS UNSAVE</translation>
+        <translation>Unsaved Settings</translation>
     </message>
     <message>
         <location filename="../app/my_app.py" line="307"/>
@@ -1975,7 +1983,7 @@ Entering a formation code will overwrite your current team configuration.</trans
     <message>
         <location filename="../app/my_app.py" line="513"/>
         <source>脚本正在运行中，确定要退出程序吗？</source>
-        <translation>The script is running, are you sure you want to exit the program?</translation>
+        <translation>A script is running. Do you want to exit AALC?</translation>
     </message>
     <message>
         <location filename="../app/my_app.py" line="524"/>
@@ -1985,12 +1993,12 @@ Entering a formation code will overwrite your current team configuration.</trans
     <message>
         <location filename="../app/my_app.py" line="525"/>
         <source>有工具正在运行中，确定要退出程序吗？</source>
-        <translation>There are tools running, are you sure you want to exit the program?</translation>
+        <translation>Tools are running. Do you want to exit AALC?</translation>
     </message>
     <message>
         <location filename="../app/my_app.py" line="597"/>
         <source>存在未保存的设置，请执行保存或取消操作</source>
-        <translation>Didn&apos;t save settings, please do save or cancel</translation>
+        <translation>Save or cancel your changes before continuing.</translation>
     </message>
     <message>
         <location filename="../app/my_app.py" line="607"/>
@@ -2002,14 +2010,14 @@ Entering a formation code will overwrite your current team configuration.</trans
         <source>检测到游戏所在显示器已开启 HDR。开启 HDR 可能导致图像识别问题；如果运行中遇到识别异常，请先关闭 Windows HDR 后重试。
 
 如果不想再看到本通知，请在“设置 &gt; 实验性内容”中关闭“HDR 检测警告”。</source>
-        <translation>HDR is enabled on the display containing the game window. HDR may cause image recognition issues. If recognition fails, disable Windows HDR and try again.
+        <translation>HDR is enabled on the display showing the game. This can interfere with image recognition. If recognition fails, turn off HDR in Windows and try again.
 
-To stop seeing this notice, disable &quot;HDR detection warning&quot; under Settings &gt; Experimental.</translation>
+To hide this notice, turn off “HDR Detection Warning” in Settings &gt; Experimental Features.</translation>
     </message>
     <message>
         <location filename="../app/my_app.py" line="709"/>
         <source>小工具</source>
-        <translation>Gadget</translation>
+        <translation>Tools</translation>
     </message>
     <message>
         <location filename="../app/my_app.py" line="700"/>
@@ -2019,27 +2027,27 @@ To stop seeing this notice, disable &quot;HDR detection warning&quot; under Sett
     <message>
         <location filename="../app/my_app.py" line="700"/>
         <source>下载已经完成，是否开始更新</source>
-        <translation>Download completed, would you like to start updating</translation>
+        <translation>The download is complete. Install the update now?</translation>
     </message>
     <message>
         <location filename="../app/my_app.py" line="622"/>
         <source>任务设置出错</source>
-        <translation>Task settings are incorrect</translation>
+        <translation>Invalid Task Settings</translation>
     </message>
     <message>
         <location filename="../app/my_app.py" line="623"/>
         <source>未设置任何任务，请勾选主页面左边的选项框需要执行的任务</source>
-        <translation>No task is set, check the task to be performed in the option box on the left side of the main page</translation>
+        <translation>Select at least one task from the checkboxes on the left of the main page.</translation>
     </message>
     <message>
         <location filename="../app/my_app.py" line="602"/>
         <source>警告！</source>
-        <translation>Warning！</translation>
+        <translation>Warning!</translation>
     </message>
     <message>
         <location filename="../app/my_app.py" line="563"/>
         <source>存在未保存的队伍设置</source>
-        <translation>There are unsaved team settings</translation>
+        <translation>You have unsaved team settings.</translation>
     </message>
 </context>
 <context>
@@ -2114,7 +2122,7 @@ To stop seeing this notice, disable &quot;HDR detection warning&quot; under Sett
     <message>
         <location filename="../app/card/messagebox_custom.py" line="94"/>
         <source>跳转</source>
-        <translation>JUMP</translation>
+        <translation>Open Link</translation>
     </message>
 </context>
 <context>
@@ -2122,7 +2130,7 @@ To stop seeing this notice, disable &quot;HDR detection warning&quot; under Sett
     <message>
         <location filename="../app/card/messagebox_custom.py" line="157"/>
         <source>我已了解以上信息</source>
-        <translation>I have understood the above information</translation>
+        <translation>I Understand</translation>
     </message>
 </context>
 <context>
@@ -2130,7 +2138,7 @@ To stop seeing this notice, disable &quot;HDR detection warning&quot; under Sett
     <message>
         <location filename="../app/page_card.py" line="411"/>
         <source>坐牢次数</source>
-        <translation>Farming times</translation>
+        <translation>MD Runs</translation>
     </message>
 </context>
 <context>
@@ -2143,7 +2151,7 @@ To stop seeing this notice, disable &quot;HDR detection warning&quot; under Sett
     <message>
         <location filename="../app/page_card.py" line="406"/>
         <source>编队1</source>
-        <translation>Team1</translation>
+        <translation>Team 1</translation>
     </message>
     <message>
         <location filename="../app/page_card.py" line="625"/>
@@ -2161,12 +2169,12 @@ To stop seeing this notice, disable &quot;HDR detection warning&quot; under Sett
     <message>
         <location filename="../app/setting_interface.py" line="564"/>
         <source>镜牢主题包</source>
-        <translation>Theme Pack</translation>
+        <translation>Theme Packs</translation>
     </message>
     <message>
         <location filename="../app/setting_interface.py" line="569"/>
         <source>模拟器设置</source>
-        <translation>Simulator Setting</translation>
+        <translation>Emulator Settings</translation>
     </message>
     <message>
         <location filename="../app/setting_interface.py" line="572"/>
@@ -2191,7 +2199,7 @@ To stop seeing this notice, disable &quot;HDR detection warning&quot; under Sett
     <message>
         <location filename="../app/setting_interface.py" line="576"/>
         <source>日志设置</source>
-        <translation>logs Settings</translation>
+        <translation>Logs Settings</translation>
     </message>
     <message>
         <location filename="../app/setting_interface.py" line="577"/>
@@ -2201,7 +2209,7 @@ To stop seeing this notice, disable &quot;HDR detection warning&quot; under Sett
     <message>
         <location filename="../app/setting_interface.py" line="580"/>
         <source>实验性</source>
-        <translation>Experimental</translation>
+        <translation>Experimental Features</translation>
     </message>
 </context>
 <context>
@@ -2228,7 +2236,7 @@ To stop seeing this notice, disable &quot;HDR detection warning&quot; under Sett
         <location filename="../app/team_setting_card.py" line="1229"/>
         <location filename="../app/team_setting_card.py" line="1466"/>
         <source>启用观测</source>
-        <translation>Enable E.G.O. Gift Observation</translation>
+        <translation>Enable E.G.O Gift Observation</translation>
     </message>
     <message>
         <location filename="../app/team_setting_card.py" line="1271"/>
@@ -2319,7 +2327,7 @@ To stop seeing this notice, disable &quot;HDR detection warning&quot; under Sett
     <message>
         <location filename="../app/team_setting_card.py" line="1316"/>
         <source>&lt;div style=&quot;font-size: 15px; line-height: 1.6;&quot;&gt;知道你们想要什么&lt;br&gt;2026-06 蜘蛛巢良秀专武在泛用-3级-4行-8列&lt;/div&gt;</source>
-        <translation>&lt;div style=&quot;font-size: 15px; line-height: 1.6;&quot;&gt;I know what you&apos;re looking for&lt;br&gt;As of June 2026, Spider Nest Ryoshu&apos;s signature weapon is at General - Level 3 - Row 4 - Column 8&lt;/div&gt;</translation>
+        <translation>&lt;div style=&quot;font-size: 15px; line-height: 1.6;&quot;&gt;I know what you&apos;re looking for&lt;br&gt;As of June 2026, the gift for Blade of the House of Spiders Ryōshū is at General, Tier III, Row 4, Column 8.&lt;/div&gt;</translation>
     </message>
 </context>
 <context>
@@ -2328,7 +2336,7 @@ To stop seeing this notice, disable &quot;HDR detection warning&quot; under Sett
         <location filename="../app/base_combination.py" line="1636"/>
         <location filename="../app/base_combination.py" line="1725"/>
         <source>移除或清空当前控件组</source>
-        <translation>Remove or Clear the Current Selection Group</translation>
+        <translation>Remove or clear this selection group.</translation>
     </message>
 </context>
 <context>
@@ -2346,7 +2354,7 @@ To stop seeing this notice, disable &quot;HDR detection warning&quot; under Sett
     <message>
         <location filename="../app/page_card.py" line="555"/>
         <source>镜 牢 进 度 </source>
-        <translation>Mirror Progress</translation>
+        <translation>MD Progress</translation>
     </message>
 </context>
 <context>
@@ -2355,7 +2363,7 @@ To stop seeing this notice, disable &quot;HDR detection warning&quot; under Sett
         <location filename="../app/page_card.py" line="560"/>
         <location filename="../app/page_card.py" line="578"/>
         <source>镜 牢 进 度 ( 普 通 ) </source>
-        <translation>Mirror Progress (Normal)</translation>
+        <translation>MD Progress (Normal)</translation>
     </message>
     <message>
         <location filename="../app/page_card.py" line="654"/>
@@ -2370,7 +2378,7 @@ To stop seeing this notice, disable &quot;HDR detection warning&quot; under Sett
     <message>
         <location filename="../app/page_card.py" line="668"/>
         <source>选择队伍配置文件</source>
-        <translation>Select Team Configuration</translation>
+        <translation>Select Team Configuration File</translation>
     </message>
     <message>
         <location filename="../app/page_card.py" line="677"/>
@@ -2380,12 +2388,12 @@ To stop seeing this notice, disable &quot;HDR detection warning&quot; under Sett
     <message>
         <location filename="../app/page_card.py" line="677"/>
         <source>无法读取配置文件，请检查文件格式是否正确。</source>
-        <translation>Unable to read the configuration file. Please check if the file format is correct.</translation>
+        <translation>Couldn&apos;t read the configuration file. Check the file format.</translation>
     </message>
     <message>
         <location filename="../app/page_card.py" line="684"/>
         <source>缺少字段</source>
-        <translation>Missing Field</translation>
+        <translation>Missing Fields</translation>
     </message>
     <message>
         <location filename="../app/page_card.py" line="685"/>
@@ -2393,10 +2401,10 @@ To stop seeing this notice, disable &quot;HDR detection warning&quot; under Sett
 - {missing_text}
 
 将使用默认值填充这些字段。是否继续？</source>
-        <translation>The following fields are missing from the configuration file:
+        <translation>The configuration file is missing these fields:
 - {missing_text}
 
-These fields will be populated with default values. Do you wish to continue?</translation>
+Use the default values and continue?</translation>
     </message>
     <message>
         <location filename="../app/page_card.py" line="688"/>
@@ -2411,22 +2419,22 @@ These fields will be populated with default values. Do you wish to continue?</tr
     <message>
         <location filename="../app/page_card.py" line="704"/>
         <source>无可用队伍槽位</source>
-        <translation>No available team slots</translation>
+        <translation>No Available Team Slots</translation>
     </message>
     <message>
         <location filename="../app/page_card.py" line="704"/>
         <source>已达到最大队伍数量（20个），无法创建新队伍。</source>
-        <translation>The maximum number of teams (20) has been reached; a new team cannot be created.</translation>
+        <translation>All 20 team slots are in use. Free a slot to create a team.</translation>
     </message>
     <message>
         <location filename="../app/page_card.py" line="721"/>
         <source>导入成功</source>
-        <translation>Import successful</translation>
+        <translation>Import Successful</translation>
     </message>
     <message>
         <location filename="../app/page_card.py" line="722"/>
         <source>已成功从文件创建队伍 {team_num}</source>
-        <translation>Team {team_num} successfully created from file</translation>
+        <translation>Team {team_num} was created from the file.</translation>
     </message>
     <message>
         <location filename="../app/page_card.py" line="731"/>
@@ -2447,7 +2455,7 @@ These fields will be populated with default values. Do you wish to continue?</tr
         <location filename="../app/page_card.py" line="557"/>
         <location filename="../app/page_card.py" line="576"/>
         <source>镜 牢 进 度 ( 困 难 ) </source>
-        <translation>Hard Mode Mirror Progress</translation>
+        <translation>MD Progress (Hard)</translation>
     </message>
 </context>
 <context>
@@ -2455,12 +2463,12 @@ These fields will be populated with default values. Do you wish to continue?</tr
     <message>
         <location filename="../tasks/tools/production_module.py" line="235"/>
         <source>开始任务</source>
-        <translation>Strat Task</translation>
+        <translation>Start Task</translation>
     </message>
     <message>
         <location filename="../tasks/tools/production_module.py" line="238"/>
         <source>等待期间关闭游戏</source>
-        <translation>Close Game Waiting</translation>
+        <translation>Close Game While Waiting</translation>
     </message>
     <message>
         <location filename="../tasks/tools/production_module.py" line="270"/>
@@ -2473,7 +2481,7 @@ These fields will be populated with default values. Do you wish to continue?</tr
     <message>
         <location filename="../app/setting_interface.py" line="149"/>
         <source>第一次运行请手动设定，之后将自动修改</source>
-        <translation>Please set it manually for the first run, it will be automatically modified afterwards</translation>
+        <translation>Set this manually before the first run. AALC updates it automatically after that.</translation>
     </message>
     <message>
         <location filename="../app/setting_interface.py" line="144"/>
@@ -2485,25 +2493,25 @@ These fields will be populated with default values. Do you wish to continue?</tr
     <message>
         <location filename="../app/setting_interface.py" line="146"/>
         <source>困难模式剩余次数</source>
-        <translation>Remaining times in Hard Mirror</translation>
+        <translation>Hard Mode Runs Remaining</translation>
     </message>
     <message>
         <location filename="../app/setting_interface.py" line="226"/>
         <source>使用的模拟器端口号</source>
-        <translation>Simulator Port</translation>
+        <translation>Emulator Port</translation>
     </message>
     <message>
         <location filename="../app/setting_interface.py" line="235"/>
         <source>MuMu/蓝叠启动模拟器超时时间(秒)</source>
-        <translation>Start Simulator Timeout</translation>
+        <translation>MuMu/BlueStacks Startup Timeout (Seconds)</translation>
     </message>
     <message>
         <source>任务卡死重启等待时间(秒)</source>
-        <translation>Task stall restart timeout (seconds)</translation>
+        <translation>Task Stall Timeout Before Restart (Seconds)</translation>
     </message>
     <message>
         <source>超时卡死时间设置，低性能PC/模拟器可设置更高</source>
-        <translation>Stall timeout setting; slower PCs/emulators can set it higher</translation>
+        <translation>Increase the timeout if your PC or emulator is slow.</translation>
     </message>
 </context>
 <context>
@@ -2516,7 +2524,7 @@ These fields will be populated with default values. Do you wish to continue?</tr
     <message>
         <location filename="../app/setting_interface.py" line="140"/>
         <source>上次自动切换困难镜牢的时间戳</source>
-        <translation>The timestamp of the last automatic switch to a difficult mirror dungeon</translation>
+        <translation>Last Automatic Switch to Hard Mode</translation>
     </message>
 </context>
 <context>
@@ -2529,7 +2537,7 @@ These fields will be populated with default values. Do you wish to continue?</tr
     <message>
         <location filename="../app/setting_interface.py" line="379"/>
         <source>Mirror 酱 CDK</source>
-        <translation>Mirror Chyan CDK</translation>
+        <translation>MirrorChyan CDK</translation>
     </message>
     <message>
         <location filename="../app/base_combination.py" line="830"/>
@@ -2553,7 +2561,7 @@ These fields will be populated with default values. Do you wish to continue?</tr
     <message>
         <location filename="../app/setting_interface.py" line="208"/>
         <source>可留空自动选择；多开时填写内部实例名，例如 Pie64</source>
-        <translation>Leave blank for auto-selection; for multiple instances, enter the internal name, such as Pie64</translation>
+        <translation>Leave blank to select an instance automatically. If you use multiple instances, enter the internal name, such as Pie64.</translation>
     </message>
     <message>
         <location filename="../app/setting_interface.py" line="214"/>
@@ -2563,11 +2571,11 @@ These fields will be populated with default values. Do you wish to continue?</tr
     <message>
         <location filename="../app/setting_interface.py" line="219"/>
         <source>模拟器的 ADB 主机名/IP，除非你知道你在做什么，否则保持默认即可</source>
-        <translation>Emulator ADB hostname/IP; keep the default unless you know what you&apos;re doing</translation>
+        <translation>ADB hostname or IP address for the emulator. Keep the default unless you need a different address.</translation>
     </message>
     <message>
         <source>蓝叠或其他模拟器的 ADB 主机名/IP；远程连接时填写远程设备地址</source>
-        <translation type="vanished">ADB hostname/IP for BlueStacks or other emulators; enter the remote device address for remote connections</translation>
+        <translation type="vanished">ADB hostname or IP address for BlueStacks or another emulator. For remote connections, enter the remote device address.</translation>
     </message>
     <message>
         <location filename="../app/base_combination.py" line="975"/>
@@ -2582,36 +2590,36 @@ These fields will be populated with default values. Do you wish to continue?</tr
         <location filename="../app/base_combination.py" line="870"/>
         <location filename="../app/base_combination.py" line="873"/>
         <source>关</source>
-        <translation>OFF</translation>
+        <translation>Off</translation>
     </message>
     <message>
         <location filename="../app/base_combination.py" line="870"/>
         <location filename="../app/base_combination.py" line="873"/>
         <source>开</source>
-        <translation>ON</translation>
+        <translation>On</translation>
     </message>
     <message>
         <location filename="../app/setting_interface.py" line="360"/>
         <source>加入预览版更新渠道</source>
-        <translation>Join Beta update</translation>
+        <translation>Join the Preview Update Channel</translation>
     </message>
     <message>
         <location filename="../app/setting_interface.py" line="129"/>
         <source>自动困难模式</source>
-        <translation>Auto change Hard Mirror</translation>
+        <translation>Auto Hard Mode</translation>
     </message>
     <message>
         <location filename="../app/setting_interface.py" line="133"/>
         <source>每周自动将前三场镜牢设置为困难模式执行，请确认启用了“困牢单次加成”功能</source>
-        <translation>The first three Mirror Dungeons will be automatically set to Hard Mode each week</translation>
+        <translation>Run the first three Mirror Dungeons each week in Hard Mode. Turn on “Use One Weekly Bonus per Hard Run.”</translation>
     </message>
     <message>
         <source>后台运行模式</source>
-        <translation type="vanished">Backend operation mode</translation>
+        <translation type="vanished">Background Mode</translation>
     </message>
     <message>
         <source>该模式下游戏不强制置顶, 但是&lt;font color=red&gt;游戏不能处于最小化状态!!&lt;/font&gt;</source>
-        <translation type="vanished">In this mode, the game is not forced to be pinned, but &lt;font color=red&gt;it cannot be in a minimized state!! &lt;/font&gt;</translation>
+        <translation type="vanished">The game window can stay in the background. &lt;font color=red&gt;Keep it unminimized.&lt;/font&gt;</translation>
     </message>
     <message>
         <location filename="../app/setting_interface.py" line="162"/>
@@ -2621,52 +2629,52 @@ These fields will be populated with default values. Do you wish to continue?</tr
     <message>
         <location filename="../app/setting_interface.py" line="166"/>
         <source>自动检测电脑&lt;font color=red&gt;总内存占用&lt;/font&gt;，超过90%执行内存清理，防止崩溃，可能略微影响脚本速度</source>
-        <translation>Automatically detect &lt;font color=red&gt;total memory usage&lt;/font&gt; of the computer, perform memory cleanup when it exceeds 90% to prevent crashes, which may slightly affect script speed</translation>
+        <translation>When &lt;font color=red&gt;total system memory usage&lt;/font&gt; exceeds 90%, AALC frees memory to help prevent crashes. This may slow down scripts.</translation>
     </message>
     <message>
         <location filename="../app/setting_interface.py" line="183"/>
         <source>使用模拟器</source>
-        <translation>Use Simulator</translation>
+        <translation>Use an Emulator</translation>
     </message>
     <message>
         <location filename="../app/setting_interface.py" line="254"/>
         <source>开机时启动 AALC</source>
-        <translation>Starting AALC at booting</translation>
+        <translation>Start AALC on Startup</translation>
     </message>
     <message>
         <location filename="../app/setting_interface.py" line="293"/>
         <source>最小化到托盘</source>
-        <translation>Minimize to tray</translation>
+        <translation>Minimize to System Tray</translation>
     </message>
     <message>
         <location filename="../app/setting_interface.py" line="297"/>
         <source>开启后，最小化时将隐藏到系统托盘</source>
-        <translation>When enabled, the application will be hidden to the system tray when minimized</translation>
+        <translation>AALC moves to the system tray when minimized.</translation>
     </message>
     <message>
         <location filename="../app/setting_interface.py" line="387"/>
         <source>自动更新图片资源</source>
-        <translation>Auto-update Image Resources</translation>
+        <translation>Automatically Update Image Resources</translation>
     </message>
     <message>
         <location filename="../app/setting_interface.py" line="462"/>
         <source>运行时保持屏幕唤醒</source>
-        <translation>Keep screen awake while running</translation>
+        <translation>Keep the Screen Awake During Tasks</translation>
     </message>
     <message>
         <location filename="../app/setting_interface.py" line="466"/>
         <source>任务运行中阻止系统休眠与锁屏；任务结束、停止或异常退出后会自动恢复系统默认策略</source>
-        <translation>Prevented from entering sleep mode or locking the screen for running</translation>
+        <translation>Keeps Windows awake and unlocked during a task. Normal sleep and lock settings resume afterward.</translation>
     </message>
     <message>
         <location filename="../app/setting_interface.py" line="472"/>
         <source>HDR 检测警告</source>
-        <translation>HDR detection warning</translation>
+        <translation>HDR Detection Warning</translation>
     </message>
     <message>
         <location filename="../app/setting_interface.py" line="476"/>
         <source>任务启动时检测游戏所在显示器的 HDR 状态；开启 HDR 时提示可能发生图像识别问题</source>
-        <translation>Checks HDR on the display containing the game window at task startup and warns about possible image recognition issues</translation>
+        <translation>Checks HDR on the game&apos;s display when a task starts and warns about possible image recognition issues.</translation>
     </message>
 </context>
 <context>
@@ -2675,19 +2683,19 @@ These fields will be populated with default values. Do you wish to continue?</tr
         <location filename="../app/team_setting_card.py" line="127"/>
         <location filename="../app/team_setting_card.py" line="587"/>
         <source>选择队伍名称</source>
-        <translation>Select team name</translation>
+        <translation>Select Team Name</translation>
     </message>
     <message>
         <location filename="../app/team_setting_card.py" line="128"/>
         <location filename="../app/team_setting_card.py" line="588"/>
         <source>选择队伍体系</source>
-        <translation>Select team system</translation>
+        <translation>Select Team Keyword</translation>
     </message>
     <message>
         <location filename="../app/team_setting_card.py" line="130"/>
         <location filename="../app/team_setting_card.py" line="589"/>
         <source>选择商店策略</source>
-        <translation>Select Shop Tactic</translation>
+        <translation>Select Shop Strategy</translation>
     </message>
     <message>
         <location filename="../app/team_setting_card.py" line="135"/>
@@ -2759,7 +2767,7 @@ These fields will be populated with default values. Do you wish to continue?</tr
         <location filename="../app/team_setting_card.py" line="195"/>
         <location filename="../app/team_setting_card.py" line="602"/>
         <source>舍弃的体系</source>
-        <translation>Abandoned system</translation>
+        <translation>Excluded Keywords</translation>
     </message>
     <message>
         <location filename="../app/team_setting_card.py" line="267"/>
@@ -2798,7 +2806,7 @@ These fields will be populated with default values. Do you wish to continue?</tr
     <message>
         <location filename="../app/team_setting_card.py" line="514"/>
         <source>队伍设置已导出到: </source>
-        <translation>Team settings exported to:</translation>
+        <translation>Team settings exported to: </translation>
     </message>
     <message>
         <location filename="../app/team_setting_card.py" line="523"/>
@@ -2808,7 +2816,7 @@ These fields will be populated with default values. Do you wish to continue?</tr
     <message>
         <location filename="../app/team_setting_card.py" line="524"/>
         <source>无法导出队伍设置，请检查日志</source>
-        <translation>Unable to export team settings. Please check the logs</translation>
+        <translation>Couldn&apos;t export the team settings. Check the logs.</translation>
     </message>
     <message>
         <location filename="../app/team_setting_card.py" line="534"/>
@@ -2823,17 +2831,17 @@ These fields will be populated with default values. Do you wish to continue?</tr
     <message>
         <location filename="../app/team_setting_card.py" line="544"/>
         <source>无法解析导入文件，请检查文件格式</source>
-        <translation>Unable to parse the imported file. Please check the file format</translation>
+        <translation>Couldn&apos;t read the imported file. Check the file format.</translation>
     </message>
     <message>
         <location filename="../app/team_setting_card.py" line="556"/>
         <source>部分字段缺失</source>
-        <translation>Some fields are missing</translation>
+        <translation>Missing Fields</translation>
     </message>
     <message>
         <location filename="../app/team_setting_card.py" line="557"/>
         <source>以下字段将使用默认值: </source>
-        <translation>The following fields will use default values:</translation>
+        <translation>The following fields will use default values: </translation>
     </message>
     <message>
         <location filename="../app/team_setting_card.py" line="566"/>
@@ -2843,17 +2851,17 @@ These fields will be populated with default values. Do you wish to continue?</tr
     <message>
         <location filename="../app/team_setting_card.py" line="566"/>
         <source>导入将覆盖当前队伍设置，是否继续？</source>
-        <translation>Importing will overwrite the current team settings. Do you wish to continue?</translation>
+        <translation>Importing will overwrite the current team settings. Continue?</translation>
     </message>
     <message>
         <location filename="../app/team_setting_card.py" line="575"/>
         <source>导入成功</source>
-        <translation>Import successful</translation>
+        <translation>Import Successful</translation>
     </message>
     <message>
         <location filename="../app/team_setting_card.py" line="576"/>
         <source>队伍设置已导入并应用</source>
-        <translation>Team settings have been imported and applied</translation>
+        <translation>Team settings imported and applied.</translation>
     </message>
     <message>
         <location filename="../app/team_setting_card.py" line="201"/>
@@ -2864,12 +2872,12 @@ These fields will be populated with default values. Do you wish to continue?</tr
     <message>
         <location filename="../app/team_setting_card.py" line="117"/>
         <source>观测EGO饰品</source>
-        <translation>Observe E.G.O. Gifts</translation>
+        <translation>Observe E.G.O Gifts</translation>
     </message>
     <message>
         <location filename="../app/team_setting_card.py" line="120"/>
         <source>编队统计数据</source>
-        <translation>Formation statistics</translation>
+        <translation>Team Statistics</translation>
     </message>
     <message>
         <location filename="../app/team_setting_card.py" line="207"/>
@@ -2928,7 +2936,7 @@ These fields will be populated with default values. Do you wish to continue?</tr
     <message>
         <location filename="../app/team_setting_card.py" line="112"/>
         <source>自定义设置（设置存在冲突时，将根据优先级覆盖生效）</source>
-        <translation>Custom Settings (Settings with conflicts will be overridden according to priority)</translation>
+        <translation>Custom Settings (higher-priority settings override conflicting ones)</translation>
     </message>
     <message>
         <location filename="../app/team_setting_card.py" line="160"/>
@@ -2965,7 +2973,7 @@ These fields will be populated with default values. Do you wish to continue?</tr
     </message>
     <message>
         <source>权重说明: 正数=优先选择(值越大优先级越高), 负数=避免选择, 0=无特殊偏好</source>
-        <translation type="vanished">Weight description: Positive=Prefer (higher value=higher priority), Negative=Avoid, 0=No special preference</translation>
+        <translation type="vanished">Positive weights increase priority. Negative weights discourage selection. A weight of 0 gives no preference.</translation>
     </message>
     <message>
         <location filename="../app/theme_pack_setting_interface.py" line="583"/>
@@ -2973,15 +2981,15 @@ These fields will be populated with default values. Do you wish to continue?</tr
         <source>权重说明: 正数=优先选择(值越大优先级越高), 负数=避免选择, 0=无特殊偏好
 优选阈值说明: 当主题包权重大于或等于优选阈值时，会被优先选中
 保存时会自动同步其他语言配置权重 (如有)</source>
-        <translation>Weight Explanation: Positive values ​​= Preferred (higher values ​​indicate higher priority); Negative values ​​= Avoid; 0 = No specific preference.
-Preference Threshold Explanation: If a theme pack&apos;s weight is greater than or equal to this threshold, it will be prioritized for selection.
-Upon saving, weights for configurations in other languages ​​(if any) will be automatically synchronized.</translation>
+        <translation>Positive weights increase priority. Negative weights discourage selection. A weight of 0 gives no preference.
+Theme Packs at or above the priority threshold take precedence.
+Saving also syncs weights across any other language configurations.</translation>
     </message>
     <message>
         <location filename="../app/theme_pack_setting_interface.py" line="594"/>
         <location filename="../app/theme_pack_setting_interface.py" line="1180"/>
         <source>优选阈值</source>
-        <translation>Optimal Threshold</translation>
+        <translation>Priority Threshold</translation>
     </message>
     <message>
         <location filename="../app/theme_pack_setting_interface.py" line="607"/>
@@ -3005,7 +3013,7 @@ Upon saving, weights for configurations in other languages ​​(if any) will b
         <location filename="../app/theme_pack_setting_interface.py" line="632"/>
         <location filename="../app/theme_pack_setting_interface.py" line="1184"/>
         <source>重置为默认</source>
-        <translation>Reset to Default</translation>
+        <translation>Reset to Defaults</translation>
     </message>
     <message>
         <location filename="../app/theme_pack_setting_interface.py" line="636"/>
@@ -3035,14 +3043,14 @@ Upon saving, weights for configurations in other languages ​​(if any) will b
         <location filename="../app/theme_pack_setting_interface.py" line="661"/>
         <location filename="../app/theme_pack_setting_interface.py" line="1189"/>
         <source>导出配置码</source>
-        <translation>Export configuration code</translation>
+        <translation>Export Configuration Code</translation>
     </message>
     <message>
         <location filename="../app/theme_pack_setting_interface.py" line="666"/>
         <location filename="../app/theme_pack_setting_interface.py" line="1130"/>
         <location filename="../app/theme_pack_setting_interface.py" line="1190"/>
         <source>导入配置码</source>
-        <translation>Import configuration code</translation>
+        <translation>Import Configuration Code</translation>
     </message>
     <message>
         <location filename="../app/theme_pack_setting_interface.py" line="672"/>
@@ -3059,7 +3067,7 @@ Upon saving, weights for configurations in other languages ​​(if any) will b
     <message>
         <location filename="../app/theme_pack_setting_interface.py" line="1011"/>
         <source>导出主题包权重</source>
-        <translation>Export Theme Package Weights</translation>
+        <translation>Export Theme Pack Weights</translation>
     </message>
     <message>
         <location filename="../app/theme_pack_setting_interface.py" line="1021"/>
@@ -3070,7 +3078,7 @@ Upon saving, weights for configurations in other languages ​​(if any) will b
     <message>
         <location filename="../app/theme_pack_setting_interface.py" line="1022"/>
         <source>主题包权重已导出到: </source>
-        <translation>Theme pack weights have been exported to:</translation>
+        <translation>Theme Pack weights exported to: </translation>
     </message>
     <message>
         <location filename="../app/theme_pack_setting_interface.py" line="1031"/>
@@ -3081,12 +3089,12 @@ Upon saving, weights for configurations in other languages ​​(if any) will b
     <message>
         <location filename="../app/theme_pack_setting_interface.py" line="1032"/>
         <source>无法导出主题包权重，请检查日志</source>
-        <translation>Unable to export theme package weights. Please check the logs</translation>
+        <translation>Couldn&apos;t export the Theme Pack weights. Check the logs.</translation>
     </message>
     <message>
         <location filename="../app/theme_pack_setting_interface.py" line="1045"/>
         <source>导入主题包权重</source>
-        <translation>Import Theme Package Weights</translation>
+        <translation>Import Theme Pack Weights</translation>
     </message>
     <message>
         <location filename="../app/theme_pack_setting_interface.py" line="1052"/>
@@ -3097,18 +3105,18 @@ Upon saving, weights for configurations in other languages ​​(if any) will b
     <message>
         <location filename="../app/theme_pack_setting_interface.py" line="1052"/>
         <source>导入将覆盖当前主题包权重设置，是否继续？</source>
-        <translation>Importing will overwrite the current theme package&apos;s weight settings. Do you wish to continue?</translation>
+        <translation>Importing will overwrite the current Theme Pack weights. Continue?</translation>
     </message>
     <message>
         <location filename="../app/theme_pack_setting_interface.py" line="1088"/>
         <location filename="../app/theme_pack_setting_interface.py" line="1152"/>
         <source>导入成功</source>
-        <translation>Import successful</translation>
+        <translation>Import Successful</translation>
     </message>
     <message>
         <location filename="../app/theme_pack_setting_interface.py" line="1089"/>
         <source>主题包权重已导入并应用</source>
-        <translation>Theme pack weights have been imported and applied</translation>
+        <translation>Theme Pack weights imported and applied.</translation>
     </message>
     <message>
         <location filename="../app/theme_pack_setting_interface.py" line="1098"/>
@@ -3119,54 +3127,54 @@ Upon saving, weights for configurations in other languages ​​(if any) will b
     <message>
         <location filename="../app/theme_pack_setting_interface.py" line="1099"/>
         <source>无法导入主题包权重，请检查文件格式和日志</source>
-        <translation>Unable to import theme package weights. Please check the file format and logs</translation>
+        <translation>Couldn&apos;t import the Theme Pack weights. Check the file format and logs.</translation>
     </message>
     <message>
         <location filename="../app/theme_pack_setting_interface.py" line="1117"/>
         <source>配置码已复制到剪贴板</source>
-        <translation>Configuration code copied to clipboard</translation>
+        <translation>Configuration code copied to clipboard.</translation>
     </message>
     <message>
         <location filename="../app/theme_pack_setting_interface.py" line="1121"/>
         <source>无法导出配置码</source>
-        <translation>Failed to export configuration code</translation>
+        <translation>Couldn&apos;t export the configuration code.</translation>
     </message>
     <message>
         <location filename="../app/theme_pack_setting_interface.py" line="1136"/>
         <source>导入将覆盖当前主题包权重设置</source>
-        <translation>Import will overwrite current theme pack weight settings</translation>
+        <translation>Importing will overwrite the current Theme Pack weights.</translation>
     </message>
     <message>
         <location filename="../app/theme_pack_setting_interface.py" line="1152"/>
         <source>主题包权重已导入</source>
-        <translation>Theme pack weights imported</translation>
+        <translation>Theme Pack weights imported.</translation>
     </message>
     <message>
         <location filename="../app/theme_pack_setting_interface.py" line="1156"/>
         <source>无法解析配置码</source>
-        <translation>Failed to parse configuration code</translation>
+        <translation>Couldn&apos;t read the configuration code.</translation>
     </message>
     <message>
         <location filename="../app/theme_pack_setting_interface.py" line="1206"/>
         <source>存在未保存修改</source>
-        <translation>Unsaved changes exist</translation>
+        <translation>Unsaved Changes</translation>
     </message>
     <message>
         <location filename="../app/theme_pack_setting_interface.py" line="1207"/>
         <source>关闭后将丢失未保存的修改，是否继续？</source>
-        <translation>Unsaved changes will be lost upon closing. Do you wish to continue?</translation>
+        <translation>Closing will discard your unsaved changes. Continue?</translation>
     </message>
     <message>
         <source>权重说明: 正数=优先选择(值越大优先级越高), 负数=避免选择, 0=无特殊偏好
 保存时会自动同步其他语言配置权重 (如有)</source>
-        <translation type="vanished">Weight description: Positive=Prefer (higher value=higher priority), Negative=Avoid, 0=No special preference&lt;br/&gt;When saving, the configuration weights for other languages ​​will be automatically synchronized (if any)</translation>
+        <translation type="vanished">Positive weights increase priority. Negative weights discourage selection. A weight of 0 gives no preference.&lt;br/&gt;Saving also syncs weights across any other language configurations.</translation>
     </message>
 </context>
 <context>
     <name>ThenComboBox</name>
     <message>
         <source>选择脚本结束后的操作，右键点击并更改选项可永久保存</source>
-        <translation type="vanished">Select the action to take after the script ends, right-click and change the option to save permanently.</translation>
+        <translation type="vanished">Choose a post-run action. Right-click to save the selection as the default.</translation>
     </message>
 </context>
 <context>
@@ -3198,8 +3206,8 @@ Upon saving, weights for configurations in other languages ​​(if any) will b
         <location filename="../module/update/check_update.py" line="119"/>
         <source>发现新版本：{Old_version} ——&gt; {New_version}
 更新日志:</source>
-        <translation>Found New Version: {Old_version} ——&gt; {New_version}
-Update Logs:</translation>
+        <translation>Update available: {Old_version} → {New_version}
+Release notes:</translation>
     </message>
 </context>
 <context>
@@ -3207,22 +3215,375 @@ Update Logs:</translation>
     <message>
         <location filename="../app/windows_toast.py" line="151"/>
         <source>知道了</source>
-        <translation>I Knew</translation>
+        <translation>Got It</translation>
     </message>
     <message>
         <location filename="../app/windows_toast.py" line="153"/>
         <source>关闭 AALC</source>
-        <translation>Shut Down AALC</translation>
+        <translation>Close AALC</translation>
     </message>
     <message>
         <location filename="../tasks/base/script_task_scheme.py" line="413"/>
         <source>AALC 运行结束</source>
-        <translation>AALC Missions Completed</translation>
+        <translation>AALC Run Complete</translation>
     </message>
     <message>
         <location filename="../tasks/base/script_task_scheme.py" line="414"/>
         <source>所有任务已完成</source>
-        <translation>All Tasks Done</translation>
+        <translation>All tasks are complete.</translation>
+    </message>
+</context>
+<context>
+    <name>StarlightBonus</name>
+    <message>
+        <location filename="../app/common/ui_config.py" line="272"/>
+        <source>buff：
+初始经费 +150
+主题卡包出现数量 +1
+商店里展出的饰品数量 +1
+可免费进行商店普通刷新 1次</source>
+        <translation>buff:
+Starting Cost +150
+Theme Pack Selection +1
+Shop E.G.O Gift Selection +1
+1 free Normal Refresh per shop</translation>
+    </message>
+    <message>
+        <location filename="../app/common/ui_config.py" line="276"/>
+        <source>buff+：
+初始经费 \yellow{+250}
+主题卡包出现数量 +1
+商店里展出的饰品数量 +1
+可免费进行商店普通刷新 1次</source>
+        <translation>buff+:
+Starting Cost \yellow{+250}
+Theme Pack Selection +1
+Shop E.G.O Gift Selection +1
+1 free Normal Refresh per shop</translation>
+    </message>
+    <message>
+        <location filename="../app/common/ui_config.py" line="280"/>
+        <source>buff++：
+初始经费 \yellow{+250}
+主题卡包出现数量 +1
+商店里展出的饰品数量 +1
+可免费进行商店普通刷新 \yellow{2次}</source>
+        <translation>buff++:
+Starting Cost \yellow{+250}
+Theme Pack Selection +1
+Shop E.G.O Gift Selection +1
+\yellow{2} free Normal Refreshes per shop</translation>
+    </message>
+    <message>
+        <location filename="../app/common/ui_config.py" line="286"/>
+        <source>buff：
+进入下个阶段时，增加当前经费的10%(最多100)
+售卖饰品所得经费增加50%(每个商店1次)</source>
+        <translation>buff:
+When moving to the next floor, increase current Cost balance by 10% (max 100)
+Increase E.G.O Gift sale price by 50% (once per Shop)</translation>
+    </message>
+    <message>
+        <location filename="../app/common/ui_config.py" line="290"/>
+        <source>buff+：
+进入下个阶段时，增加当前经费的\yellow{20%(最多125)}
+售卖饰品所得经费增加\yellow{75%(每个商店1次)}</source>
+        <translation>buff+:
+When moving to the next floor, increase current Cost balance by \yellow{20% (max 125)}
+Increase E.G.O Gift sale price by \yellow{75% (once per Shop)}</translation>
+    </message>
+    <message>
+        <location filename="../app/common/ui_config.py" line="294"/>
+        <source>buff++：
+进入下个阶段时，增加当前经费的\yellow{30%(最多150)}
+售卖饰品所得经费增加\yellow{100%(每个商店1次)}</source>
+        <translation>buff++:
+When moving to the next floor, increase current Cost balance by \yellow{30% (max 150)}
+Increase E.G.O Gift sale price by \yellow{100% (once per Shop)}</translation>
+    </message>
+    <message>
+        <location filename="../app/common/ui_config.py" line="300"/>
+        <source>buff：
+主题卡包出现数量 +1
+主题卡包刷新次数 +2
+选择未记录的主题卡包时，所有人格等级 +3(最多9级)</source>
+        <translation>buff:
+Theme Pack Selection +1
+Theme Pack Refresh Chance +2
+When choosing a new Theme Pack for the first time, all Identities gain 3 levels (max 9)</translation>
+    </message>
+    <message>
+        <location filename="../app/common/ui_config.py" line="304"/>
+        <source>buff+：
+主题卡包出现数量 +1
+主题卡包刷新次数 \yellow{+3}
+选择未记录的主题卡包时，所有人格等级 +3(最多9级)
+\yellow{如果解锁了45个及以上主题卡包图鉴中的主题卡包，获得1层拼点威力提升}</source>
+        <translation>buff+:
+Theme Pack Selection +1
+Theme Pack Refresh Chance \yellow{+3}
+When choosing a new Theme Pack for the first time, all Identities gain 3 levels (max 9)
+\yellow{If 45+ Theme Packs are unlocked in the Theme Pack Compendium, gain 1 Clash Power Up}</translation>
+    </message>
+    <message>
+        <location filename="../app/common/ui_config.py" line="308"/>
+        <source>buff++：
+主题卡包出现数量 +1
+主题卡包刷新次数 \yellow{+4}
+选择未记录的主题卡包时，所有人格等级 +3(最多9级)
+\yellow{如果解锁了45个及以上主题卡包图鉴中的主题卡包，获得2层拼点威力提升}</source>
+        <translation>buff++:
+Theme Pack Selection +1
+Theme Pack Refresh Chance \yellow{+4}
+When choosing a new Theme Pack for the first time, all Identities gain 3 levels (max 9)
+\yellow{If 45+ Theme Packs are unlocked in the Theme Pack Compendium, gain 2 Clash Power Up}</translation>
+    </message>
+    <message>
+        <location filename="../app/common/ui_config.py" line="314"/>
+        <source>buff：
+初始经费 +400
+初始饰品可选择数 +1</source>
+        <translation>buff:
+Starting Cost +400
+Starting E.G.O Gift Choice +1</translation>
+    </message>
+    <message>
+        <location filename="../app/common/ui_config.py" line="318"/>
+        <source>buff+：
+初始经费 \yellow{+500}
+初始饰品可选择数 +1
+\yellow{选择遭遇战奖励卡中的星芒选项时，经费 +75}</source>
+        <translation>buff+:
+Starting Cost \yellow{+500}
+Starting E.G.O Gift Choice +1
+\yellow{When choosing Starlight from Encounter Reward Cards, Cost +75}</translation>
+    </message>
+    <message>
+        <location filename="../app/common/ui_config.py" line="322"/>
+        <source>buff++：
+初始经费 \yellow{+700}
+初始饰品可选择数 +1
+\yellow{选择遭遇战奖励卡中的星芒选项时，经费 +150}</source>
+        <translation>buff++:
+Starting Cost \yellow{+700}
+Starting E.G.O Gift Choice +1
+\yellow{When choosing Starlight from Encounter Reward Cards, Cost +150}</translation>
+    </message>
+    <message>
+        <location filename="../app/common/ui_config.py" line="328"/>
+        <source>buff：
+商店里展出的饰品数量 +1
+战斗胜利时获得的经费 +20%
+提升商店里更高等级饰品的展出概率</source>
+        <translation>buff:
+Shop E.G.O Gift Selection +1
+Encounter Reward Cost +20%
+Greater chance for higher-tier E.G.O Gifts to appear in Shops</translation>
+    </message>
+    <message>
+        <location filename="../app/common/ui_config.py" line="332"/>
+        <source>buff+：
+商店里展出的饰品数量 +1
+战斗胜利时获得的经费 \yellow{+30%}
+提升商店里更高等级饰品的展出概率
+\yellow{进入商店时，获得等同于当前持有的饰品等级之和的经费(最多75)}</source>
+        <translation>buff+:
+Shop E.G.O Gift Selection +1
+Encounter Reward Cost \yellow{+30%}
+Greater chance for higher-tier E.G.O Gifts to appear in Shops
+\yellow{Upon entering a shop, gain Cost equal to the sum of the tiers of your E.G.O Gifts (max 75)}</translation>
+    </message>
+    <message>
+        <location filename="../app/common/ui_config.py" line="336"/>
+        <source>buff++：
+商店里展出的饰品数量 +1
+战斗胜利时获得的经费 \yellow{+40%}
+提升商店里更高等级饰品的展出概率
+\yellow{进入商店时，获得等同于当前持有的饰品等级之和的经费(最多150)}</source>
+        <translation>buff++:
+Shop E.G.O Gift Selection +1
+Encounter Reward Cost \yellow{+40%}
+Greater chance for higher-tier E.G.O Gifts to appear in Shops
+\yellow{Upon entering a shop, gain Cost equal to the sum of the tiers of your E.G.O Gifts (max 150)}</translation>
+    </message>
+    <message>
+        <location filename="../app/common/ui_config.py" line="342"/>
+        <source>buff：
+可免费进行商店关键词刷新 1次
+进入第1层时，随机获得1件1级饰品</source>
+        <translation>buff:
+1 free Keyword Refresh per shop
+Upon entering Floor 1, gain 1 random Tier 1 E.G.O Gift</translation>
+    </message>
+    <message>
+        <location filename="../app/common/ui_config.py" line="346"/>
+        <source>buff+：
+可免费进行商店关键词刷新 1次
+进入第1层时，随机获得\yellow{2件}1级饰品
+\yellow{特殊商店出现概率 +10%}</source>
+        <translation>buff+:
+1 free Keyword Refresh per shop
+Upon entering Floor 1, gain \yellow{2} random Tier 1 E.G.O Gifts
+\yellow{+10% chance for Super Shop to appear}</translation>
+    </message>
+    <message>
+        <location filename="../app/common/ui_config.py" line="350"/>
+        <source>buff++：
+可免费进行商店关键词刷新 \yellow{2次}
+进入第1层时，随机获得\yellow{3件}1级饰品
+\yellow{特殊商店出现概率 +25%}</source>
+        <translation>buff++:
+\yellow{2} free Keyword Refreshes per shop
+Upon entering Floor 1, gain \yellow{3} random Tier 1 E.G.O Gifts
+\yellow{+25% chance for Super Shop to appear}</translation>
+    </message>
+    <message>
+        <location filename="../app/common/ui_config.py" line="356"/>
+        <source>buff：
+进入第1层时，人格等级 +3
+通过阶段时，人格等级 +1(最多+5)</source>
+        <translation>buff:
+Upon entering Floor 1, all Identities gain 3 levels
+After clearing a floor, all Identities gain 1 level (max 5)</translation>
+    </message>
+    <message>
+        <location filename="../app/common/ui_config.py" line="360"/>
+        <source>buff+：
+进入第1层时，人格等级 +3
+通过阶段时，人格等级 +1\yellow{(最多+9)}</source>
+        <translation>buff+:
+Upon entering Floor 1, all Identities gain 3 levels
+After clearing a floor, all Identities gain 1 level \yellow{(max 9)}</translation>
+    </message>
+    <message>
+        <location filename="../app/common/ui_config.py" line="364"/>
+        <source>buff++：
+进入第1层时，人格等级 +3
+\yellow{进入第6层时，人格等级 +3}
+通过阶段时，人格等级 +1\yellow{(最多+9)}</source>
+        <translation>buff++:
+Upon entering Floor 1, all Identities gain 3 levels
+\yellow{Upon entering Floor 6, all Identities gain 3 levels}
+After clearing a floor, all Identities gain 1 level \yellow{(max 9)}</translation>
+    </message>
+    <message>
+        <location filename="../app/common/ui_config.py" line="370"/>
+        <source>buff：
+最大速度值 +2
+获得1层 拼点威力提升
+获得1层 伤害强化
+获得1层 守护</source>
+        <translation>buff:
+Max Speed +2
+Gain 1 Clash Power Up
+Gain 1 Damage Up
+Gain 1 Protection</translation>
+    </message>
+    <message>
+        <location filename="../app/common/ui_config.py" line="374"/>
+        <source>buff+：
+最大速度值 \yellow{+3}
+获得\yellow{2层} 拼点威力提升
+获得1层 伤害强化
+获得1层 守护</source>
+        <translation>buff+:
+Max Speed \yellow{+3}
+Gain \yellow{2} Clash Power Up
+Gain 1 Damage Up
+Gain 1 Protection</translation>
+    </message>
+    <message>
+        <location filename="../app/common/ui_config.py" line="378"/>
+        <source>buff++：
+最大速度值 \yellow{+3}
+获得\yellow{2层} 拼点威力提升
+获得\yellow{2层} 伤害强化
+获得\yellow{2层} 守护</source>
+        <translation>buff++:
+Max Speed \yellow{+3}
+Gain \yellow{2} Clash Power Up
+Gain \yellow{2} Damage Up
+Gain \yellow{2} Protection</translation>
+    </message>
+    <message>
+        <location filename="../app/common/ui_config.py" line="384"/>
+        <source>buff：
+进入商店时，随机获得1件3级及以下的合成/售卖专用饰品
+进入第3层时，随机获得1件3级饰品
+合成时，随机获得比合成产物(3级及以上)低2级的饰品(每个商店最多1次)</source>
+        <translation>buff:
+Upon entering a shop, gain one random E.G.O Gift of Tier 3 or lower, usable only for fusion or sale
+Upon entering Floor 3, gain 1 random Tier 3 E.G.O Gift
+When fusing, gain a random additional E.G.O Gift 2 Tiers below the fusion result (must be Tier 3 or higher) (once per Shop)</translation>
+    </message>
+    <message>
+        <location filename="../app/common/ui_config.py" line="388"/>
+        <source>buff+：
+进入商店时，随机获得1件3级及以下的合成・售卖专用E.G.O饰品
+第5层及以下：\yellow{1~3级}
+第6层及以上：\yellow{2~3级}
+进入第3层\yellow{与第5层}时，随机获得1件所选关键词的3级E.G.O饰品
+合成时，可随机获得比合成产物(3级及以上)低2级的E.G.O饰品(每个商店1次)</source>
+        <translation>buff+:
+Upon entering a shop, gain one random E.G.O Gift usable only for fusion or sale
+Floor 5 or lower: \yellow{Tier 1~3}
+Floor 6 or higher: \yellow{Tier 2~3}
+Upon entering Floor 3 \yellow{and Floor 5}, gain 1 random Tier 3 E.G.O Gift from the selected Keyword category
+When fusing, gain a random additional E.G.O Gift 2 Tiers below the fusion result (must be Tier 3 or higher) (once per Shop)</translation>
+    </message>
+    <message>
+        <location filename="../app/common/ui_config.py" line="392"/>
+        <source>buff++：
+进入商店时，随机获得1件3级及以下的合成・售卖专用E.G.O饰品
+第5层及以下：\yellow{2~3级}
+第6层及以上：\yellow{3~4级}
+进入第3层、第5层\yellow{与第7层}时，随机获得1件所选关键词的\yellow{4级}E.G.O饰品
+合成时，可随机获得比合成产物(3级及以上)低\yellow{1级}的E.G.O饰品(每个商店1次)</source>
+        <translation>buff++:
+Upon entering a shop, gain one random E.G.O Gift usable only for fusion or sale
+Floor 5 or lower: \yellow{Tier 2~3}
+Floor 6 or higher: \yellow{Tier 3~4}
+Upon entering Floors 3, 5, \yellow{and 7}, gain 1 random Tier \yellow{4} E.G.O Gift from the selected Keyword category
+When fusing, gain a random additional E.G.O Gift \yellow{1 Tier below} the fusion result (must be Tier 3 or higher) (once per Shop)</translation>
+    </message>
+    <message>
+        <location filename="../app/common/ui_config.py" line="398"/>
+        <source>buff：
+主题卡包出现数量 +1
+初始饰品可选择数 +1
+进入镜像迷宫时，选择获得1件所选关键词对应的随机3级饰品(若无该等级的饰品，则会出现更低等级的饰品)
+进入镜像迷宫时，获得1个黯淡的残影</source>
+        <translation>buff:
+Theme Pack Selection +1
+Starting E.G.O Gift Choice +1
+Upon entry, choose 1 Tier 3 E.G.O Gift for the selected Keyword (if no remaining Gifts meet the conditions, a lower-tier gift will appear instead)
+Upon entry, gain 1 Dark Vestige</translation>
+    </message>
+    <message>
+        <location filename="../app/common/ui_config.py" line="402"/>
+        <source>buff+：
+主题卡包出现数量 +1
+初始饰品可选择数 +1
+进入镜像迷宫时，选择获得\yellow{2件}所选关键词对应的随机3级饰品(若无该等级的饰品，则会出现更低等级的饰品)
+进入镜像迷宫时，获得1个黯淡的残影、\yellow{1个微茫的残影}</source>
+        <translation>buff+:
+Theme Pack Selection +1
+Starting E.G.O Gift Choice +1
+Upon entry, choose \yellow{2} Tier 3 E.G.O Gifts for the selected Keyword (if no remaining Gifts meet the conditions, a lower-tier gift will appear instead)
+Upon entry, gain 1 Dark Vestige and \yellow{1 Faint Vestige}</translation>
+    </message>
+    <message>
+        <location filename="../app/common/ui_config.py" line="406"/>
+        <source>buff++：
+主题卡包出现数量 +1
+初始饰品可选择数 +1
+进入镜像迷宫时，选择获得\yellow{3件}所选关键词对应的随机3级饰品(若无该等级的饰品，则会出现更低等级的饰品)
+进入镜像迷宫时，获得1个黯淡的残影、\yellow{1个微茫的残影}与\yellow{1个闪耀的残影}</source>
+        <translation>buff++:
+Theme Pack Selection +1
+Starting E.G.O Gift Choice +1
+Upon entry, choose \yellow{3} Tier 3 E.G.O Gifts for the selected Keyword (if no remaining Gifts meet the conditions, a lower-tier gift will appear instead)
+Upon entry, gain 1 Dark Vestige, \yellow{1 Faint Vestige}, and \yellow{1 Twinkling Vestige}</translation>
     </message>
 </context>
 </TS>
