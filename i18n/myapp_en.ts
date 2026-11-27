@@ -861,55 +861,13 @@ Right-click to save this setting as the default.</translation>
         <source>否 (默认)</source>
         <translation>No (Default)</translation>
     </message>
-    <message>
-        <location filename="../app/__init__.py" line="63"/>
-        <source>1 次</source>
-        <translation>1 Time</translation>
-    </message>
-    <message>
-        <location filename="../app/__init__.py" line="64"/>
-        <source>2 次</source>
-        <translation>2 Times</translation>
-    </message>
-    <message>
-        <location filename="../app/__init__.py" line="65"/>
-        <source>3 次</source>
-        <translation>3 Times</translation>
-    </message>
-    <message>
-        <location filename="../app/__init__.py" line="66"/>
-        <source>4 次</source>
-        <translation>4 Times</translation>
-    </message>
-    <message>
-        <location filename="../app/__init__.py" line="67"/>
-        <source>5 次</source>
-        <translation>5 Times</translation>
-    </message>
-    <message>
-        <location filename="../app/__init__.py" line="68"/>
-        <source>6 次</source>
-        <translation>6 Times</translation>
-    </message>
-    <message>
-        <location filename="../app/__init__.py" line="69"/>
-        <source>7 次</source>
-        <translation>7 Times</translation>
-    </message>
-    <message>
-        <location filename="../app/__init__.py" line="70"/>
-        <source>8 次</source>
-        <translation>8 Times</translation>
-    </message>
-    <message>
-        <location filename="../app/__init__.py" line="71"/>
-        <source>9 次</source>
-        <translation>9 Times</translation>
-    </message>
-    <message>
-        <location filename="../app/__init__.py" line="72"/>
-        <source>10 次</source>
-        <translation>10 Times</translation>
+    <message numerus="yes">
+        <location filename="../app/base_tools.py" line="428"/>
+        <source>%n 次</source>
+        <translation>
+            <numerusform>%n Time</numerusform>
+            <numerusform>%n Times</numerusform>
+        </translation>
     </message>
 </context>
 <context>

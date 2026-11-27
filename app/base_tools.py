@@ -1,4 +1,4 @@
-from typing import Union
+from typing import Callable, Union
 
 from PySide6.QtCore import Qt, Signal
 from PySide6.QtGui import QFont, QIcon
@@ -398,6 +398,7 @@ class BaseComboBox(BaseLayout):
         self.setObjectName(config_name)
         self.config_name = config_name
         self.items = None
+        self.item_text = None
         self.combo_box = RightClickComboBox(self)
         self.hBoxLayout.addWidget(self.combo_box, stretch=1)
         self.setFixedHeight(30)
@@ -407,7 +408,9 @@ class BaseComboBox(BaseLayout):
 
         self.combo_box.currentIndexChanged.connect(self.on_change)
 
-    def add_items(self, items):
+    def add_items(self, items, item_text: Callable[["BaseComboBox", int], str] | None = None):
+        """item_text 用选项的值生成译文，用于带数字、不能逐条翻译的选项。"""
+        self.item_text = item_text
         self.combo_box.currentIndexChanged.disconnect(self.on_change)
         self.combo_box.addItems(items)
         self.items = items
@@ -419,6 +422,10 @@ class BaseComboBox(BaseLayout):
                     self.combo_box.setCurrentIndex(i)
                     break
         self.combo_box.currentIndexChanged.connect(self.on_change)
+
+    def times_text(self, count: int) -> str:
+        # lupdate 只把 self.tr 的带数量写法识别为复数条目
+        return self.tr("%n 次", "", count)
 
     def on_change(self, index):
         items_list = list(self.items.items())
@@ -439,10 +446,9 @@ class BaseComboBox(BaseLayout):
 
     def retranslateUi(self):
         if self.items:
-            index = 0
-            for key in self.items:
-                self.combo_box.setItemText(index, self.tr(key))
-                index += 1
+            for index, (key, value) in enumerate(self.items.items()):
+                text = self.item_text(self, value) if self.item_text else self.tr(key)
+                self.combo_box.setItemText(index, text)
         if self.toolTip():
             self.setToolTip(self.tr(self.toolTip()))
 

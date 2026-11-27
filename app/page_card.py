@@ -37,7 +37,7 @@ from app.base_combination import (
     MirrorTeamCombination,
     TextProgressBar,
 )
-from app.base_tools import BaseCheckBox
+from app.base_tools import BaseCheckBox, BaseComboBox
 from app.common.ui_config import get_theme_aware_text_browser_qss
 from app.language_manager import LanguageManager
 from app.widget.custom_segmented_widget import CustomSegmentedWidget
@@ -211,7 +211,7 @@ class PageDailyTask(PageCard):
         )
         self.coutinuous_combat.box.setFixedWidth(200)
         self.coutinuous_combat.combo_box.setFixedWidth(100)
-        self.coutinuous_combat.add_items(coutinuous_times)
+        self.coutinuous_combat.add_items(coutinuous_times, BaseComboBox.times_text)
 
         self.targeted_teaming_EXP = BaseCheckBox(
             "targeted_teaming_EXP",

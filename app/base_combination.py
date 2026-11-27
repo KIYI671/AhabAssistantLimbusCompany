@@ -126,8 +126,8 @@ class CheckBoxWithComboBox(QFrame):
         self.additional_combo_box = BaseComboBox(config_name, combo_box_width)
         self.hBoxLayout.addWidget(self.additional_combo_box)
 
-    def add_items(self, items):
-        self.combo_box.add_items(items)
+    def add_items(self, items, item_text=None):
+        self.combo_box.add_items(items, item_text)
         self.items = items
 
     def add_times_for_additional(self, items):
