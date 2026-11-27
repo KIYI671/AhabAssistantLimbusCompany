@@ -1,4 +1,6 @@
+import re
 import time
+from typing import Literal, NotRequired, TypedDict
 
 import requests
 from PySide6.QtCore import Qt, QThread, Signal, Slot
@@ -6,6 +8,7 @@ from PySide6.QtGui import QFont, QIcon
 from PySide6.QtWidgets import (
     QFrame,
     QHBoxLayout,
+    QListWidget,
     QListWidgetItem,
     QTextBrowser,
     QVBoxLayout,
@@ -13,9 +16,9 @@ from PySide6.QtWidgets import (
 )
 from qfluentwidgets import (
     CheckBox,
-    ListWidget,
     PopUpAniStackedWidget,
     PrimaryPushButton,
+    SmoothScrollDelegate,
     isDarkTheme,
 )
 from qframelesswindow import FramelessDialog, StandardTitleBar
@@ -29,6 +32,41 @@ from app.common.ui_config import (
 )
 from module.config import cfg
 from module.logger import log
+
+
+class AnnouncementItem(TypedDict):
+    title: str
+    content: str
+    contentType: NotRequired[Literal["markdown", "html", "text"]]  # 缺省按 markdown 处理
+    lang: NotRequired[str]  # 可选，界面语言代码（zh_cn / en）；缺省时按标题推断
+
+
+class AnnouncementFeed(TypedDict):
+    Time: str  # 公告更新时间，格式 "%Y-%m-%d %H:%M:%S"
+    Announcement: list[AnnouncementItem]
+
+
+_CJK_PATTERN = re.compile("[\\u4e00-\\u9fff]")
+
+
+def get_announcement_language(anno: AnnouncementItem) -> str:
+    """
+    获取公告 `anno` 所用的语言。优先使用 `anno` 的 `lang` 字段；
+    没有该字段时，标题含汉字视为 `zh_cn`，否则视为 `en`。
+    """
+    lang = anno.get("lang")
+    if lang:
+        return lang
+    return "zh_cn" if _CJK_PATTERN.search(anno["title"]) else "en"
+
+
+def filter_announcements_by_lang(announcements: list[AnnouncementItem], lang: str) -> list[AnnouncementItem]:
+    """
+    使用 `lang` 过滤公告 `announcements`，只保留语言为 `lang` 的公告。
+    没有符合的公告时返回全部公告，避免用户一条公告都看不到。
+    """
+    matched = [anno for anno in announcements if get_announcement_language(anno) == lang]
+    return matched or announcements
 
 
 class AnnouncementThread(QThread):
@@ -57,7 +95,7 @@ class AnnouncementThread(QThread):
             response.raise_for_status()  # 如果状态码非200则抛出异常
 
             # 解析 JSON 数据
-            announcements = response.json()
+            announcements: AnnouncementFeed = response.json()
             time_str = announcements["Time"]
             time_struct = time.strptime(time_str, "%Y-%m-%d %H:%M:%S")
             target_timestamp = time.mktime(time_struct)
@@ -66,7 +104,7 @@ class AnnouncementThread(QThread):
                 self.AnnouncementSignal.emit(AnnouncementStatus.SUCCESS)
                 return
             self.announcement_time = target_timestamp
-            self.announcement = announcements["Announcement"]
+            self.announcement: list[AnnouncementItem] = announcements["Announcement"]
             self.AnnouncementSignal.emit(AnnouncementStatus.ANNO_AVAILABLE)
         except Exception as e:
             log.error(f"获取公告失败:{e}")
@@ -92,6 +130,8 @@ class Announcement(QWidget):
         self.content = QTextBrowser(self)
         self.content.setOpenExternalLinks(True)
         self.content.setAutoFillBackground(True)
+        # 用 Fluent 风格的悬浮滚动条代替原生滚动条，跟随深浅色主题
+        self.scroll_delegate = SmoothScrollDelegate(self.content)
 
         # 根据 content_type 渲染内容
         if show_title:
@@ -133,7 +173,7 @@ class Announcement(QWidget):
 
 
 class AnnouncementBoard(FramelessDialog):
-    def __init__(self, anno, time, parent=None):
+    def __init__(self, anno: list[AnnouncementItem], time: float, parent=None):
         super().__init__(parent=parent)
 
         # 设置标题栏
@@ -143,6 +183,10 @@ class AnnouncementBoard(FramelessDialog):
         self.titleBar.minBtn.hide()
         self.titleBar.maxBtn.hide()
         self.titleBar.closeBtn.hide()
+        # qframelesswindow 建的标题 QLabel 没有 objectName，自身 QSS 还写死了 'Segoe UI'（汉字会回退到日文字形）。
+        # 给它起名并清掉自身 QSS，交给下面 _apply_styles 里的标题栏 QSS 统一控制。
+        self.titleBar.titleLabel.setObjectName("titleLabel")
+        self.titleBar.titleLabel.setStyleSheet("")
 
         # 设置模态
         self.setWindowModality(Qt.WindowModal)
@@ -171,9 +215,14 @@ class AnnouncementBoard(FramelessDialog):
         # ...
 
         # 标题列表
-        self.title_list = ListWidget()
-        self.title_list.setSpacing(5)
+        self.title_list = QListWidget()
         self.title_list.setContentsMargins(0, 10, 0, 0)  # 增加顶部间距代替头部
+        # 先创建再设置滚动条策略，否则创建时会把横向滚动条重新打开，长标题不再显示省略号
+        self.title_list_scroll_delegate = SmoothScrollDelegate(self.title_list)
+        # 侧边栏宽度固定：长标题用省略号截断（悬停显示完整标题），不出现横向滚动
+        self.title_list.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        # 右边留出悬浮滚动条的位置，避免压住文字
+        self.title_list.setViewportMargins(4, 4, 12, 4)
         self.title_list.currentRowChanged.connect(self.on_title_clicked)
         self.title_list.addItem(QListWidgetItem(self.tr("ALL~ 全部公告")))
 
@@ -249,9 +298,9 @@ class AnnouncementBoard(FramelessDialog):
         # 应用主题样式
         self._apply_styles()
 
-    def set_announcement(self, announcements):
+    def set_announcement(self, announcements: list[AnnouncementItem]):
         """设置公告"""
-        for anno in announcements:
+        for anno in filter_announcements_by_lang(announcements, cfg.language_in_program):
             self.add(
                 Announcement(
                     None,
@@ -342,7 +391,9 @@ class AnnouncementBoard(FramelessDialog):
         # 将标题添加到左侧标题栏
         title = dialog.title
         dialog.setParent(self)
-        self.title_list.addItem(title)
+        item = QListWidgetItem(title)
+        item.setToolTip(title)
+        self.title_list.addItem(item)
 
         # 将内容添加到右侧内容栏
         self.content_stack.addWidget(dialog)
@@ -419,7 +470,10 @@ class AnnouncementBoard(FramelessDialog):
                     background-color: rgba(45, 45, 45, 1);
                     color: white;
                 }
-                TitleBar > QLabel#titleLabel {
+                QLabel#titleLabel {
+                    background: transparent;
+                    font-size: 13px;
+                    padding: 0 4px;
                     color: white;
                 }
                 """
@@ -437,7 +491,10 @@ class AnnouncementBoard(FramelessDialog):
                     background-color: rgba(245, 245, 245, 1);
                     color: black;
                 }
-                TitleBar > QLabel#titleLabel {
+                QLabel#titleLabel {
+                    background: transparent;
+                    font-size: 13px;
+                    padding: 0 4px;
                     color: black;
                 }
                 """

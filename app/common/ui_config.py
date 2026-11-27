@@ -1,7 +1,7 @@
 # 应用 UI 配置
 from PySide6.QtCore import QT_TRANSLATE_NOOP, Qt
 from PySide6.QtGui import QColor
-from PySide6.QtWidgets import QFrame
+from PySide6.QtWidgets import QApplication, QFrame
 from qfluentwidgets import isDarkTheme, qconfig
 
 BORDER_STYLE = {
@@ -36,6 +36,12 @@ TITLE_BAR_STYLES = {
 def apply_font_config():
     """应用全局字体配置"""
     qconfig.fontFamilies.value = FONT_FAMILIES
+    # 普通 Qt 控件用应用默认字体，Windows 上默认只有 Segoe UI，汉字会回退成日文字形，所以也加上中文字体
+    app = QApplication.instance()
+    if app is not None:
+        font = app.font()
+        font.setFamilies(FONT_FAMILIES)
+        app.setFont(font)
 
 
 def get_main_window_style(is_dark: bool) -> dict:
@@ -612,47 +618,45 @@ def get_announcement_sidebar_qss() -> tuple[str, str]:
 # 公告板列表项样式配置
 ANNOUNCEMENT_LIST_STYLES = {
     "dark": """
-        ListWidget {
+        QListWidget {
             background-color: transparent;
             border: none;
             outline: 0px;
+            font-size: 14px;
         }
-        ListWidget::item {
+        QListWidget::item {
             color: rgba(255, 255, 255, 0.85);
             background-color: transparent;
-            border-left: 3px solid transparent;
-            padding: 12px 15px;
-            margin: 2px 5px;
+            padding: 4px 6px;
             border-radius: 4px;
         }
-        ListWidget::item:hover {
+        QListWidget::item:hover {
             background-color: rgba(255, 255, 255, 0.08);
         }
-        ListWidget::item:selected {
-            background-color: rgba(255, 255, 255, 0.12);
-            border-left: 3px solid #0078d4;
+        QListWidget::item:selected {
+            background-color: rgba(255, 255, 255, 0.14);
+            color: rgba(255, 255, 255, 0.85);
         }
     """,
     "light": """
-        ListWidget {
+        QListWidget {
             background-color: transparent;
             border: none;
             outline: 0px;
+            font-size: 14px;
         }
-        ListWidget::item {
+        QListWidget::item {
             color: rgba(0, 0, 0, 0.85);
             background-color: transparent;
-            border-left: 3px solid transparent;
-            padding: 12px 15px;
-            margin: 2px 5px;
+            padding: 4px 6px;
             border-radius: 4px;
         }
-        ListWidget::item:hover {
+        QListWidget::item:hover {
             background-color: rgba(0, 0, 0, 0.05);
         }
-        ListWidget::item:selected {
-            background-color: rgba(0, 0, 0, 0.08);
-            border-left: 3px solid #0078d4;
+        QListWidget::item:selected {
+            background-color: rgba(0, 0, 0, 0.09);
+            color: rgba(0, 0, 0, 0.85);
         }
     """,
 }
