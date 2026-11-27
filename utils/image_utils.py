@@ -361,9 +361,7 @@ class ImageUtils:
         kp1, des1 = orb.detectAndCompute(template, None)
         kp2, des2 = orb.detectAndCompute(target, None)
 
-        # 任一图都没提取到描述符时直接判为不匹配：图像过于平滑/裁剪区域无纹理时 ORB 会返回 None，
-        # 把 None 交给 knnMatch 时 opencv 4.x 抛 cv2.error（被上层吞掉只打一行日志），
-        # opencv 5.x 直接 SIGSEGV（进程猝死、无 traceback），所以必须在这里拦住。
+        # 任一图片未提取到特征描述符时直接返回不匹配，避免将 None 传给匹配器导致报错或崩溃。
         if des1 is None or des2 is None:
             return False, 0
 
